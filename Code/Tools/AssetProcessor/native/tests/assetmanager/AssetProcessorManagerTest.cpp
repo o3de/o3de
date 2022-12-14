@@ -81,6 +81,8 @@ void AssetProcessorManagerTest::SetUp()
 
     AssetProcessorTest::SetUp();
 
+    qRegisterMetaType<AssetProcessor::SourceAssetReference>("SourceAssetReference");
+
     AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
     AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
@@ -959,13 +961,13 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTe
     newEntry1.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry1.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry1.m_sourceGuid = m_aUuid;
-    newEntry1.m_dependsOnSource = PathOrUuid(m_bUuid);
+    newEntry1.m_dependsOnSource = PathOrUuid(m_assetRootDir.absoluteFilePath("subfolder1/b.txt").toUtf8().constData());
 
     SourceFileDependencyEntry newEntry2; // b depends on C
     newEntry2.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry2.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry2.m_sourceGuid = m_bUuid;
-    newEntry2.m_dependsOnSource = PathOrUuid("c.txt");
+    newEntry2.m_dependsOnSource = PathOrUuid(m_cUuid);
 
     SourceFileDependencyEntry newEntry3;  // b also depends on D
     newEntry3.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
@@ -988,8 +990,8 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTe
 
     // make sure the corresponding values in the map are also correct
     EXPECT_STREQ(dependencies[m_assetRootDir.absoluteFilePath("subfolder1/a.txt").toUtf8().constData()].c_str(), m_aUuid.ToFixedString(false, false).c_str());
-    EXPECT_STREQ(dependencies[m_assetRootDir.absoluteFilePath("subfolder1/b.txt").toUtf8().constData()].c_str(), m_bUuid.ToFixedString(false, false).c_str());
-    EXPECT_STREQ(dependencies[m_assetRootDir.absoluteFilePath("subfolder1/c.txt").toUtf8().constData()].c_str(), "c.txt");
+    EXPECT_STREQ(dependencies[m_assetRootDir.absoluteFilePath("subfolder1/b.txt").toUtf8().constData()].c_str(), m_assetRootDir.absoluteFilePath("subfolder1/b.txt").toUtf8().constData());
+    EXPECT_STREQ(dependencies[m_assetRootDir.absoluteFilePath("subfolder1/c.txt").toUtf8().constData()].c_str(), m_cUuid.ToFixedString(false, false).c_str());
     EXPECT_STREQ(dependencies[m_assetRootDir.absoluteFilePath("subfolder1/d.txt").toUtf8().constData()].c_str(), "d.txt");
 
     dependencies.clear();
@@ -3166,6 +3168,55 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_BasicTes
     EXPECT_NE(deps.find(m_dependsOnFile2_Source.toUtf8().constData()), deps.end());
     EXPECT_NE(deps.find(m_dependsOnFile1_Job.toUtf8().constData()), deps.end());
     EXPECT_NE(deps.find(m_dependsOnFile2_Job.toUtf8().constData()), deps.end());
+}
+
+TEST_F(SourceFileDependenciesTest, DependenciesSavedWithPathAndUuid_FromAssetIdIsSetCorrectly)
+{
+    AssetProcessor::AssetProcessorManager::JobToProcessEntry job;
+    SetupData(
+        { MakeSourceDependency("a.txt"), MakeSourceDependency(m_uuidOfB) },
+        { MakeJobDependency("c.txt"), MakeJobDependency(m_uuidOfD) },
+        true,
+        true,
+        true,
+        job);
+
+    AZStd::vector<AzToolsFramework::AssetDatabase::SourceFileDependencyEntry> dependencyEntry;
+    m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByDependsOnSource(
+        m_uuidOfA,
+        "a.txt",
+        "a.txt",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any,
+        dependencyEntry);
+
+    m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByDependsOnSource(
+        m_uuidOfB,
+        "b.txt",
+        "b.txt",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any,
+        dependencyEntry);
+
+    m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByDependsOnSource(
+        m_uuidOfC,
+        "c.txt",
+        "c.txt",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any,
+        dependencyEntry);
+
+    m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByDependsOnSource(
+        m_uuidOfD,
+        "d.txt",
+        "d.txt",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any,
+        dependencyEntry);
+
+    ASSERT_EQ(dependencyEntry.size(), 4);
+
+    // These should be in the order queried above.  A and C are path based, so FromAssetId should be false, B and D are UUID based so FromAssetId should be true
+    EXPECT_FALSE(dependencyEntry[0].m_fromAssetId);
+    EXPECT_TRUE(dependencyEntry[1].m_fromAssetId);
+    EXPECT_FALSE(dependencyEntry[2].m_fromAssetId);
+    EXPECT_TRUE(dependencyEntry[3].m_fromAssetId);
 }
 
 TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_UpdateTest)

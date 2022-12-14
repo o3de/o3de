@@ -41,6 +41,7 @@ namespace PhysX
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
         AZStd::vector<AzToolsFramework::ViewportUi::ClusterId> PopulateViewportUiImpl() override;
         AZStd::string GetComponentModeName() const override;
+        AZ::Uuid GetComponentModeType() const override;
 
     private:
         //! Used to identify the group of component modes.

@@ -25,6 +25,7 @@
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialAssetCreator.h>
 
 namespace Terrain
@@ -32,11 +33,6 @@ namespace Terrain
     namespace
     {
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
-    }
-
-    namespace TerrainSrgInputs
-    {
-        static const char* const Textures("m_textures");
     }
 
     void TerrainFeatureProcessor::Reflect(AZ::ReflectContext* context)
@@ -59,45 +55,33 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Initialize()
     {
-        m_imageArrayHandler = AZStd::make_shared<AZ::Render::BindlessImageArrayHandler>();
-
         auto sceneSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetSceneSrgLayout();
-        
+
         // Load the terrain material asynchronously
-        const AZStd::string materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
-        m_materialAssetLoader = AZStd::make_unique<AZ::RPI::AssetUtils::AsyncAssetLoader>();
-        *m_materialAssetLoader = AZ::RPI::AssetUtils::AsyncAssetLoader::Create<AZ::RPI::MaterialAsset>(materialFilePath, 0u,
-            [&](AZ::Data::Asset<AZ::Data::AssetData> assetData, bool success) -> void
-            {
-                const AZ::Data::Asset<AZ::RPI::MaterialAsset>& materialAsset = static_cast<AZ::Data::Asset<AZ::RPI::MaterialAsset>>(assetData);
-                if (success)
-                {
-                    m_materialInstance = AZ::RPI::Material::FindOrCreate(assetData);
-                    AZ::RPI::MaterialReloadNotificationBus::Handler::BusConnect(materialAsset->GetId());
-                    if (!materialAsset->GetObjectSrgLayout())
-                    {
-                        AZ_Error("TerrainFeatureProcessor", false, "No per-object ShaderResourceGroup found on terrain material.");
-                    }
-                    else
-                    {
-                        PrepareMaterialData();
-                    }
-                }
-            }
-        );
-        OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask(TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings));
+        static constexpr const char* materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
+        const AZ::Data::AssetId materialAssetId =
+            AZ::RPI::AssetUtils::GetAssetIdForProductPath(materialFilePath, AZ::RPI::AssetUtils::TraceLevel::Error);
+        if (materialAssetId.IsValid())
+        {
+            m_materialAsset.Create(materialAssetId);
+            m_materialAsset.QueueLoad();
+            AZ::Data::AssetBus::Handler::BusConnect(materialAssetId);
+        }
+
+        OnTerrainDataChanged(
+            AZ::Aabb::CreateNull(), TerrainDataChangedMask(TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings));
         m_meshManager.Initialize(*GetParentScene());
     }
 
     void TerrainFeatureProcessor::Deactivate()
     {
+        AZ::Data::AssetBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
-        AZ::RPI::MaterialReloadNotificationBus::Handler::BusDisconnect();
         
         DisableSceneNotification();
         OnTerrainDataDestroyBegin();
 
-        m_materialAssetLoader = {};
+        m_materialAsset = {};
         m_materialInstance = {};
 
         m_meshManager.Reset();
@@ -112,6 +96,26 @@ namespace Terrain
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
     {
         ProcessSurfaces(packet);
+    }
+
+    void TerrainFeatureProcessor::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        m_materialAsset = asset;
+        if (!m_materialAsset->GetObjectSrgLayout())
+        {
+            AZ_Error("TerrainFeatureProcessor", false, "No per-object ShaderResourceGroup found on terrain material.");
+        }
+        else
+        {
+            m_materialInstance = AZ::RPI::Material::FindOrCreate(m_materialAsset);
+            PrepareMaterialData();
+            m_terrainBoundsNeedUpdate = true;
+        }
+    }
+
+    void TerrainFeatureProcessor::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        OnAssetReady(asset);
     }
 
     void TerrainFeatureProcessor::OnTerrainDataDestroyBegin()
@@ -204,7 +208,7 @@ namespace Terrain
     {
         m_terrainSrg = {};
 
-        for (auto& shaderItem : m_materialInstance->GetShaderCollection())
+        for (auto& shaderItem : m_materialInstance->GetGeneralShaderCollection())
         {
             if (shaderItem.GetShaderAsset()->GetDrawListName() == AZ::Name("forward"))
             {
@@ -219,22 +223,13 @@ namespace Terrain
 
         if (m_terrainSrg)
         {
-            if (m_imageArrayHandler->IsInitialized())
-            {
-                m_imageArrayHandler->UpdateSrgIndices(m_terrainSrg, AZ::Name(TerrainSrgInputs::Textures));
-            }
-            else
-            {
-                m_imageArrayHandler->Initialize(m_terrainSrg, AZ::Name(TerrainSrgInputs::Textures));
-            }
-
             if (m_macroMaterialManager.IsInitialized())
             {
                 m_macroMaterialManager.UpdateSrgIndices(m_terrainSrg);
             }
             else
             {
-                m_macroMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg);
+                m_macroMaterialManager.Initialize(m_terrainSrg);
             }
             
             if (m_detailMaterialManager.IsInitialized())
@@ -243,7 +238,7 @@ namespace Terrain
             }
             else if(m_materialInstance)
             {
-                m_detailMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg, m_materialInstance);
+                m_detailMaterialManager.Initialize(m_terrainSrg, m_materialInstance);
             }
 
             if (m_clipmapManager.IsClipmapEnabled())
@@ -261,7 +256,6 @@ namespace Terrain
         }
         else
         {
-            m_imageArrayHandler->Reset();
             m_macroMaterialManager.Reset();
             m_detailMaterialManager.Reset();
             if (m_clipmapManager.IsClipmapEnabled())
@@ -319,11 +313,6 @@ namespace Terrain
                     }
                 }
             }
-            if (m_imageArrayHandler->IsInitialized())
-            {
-                bool result [[maybe_unused]] = m_imageArrayHandler->UpdateSrg(m_terrainSrg);
-                AZ_Error(TerrainFPName, result, "Failed to set image view unbounded array into shader resource group.");
-            }
 
             if (m_meshManager.IsInitialized())
             {
@@ -357,12 +346,6 @@ namespace Terrain
                 pass->BindSrg(m_terrainSrg->GetRHIShaderResourceGroup());
             }
         }
-    }
-
-    void TerrainFeatureProcessor::OnMaterialReinitialized([[maybe_unused]] const MaterialInstance& material)
-    {
-        PrepareMaterialData();
-        m_terrainBoundsNeedUpdate = true;
     }
 
     void TerrainFeatureProcessor::SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config)

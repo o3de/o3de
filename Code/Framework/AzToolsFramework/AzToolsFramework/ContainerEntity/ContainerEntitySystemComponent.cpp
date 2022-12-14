@@ -128,36 +128,32 @@ namespace AzToolsFramework
                 return entityId;
             }
 
-            // Return the highest closed container, or the entity if none is found.
-            AZ::EntityId secondLastOpenContainerBeforeSelection = entityId;
-            AZ::EntityId lastOpenContainerBeforeSelection = entityId;
+            // Return the highest unselected ancestor container of the entity, or the entity if none is found.
+            AZ::EntityId highestUnselectedAncestorContainer = entityId;
 
             // Skip the queried entity, as we only want to check its ancestors.
             AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
 
-            // Assumption - there are no closed containers. This is due to the way PrefabEditScope::NESTED_INSTANCES works,
-            // since we open all descendant containers of the focused prefab.
-            // If this is no longer the case, this code will need a rewrite.
-
-            // Go up the hierarchy until you hit the root
+            // Go up the hierarchy until you hit the root or a selected container
             while (entityId.IsValid())
             {
-                if (IsContainer(entityId) &&
-                    AZStd::find(selectedEntities.begin(), selectedEntities.end(), entityId) != selectedEntities.end())
+                if (IsContainer(entityId))
                 {
-                    return lastOpenContainerBeforeSelection;
-                }
-                else
-                {
-                    secondLastOpenContainerBeforeSelection = lastOpenContainerBeforeSelection;
-                    lastOpenContainerBeforeSelection = entityId;
+                    if (AZStd::find(selectedEntities.begin(), selectedEntities.end(), entityId) != selectedEntities.end())
+                    {
+                        // Found a selected container
+                        break;
+                    }
+                    else
+                    {
+                        highestUnselectedAncestorContainer = entityId;
+                    }
                 }
 
                 AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
             }
 
-            // We will always hit the root, so exclude it for our purposes
-            return secondLastOpenContainerBeforeSelection;
+            return highestUnselectedAncestorContainer;
         }
 
         // Return the highest closed container, or the entity if none is found.

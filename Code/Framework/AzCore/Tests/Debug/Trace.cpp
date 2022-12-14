@@ -15,7 +15,7 @@
 namespace UnitTest
 {
     struct TraceTests
-        : ScopedAllocatorSetupFixture
+        : LeakDetectionFixture
         , AZ::Debug::TraceMessageBus::Handler
     {
         bool OnPreAssert(const char*, int, const char*, const char*) override

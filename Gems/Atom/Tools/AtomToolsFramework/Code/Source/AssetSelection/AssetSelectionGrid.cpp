@@ -33,6 +33,7 @@ namespace AtomToolsFramework
         : QDialog(parent)
         , m_tileSize(tileSize)
         , m_ui(new Ui::AssetSelectionGrid)
+        , m_filterFn(filterFn)
     {
         m_ui->setupUi(this);
 
@@ -45,7 +46,6 @@ namespace AtomToolsFramework
         SetupDialogButtons();
         setModal(true);
 
-        SetFilter(filterFn);
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     }
 
@@ -54,31 +54,45 @@ namespace AtomToolsFramework
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
     }
 
-    void AssetSelectionGrid::Reset()
+    void AssetSelectionGrid::Clear()
     {
         m_ui->m_assetList->clear();
+    }
 
-        if (m_filterFn)
+    void AssetSelectionGrid::Populate()
+    {
+        Clear();
+
+        for (const auto& path : GetPathsInSourceFoldersMatchingFilter(m_filterFn))
         {
-            for (const auto& path : GetPathsInSourceFoldersMatchingFilter(m_filterFn))
-            {
-                AddPath(path);
-            }
-            m_ui->m_assetList->sortItems();
-            m_ui->m_assetList->setCurrentItem(0);
+            AddPath(path);
         }
+
+        m_ui->m_assetList->sortItems();
+        m_ui->m_assetList->setCurrentItem(0);
     }
 
     void AssetSelectionGrid::SetFilter(const FilterFn& filterFn)
     {
         m_filterFn = filterFn;
-        Reset();
+    }
+
+    const AssetSelectionGrid::FilterFn& AssetSelectionGrid::GetFilter() const
+    {
+        return m_filterFn;
     }
 
     void AssetSelectionGrid::AddPath(const AZStd::string& path)
     {
-        const QVariant pathItemData(QString::fromUtf8(path.data(), static_cast<int>(path.size())));
-        const QString title(GetDisplayNameFromPath(path).c_str());
+        if(m_filterFn && !m_filterFn(path))
+        {
+            return;
+        }
+
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
+        const QString title(GetDisplayNameFromPath(pathWithAlias).c_str());
 
         // Skip creating this list item if one with the same path is already registered
         for (int i = 0; i < m_ui->m_assetList->count(); ++i)
@@ -126,7 +140,7 @@ namespace AtomToolsFramework
         AZ::Data::AssetInfo assetInfo;
         AZStd::string watchFolder;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, path.data(), assetInfo, watchFolder);
+            result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, pathWithoutAlias.c_str(), assetInfo, watchFolder);
 
         AzToolsFramework::Thumbnailer::ThumbnailWidget* thumbnail = new AzToolsFramework::Thumbnailer::ThumbnailWidget(itemWidget);
         thumbnail->setFixedSize(m_tileSize);
@@ -140,7 +154,8 @@ namespace AtomToolsFramework
 
     void AssetSelectionGrid::RemovePath(const AZStd::string& path)
     {
-        const QVariant pathItemData(QString::fromUtf8(path.data(), static_cast<int>(path.size())));
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
         for (int i = 0; i < m_ui->m_assetList->count(); ++i)
         {
             QListWidgetItem* item = m_ui->m_assetList->item(i);
@@ -154,7 +169,8 @@ namespace AtomToolsFramework
 
     void AssetSelectionGrid::SelectPath(const AZStd::string& path)
     {
-        const QVariant pathItemData(QString::fromUtf8(path.data(), static_cast<int>(path.size())));
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
         for (int i = 0; i < m_ui->m_assetList->count(); ++i)
         {
             QListWidgetItem* item = m_ui->m_assetList->item(i);
@@ -174,26 +190,12 @@ namespace AtomToolsFramework
 
     void AssetSelectionGrid::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
     {
-        if (m_filterFn)
-        {
-            const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId);
-            if (m_filterFn(path))
-            {
-                AddPath(path);
-            }
-        }
+        AddPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
     }
 
     void AssetSelectionGrid::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
     {
-        if (m_filterFn)
-        {
-            const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId);
-            if (m_filterFn(path))
-            {
-                RemovePath(path);
-            }
-        }
+        RemovePath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
     }
 
     void AssetSelectionGrid::SetupAssetList()

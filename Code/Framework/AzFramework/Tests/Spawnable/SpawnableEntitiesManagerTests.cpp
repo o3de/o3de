@@ -98,14 +98,14 @@ namespace UnitTest
         AZ::EntityId m_parent;
     };
 
-    class SpawnableEntitiesManagerTest : public AllocatorsFixture
+    class SpawnableEntitiesManagerTest : public LeakDetectionFixture
     {
     public:
         constexpr static AZ::u64 EntityIdStartId = 40;
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_application = new TestApplication();
             AZ::ComponentApplication::Descriptor descriptor;
@@ -146,7 +146,7 @@ namespace UnitTest
             delete m_application;
             m_application = nullptr;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void ProcessQueueTillEmtpy()

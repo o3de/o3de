@@ -193,10 +193,12 @@ namespace AtomToolsFramework
         m_modularCameraViewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
 
         ModularViewportCameraControllerRequestBus::Handler::BusConnect(viewportId);
+        AzToolsFramework::ViewportInteraction::ViewportInteractionNotificationBus::Handler::BusConnect(viewportId);
     }
 
     ModularViewportCameraControllerInstance::~ModularViewportCameraControllerInstance()
     {
+        AzToolsFramework::ViewportInteraction::ViewportInteractionNotificationBus::Handler::BusDisconnect();
         ModularViewportCameraControllerRequestBus::Handler::BusDisconnect();
     }
 
@@ -335,6 +337,13 @@ namespace AtomToolsFramework
         m_targetCamera.m_offset = offset;
     }
 
+    void ModularViewportCameraControllerInstance::LookFromOrbit()
+    {
+        m_targetCamera.m_pivot = m_targetCamera.Translation();
+        m_targetCamera.m_offset = AZ::Vector3::CreateZero();
+        m_camera = m_targetCamera;
+    }
+
     bool ModularViewportCameraControllerInstance::AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs)
     {
         return m_cameraSystem.m_cameras.AddCameras(cameraInputs);
@@ -344,6 +353,11 @@ namespace AtomToolsFramework
         const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs)
     {
         return m_cameraSystem.m_cameras.RemoveCameras(cameraInputs);
+    }
+
+    void ModularViewportCameraControllerInstance::ResetCameras()
+    {
+        m_cameraSystem.m_cameras.Reset();
     }
 
     bool ModularViewportCameraControllerInstance::IsInterpolating() const
@@ -380,6 +394,11 @@ namespace AtomToolsFramework
     bool ModularViewportCameraControllerInstance::IsTrackingTransform() const
     {
         return m_storedCamera.has_value();
+    }
+
+    void ModularViewportCameraControllerInstance::OnViewportFocusOut()
+    {
+        ResetCameras();
     }
 
     AZ::Transform PlaceholderModularCameraViewportContextImpl::GetCameraTransform() const

@@ -61,7 +61,7 @@ static AZStd::vector<AZStd::string> GetEditorInputNames()
 void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::SerializeContext& serialize)
 {
     serialize.Class<CameraMovementSettings>()
-        ->Version(4)
+        ->Version(5)
         ->Field("TranslateSpeed", &CameraMovementSettings::m_translateSpeed)
         ->Field("RotateSpeed", &CameraMovementSettings::m_rotateSpeed)
         ->Field("BoostMultiplier", &CameraMovementSettings::m_boostMultiplier)
@@ -80,6 +80,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
         ->Field("DefaultOrientation", &CameraMovementSettings::m_defaultPitchYaw)
         ->Field("DefaultOrbitDistance", &CameraMovementSettings::m_defaultOrbitDistance)
         ->Field("SpeedScale", &CameraMovementSettings::m_speedScale)
+        ->Field("GoToPositionInstantly", &CameraMovementSettings::m_goToPositionInstantly)
         ->Field("Reset", &CameraMovementSettings::m_resetButton);
 
     if (AZ::EditContext* editContext = serialize.GetEditContext())
@@ -87,7 +88,10 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
         const float minValue = 0.0001f;
         editContext->Class<CameraMovementSettings>("Camera Movement Settings", "")
             ->DataElement(
-                AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_speedScale, "Camera Speed Scale", "Overall scale applied to all camera movements")
+                AZ::Edit::UIHandlers::SpinBox,
+                &CameraMovementSettings::m_speedScale,
+                "Camera Speed Scale",
+                "Overall scale applied to all camera movements")
             ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_translateSpeed, "Camera Movement Speed", "Camera movement speed")
@@ -181,6 +185,11 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
                 "Default Orbit Distance",
                 "The default distance to orbit about when there is no entity selected")
             ->Attribute(AZ::Edit::Attributes::Min, minValue)
+            ->DataElement(
+                AZ::Edit::UIHandlers::CheckBox,
+                &CameraMovementSettings::m_goToPositionInstantly,
+                "Camera Go To Position Instantly",
+                "Camera will instantly go to the set position and won't interpolate there")
             ->DataElement(
                 AZ::Edit::UIHandlers::Button, &CameraMovementSettings::m_resetButton, "", "Restore camera movement settings to defaults")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CameraMovementSettings::Reset)
@@ -377,6 +386,7 @@ void CEditorPreferencesPage_ViewportCamera::OnApply()
     SandboxEditor::SetCameraDefaultEditorPosition(m_cameraMovementSettings.m_defaultPosition);
     SandboxEditor::SetCameraDefaultOrbitDistance(m_cameraMovementSettings.m_defaultOrbitDistance);
     SandboxEditor::SetCameraDefaultEditorOrientation(m_cameraMovementSettings.m_defaultPitchYaw);
+    SandboxEditor::SetCameraGoToPositionInstantlyEnabled(m_cameraMovementSettings.m_goToPositionInstantly);
 
     SandboxEditor::SetCameraTranslateForwardChannelId(m_cameraInputSettings.m_translateForwardChannelId);
     SandboxEditor::SetCameraTranslateBackwardChannelId(m_cameraInputSettings.m_translateBackwardChannelId);
@@ -423,6 +433,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reset()
     SandboxEditor::ResetCameraDefaultEditorPosition();
     SandboxEditor::ResetCameraDefaultOrbitDistance();
     SandboxEditor::ResetCameraDefaultEditorOrientation();
+    SandboxEditor::ResetCameraGoToPositionInstantlyEnabled();
 
     Initialize();
 }
@@ -447,6 +458,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Initialize()
     m_defaultPosition = SandboxEditor::CameraDefaultEditorPosition();
     m_defaultOrbitDistance = SandboxEditor::CameraDefaultOrbitDistance();
     m_defaultPitchYaw = SandboxEditor::CameraDefaultEditorOrientation();
+    m_goToPositionInstantly = SandboxEditor::CameraGoToPositionInstantlyEnabled();
 }
 
 void CEditorPreferencesPage_ViewportCamera::CameraInputSettings::Reset()

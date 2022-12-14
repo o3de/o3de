@@ -25,7 +25,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_TRUE(testLoadValues[i] == testStoreValues[i]);
+            EXPECT_NEAR(testLoadValues[i], testStoreValues[i], 1e-6f);
         }
     }
 
@@ -40,7 +40,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_TRUE(testLoadValues[i] == testStoreValues[i]);
+            EXPECT_NEAR(testLoadValues[i], testStoreValues[i], 1e-6f);
         }
     }
 
@@ -52,7 +52,7 @@ namespace UnitTest
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
         const float firstFloat = VectorType::SelectFirst(testVector);
 
-        EXPECT_TRUE(testLoadValues[0] == firstFloat);
+        EXPECT_NEAR(testLoadValues[0], firstFloat, 1e-6f);
     }
 
     template <typename VectorType>
@@ -63,7 +63,7 @@ namespace UnitTest
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
         const float firstFloat = VectorType::SelectSecond(testVector);
 
-        EXPECT_TRUE(testLoadValues[1] == firstFloat);
+        EXPECT_NEAR(testLoadValues[1], firstFloat, 1e-6f);
     }
 
     template <typename VectorType>
@@ -74,7 +74,7 @@ namespace UnitTest
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
         const float firstFloat = VectorType::SelectThird(testVector);
 
-        EXPECT_TRUE(testLoadValues[2] == firstFloat);
+        EXPECT_NEAR(testLoadValues[2], firstFloat, 1e-6f);
     }
 
     template <typename VectorType>
@@ -85,7 +85,7 @@ namespace UnitTest
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
         const float firstFloat = VectorType::SelectFourth(testVector);
 
-        EXPECT_TRUE(testLoadValues[3] == firstFloat);
+        EXPECT_NEAR(testLoadValues[3], firstFloat, 1e-6f);
     }
 
     template <typename VectorType>
@@ -340,11 +340,11 @@ namespace UnitTest
         switch (VectorType::ElementCount)
         {
         case 4:
-            EXPECT_TRUE(AZ::IsClose(testStoreValues[3], 4.0f, 0.01f));
+            EXPECT_NEAR(testStoreValues[3], 4.0f, 0.01f);
         case 3:
             EXPECT_TRUE(std::isnan(testStoreValues[2]));
         case 2:
-            EXPECT_TRUE(AZ::IsClose(testStoreValues[1], -4.0f, 0.01f));
+            EXPECT_NEAR(testStoreValues[1], -4.0f, 0.01f);
         case 1:
             EXPECT_TRUE(std::isnan(testStoreValues[0]));
             break;
@@ -1056,7 +1056,7 @@ namespace UnitTest
             float results[4] = { 0.5f, 0.25f, 0.125f, 1.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_TRUE(AZ::IsClose(testStoreValues[i], results[i], 0.01f));
+                EXPECT_NEAR(testStoreValues[i], results[i], 0.01f);
             }
         }
 
@@ -1068,7 +1068,7 @@ namespace UnitTest
             float results[4] = { 0.5f, 0.25f, 0.125f, 1.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_TRUE(AZ::IsClose(testStoreValues[i], results[i], 0.01f));
+                EXPECT_NEAR(testStoreValues[i], results[i], 0.01f);
             }
         }
     }
@@ -1089,11 +1089,11 @@ namespace UnitTest
             switch (VectorType::ElementCount)
             {
             case 4:
-                AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], 0.0f);
+                EXPECT_NEAR(testStoreValues[3], 0.0f, 0.002f);
             case 3:
-                AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 1.0f);
+                EXPECT_NEAR(testStoreValues[2], 1.0f, 0.002f);
             case 2:
-                AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 4.0f);
+                EXPECT_NEAR(testStoreValues[1], 4.0f, 0.002f);
             case 1:
                 EXPECT_TRUE(std::isnan(testStoreValues[0]));
                 break;
@@ -1110,9 +1110,9 @@ namespace UnitTest
             case 4:
                 EXPECT_TRUE(std::isnan(testStoreValues[3]) || std::isinf(testStoreValues[3]));
             case 3:
-                AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 1.0f);
+                EXPECT_NEAR(testStoreValues[2], 1.0f, 0.002f);
             case 2:
-                AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 0.25f);
+                EXPECT_NEAR(testStoreValues[1], 0.25f, 0.002f);
             case 1:
                 EXPECT_TRUE(std::isnan(testStoreValues[0]));
                 break;
@@ -1139,13 +1139,13 @@ namespace UnitTest
             switch (VectorType::ElementCount)
             {
             case 4:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[3], 0.0f, precision);
+                EXPECT_NEAR(testStoreValues1[3], 0.0f, precision);
             case 3:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[2], 1.0f, precision);
+                EXPECT_NEAR(testStoreValues1[2], 1.0f, precision);
             case 2:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[1], 0.5f, precision);
+                EXPECT_NEAR(testStoreValues1[1], 0.5f, precision);
             case 1:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[0], 0.0f, precision);
+                EXPECT_NEAR(testStoreValues1[0], 0.0f, precision);
             }
         }
 
@@ -1156,13 +1156,13 @@ namespace UnitTest
             switch (VectorType::ElementCount)
             {
             case 4:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[3], 0.0f, precision);
+                EXPECT_NEAR(testStoreValues2[3], 0.0f, precision);
             case 3:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[2], -1.0f, precision);
+                EXPECT_NEAR(testStoreValues2[2], -1.0f, precision);
             case 2:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[1], -0.8660254f, precision);
+                EXPECT_NEAR(testStoreValues2[1], -0.8660254f, precision);
             case 1:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[0], 0.0f, precision);
+                EXPECT_NEAR(testStoreValues2[0], 0.0f, precision);
             }
         }
     }
@@ -1186,13 +1186,13 @@ namespace UnitTest
             switch (VectorType::ElementCount)
             {
             case 4:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[3], -1.0f, precision);
+                EXPECT_NEAR(testStoreValues1[3], -1.0f, precision);
             case 3:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[2], 0.0f, precision);
+                EXPECT_NEAR(testStoreValues1[2], 0.0f, precision);
             case 2:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[1], 0.8660254f, precision);
+                EXPECT_NEAR(testStoreValues1[1], 0.8660254f, precision);
             case 1:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[0], 1.0f, precision);
+                EXPECT_NEAR(testStoreValues1[0], 1.0f, precision);
             }
         }
 
@@ -1203,13 +1203,13 @@ namespace UnitTest
             switch (VectorType::ElementCount)
             {
             case 4:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[3], -1.0f, precision);
+                EXPECT_NEAR(testStoreValues2[3], -1.0f, precision);
             case 3:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[2], 0.0f, precision);
+                EXPECT_NEAR(testStoreValues2[2], 0.0f, precision);
             case 2:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[1], -0.5f, precision);
+                EXPECT_NEAR(testStoreValues2[1], -0.5f, precision);
             case 1:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[0], -1.0f, precision);
+                EXPECT_NEAR(testStoreValues2[0], -1.0f, precision);
             }
         }
     }
@@ -1233,13 +1233,13 @@ namespace UnitTest
             switch (VectorType::ElementCount)
             {
             case 4:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[3], Constants::HalfPi, precision);
+                EXPECT_NEAR(testStoreValues1[3], Constants::HalfPi, precision);
             case 3:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[2], 2 * Constants::Pi / 3.0f, precision);
+                EXPECT_NEAR(testStoreValues1[2], 2 * Constants::Pi / 3.0f, precision);
             case 2:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[1], 5 * Constants::Pi / 6.0f, precision);
+                EXPECT_NEAR(testStoreValues1[1], 5 * Constants::Pi / 6.0f, precision);
             case 1:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[0], Constants::Pi, precision);
+                EXPECT_NEAR(testStoreValues1[0], Constants::Pi, precision);
             }
         }
 
@@ -1254,9 +1254,9 @@ namespace UnitTest
             case 3:
                 EXPECT_TRUE(std::isnan(testStoreValues2[2]));
             case 2:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[1], 0.0f, precision);
+                EXPECT_NEAR(testStoreValues2[1], 0.0f, precision);
             case 1:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[0], Constants::QuarterPi, precision);
+                EXPECT_NEAR(testStoreValues2[0], Constants::QuarterPi, precision);
             }
         }
     }
@@ -1280,13 +1280,13 @@ namespace UnitTest
             switch (VectorType::ElementCount)
             {
             case 4:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[3], 1.569796f, precision);
+                EXPECT_NEAR(testStoreValues1[3], 1.569796f, precision);
             case 3:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[2], Constants::Pi / 4.0f, precision);
+                EXPECT_NEAR(testStoreValues1[2], Constants::Pi / 4.0f, precision);
             case 2:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[1], Constants::Pi / 6.0f, precision);
+                EXPECT_NEAR(testStoreValues1[1], Constants::Pi / 6.0f, precision);
             case 1:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[0], 0.0f, precision);
+                EXPECT_NEAR(testStoreValues1[0], 0.0f, precision);
             }
         }
 
@@ -1297,13 +1297,13 @@ namespace UnitTest
             switch (VectorType::ElementCount)
             {
             case 4:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[3], -1.569796f, precision);
+                EXPECT_NEAR(testStoreValues2[3], -1.569796f, precision);
             case 3:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[2], -Constants::Pi / 4.0f, precision);
+                EXPECT_NEAR(testStoreValues2[2], -Constants::Pi / 4.0f, precision);
             case 2:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[1], -Constants::Pi / 6.0f, precision);
+                EXPECT_NEAR(testStoreValues2[1], -Constants::Pi / 6.0f, precision);
             case 1:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[0], 0.0f, precision);
+                EXPECT_NEAR(testStoreValues2[0], 0.0f, precision);
             }
         }
     }
@@ -1333,13 +1333,13 @@ namespace UnitTest
             switch (VectorType::ElementCount)
             {
             case 4:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[3], Constants::Pi / 4.0f, precision);
+                EXPECT_NEAR(testStoreValues1[3], Constants::Pi / 4.0f, precision);
             case 3:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[2], -Constants::HalfPi, precision);
+                EXPECT_NEAR(testStoreValues1[2], -Constants::HalfPi, precision);
             case 2:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[1], Constants::HalfPi, precision);
+                EXPECT_NEAR(testStoreValues1[1], Constants::HalfPi, precision);
             case 1:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues1[0], 0.0f, precision);
+                EXPECT_NEAR(testStoreValues1[0], 0.0f, precision);
             }
         }
 
@@ -1350,13 +1350,13 @@ namespace UnitTest
             switch (VectorType::ElementCount)
             {
             case 4:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[3], 0.0f, precision);
+                EXPECT_NEAR(testStoreValues2[3], 0.0f, precision);
             case 3:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[2], -3 * Constants::Pi / 4.0f, precision);
+                EXPECT_NEAR(testStoreValues2[2], -3 * Constants::Pi / 4.0f, precision);
             case 2:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[1], 3 * Constants::Pi / 4.0f, precision);
+                EXPECT_NEAR(testStoreValues2[1], 3 * Constants::Pi / 4.0f, precision);
             case 1:
-                AZ_TEST_ASSERT_CLOSE(testStoreValues2[0], Constants::Pi, precision);
+                EXPECT_NEAR(testStoreValues2[0], Constants::Pi, precision);
             }
         }
     }
@@ -1496,13 +1496,13 @@ namespace UnitTest
             switch (VectorType::ElementCount)
             {
             case 4:
-                AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], 4.0f);
+                EXPECT_NEAR(testStoreValues[3], 4.0f, 0.002f);
             case 3:
-                AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 2.0f);
+                EXPECT_NEAR(testStoreValues[2], 2.0f, 0.002f);
             case 2:
-                AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 0.0f);
+                EXPECT_NEAR(testStoreValues[1], 0.0f, 0.002f);
             case 1:
-                AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], -1.0f);
+                EXPECT_NEAR(testStoreValues[0], -1.0f, 0.002f);
                 break;
             }
         }
@@ -1523,7 +1523,7 @@ namespace UnitTest
         EXPECT_TRUE(std::isnan(testStoreFloatValues[0]));
         if constexpr (VectorType::ElementCount > 1)
         {
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreFloatValues[1], 0.0f);
+            EXPECT_NEAR(testStoreFloatValues[1], 0.0f, 0.002f);
         }
 
         typename VectorType::Int32Type testVector2 = VectorType::CastToInt(testVector1);
@@ -2371,7 +2371,7 @@ namespace UnitTest
         Simd::Vec1::FloatType testDot = Simd::Vec2::Dot(sourceVector1, sourceVector2);
         Simd::Vec1::StoreUnaligned(testStoreValues, testDot);
 
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 257.0f);
+        EXPECT_NEAR(testStoreValues[0], 257.0f, 0.002f);
     }
 
     TEST(MATH_SimdMath, TestDotFloatVec3)
@@ -2384,7 +2384,7 @@ namespace UnitTest
         Simd::Vec1::FloatType testDot = Simd::Vec3::Dot(sourceVector1, sourceVector2);
         Simd::Vec1::StoreUnaligned(testStoreValues, testDot);
 
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 258.0f);
+        EXPECT_NEAR(testStoreValues[0], 258.0f, 0.002f);
     }
 
     TEST(MATH_SimdMath, TestDotFloatVec4)
@@ -2397,7 +2397,7 @@ namespace UnitTest
         Simd::Vec1::FloatType testDot = Simd::Vec4::Dot(sourceVector1, sourceVector2);
         Simd::Vec1::StoreUnaligned(testStoreValues, testDot);
 
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 257.0f);
+        EXPECT_NEAR(testStoreValues[0], 257.0f, 0.002f);
     }
 
     TEST(MATH_SimdMath, TestCrossFloatVec3)
@@ -2412,30 +2412,30 @@ namespace UnitTest
             Simd::Vec3::FloatType testVector = Simd::Vec3::Cross(sourceVector1, sourceVector2);
             Simd::Vec3::StoreUnaligned(testStoreValues, testVector);
 
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 0.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 1.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], 0.0f);
+            EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[1], 0.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[2], 1.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[3], 0.0f, 0.002f);
         }
 
         {
             Simd::Vec3::FloatType testVector = Simd::Vec3::Cross(sourceVector2, sourceVector3);
             Simd::Vec3::StoreUnaligned(testStoreValues, testVector);
 
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 1.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 0.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 0.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], 0.0f);
+            EXPECT_NEAR(testStoreValues[0], 1.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[1], 0.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[2], 0.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[3], 0.0f, 0.002f);
         }
 
         {
             Simd::Vec3::FloatType testVector = Simd::Vec3::Cross(sourceVector3, sourceVector1);
             Simd::Vec3::StoreUnaligned(testStoreValues, testVector);
 
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 1.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 0.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], 0.0f);
+            EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[1], 1.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[2], 0.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[3], 0.0f, 0.002f);
         }
     }
 
@@ -2451,19 +2451,19 @@ namespace UnitTest
         Simd::Vec3::Mat3x3Inverse(rows, rows);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, rows[0]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.5f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 0.0f);
+        EXPECT_NEAR(testStoreValues[0], 0.5f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 0.0f, 0.002f);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, rows[1]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 0.5f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 0.0f);
+        EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 0.5f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 0.0f, 0.002f);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, rows[2]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 0.5f);
+        EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 0.5f, 0.002f);
     }
 
     TEST(MATH_SimdMath, TestMat3x3Adjugate)
@@ -2478,19 +2478,19 @@ namespace UnitTest
         Simd::Vec3::Mat3x3Adjugate(rows, rows);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, rows[0]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], -1.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], -1.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2],  2.0f);
+        EXPECT_NEAR(testStoreValues[0], -1.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], -1.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2],  2.0f, 0.002f);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, rows[1]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], -5.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1],  5.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2],  5.0f);
+        EXPECT_NEAR(testStoreValues[0], -5.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1],  5.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2],  5.0f, 0.002f);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, rows[2]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0],  2.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], -3.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], -4.0f);
+        EXPECT_NEAR(testStoreValues[0],  2.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], -3.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], -4.0f, 0.002f);
     }
 
     TEST(MATH_SimdMath, TestMat3x3Transpose)
@@ -2505,19 +2505,19 @@ namespace UnitTest
         Simd::Vec3::Mat3x3Transpose(rows, rows);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, rows[0]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 1.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 4.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 7.0f);
+        EXPECT_NEAR(testStoreValues[0], 1.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 4.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 7.0f, 0.002f);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, rows[1]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 2.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 5.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 8.0f);
+        EXPECT_NEAR(testStoreValues[0], 2.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 5.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 8.0f, 0.002f);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, rows[2]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 3.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 6.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 9.0f);
+        EXPECT_NEAR(testStoreValues[0], 3.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 6.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 9.0f, 0.002f);
     }
 
     TEST(MATH_SimdMath, TestMat3x3Multiply)
@@ -2538,19 +2538,19 @@ namespace UnitTest
         Simd::Vec3::Mat3x3Multiply(rowsA, rowsB, out);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, out[0]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 1.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 0.0f);
+        EXPECT_NEAR(testStoreValues[0], 1.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 0.0f, 0.002f);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, out[1]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 1.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 0.0f);
+        EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 1.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 0.0f, 0.002f);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, out[2]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 1.0f);
+        EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 1.0f, 0.002f);
     }
 
     TEST(MATH_SimdMath, TestMat3x3TransposeMultiply)
@@ -2571,19 +2571,19 @@ namespace UnitTest
         Simd::Vec3::Mat3x3TransposeMultiply(rowsA, rowsB, out);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, out[0]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 1.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 0.0f);
+        EXPECT_NEAR(testStoreValues[0], 1.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 0.0f, 0.002f);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, out[1]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 1.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 0.0f);
+        EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 1.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 0.0f, 0.002f);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, out[2]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 1.0f);
+        EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 1.0f, 0.002f);
     }
 
     TEST(MATH_SimdMath, TestQuaternion)
@@ -2639,16 +2639,16 @@ namespace UnitTest
             Simd::Vec4::FloatType planeVec = Simd::Vec4::ConstructPlane(normalVec, pointVec);
             Simd::Vec4::StoreUnaligned(testStoreValues, planeVec);
 
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 1.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 0.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], 0.0f);
+            EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[1], 1.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[2], 0.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[3], 0.0f, 0.002f);
 
             Simd::Vec3::FloatType testPoint = Simd::Vec3::LoadImmediate(0.0f, 10.0f, 0.0f);
             Simd::Vec1::FloatType testDist = Simd::Vec4::PlaneDistance(planeVec, testPoint);
             Simd::Vec1::StoreUnaligned(testStoreValues, testDist);
 
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 10.0f);
+            EXPECT_NEAR(testStoreValues[0], 10.0f, 0.002f);
         }
 
         // Point offset along the plane normal, offset should be preserved in distance calculations
@@ -2659,16 +2659,16 @@ namespace UnitTest
             Simd::Vec4::FloatType planeVec = Simd::Vec4::ConstructPlane(normalVec, pointVec);
             Simd::Vec4::StoreUnaligned(testStoreValues, planeVec);
 
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 1.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 0.0f);
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], -10.0f);
+            EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[1], 1.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[2], 0.0f, 0.002f);
+            EXPECT_NEAR(testStoreValues[3], -10.0f, 0.002f);
 
             Simd::Vec3::FloatType testPoint = Simd::Vec3::LoadImmediate(0.0f, -5.0f, 0.0f);
             Simd::Vec1::FloatType testDist = Simd::Vec4::PlaneDistance(planeVec, testPoint);
             Simd::Vec1::StoreUnaligned(testStoreValues, testDist);
 
-            AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], -15.0f);
+            EXPECT_NEAR(testStoreValues[0], -15.0f, 0.002f);
         }
     }
 
@@ -2684,22 +2684,22 @@ namespace UnitTest
         Simd::Vec4::Mat3x4Transpose(rows, rows);
 
         Simd::Vec4::StoreUnaligned(testStoreValues, rows[0]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 4.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 8.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], 0.0f);
+        EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 4.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 8.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[3], 0.0f, 0.002f);
 
         Simd::Vec4::StoreUnaligned(testStoreValues, rows[1]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 1.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 5.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 9.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], 0.0f);
+        EXPECT_NEAR(testStoreValues[0], 1.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 5.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 9.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[3], 0.0f, 0.002f);
 
         Simd::Vec4::StoreUnaligned(testStoreValues, rows[2]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 2.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 6.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], -1.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], 0.0f);
+        EXPECT_NEAR(testStoreValues[0], 2.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 6.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], -1.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[3], 0.0f, 0.002f);
     }
 
     TEST(MATH_SimdMath, TestMat4x4Transpose)
@@ -2715,28 +2715,28 @@ namespace UnitTest
         Simd::Vec4::Mat4x4Transpose(rows, rows);
 
         Simd::Vec4::StoreUnaligned(testStoreValues, rows[0]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 4.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 8.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], -1.0f);
+        EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 4.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 8.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[3], -1.0f, 0.002f);
 
         Simd::Vec4::StoreUnaligned(testStoreValues, rows[1]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 1.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 5.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 9.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], -2.0f);
+        EXPECT_NEAR(testStoreValues[0], 1.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 5.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 9.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[3], -2.0f, 0.002f);
 
         Simd::Vec4::StoreUnaligned(testStoreValues, rows[2]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 2.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 6.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 9.1f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], -3.0f);
+        EXPECT_NEAR(testStoreValues[0], 2.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 6.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 9.1f, 0.002f);
+        EXPECT_NEAR(testStoreValues[3], -3.0f, 0.002f);
 
         Simd::Vec4::StoreUnaligned(testStoreValues, rows[3]);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 3.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[1], 7.0f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[2], 9.9f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[3], -4.0f);
+        EXPECT_NEAR(testStoreValues[0], 3.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[1], 7.0f, 0.002f);
+        EXPECT_NEAR(testStoreValues[2], 9.9f, 0.002f);
+        EXPECT_NEAR(testStoreValues[3], -4.0f, 0.002f);
     }
 
     TEST(MATH_SimdMath, TestConvertToIntVec1)

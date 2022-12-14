@@ -13,6 +13,8 @@
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <AzCore/Debug/Profiler.h>
 
+#include <VegetationProfiler.h>
+
 namespace Vegetation
 {
     namespace AreaUtil
@@ -279,13 +281,13 @@ namespace Vegetation
 
     void AreaComponentBase::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& /*world*/)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
         OnCompositionChanged();
     }
 
     void AreaComponentBase::OnShapeChanged([[maybe_unused]] ShapeComponentNotifications::ShapeChangeReasons reasons)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
         OnCompositionChanged();
     }
 }

@@ -14,7 +14,7 @@ namespace UnitTest
 {
 
     struct MixedAllocatorTestFixture
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         MixedAllocatorTestFixture()

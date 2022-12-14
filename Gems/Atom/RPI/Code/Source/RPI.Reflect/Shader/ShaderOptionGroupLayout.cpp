@@ -385,7 +385,7 @@ namespace AZ
         {
             shaderVariantKey >>= m_bitOffset;
             shaderVariantKey &= AZ_BIT_MASK(m_bitCount);
-            uint32_t value = shaderVariantKey.to_ulong();
+            uint32_t value = static_cast<uint32_t>(shaderVariantKey.to_ulong());
             return value;
         }
         

@@ -253,9 +253,6 @@ private:
     void RenderSnapMarker();
     void RenderAll();
 
-    // Draw a selected region if it has been selected
-    void RenderSelectedRegion();
-
     bool RayRenderMeshIntersection(IRenderMesh* pRenderMesh, const Vec3& vInPos, const Vec3& vInDir, Vec3& vOutPos, Vec3& vOutNormal) const;
 
     bool AddCameraMenuItems(QMenu* menu);
@@ -392,6 +389,8 @@ private:
 
     // Handlers for snapping/editor event callbacks
     SandboxEditor::AngleSnappingChangedEvent::Handler m_angleSnappingHandler;
+    SandboxEditor::CameraSpeedScaleChangedEvent::Handler m_cameraSpeedScaleHandler;
+    SandboxEditor::GridShowingChangedEvent::Handler m_gridShowingHandler;
     SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
     SandboxEditor::NearFarPlaneChangedEvent::Handler m_nearPlaneDistanceHandler;
     SandboxEditor::NearFarPlaneChangedEvent::Handler m_farPlaneDistanceHandler;

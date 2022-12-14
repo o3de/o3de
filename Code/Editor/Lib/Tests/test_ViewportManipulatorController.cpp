@@ -77,7 +77,7 @@ namespace UnitTest
         return false;
     }
 
-    class ViewportManipulatorControllerFixture : public AllocatorsTestFixture
+    class ViewportManipulatorControllerFixture : public LeakDetectionFixture
     {
     public:
         static inline constexpr AzFramework::ViewportId TestViewportId = 1234;
@@ -85,7 +85,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_rootWidget = AZStd::make_unique<QWidget>();
             m_rootWidget->setFixedSize(WidgetSize);
@@ -113,7 +113,7 @@ namespace UnitTest
 
             QApplication::setActiveWindow(nullptr);
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<QWidget> m_rootWidget;

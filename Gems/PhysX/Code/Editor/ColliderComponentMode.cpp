@@ -201,6 +201,11 @@ namespace PhysX
         return "Collider Edit Mode";
     }
 
+    AZ::Uuid ColliderComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<ColliderComponentMode>();
+    }
+
     void RefreshUI()
     {
         /// The reason this is in a free function is because ColliderComponentMode

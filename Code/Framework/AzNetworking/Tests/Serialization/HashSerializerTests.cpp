@@ -44,13 +44,8 @@ namespace UnitTest
         }
     };
 
-    class HashSerializerTests : public AllocatorsFixture
+    class HashSerializerTests : public LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            SetupAllocator();
-        }
     };
 
     TEST_F(HashSerializerTests, TestHashSerialization)
