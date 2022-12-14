@@ -100,12 +100,12 @@ namespace AZ
             {
                 uint64_t m_block;
 
-                struct UnpackedData
+                struct
                 {
                     uint8_t m_color0;
                     uint8_t m_color1;
                     uint8_t m_colorIndices[6];
-                } m_unpackedData;
+                };
             };
 
             // Each block is 8 bytes in size.
@@ -142,16 +142,16 @@ namespace AZ
                     return AZ::Color(color / 255.0f, color / 255.0f, color / 255.0f, 1.0f);
                 };
 
-                if (m_unpackedData.m_color0 > m_unpackedData.m_color1)
+                if (m_color0 > m_color1)
                 {
                     // When the first color palette entry is larger, the first two indices are the two palette entries,
                     // and the remaining 5 are interpolations from 1/7 to 6/7 between the palette entries.
                     switch (colorIndex)
                     {
                     case 0:
-                        return extractColor(m_unpackedData.m_color0);
+                        return extractColor(m_color0);
                     case 1:
-                        return extractColor(m_unpackedData.m_color1);
+                        return extractColor(m_color1);
                     case 2:
                     case 3:
                     case 4:
@@ -159,8 +159,8 @@ namespace AZ
                     case 6:
                     case 7:
                         // Index 2-7 lerps from 1/7 - 6/7 between color0 and color1
-                        return extractColor(m_unpackedData.m_color0)
-                            .Lerp(extractColor(m_unpackedData.m_color1), aznumeric_cast<float>(colorIndex - 1) / 7.0f);
+                        return extractColor(m_color0)
+                            .Lerp(extractColor(m_color1), aznumeric_cast<float>(colorIndex - 1) / 7.0f);
                     }
                 }
                 else
@@ -171,16 +171,16 @@ namespace AZ
                     switch (colorIndex)
                     {
                     case 0:
-                        return extractColor(m_unpackedData.m_color0);
+                        return extractColor(m_color0);
                     case 1:
-                        return extractColor(m_unpackedData.m_color1);
+                        return extractColor(m_color1);
                     case 2:
                     case 3:
                     case 4:
                     case 5:
                         // Index 2-5 lerps from 1/5 - 4/5 between color0 and color1
-                        return extractColor(m_unpackedData.m_color0)
-                            .Lerp(extractColor(m_unpackedData.m_color1), aznumeric_cast<float>(colorIndex - 1) / 5.0f);
+                        return extractColor(m_color0)
+                            .Lerp(extractColor(m_color1), aznumeric_cast<float>(colorIndex - 1) / 5.0f);
                     case 6:
                         // Index 6 returns transparent black
                         return AZ::Color::CreateZero();
