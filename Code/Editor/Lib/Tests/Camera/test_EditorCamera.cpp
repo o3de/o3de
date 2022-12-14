@@ -296,7 +296,7 @@ namespace UnitTest
             secondTransformToInterpolateTo,
             InterpolateToTransformDuration);
 
-        bool interpolating = true;
+        bool interpolating = false;
         AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
             interpolating, TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::IsInterpolating);
 
@@ -710,7 +710,7 @@ namespace UnitTest
 
         {
             const float existingCameraGoToPositionDuration = SandboxEditor::CameraGoToPositionDuration();
-            const float expectedCameraGoToPositionDuration = !existingCameraGoToPositionDuration;
+            const float expectedCameraGoToPositionDuration = existingCameraGoToPositionDuration + 1.0f;
             SandboxEditor::SetCameraGoToPositionDuration(expectedCameraGoToPositionDuration);
             const float actualCameraGoToPositionDuration = SandboxEditor::CameraGoToPositionDuration();
             EXPECT_THAT(expectedCameraGoToPositionDuration, Eq(actualCameraGoToPositionDuration));
