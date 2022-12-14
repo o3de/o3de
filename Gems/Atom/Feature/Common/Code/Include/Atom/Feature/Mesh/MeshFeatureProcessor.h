@@ -36,6 +36,7 @@ namespace AZ
     {
         class TransformServiceFeatureProcessor;
         class RayTracingFeatureProcessor;
+        class ReflectionProbeFeatureProcessor;
 
         class ModelDataInstance
             : public MaterialAssignmentNotificationBus::MultiHandler
@@ -79,12 +80,14 @@ namespace AZ
                 ModelDataInstance* m_parent = nullptr;
             };
 
-            void DeInit();
+            void DeInit(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
             void QueueInit(const Data::Instance<RPI::Model>& model);
             void Init();
             void BuildDrawPacketList(size_t modelLodIndex);
-            void SetRayTracingData();
-            void RemoveRayTracingData();
+            void SetRayTracingData(
+                RayTracingFeatureProcessor* rayTracingFeatureProcessor,
+                TransformServiceFeatureProcessor* transformServiceFeatureProcessor);
+            void RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
             void SetIrradianceData(RayTracingFeatureProcessor::SubMesh& subMesh,
                     const Data::Instance<RPI::Material> material, const Data::Instance<RPI::Image> baseColorImage);
             void SetSortKey(RHI::DrawItemSortKey sortKey);
@@ -94,7 +97,9 @@ namespace AZ
             void UpdateDrawPackets(bool forceUpdate = false);
             void BuildCullable();
             void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);
-            void UpdateObjectSrg();
+            void UpdateObjectSrg(
+                ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor,
+                TransformServiceFeatureProcessor* transformServiceFeatureProcessor);
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
             void UpdateMaterialChangeIds();
@@ -136,6 +141,7 @@ namespace AZ
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_visible = true;
             bool m_hasForwardPassIblSpecularMaterial = false;
+            bool m_needsSetRayTracingData = false;
         };
 
         static constexpr size_t foo = sizeof(ModelDataInstance);
@@ -238,6 +244,7 @@ namespace AZ
             StableDynamicArray<ModelDataInstance> m_modelData;
             TransformServiceFeatureProcessor* m_transformService;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
+            ReflectionProbeFeatureProcessor* m_reflectionProbeFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
             RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
