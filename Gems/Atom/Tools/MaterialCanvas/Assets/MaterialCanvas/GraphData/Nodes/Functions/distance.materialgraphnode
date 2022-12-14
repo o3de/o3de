@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Distance",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the distance between two points",
         "slotDataTypeGroups": [
             "inValue1|inValue2",
             "outValue"

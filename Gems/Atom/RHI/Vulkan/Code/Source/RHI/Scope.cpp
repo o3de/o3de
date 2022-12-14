@@ -23,7 +23,7 @@
 #include <RHI/SwapChain.h>
 #include <RHI/Framebuffer.h>
 #include <RHI/Device.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 #include <RHI/BufferView.h>
 
 namespace AZ

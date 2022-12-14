@@ -68,7 +68,6 @@ namespace AZ
         private:
             bool DoUpdate(const Scene& parentScene);
             void ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback);
-            bool MaterialOwnsShaderOption(const Name& shaderOptionName);
 
             ConstPtr<RHI::DrawPacket> m_drawPacket;
 

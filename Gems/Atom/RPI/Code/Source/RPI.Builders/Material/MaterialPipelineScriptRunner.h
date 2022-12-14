@@ -69,6 +69,9 @@ namespace AZ
             };
 
             static constexpr char const DebugName[] = "MaterialPipelineScriptRunner";
+
+            // TODO(MaterialPipeline): I think I want to rename this to something better, maybe "MaterialTypeBuilderSetup" since
+            // what it's really configuring is the behavior of the MaterialTypeBuilder.
             static constexpr char const MainFunctionName[] = "MaterialTypeSetup";
 
             BehaviorContext m_scriptBehaviorContext;

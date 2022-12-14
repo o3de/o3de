@@ -274,9 +274,6 @@ namespace Terrain
             debugDisplay.SetColor(dirtyRegionColor);
             debugDisplay.DrawSolidBox(m_lastDirtyRegion.GetMin(), m_lastDirtyRegion.GetMax());
         }
-
-        // Clear it out until something goes dirty again.
-        m_lastDirtyRegion = AZ::Aabb::CreateNull();
     }
 
     void TerrainWorldDebuggerComponent::DrawWorldBounds(AzFramework::DebugDisplayRequests& debugDisplay)
@@ -654,10 +651,7 @@ namespace Terrain
         if (dataChangedMask & (TerrainDataChangedMask::Settings | TerrainDataChangedMask::HeightData))
         {
             MarkDirtySectors(dirtyRegion);
-        }
 
-        if (dataChangedMask & TerrainDataChangedMask::Settings)
-        {
             // Any time the world bounds potentially changes, notify that the terrain debugger's visibility bounds also changed.
             AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
                 &AzFramework::IEntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());

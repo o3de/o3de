@@ -165,6 +165,7 @@ set(FILES
     Memory/LeakDetection.cpp
     Memory.cpp
     Metrics/EventLoggerFactoryTests.cpp
+    Metrics/EventLoggerReflectUtilsTests.cpp
     Metrics/EventLoggerUtilsTests.cpp
     Metrics/JsonTraceEventLoggerTests.cpp
     Module.cpp
@@ -225,6 +226,7 @@ set(FILES
     Serialization.cpp
     SerializeContextFixture.h
     Settings/CommandLineTests.cpp
+    Settings/ConfigParserTests.cpp
     Settings/ConfigurableStackTests.cpp
     Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
