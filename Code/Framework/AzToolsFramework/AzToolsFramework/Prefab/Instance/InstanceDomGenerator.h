@@ -51,10 +51,10 @@ namespace AzToolsFramework
 
         private:
             //! Given an instance and its DOM, updates the container entity in the DOM with the one seen
-            //! from the owning instance template DOM.
+            //! from the highest instance ancestor template DOM.
             //! @param[out] instanceDom The DOM of the instance that will be modified.
             //! @param instance The given instance object.
-            void UpdateContainerEntityInDomFromOwningInstance(PrefabDom& instanceDom, const Instance& instance) const;
+            void UpdateContainerEntityInDomFromHighestAncestor(PrefabDom& instanceDom, const Instance& instance) const;
 
             //! Given an instance, it walks up to the root instance in the hierarchy and populates the container entity dom as seen
             //! from the root template DOM.
