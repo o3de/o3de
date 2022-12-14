@@ -125,6 +125,9 @@ namespace AZ
             const auto& rayTracingMaterialSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RayTracingMaterialSrgBindingSlot);
             m_requiresRayTracingMaterialSrg = (rayTracingMaterialSrgLayout != nullptr);
 
+            const auto& rayTracingSceneSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RayTracingSceneSrgBindingSlot);
+            m_requiresRayTracingSceneSrg = (rayTracingSceneSrgLayout != nullptr);
+
             // build the ray tracing pipeline state descriptor
             RHI::RayTracingPipelineStateDescriptor descriptor;
             descriptor.Build()
@@ -312,11 +315,12 @@ namespace AZ
 
             // bind RayTracingGlobal, RayTracingScene, and View Srgs
             // [GFX TODO][ATOM-15610] Add RenderPass::SetSrgsForRayTracingDispatch
-            AZStd::vector<RHI::ShaderResourceGroup*> shaderResourceGroups =
+            AZStd::vector<RHI::ShaderResourceGroup*> shaderResourceGroups = { m_shaderResourceGroup->GetRHIShaderResourceGroup() };
+
+            if (m_requiresRayTracingSceneSrg)
             {
-                m_shaderResourceGroup->GetRHIShaderResourceGroup(),
-                rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()
-            };
+                shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup());
+            }
 
             if (m_requiresViewSrg)
             {
