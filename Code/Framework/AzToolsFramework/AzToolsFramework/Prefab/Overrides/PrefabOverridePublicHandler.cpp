@@ -34,8 +34,8 @@ namespace AzToolsFramework
 
         PrefabOverridePublicHandler::~PrefabOverridePublicHandler()
         {
-            AZ::Interface<PrefabOverridePublicInterface>::Unregister(this);
             PrefabOverridePublicRequestBus::Handler::BusDisconnect();
+            AZ::Interface<PrefabOverridePublicInterface>::Unregister(this);
         }
 
         void PrefabOverridePublicHandler::Reflect(AZ::ReflectContext* context)
