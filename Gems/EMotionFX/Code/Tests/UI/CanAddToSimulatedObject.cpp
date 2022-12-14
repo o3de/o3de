@@ -22,6 +22,7 @@
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Editor/ReselectingTreeView.h>
+#include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/TestActorAssets.h>
