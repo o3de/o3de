@@ -68,6 +68,10 @@ class TestAutomationQtPyTests(TestAutomationBase):
         from . import ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    def test_ScriptEvents_Default_SendReceiveSuccesfully(self, request, workspace, editor, launcher_platform):
+        from . import ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage as test_module
+        self._run_test(request, workspace, editor, test_module)
+
     """
     od3e/o3de#13481
     This test fails in multi test. QCheckbox state change does not trigger table changes like in hydra/editor test run
@@ -182,7 +186,7 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
-
+    """
     def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, editor, launcher_platform):
 
         expected_lines = [
@@ -200,6 +204,7 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
+    """
     def test_ScriptEvents_ReturnSetType_Successfully(self, request, editor, launcher_platform):
 
         expected_lines = [
