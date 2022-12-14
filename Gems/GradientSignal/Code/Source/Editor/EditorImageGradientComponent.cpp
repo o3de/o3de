@@ -7,6 +7,7 @@
  */
 
 #include <Editor/EditorImageGradientComponent.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
@@ -755,7 +756,8 @@ namespace GradientSignal
             settingsRegistry->Get(defaultPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
         }
 
-        defaultPath /= AZ::IO::FixedMaxPathString::format(AZ_STRING_FORMAT "_gsi.tif", AZ_STRING_ARG(GetEntity()->GetName()));
+        defaultPath /= AZ::IO::FixedMaxPathString::format(
+            AZ_STRING_FORMAT "_gsi.tif", AZ_STRING_ARG(AZ::RPI::AssetUtils::SanitizeFileName(GetEntity()->GetName())));
 
         return defaultPath.Native();
     }
