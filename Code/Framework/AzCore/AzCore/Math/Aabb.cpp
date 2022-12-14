@@ -238,13 +238,23 @@ namespace AZ
 
     void Aabb::ApplyMatrix3x4(const Matrix3x4& matrix3x4)
     {
-        const AZ::Vector3 extents = GetExtents();
-        const AZ::Vector3 center = matrix3x4 * GetCenter();
-        AZ::Vector3 newHalfExtents(
-            0.5f * matrix3x4.GetRowAsVector3(0).GetAbs().Dot(extents),
-            0.5f * matrix3x4.GetRowAsVector3(1).GetAbs().Dot(extents),
-            0.5f * matrix3x4.GetRowAsVector3(2).GetAbs().Dot(extents));
-        m_min = center - newHalfExtents;
-        m_max = center + newHalfExtents;
+        Vector3 a, b, axisCoeffs;
+
+        Vector3 newMin, newMax;
+        newMin = newMax = matrix3x4.GetTranslation();
+
+        // Find extreme points for each axis.
+        for (int j = 0; j < 3; j++)
+        {
+            axisCoeffs = matrix3x4.GetRowAsVector3(j);
+            a = axisCoeffs * m_min;
+            b = axisCoeffs * m_max;
+
+            newMin.SetElement(j, newMin(j) + a.GetMin(b).Dot(Vector3::CreateOne()));
+            newMax.SetElement(j, newMax(j) + a.GetMax(b).Dot(Vector3::CreateOne()));
+        }
+
+        m_min = newMin;
+        m_max = newMax;
     }
 }
