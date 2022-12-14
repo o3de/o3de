@@ -176,7 +176,7 @@ namespace AZStd
         inline ~basic_string()
         {
             // destroy the string
-            deallocate_memory(m_storage.first().GetData(), 0, typename allocator_type::allow_memory_leaks());
+            deallocate_memory(m_storage.first().GetData(), 0);
         }
 
         constexpr operator AZStd::basic_string_view<Element, Traits>() const
@@ -337,7 +337,7 @@ namespace AZStd
         {
             if (this != &rhs)
             {
-                deallocate_memory(m_storage.first().GetData(), 0, typename allocator_type::allow_memory_leaks());
+                deallocate_memory(m_storage.first().GetData(), 0);
 
                 m_storage.first().SetCapacity(rhs.capacity());
 
@@ -1337,7 +1337,7 @@ namespace AZStd
                     Traits::copy(newData, data, size() + 1);  // copy elements and terminator
 
                     // Free memory (if needed).
-                    deallocate_memory(data, 0, typename allocator_type::allow_memory_leaks());
+                    deallocate_memory(data, 0);
                     m_storage.second() = newAllocator;
                 }
                 else
@@ -1439,21 +1439,6 @@ namespace AZStd
                 }
                 else
                 {
-                    size_type expandedSize = 0;
-                    if (!m_storage.first().ShortStringOptimizationActive())
-                    {
-                        expandedSize = m_storage.second().resize(m_storage.first().GetData(), sizeof(node_type) * (numElements + 1));
-                        // our memory managers allocate on 8+ bytes boundary and our node type should be less than that in general, otherwise
-                        // we need to take care when we compute the size on deallocate.
-                        AZ_Assert(expandedSize % sizeof(node_type) == 0, "Expanded size not a multiply of node type. This should not happen");
-                        size_type expandedCapacity = expandedSize / sizeof(node_type);
-                        if (expandedCapacity > numElements)
-                        {
-                            m_storage.first().SetCapacity(expandedCapacity - 1);
-                            return;
-                        }
-                    }
-
                     pointer newData = reinterpret_cast<pointer>(m_storage.second().allocate(sizeof(node_type) * (numElements + 1), alignof(node_type)));
                     AZSTD_CONTAINER_ASSERT(newData != nullptr, "AZStd::string allocation failed!");
 
@@ -1463,7 +1448,7 @@ namespace AZStd
                     {
                         Traits::copy(newData, data, newSize);  // copy existing elements
                     }
-                    deallocate_memory(data, expandedSize, typename allocator_type::allow_memory_leaks());
+                    deallocate_memory(data, 0);
 
                     Traits::assign(newData[newSize], Element());  // terminate
                     m_storage.first().SetCapacity(numElements);
@@ -1559,7 +1544,7 @@ namespace AZStd
             {
                 va_list args;
                 va_start(args, formatStr);
-                basic_string<char, char_traits<char>, Allocator> result = this_type::format_arg(formatStr, args);
+                auto result = this_type::format_arg(formatStr, args);
                 va_end(args);
                 return result;
             }
@@ -1568,7 +1553,7 @@ namespace AZStd
             {
                 va_list args;
                 va_start(args, formatStr);
-                basic_string<wchar_t, char_traits<wchar_t>, Allocator> result = this_type::format_arg(formatStr, args);
+                auto result = this_type::format_arg(formatStr, args);
                 va_end(args);
                 return result;
             }
@@ -1593,7 +1578,7 @@ namespace AZStd
         {
             va_list args;
             va_start(args, formatStr);
-            basic_string<char, char_traits<char>, Allocator> result = format_arg(formatStr, args);
+            auto result = format_arg(formatStr, args);
             va_end(args);
             return result;
         }
@@ -1602,12 +1587,6 @@ namespace AZStd
 #    undef FORMAT_FUNC_ARG
 
 #else // !AZ_COMPILER_CLANG && !defined(_PREFAST_) && !defined(_RELEASE)
-
-        static basic_string<char, char_traits<char>, Allocator> format(const char* formatStr)
-        {
-            return { formatStr };
-        }
-
         template<typename... Args>
         static basic_string<char, char_traits<char>, Allocator> format(const char* formatStr, Args... args)
         {
@@ -1620,16 +1599,12 @@ namespace AZStd
                 return isValid;
             };
             constexpr bool allValid = (IsValidFormatArg(args) && ...);
-            static_assert(allValid, "Invalid string::format arguments, must be: numeric(floating point, integral, pointer) or C String(char/w_char)");
+            static_assert(allValid, "Invalid string::format arguments, must be: numeric(floating point, integral, pointer) or C String(char/wchar_t)");
 
             return _Format_Internal::raw_format(formatStr, args...);
         }
 #endif // AZ_COMPILER_CLANG || defined(_PREFAST_) || defined(_RELEASE)
 
-        static inline basic_string<wchar_t, char_traits<wchar_t>, Allocator> format(const wchar_t* formatStr)
-        {
-            return { formatStr };
-        }
 
         template<typename... Args>
         static basic_string<wchar_t, char_traits<wchar_t>, Allocator> format(const wchar_t* formatStr, Args... args)
@@ -1643,7 +1618,7 @@ namespace AZStd
                 return isValid;
             };
             constexpr bool allValid = (IsValidFormatArg(args) && ...);
-            static_assert(allValid, "Invalid wstring::format arguments, must be: numeric(floating point, integral, pointer) or C String(char/w_char)");
+            static_assert(allValid, "Invalid wstring::format arguments, must be: numeric(floating point, integral, pointer) or C String(char/wchar_t)");
 
             return _Format_Internal::raw_format(formatStr, args...);
         }
@@ -1684,21 +1659,6 @@ namespace AZStd
             }
             if (newCapacity >= ShortStringData::Capacity)
             {
-                size_type expandedSize = 0;
-                if (!m_storage.first().ShortStringOptimizationActive())
-                {
-                    expandedSize = m_storage.second().resize(m_storage.first().GetData(), sizeof(node_type) * (newCapacity + 1));
-                    // our memory managers allocate on 8+ bytes boundary and our node type should be less than that in general, otherwise
-                    // we need to take care when we compute the size on deallocate.
-                    AZ_Assert(expandedSize % sizeof(node_type) == 0, "Expanded size not a multiple of node type. This should not happen");
-                    size_type expandedCapacity = expandedSize / sizeof(node_type);
-                    if (expandedCapacity > newCapacity)
-                    {
-                        m_storage.first().SetCapacity(expandedCapacity - 1);
-                        return;
-                    }
-                }
-
                 pointer newData = reinterpret_cast<pointer>(m_storage.second().allocate(sizeof(node_type) * (newCapacity + 1), alignof(node_type)));
                 AZSTD_CONTAINER_ASSERT(newData != nullptr, "AZStd::string allocation failed!");
                 if (newData)
@@ -1708,7 +1668,7 @@ namespace AZStd
                     {
                         Traits::copy(newData, data, oldLength);    // copy existing elements
                     }
-                    deallocate_memory(data, expandedSize, typename allocator_type::allow_memory_leaks());
+                    deallocate_memory(data, 0);
 
                     Traits::assign(newData[oldLength], Element());  // terminate
                     m_storage.first().SetCapacity(newCapacity);
@@ -1739,10 +1699,7 @@ namespace AZStd
             return newSize <= capacity();
         }
 
-        inline void deallocate_memory(pointer, size_type, const true_type& /* allocator::allow_memory_leaks */)
-        {}
-
-        inline void deallocate_memory(pointer data, size_type expandedSize, const false_type& /* !allocator::allow_memory_leaks */)
+        inline void deallocate_memory(pointer data, size_type expandedSize)
         {
             if (!m_storage.first().ShortStringOptimizationActive())
             {

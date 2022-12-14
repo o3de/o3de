@@ -254,12 +254,15 @@ namespace AzToolsFramework
             // the absolute path is just the relative path with cache root prepended.
             AZ::IO::Path pathFromDatabase(productWithUuidDatabaseEntry.second.m_productName.c_str());
             AZ::IO::PathView cleanedRelative = pathFromDatabase.RelativePath();
+            AZ::IO::FixedMaxPath storageForLexicallyRelative{};
             // remove the first element from the path if you can:
             if (!cleanedRelative.empty())
             {
-                cleanedRelative = cleanedRelative.LexicallyRelative(*cleanedRelative.begin());
+                storageForLexicallyRelative = cleanedRelative.LexicallyRelative(*cleanedRelative.begin());
+                cleanedRelative = storageForLexicallyRelative;
             }
             product->m_relativePath = cleanedRelative;
+            product->m_visiblePath = cleanedRelative;
             product->m_fullPath = (AZ::IO::Path("@products@") / cleanedRelative).LexicallyNormal();
 
             // compute the display data from the above data.
@@ -412,6 +415,7 @@ namespace AzToolsFramework
             // shown root.
             child->m_fullPath = m_fullPath / child->m_name;
             child->m_relativePath = child->m_name;
+            child->m_visiblePath = child->m_name;
 
             // the display path is the relative path without the child's name.  So it is blank here.
             child->m_displayPath = QString();

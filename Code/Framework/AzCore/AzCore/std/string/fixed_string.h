@@ -38,7 +38,7 @@ namespace AZStd
 
         using iterator = pointer;
         using const_iterator = const_pointer;
-       
+
         using reverse_iterator = AZStd::reverse_iterator<iterator>;
         using const_reverse_iterator = AZStd::reverse_iterator<const_iterator>;
         using value_type = Element;

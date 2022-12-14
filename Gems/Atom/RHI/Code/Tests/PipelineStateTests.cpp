@@ -135,13 +135,15 @@ namespace UnitTest
         RHI::Ptr<RHI::PipelineState> pipelineState = RHI::Factory::Get().CreatePipelineState();
         auto descriptor = CreatePipelineStateDescriptor(0);
         descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_subpassInputCount = 1;
-        descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_subpassInputIndices[0] = 1;
+        descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_subpassInputDescriptors[0].m_attachmentIndex = 1;
         RHI::ResultCode resultCode = pipelineState->Init(*device, descriptor);
         EXPECT_EQ(resultCode, RHI::ResultCode::Success);
 
         AZ_TEST_START_ASSERTTEST;
         pipelineState = RHI::Factory::Get().CreatePipelineState();
-        descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_subpassInputIndices[0] = 3;
+        descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0]
+            .m_subpassInputDescriptors[0]
+            .m_attachmentIndex = 3;
         resultCode = pipelineState->Init(*device, descriptor);
         AZ_TEST_STOP_ASSERTTEST(1);
         EXPECT_EQ(resultCode, RHI::ResultCode::InvalidOperation);

@@ -19,17 +19,11 @@ namespace UnitTest
 
     //! Unit Test for testing Base64 Encode/Decode functions
     class Base64Test
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    public:
-        Base64Test()
-            : AllocatorsFixture()
-        {
-        }
-
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AllocatorInstance<PoolAllocator>::Create();
             AllocatorInstance<ThreadPoolAllocator>::Create();
             ComponentApplication::Descriptor desc;
@@ -44,7 +38,7 @@ namespace UnitTest
             m_app.reset();
             AllocatorInstance<PoolAllocator>::Destroy();
             AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<ComponentApplication> m_app;

@@ -89,7 +89,350 @@
                         "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
                         "Method": "ScriptCanvas_StringFunctions_ReplaceString"
                     }
-                }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "6A4FE29F-3BAA-40D6-8BEE-CDE9CCBD7885"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Method": "Get Element"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "B7E79DC5-21DA-4001-8284-85707C71C29B"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Method": "Get Last Element"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "26DDC284-BD01-471E-BA8F-36C3A1ADA169"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Method": "Clear All Elements"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "670FCD62-BAA8-4812-9CF2-C3F2EC5F54F5"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Method": "Is Empty"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "F1A891C9-81D4-4675-A57A-F11AB415F95F"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Method": "Erase"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "B0E10176-5DFE-4D34-BEF8-7EB575929CE7"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Method": "Get First Element"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "122B30C9-30A6-4CAF-B4E3-327A6C1A1E38"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Method": "Insert"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "11DDEEC1-7111-4655-B47F-8F0372B1A1A9"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Method": "Add Element at End"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "981EA18E-F421-4B39-9FF7-27322F3E8B14"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Method": "Get Size"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "8481E892-DE37-4CCF-86AA-E4770DE90643"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_StringFunctions_ContainsString"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "197D0BAA-FCAF-4922-872B-3A95BEA574B2"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_StringFunctions_ReplaceString"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "60EB479A-CF31-4734-B2E5-422828A54A46"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_StringFunctions_StartsWith"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "6C1CECA6-C155-4ED5-96BC-1D4F11C7A0FE"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_StringFunctions_EndsWith"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "327EFC0F-F71E-4028-BAF9-C4223B933FB6"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_StringFunctions_Split"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "121E5B89-5A8A-4477-A3B7-078B0F1B36FD"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_StringFunctions_Join"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "364F5AC9-8351-44B6-A069-03367B21F7AA"
+                    },
+                    "NewNode" : {
+                        "Uuid": "D3629902-02E9-AE59-0424-F366D342B433"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "399A2608-77E3-41F9-90FA-58A9B6E0E34D"
+                    },
+                    "NewNode" : {
+                        "Uuid": "D3629902-02E9-AE59-0424-F366D342B433"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "FAEADF5A-F7D9-415A-A3E8-F534BD379B9A"
+                    },
+                    "NewNode" : {
+                        "Uuid": "233C84A7-44DE-A948-D65C-46C11F1F7162"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "D93538FF-3553-4C65-AB81-9089C5270214"
+                    },
+                    "NewNode" : {
+                        "Uuid": "CCF1F41F-39C2-C847-9D9E-0155C8B46E1C"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "BA107060-249D-4818-9CEC-7573718273FC"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E73DB180-A325-763B-A1FE-517B548AF66E"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "0A38EDCA-0571-48F0-9199-F6168C1EAAF0"
+                    },
+                    "NewNode" : {
+                        "Uuid": "AB587027-2270-4CA6-242F-6069C6D9BBB6"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "60CF8540-E51A-434D-A32C-461C41D68AF9"
+                    },
+                    "NewNode" : {
+                        "Uuid": "32A4BEDC-C207-4472-61DE-9A716402620A"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "1C4971A7-DE76-4E8E-9381-F579A57B2A78"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "Unit Testing",
+                        "Method": "Add Failure"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "0D5B9544-C36B-490F-899A-E260D8351620"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "Unit Testing",
+                        "Method": "Add Success"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "E65449D2-45A9-402B-ADF7-4E4F27A99245"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "Unit Testing",
+                        "Method": "Checkpoint"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "856DB72A-48CB-4142-A032-1253D3AB8BEC"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Class": "Unit Testing",
+                        "Method": "Expect Equal"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "3838E12C-CEAB-4CED-9958-B6C0399FCD92"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "Unit Testing",
+                        "Method": "Expect False"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "8DD464A5-C09D-4017-82B7-B1EA672BA9EA"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Class": "Unit Testing",
+                        "Method": "Expect Greater Than"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "8EB4E313-1479-4428-AE0C-75F233C5F5EB"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Class": "Unit Testing",
+                        "Method": "Expect Greater Than Equal"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "693FD406-8735-4DBB-B0A8-39E7DA467559"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Class": "Unit Testing",
+                        "Method": "Expect Less Than"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "52D4803F-6273-4A4E-96CC-F2892CFE433B"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Class": "Unit Testing",
+                        "Method": "Expect Less Than Equal"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "66334794-0F98-4BFC-9DB0-8AB6A4052D09"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8",
+                        "Class": "Unit Testing",
+                        "Method": "Expect Not Equal"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "88F9BE2D-F591-45AD-9682-FBB67C39C504"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "Unit Testing",
+                        "Method": "Expect True"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "DC0BCFE9-3066-4232-AA68-AAFB206C917F"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "Unit Testing",
+                        "Method": "Mark Complete"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "7379D5B4-787B-4C46-9394-288F16E5BF3A"
+                    },
+                    "NewNode" : {
+                        "Uuid": "DC17E19F-3829-410D-9A0B-AD60C6066DAA"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "1BC9A5A9-9BF3-4DA7-A8F7-911254AEB243"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E9BB45A1-AE96-47B0-B2BF-2927D420A28C"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "A10AD4C7-B633-4A75-8210-1353A87441E4"
+                    },
+                    "NewNode" : {
+                        "Uuid": "D0615D0A-027F-47F6-A02B-E35DAF22F431"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "6C52B2D1-3526-4855-A217-5106D54F6B90"
+                    },
+                    "NewNode" : {
+                        "Uuid": "C1B42FEC-0545-4511-9FAC-11E0387FEDF0"
+                    }
+                },
             ]
         }
     }

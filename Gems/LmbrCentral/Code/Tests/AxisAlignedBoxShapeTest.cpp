@@ -7,6 +7,7 @@
  */
 
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <AZTestShared/Utils/Utils.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Random.h>
@@ -21,8 +22,8 @@
 namespace UnitTest
 {
     class AxisAlignedBoxShapeTest
-        : public AllocatorsFixture
-        , public ShapeOffsetTestsBase
+        : public LeakDetectionFixture
+        , public RegistryTestHelper
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
@@ -32,8 +33,8 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
-            ShapeOffsetTestsBase::SetUp();
+            LeakDetectionFixture::SetUp();
+            RegistryTestHelper::SetUp(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             m_transformComponentDescriptor =
@@ -53,8 +54,8 @@ namespace UnitTest
             m_axisAlignedBoxShapeComponentDescriptor.reset();
             m_axisAlignedBoxShapeDebugDisplayComponentDescriptor.reset();
             m_serializeContext.reset();
-            ShapeOffsetTestsBase::TearDown();
-            AllocatorsFixture::TearDown();
+            RegistryTestHelper::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
@@ -343,5 +344,17 @@ namespace UnitTest
             shapeAabb, entity.GetId(), &LmbrCentral::ShapeComponentRequests::GetEncompassingAabb);
         EXPECT_THAT(debugDrawAabb.GetMin(), IsClose(AZ::Vector3(-2.0f, -9.0f, -10.0f)));
         EXPECT_THAT(debugDrawAabb.GetMax(), IsClose(AZ::Vector3(8.0f, -1.0f, -6.0f)));
+    }
+
+    TEST_F(AxisAlignedBoxShapeTest, IsTypeAxisAlignedReturnsTrue)
+    {
+        AZ::Entity entity;
+        CreateDefaultAxisAlignedBox(AZ::Transform::CreateIdentity(), entity);
+
+        bool isTypeAxisAligned = false;
+        LmbrCentral::BoxShapeComponentRequestsBus::EventResult(
+            isTypeAxisAligned, entity.GetId(), &LmbrCentral::BoxShapeComponentRequests::IsTypeAxisAligned);
+
+        EXPECT_TRUE(isTypeAxisAligned);
     }
 } // namespace UnitTest

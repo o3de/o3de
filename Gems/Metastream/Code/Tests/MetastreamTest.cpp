@@ -37,12 +37,10 @@ protected:
     {
         AZ::AllocatorInstance<AZ::OSAllocator>::Create();
         AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-        AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
     }
 
     void TeardownEnvironment() override
     {
-        AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
         AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     }

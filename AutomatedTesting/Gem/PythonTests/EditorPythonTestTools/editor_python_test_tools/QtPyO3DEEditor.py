@@ -16,6 +16,7 @@ from consts.asset_editor import (ASSET_EDITOR_UI)
 from consts.scripting import (SCRIPT_CANVAS_UI)
 from consts.general import (WAIT_TIME_SEC_3)
 
+
 class Tests():
     script_canvas_editor_opened = ("Script Canvas Editor opened successfully", "Failed to open Script Canvas Editor")
     script_canvas_editor_closed = ("Script Canvas Editor closed successfully", "Failed to close Script Canvas Editor")

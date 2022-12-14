@@ -45,6 +45,9 @@ namespace ShaderManagementConsole
         AZ::Data::AssetInfo GetSourceAssetInfo(const AZStd::string& sourceAssetFileName) override;
         AZStd::vector<AZ::Data::AssetId> FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath) override;
         AZStd::vector<AZ::RPI::ShaderCollection::Item> GetMaterialInstanceShaderItems(const AZ::Data::AssetId& assetId) override;
+        AZStd::vector<AZ::Data::AssetId> GetAllMaterialAssetIds() override;
+        AZStd::string GetFullSourcePathFromRelativeProductPath(const AZStd::string& relativeProductPath) override;
+        AZStd::string GenerateRelativeSourcePath(const AZStd::string& fullShaderPath) override;
 
     private:
         AZStd::unique_ptr<ShaderManagementConsoleWindow> m_window;

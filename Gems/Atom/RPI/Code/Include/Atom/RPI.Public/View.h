@@ -79,6 +79,22 @@ namespace AZ
             //! Add a draw item to this view with its associated draw list tag
             void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties);
 
+            //! Applies some flags to the view that are reset each frame. The provided flags are combined with m_andFlags
+            //! using &, and are combined with m_orFlags using |.
+            void ApplyFlags(uint32_t flags);
+
+            //! Clears and resets the flag positions marked with flag. This means the 'and' flag is set to 1 and the 'or' flag is set to 0.
+            void ClearFlags(uint32_t flags);
+
+            //! Clears and resets all the flags. This effectively sets the and flags back to 0xFFFFFFFF and the or flags to 0x00000000;
+            void ClearAllFlags();
+
+            //! Returns the boolean & combination of all flags provided with ApplyFlags() since the last frame.
+            uint32_t GetAndFlags();
+
+            //! Returns the boolean | combination of all flags provided with ApplyFlags() since the last frame.
+            uint32_t GetOrFlags();
+
             //! Sets the worldToView matrix and recalculates the other matrices.
             void SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView);
 
@@ -213,6 +229,9 @@ namespace AZ
 
             // Masked Occlusion Culling interface
             MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
+
+            AZStd::atomic_uint32_t m_andFlags{ 0xFFFFFFFF };
+            AZStd::atomic_uint32_t m_orFlags { 0x00000000 };
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(View::UsageFlags);

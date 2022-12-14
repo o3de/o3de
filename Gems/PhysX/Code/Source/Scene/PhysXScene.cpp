@@ -23,11 +23,14 @@
 #include <PhysX/MathConversion.h>
 #include <Joint/PhysXJoint.h>
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/ProfilerBus.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/Task/TaskGraph.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
@@ -36,7 +39,19 @@
 
 namespace PhysX
 {
+    AZ_CVAR_EXTERNED(bool, physx_batchTransformSync);
+
+    AZ_CVAR(bool, physx_parallelTransformSync, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Multithreaded transform update for rigid bodies. "
+        "Only relevant if batched transform update is enabled.");
+    AZ_CVAR(size_t, physx_parallelTransformSyncBatchSize, 250, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "How many rigid bodies should be processed per task");
+
     AZ_CLASS_ALLOCATOR_IMPL(PhysXScene, AZ::SystemAllocator, 0);
+
+    AZ_CVAR(bool, physx_profileSimulationDatapoints, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Expose PhysX simulation statistics to profiler. "
+        "True: Simulation statistics will be collected for the profiler. "
+        "False: Simulation statistics will not be collected.");
 
     /*static*/ thread_local AZStd::vector<physx::PxRaycastHit> PhysXScene::s_rayCastBuffer;
     /*static*/ thread_local AZStd::vector<physx::PxSweepHit> PhysXScene::s_sweepBuffer;
@@ -605,7 +620,22 @@ namespace PhysX
             // Keep the event signal outside of the scene lock since there may be handlers that want to lock the scene for write
             m_sceneActiveSimulatedBodies.Signal(m_sceneHandle, activeBodyHandles, m_currentDeltaTime);
 
-            SyncActiveBodyTransform(activeBodyHandles);
+            if (physx_batchTransformSync)
+            {
+                m_queuedActiveBodyIndices.IncreaseCapacity(activeBodyHandles.size());
+
+                for (const AzPhysics::SimulatedBodyHandle& bodyHandle : activeBodyHandles)
+                {
+                    AzPhysics::SimulatedBodyIndex bodyIndex = AZStd::get<1>(bodyHandle);
+                    m_queuedActiveBodyIndices.Insert(bodyIndex);
+                }
+
+                m_accumulatedDeltaTime += m_currentDeltaTime;
+            }
+            else
+            {
+                SyncActiveBodyTransform(activeBodyHandles);
+            }
         }
 
         FlushQueuedEvents();
@@ -1187,15 +1217,8 @@ namespace PhysX
 
     void PhysXScene::UpdateAzProfilerDataPoints()
     {
-        using physx::PxGeometryType;
-
-        bool isProfilingActive = false;
-        if (auto profilerSystem = AZ::Debug::ProfilerSystemInterface::Get(); profilerSystem)
-        {
-            isProfilingActive = profilerSystem->IsActive();
-        }
-
-        if (!isProfilingActive)
+#if !defined(AZ_RELEASE_BUILD)
+        if (!physx_profileSimulationDatapoints)
         {
             return;
         }
@@ -1209,39 +1232,47 @@ namespace PhysX
             m_pxScene->getSimulationStatistics(stats);
         }
 
-        [[maybe_unused]] const char* RootCategory = "PhysX/%s/%s";
+        // Shapes
+        using physx::PxGeometryType;
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::eSPHERE], L"PhysX/Shapes/Sphere");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::ePLANE], L"PhysX/Shapes/Plane");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::eCAPSULE], L"PhysX/Shapes/Capsule");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::eBOX], L"PhysX/Shapes/Box");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::eCONVEXMESH], L"PhysX/Shapes/ConvexMesh");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::eTRIANGLEMESH], L"PhysX/Shapes/TriangleMesh");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::eHEIGHTFIELD], L"PhysX/Shapes/Heightfield");
 
-        [[maybe_unused]] const char* ShapesSubCategory = "Shapes";
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::eSPHERE], RootCategory, ShapesSubCategory, "Sphere");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::ePLANE], RootCategory, ShapesSubCategory, "Plane");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::eCAPSULE], RootCategory, ShapesSubCategory, "Capsule");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::eBOX], RootCategory, ShapesSubCategory, "Box");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::eCONVEXMESH], RootCategory, ShapesSubCategory, "ConvexMesh");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::eTRIANGLEMESH], RootCategory, ShapesSubCategory, "TriangleMesh");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbShapes[PxGeometryType::eHEIGHTFIELD], RootCategory, ShapesSubCategory, "Heightfield");
+        // Objects
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbActiveConstraints, L"PhysX/Objects/ActiveConstraints");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbActiveDynamicBodies, L"PhysX/Objects/ActiveDynamicBodies");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbActiveKinematicBodies, L"PhysX/Objects/ActiveKinematicBodies");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbStaticBodies, L"PhysX/Objects/StaticBodies");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbDynamicBodies, L"PhysX/Objects/DynamicBodies");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbKinematicBodies, L"PhysX/Objects/KinematicBodies");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbAggregates, L"PhysX/Objects/Aggregates");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbArticulations, L"PhysX/Objects/Articulations");
 
-        [[maybe_unused]] const char* ObjectsSubCategory = "Objects";
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbActiveConstraints, RootCategory, ObjectsSubCategory, "ActiveConstraints");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbActiveDynamicBodies, RootCategory, ObjectsSubCategory, "ActiveDynamicBodies");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbActiveKinematicBodies, RootCategory, ObjectsSubCategory, "ActiveKinematicBodies");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbStaticBodies, RootCategory, ObjectsSubCategory, "StaticBodies");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbDynamicBodies, RootCategory, ObjectsSubCategory, "DynamicBodies");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbKinematicBodies, RootCategory, ObjectsSubCategory, "KinematicBodies");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbAggregates, RootCategory, ObjectsSubCategory, "Aggregates");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbArticulations, RootCategory, ObjectsSubCategory, "Articulations");
+        // Solver
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbAxisSolverConstraints, L"PhysX/Solver/AxisSolverConstraints");
+        AZ_PROFILE_DATAPOINT(Physics, stats.compressedContactSize, L"PhysX/Solver/CompressedContactSize");
+        AZ_PROFILE_DATAPOINT(Physics, stats.requiredContactConstraintMemory, L"PhysX/Solver/RequiredContactConstraintMemory");
+        AZ_PROFILE_DATAPOINT(Physics, stats.peakConstraintMemory, L"PhysX/Solver/PeakConstraintMemory");
 
-        [[maybe_unused]] const char* SolverSubCategory = "Solver";
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbAxisSolverConstraints, RootCategory, SolverSubCategory, "AxisSolverConstraints");
-        AZ_PROFILE_DATAPOINT(Physics, stats.compressedContactSize, RootCategory, SolverSubCategory, "CompressedContactSize");
-        AZ_PROFILE_DATAPOINT(Physics, stats.requiredContactConstraintMemory, RootCategory, SolverSubCategory, "RequiredContactConstraintMemory");
-        AZ_PROFILE_DATAPOINT(Physics, stats.peakConstraintMemory, RootCategory, SolverSubCategory, "PeakConstraintMemory");
+        // Broadphase
+        AZ_PROFILE_DATAPOINT(Physics, stats.getNbBroadPhaseAdds(), L"PhysX/Broadphase/BroadPhaseAdds");
+        AZ_PROFILE_DATAPOINT(Physics, stats.getNbBroadPhaseRemoves(), L"PhysX/Broadphase/BroadPhaseRemoves");
 
-        [[maybe_unused]] const char* BroadphaseSubCategory = "Broadphase";
-        AZ_PROFILE_DATAPOINT(Physics, stats.getNbBroadPhaseAdds(), RootCategory, BroadphaseSubCategory, "BroadPhaseAdds");
-        AZ_PROFILE_DATAPOINT(Physics, stats.getNbBroadPhaseRemoves(), RootCategory, BroadphaseSubCategory, "BroadPhaseRemoves");
+        // Collisions
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbDiscreteContactPairsTotal, L"PhysX/Collisions/DiscreteContactPairsTotal");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbDiscreteContactPairsWithCacheHits, L"PhysX/Collisions/DiscreteContactPairsWithCacheHits");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbDiscreteContactPairsWithContacts, L"PhysX/Collisions/DiscreteContactPairsWithContacts");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbNewPairs, L"PhysX/Collisions/NewPairs");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbLostPairs, L"PhysX/Collisions/LostPairs");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbNewTouches, L"PhysX/Collisions/NewTouches");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbLostTouches, L"PhysX/Collisions/LostTouches");
+        AZ_PROFILE_DATAPOINT(Physics, stats.nbPartitions, L"PhysX/Collisions/Partitions");
 
         // Compute pair stats for all geometry types
-#if AZ_PROFILE_DATAPOINT
         AZ::u32 ccdPairs = 0;
         AZ::u32 modifiedPairs = 0;
         AZ::u32 triggerPairs = 0;
@@ -1257,20 +1288,11 @@ namespace PhysX
                 triggerPairs += stats.getRbPairStats(physx::PxSimulationStatistics::eTRIGGER_PAIRS, firstGeom, secondGeom);
             }
         }
-#endif
 
-        [[maybe_unused]] const char* CollisionsSubCategory = "Collisions";
-        AZ_PROFILE_DATAPOINT(Physics, ccdPairs, RootCategory, CollisionsSubCategory, "CCDPairs");
-        AZ_PROFILE_DATAPOINT(Physics, modifiedPairs, RootCategory, CollisionsSubCategory, "ModifiedPairs");
-        AZ_PROFILE_DATAPOINT(Physics, triggerPairs, RootCategory, CollisionsSubCategory, "TriggerPairs");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbDiscreteContactPairsTotal, RootCategory, CollisionsSubCategory, "DiscreteContactPairsTotal");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbDiscreteContactPairsWithCacheHits, RootCategory, CollisionsSubCategory, "DiscreteContactPairsWithCacheHits");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbDiscreteContactPairsWithContacts, RootCategory, CollisionsSubCategory, "DiscreteContactPairsWithContacts");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbNewPairs, RootCategory, CollisionsSubCategory, "NewPairs");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbLostPairs, RootCategory, CollisionsSubCategory, "LostPairs");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbNewTouches, RootCategory, CollisionsSubCategory, "NewTouches");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbLostTouches, RootCategory, CollisionsSubCategory, "LostTouches");
-        AZ_PROFILE_DATAPOINT(Physics, stats.nbPartitions, RootCategory, CollisionsSubCategory, "Partitions");
+        AZ_PROFILE_DATAPOINT(Physics, ccdPairs, L"PhysX/Collisions/CCDPairs");
+        AZ_PROFILE_DATAPOINT(Physics, modifiedPairs, L"PhysX/Collisions/ModifiedPairs");
+        AZ_PROFILE_DATAPOINT(Physics, triggerPairs, L"PhysX/Collisions/TriggerPairs");
+#endif // !defined(AZ_RELEASE_BUILD)
     }
 
     void PhysXScene::SyncActiveBodyTransform(const AzPhysics::SimulatedBodyHandleList& activeBodyHandles)
@@ -1287,4 +1309,91 @@ namespace PhysX
         }
     }
 
-}
+    void PhysXScene::FlushTransformSync()
+    {
+        AZ_PROFILE_SCOPE(Physics, "PhysX::FlushTransformSync");
+
+        auto transformSync = [this](AzPhysics::SimulatedBodyIndex bodyIndex)
+        {
+            if (bodyIndex < m_simulatedBodies.size() && m_simulatedBodies[bodyIndex].second)
+            {
+                m_simulatedBodies[bodyIndex].second->SyncTransform(m_accumulatedDeltaTime);
+            }
+        };
+
+        if (physx_parallelTransformSync)
+        {
+            m_queuedActiveBodyIndices.ApplyParallel(transformSync, m_pxScene);
+        }
+        else
+        {
+            m_queuedActiveBodyIndices.Apply(transformSync);
+        }
+
+        m_queuedActiveBodyIndices.Clear();
+        m_accumulatedDeltaTime = 0.0f;
+    }
+
+    void PhysXScene::QueuedActiveBodyIndices::Insert(AzPhysics::SimulatedBodyIndex bodyIndex)
+    {
+        if (m_uniqueIndices.insert(bodyIndex).second)
+        {
+            m_packedIndices.emplace_back(bodyIndex);
+        }
+    }
+
+    void PhysXScene::QueuedActiveBodyIndices::IncreaseCapacity(size_t extraSize)
+    {
+        m_packedIndices.reserve(m_packedIndices.size() + extraSize);
+    }
+
+    void PhysXScene::QueuedActiveBodyIndices::Clear()
+    {
+        m_uniqueIndices.clear();
+        m_packedIndices.clear();
+    }
+
+    void PhysXScene::QueuedActiveBodyIndices::Apply(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction)
+    {
+        AZStd::for_each(m_packedIndices.begin(), m_packedIndices.end(), applyFunction);
+    }
+
+    void PhysXScene::QueuedActiveBodyIndices::ApplyParallel(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction, physx::PxScene* pxScene)
+    {
+        AZ::TaskGraph taskGraph("Parallel Sync");
+        AZ::TaskGraphEvent finishEvent("Parallel sync event");
+
+        {
+            AZ_PROFILE_SCOPE(Physics, "Sync Setup");
+
+            size_t batchSize = physx_parallelTransformSyncBatchSize;
+            size_t fullSize = m_packedIndices.size();
+            for (size_t i = 0; i < fullSize; i += batchSize)
+            {
+                AZ::TaskDescriptor taskDescriptor{"SyncTask", "Physics"};
+                taskGraph.AddTask(
+                    taskDescriptor,
+                    [start = i, end = AZStd::min(i + batchSize, fullSize), &applyFunction, pxScene, this]()
+                    {
+                        AZ_PROFILE_SCOPE(Physics, "Sync Task");
+
+                        // Note: It is important to keep the scene locked for read for the entire task execution.
+                        // Otherwise the functions reading data from the rigid body will have to lock it locally.
+                        // This causes a huge amount of context switches making the execution of each task ~20x slower. 
+                        PHYSX_SCENE_READ_LOCK(pxScene);
+
+                        for (size_t batchIndex = start; batchIndex < end; ++batchIndex)
+                        {
+                            applyFunction(m_packedIndices[batchIndex]);
+                        }
+                    });
+            }
+
+            taskGraph.Submit(&finishEvent);
+        }
+
+        finishEvent.Wait();
+    }
+
+} // namespace PhysX
+

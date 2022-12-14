@@ -125,7 +125,7 @@ namespace UnitTest
         }
     };
 
-    class EditorVertexSelectionFixture : public ToolsApplicationFixture
+    class EditorVertexSelectionFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override

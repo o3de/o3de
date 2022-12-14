@@ -167,6 +167,7 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor & descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
             RHI::ResultCode CompactSRGMemory() override;
+            RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) override;
             //////////////////////////////////////////////////////////////////////////
 
             RHI::ResultCode InitSubPlatform(RHI::PhysicalDevice& physicalDevice);

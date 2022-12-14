@@ -6,6 +6,7 @@
  *
  */
 
+#include <native/FileWatcher/FileWatcher.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <native/unittests/FileWatcherUnitTests.h>
 #include <native/unittests/UnitTestUtils.h>
@@ -31,9 +32,10 @@ void FileWatcherUnitTest::TearDown()
     UnitTest::AssetProcessorUnitTestBase::TearDown();
 }
 
-// File operations on Linux behave differently on Linux than Windows.
-// The system under test doesn't yet handle Linux's file operations, which surfaced as this test arbitrarily passing and failing.
-// This test is disabled on Linux until the system under test can handle Linux file system behavior correctly.
+// Linux has a maximum number of watches allowed by the system, which is set by fs.inotify.max_user_watches.
+// FileWatcher will fail to watch any more folders once it hits this limit, which causes the test failures on Linux.
+// FileWatcher has the logic in place to check the number of watches but the warning message is currently absorbed by UnitTestUtils::AssertAbsorber.
+// To change fs.inotify.max_user_watches, run command "sudo sysctl fs.inotify.max_user_watches=$VALUE" from the terminal.
 #if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS && !defined(AZ_PLATFORM_LINUX)
 
 TEST_F(FileWatcherUnitTest, WatchFileCreation_CreateSingleFile_FileChangeFound)
@@ -323,4 +325,32 @@ TEST_F(FileWatcherUnitTest, WatchFileRelocation_RenameTestAsset_FileChangeFound)
         QObject::disconnect(connectionModified);
     }
 }
+
+TEST_F(FileWatcherUnitTest, WatchFolder_ValidFoldersWatched)
+{
+    // reset watched folders
+    m_fileWatcher->StopWatching();
+    m_fileWatcher->ClearFolderWatches();
+
+    QDir tempDirPath(m_assetRootPath);
+
+    // when a folder named "dir" is added
+    auto folder1 = tempDirPath.absoluteFilePath("dir1");
+    m_fileWatcher->AddFolderWatch(folder1);
+    // the folder is watched
+    EXPECT_TRUE(m_fileWatcher->HasWatchFolder(folder1));
+
+    // when a folder with a similar name is added
+    auto folder2 = tempDirPath.absoluteFilePath("dir11");
+    m_fileWatcher->AddFolderWatch(folder2);
+    // the folder is watched
+    EXPECT_TRUE(m_fileWatcher->HasWatchFolder(folder2));
+
+    // when a folder that is a subdirectory of an existing added folder
+    auto folder3 = tempDirPath.absoluteFilePath("dir1/subdir");
+    m_fileWatcher->AddFolderWatch(folder3);
+    // the folder is NOT added becuase the parent is already watched
+    EXPECT_FALSE(m_fileWatcher->HasWatchFolder(folder3));
+}
+
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS

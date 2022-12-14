@@ -747,9 +747,12 @@ bool GUIApplicationManager::Restart()
 
 void GUIApplicationManager::Reflect()
 {
+    ApplicationManagerBase::Reflect();
+
     AZ::SerializeContext* context;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialize context");
+
     AzToolsFramework::LogPanel::BaseLogPanel::Reflect(context);
     AssetProcessor::PlatformConfiguration::Reflect(context);
 }

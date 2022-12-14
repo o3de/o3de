@@ -27,7 +27,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(BufferScopeAttachment, "{48A21F94-985B-40EE-A75A-8E960E935321}", ScopeAttachment);
-            AZ_CLASS_ALLOCATOR(BufferScopeAttachment, AZ::PoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferScopeAttachment, SystemAllocator, 0);
 
             BufferScopeAttachment(
                 Scope& scope,

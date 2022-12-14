@@ -38,6 +38,12 @@ namespace AZ
                 LightTypeCount,
             };
 
+            enum class ShadowCachingMode : uint8_t
+            {
+                NoCaching,
+                UpdateOnChange,
+            };
+
             static constexpr float CutoffIntensity = 0.1f;
 
             AZ::Color m_color = AZ::Color::CreateOne();
@@ -56,6 +62,8 @@ namespace AZ
 
             // Shadows (only used for supported shapes)
             bool m_enableShadow = false;
+            ShadowCachingMode m_shadowCachingMode = ShadowCachingMode::NoCaching;
+            mutable bool m_cacheShadows = false; // proxy property used for the edit context.
             float m_bias = 0.1f;
             float m_normalShadowBias = 0.0f;
             ShadowmapSize m_shadowmapMaxSize = ShadowmapSize::Size256;

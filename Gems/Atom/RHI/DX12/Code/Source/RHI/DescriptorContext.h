@@ -39,29 +39,34 @@ namespace AZ
             void CreateConstantBufferView(
                 const Buffer& buffer,
                 const RHI::BufferViewDescriptor& bufferViewDescriptor,
-                DescriptorHandle& constantBufferView);
+                DescriptorHandle& constantBufferView,
+                DescriptorHandle& staticView);
 
             void CreateShaderResourceView(
                 const Buffer& buffer,
                 const RHI::BufferViewDescriptor& bufferViewDescriptor,
-                DescriptorHandle& shaderResourceView);
+                DescriptorHandle& shaderResourceView,
+                DescriptorHandle& staticView);
 
             void CreateUnorderedAccessView(
                 const Buffer& buffer,
                 const RHI::BufferViewDescriptor& bufferViewDescriptor,
                 DescriptorHandle& unorderedAccessView,
-                DescriptorHandle& unorderedAccessViewClear);
+                DescriptorHandle& unorderedAccessViewClear,
+                DescriptorHandle& staticView);
 
             void CreateShaderResourceView(
                 const Image& image,
                 const RHI::ImageViewDescriptor& imageViewDescriptor,
-                DescriptorHandle& shaderResourceView);
+                DescriptorHandle& shaderResourceView,
+                DescriptorHandle& staticView);
 
             void CreateUnorderedAccessView(
                 const Image& image,
                 const RHI::ImageViewDescriptor& imageViewDescriptor,
                 DescriptorHandle& unorderedAccessView,
-                DescriptorHandle& unorderedAccessViewClear);
+                DescriptorHandle& unorderedAccessViewClear,
+                DescriptorHandle& staticView);
 
             void CreateRenderTargetView(
                 const Image& image,
@@ -80,6 +85,7 @@ namespace AZ
 
             void ReleaseDescriptor(DescriptorHandle descriptorHandle);
 
+            void ReleaseStaticDescriptor(DescriptorHandle index);
 
             //! Creates a GPU-visible descriptor table.
             //! @param descriptorHeapType The descriptor heap to allocate from.
@@ -87,6 +93,9 @@ namespace AZ
             //! @param srg Shader resource group with which the descriptor table is associated with
             DescriptorTable CreateDescriptorTable(
                 D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType, uint32_t descriptorCount, ShaderResourceGroup* srg);
+
+            //! Retrieve a descriptor handle to the start of the static region of the shader-visible CBV_SRV_UAV heap
+            D3D12_GPU_DESCRIPTOR_HANDLE GetBindlessGpuPlatformHandle() const;
 
             //! Releases a GPU-visible descriptor table.
             //! @param descriptorHeapType The descriptor heap to allocate from.
@@ -132,6 +141,10 @@ namespace AZ
         private:
             void CopyDescriptor(DescriptorHandle dst, DescriptorHandle src);
 
+            // Accepts a descriptor allocated from the CPU visible heap and creates a copy in the shader-
+            // visible heap in the static region
+            DescriptorHandle AllocateStaticDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE handle);
+
             void CreateNullDescriptors();
             void CreateNullDescriptorsSRV();
             void CreateNullDescriptorsUAV();
@@ -156,6 +169,12 @@ namespace AZ
 
             DescriptorPool m_pools[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES][NumHeapFlags];
 
+            // The static pool is a region of the shader-visible descriptor heap used to store descriptors that persist for the
+            // lifetime of the resource view they reference
+            DescriptorPool m_staticPool;
+            // This table binds the entire range of CBV_SRV_UAV descriptor handles in the shader visible heap
+            DescriptorTable m_staticTable;
+
             AZStd::unordered_map<D3D12_SRV_DIMENSION, DescriptorHandle> m_nullDescriptorsSRV;
             AZStd::unordered_map<D3D12_UAV_DIMENSION, DescriptorHandle> m_nullDescriptorsUAV;
             DescriptorHandle m_nullDescriptorCBV;
@@ -174,6 +193,10 @@ namespace AZ
 
             //Boolean to dictate if we should support compaction for shader visible CbvSrvUav heap
             bool m_allowDescriptorHeapCompaction = false;
+
+            // Offset from the shader-visible descriptor heap start to the first static descriptor handle
+            // (see PlatformLimitsDescriptor::m_numShaderVisibleCbvSrvUavStaticHandles)
+            uint32_t m_staticDescriptorOffset = 0;
             
             //Map to store active SRGs and the number of associated descriptor tables. This is used to recreate the new compacted heap when we switch heaps
             AZStd::unordered_map<ShaderResourceGroup*, uint32_t> m_srgAllocations;

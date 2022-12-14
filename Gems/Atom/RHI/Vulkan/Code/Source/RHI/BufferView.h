@@ -38,7 +38,13 @@ namespace AZ
             /// Only valid for buffers with the RayTracingAccelerationStructure bind flag
             VkAccelerationStructureKHR GetNativeAccelerationStructure() const;
 
+            uint32_t GetBindlessReadIndex() const override;
+
+            uint32_t GetBindlessReadWriteIndex() const override;
+
         private:
+            friend class BindlessDescriptorPool;
+
             BufferView() = default;
 
             //////////////////////////////////////////////////////////////////////////
@@ -57,6 +63,9 @@ namespace AZ
 
             VkBufferView m_nativeBufferView = VK_NULL_HANDLE;
             VkAccelerationStructureKHR m_nativeAccelerationStructure = VK_NULL_HANDLE;
+
+            uint32_t m_readIndex = ~0u;
+            uint32_t m_readWriteIndex = ~0u;
         };
 
     }

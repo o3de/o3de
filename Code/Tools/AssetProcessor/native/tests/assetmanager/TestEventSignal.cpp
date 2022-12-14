@@ -8,7 +8,9 @@
 
 #include <native/tests/assetmanager/TestEventSignal.h>
 #include <AzCore/std/parallel/thread.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 
 namespace UnitTests
 {

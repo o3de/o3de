@@ -20,7 +20,7 @@
 namespace UnitTest
 {
     class PythonBuilderProcessJobTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZStd::unique_ptr<AZ::ComponentApplication> m_app;

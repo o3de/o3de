@@ -500,9 +500,6 @@ namespace AzToolsFramework
 
         initEntityPropertyEditorResources();
 
-        m_componentModeCollection = AZ::Interface<ComponentModeCollectionInterface>::Get();
-        AZ_Assert(m_componentModeCollection, "Could not retrieve component mode collection.");
-
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         AZ_Assert(m_prefabPublicInterface != nullptr, "EntityPropertyEditor requires a PrefabPublicInterface instance on Initialize.");
 
@@ -627,8 +624,8 @@ namespace AzToolsFramework
         //this is the way to do it without overriding or registering with all child widgets
         qApp->installEventFilter(this);
 
-        AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
-            AzToolsFramework::GetEntityContextId());
+        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
+            GetEntityContextId());
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
     }
 
@@ -636,14 +633,14 @@ namespace AzToolsFramework
     {
         qApp->removeEventFilter(this);
 
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
+        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
+        EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ReadOnlyEntityPublicNotificationBus::Handler::BusDisconnect();
         EditorWindowUIRequestBus::Handler::BusDisconnect();
         EntityPropertyEditorRequestBus::Handler::BusDisconnect();
-        ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         AZ::EntitySystemBus::Handler::BusDisconnect();
-        EditorEntityContextNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
-        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
+        ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         
         for (auto& entityId : m_overrideSelectedEntityIds)
         {
@@ -5889,8 +5886,11 @@ namespace AzToolsFramework
         {
             DisableComponentActions(this, m_entityComponentActions);
             SetPropertyEditorState(m_gui, false);
-            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
             m_disabled = true;
+
+            // note: ComponentModeCollectionInterface cannot be cached as it may change during the lifetime of the application
+            const auto componentModeTypes = AZ::Interface<ComponentModeCollectionInterface>::Get()->GetComponentTypes();
+
             
             if (!componentModeTypes.empty())
             {
@@ -5900,6 +5900,13 @@ namespace AzToolsFramework
             for (auto componentEditor : m_componentEditors)
             {
                 componentEditor->EnteredComponentMode(componentModeTypes);
+
+                // if this component editor is active and editable during component mode
+                if (componentEditor->IsSelected())
+                {
+                    // scroll to the relevant component card
+                    m_gui->m_componentList->ensureWidgetVisible(componentEditor);
+                }
             }
 
             // record the selected state after entering component mode
@@ -5914,7 +5921,7 @@ namespace AzToolsFramework
         {
             EnableComponentActions(this, m_entityComponentActions);
             SetPropertyEditorState(m_gui, true);
-            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
+            const auto componentModeTypes = AZ::Interface<ComponentModeCollectionInterface>::Get()->GetComponentTypes();
             m_disabled = false;
 
             for (auto componentEditor : m_componentEditors)
@@ -5932,6 +5939,13 @@ namespace AzToolsFramework
         for (auto componentEditor : m_componentEditors)
         {
             componentEditor->ActiveComponentModeChanged(componentType);
+
+            // if this component editor has been changed to during component mode
+            if (componentEditor->IsSelected())
+            {
+                // scroll to the relevant component card
+                m_gui->m_componentList->ensureWidgetVisible(componentEditor);
+            }
         }
     }
 
@@ -6054,7 +6068,5 @@ void StatusComboBox::wheelEvent(QWheelEvent* e)
         QComboBox::wheelEvent(e);
     }
 }
-
-
 
 #include "UI/PropertyEditor/moc_EntityPropertyEditor.cpp"

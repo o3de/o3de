@@ -370,7 +370,7 @@ namespace UnitTest
 
     template <typename Bus>
     class EBusTestAll
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         using BusHandler = Handler<Bus>;
@@ -385,7 +385,7 @@ namespace UnitTest
         void TearDown() override
         {
             DestroyHandlers();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -1538,7 +1538,7 @@ namespace UnitTest
     }
 
     class EBus
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {};
 
     TEST_F(EBus, DISABLED_CopyConstructorOfEBusHandlerDoesNotAssertInInternalDestructorOfHandler)
@@ -1823,7 +1823,7 @@ namespace UnitTest
     }
 
     class QueueEbusTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
 
     };
@@ -4121,7 +4121,7 @@ namespace UnitTest
 
     template <typename ParamType>
     class EBusParamFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public ::testing::WithParamInterface<ParamType>
     {};
 

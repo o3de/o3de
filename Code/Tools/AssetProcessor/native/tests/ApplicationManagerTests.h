@@ -9,7 +9,9 @@
 #pragma once
 
 #include <utilities/BatchApplicationManager.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include "assetmanager/MockAssetProcessorManager.h"
 #include "assetmanager/MockFileProcessor.h"
@@ -19,6 +21,8 @@ namespace UnitTests
     struct MockBatchApplicationManager : BatchApplicationManager
     {
         using ApplicationManagerBase::InitFileMonitor;
+        using ApplicationManagerBase::InitFileStateCache;
+        using ApplicationManagerBase::InitUuidManager;
         using ApplicationManagerBase::m_assetProcessorManager;
         using ApplicationManagerBase::m_fileProcessor;
         using ApplicationManagerBase::m_fileStateCache;
@@ -26,7 +30,7 @@ namespace UnitTests
         using BatchApplicationManager::BatchApplicationManager;
     };
 
-    struct ApplicationManagerTest : ::UnitTest::ScopedAllocatorSetupFixture
+    struct ApplicationManagerTest : ::UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override;

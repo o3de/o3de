@@ -8,7 +8,9 @@
 
 #include <QTemporaryDir>
 #include <AzTest/AzTest.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include "AzToolsFramework/API/AssetDatabaseBus.h"
 #include "AssetDatabase/AssetDatabase.h"
 #include <AssetManager/PathDependencyManager.h>
@@ -55,7 +57,7 @@ namespace UnitTests
     };
 
     struct PathDependencyDeletionTest
-        : ::UnitTest::ScopedAllocatorSetupFixture
+        : ::UnitTest::LeakDetectionFixture
         , PathDependencyBase
     {
         void SetUp() override
@@ -336,8 +338,7 @@ namespace UnitTests
     }
 
     struct PathDependencyBenchmarks
-        : ::UnitTest::ScopedAllocatorFixture
-          , PathDependencyBase
+        : PathDependencyBase
     {
         static inline constexpr int NumTestDependencies = 4; // Must be a multiple of 4
         static inline constexpr int NumTestProducts = 2; // Must be a multiple of 2
@@ -488,7 +489,8 @@ namespace UnitTests
     };
 
     struct PathDependencyTestValidation
-        : PathDependencyBenchmarks, ::testing::Test
+        : UnitTest::LeakDetectionFixture
+        , PathDependencyBenchmarks
     {
         void SetUp() override
         {

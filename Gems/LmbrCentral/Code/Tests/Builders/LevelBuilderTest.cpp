@@ -90,7 +90,7 @@ namespace UnitTest
     };
 
     class LevelBuilderTest
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
         , public UnitTest::TraceBusRedirector
     {
     protected:

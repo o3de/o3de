@@ -84,9 +84,8 @@ namespace AssetProcessor
         bool GetSourceBySourceGuid(AZ::Uuid sourceGuid, AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry);
 
         bool GetSourceBySourceID(AZ::s64 sourceID, AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry);
-        bool GetSourceBySourceName(QString exactSourceName, AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry);
-        bool GetSourcesBySourceName(QString exactSourceName, AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer& source);
-        bool GetSourcesBySourceNameScanFolderId(QString exactSourceName, AZ::s64 scanFolderID, AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer& source);
+        bool GetSourceBySourceNameScanFolderId(QString exactSourceName, AZ::s64 scanFolderID, AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry);
+        bool GetSourcesBySourceName(QString exactSourceName, AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer& container);
         bool GetSourcesLikeSourceName(QString likeSourceName, LikeType likeType, AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer& container);
         bool GetSourcesLikeSourceNameScanFolderId(QString likeSourceName, AZ::s64 scanFolderID, LikeType likeType, AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer& container);
 
@@ -136,6 +135,7 @@ namespace AssetProcessor
 
         bool GetProductsBySourceID(AZ::s64 sourceID, AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
         bool GetProductsBySourceName(QString exactSourceName, AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
+        bool GetProductsBySourceNameScanFolderID(QString exactSourceName, AZ::s64 scanFolderId, AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
         bool GetProductsLikeSourceName(QString likeSourceName, LikeType likeType, AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
 
         bool SetProduct(AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry); //on success sets productID, if it already exists updates it

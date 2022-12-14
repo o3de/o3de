@@ -262,7 +262,7 @@ namespace Audio
 
             for (AZ::u64 i = 0; i < Audio::CVars::s_AudioObjectPoolSize; ++i)
             {
-                auto audioProxy = azcreate(CAudioProxy, (), Audio::AudioSystemAllocator, "AudioProxy");
+                auto audioProxy = azcreate(CAudioProxy, (), Audio::AudioSystemAllocator);
                 m_apAudioProxies.push_back(audioProxy);
             }
 
@@ -419,7 +419,7 @@ namespace Audio
         }
         else
         {
-            audioProxy = azcreate(CAudioProxy, (), Audio::AudioSystemAllocator, "AudioProxyEx");
+            audioProxy = azcreate(CAudioProxy, (), Audio::AudioSystemAllocator);
             AZ_Assert(audioProxy != nullptr, "AudioSystem::GetAudioProxy - failed to create new AudioProxy instance!");
         }
 

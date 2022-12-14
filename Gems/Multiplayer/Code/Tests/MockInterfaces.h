@@ -36,6 +36,7 @@ namespace UnitTest
         MOCK_METHOD1(AddSessionShutdownHandler, void(Multiplayer::SessionShutdownEvent::Handler&));
         MOCK_METHOD1(AddLevelLoadBlockedHandler, void(Multiplayer::LevelLoadBlockedEvent::Handler&));
         MOCK_METHOD1(AddNoServerLevelLoadedHandler, void(Multiplayer::NoServerLevelLoadedEvent::Handler&));
+        MOCK_METHOD1(AddVersionMismatchHandler, void(Multiplayer::VersionMismatchEvent::Handler&));
         MOCK_METHOD5(SendNotifyClientMigrationEvent, void(AzNetworking::ConnectionId, const Multiplayer::HostId&, uint64_t, Multiplayer::ClientInputId, Multiplayer::NetEntityId));
         MOCK_METHOD2(SendNotifyEntityMigrationEvent, void(const Multiplayer::ConstNetworkEntityHandle&, const Multiplayer::HostId&));
         MOCK_METHOD1(SendReadyForEntityUpdates, void(bool));

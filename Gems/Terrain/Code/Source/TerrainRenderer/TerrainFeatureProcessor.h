@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
-#include <TerrainRenderer/BindlessImageArrayHandler.h>
 #include <TerrainRenderer/Passes/TerrainClipmapComputePass.h>
 #include <TerrainRenderer/TerrainDetailMaterialManager.h>
 #include <TerrainRenderer/TerrainMacroMaterialManager.h>
@@ -19,7 +19,6 @@
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 
 namespace AZ::RPI
 {
@@ -35,7 +34,7 @@ namespace Terrain
 {
     class TerrainFeatureProcessor final
         : public AZ::RPI::FeatureProcessor
-        , private AZ::RPI::MaterialReloadNotificationBus::Handler
+        , public AZ::Data::AssetBus::Handler
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
@@ -62,7 +61,6 @@ namespace Terrain
         const TerrainClipmapManager& GetClipmapManager() const;
     private:
 
-        static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
         using MaterialInstance = AZ::Data::Instance<AZ::RPI::Material>;
         
         struct WorldShaderData
@@ -73,8 +71,9 @@ namespace Terrain
             float m_padding;
         };
 
-        // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
-        void OnMaterialReinitialized(const MaterialInstance& material) override;
+        //! AZ::Data::AssetBus overrides...
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataDestroyBegin() override;
@@ -99,9 +98,7 @@ namespace Terrain
         TerrainDetailMaterialManager m_detailMaterialManager;
         TerrainClipmapManager m_clipmapManager;
 
-        AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_imageArrayHandler;
-
-        AZStd::unique_ptr<AZ::RPI::AssetUtils::AsyncAssetLoader> m_materialAssetLoader;
+        AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
         MaterialInstance m_materialInstance;
 
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_terrainSrg;

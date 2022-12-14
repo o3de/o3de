@@ -99,6 +99,7 @@ namespace EMotionFX
         static const char* s_ragdollJointLimitIconPath;
         static const char* s_simulatedJointIconPath;
         static const char* s_simulatedColliderIconPath;
+        static const char* s_characterIconPath;
 
         static bool IndexIsRootNode(const QModelIndex& idx);
         static bool IndicesContainRootNode(const QModelIndexList& indices);
@@ -135,6 +136,7 @@ namespace EMotionFX
         QIcon m_ragdollJointLimitIcon;
         QIcon m_simulatedJointIcon;
         QIcon m_simulatedColliderIcon;
+        QIcon m_characterIcon;
     };
 
 } // namespace EMotionFX

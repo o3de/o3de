@@ -138,6 +138,16 @@ namespace AZ
         {
             if (m_performanceCollector)
             {
+                if (m_gpuPassProfiler && !m_performanceCollector->IsWaitingBeforeCapture() && m_gpuPassProfiler->IsGpuTimeMeasurementEnabled())
+                {
+                    uint64_t durationNanoseconds = m_gpuPassProfiler->MeasureGpuTimeInNanoseconds(AZ::RPI::PassSystemInterface::Get()->GetRootPass());
+                    // The first three frames, it is expected to be zero. So only record non-zero samples.
+                    if (durationNanoseconds > 0)
+                    {
+                        m_performanceCollector->RecordSample(PerformanceSpecGpuTime, AZStd::chrono::microseconds(aznumeric_cast<int64_t>(durationNanoseconds / 1000)));
+                    }
+                }
+
                 m_performanceCollector->RecordPeriodicEvent(PerformanceSpecEngineCpuTime);
                 m_performanceCollector->FrameTick();
             }
@@ -187,6 +197,7 @@ namespace AZ
         AZ_CVAR_EXTERNED(AZ::CVarFixedString, r_metricsDataLogType);
         AZ_CVAR_EXTERNED(AZ::u32, r_metricsWaitTimePerCaptureBatch);
         AZ_CVAR_EXTERNED(AZ::u32, r_metricsFrameCountPerCaptureBatch);
+        AZ_CVAR_EXTERNED(bool, r_metricsMeasureGpuTime);
         AZ_CVAR_EXTERNED(bool, r_metricsQuitUponCompletion);
 
         AZStd::string RPISystemComponent::GetLogCategory()
@@ -199,9 +210,15 @@ namespace AZ
 
         void RPISystemComponent::InitializePerformanceCollector()
         {
-            auto onBatchCompleteCallback = [](AZ::u32 pendingBatches) {
+            auto onBatchCompleteCallback = [&](AZ::u32 pendingBatches) {
                 AZ_TracePrintf("RPISystem", "Completed a performance batch, still %u batches are pending.\n", pendingBatches);
                 r_metricsNumberOfCaptureBatches = pendingBatches;
+                if (pendingBatches == 0)
+                {
+                    m_gpuPassProfiler->SetGpuTimeMeasurementEnabled(false);
+                    // Force disabling timestamp collection in the root pass.
+                    AZ::RPI::PassSystemInterface::Get()->GetRootPass()->SetTimestampQueryEnabled(false);
+                }
                 if (r_metricsQuitUponCompletion && (pendingBatches == 0))
                 {
                     AzFramework::ConsoleRequestBus::Broadcast(
@@ -213,11 +230,15 @@ namespace AZ
                 PerformanceSpecGraphicsSimulationTime,
                 PerformanceSpecGraphicsRenderTime,
                 PerformanceSpecEngineCpuTime,
+                PerformanceSpecGpuTime,
                 });
             AZStd::string logCategory = GetLogCategory();
             m_performanceCollector = AZStd::make_unique<AZ::Debug::PerformanceCollector>(
                 logCategory, performanceMetrics, onBatchCompleteCallback);
+            m_gpuPassProfiler = AZStd::make_unique<GpuPassProfiler>();
+
             //Feed the CVAR values.
+            m_gpuPassProfiler->SetGpuTimeMeasurementEnabled(r_metricsMeasureGpuTime);
             m_performanceCollector->UpdateDataLogType(GetDataLogTypeFromCVar(r_metricsDataLogType));
             m_performanceCollector->UpdateFrameCountPerCaptureBatch(r_metricsFrameCountPerCaptureBatch);
             m_performanceCollector->UpdateWaitTimeBeforeEachBatch(AZStd::chrono::seconds(r_metricsWaitTimePerCaptureBatch));

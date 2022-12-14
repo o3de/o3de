@@ -175,7 +175,7 @@ namespace AZ
 
             /**
              * Attempts to find an instance associated with the provided id. If the instance exists, it
-             * is returned. If no instance is found, nullptr is returned. If is safe to call this from
+             * is returned. If no instance is found, nullptr is returned. It is safe to call this from
              * multiple threads.
              *
              * @param id The id used to find an instance in the database.
@@ -225,6 +225,10 @@ namespace AZ
             bool m_checkAssetIds = true;
             //useAssetTypeAsKeyForHandlers;
             static const char* GetEnvironmentName();
+
+            
+            Data::Asset<Data::AssetData> LoadAsset(const Data::Asset<AssetData>& asset) const;
+            Data::Instance<Type> EmplaceInstance(const InstanceId& id, const Data::Asset<AssetData>& asset, const AZStd::any* param);
 
             // Utility function called by InstanceData to remove the instance from the database.
             void ReleaseInstance(InstanceData* instance, const InstanceId& instanceId) override;
@@ -300,22 +304,12 @@ namespace AZ
             }
 
             // Take a reference so we can mutate it.
-            Data::Asset<Data::AssetData> assetLocal = asset;
+            Data::Asset<Data::AssetData> assetLocal = LoadAsset(asset);
 
+            // Failed to load the asset
             if (!assetLocal.IsReady())
             {
-                assetLocal.QueueLoad();
-
-                if (assetLocal.IsLoading())
-                {
-                    assetLocal.BlockUntilLoadComplete();
-                }
-
-                // Failed to load the asset
-                if (!assetLocal.IsReady())
-                {
-                    return nullptr;
-                }
+                return nullptr;
             }
 
             // Take a lock to guard the insertion.  Note that this will not guard against recursive insertions on the same thread.
@@ -331,44 +325,31 @@ namespace AZ
                 return iter->second;
             }
 
-            // Emplace a new instance and return it.
-            // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
-            // the contents of m_database may change within this call.
-            Data::Instance<Type> instance = nullptr;
-            if (!param)
-            {
-                instance = m_instanceHandler.m_createFunction(assetLocal.Get());
-            }
-            else
-            {
-                instance = m_instanceHandler.m_createFunctionWithParam(assetLocal.Get(), param);
-            }
-
-            if (instance)
-            {
-                AZ_Assert(m_database.find(id) == m_database.end(),
-                    "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
-                    "This asset might be erroneously referencing itself as a dependent asset.", id.ToString<AZStd::string>().c_str());
-
-                instance->m_id = id;
-                instance->m_parentDatabase = this;
-                instance->m_assetId = assetLocal.GetId();
-                instance->m_assetType = assetLocal.GetType();
-                m_database.emplace(id, instance.get());
-            }
-            return AZStd::move(instance);
+            return EmplaceInstance(id, assetLocal, param);
         }
 
         template<typename Type>
         Data::Instance<Type> InstanceDatabase<Type>::FindOrCreate(const Asset<AssetData>& asset, const AZStd::any* param)
         {
-            return FindOrCreate(Data::InstanceId::CreateFromAssetId(asset.GetId()), asset, param);
+            return FindOrCreate(Data::InstanceId::CreateFromAsset(asset), asset, param);
         }
 
         template<typename Type>
         Data::Instance<Type> InstanceDatabase<Type>::Create(const Asset<AssetData>& asset, const AZStd::any* param)
         {
-            return FindOrCreate(Data::InstanceId::CreateRandom(), asset, param);
+            const InstanceId id = InstanceId::CreateRandom();
+
+            Data::Asset<AssetData> assetLocal = LoadAsset(asset);
+
+            // Failed to load the asset
+            if (!assetLocal.IsReady())
+            {
+                return nullptr;
+            }         
+            
+            // Take a lock to guard the insertion.  Note that this will not guard against recursive insertions on the same thread.
+            AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
+            return EmplaceInstance(id, assetLocal, param);            
         }
 
         template<typename Type>
@@ -383,6 +364,57 @@ namespace AZ
                 instanceItr->second->m_isOrphaned = true;
                 m_database.erase(instanceItr);
             }
+        }
+
+        template<typename Type>
+        Data::Asset<Data::AssetData> InstanceDatabase<Type>::LoadAsset(const Data::Asset<AssetData>& asset) const
+        {
+            // Take a reference so we can mutate it.
+            Data::Asset<Data::AssetData> assetLocal = asset;
+            if (!assetLocal.IsReady())
+            {
+                assetLocal.QueueLoad();
+
+                if (assetLocal.IsLoading())
+                {
+                    assetLocal.BlockUntilLoadComplete();
+                }
+            }
+            return assetLocal;
+        }
+
+        template<typename Type>
+        Data::Instance<Type> InstanceDatabase<Type>::EmplaceInstance(
+            const InstanceId& id, const Data::Asset<AssetData>& asset, const AZStd::any* param)
+        {
+            // Emplace a new instance and return it.
+            // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
+            // the contents of m_database may change within this call.
+            Data::Instance<Type> instance = nullptr;
+            if (!param)
+            {
+                instance = m_instanceHandler.m_createFunction(asset.Get());
+            }
+            else
+            {
+                instance = m_instanceHandler.m_createFunctionWithParam(asset.Get(), param);
+            }
+
+            if (instance)
+            {
+                AZ_Assert(
+                    m_database.find(id) == m_database.end(),
+                    "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
+                    "This asset might be erroneously referencing itself as a dependent asset.",
+                    id.ToString<AZStd::string>().c_str());
+
+                instance->m_id = id;
+                instance->m_parentDatabase = this;
+                instance->m_assetId = asset.GetId();
+                instance->m_assetType = asset.GetType();
+                m_database.emplace(id, instance.get());
+            }
+            return instance;
         }
 
         template<typename Type>

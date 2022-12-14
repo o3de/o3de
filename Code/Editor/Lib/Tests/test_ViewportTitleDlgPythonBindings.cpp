@@ -23,7 +23,7 @@ namespace ViewportTitleDlgFuncsUnitTests
 {
 
     class ViewportTitleDlgPythonBindingsFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;

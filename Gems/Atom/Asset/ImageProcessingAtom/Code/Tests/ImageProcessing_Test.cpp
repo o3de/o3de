@@ -90,8 +90,7 @@ namespace UnitTest
     };
 
     class ImageProcessingTest
-        : public ::testing::Test
-        , public AllocatorsBase
+        : public LeakDetectionFixture
         , public AZ::ComponentApplicationBus::Handler
     {
     public:
@@ -134,8 +133,6 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsBase::SetupAllocator();
-
             // Adding this handler to allow utility functions access the serialize context
             ComponentApplicationBus::Handler::BusConnect();
             AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
@@ -265,7 +262,6 @@ namespace UnitTest
 
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
-            AllocatorsBase::TeardownAllocator();
         }
 
         //enum names for Images with specific identification

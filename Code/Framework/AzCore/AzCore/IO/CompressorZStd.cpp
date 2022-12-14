@@ -95,7 +95,7 @@ namespace AZ::IO
 
         if (m_decompressionCachePerStream)
         {
-            zstdData->m_decompressedCache = reinterpret_cast<unsigned char*>(azmalloc(m_decompressionCachePerStream, m_CompressedDataBufferAlignment, AZ::SystemAllocator, "CompressorZStd"));
+            zstdData->m_decompressedCache = reinterpret_cast<unsigned char*>(azmalloc(m_decompressionCachePerStream, m_CompressedDataBufferAlignment, AZ::SystemAllocator));
         }
 
         zstdData->m_decompressLastOffset = seekPointOffset; // set the start address of the seek points as the last valid read address for the compressed stream.
@@ -466,7 +466,7 @@ namespace AZ::IO
         if (m_compressedDataBuffer == nullptr)
         {
             AZ_Assert(m_compressedDataBufferUseCount == 0, "Buffer usecount should be 0 if the buffer is NULL");
-            m_compressedDataBuffer = reinterpret_cast<unsigned char*>(azmalloc(m_compressedDataBufferSize, m_CompressedDataBufferAlignment, AZ::SystemAllocator, "CompressorZStd"));
+            m_compressedDataBuffer = reinterpret_cast<unsigned char*>(azmalloc(m_compressedDataBufferSize, m_CompressedDataBufferAlignment, AZ::SystemAllocator));
             m_lastReadStream = nullptr; // reset the cache info in the m_dataBuffer
         }
         ++m_compressedDataBufferUseCount;

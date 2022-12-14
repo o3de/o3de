@@ -43,7 +43,7 @@
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsWindow.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 #include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkLoader.h>
@@ -53,6 +53,7 @@
 // AzQtComponents
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
+#include <AzQtComponents/Components/InputDialog.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -1487,11 +1488,11 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
     case eNotify_OnBeginSceneOpen:
     case eNotify_OnBeginNewScene:
     case eNotify_OnCloseScene:
-        ResetAutoSaveTimers();
+        StopAutoSaveTimers();
         break;
     case eNotify_OnEndSceneOpen:
     case eNotify_OnEndNewScene:
-        ResetAutoSaveTimers(true);
+        StartAutoSaveTimers();
         break;
     }
 }
@@ -1515,7 +1516,7 @@ void MainWindow::RegisterStdViewClasses()
     CSettingsManagerDialog::RegisterViewClass();
     AzAssetBrowserWindow::RegisterViewClass();
     AssetEditorWindow::RegisterViewClass();
-    PaintBrush::RegisterPaintBrushSettingsWindow();
+    AzToolsFramework::RegisterPaintBrushSettingsWindow();
 
     // Notify that views can now be registered
     AzToolsFramework::EditorEvents::Bus::Broadcast(
@@ -1533,7 +1534,7 @@ void MainWindow::RefreshStyle()
     GetIEditor()->Notify(eNotify_OnStyleChanged);
 }
 
-void MainWindow::ResetAutoSaveTimers(bool bForceInit)
+void MainWindow::StopAutoSaveTimers()
 {
     if (m_autoSaveTimer)
     {
@@ -1545,35 +1546,50 @@ void MainWindow::ResetAutoSaveTimers(bool bForceInit)
     }
     m_autoSaveTimer = nullptr;
     m_autoRemindTimer = nullptr;
+}
 
-    if (bForceInit)
+void MainWindow::StartAutoSaveTimers()
+{
+    if (gSettings.autoBackupTime > 0 && gSettings.autoBackupEnabled)
     {
-        if (gSettings.autoBackupTime > 0 && gSettings.autoBackupEnabled)
-        {
-            m_autoSaveTimer = new QTimer(this);
-            m_autoSaveTimer->start(gSettings.autoBackupTime * 1000 * 60);
-            connect(m_autoSaveTimer, &QTimer::timeout, this, [&]() {
+        m_autoSaveTimer = new QTimer(this);
+        m_autoSaveTimer->start(gSettings.autoBackupTime * 1000 * 60);
+        connect(
+            m_autoSaveTimer,
+            &QTimer::timeout,
+            this,
+            [&]()
+            {
                 if (gSettings.autoBackupEnabled)
                 {
                     // Call autosave function of CryEditApp
                     GetIEditor()->GetDocument()->SaveAutoBackup();
                 }
             });
-        }
-        if (gSettings.autoRemindTime > 0)
-        {
-            m_autoRemindTimer = new QTimer(this);
-            m_autoRemindTimer->start(gSettings.autoRemindTime * 1000 * 60);
-            connect(m_autoRemindTimer, &QTimer::timeout, this, [&]() {
+    }
+    if (gSettings.autoRemindTime > 0)
+    {
+        m_autoRemindTimer = new QTimer(this);
+        m_autoRemindTimer->start(gSettings.autoRemindTime * 1000 * 60);
+        connect(
+            m_autoRemindTimer,
+            &QTimer::timeout,
+            this,
+            [&]()
+            {
                 if (gSettings.autoRemindTime > 0)
                 {
                     // Remind to save.
                     CCryEditApp::instance()->SaveAutoRemind();
                 }
             });
-        }
     }
+}
 
+void MainWindow::ResetAutoSaveTimers()
+{
+    StopAutoSaveTimers();
+    StartAutoSaveTimers();
 }
 
 void MainWindow::ResetBackgroundUpdateTimer()
@@ -1640,7 +1656,7 @@ void MainWindow::SaveLayout()
         return;
     }
 
-    QString layoutName = QInputDialog::getText(this, tr("Layout Name"), QString()).toLower();
+    QString layoutName = InputDialog::getText(this, tr("Layout Name"), QString(), QLineEdit::Normal, QString(), "[a-z]+[a-z0-9\\-\\_]*");
     if (layoutName.isEmpty())
     {
         return;
@@ -1694,11 +1710,7 @@ void MainWindow::ViewRenamePaneLayout(const QString& layoutName)
     bool validName = false;
     while (!validName)
     {
-        newLayoutName = QInputDialog::getText(this, tr("Rename layout '%1'").arg(layoutName), QString());
-        if (newLayoutName.isEmpty())
-        {
-            return;
-        }
+        newLayoutName = InputDialog::getText(this, tr("Layout Name"), QString(), QLineEdit::Normal, QString(), "[a-z]+[a-z0-9\\-\\_]*");
 
         if (m_viewPaneManager->HasLayout(newLayoutName))
         {
