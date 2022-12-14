@@ -91,37 +91,22 @@ namespace AZ::Dom
     }
 
     template<class T>
-    bool DomPrefixTree<T>::MoveNodeAtPath(const Path& path, Node&& nodeToMove)
+    bool DomPrefixTree<T>::OverwritePath(const Path& path, Node&& newNode, bool createParentsIfNeeded)
     {
         Node* node = &m_rootNode;
         const size_t parentEntriesToIterate = path.Size() - 1;
         for (size_t i = 0; i < parentEntriesToIterate; ++i)
         {
             const PathEntry& entry = path[i];
-            auto nodeIt = node->m_values.find(entry);
-            if (nodeIt == node->m_values.end())
+            if (!createParentsIfNeeded && node->m_values.find(entry) == node->m_values.end())
             {
                 return false;
             }
-            node = &nodeIt->second;
-        }
-
-        node->m_values[path[path.Size() - 1]] = AZStd::move(nodeToMove);
-        return true;
-    }
-
-    template<class T>
-    void DomPrefixTree<T>::MoveNodeAtPathAndCreateParents(const Path& path, Node&& nodeToMove)
-    {
-        Node* node = &m_rootNode;
-        const size_t parentEntriesToIterate = path.Size() - 1;
-        for (size_t i = 0; i < parentEntriesToIterate; ++i)
-        {
-            const PathEntry& entry = path[i];
             node = &node->m_values[entry]; // get or create an entry in this node
         }
 
-        node->m_values[path[path.Size() - 1]] = AZStd::move(nodeToMove);
+        node->m_values[path[path.Size() - 1]] = AZStd::move(newNode);
+        return true;
     }
 
     template<class T>
@@ -406,17 +391,10 @@ namespace AZ::Dom
     }
 
     template<class T>
-    bool DomPrefixTree<T>::MoveSubTree(const Path& path, DomPrefixTree&& subTree)
+    bool DomPrefixTree<T>::OverwritePath(const Path& path, DomPrefixTree&& subtree, bool createParentsIfNeeded)
     {
-        Node* node = subTree.GetNodeForPath(AZ::Dom::Path());
-        return MoveNodeAtPath(path, AZStd::move(*node));
-    }
-
-    template<class T>
-    void DomPrefixTree<T>::MoveSubTreeAndCreateParents(const Path& path, DomPrefixTree&& subTree)
-    {
-        Node* node = subTree.GetNodeForPath(AZ::Dom::Path());
-        MoveNodeAtPathAndCreateParents(path, AZStd::move(*node));
+        Node* node = subtree.GetNodeForPath(AZ::Dom::Path());
+        return OverwritePath(path, AZStd::move(*node), createParentsIfNeeded);
     }
 
     template<class T>

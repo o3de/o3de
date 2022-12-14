@@ -129,18 +129,13 @@ namespace AZ::Dom
         //! @return The DomPrefixTree that is detached.
         DomPrefixTree<T> DetachSubTree(const Path& path);
 
-        //! Moves a subtree to the provided path. It will overwrite the subtree at the path.
-        //! The subtree would be moved only if all parent path entries of the provided path already exist.
-        //! @param path The path which corresponds to the root node to which the subtree should be moved.
-        //! @param subTree The subtree to move to the provided path.
-        //! @return True if the subTree was moved successfully. Return false otherwise.
-        bool MoveSubTree(const Path& path, DomPrefixTree&& subTree);
-
-        //! Moves a subtree to the provided path and create parent entries. It will overwrite the subtree at the path.
-        //! The subtree will always be moved. If parent path entries do not match, it will create them.
-        //! @param path The path which corresponds to the root node to which the subtree should be moved.
-        //! @param subTree The subtree to move to the provided path.
-        void MoveSubTreeAndCreateParents(const Path& path, DomPrefixTree&& subTree);
+        //! Overwrites the subtree at the path and replaces it with the given subtree.
+        //! Old node and its children at the path would be destroyed. The new subtree will be moved to the path.
+        //! @param path The path which corresponds to the root node to which the subtree would be overwritten.
+        //! @param subtree The subtree to move to the provided path.
+        //! @param createParentsIfNeeded Create parent entries for the provided path if the flag is on.
+        //! @return True if the subtree was overwritten successfully, false if createParentsIfNeeded is off and no target path exists.
+        bool OverwritePath(const Path& path, DomPrefixTree&& subtree, bool createParentsIfNeeded = false);
 
         //! Removes all entries from this tree.
         void Clear();
@@ -169,18 +164,13 @@ namespace AZ::Dom
         //! @return The Node that is detached.
         Node DetachNodeAtPath(const Path& path);
 
-        //! Moves a node to the provided path. It will overwrite the node at the path and children nodes.
-        //! The node would be moved only if all parent path entries of the provided path already exist.
-        //! @param path The path which corresponds to where the node should be moved to.
-        //! @param nodeToMove The node to move.
-        //! @return True if the node was moved successfully. Return false otherwise.
-        bool MoveNodeAtPath(const Path& path, Node&& nodeToMove);
-
-        //! Moves a node to the provided path and create parent entries. It will overwrite the node at the path and children nodes.
-        //! The node will always be moved. If parent path entries do not match, it will create them.
-        //! @param path The path which corresponds to where the node should be moved to.
-        //! @param nodeToMove The node to move.
-        void MoveNodeAtPathAndCreateParents(const Path& path, Node&& nodeToMove);
+        //! Overwrites the node at the path and replaces it with the given node.
+        //! Old node and its children at the path would be destroyed. New nodes will be moved to the path.
+        //! @param path The path which corresponds to the root node to which the subtree would be overwritten.
+        //! @param newNode The new node to move to the provided path.
+        //! @param createParentsIfNeeded Create parent entries for the provided path if the flag is on.
+        //! @return True if the node was overwritten successfully, false if createParentsIfNeeded is off and no target path exists.
+        bool OverwritePath(const Path& path, Node&& newNode, bool createParentsIfNeeded = false);
 
         Node m_rootNode;
     };
