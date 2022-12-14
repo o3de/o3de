@@ -255,99 +255,52 @@ namespace AZ::Dom::Tests
         EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::ExactPath));
     }
 
-    TEST_F(DomPrefixTreeTests, AttachSubTreeAddsNewNodeAtExistingPath)
+    TEST_F(DomPrefixTreeTests, MoveSubTreeAddsNewNodeAtExistingPath)
     {
         DomPrefixTree<int> tree;
         tree.SetValue(Path("/foo"), 40);
 
-        DomPrefixTree<int> treeToAttach;
-        treeToAttach.SetValue(Path(), 80);
-        treeToAttach.SetValue(Path("/1"), 120);
-        bool result = tree.AttachSubTree(Path("/foo/0"), AZStd::move(treeToAttach));
+        DomPrefixTree<int> subtree;
+        subtree.SetValue(Path(), 80);
+        subtree.SetValue(Path("/1"), 120);
+        bool isMoved = tree.MoveSubTree(Path("/foo/0"), AZStd::move(subtree));
 
-        // Validate that the new values is present at the paths in the original tree.
-        EXPECT_TRUE(result);
+        // Validate that the subtree was moved and new values are present at the paths in the original tree.
+        EXPECT_TRUE(isMoved);
         EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::ExactPath));
         EXPECT_EQ(120, *tree.ValueAtPath(Path("/foo/0/1"), PrefixTreeMatch::ExactPath));
     }
 
-    TEST_F(DomPrefixTreeTests, AttachSubTreeReplacesExistingNode)
+    TEST_F(DomPrefixTreeTests, MoveSubTreeReplacesExistingNodeAndChildren)
     {
         DomPrefixTree<int> tree;
         tree.SetValue(Path("/foo"), 40);
         tree.SetValue(Path("/foo/1"), 60);
+        tree.SetValue(Path("/foo/2"), 70);
 
-        DomPrefixTree<int> treeToAttach;
-        treeToAttach.SetValue(Path(), 80);
-        treeToAttach.SetValue(Path("/1"), 120);
-        bool result = tree.AttachSubTree(Path("/foo"), AZStd::move(treeToAttach));
+        DomPrefixTree<int> subtree;
+        subtree.SetValue(Path(), 80);
+        subtree.SetValue(Path("/1"), 120);
+        bool isMoved = tree.MoveSubTree(Path("/foo"), AZStd::move(subtree));
 
-        // Validate that existing values are replaced in the original tree.
-        EXPECT_TRUE(result);
+        // Validate that the subtree is moved and existing nodes are replaced in the original tree.
+        EXPECT_TRUE(isMoved);
         EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::ExactPath));
         EXPECT_EQ(120, *tree.ValueAtPath(Path("/foo/1"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(nullptr, tree.ValueAtPath(Path("/foo/2"), PrefixTreeMatch::ExactPath));
     }
 
-    TEST_F(DomPrefixTreeTests, AttachSubTreeFailsAtNonExistingPath)
+    TEST_F(DomPrefixTreeTests, MoveSubTreeFailsAtNonExistingPath)
     {
         DomPrefixTree<int> tree;
         tree.SetValue(Path("/foo"), 40);
 
-        DomPrefixTree<int> treeToAttach;
-        treeToAttach.SetValue(Path(), 80);
-        bool result = tree.AttachSubTree(Path("/foo/bar/baz"), AZStd::move(treeToAttach)); // Path '/foo/bar' does not exist
+        DomPrefixTree<int> subtree;
+        subtree.SetValue(Path(), 80);
+        bool isMoved = tree.MoveSubTree(Path("/foo/bar/baz"), AZStd::move(subtree)); // Parent entry 'bar' does not exist
 
-        // Validate that the subtree could not be attached to the tree.
-        EXPECT_FALSE(result);
-    }
-
-    TEST_F(DomPrefixTreeTests, InsertOrAttachSubTreeAttachesNewNodeAtExistingPath)
-    {
-        DomPrefixTree<int> tree;
-        tree.SetValue(Path("/foo"), 40);
-
-        DomPrefixTree<int> treeToAttach;
-        treeToAttach.SetValue(Path(), 80);
-        treeToAttach.SetValue(Path("/1"), 120);
-        bool isInserted = tree.InsertOrAttachSubTree(Path("/foo/bar"), AZStd::move(treeToAttach)); // Path '/foo' exists
-
-        // Validate that the subtree is attached and the new values is present at the paths in the original tree.
-        EXPECT_FALSE(isInserted);
-        EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo/bar"), PrefixTreeMatch::ExactPath));
-        EXPECT_EQ(120, *tree.ValueAtPath(Path("/foo/bar/1"), PrefixTreeMatch::ExactPath));
-    }
-
-    TEST_F(DomPrefixTreeTests, InsertOrAttachSubTreeReplacesExistingNodeAtExistingPath)
-    {
-        DomPrefixTree<int> tree;
-        tree.SetValue(Path("/foo"), 40);
-        tree.SetValue(Path("/foo/1"), 60);
-
-        DomPrefixTree<int> treeToAttach;
-        treeToAttach.SetValue(Path(), 80);
-        treeToAttach.SetValue(Path("/1"), 120);
-        bool isInserted = tree.InsertOrAttachSubTree(Path("/foo"), AZStd::move(treeToAttach));
-
-        // Validate that the subtree is attached and existing values are replaced in the original tree.
-        EXPECT_FALSE(isInserted);
-        EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::ExactPath));
-        EXPECT_EQ(120, *tree.ValueAtPath(Path("/foo/1"), PrefixTreeMatch::ExactPath));
-    }
-
-    TEST_F(DomPrefixTreeTests, InsertOrAttachSubTreeInsertsNewNodeAtNonExistingPath)
-    {
-        DomPrefixTree<int> tree;
-        tree.SetValue(Path("/foo"), 40);
-
-        DomPrefixTree<int> treeToAttach;
-        treeToAttach.SetValue(Path(), 80);
-        treeToAttach.SetValue(Path("/1"), 120);
-        bool isInserted = tree.InsertOrAttachSubTree(Path("/foo/bar/baz"), AZStd::move(treeToAttach)); // Path '/foo/bar' does not exist
-
-        // Validate that the subtree is inserted and the new values is present at the paths in the original tree.
-        EXPECT_TRUE(isInserted);
-        EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo/bar/baz"), PrefixTreeMatch::ExactPath));
-        EXPECT_EQ(120, *tree.ValueAtPath(Path("/foo/bar/baz/1"), PrefixTreeMatch::ExactPath));
+        // Validate that the subtree could not be moved to the tree.
+        EXPECT_FALSE(isMoved);
     }
 
     TEST_F(DomPrefixTreeTests, ClearTree)

@@ -129,17 +129,12 @@ namespace AZ::Dom
         //! @return The DomPrefixTree that is detached.
         DomPrefixTree<T> DetachSubTree(const Path& path);
 
-        //! Attaches a subtree at the provided path. Attaching will overwrite the subtree at the path.
-        //! @param path The path which corresponds to the node at which the subtree should be attached.
-        //! @param subTree The subtree to attach at the provided path.
-        //! @return True if the subTree was attached successfully. Return false otherwise.
-        bool AttachSubTree(const Path& path, DomPrefixTree&& subTree);
-
-        //! Inserts or attaches a subtree at the provided path. Attaching will override the subtree at the path.
-        //! @param path The path which corresponds to the node at which the subtree should be attached.
-        //! @param subTree The subtree to attach at the provided path.
-        //! @return True if the subtree was inserted successfully. Return false if the subtree was attached successfully.
-        bool InsertOrAttachSubTree(const Path& path, DomPrefixTree&& subTree);
+        //! Moves a subtree to the provided path. It will overwrite the subtree at the path.
+        //! The subtree would be moved only if all parent path entries of the provided path already exist.
+        //! @param path The path which corresponds to the root node to which the subtree should be moved.
+        //! @param subTree The subtree to move to the provided path.
+        //! @return True if the subTree was moved successfully. Return false otherwise.
+        bool MoveSubTree(const Path& path, DomPrefixTree&& subTree);
 
         //! Removes all entries from this tree.
         void Clear();
@@ -168,18 +163,12 @@ namespace AZ::Dom
         //! @return The Node that is detached.
         Node DetachNodeAtPath(const Path& path);
 
-        //! Attaches a node that matches the provided path. Attaching will overwrite the node at the path.
-        //! @param path The path which corresponds to the node at which the subtree should be attached.
-        //! @param nodeToAttach The node to be attached.
-        //! @return True if the node was attached successfully. Return false otherwise.
-        bool AttachNodeAtPath(const Path& path, Node&& nodeToAttach);
-
-        //! Inserts or attaches a node at the provided path. Attaching will override the node at the path.
-        //! Insertion will create new entries if the provided path does not exist.
-        //! @param path The path which corresponds to the node at which the subtree should be inserted or attached.
-        //! @param nodeToAttach The node to be inserted or attached.
-        //! @return True if the node was inserted successfully. Return false if the node was attached successfully.
-        bool InsertOrAttachNodeAtPath(const Path& path, Node&& nodeToAttach);
+        //! Moves a node to the provided path. It will overwrite the node at the path and children nodes.
+        //! The node would be moved only if all parent path entries of the provided path already exist.
+        //! @param path The path which corresponds to where the node should be moved to.
+        //! @param nodeToMove The node to move.
+        //! @return True if the node was moved successfully. Return false otherwise.
+        bool MoveNodeAtPath(const Path& path, Node&& nodeToMove);
 
         Node m_rootNode;
     };

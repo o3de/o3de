@@ -154,7 +154,7 @@ namespace AzToolsFramework
 
         bool Link::AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree)
         {
-            return m_linkPatchesTree.AttachSubTree(path, AZStd::move(subTree));
+            return m_linkPatchesTree.MoveSubTree(path, AZStd::move(subTree));
         }
 
         PrefabDomPath Link::GetInstancePath() const
