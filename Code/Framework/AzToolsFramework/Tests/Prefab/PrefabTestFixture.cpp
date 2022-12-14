@@ -289,6 +289,17 @@ namespace UnitTest
         return foundInstanceAlias;
     }
 
+    void PrefabTestFixture::RenameEntity(AZ::EntityId entityId, const AZStd::string& newName)
+    {
+        ASSERT_FALSE(newName.empty()) << "Cannot rename an entity to empty string.";
+        AZ::Entity* entityToRename = AzToolsFramework::GetEntityById(entityId);
+        ASSERT_TRUE(entityToRename != nullptr) << "Cannot rename a null entity.";
+
+        entityToRename->SetName(newName);
+        m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_undoStack->GetTop());
+        PropagateAllTemplateChanges();
+    }
+
     void PrefabTestFixture::ValidateEntityUnderInstance(
         AZ::EntityId containerEntityId, const EntityAlias& entityAlias, const AZStd::string& entityName)
     {

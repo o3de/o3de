@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{B49B9177-73FD-4ADF-B9BC-489A3E1EA0DB}",
         "category": "Math Functions",
-        "title": "Combine4",
+        "title": "Float4 From Values",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Construct a float4 from input values",
         "slotDataTypeGroups": [
             "inX|inY|inZ|inW",
             "outValue"

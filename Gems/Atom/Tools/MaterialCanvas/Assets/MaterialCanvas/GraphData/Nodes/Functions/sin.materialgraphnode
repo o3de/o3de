@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{ACFD2852-1C39-4E11-9F48-56618DF90689}",
         "category": "Math Functions",
-        "title": "Sin",
+        "title": "Sine",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the sine of the input value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

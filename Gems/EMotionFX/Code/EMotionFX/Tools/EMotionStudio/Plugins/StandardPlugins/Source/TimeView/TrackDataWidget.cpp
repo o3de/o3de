@@ -1598,6 +1598,11 @@ namespace EMStudio
     // the mouse wheel is adjusted
     void TrackDataWidget::DoWheelEvent(QWheelEvent* event, TimeViewPlugin* plugin)
     {
+        if (m_isScrolling || m_dragging || m_resizing)
+        {
+            return;
+        }
+
         plugin->SetRedrawFlag();
 
         // Vertical
@@ -1608,27 +1613,6 @@ namespace EMStudio
 
             double zoomDelta = delta * 4 * MCore::Clamp(plugin->GetTimeScale() / 2.0, 1.0, 22.0);
             plugin->SetScale(plugin->GetTimeScale() + zoomDelta);
-        }
-
-        // Horizontal
-        {
-            const int numDegrees    = event->angleDelta().x() / 8;
-            const int numSteps      = numDegrees / 15;
-            float delta             = numSteps / 10.0f;
-
-            if (EMotionFX::GetRecorder().GetIsRecording() == false)
-            {
-                if (delta > 0)
-                {
-                    delta = 1;
-                }
-                else
-                {
-                    delta = -1;
-                }
-
-                plugin->DeltaScrollX(-delta * 600);
-            }
         }
     }
 

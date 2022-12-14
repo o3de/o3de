@@ -49,7 +49,7 @@ namespace AZ::Render
 
         float GetRadius() const;
 
-        LmbrCentral::SphereShapeComponentRequests* m_shapeBus = nullptr;
+        LmbrCentral::SphereShapeComponentRequests* m_sphereShapeBus = nullptr;
     };
 
     inline float SphereLightDelegate::GetEffectiveSolidAngle() const

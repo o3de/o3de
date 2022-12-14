@@ -7,11 +7,12 @@
         "category": "Constants",
         "title": "Color Constant",
         "titlePaletteName": "ConstantNodeTitlePalette",
+        "description": "Create a shader constant with the type and value defined by this node.",
         "slotDataTypeGroups": [
             "inValue|outValue",
             "outR|outG|outB|outA"
         ],
-        "inputSlots": [
+        "propertySlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
