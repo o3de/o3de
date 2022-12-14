@@ -55,7 +55,7 @@ namespace Multiplayer
         };
 
         EntityReplicationManager(AzNetworking::IConnection& connection, AzNetworking::IConnectionListener& connectionListener, Mode mode);
-        ~EntityReplicationManager() = default;
+        ~EntityReplicationManager();
 
         const HostId& GetRemoteHostId() const;
 

@@ -15,6 +15,20 @@
 
 namespace Multiplayer
 {
+    struct NonOwningBuffer
+    {
+        NonOwningBuffer() = default;
+        explicit NonOwningBuffer(AzNetworking::PacketEncodingBuffer* buffer) : m_buffer(buffer) {}
+        ~NonOwningBuffer();
+
+        void reset(AzNetworking::PacketEncodingBuffer* buffer);
+        AzNetworking::PacketEncodingBuffer* get() const;
+
+    private:
+        AzNetworking::PacketEncodingBuffer* m_buffer = nullptr;
+        void ReleaseBuffer();
+    };
+
     //! @class NetworkEntityUpdateMessage
     //! @brief Property replication packet.
     class NetworkEntityUpdateMessage
@@ -96,6 +110,9 @@ namespace Multiplayer
         //! @return boolean true for success, false for serialization failure
         bool Serialize(AzNetworking::ISerializer& serializer);
 
+        static void InitializeBufferPool();
+        static void ReleaseBufferPool();
+
     private:
 
         NetEntityRole  m_networkRole = NetEntityRole::InvalidRole;
@@ -105,9 +122,11 @@ namespace Multiplayer
         bool           m_hasValidPrefabId = false;
         PrefabEntityId m_prefabEntityId;
 
+        static AzNetworking::PacketEncodingBuffer* GetNewBuffer();
+
         // Only allocated if we actually have data
         // This is to prevent blowing out stack memory if we declare an array of these EntityUpdateMessages
-        AZStd::unique_ptr<AzNetworking::PacketEncodingBuffer> m_data;
+        NonOwningBuffer m_data;
     };
     using NetworkEntityUpdateVector = AZStd::fixed_vector<NetworkEntityUpdateMessage, MaxAggregateEntityMessages>;
 }

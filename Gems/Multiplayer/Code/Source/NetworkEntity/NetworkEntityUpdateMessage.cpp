@@ -7,7 +7,8 @@
  */
 
 #include <Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h>
-#include <AzCore/Console/ILogger.h>
+
+#pragma optimize("", off)
 
 namespace Multiplayer
 {
@@ -31,10 +32,10 @@ namespace Multiplayer
         , m_hasValidPrefabId(rhs.m_hasValidPrefabId)
         , m_prefabEntityId(rhs.m_prefabEntityId)
     {
-        if (rhs.m_data != nullptr)
+        if (rhs.m_data.get() != nullptr)
         {
-            m_data = AZStd::make_unique<AzNetworking::PacketEncodingBuffer>();
-            (*m_data) = (*rhs.m_data); // Deep-copy
+            m_data.reset(GetNewBuffer());
+            (*m_data.get()) = (*rhs.m_data.get()); // Deep-copy
         }
     }
 
@@ -82,10 +83,10 @@ namespace Multiplayer
         m_wasMigrated = rhs.m_wasMigrated;
         m_hasValidPrefabId = rhs.m_hasValidPrefabId;
         m_prefabEntityId = rhs.m_prefabEntityId;
-        if (rhs.m_data != nullptr)
+        if (rhs.m_data.get() != nullptr)
         {
-            m_data = AZStd::make_unique<AzNetworking::PacketEncodingBuffer>();
-            *m_data = (*rhs.m_data);
+            m_data.reset(GetNewBuffer());
+            (*m_data.get()) = (*rhs.m_data.get()); // Deep-copy
         }
         return *this;
     }
@@ -120,7 +121,7 @@ namespace Multiplayer
         }
 
         // 2-byte size header + the actual blob payload itself
-        const uint32_t sizeOfBlob = static_cast<uint32_t>((m_data != nullptr) ? sizeof(PropertyIndex) + m_data->GetSize() : 0);
+        const uint32_t sizeOfBlob = static_cast<uint32_t>((m_data.get() != nullptr) ? sizeof(PropertyIndex) + m_data.get()->GetSize() : 0);
 
         if (m_hasValidPrefabId)
         {
@@ -170,11 +171,11 @@ namespace Multiplayer
 
     void NetworkEntityUpdateMessage::SetData(const AzNetworking::PacketEncodingBuffer& value)
     {
-        if (m_data == nullptr)
+        if (m_data.get() == nullptr)
         {
-            m_data = AZStd::make_unique<AzNetworking::PacketEncodingBuffer>();
+            m_data.reset(GetNewBuffer());
         }
-        (*m_data) = value;
+        (*m_data.get()) = value;
     }
 
     const AzNetworking::PacketEncodingBuffer* NetworkEntityUpdateMessage::GetData() const
@@ -184,11 +185,11 @@ namespace Multiplayer
 
     AzNetworking::PacketEncodingBuffer& NetworkEntityUpdateMessage::ModifyData()
     {
-        if (m_data == nullptr)
+        if (m_data.get() == nullptr)
         {
-            m_data = AZStd::make_unique<AzNetworking::PacketEncodingBuffer>();
+            m_data.reset(GetNewBuffer());
         }
-        return *m_data;
+        return *m_data.get();
     }
 
     bool NetworkEntityUpdateMessage::Serialize(AzNetworking::ISerializer& serializer)
@@ -221,14 +222,125 @@ namespace Multiplayer
             }
 
             // m_data should never be nullptr unless this is a delete packet
-            if (m_data == nullptr)
+            if (m_data.get() == nullptr)
             {
-                m_data = AZStd::make_unique<AzNetworking::PacketEncodingBuffer>();
+                m_data.reset(GetNewBuffer());
             }
 
-            serializer.Serialize(*m_data, "Data");;
+            serializer.Serialize(*m_data.get(), "Data");;
         }
 
         return serializer.IsValid();
     }
+
+    class GlobalBufferPool
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(GlobalBufferPool, AZ::SystemAllocator, 0);
+
+        AzNetworking::PacketEncodingBuffer* GetNewBuffer();
+        void ReturnBuffer(AzNetworking::PacketEncodingBuffer* buffer);
+        void ReleaseAllBuffers();
+
+        using BufferPtr = AZStd::unique_ptr<AzNetworking::PacketEncodingBuffer>;
+
+        AZStd::vector<BufferPtr> m_owningPool;
+
+        AZStd::deque<AzNetworking::PacketEncodingBuffer*> m_freePool;
+    };
+
+    static GlobalBufferPool* GlobalBufferPoolInstance = nullptr;
+
+    void NetworkEntityUpdateMessage::InitializeBufferPool()
+    {
+        if (!GlobalBufferPoolInstance)
+        {
+            GlobalBufferPoolInstance = aznew GlobalBufferPool;
+        }
+    }
+
+    void NetworkEntityUpdateMessage::ReleaseBufferPool()
+    {
+        if (!GlobalBufferPoolInstance)
+        {
+            const auto size = GlobalBufferPoolInstance->m_owningPool.size();
+            AZ_Printf(__FUNCTION__, "pool size was %d", size);
+
+            delete GlobalBufferPoolInstance;
+            GlobalBufferPoolInstance = nullptr;
+        }
+    }
+
+    AzNetworking::PacketEncodingBuffer* GlobalBufferPool::GetNewBuffer()
+    {
+        if (m_freePool.empty())
+        {
+            m_owningPool.emplace_back(AZStd::make_unique<AzNetworking::PacketEncodingBuffer>());
+            return m_owningPool.back().get();
+        }
+
+        AzNetworking::PacketEncodingBuffer* buffer = m_freePool.back();
+        m_freePool.pop_back();
+
+        return buffer;
+    }
+
+    void GlobalBufferPool::ReturnBuffer(AzNetworking::PacketEncodingBuffer* buffer)
+    {
+        m_freePool.push_back(buffer);
+    }
+
+    void GlobalBufferPool::ReleaseAllBuffers()
+    {
+        m_freePool.clear();
+        m_owningPool.clear();
+    }
+
+    NonOwningBuffer::~NonOwningBuffer()
+    {
+        ReleaseBuffer();
+    }
+
+    void NonOwningBuffer::reset(AzNetworking::PacketEncodingBuffer* buffer)
+    {
+        if (m_buffer)
+        {
+            ReleaseBuffer();
+        }
+
+        m_buffer = buffer;
+    }
+
+    AzNetworking::PacketEncodingBuffer* NonOwningBuffer::get() const
+    {
+        return m_buffer;
+    }
+
+    void NonOwningBuffer::ReleaseBuffer()
+    {
+        if (m_buffer)
+        {
+            if (GlobalBufferPoolInstance)
+            {
+                GlobalBufferPoolInstance->ReturnBuffer(m_buffer);
+            }
+            else
+            {
+                delete m_buffer;
+            }
+            m_buffer = nullptr;
+        }
+    }
+
+    AzNetworking::PacketEncodingBuffer* NetworkEntityUpdateMessage::GetNewBuffer()
+    {
+        if (GlobalBufferPoolInstance)
+        {
+            return GlobalBufferPoolInstance->GetNewBuffer();
+        }
+
+        return aznew AzNetworking::PacketEncodingBuffer;
+    }
 }
+
+#pragma optimize("", on)
