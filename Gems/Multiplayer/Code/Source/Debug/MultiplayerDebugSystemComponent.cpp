@@ -71,6 +71,10 @@ namespace Multiplayer
     {
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
+        m_auditTrailElems.clear();
+        m_committedAuditTrail.clear();
+        m_pendingAuditTrail.clear();
+        m_filteredAuditTrail.clear();
 #endif
     }
 
