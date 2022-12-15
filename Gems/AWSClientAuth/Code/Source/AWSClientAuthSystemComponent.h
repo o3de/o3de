@@ -15,8 +15,6 @@
 #include <AWSClientAuthBus.h>
 #include <AWSCoreBus.h>
 
-#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
-
 namespace AWSClientAuth
 {
     //! Gem System Component. Responsible for instantiating and managing Authentication and Authorization Controller
@@ -24,7 +22,6 @@ namespace AWSClientAuth
         : public AZ::Component
         , public AWSCore::AWSCoreNotificationsBus::Handler
         , public AWSClientAuthRequestBus::Handler
-        , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         ~AWSClientAuthSystemComponent() override = default;
@@ -47,9 +44,6 @@ namespace AWSClientAuth
         // AWSCoreNotification interface
         void OnSDKInitialized() override;
         void OnSDKShutdownStarted() override {}
-
-        // ActionManagerRegistrationNotificationBus implementation
-        void OnMenuBindingHook() override;
 
         // AWSClientAuthRequests interface
         std::shared_ptr<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient> GetCognitoIDPClient() override;

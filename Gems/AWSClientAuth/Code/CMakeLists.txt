@@ -8,10 +8,6 @@
 
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
-if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    set(additional_tool_deps AZ::AzToolsFramework)
-endif()
-
 ly_add_target(
     NAME AWSClientAuth.Static STATIC
     NAMESPACE Gem
@@ -26,7 +22,6 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            ${additional_tool_deps}
             Gem::AWSCore
             Gem::HttpRequestor
             3rdParty::AWSNativeSDK::AWSClientAuth
@@ -45,13 +40,44 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            ${additional_tool_deps}
             Gem::AWSCore
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
         PUBLIC
             Gem::AWSClientAuth.Static
 )
+
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+
+ly_add_target( 
+    NAME AWSClientAuth.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        awsclientauth_editor_files.cmake
+        awsclientauth_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+    COMPILE_DEFINITIONS
+        PRIVATE
+            AWSCLIENTAUTH_EDITOR
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzFramework
+            AZ::AzToolsFramework
+            Gem::AWSCore
+            Gem::HttpRequestor
+            3rdParty::AWSNativeSDK::AWSClientAuth
+            3rdParty::AWSNativeSDK::Core
+        PUBLIC
+            Gem::AWSClientAuth.Static
+    RUNTIME_DEPENDENCIES
+        Gem::AWSClientAuth
+)
+
+endif()
+
 
 # Load the "Gem::AWSClientAuth" module in all types of applications.
 ly_create_alias(
@@ -77,7 +103,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME AWSClientAuth.Tools
         NAMESPACE Gem
         TARGETS
-            Gem::AWSClientAuth
+            Gem::AWSClientAuth.Editor
             Gem::AWSCore.Tools
             Gem::HttpRequestor.Tools
     )
@@ -112,7 +138,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::AWSNativeSDK::AWSClientAuth
                 AZ::AzCore
                 AZ::AzFramework
-                ${additional_tool_deps}
                 AZ::AWSNativeSDKTestLibs
                 Gem::AWSClientAuth.Static
                 Gem::AWSCore

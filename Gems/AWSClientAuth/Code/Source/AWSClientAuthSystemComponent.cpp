@@ -23,8 +23,6 @@
 #include <aws/cognito-identity/CognitoIdentityClient.h>
 #include <aws/cognito-idp/CognitoIdentityProviderClient.h>
 
-#include <ActionManager/Action/ActionManagerInterface.h>
-
 #include <AWSCoreBus.h>
 
 namespace AZ
@@ -174,8 +172,6 @@ namespace AWSClientAuth
 
     void AWSClientAuthSystemComponent::Activate()
     {
-        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
-
         AZ::Interface<IAWSClientAuthRequests>::Register(this);
         AWSClientAuthRequestBus::Handler::BusConnect();
 
@@ -206,8 +202,6 @@ namespace AWSClientAuth
 
     void AWSClientAuthSystemComponent::Deactivate()
     {
-        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
-
         m_authenticationProviderManager.reset();
         m_awsCognitoUserManagementController.reset();
         m_awsCognitoAuthorizationController.reset();
@@ -239,92 +233,6 @@ namespace AWSClientAuth
         m_cognitoIdentityProviderClient =
             std::make_shared<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient>(Aws::Auth::AWSCredentials(), clientConfiguration);
         m_cognitoIdentityClient = std::make_shared<Aws::CognitoIdentity::CognitoIdentityClient>(Aws::Auth::AWSCredentials(), clientConfiguration);
-    }
-
-    void AWSClientAuthSystemComponent::OnMenuBindingHook()
-    {
-        constexpr const char* AWSClientAuth[] =
-        {
-             "Client Auth Gem" ,
-             "client_auth_gem" ,
-             ":/Notifications/download.svg",
-             ""
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::CreateSubMenu, AWSCore::AWSMenuIdentifier, AWSClientAuth, 100);
-
-        const auto& submenuIdentifier = AWSClientAuth[1];
-
-        constexpr const char* AWSClientAuthGemOverview[] =
-        {
-             "Client Auth Gem overview" ,
-             "client_auth_gem_overview" ,
-             ":/Notifications/link.svg",
-             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-client-auth/"
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSClientAuthGemOverview, 0);
-
-        constexpr const char* AWSSetupClientAuthGem[] =
-        {
-             "Setup Client Auth Gem",
-             "setup_client_auth_gem",
-             ":/Notifications/link.svg",
-             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-client-auth/setup/"
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSSetupClientAuthGem, 0);
-
-        constexpr const char* AWSClientAuthCDKAndResourcesUrl[] =
-        {
-             "CDK application and resource mappings",
-             "cdk_application_and_resource_mappings",
-             ":/Notifications/link.svg",
-             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-client-auth/setup/#3-deploy-the-cdk-application"
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSClientAuthCDKAndResourcesUrl, 0);
-
-        constexpr const char* AWSClientAuthScriptCanvasAndLua[] =
-        {
-             "Scripting reference",
-             "scripting_reference",
-             ":/Notifications/link.svg",
-             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-client-auth/scripting/"
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSClientAuthScriptCanvasAndLua, 0);
-
-        constexpr const char* AWSClientAuth3rdPartyAuthProvider[] =
-        {
-             "3rd Party developer authentication provider support",
-             "3rd_party_developer_authentication_provider_support",
-             ":/Notifications/link.svg",
-             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-client-auth/authentication-providers/#using-a-custom-provider"
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSClientAuth3rdPartyAuthProvider, 0);
-
-        constexpr const char* AWSClientAuthCustomAuthProvider[] =
-        {
-             "Custom developer authentication provider support",
-             "custom_developer_authentication_provider_support",
-             ":/Notifications/link.svg",
-             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-client-auth/authentication-providers/#using-a-custom-provider"
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSClientAuthCustomAuthProvider, 0);
-
-        constexpr const char* AWSClientAuthAPI[] =
-        {
-             "API reference",
-             "api_reference",
-             ":/Notifications/link.svg",
-             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-client-auth/cpp-api/"
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSClientAuthAPI, 0);
-
     }
 
     std::shared_ptr<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient> AWSClientAuthSystemComponent::GetCognitoIDPClient()

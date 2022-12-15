@@ -14,8 +14,6 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-#include <ActionManager/ActionManagerRegistrationNotificationBus.h>
-
 namespace AWSMetrics
 {
     class MetricsManager;
@@ -24,7 +22,6 @@ namespace AWSMetrics
     class AWSMetricsSystemComponent
         : public AZ::Component
         , protected AWSMetricsRequestBus::Handler
-        , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(AWSMetricsSystemComponent, "{D6252A35-6A8E-4E8B-BFC6-FCBE80E5A626}");
@@ -54,9 +51,6 @@ namespace AWSMetrics
         void Activate() override;
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
-
-        // ActionManagerRegistrationNotificationBus implementation
-        void OnMenuBindingHook() override;
 
         using Attributes = AZStd::vector<MetricsAttribute>;
 

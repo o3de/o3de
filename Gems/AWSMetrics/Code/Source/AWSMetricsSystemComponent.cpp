@@ -13,13 +13,6 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AzToolsFramework/ActionManager/Action/ActionManager.h>
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
-#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
-
-#include <QDesktopServices>
-#include <QUrl>
-
 namespace AWSMetrics
 {
     class AWSMetricsNotificationBusHandler
@@ -206,104 +199,12 @@ namespace AWSMetrics
     void AWSMetricsSystemComponent::Activate()
     {
         AWSMetricsRequestBus::Handler::BusConnect();
-        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 
         m_metricsManager->StartMetrics();
     }
 
-    void AWSMetricsSystemComponent::OnMenuBindingHook()
-    {
-        constexpr const char* AWSMetrics[] =
-        {
-             "Metrics Gem" ,
-             "aws_metrics_gem" ,
-             ":/Notifications/download.svg",
-             ""
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::CreateSubMenu, AWSCore::AWSMenuIdentifier, AWSMetrics, 200);
-
-        const auto& submenuIdentifier = AWSMetrics[1];
-
-        static constexpr const char* AWSMetricsGemOverview[] =
-        {
-             "Metrics Gem overview" ,
-             "aws_metrics_gem_overview" ,
-             ":/Notifications/link.svg",
-             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-metrics/"
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSMetricsGemOverview, 0);
-
-        static constexpr const char* AWSMetricsSetupGem[] =
-        {
-             "Setup Metrics Gem" ,
-             "aws_setup_metrics_gem" ,
-             ":/Notifications/link.svg",
-             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-metrics/setup/"
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSMetricsSetupGem, 0);
-
-        static constexpr const char* AWSMetricsScripting[] =
-        {
-             "Scripting Reference" ,
-             "aws_metrics_scripting_reference" ,
-             ":/Notifications/link.svg",
-             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-metrics/scripting/"
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSMetricsScripting, 0);
-
-        static constexpr const char* AWSMetricsAPIReference[] =
-        {
-             "API Reference" ,
-             "aws_metrics_api_reference" ,
-             ":/Notifications/link.svg",
-             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-metrics/cpp-api/"
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSMetricsAPIReference, 0);
-
-        static constexpr const char* AWSMetricsAdvancedTopics[] =
-        {
-             "Advanced Topics" ,
-             "aws_metrics_advanced_topics" ,
-             ":/Notifications/link.svg",
-             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-metrics/advanced-topics/"
-        };
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSMetricsAdvancedTopics, 0);
-
-        constexpr const char metricsSettingsIdentifier[] = "aws_metrics_settings";
-
-        AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@engroot@");
-        AZStd::string configFilePath = priorAlias + "\\Gems\\AWSMetrics\\Code\\" + AZ::SettingsRegistryInterface::RegistryFolder;
-        AzFramework::StringFunc::Path::Normalize(configFilePath);
-
-        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        AZ_Assert(actionManagerInterface, "AWSMetricsSystemComponent - could not get ActionManagerInterface");
-
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Metrics Settings";
-        auto outcome = actionManagerInterface->RegisterAction(AWSCore::ActionContext, metricsSettingsIdentifier, actionProperties,
-            [configFilePath]()
-            {
-                QDesktopServices::openUrl(QUrl::fromLocalFile(configFilePath.c_str()));
-            });
-        AZ_Assert(outcome.IsSuccess(), "Failed to register action %s", metricsSettingsIdentifier);
-
-        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-        AZ_Assert(menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInterface");
-
-        menuManagerInterface->AddActionToMenu(submenuIdentifier, metricsSettingsIdentifier, 0);
-
-    }
-
     void AWSMetricsSystemComponent::Deactivate()
     {
-        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
-
         m_metricsManager->ShutdownMetrics();
 
         AWSMetricsRequestBus::Handler::BusDisconnect();
