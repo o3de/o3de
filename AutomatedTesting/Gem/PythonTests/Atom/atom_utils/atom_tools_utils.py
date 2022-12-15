@@ -160,7 +160,8 @@ def get_last_lighting_preset_path() -> str:
     "C:/git/o3de/Gems/Atom/Feature/Common/Assets/LightingPresets/LowContrast/artist_workshop.lightingpreset.azasset"
     "C:/git/o3de/Gems/Atom/TestData/TestData/LightingPresets/beach_parking.lightingpreset.azasset"
     """
-    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastLightingPresetPathWithoutAlias")
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, "GetLastLightingPresetPathWithoutAlias")
 
 
 def get_last_model_preset_path() -> str:
