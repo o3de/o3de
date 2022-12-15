@@ -283,8 +283,6 @@ def CheckoutEngineBootstrapScripts(branchName, userRemoteConfig = [GetEngineRemo
 
 def CheckoutRepo(String branchName, userRemoteConfigs, boolean disableSubmodules = false, boolean setEnvCommit = false) {
     echo "Checkout Repo:"
-    //echo "branchName:${branchName}"
-    //echo "userRemoteConfigs.URL:${userRemoteConfigs.URL} userRemoteConfigs.BRANCH:${userRemoteConfigs.BRANCH}"
     if (fileExists('.git')) {
         // If the repository after checkout is locked, likely we took a snapshot while git was running,
         // to leave the repo in a usable state, garbage collect.
@@ -362,6 +360,7 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
 
 //this should assume it will always be executed from the workspace root
 def ExecuteControlFile(controlFile) {
+    echo "ExecuteControlFile: ${controlFile}"
     dir(ENGINE_REPOSITORY_NAME) {
         //register all the objects specified in this controlFile
         controlFile.REGISTER_ENGINES.each { engineName ->
@@ -388,15 +387,15 @@ def ExecuteControlFile(controlFile) {
     //check out all repos
     controlFile.REPOS.each { repo ->
         if(!fileExists(repo.NAME)) {
-            CheckoutRepo(repo.BRANCH, GetRemoteConfig(repo.NAME, repo.URL))
+            CheckoutRepo(repo.BRANCH, [GetRemoteConfig(repo.NAME, repo.URL)])
 
             def repoControlFile = {}
-            def foundRepoControlFile = False
+            def foundRepoControlFile = false
             dir(repo.NAME) {
                 if(fileExists(".automatedtesting.json")) {
                     echo 'Loading ${repo.URL} .automatedtesting.json'
                     repoControlFile = readJSON file: '.automatedtesting.json'
-                    foundRepoControlFile = True
+                    foundRepoControlFile = true
                 }
             }
 
@@ -573,21 +572,23 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             }
 
             //register the engine
+            echo "Register engine: ${ENGINE_URL}"
             PlatformSh("scripts/o3de${ext} register --this-engine", "Registering this engine, will generate the o3de_manifest")
 
             //if the engine has an automatedtesting.json execute it
-            if(fileExists(".automatedtesting.json")) {
+            if(fileExists('.automatedtesting.json')) {
                 echo 'Loading Engine .automatedtesting.json'
                 engineAutomatedTestingControlFile = readJSON file: '.automatedtesting.json'
-                engineAutomatedTestingControlFileFound = True
+                engineAutomatedTestingControlFileFound = true
             }
         }
-        if(engineAutomatedTestingControlFileFound){
+        if(engineAutomatedTestingControlFileFound) {
             ExecuteControlFile(engineAutomatedTestingControlFile)
         }
 
         //if we are not committing to the engine repo then pull that repo in here
         if(COMMIT_REPOSITORY_NAME != ENGINE_REPOSITORY_NAME) {
+            echo 'Checkout commit repo'
             CheckoutRepo(branchName, scm.userRemoteConfigs, disableSubmodules, true)
             def automatedTestingControlFile = {}
             def automatedTestingControlFileFound = false
@@ -597,7 +598,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 if(fileExists(".automatedtesting.json")) {
                     echo 'Loading ${COMMIT_REPOSITORY_NAME} .automatedtesting.json'
                     automatedTestingControlFile = readJSON file: '.automatedtesting.json'
-                    automatedTestingControlFileFound = True
+                    automatedTestingControlFileFound = true
                 }
             }
             if(automatedTestingControlFileFound){
