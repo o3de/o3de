@@ -385,7 +385,7 @@ def ExecuteControlFile(controlFile) {
 
     //check out all repos
     controlFile.REPOS.each { repo ->
-        if(!fileExists(repo.NAME) {
+        if(!fileExists(repo.NAME)) {
             echo "Checkout Repo: URL:${repo.URL} BRANCH:${repo.BRANCH}"
             CheckoutRepo(repo.BRANCH, GetRemoteConfig(repo.NAME, repo.URL))
 
@@ -441,8 +441,7 @@ def ExecuteControlFile(controlFile) {
 
                     //If this is not a standard composite repo, then it wont have any composite dirs, then we know
                     //its a singular object repo, see what kind it is.
-                    if(!enginesExist && !projectsExist && !gemsExist && !templatesExist && !restrictedExist)
-                    {
+                    if(!enginesExist && !projectsExist && !gemsExist && !templatesExist && !restrictedExist) {
                         if(fileExists("engine.json")) {
                             engineRepo = true
                         }
