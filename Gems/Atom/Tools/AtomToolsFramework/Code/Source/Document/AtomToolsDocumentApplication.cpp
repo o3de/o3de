@@ -50,8 +50,9 @@ namespace AtomToolsFramework
                     if (documentType.IsSupportedExtensionToOpen(entries.front()->GetFullPath()))
                     {
                         menu->addAction(QObject::tr("Open"), [entries, this]() {
-                            AtomToolsDocumentSystemRequestBus::Event(
-                                m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, entries.front()->GetFullPath());
+                            AZ::SystemTickBus::QueueFunction([toolId = m_toolId, path = entries.front()->GetFullPath()]() {
+                                AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
+                            });
                         });
                         handledOpen = true;
                         break;
@@ -74,8 +75,8 @@ namespace AtomToolsFramework
                             : QObject::tr("Create %1...").arg(documentType.m_documentTypeName.c_str());
 
                         menu->addAction(createActionName, [entries, documentType, this]() {
-                            const auto& defaultPath = GetUniqueDefaultSaveFilePath(documentType.GetDefaultExtensionToSave().c_str());
-                            const auto& savePath = GetSaveFilePath(defaultPath);
+                            const auto& savePath = GetSaveFilePathFromDialog(
+                                {}, documentType.m_supportedExtensionsToSave, documentType.m_documentTypeName);
                             if (!savePath.empty())
                             {
                                 AtomToolsDocumentSystemRequestBus::Event(

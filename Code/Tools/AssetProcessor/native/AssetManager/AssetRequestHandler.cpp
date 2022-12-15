@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
+#include "native/AssetManager/assetProcessorManager.h"
 #include <QDir>
 #include <QTimer>
 
@@ -71,6 +72,69 @@ namespace
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AzFramework::AssetSystem;
+
+    template<typename T>
+    void BuildReport(AssetProcessor::ISourceFileRelocation* relocationInterface, T& result, AZStd::vector<AZStd::string>& lines)
+    {
+        if (result.IsSuccess())
+        {
+            AssetProcessor::RelocationSuccess success = result.TakeValue();
+
+            // The report can be too long for the AZ_Printf buffer, so split it into individual lines
+            AZStd::string report = relocationInterface->BuildChangeReport(success.m_relocationContainer, success.m_updateTasks);
+            AzFramework::StringFunc::TokenizeVisitor(
+                report,
+                [&lines](AZStd::string line)
+                {
+                    lines.push_back(line);
+                    AZ::Debug::Trace::Instance().Output(AssetProcessor::ConsoleChannel, (line + "\n").c_str());
+                },
+                "\n");
+        }
+    }
+
+    AssetChangeReportResponse HandleAssetChangeReportRequest(MessageData < AssetChangeReportRequest> messageData)
+    {
+        AZStd::vector<AZStd::string> lines;
+
+        auto* relocationInterface = AZ::Interface<AssetProcessor::ISourceFileRelocation>::Get();
+        if (relocationInterface)
+        {
+            switch (messageData.m_message->m_type)
+            {
+                case AssetChangeReportRequest::ChangeType::CheckMove:
+                {
+                    auto resultCheck = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath, RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_UpdateReferencesFlag);
+
+                    BuildReport(relocationInterface, resultCheck, lines);
+                    break;
+                }
+                case AssetChangeReportRequest::ChangeType::Move:
+                {
+                    auto resultMove = relocationInterface->Move(
+                        messageData.m_message->m_fromPath, messageData.m_message->m_toPath, RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_UpdateReferencesFlag);
+
+                    BuildReport(relocationInterface, resultMove, lines);
+                    break;
+                }
+                case AssetChangeReportRequest::ChangeType::CheckDelete:
+                {
+                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath, RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag);
+
+                    BuildReport(relocationInterface, resultCheck, lines);
+                    break;
+                }
+                case AssetChangeReportRequest::ChangeType::Delete:
+                {
+                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, RelocationParameters_AllowDependencyBreakingFlag);
+
+                    BuildReport(relocationInterface, resultDelete, lines);
+                    break;
+                }
+            }
+        }
+        return AssetChangeReportResponse(lines);
+    }
 
     GetFullSourcePathFromRelativeProductPathResponse HandleGetFullSourcePathFromRelativeProductPathRequest(MessageData<GetFullSourcePathFromRelativeProductPathRequest> messageData)
     {
@@ -434,6 +498,8 @@ AssetRequestHandler::AssetRequestHandler()
     m_requestRouter.RegisterMessageHandler(&HandleUnregisterSourceAssetRequest);
     m_requestRouter.RegisterMessageHandler(&HandleAssetInfoRequest);
     m_requestRouter.RegisterMessageHandler(&HandleAssetDependencyInfoRequest);
+    m_requestRouter.RegisterMessageHandler(&HandleAssetChangeReportRequest);
+
     m_requestRouter.RegisterMessageHandler(ToFunction(&AssetRequestHandler::HandleRequestEscalateAsset));
 }
 

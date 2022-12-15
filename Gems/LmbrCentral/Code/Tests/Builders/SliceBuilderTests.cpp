@@ -288,7 +288,7 @@ namespace UnitTest
     };
 
     class DependencyTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public ComponentApplicationBus::Handler
     {
     public:
@@ -319,7 +319,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             AllocatorInstance<PoolAllocator>::Create();
             AllocatorInstance<ThreadPoolAllocator>::Create();
@@ -370,7 +370,7 @@ namespace UnitTest
             AllocatorInstance<PoolAllocator>::Destroy();
             AllocatorInstance<ThreadPoolAllocator>::Destroy();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void VerifyDependency(AZ::Data::Asset<SliceAsset>& sliceAsset, AZ::Data::AssetId mockAssetId)

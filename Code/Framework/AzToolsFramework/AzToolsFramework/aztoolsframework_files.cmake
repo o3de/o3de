@@ -127,6 +127,8 @@ set(FILES
     AssetBundle/AssetBundleComponent.h
     AssetDatabase/AssetDatabaseConnection.cpp
     AssetDatabase/AssetDatabaseConnection.h
+    AssetDatabase/PathOrUuid.h
+    AssetDatabase/PathOrUuid.cpp
     Debug/TraceContext.inl
     Debug/TraceContext.h
     Debug/TraceContextStackInterface.h
@@ -212,6 +214,7 @@ set(FILES
     Manipulators/BoxManipulatorRequestBus.h
     Manipulators/EditorVertexSelection.h
     Manipulators/EditorVertexSelection.cpp
+    Manipulators/EditorVertexSelectionBus.h
     Manipulators/HoverSelection.h
     Manipulators/LineHoverSelection.h
     Manipulators/LineHoverSelection.cpp
@@ -234,8 +237,6 @@ set(FILES
     Manipulators/ManipulatorSpace.h
     Manipulators/PaintBrushManipulator.cpp
     Manipulators/PaintBrushManipulator.h
-    Manipulators/PaintBrushNotificationBus.h
-    Manipulators/PaintBrushRequestBus.h
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
     Manipulators/RotationManipulators.cpp
@@ -252,7 +253,20 @@ set(FILES
     Manipulators/SurfaceManipulator.h
     Manipulators/TranslationManipulators.cpp
     Manipulators/TranslationManipulators.h
+    Metadata/MetadataManager.h
+    Metadata/MetadataManager.cpp
     Maths/TransformUtils.h
+    PaintBrush/PaintBrushSubModeCluster.cpp
+    PaintBrush/PaintBrushSubModeCluster.h
+    PaintBrush/GlobalPaintBrushSettings.cpp
+    PaintBrush/GlobalPaintBrushSettings.h
+    PaintBrush/GlobalPaintBrushSettingsNotificationBus.h
+    PaintBrush/GlobalPaintBrushSettingsRequestBus.h
+    PaintBrush/GlobalPaintBrushSettingsSystemComponent.cpp
+    PaintBrush/GlobalPaintBrushSettingsSystemComponent.h
+    PaintBrush/GlobalPaintBrushSettingsWindow.cpp
+    PaintBrush/GlobalPaintBrushSettingsWindow.h
+    PaintBrush/GlobalPaintBrushSettingsWindow_Internals.h
     Picking/BoundInterface.h
     Picking/ContextBoundAPI.h
     Picking/Manipulators/ManipulatorBoundManager.cpp
@@ -368,6 +382,13 @@ set(FILES
     UI/Docking/DockWidgetUtils.h
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.cpp
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.h
+    UI/DocumentPropertyEditor/DPEComponentAdapter.h
+    UI/DocumentPropertyEditor/DPEComponentAdapter.cpp
+    UI/DocumentPropertyEditor/ValueStringFilter.cpp
+    UI/DocumentPropertyEditor/ValueStringFilter.h
+    UI/DocumentPropertyEditor/FilteredDPE.cpp
+    UI/DocumentPropertyEditor/FilteredDPE.h
+    UI/DocumentPropertyEditor/FilteredDPE.ui
     UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
@@ -517,8 +538,6 @@ set(FILES
     UI/UICore/ConsoleTextEdit.cpp
     UI/UICore/IconButton.hxx
     UI/UICore/IconButton.cpp
-    UI/UICore/PlainTextEdit.hxx
-    UI/UICore/PlainTextEdit.cpp
     UI/UICore/ProgressShield.hxx
     UI/UICore/ProgressShield.cpp
     UI/UICore/ProgressShield.ui
@@ -595,11 +614,14 @@ set(FILES
     ViewportUi/ViewportUiWidgetCallbacks.cpp
     ViewportUi/ViewportUiDisplayLayout.h
     ViewportUi/ViewportUiDisplayLayout.cpp
+    ComponentMode/ComponentModeActionHandler.h
+    ComponentMode/ComponentModeActionHandler.cpp
     ComponentMode/EditorComponentModeBus.h
     ComponentMode/ComponentModeCollection.h
     ComponentMode/ComponentModeCollection.cpp
     ComponentMode/ComponentModeDelegate.h
     ComponentMode/ComponentModeDelegate.cpp
+    ComponentMode/ComponentModeDelegateBus.h
     ComponentMode/ComponentModeSwitcher.h
     ComponentMode/ComponentModeSwitcher.cpp
     ComponentMode/ComponentModeViewportUi.h
@@ -655,6 +677,8 @@ set(FILES
     AssetBrowser/EBusFindAssetTypeByName.h
     AssetBrowser/Views/AssetBrowserTreeView.cpp
     AssetBrowser/Views/AssetBrowserTreeView.h
+    AssetBrowser/Views/AssetBrowserTreeViewDialog.cpp
+    AssetBrowser/Views/AssetBrowserTreeViewDialog.h
     AssetBrowser/Views/AssetBrowserTableView.cpp
     AssetBrowser/Views/AssetBrowserTableView.h
     AssetBrowser/Views/EntryDelegate.cpp
@@ -774,6 +798,12 @@ set(FILES
     Prefab/Instance/TemplateInstanceMapperInterface.h
     Prefab/Link/Link.h
     Prefab/Link/Link.cpp
+    Prefab/Overrides/PrefabOverrideHandler.h
+    Prefab/Overrides/PrefabOverrideHandler.cpp
+    Prefab/Overrides/PrefabOverridePublicInterface.h
+    Prefab/Overrides/PrefabOverridePublicHandler.h
+    Prefab/Overrides/PrefabOverridePublicHandler.cpp
+    Prefab/Overrides/PrefabOverrideTypes.h
     Prefab/Procedural/ProceduralPrefabAsset.h
     Prefab/Procedural/ProceduralPrefabAsset.cpp
     Prefab/PrefabPublicHandler.h
@@ -785,8 +815,6 @@ set(FILES
     Prefab/PrefabPublicRequestBus.h
     Prefab/PrefabPublicRequestHandler.h
     Prefab/PrefabPublicRequestHandler.cpp
-    Prefab/PrefabUndo.h
-    Prefab/PrefabUndo.cpp
     Prefab/PrefabUndoCache.cpp
     Prefab/PrefabUndoCache.h
     Prefab/PrefabUndoHelpers.cpp
@@ -827,13 +855,31 @@ set(FILES
     Prefab/Spawnable/SpawnableUtils.cpp
     Prefab/Template/Template.h
     Prefab/Template/Template.cpp
+    Prefab/Undo/PrefabUndo.h
+    Prefab/Undo/PrefabUndo.cpp
+    Prefab/Undo/PrefabUndoAddEntity.h
+    Prefab/Undo/PrefabUndoAddEntity.cpp
+    Prefab/Undo/PrefabUndoAddEntityAsOverride.h
+    Prefab/Undo/PrefabUndoAddEntityAsOverride.cpp
+    Prefab/Undo/PrefabUndoDelete.h
+    Prefab/Undo/PrefabUndoDelete.cpp
+    Prefab/Undo/PrefabUndoDeleteAsOverride.h
+    Prefab/Undo/PrefabUndoDeleteAsOverride.cpp
+    Prefab/Undo/PrefabUndoBase.h
+    Prefab/Undo/PrefabUndoBase.cpp
+    Prefab/Undo/PrefabUndoRevertOverrides.h
+    Prefab/Undo/PrefabUndoRevertOverrides.cpp
+    Prefab/Undo/PrefabUndoUpdateLink.h
+    Prefab/Undo/PrefabUndoUpdateLink.cpp
+    Prefab/Undo/PrefabUndoUtils.h
+    Prefab/Undo/PrefabUndoUtils.cpp
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx
     UI/Outliner/EntityOutlinerTreeView.cpp
     UI/Outliner/EntityOutlinerWidget.hxx
     UI/Outliner/EntityOutlinerWidget.cpp
-    UI/Outliner/EntityOutlinerCacheBus.h 
+    UI/Outliner/EntityOutlinerCacheBus.h
     UI/Outliner/EntityOutlinerDragAndDropContext.h
     UI/Outliner/EntityOutlinerListModel.hxx
     UI/Outliner/EntityOutlinerListModel.cpp

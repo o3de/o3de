@@ -170,6 +170,7 @@ namespace AzToolsFramework
         m_handler = nullptr;
         m_isMultiSizeContainer = false;
         m_isFixedSizeOrSmartPtrContainer = false;
+        m_custom = false;
         if (m_selectionEnabled) 
         {
             SetSelected(false);

@@ -24,6 +24,8 @@ namespace AZ
             AZ_TYPE_INFO(RenderPipelineDescriptor, "{B1A5CF41-AC8D-440E-A1E9-3544D7F3445B}");
             static void Reflect(AZ::ReflectContext* context);
 
+            static constexpr char const Extension[] = "RenderPipeline.azasset";
+
             //! The root pass template name 
             AZStd::string m_rootPassTemplate;
 
@@ -35,6 +37,9 @@ namespace AZ
             //! Render Pipeline's name. This name will be used to identify the render pipeline when it's added to a scene.
             //! Render pipelines in the same scene won't have same name.
             AZStd::string m_name;
+
+            //! This will be used in the render pipeline's DrawFilterMask for draw item filtering.
+            AZStd::string m_materialPipelineTag = "MainPipeline";
 
             //! Render settings that can be queried by passes to set things like MSAA on attachments
             PipelineRenderSettings m_renderSettings;

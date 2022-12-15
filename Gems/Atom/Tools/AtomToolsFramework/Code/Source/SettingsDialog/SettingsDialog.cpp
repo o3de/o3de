@@ -6,37 +6,22 @@
  *
  */
 
-#include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
-#include <AtomToolsFramework/Util/Util.h>
 
 #include <QDialogButtonBox>
 #include <QVBoxLayout>
 
 namespace AtomToolsFramework
 {
-    SettingsDialog::SettingsDialog(AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> groups, QWidget* parent)
+    SettingsDialog::SettingsDialog(QWidget* parent)
         : QDialog(parent)
-        , m_groups(groups)
     {
         setWindowTitle("Settings");
-        setFixedSize(800, 400);
         setLayout(new QVBoxLayout(this));
         setModal(true);
 
         m_inspectorWidget = new InspectorWidget(this);
         layout()->addWidget(m_inspectorWidget);
-
-        m_inspectorWidget->AddGroupsBegin();
-        for (auto group : m_groups)
-        {
-            m_inspectorWidget->AddGroup(
-                group->m_name,
-                group->m_displayName,
-                group->m_description,
-                new InspectorPropertyGroupWidget(group.get(), group.get(), azrtti_typeid<DynamicPropertyGroup>()));
-        }
-        m_inspectorWidget->AddGroupsEnd();
 
         // Create the bottom row of the dialog with action buttons
         auto buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok, this);
@@ -45,7 +30,12 @@ namespace AtomToolsFramework
         layout()->addWidget(buttonBox);
     }
 
-    AZStd::shared_ptr<DynamicPropertyGroup> CreateSettingsGroup(
+    InspectorWidget* SettingsDialog::GetInspector()
+    {
+        return m_inspectorWidget;
+    }
+
+    AZStd::shared_ptr<DynamicPropertyGroup> CreateSettingsPropertyGroup(
         const AZStd::string& displayName,
         const AZStd::string& description,
         AZStd::vector<DynamicProperty> properties,
@@ -60,11 +50,10 @@ namespace AtomToolsFramework
         return AZStd::shared_ptr<DynamicPropertyGroup>(group);
     }
 
-    DynamicProperty CreatePropertyFromSetting(
+    DynamicProperty CreateSettingsPropertyValue(
         const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const AZStd::string& defaultValue)
     {
         DynamicPropertyConfig config;
-        config.m_dataType = DynamicPropertyType::String;
         config.m_id = id;
         config.m_name = displayName;
         config.m_displayName = displayName;
@@ -78,11 +67,10 @@ namespace AtomToolsFramework
         return DynamicProperty(config);
     }
 
-    DynamicProperty CreatePropertyFromSetting(
+    DynamicProperty CreateSettingsPropertyValue(
         const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const bool& defaultValue)
     {
         DynamicPropertyConfig config;
-        config.m_dataType = DynamicPropertyType::Bool;
         config.m_id = id;
         config.m_name = displayName;
         config.m_displayName = displayName;
@@ -96,11 +84,10 @@ namespace AtomToolsFramework
         return DynamicProperty(config);
     }
 
-    DynamicProperty CreatePropertyFromSetting(
+    DynamicProperty CreateSettingsPropertyValue(
         const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const double& defaultValue)
     {
         DynamicPropertyConfig config;
-        config.m_dataType = DynamicPropertyType::Float;
         config.m_id = id;
         config.m_name = displayName;
         config.m_displayName = displayName;
@@ -114,11 +101,10 @@ namespace AtomToolsFramework
         return DynamicProperty(config);
     }
 
-    DynamicProperty CreatePropertyFromSetting(
+    DynamicProperty CreateSettingsPropertyValue(
         const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const AZ::u64& defaultValue)
     {
         DynamicPropertyConfig config;
-        config.m_dataType = DynamicPropertyType::UInt;
         config.m_id = id;
         config.m_name = displayName;
         config.m_displayName = displayName;
@@ -132,11 +118,10 @@ namespace AtomToolsFramework
         return DynamicProperty(config);
     }
 
-    DynamicProperty CreatePropertyFromSetting(
+    DynamicProperty CreateSettingsPropertyValue(
         const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const AZ::s64& defaultValue)
     {
         DynamicPropertyConfig config;
-        config.m_dataType = DynamicPropertyType::Int;
         config.m_id = id;
         config.m_name = displayName;
         config.m_displayName = displayName;

@@ -75,7 +75,7 @@ namespace AZ
             if (!m_functionLoader->Init() ||
                 !m_functionLoader->LoadProcAddresses(&m_context, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE))
             {
-                AZ_Warning("Vulkan", false, "Could not initialized function loader.");
+                AZ_Warning("Vulkan", false, "Could not initialize function loader.");
                 return false;
             }
 
@@ -330,6 +330,8 @@ namespace AZ
 
                 //Update the native object from the passed by the XR module
                 m_instance = xrInstanceDescriptor->m_outputData.m_xrVkInstance;
+                //Update the context from the passed by the XR module
+                m_context = xrInstanceDescriptor->m_outputData.m_context;
 
                 //Re-add support for validation with the updated VkInstance
                 CreateDebugMessenger();

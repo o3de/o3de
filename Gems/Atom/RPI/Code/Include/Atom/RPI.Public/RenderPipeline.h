@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/DrawList.h>
+#include <Atom/RHI/DrawFilterTagRegistry.h>
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/PipelinePassChanges.h>
@@ -94,7 +95,7 @@ namespace AZ
             static RenderPipelinePtr CreateRenderPipelineFromAsset(Data::Asset<AnyAsset> pipelineAsset);
 
             static RenderPipelinePtr CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext,
-                                                                   const WindowContext::SwapChainMode swapchainMode = WindowContext::SwapChainMode::Default);
+                                                                   const ViewType viewType = ViewType::Default);
             static RenderPipelinePtr CreateRenderPipelineForWindow(Data::Asset<AnyAsset> pipelineAsset, const WindowContext& windowContext);
 
             // Data type for render pipeline's views' information
@@ -203,9 +204,6 @@ namespace AZ
             //! Get current render mode
             RenderMode GetRenderMode() const;
 
-            //! Get draw filter tag
-            RHI::DrawFilterTag GetDrawFilterTag() const;
-
             //! Get draw filter mask
             RHI::DrawFilterMask GetDrawFilterMask() const;
 
@@ -225,6 +223,9 @@ namespace AZ
             //! Note: to find all the passes with matching name in this render pipeline,
             //! use RPI::PassSystemInterface::Get()->ForEachPass() function instead.
             Ptr<Pass> FindFirstPass(const AZ::Name& passName);
+
+            //! Return the view type associated with this pipeline.
+            ViewType GetViewType() const;
 
         private:
             RenderPipeline() = default;
@@ -276,7 +277,8 @@ namespace AZ
             // if the view already exists in map, its DrawListMask will be combined to the existing one's
             void CollectPersistentViews(AZStd::map<ViewPtr, RHI::DrawListMask>& outViewMasks) const;
 
-            void SetDrawFilterTag(RHI::DrawFilterTag);
+            void SetDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry);
+            void ReleaseDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry);
 
             // End of functions accessed by Scene class
             //////////////////////////////////////////////////
@@ -299,6 +301,9 @@ namespace AZ
             // RenderPipeline's name id, it will be used to identify the render pipeline when it's added to a Scene
             RenderPipelineId m_nameId;
 
+            // The name of a material pipeline (.materialpipeline file) that this RenderPipeline is associated with.
+            Name m_materialPipelineTagName;
+
             // Whether the pipeline should recreate it's pass tree, for example in the case of pass asset hot reloading.
             bool m_needsPassRecreate = false;
 
@@ -316,15 +321,20 @@ namespace AZ
             // Render settings that can be queried by passes to setup things like render target resolution
             PipelineRenderSettings m_activeRenderSettings;
 
-            // A tag to filter draw items submitted by passes of this render pipeline.
-            // This tag is allocated when it's added to a scene. It's set to invalid when it's removed to the scene.
-            RHI::DrawFilterTag m_drawFilterTag;
+            // Tags to filter draw items submitted by passes of this render pipeline.
+            // These tags are allocated when the pipeline is added to a scene. They are set to invalid when removed from the scene.
+            RHI::DrawFilterTag m_drawFilterTagForPipelineInstanceName;
+            RHI::DrawFilterTag m_drawFilterTagForMaterialPipeline;
+
             // A mask to filter draw items submitted by passes of this render pipeline.
-            // This mask is created from the value of m_drawFilterTag.
+            // This mask is created from the above DrawFilterTag(s).
             RHI::DrawFilterMask m_drawFilterMask = 0;
 
             // The descriptor used to created this render pipeline
             RenderPipelineDescriptor m_descriptor;
+
+            // View type associated with the Render Pipeline.
+            ViewType m_viewType = ViewType::Default;
         };
 
     } // namespace RPI

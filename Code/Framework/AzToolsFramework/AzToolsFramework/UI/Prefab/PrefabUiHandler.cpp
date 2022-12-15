@@ -14,6 +14,7 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 #include <QAbstractItemModel>
 #include <QApplication>
@@ -26,8 +27,7 @@
 
 namespace AzToolsFramework
 {
-    static const QPoint ExpanderOffset = { -18, 3 };
-    static const QPoint EditIconOffset = { -13, 7 };
+    static const QPoint EditIconOffset = { -18, 3 };
 
     AzFramework::EntityContextId PrefabUiHandler::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
 
@@ -54,6 +54,19 @@ namespace AzToolsFramework
             return;
         }
 
+        m_prefabOverridePublicInterface = AZ::Interface<Prefab::PrefabOverridePublicInterface>::Get();
+        if (m_prefabOverridePublicInterface == nullptr)
+        {
+            AZ_Assert(false, "PrefabUiHandler - could not get PrefabOverridePublicInterface on PrefabUiHandler construction.");
+            return;
+        }
+
+        // Cache override pixmaps. QIcon handles dpi scaling
+        QIcon editOverrideIcon = QIcon(m_editEntityOverrideImagePath);
+        m_editEntityOverrideImage = editOverrideIcon.pixmap(s_overrideImageSize);
+        QIcon addOverrideIcon = QIcon(m_addEntityOverrideImagePath);
+        m_addEntityOverrideImage = addOverrideIcon.pixmap(s_overrideImageSize);
+
         // Get EditorEntityContextId
         EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
     }
@@ -74,9 +87,10 @@ namespace AzToolsFramework
                 saveFlag = "*";
             }
 
-            infoString = QObject::tr("<table style=\"font-size: 10px;\"><tr><td>%1%2</td><td width=\"%3\"></td></tr></table>")
+            infoString = QObject::tr("<table style=\"font-size: %4px;\"><tr><td>%1%2</td><td width=\"%3\"></td></tr></table>")
                              .arg(path.Filename().Native().data())
                              .arg(saveFlag)
+                             .arg(m_prefabEditIconSize)
                              .arg(m_prefabFileNameFontSize);
         }
 
@@ -225,6 +239,18 @@ namespace AzToolsFramework
         PaintDescendantBorder(painter, option, index, descendantIndex, borderColor);
     }
 
+    const QPixmap& PrefabUiHandler::GetOverrideImageForEntity(AZ::EntityId entityId) const
+    {
+        if (auto overrideType = m_prefabOverridePublicInterface->GetOverrideType(entityId); overrideType.has_value())
+        {
+            if (overrideType == AzToolsFramework::Prefab::OverrideType::AddEntity)
+            {
+                return m_addEntityOverrideImage;
+            }
+        }
+        return m_editEntityOverrideImage;
+    }
+
     void PrefabUiHandler::PaintDescendantForeground(
         QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const QModelIndex& descendantIndex) const
     {
@@ -232,6 +258,61 @@ namespace AzToolsFramework
         {
             AZ_Warning("PrefabUiHandler", false, "PrefabUiHandler - painter is nullptr, can't draw Prefab outliner background.");
             return;
+        }
+
+        if (descendantIndex.column() == EntityOutlinerListModel::ColumnName)
+        {
+            AZ::EntityId descendantEntityId = GetEntityIdFromIndex(descendantIndex);
+
+            // If the entity is not in the focus hierarchy, we needn't add override visualization
+            // as overrides are only shown from the current focused prefab.
+            if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(descendantEntityId))
+            {
+                // Container entities will always have overrides because they need to maintain unique positions in the scene.
+                // We are skipping checking for overrides on container entities for this reason.
+                if (!m_prefabPublicInterface->IsInstanceContainerEntity(descendantEntityId) &&
+                    m_prefabOverridePublicInterface->AreOverridesPresent(descendantEntityId))
+                {
+                    painter->save();
+                    painter->setPen(Qt::NoPen);
+
+                    // Cover the right side of the entity icon's cube with the background color
+                    QColor backgroundColor = m_backgroundColor;
+                    const bool isHovered = (option.state & QStyle::State_MouseOver);
+                    const bool isSelected = descendantIndex.data(EntityOutlinerListModel::SelectedRole).template value<bool>();
+                    if (isSelected)
+                    {
+                        backgroundColor = m_backgroundSelectedColor;
+                    }
+                    else if (isHovered)
+                    {
+                        backgroundColor = m_backgroundHoverColor;
+                    }
+
+                    // Create a path to fill with the background color
+                    constexpr int coveredAreaLength = 7;
+                    const QPoint coveredAreaOffsetFromEntityIcon(11, 12);
+                    const QPoint coveredAreaTopLeft = option.rect.topLeft() + coveredAreaOffsetFromEntityIcon;
+                    const QPoint coveredAreaTopRight = coveredAreaTopLeft + QPoint(coveredAreaLength, -4);
+                    const QPoint coveredAreaBottomLeft = QPoint(coveredAreaTopLeft.x(), coveredAreaTopLeft.y() + coveredAreaLength);
+                    const QPoint coveredAreaBottomRight = QPoint(coveredAreaBottomLeft.x() + coveredAreaLength, coveredAreaBottomLeft.y());
+                    QPainterPath coveredAreaPath;
+                    coveredAreaPath.moveTo(coveredAreaTopLeft);
+                    coveredAreaPath.lineTo(coveredAreaTopRight);
+                    coveredAreaPath.lineTo(coveredAreaBottomRight);
+                    coveredAreaPath.lineTo(coveredAreaBottomLeft);
+                    coveredAreaPath.lineTo(coveredAreaTopLeft);
+                    painter->setRenderHint(QPainter::Antialiasing, false);
+                    painter->fillPath(coveredAreaPath, backgroundColor);
+
+                    // Paint the override image
+                    const QPixmap& overrideImage = GetOverrideImageForEntity(descendantEntityId);
+                    painter->setRenderHint(QPainter::Antialiasing, true);
+                    painter->drawPixmap(option.rect.topLeft() + s_overrideImageOffset, overrideImage);
+
+                    painter->restore();
+                }
+            }
         }
 
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
@@ -344,8 +425,6 @@ namespace AzToolsFramework
     {
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
-        const int iconSize = 16;
-        const int editIconSize = 10;
         const bool isHovered = (option.state & QStyle::State_MouseOver);
         const bool isSelected = index.data(EntityOutlinerListModel::SelectedRole).template value<bool>();
         const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
@@ -379,12 +458,12 @@ namespace AzToolsFramework
 
                     // Paint a rect to cover up the expander.
                     QRect rect = QRect(0, 0, 16, 16);
-                    rect.translate(option.rect.topLeft() + ExpanderOffset);
+                    rect.translate(option.rect.topLeft() + EditIconOffset);
                     painter->fillRect(rect, editIconBackgroundColor);
 
                     // Paint the icon.
                     QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
-                    painter->drawPixmap(option.rect.topLeft() + ExpanderOffset, closeIcon.pixmap(iconSize));
+                    painter->drawPixmap(option.rect.topLeft() + EditIconOffset, closeIcon.pixmap(m_prefabEditIconSize));
                 }
             }
         }
@@ -394,7 +473,7 @@ namespace AzToolsFramework
             if (isFirstColumn && isHovered && !isContainerOpen)
             {
                 QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
-                painter->drawPixmap(option.rect.topRight() + EditIconOffset, openIcon.pixmap(editIconSize));
+                painter->drawPixmap(option.rect.topRight() + EditIconOffset, openIcon.pixmap(m_prefabEditIconSize));
             }
         }
 
@@ -447,7 +526,7 @@ namespace AzToolsFramework
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
 
         QRect expanderRect = QRect(0, 0, 16, 16);
-        expanderRect.translate(option.rect.topLeft() + ExpanderOffset);
+        expanderRect.translate(option.rect.topLeft() + EditIconOffset);
 
         const QPoint textOffset = QPoint(0, 3);
         QRect filenameRect = QRect(0, 0, 12, 10);

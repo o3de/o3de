@@ -9,11 +9,11 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzQtComponents/Components/Widgets/Card.h>
 #include <EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/MotionEventPresetManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
-#include <MysticQt/Source/DialogStack.h>
 #include <QLabel>
 #include <QTableWidget>
 #include <QTableWidgetItem>
@@ -29,22 +29,24 @@ QT_FORWARD_DECLARE_CLASS(QShortcut)
 
 namespace EMStudio
 {
-    class MotionEventsPlugin;
+    class TimeViewPlugin;
 
     class MotionEventPresetsWidget
-        : public QWidget
+        : public AzQtComponents::Card
     {
         Q_OBJECT // AUTOMOC
         MCORE_MEMORYOBJECTCATEGORY(MotionEventPresetsWidget, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
-        MotionEventPresetsWidget(QWidget* parent, MotionEventsPlugin* plugin);
+        MotionEventPresetsWidget(QWidget* parent, TimeViewPlugin* plugin);
 
         // overloaded main init function
         void Init();
         void UpdateInterface();
 
         QTableWidget* GetMotionEventPresetsTable()                                                          { return m_tableWidget; }
+
+        bool CheckIfIsPresetReadyToDrop();
 
     public slots:
         void ReInit();
@@ -97,6 +99,6 @@ namespace EMStudio
         QAction* m_saveAction = nullptr;
         QAction* m_saveAsAction = nullptr;
         QAction* m_loadAction = nullptr;
-        MotionEventsPlugin* m_plugin = nullptr;
+        TimeViewPlugin* m_timeViewPlugin = nullptr;
     };
 } // namespace EMStudio

@@ -28,7 +28,7 @@
 namespace LUAEditor
 {
     LUAEditorPlainTextEdit::LUAEditorPlainTextEdit(QWidget* pParent)
-        : AzToolsFramework::PlainTextEdit(pParent)
+        : QPlainTextEdit(pParent)
     {
         m_completionModel = aznew CompletionModel(this);
         m_completer = aznew Completer(m_completionModel, this);
@@ -41,6 +41,61 @@ namespace LUAEditor
     {
         delete m_completer;
         delete m_completionModel;
+    }
+
+    QRectF LUAEditorPlainTextEdit::GetBlockBoundingGeometry(const QTextBlock& block) const
+    {
+        auto result = blockBoundingGeometry(block);
+        result.translate(contentOffset());
+        return result;
+    }
+
+    void LUAEditorPlainTextEdit::ForEachVisibleBlock(AZStd::function<void(QTextBlock& block, const QRectF&)> operation) const
+    {
+        for (auto block = document()->begin(); block != document()->end(); block = block.next())
+        {
+            auto blockRect = GetBlockBoundingGeometry(block);
+            if (block.isVisible() && blockRect.bottom() > 0 && blockRect.top() < size().height())
+            {
+                operation(block, blockRect);
+            }
+        }
+    }
+
+    void LUAEditorPlainTextEdit::mouseDoubleClickEvent(QMouseEvent* event)
+    {
+        auto& mousePos = event->localPos();
+
+        QTextBlock blockClicked;
+        // any block could be hidden, so have to loop through to be sure
+        ForEachVisibleBlock(
+            [&](const QTextBlock& block, const QRectF& blockRect)
+            {
+                if (mousePos.y() >= blockRect.top() && mousePos.y() <= blockRect.bottom())
+                {
+                    blockClicked = block;
+                }
+            });
+
+        event->ignore();
+
+        if (blockClicked.isValid())
+        {
+            emit BlockDoubleClicked(event, blockClicked);
+        }
+
+        if (!event->isAccepted())
+        {
+            QPlainTextEdit::mouseDoubleClickEvent(event);
+        }
+        event->accept();
+    }
+
+    void LUAEditorPlainTextEdit::scrollContentsBy(int x, int y) 
+    {
+        QPlainTextEdit::scrollContentsBy(x, y);
+
+        emit Scrolled();
     }
 
     void LUAEditorPlainTextEdit::focusInEvent(QFocusEvent* pEvent)
@@ -578,7 +633,7 @@ namespace LUAEditor
         }
         else
         {
-            AzToolsFramework::PlainTextEdit::dropEvent(e);
+            QPlainTextEdit::dropEvent(e);
         }
     }
 }

@@ -12,25 +12,20 @@
 #include <tests/assetmanager/MockAssetProcessorManager.h>
 #include <tests/assetmanager/MockFileProcessor.h>
 #include <AzToolsFramework/Archive/ArchiveComponent.h>
+#include <native/FileWatcher/FileWatcher.h>
 #include <native/utilities/AssetServerHandler.h>
 #include <native/resourcecompiler/rcjob.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <unittests/UnitTestUtils.h>
 
 namespace UnitTests
 {
-    bool DatabaseLocationListener::GetAssetDatabaseLocation(AZStd::string& location)
-    {
-        location = m_databaseLocation;
-        return true;
-    }
-
     void ApplicationManagerTest::SetUp()
     {
-        ScopedAllocatorSetupFixture::SetUp();
-        
-        AZ::IO::Path tempDir(m_tempDir.GetDirectory());
-        m_databaseLocationListener.m_databaseLocation = (tempDir / "test_database.sqlite").Native();
+        LeakDetectionFixture::SetUp();
+
+        AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 
         // We need a QCoreApplication to run the event loop
         int argc = 0;
@@ -47,8 +42,8 @@ namespace UnitTests
         m_applicationManager->m_platformConfiguration->EnablePlatform(AssetBuilderSDK::PlatformInfo{ "pc", { "tag" } });
         m_applicationManager->m_platformConfiguration->PopulatePlatformsForScanFolder(platforms);
         m_applicationManager->m_platformConfiguration->AddScanFolder(
-            AssetProcessor::ScanFolderInfo{ tempDir.c_str(), "test", "test", true, true, platforms });
-        
+            AssetProcessor::ScanFolderInfo{ assetRootDir.c_str(), "test", "test", true, true, platforms });
+
         m_apmThread = AZStd::make_unique<QThread>(nullptr);
         m_apmThread->setObjectName("APM Thread");
         m_applicationManager->m_assetProcessorManager->moveToThread(m_apmThread.get());
@@ -61,6 +56,8 @@ namespace UnitTests
         m_mockFileProcessor = fileProcessor.get();
         m_applicationManager->m_fileProcessor = AZStd::move(fileProcessor); // The manager is taking ownership
         m_fileProcessorThread->start();
+
+        m_applicationManager->InitUuidManager();
 
         auto fileWatcher = AZStd::make_unique<FileWatcher>();
         m_fileWatcher = fileWatcher.get();
@@ -75,17 +72,38 @@ namespace UnitTests
         m_fileProcessorThread->exit();
         m_mockAPM = nullptr;
 
-        ScopedAllocatorSetupFixture::TearDown();
+        LeakDetectionFixture::TearDown();
+    }
+
+    using BatchApplicationManagerTest = UnitTest::LeakDetectionFixture;
+
+    TEST_F(BatchApplicationManagerTest, FileCreatedOnDisk_ShowsUpInFileCache)
+    {
+        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
+        AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
+
+        int argc = 0;
+
+        auto m_applicationManager = AZStd::make_unique<MockBatchApplicationManager>(&argc, nullptr);
+        m_applicationManager->InitFileStateCache();
+
+        auto* fileStateCache = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
+
+        ASSERT_TRUE(fileStateCache);
+
+        EXPECT_FALSE(fileStateCache->Exists((assetRootDir / "test").c_str()));
+        UnitTestUtils::CreateDummyFile((assetRootDir / "test").c_str());
+        EXPECT_TRUE(fileStateCache->Exists((assetRootDir / "test").c_str()));
     }
 
     TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread)
     {
-        AZ::IO::Path tempDir(m_tempDir.GetDirectory());
+        AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 
-        Q_EMIT m_fileWatcher->fileAdded((tempDir / "test").c_str());
-        Q_EMIT m_fileWatcher->fileModified((tempDir / "test2").c_str());
-        Q_EMIT m_fileWatcher->fileRemoved((tempDir / "test3").c_str());
-        
+        Q_EMIT m_fileWatcher->fileAdded((assetRootDir / "test").c_str());
+        Q_EMIT m_fileWatcher->fileModified((assetRootDir / "test2").c_str());
+        Q_EMIT m_fileWatcher->fileRemoved((assetRootDir / "test3").c_str());
+
         EXPECT_TRUE(m_mockAPM->m_events[Added].WaitAndCheck()) << "APM Added event failed";
         EXPECT_TRUE(m_mockAPM->m_events[Modified].WaitAndCheck()) << "APM Modified event failed";
         EXPECT_TRUE(m_mockAPM->m_events[Deleted].WaitAndCheck()) << "APM Deleted event failed";
@@ -105,8 +123,6 @@ namespace UnitTests
 
     TEST(AssetProcessorAssetServerHandler, AssetServerHandler_FutureCalls_FailsNoExceptions)
     {
-        UnitTest::ScopedAllocatorFixture fixture;
-
         char executablePath[AZ_MAX_PATH_LEN];
         AZ::Utils::GetExecutablePath(executablePath, AZ_MAX_PATH_LEN);
 

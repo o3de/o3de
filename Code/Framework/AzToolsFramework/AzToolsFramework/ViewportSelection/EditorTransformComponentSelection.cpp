@@ -20,6 +20,7 @@
 #include <AzQtComponents/Components/Style.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
@@ -1049,6 +1050,10 @@ namespace AzToolsFramework
             m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
             AZ_Assert(
                 m_actionManagerInterface, "PrefabCould not get ActionManagerInterface on EditorTransformComponentSelection construction.");
+
+            m_hotKeyManagerInterface = AZ::Interface<HotKeyManagerInterface>::Get();
+            AZ_Assert(
+                m_hotKeyManagerInterface, "PrefabCould not get HotKeyManagerInterface on EditorTransformComponentSelection construction.");
 
             m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
             AZ_Assert(
@@ -2534,6 +2539,7 @@ namespace AzToolsFramework
 
         // Duplicate
         {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.duplicate";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = DuplicateTitle;
             actionProperties.m_description = DuplicateDesc;
@@ -2541,7 +2547,7 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.duplicate",
+                actionIdentifier,
                 actionProperties,
                 []()
                 {
@@ -2558,10 +2564,16 @@ namespace AzToolsFramework
                     // selection update handled in AfterEntitySelectionChanged
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+D");
         }
 
         // Delete
         {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.delete";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = DeleteTitle;
             actionProperties.m_description = DeleteDesc;
@@ -2569,7 +2581,7 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.delete",
+                actionIdentifier,
                 actionProperties,
                 [this]()
                 {
@@ -2584,13 +2596,17 @@ namespace AzToolsFramework
 
                     m_selectedEntityIds.clear();
                     m_pivotOverrideFrame.Reset();
-                }
-            );
-        }
+                });
 
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Delete");
+        }
 
         // Select All
         {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.selectAll";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = SelectAllTitle;
             actionProperties.m_description = SelectAllDesc;
@@ -2598,7 +2614,7 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.selectAll",
+                actionIdentifier,
                 actionProperties,
                 [this]()
                 {
@@ -2625,7 +2641,8 @@ namespace AzToolsFramework
                             {
                                 AddEntityToSelection(entityId);
                             }
-                        });
+                        }
+                    );
 
                     auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
 
@@ -2637,10 +2654,16 @@ namespace AzToolsFramework
                     RegenerateManipulators();
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+A");
         }
 
         // Invert Selection
         {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.invertSelection";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = InvertSelectionTitle;
             actionProperties.m_description = InvertSelectionDesc;
@@ -2648,7 +2671,7 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.invertSelection",
+                actionIdentifier,
                 actionProperties,
                 [this]()
                 {
@@ -2694,10 +2717,16 @@ namespace AzToolsFramework
                     RegenerateManipulators();
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Shift+I");
         }
         
         // Toggle Pivot Location
         {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.togglePivot";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = TogglePivotTitleEditMenu;
             actionProperties.m_description = TogglePivotDesc;
@@ -2705,17 +2734,23 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.togglePivot",
+                actionIdentifier,
                 actionProperties,
                 [&]()
                 {
                     ToggleCenterPivotSelection();
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "P");
         }
 
         // Reset Entity Transform
         {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.resetEntityTransform";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = ResetEntityTransformTitle;
             actionProperties.m_description = ResetEntityTransformDesc;
@@ -2723,7 +2758,7 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.resetEntityTransform",
+                actionIdentifier,
                 actionProperties,
                 [this]
                 {
@@ -2741,10 +2776,16 @@ namespace AzToolsFramework
                     }
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "R");
         }
 
         // Reset Manipulator
         {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.resetManipulator";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = ResetManipulatorTitle;
             actionProperties.m_description = ResetManipulatorDesc;
@@ -2752,13 +2793,18 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.resetManipulator",
+                actionIdentifier,
                 actionProperties,
                 [this]()
                 {
                     DelegateClearManipulatorOverride();
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+R");
         }
 
         const auto showHide = [this](const bool show)
@@ -2785,6 +2831,7 @@ namespace AzToolsFramework
 
         // Show Selection
         {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.showSelection";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = ShowSelectionTitle;
             actionProperties.m_description = ShowSelectionDesc;
@@ -2792,17 +2839,21 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.showSelection",
+                actionIdentifier,
                 actionProperties,
                 [showHide]()
                 {
                     showHide(true);
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
         }
 
         // Hide Selection
         {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.hideSelection";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = HideSelectionTitle;
             actionProperties.m_description = HideSelectionDesc;
@@ -2810,17 +2861,23 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.hideSelection",
+                actionIdentifier,
                 actionProperties,
                 [showHide]()
                 {
                     showHide(false);
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "H");
         }
 
         // Show All
         {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.showAll";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = ShowAllTitle;
             actionProperties.m_description = ShowAllDesc;
@@ -2828,7 +2885,7 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.showAll",
+                actionIdentifier,
                 actionProperties,
                 []()
                 {
@@ -2845,6 +2902,11 @@ namespace AzToolsFramework
                     );
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Shift+H");
         }
 
         const auto lockUnlock = [this](const bool lock)
@@ -2871,6 +2933,7 @@ namespace AzToolsFramework
 
         // Lock Selection
         {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.lockSelection";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = LockSelectionTitle;
             actionProperties.m_description = LockSelectionDesc;
@@ -2878,17 +2941,23 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.lockSelection",
+                actionIdentifier,
                 actionProperties,
                 [lockUnlock]()
                 {
                     lockUnlock(true);
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "L");
         }
 
         // Unlock Selection
         {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.unlockSelection";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = UnlockSelectionTitle;
             actionProperties.m_description = UnlockSelectionDesc;
@@ -2896,17 +2965,21 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.unlockSelection",
+                actionIdentifier,
                 actionProperties,
                 [lockUnlock]()
                 {
                     lockUnlock(false);
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
         }
 
         // Unlock All Entities
         {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.unlockAllEntities";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = UnlockAllTitle;
             actionProperties.m_description = UnlockAllDesc;
@@ -2914,7 +2987,7 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.unlockAllEntities",
+                actionIdentifier,
                 actionProperties,
                 []()
                 {
@@ -2931,6 +3004,11 @@ namespace AzToolsFramework
                     );
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Shift+L");
         }
 
         // Transform Mode - Move
@@ -2941,6 +3019,7 @@ namespace AzToolsFramework
             actionProperties.m_description = "Select and move selected object(s)";
             actionProperties.m_category = "Edit";
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Move.svg";
+            actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
@@ -2958,6 +3037,11 @@ namespace AzToolsFramework
 
             // Update when the transform mode changes.
             m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "1");
         }
 
         // Transform Mode - Rotate
@@ -2968,6 +3052,7 @@ namespace AzToolsFramework
             actionProperties.m_description = "Select and rotate selected object(s)";
             actionProperties.m_category = "Edit";
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Rotate.svg";
+            actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
@@ -2985,6 +3070,11 @@ namespace AzToolsFramework
 
             // Update when the transform mode changes.
             m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "2");
         }
 
         // Transform Mode - Scale
@@ -2995,6 +3085,7 @@ namespace AzToolsFramework
             actionProperties.m_description = "Select and scale selected object(s)";
             actionProperties.m_category = "Edit";
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Scale.svg";
+            actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
@@ -3012,6 +3103,11 @@ namespace AzToolsFramework
 
             // Update when the transform mode changes.
             m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "3");
         }
     }
 

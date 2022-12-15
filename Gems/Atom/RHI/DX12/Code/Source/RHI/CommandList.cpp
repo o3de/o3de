@@ -367,10 +367,11 @@ namespace AZ
 
                 for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
                 {
-                    if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid())
+                    if (binding.m_bindlessTable.IsValid() 
+                        && compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                     {
                         GetCommandList()->SetComputeRootDescriptorTable(
-                            binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
+                            binding.m_bindlessTable.GetIndex(),
                             compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex]);
                     }
                 }
@@ -437,6 +438,7 @@ namespace AZ
 
             CommitScissorState();
             CommitViewportState();
+            CommitShadingRateState();
 
             switch (drawItem.m_arguments.m_type)
             {
@@ -528,6 +530,18 @@ namespace AZ
 #endif
         }
 
+        void CommandList::SetFragmentShadingRate(
+            RHI::ShadingRate rate, const RHI::ShadingRateCombinators& combinators)
+        {
+            if (!RHI::CheckBitsAll(GetDevice().GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw))
+            {
+                AZ_Assert(false, "Per Draw shading rate is not supported on this platform");
+                return;
+            }
+
+            m_state.m_shadingRateState.Set(rate, combinators);
+        }
+
         void CommandList::BuildTopLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingTlas& rayTracingTlas)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
@@ -611,6 +625,35 @@ namespace AZ
             m_state.m_scissorState.m_isDirty = false;
         }
 
+        void CommandList::CommitShadingRateState()
+        {
+            if (!m_state.m_shadingRateState.m_isDirty)
+            {
+                return;
+            }
+
+#ifdef O3DE_DX12_VRS_SUPPORT
+            AZ_Assert(
+                RHI::CheckBitsAll(GetDevice().GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw),
+                "PerDraw shading rate is not supported on this platform");
+
+            AZStd::array<D3D12_SHADING_RATE_COMBINER, RHI::ShadingRateCombinators::array_size> d3d12Combinators;
+            for (int i = 0; i < m_state.m_shadingRateState.m_shadingRateCombinators.size(); ++i)
+            {
+                d3d12Combinators[i] = ConvertShadingRateCombiner(m_state.m_shadingRateState.m_shadingRateCombinators[i]);
+            }
+
+            auto commandList5 = DX12ResourceCast<ID3D12GraphicsCommandList5>(GetCommandList());
+            AZ_Assert(commandList5, "Failed to cast command list to ID3D12GraphicsCommandList5");
+            if (commandList5)
+            {
+                commandList5->RSSetShadingRate(
+                    ConvertShadingRateEnum(m_state.m_shadingRateState.m_shadingRate), d3d12Combinators.data());
+            }
+#endif
+            m_state.m_shadingRateState.m_isDirty = false;
+        }
+
         void CommandList::ExecuteIndirect(const RHI::IndirectArguments& arguments)
         {
             const IndirectBufferSignature* signature = static_cast<const IndirectBufferSignature*>(arguments.m_indirectBufferView->GetSignature());
@@ -685,7 +728,8 @@ namespace AZ
             uint32_t renderTargetCount,
             const ImageView* const* renderTargets,
             const ImageView* depthStencilAttachment,
-            RHI::ScopeAttachmentAccess depthStencilAccess)
+            RHI::ScopeAttachmentAccess depthStencilAccess,
+            const ImageView* shadingRateAttachment)
         {
             D3D12_CPU_DESCRIPTOR_HANDLE colorDescriptors[RHI::Limits::Pipeline::AttachmentColorCountMax];
             for (uint32_t i = 0; i < renderTargetCount; ++i)
@@ -706,6 +750,33 @@ namespace AZ
             {
                 GetCommandList()->OMSetRenderTargets(renderTargetCount, colorDescriptors, false, nullptr);
             }
+
+#ifdef O3DE_DX12_VRS_SUPPORT
+            if (m_state.m_shadingRateImage != shadingRateAttachment &&
+                RHI::CheckBitsAll(GetDevice().GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerRegion))
+            {
+                auto commandList5 = DX12ResourceCast<ID3D12GraphicsCommandList5>(GetCommandList());
+                AZ_Assert(commandList5, "Failed to cast command list to ID3D12GraphicsCommandList5");
+                if (commandList5)
+                {
+                    if (shadingRateAttachment)
+                    {
+                        commandList5->RSSetShadingRateImage(shadingRateAttachment->GetMemory());
+                        SetFragmentShadingRate(
+                            RHI::ShadingRate::Rate1x1,
+                            RHI::ShadingRateCombinators{ RHI::ShadingRateCombinerOp::Passthrough, RHI::ShadingRateCombinerOp::Override });
+                    }
+                    else
+                    {
+                        commandList5->RSSetShadingRateImage(nullptr);
+                        SetFragmentShadingRate(
+                            RHI::ShadingRate::Rate1x1,
+                            RHI::ShadingRateCombinators{ RHI::ShadingRateCombinerOp::Override, RHI::ShadingRateCombinerOp::Passthrough });
+                    }
+                    m_state.m_shadingRateImage = shadingRateAttachment;
+                }
+            }
+#endif
         }
 
         void CommandList::QueueTileMapRequest(const TileMapRequest& request)

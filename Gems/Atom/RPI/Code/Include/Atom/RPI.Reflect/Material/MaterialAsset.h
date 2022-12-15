@@ -15,7 +15,6 @@
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 
 #include <AzCore/EBus/Event.h>
 
@@ -37,8 +36,6 @@ namespace AZ
         //! Use a MaterialAssetCreator to create a MaterialAsset.
         class MaterialAsset
             : public AZ::Data::AssetData
-            , public Data::AssetBus::Handler
-            , public MaterialReloadNotificationBus::Handler
             , public AssetInitBus::Handler
         {
             friend class MaterialVersionUpdates;
@@ -65,13 +62,16 @@ namespace AZ
             //! Returns the MaterialTypeAsset.
             const Data::Asset<MaterialTypeAsset>& GetMaterialTypeAsset() const;
 
-            //! Returns the collection of all shaders that this material could run.
-            const ShaderCollection& GetShaderCollection() const;
+            //! Return the general purpose shader collection that applies to any render pipeline.
+            const ShaderCollection& GetGeneralShaderCollection() const;
 
             //! The material may contain any number of MaterialFunctors.
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more.
             //! See MaterialFunctor.h for details.
             const MaterialFunctorList& GetMaterialFunctors() const;
+
+            //! Return the collection of MaterialPipelinePayload data for all supported material pipelines.
+            const MaterialTypeAsset::MaterialPipelineMap& GetMaterialPipelinePayloads() const;
 
             //! Returns the shader resource group layout that has per-material frequency, which indicates most of the topology
             //! for a material's shaders.
@@ -141,16 +141,6 @@ namespace AZ
 
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
-
-            // AssetBus overrides...
-            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
-            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
-
-            //! Replaces the MaterialTypeAsset when a reload occurs
-            void ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset);
-
-            // MaterialReloadNotificationBus overrides...
-            void OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset) override;
 
             static const char* s_debugTraceName;
 

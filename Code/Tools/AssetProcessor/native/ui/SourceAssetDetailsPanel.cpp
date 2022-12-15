@@ -147,7 +147,7 @@ namespace AssetProcessor
                             intermediateAssetSourcePath = sourceEntry.m_sourceName;
                             return true;
                         });
-                    
+
                     AZStd::string sourceIntermediateAssetPath = AssetUtilities::StripAssetPlatformNoCopy(productEntry.m_productName);
 
                     // Qt handles cleanup automatically, setting this as the parent means
@@ -163,6 +163,10 @@ namespace AssetProcessor
                     m_ui->IntermediateAssetsTable->setCellWidget(intermediateAssetCount, 0, rowGoToButton);
 
                     QTableWidgetItem* rowName = new QTableWidgetItem(productEntry.m_productName.c_str());
+                    if (IsProductOutputFlagSet(productEntry, AssetBuilderSDK::ProductOutputFlags::CachedAsset))
+                    {
+                        rowName->setIcon(QIcon(":/cached_asset_item.png"));
+                    }
                     m_ui->IntermediateAssetsTable->setItem(intermediateAssetCount, 1, rowName);
                     ++intermediateAssetCount;
                 }
@@ -183,6 +187,10 @@ namespace AssetProcessor
                     m_ui->productTable->setCellWidget(productCount, 0, rowGoToButton);
 
                     QTableWidgetItem* rowName = new QTableWidgetItem(productEntry.m_productName.c_str());
+                    if (IsProductOutputFlagSet(productEntry, AssetBuilderSDK::ProductOutputFlags::CachedAsset))
+                    {
+                        rowName->setIcon(QIcon(":/cached_asset_item.png"));
+                    }
                     m_ui->productTable->setItem(productCount, 1, rowName);
                     ++productCount;
                 }
@@ -202,8 +210,7 @@ namespace AssetProcessor
         m_ui->outgoingSourceDependenciesTable->setRowCount(0);
         int sourceDependencyCount = 0;
         assetDatabaseConnection.QueryDependsOnSourceBySourceDependency(
-            sourceItemData->m_sourceInfo.m_sourceName.c_str(),
-            nullptr,
+            sourceItemData->m_sourceInfo.m_sourceGuid,
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
             {
@@ -211,19 +218,45 @@ namespace AssetProcessor
 
                 // Some outgoing source dependencies are wildcard, or unresolved paths.
                 // Only add a button to link to rows that actually exist.
-                
-                AzToolsFramework::AssetDatabase::SourceDatabaseEntry dependencyDetails;
-                assetDatabaseConnection.QuerySourceBySourceName(
-                    sourceFileDependencyEntry.m_dependsOnSource.c_str(),
-                    [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
-                    {
-                        dependencyDetails = sourceEntry;
-                        return false;
-                    });
 
+                AzToolsFramework::AssetDatabase::SourceDatabaseEntry dependencyDetails;
+                AZStd::string displayString;
+
+                if (sourceFileDependencyEntry.m_dependsOnSource.IsUuid())
+                {
+                    assetDatabaseConnection.QuerySourceBySourceGuid(
+                        sourceFileDependencyEntry.m_dependsOnSource.GetUuid(),
+                        [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                        {
+                            dependencyDetails = entry;
+                            displayString = dependencyDetails.m_sourceName;
+                            return false;
+                        });
+
+                    if (displayString.empty())
+                    {
+                        displayString = sourceFileDependencyEntry.m_dependsOnSource.GetUuid().ToFixedString();
+                    }
+                }
+                else
+                {
+                    assetDatabaseConnection.QuerySourceBySourceName(
+                        sourceFileDependencyEntry.m_dependsOnSource.GetPath().c_str(),
+                        [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+                        {
+                            dependencyDetails = sourceEntry;
+                            displayString = dependencyDetails.m_sourceName;
+                            return false;
+                        });
+
+                    if (displayString.empty())
+                    {
+                        displayString = sourceFileDependencyEntry.m_dependsOnSource.GetPath();
+                    }
+                }
 
                 SourceAssetTreeModel* treeModel = dependencyDetails.m_scanFolderPK == 1 ? m_intermediateTreeModel : m_sourceTreeModel;
-                QModelIndex goToIndex = treeModel->GetIndexForSource(sourceFileDependencyEntry.m_dependsOnSource);
+                QModelIndex goToIndex = treeModel->GetIndexForSource(dependencyDetails.m_sourceName);
                 if (goToIndex.isValid())
                 {
                     // Qt handles cleanup automatically, setting this as the parent means
@@ -234,12 +267,12 @@ namespace AssetProcessor
                         &QPushButton::clicked,
                         [=]
                         {
-                            GoToSource(sourceFileDependencyEntry.m_dependsOnSource);
+                            GoToSource(dependencyDetails.m_sourceName);
                         });
                     m_ui->outgoingSourceDependenciesTable->setCellWidget(sourceDependencyCount, 0, rowGoToButton);
                 }
 
-                QTableWidgetItem* rowName = new QTableWidgetItem(sourceFileDependencyEntry.m_dependsOnSource.c_str());
+                QTableWidgetItem* rowName = new QTableWidgetItem(displayString.c_str());
                 m_ui->outgoingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
                 ++sourceDependencyCount;
                 return true;
@@ -254,13 +287,31 @@ namespace AssetProcessor
     {
         m_ui->incomingSourceDependenciesTable->setRowCount(0);
         int sourceDependencyCount = 0;
+
+        auto absolutePath = AZ::IO::Path(sourceItemData->m_scanFolderInfo.m_scanFolder) / sourceItemData->m_sourceInfo.m_sourceName;
+
         assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
+            sourceItemData->m_sourceInfo.m_sourceGuid,
             sourceItemData->m_sourceInfo.m_sourceName.c_str(),
-            nullptr,
+            absolutePath.FixedMaxPathStringAsPosix().c_str(),
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
             {
                 m_ui->incomingSourceDependenciesTable->insertRow(sourceDependencyCount);
+
+                AZStd::string sourceName;
+                assetDatabaseConnection.QuerySourceBySourceGuid(
+                    sourceFileDependencyEntry.m_sourceGuid,
+                    [&sourceName](const auto& entry)
+                    {
+                        sourceName = entry.m_sourceName;
+                        return false;
+                    });
+
+                if (sourceName.empty())
+                {
+                    sourceName = AZStd::string::format("Invalid UUID - %s", sourceFileDependencyEntry.m_sourceGuid.ToFixedString().c_str());
+                }
 
                 // Qt handles cleanup automatically, setting this as the parent means
                 // when this panel is torn down, these widgets will be destroyed.
@@ -268,13 +319,13 @@ namespace AssetProcessor
                 connect(
                     rowGoToButton->m_ui->goToPushButton,
                     &QPushButton::clicked,
-                    [=]
+                    [this, sourceName]
                     {
-                        GoToSource(sourceFileDependencyEntry.m_source);
+                        GoToSource(sourceName);
                     });
                 m_ui->incomingSourceDependenciesTable->setCellWidget(sourceDependencyCount, 0, rowGoToButton);
 
-                QTableWidgetItem* rowName = new QTableWidgetItem(sourceFileDependencyEntry.m_source.c_str());
+                QTableWidgetItem* rowName = new QTableWidgetItem(QString(sourceName.c_str()));
                 m_ui->incomingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
 
                 ++sourceDependencyCount;

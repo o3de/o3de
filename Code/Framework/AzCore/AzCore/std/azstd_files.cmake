@@ -43,6 +43,7 @@ set(FILES
     limits.h
     numeric.h
     math.h
+    metaprogramming/ratio.h
     optional.h
     ranges/as_const_view.h
     ranges/as_rvalue_view.h
@@ -74,7 +75,6 @@ set(FILES
     ranges/transform_view.h
     ranges/zip_view.h
     ranges/zip_view.inl
-    ratio.h
     reference_wrapper.h
     sort.h
     time.h
@@ -83,8 +83,7 @@ set(FILES
     bind/bind.h
     bind/mem_fn.h
     chrono/chrono.h
-    chrono/clocks.h
-    chrono/types.h
+    chrono/time.cpp
     containers/array.h
     containers/bitset.h
     containers/compressed_pair.h
@@ -170,6 +169,7 @@ set(FILES
     string/alphanum.cpp
     string/alphanum.h
     string/conversions.h
+    string/fixed_string.cpp
     string/fixed_string.h
     string/fixed_string.inl
     string/memorytoascii.h
@@ -262,7 +262,12 @@ set(FILES
     typetraits/internal/type_sequence_traits.h
     typetraits/internal/is_template_copy_constructible.h
     utility/as_const.h
+    utility/charconv.h
     utility/declval.h
+    utility/expected.h
+    utility/expected.inl
+    utility/expected_internal.h
+    utility/expected_internal.inl
     utility/move.h
     utility/to_underlying.h
 )

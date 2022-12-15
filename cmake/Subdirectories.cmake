@@ -13,163 +13,131 @@ include_guard()
 ################################################################################
 
 # Add a GLOBAL property which can be used to quickly determine if a directory is an external subdirectory
-get_property(cache_external_subdirs CACHE LY_EXTERNAL_SUBDIRS PROPERTY VALUE)
+get_property(cache_external_subdirs CACHE O3DE_EXTERNAL_SUBDIRS PROPERTY VALUE)
 foreach(cache_external_subdir IN LISTS cache_external_subdirs)
     file(REAL_PATH ${cache_external_subdir} real_external_subdir)
     set_property(GLOBAL PROPERTY "O3DE_SUBDIRECTORY_${real_external_subdir}" TRUE)
 endforeach()
 
-# The following functions is for gathering the list of external subdirectories
-# provided by the engine.json
-function(add_engine_gem_json_external_subdirectories gem_path)
+# The visited_gem_name_set is used to append the external_subdirectories found
+# within descendant gems to the parants to the globl O3DE_EXTERNAL_SUBDIRS_GEM_<gem_name> property
+# i.e If `GemA` "external_subdirectories" points to `GemB` and `GemB` external_subdirectories
+# points to `GemC`.
+# Then O3DE_EXTERNAL_SUBDIRS_GEM_GemA = [<AbsPath GemB>, <AbsPath GemC>]
+# And O3DE_EXTERNAL_SUBDIRS_GEM_GemB = [<AbsPath GemC>]
+#! add_o3de_object_gem_json_external_subdirectories : Recurses through external subdirectories
+#! originally found in the add_*_json_external_subdirectories command
+function(add_o3de_object_gem_json_external_subdirectories object_type object_name gem_path visited_gem_name_set_ref)
     set(gem_json_path ${gem_path}/gem.json)
     if(EXISTS ${gem_json_path})
+        o3de_read_json_external_subdirs(gem_external_subdirs ${gem_path}/gem.json)
         # Read the gem_name from the gem.json and map it to the gem path
         o3de_read_json_key(gem_name "${gem_path}/gem.json" "gem_name")
         if (gem_name)
             set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
         endif()
 
-        o3de_read_json_external_subdirs(gem_external_subdirs "${gem_path}/gem.json")
+        # Push the gem name onto the visited set
+        list(APPEND ${visited_gem_name_set_ref} ${gem_name})
         foreach(gem_external_subdir IN LISTS gem_external_subdirs)
             file(REAL_PATH ${gem_external_subdir} real_external_subdir BASE_DIRECTORY ${gem_path})
 
-            # Append external subdirectory ONLY to LY_EXTERNAL_SUBDIRS_ENGINE PROPERTY
-            get_property(current_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_ENGINE)
+            if(NOT object_name STREQUAL "")
+                # Append external subdirectory to the O3DE_EXTERNAL_SUBDIRS_${object_type}_${object_name} PROPERTY
+                set(object_external_subdir_property_name O3DE_EXTERNAL_SUBDIRS_${object_type}_${object_name})
+            else()
+                # Append external subdirectory to the O3DE_EXTERNAL_SUBDIRS_${object_type} PROPERTY
+                set(object_external_subdir_property_name O3DE_EXTERNAL_SUBDIRS_${object_type})
+            endif()
+
+            get_property(current_external_subdirs GLOBAL PROPERTY ${object_external_subdir_property_name})
             if(NOT real_external_subdir IN_LIST current_external_subdirs)
-                set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS_ENGINE ${real_external_subdir})
+                set_property(GLOBAL APPEND PROPERTY ${object_external_subdir_property_name} "${real_external_subdir}")
                 set_property(GLOBAL PROPERTY "O3DE_SUBDIRECTORY_${real_external_subdir}" TRUE)
-                add_engine_gem_json_external_subdirectories(${real_external_subdir})
+                foreach(visited_gem_name IN LISTS ${visited_gem_name_set_ref})
+                    # Append the external subdirectories that come with the gem to
+                    # the visited_gem_set O3DE_EXTERNAL_SUBDIRS_GEM_<gem-name> properties as well
+                    set_property(GLOBAL APPEND PROPERTY O3DE_EXTERNAL_SUBDIRS_GEM_${visited_gem_name} ${real_external_subdir})
+                endforeach()
+                add_o3de_object_gem_json_external_subdirectories("${object_type}" "${object_name}" "${real_external_subdir}" "${visited_gem_name_set_ref}")
+            endif()
+        endforeach()
+        # Pop the gem name from the visited set
+        list(POP_BACK ${visited_gem_name_set_ref})
+    endif()
+endfunction()
+
+#! add_o3de_object_json_external_subdirectories:
+#! Returns the external_subdirectories referenced by the supplied <o3de_object>.json
+#! This will recurse through to check for gem.json external_subdirectories
+#! via calling the *_gem_json_extenal_subdirectories variant of this function
+function(add_o3de_object_json_external_subdirectories object_type object_name object_path object_json_filename)
+    set(object_json_path ${object_path}/${object_json_filename})
+    if(EXISTS ${object_json_path})
+        o3de_read_json_external_subdirs(object_external_subdirs ${object_json_path})
+        foreach(object_external_subdir IN LISTS object_external_subdirs)
+            file(REAL_PATH ${object_external_subdir} real_external_subdir BASE_DIRECTORY ${object_path})
+
+            # Append external subdirectory ONLY to O3DE_EXTERNAL_SUBDIRS_PROJECT_${project_name} PROPERTY
+            if(NOT object_name STREQUAL "")
+                # Append external subdirectory to the O3DE_EXTERNAL_SUBDIRS_${object_type}_${object_name} PROPERTY
+                set(object_external_subdir_property_name O3DE_EXTERNAL_SUBDIRS_${object_type}_${object_name})
+            else()
+                # Append external subdirectory to the O3DE_EXTERNAL_SUBDIRS_${object_type} PROPERTY
+                set(object_external_subdir_property_name O3DE_EXTERNAL_SUBDIRS_${object_type})
+            endif()
+
+            get_property(current_external_subdirs GLOBAL PROPERTY ${object_external_subdir_property_name})
+            if(NOT real_external_subdir IN_LIST current_external_subdirs)
+                set_property(GLOBAL APPEND PROPERTY ${object_external_subdir_property_name} "${real_external_subdir}")
+                set_property(GLOBAL PROPERTY "O3DE_SUBDIRECTORY_${real_external_subdir}" TRUE)
+                set(visited_gem_name_set)
+                add_o3de_object_gem_json_external_subdirectories("${object_type}" "${object_name}" "${real_external_subdir}" visited_gem_name_set)
             endif()
         endforeach()
     endif()
 endfunction()
 
+# The following functions is for gathering the list of external subdirectories
+# provided by the engine.json
 function(add_engine_json_external_subdirectories)
-    set(engine_json_path ${LY_ROOT_FOLDER}/engine.json)
-    if(EXISTS ${engine_json_path})
-        o3de_read_json_external_subdirs(engine_external_subdirs ${engine_json_path})
-        foreach(engine_external_subdir IN LISTS engine_external_subdirs)
-            file(REAL_PATH ${engine_external_subdir} real_external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER})
-
-            # Append external subdirectory ONLY to LY_EXTERNAL_SUBDIRS_ENGINE PROPERTY
-            get_property(current_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_ENGINE)
-            if(NOT real_external_subdir IN_LIST current_external_subdirs)
-                set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS_ENGINE ${real_external_subdir})
-                set_property(GLOBAL PROPERTY "O3DE_SUBDIRECTORY_${real_external_subdir}" TRUE)
-                add_engine_gem_json_external_subdirectories(${real_external_subdir})
-            endif()
-        endforeach()
-    endif()
+    add_o3de_object_json_external_subdirectories("ENGINE" "" "${LY_ROOT_FOLDER}" "engine.json")
 endfunction()
 
 
 # The following functions is for gathering the list of external subdirectories
 # provided by the project.json
-function(add_project_gem_json_external_subdirectories gem_path project_name)
-    set(gem_json_path ${gem_path}/gem.json)
-    if(EXISTS ${gem_json_path})
-        o3de_read_json_external_subdirs(gem_external_subdirs ${gem_path}/gem.json)
-        # Read the gem_name from the gem.json and map it to the gem path
-        o3de_read_json_key(gem_name "${gem_path}/gem.json" "gem_name")
-        if (gem_name)
-            set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
-        endif()
-
-        foreach(gem_external_subdir IN LISTS gem_external_subdirs)
-            file(REAL_PATH ${gem_external_subdir} real_external_subdir BASE_DIRECTORY ${gem_path})
-
-            # Append external subdirectory ONLY to LY_EXTERNAL_SUBDIRS_${project_name} PROPERTY
-            get_property(current_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_${project_name})
-            if(NOT real_external_subdir IN_LIST current_external_subdirs)
-                set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS_${project_name} ${real_external_subdir})
-                set_property(GLOBAL PROPERTY "O3DE_SUBDIRECTORY_${real_external_subdir}" TRUE)
-                add_project_gem_json_external_subdirectories(${real_external_subdir} "${project_name}")
-            endif()
-        endforeach()
-    endif()
-endfunction()
-
 function(add_project_json_external_subdirectories project_path project_name)
-    set(project_json_path ${project_path}/project.json)
-    if(EXISTS ${project_json_path})
-        o3de_read_json_external_subdirs(project_external_subdirs ${project_path}/project.json)
-        foreach(project_external_subdir IN LISTS project_external_subdirs)
-            file(REAL_PATH ${project_external_subdir} real_external_subdir BASE_DIRECTORY ${project_path})
-
-            # Append external subdirectory ONLY to LY_EXTERNAL_SUBDIRS_${project_name} PROPERTY
-            get_property(current_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_${project_name})
-            if(NOT real_external_subdir IN_LIST current_external_subdirs)
-                set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS_${project_name} ${real_external_subdir})
-                set_property(GLOBAL PROPERTY "O3DE_SUBDIRECTORY_${real_external_subdir}" TRUE)
-                add_project_gem_json_external_subdirectories(${real_external_subdir} "${project_name}")
-            endif()
-        endforeach()
-    endif()
-endfunction()
-
-
-#! add_o3de_manifest_gem_json_external_subdirectories : Recurses through external subdirectories
-#! originally found in the add_o3de_manifest_json_external_subdirectories command
-function(add_o3de_manifest_gem_json_external_subdirectories gem_path)
-    set(gem_json_path ${gem_path}/gem.json)
-    if(EXISTS ${gem_json_path})
-        o3de_read_json_external_subdirs(gem_external_subdirs ${gem_path}/gem.json)
-        # Read the gem_name from the gem.json and map it to the gem path
-        o3de_read_json_key(gem_name "${gem_path}/gem.json" "gem_name")
-        if (gem_name)
-            set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
-        endif()
-
-        foreach(gem_external_subdir IN LISTS gem_external_subdirs)
-            file(REAL_PATH ${gem_external_subdir} real_external_subdir BASE_DIRECTORY ${gem_path})
-
-            # Append external subdirectory ONLY to LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST PROPERTY
-            get_property(current_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST)
-            if(NOT real_external_subdir IN_LIST current_external_subdirs)
-                set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST ${real_external_subdir})
-                set_property(GLOBAL PROPERTY "O3DE_SUBDIRECTORY_${real_external_subdir}" TRUE)
-                add_o3de_manifest_gem_json_external_subdirectories(${real_external_subdir})
-            endif()
-        endforeach()
-    endif()
+    add_o3de_object_json_external_subdirectories("PROJECT" "${project_name}" "${project_path}" "project.json")
 endfunction()
 
 #! add_o3de_manifest_json_external_subdirectories : Adds the list of external_subdirectories
-#! in the user o3de_manifest.json to the LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST property
+#! in the user o3de_manifest.json to the O3DE_EXTERNAL_SUBDIRS_O3DE_MANIFEST property
 function(add_o3de_manifest_json_external_subdirectories)
+    # Retrieves the path to the o3de_manifest.json(includes the name)
     o3de_get_manifest_path(manifest_path)
-    if(EXISTS ${manifest_path})
-        o3de_read_json_external_subdirs(o3de_manifest_external_subdirs ${manifest_path})
-        foreach(manifest_external_subdir IN LISTS o3de_manifest_external_subdirs)
-            file(REAL_PATH ${manifest_external_subdir} real_external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+    # Separate the o3de_manifest.json from the path to it
+    cmake_path(GET manifest_path FILENAME manifest_json_name)
+    cmake_path(GET manifest_path PARENT_PATH manifest_path)
 
-            # Append external subdirectory ONLY to LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST PROPERTY
-            get_property(current_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST)
-            if(NOT real_external_subdir IN_LIST current_external_subdirs)
-                set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST ${real_external_subdir})
-                set_property(GLOBAL PROPERTY "O3DE_SUBDIRECTORY_${real_external_subdir}" TRUE)
-                add_o3de_manifest_gem_json_external_subdirectories(${real_external_subdir})
-            endif()
-        endforeach()
-    endif()
+    add_o3de_object_json_external_subdirectories("O3DE_MANIFEST" "" "${manifest_path}" "${manifest_json_name}")
 endfunction()
 
 #! Gather unique_list of all external subdirectories that is union
 #! of the engine.json, project.json, o3de_manifest.json and any gem.json files found visiting
 function(get_all_external_subdirectories output_subdirs)
     # Gather user supplied external subdirectories via the Cache Variable
-    get_property(all_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
-    get_property(manifest_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST)
+    get_property(all_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS)
+    get_property(manifest_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS_O3DE_MANIFEST)
     list(APPEND all_external_subdirs ${manifest_external_subdirs})
-    get_property(engine_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_ENGINE)
+    get_property(engine_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS_ENGINE)
     list(APPEND all_external_subdirs ${engine_external_subdirs})
 
     # Gather the list of every configured project external subdirectory
     # and and append them to the list of external subdirectories
     get_property(project_names GLOBAL PROPERTY O3DE_PROJECTS_NAME)
     foreach(project_name IN LISTS project_names)
-        get_property(project_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_${project_name})
+        get_property(project_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS_PROJECT_${project_name})
         list(APPEND all_external_subdirs ${project_external_subdirs})
     endforeach()
 
@@ -187,10 +155,11 @@ function(query_gem_paths_from_external_subdirs output_gem_dirs gem_names registe
     if (gem_names)
         foreach(gem_name IN LISTS gem_names)
             unset(gem_path)
+            get_property(gem_optional GLOBAL PROPERTY ${gem_name}_OPTIONAL)
             o3de_find_gem_with_registered_external_subdirs(${gem_name} gem_path "${registered_external_subdirs}")
             if (gem_path)
                 list(APPEND gem_dirs ${gem_path})
-            else()
+            elseif(NOT gem_optional)
                 list(JOIN registered_external_subdirs "\n" external_subdirs_formatted)
                 message(SEND_ERROR "The gem \"${gem_name}\""
                 " could not be found in any gem.json from the following list of registered external subdirectories:\n"
@@ -275,51 +244,76 @@ function(reorder_dependent_gems_before_external_subdirs output_gem_subdirs subdi
     set(${output_gem_subdirs} ${output_external_dirs} PARENT_SCOPE)
 endfunction()
 
-#! Gather unique_list of all external subdirectories that the project provides or uses
+#! Gather unique_list of all external subdirectories that the o3de object provides or uses
 #! The list is made up of the following
-#! - The paths of gems referenced in the project.json "gem_names" key. Those paths are queried
+#! - The paths of gems referenced in the <o3de_object>.json "gem_names" key. Those paths are queried
 #!   from the "external_subdirectories" in o3de_manifest.json
-#! - The project path
-#! - The list of external_subdirectories found by recursively visting the project.json "external_subdirectories"
-function(get_all_external_subdirectories_for_project output_subdirs project_name project_path)
-    # Append the gems referenced by name from "gem_names" field in the project.json
+#! - The <o3de_object> path
+#! - The list of external_subdirectories found by recursively visting the <o3de_object>.json "external_subdirectories"
+function(get_all_external_subdirectories_for_o3de_object output_subdirs object_type object_name object_path object_json_filename)
+    # Append the gems referenced by name from "gem_names" field in the <object>.json
     # These gems are registered in the users o3de_manifest.json
-    o3de_read_json_array(gem_names ${project_path}/project.json "gem_names")
-    add_registered_gems_to_external_subdirs(project_gem_reference_dirs "${gem_names}")
-    list(APPEND subdirs_for_project ${project_gem_reference_dirs})
+    o3de_read_json_array(initial_gem_names ${object_path}/${object_json_filename} "gem_names")
+    set(gem_names "")
+    foreach(gem_name IN LISTS initial_gem_names)
+        # Use the ERROR_VARIABLE to catch the common case when it's a simple string and not a json type.
+        string(JSON json_type ERROR_VARIABLE json_error TYPE ${gem_name})
+        set(gem_optional FALSE)
+        if(${json_type} STREQUAL "OBJECT")
+            string(JSON gem_optional GET ${gem_name} "optional")
+            string(JSON gem_name GET ${gem_name} "name")
+        endif()
 
-    # Append the project root path to the list of external subdirectories so that it is visited
-    list(APPEND subdirs_for_project ${project_path})
+        # Set a global "optional" property on the gem name
+        set_property(GLOBAL PROPERTY "${gem_name}_OPTIONAL" ${gem_optional})
+        # Build the gem_names list with extracted names
+        list(APPEND gem_names ${gem_name})
+    endforeach()
 
-    # Append the list of external_subdirectories that come with the project
-    get_property(project_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_${project_name})
-    list(APPEND subdirs_for_project ${project_external_subdirs})
+    add_registered_gems_to_external_subdirs(object_gem_reference_dirs "${gem_names}")
+    list(APPEND subdirs_for_object ${object_gem_reference_dirs})
 
-    list(REMOVE_DUPLICATES subdirs_for_project)
-    set(${output_subdirs} ${subdirs_for_project} PARENT_SCOPE)
+    # Also append the array the "external_subdirectories" from each gem referenced through the "gem_names"
+    # field
+    foreach(gem_name IN LISTS gem_names)
+        get_property(gem_real_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS_GEM_${gem_name})
+        list(APPEND subdirs_for_object ${gem_real_external_subdirs})
+    endforeach()
+
+    # Append the list of external_subdirectories that come with the object
+    if(NOT object_name STREQUAL "")
+        # query the O3DE_EXTERNAL_SUBDIRS_${object_type}_${object_name} PROPERTY
+        set(object_external_subdir_property_name O3DE_EXTERNAL_SUBDIRS_${object_type}_${object_name})
+    else()
+        # query the O3DE_EXTERNAL_SUBDIRS_${object_type} PROPERTY
+        set(object_external_subdir_property_name O3DE_EXTERNAL_SUBDIRS_${object_type})
+    endif()
+
+    get_property(object_external_subdirs GLOBAL PROPERTY ${object_external_subdir_property_name})
+    list(APPEND subdirs_for_object ${object_external_subdirs})
+
+    list(REMOVE_DUPLICATES subdirs_for_object)
+    set(${output_subdirs} ${subdirs_for_object} PARENT_SCOPE)
 endfunction()
 
 #! Gather the unqiue list of all external subdirectories that the engine provides("external_subdirectories")
 #! plus all external subdirectories that every active project provides("external_subdirectories")
 #! or references("gem_names")
 function(get_external_subdirectories_in_use output_subdirs)
-    # Gather the list of external subdirectories set through the LY_EXTERNAL_SUBDIRS Cache Variable
-    get_property(all_external_subdirs CACHE LY_EXTERNAL_SUBDIRS PROPERTY VALUE)
+    # Gather the list of external subdirectories set through the O3DE_EXTERNAL_SUBDIRS Cache Variable
+    get_property(all_external_subdirs CACHE O3DE_EXTERNAL_SUBDIRS PROPERTY VALUE)
     # Append the list of external subdirectories from the engine.json
-    get_property(engine_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_ENGINE)
+    get_all_external_subdirectories_for_o3de_object(engine_external_subdirs "ENGINE" "" ${LY_ROOT_FOLDER} "engine.json")
     list(APPEND all_external_subdirs ${engine_external_subdirs})
-    # Append the gems referenced by name from "gem_names" field in the engine.json
-    # These gems are registered in the users o3de_manifest.json
-    o3de_read_json_array(gem_names ${LY_ROOT_FOLDER}/engine.json "gem_names")
-    add_registered_gems_to_external_subdirs(engine_gem_reference_dirs "${gem_names}")
-    list(APPEND all_external_subdirs ${engine_gem_reference_dirs})
 
     # Visit each LY_PROJECTS entry and append the external subdirectories
     # the project provides and references
     get_property(O3DE_PROJECTS_NAME GLOBAL PROPERTY O3DE_PROJECTS_NAME)
     foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
         file(REAL_PATH ${project_path} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
-        get_all_external_subdirectories_for_project(external_subdirs ${project_name} ${full_directory_path} )
+        # Append the project root path to the list of external subdirectories so that it is visited
+        list(APPEND all_external_subdirs ${project_path})
+        get_all_external_subdirectories_for_o3de_object(external_subdirs "PROJECT" "${project_name}" ${full_directory_path} "project.json")
         list(APPEND all_external_subdirs ${external_subdirs})
     endforeach()
 

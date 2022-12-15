@@ -11,6 +11,7 @@
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 #include <RHI/Scope.h>
 #include <RHI/Semaphore.h>
 
@@ -60,7 +61,7 @@ namespace AZ
             // Queue the resource buffer barrier into the provided scope.
             void QueueResourceBarrier(
                 Scope& scope,
-                RHI::ScopeAttachment& scopeAttachment,
+                const RHI::ScopeAttachment& scopeAttachment,
                 Buffer& buffer,
                 const RHI::BufferSubresourceRange& range,
                 const Scope::BarrierSlot slot,
@@ -72,7 +73,7 @@ namespace AZ
             // Queue the resource barrier into the provided scope.
             void QueueResourceBarrier(
                 Scope& scope,
-                RHI::ScopeAttachment& scopeAttachment,
+                const RHI::ScopeAttachment& scopeAttachment,
                 Image& image,
                 const RHI::ImageSubresourceRange& range,
                 const Scope::BarrierSlot slot,
@@ -103,8 +104,8 @@ namespace AZ
             // Add VK_ACCESS_TRANSFER_WRITE_BIT in case we want to do a clear operation.
             if (HasExplicitClear(scopeAttachment, scopeAttachment.GetDescriptor()))
             {
-                srcAccessFlags |= VK_ACCESS_TRANSFER_WRITE_BIT;
-                srcAccessFlags = RHI::FilterBits(srcAccessFlags, GetSupportedAccessFlags(srcPipelineStageFlags));
+                srcPipelineStageFlags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+                srcAccessFlags = RHI::FilterBits(srcAccessFlags | VK_ACCESS_TRANSFER_WRITE_BIT, GetSupportedAccessFlags(srcPipelineStageFlags));
             }
         
             auto subresourceRange = GetSubresourceRange(scopeAttachment);

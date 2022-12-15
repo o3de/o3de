@@ -14,6 +14,7 @@ set(FILES
     Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerDebug.h
     Include/Multiplayer/MultiplayerDebug.inl
+    Include/Multiplayer/MultiplayerMetrics.h
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
     Include/Multiplayer/MultiplayerEditorServerBus.h
@@ -109,6 +110,8 @@ set(FILES
     Source/MultiplayerStats.cpp
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h
+    Source/MultiplayerStatSystemComponent.cpp
+    Source/MultiplayerStatSystemComponent.h
     Source/NetworkEntity/EntityReplication/EntityReplicationManager.cpp
     Source/NetworkEntity/EntityReplication/EntityReplicator.cpp
     Source/NetworkEntity/EntityReplication/PropertyPublisher.cpp

@@ -45,12 +45,9 @@ set(FILES
     CryAssert.h
     CryFile.h
     CryListenerSet.h
-    CryLegacyAllocator.h
     CryPath.h
     CrySystemBus.h
     CryVersion.h
-    LegacyAllocator.cpp
-    LegacyAllocator.h
     MiniQueue.h
     MultiThread_Containers.h
     NullAudioSystem.h
@@ -104,6 +101,5 @@ set(FILES
     Maestro/Types/AssetBlendKey.h
     Maestro/Types/AssetBlends.h
     Maestro/Types/SequenceType.h
-    StaticInstance.h
     WinBase.cpp
 )

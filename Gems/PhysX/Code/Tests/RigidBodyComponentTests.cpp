@@ -13,8 +13,14 @@
 #include <EditorRigidBodyComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <PhysX/EditorColliderComponentRequestBus.h>
+#include <PhysX/PhysXLocks.h>
 #include <Tests/EditorTestUtilities.h>
 #include <Tests/PhysXTestCommon.h>
+
+namespace PhysX
+{
+    bool IsDefaultSceneCcdEnabled();
+}
 
 namespace PhysXEditorTests
 {
@@ -136,8 +142,118 @@ namespace PhysXEditorTests
         EXPECT_TRUE(AZ::IsClose(bodyAabb.GetZExtent(), cylinderHeight));
 
         AZStd::shared_ptr<const Physics::Shape> shape = rigidBody->GetShape(0);
+        const physx::PxRigidBody* pxRigidBody = static_cast<const physx::PxRigidBody*>(rigidBody->GetNativePointer());
         const physx::PxShape* pxShape = static_cast<const physx::PxShape*>(shape->GetNativePointer());
         // Check the geometry is a type of Convex
+        PHYSX_SCENE_READ_LOCK(pxRigidBody->getScene());
         EXPECT_EQ(pxShape->getGeometryType(), physx::PxGeometryType::eCONVEXMESH);
+    }
+
+    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_CylinderColliderZeroRadius_NoColliderCreated)
+    {
+        // Create editor entities
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ZeroRadius");
+
+        UnitTest::ErrorHandler expectedError("SetCylinderRadius: radius must be greater than zero.");
+
+        const auto* rigidBodyComponent = editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        const auto* colliderComponent = editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
+
+        editorEntity->Activate();
+
+        AZ::EntityComponentIdPair idPair(editorEntity->GetId(), colliderComponent->GetId());
+
+        // Set collider to be a cylinder
+        const Physics::ShapeType shapeType = Physics::ShapeType::Cylinder;
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetShapeType, shapeType);
+
+        // Set collider cylinder radius to zero
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderRadius, 0.0f);
+
+        // Notify listeners that collider has changed
+        Physics::ColliderComponentEventBus::Event(editorEntity->GetId(), &Physics::ColliderComponentEvents::OnColliderChanged);
+
+        // Verify no shapes are created and there's an expected error
+        const AzPhysics::RigidBody* rigidBody = rigidBodyComponent->GetRigidBody();
+        EXPECT_EQ(rigidBody->GetShapeCount(), 0);
+        EXPECT_EQ(expectedError.GetErrorCount(), 1);
+    }
+
+    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_CylinderColliderZeroHeight_NoColliderCreated)
+    {
+        // Create editor entities
+        EntityPtr editorEntity =  CreateInactiveEditorEntity("ZeroHeight");
+
+        UnitTest::ErrorHandler expectedError("SetCylinderHeight: height must be greater than zero.");
+
+        const auto* rigidBodyComponent = editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        const auto* colliderComponent = editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
+
+        editorEntity->Activate();
+
+        AZ::EntityComponentIdPair idPair(editorEntity->GetId(), colliderComponent->GetId());
+
+        // Set collider to be a cylinder
+        const Physics::ShapeType shapeType = Physics::ShapeType::Cylinder;
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetShapeType, shapeType);
+
+        // Set collider cylinder height to zero
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderHeight, 0.0f);
+
+        // Notify listeners that collider has changed
+        Physics::ColliderComponentEventBus::Event(editorEntity->GetId(), &Physics::ColliderComponentEvents::OnColliderChanged);
+
+        // Verify no shapes are created and there's an expected error
+        const AzPhysics::RigidBody* rigidBody = rigidBodyComponent->GetRigidBody();
+        EXPECT_EQ(rigidBody->GetShapeCount(), 0);
+        EXPECT_EQ(expectedError.GetErrorCount(), 1);
+    }
+
+    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_CylinderColliderSetInvalidSubdivisions_WarningIssued)
+    {
+        // Create editor entities
+        EntityPtr editorEntity = CreateInactiveEditorEntity("InvalidSubdivisions");
+
+        UnitTest::ErrorHandler expectedError("clamped into allowed range");
+
+        editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        const auto* colliderComponent = editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
+
+        editorEntity->Activate();
+
+        AZ::EntityComponentIdPair idPair(editorEntity->GetId(), colliderComponent->GetId());
+
+        // Set collider to be a cylinder
+        const Physics::ShapeType shapeType = Physics::ShapeType::Cylinder;
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetShapeType, shapeType);
+
+        // Set collider subdivision values outside the allowed range
+        const AZ::u8 subdivisionsTooSmall = PhysX::Utils::MinFrustumSubdivisions - 1;
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooSmall);
+        EXPECT_EQ(expectedError.GetExpectedWarningCount(), 1);
+
+        const AZ::u8 subdivisionsTooLarge = PhysX::Utils::MaxFrustumSubdivisions + 1;
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooLarge);
+        EXPECT_EQ(expectedError.GetExpectedWarningCount(), 2);
+    }
+
+    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_PhysXConfigButtonVisibilityFunctionUpdatesOnSceneConfigurationChange)
+    {
+        // Given a scene configuration
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        auto config = physicsSystem->GetDefaultSceneConfiguration();
+
+        // When the scene CCD is disabled the component CCD button is disabled
+        // (the buttons read-only attribute is linked to IsDefaultSceneCcdEnabled)
+        config.m_enableCcd = false;
+        physicsSystem->UpdateDefaultSceneConfiguration(config);
+
+        EXPECT_FALSE(PhysX::IsDefaultSceneCcdEnabled());
+
+        // Then when CCD is enabled the opposite is true
+        config.m_enableCcd = true;
+        physicsSystem->UpdateDefaultSceneConfiguration(config);
+
+        EXPECT_TRUE(PhysX::IsDefaultSceneCcdEnabled());
     }
 } // namespace PhysXEditorTests

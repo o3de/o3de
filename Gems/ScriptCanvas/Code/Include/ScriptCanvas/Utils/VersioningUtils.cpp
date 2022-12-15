@@ -12,20 +12,27 @@
 
 namespace ScriptCanvas
 {
-    AZStd::vector<Endpoint> GraphUpdateSlotReport::Convert(const Endpoint& oldEndpoint) const
+    AZStd::vector<Endpoint> GraphUpdateReport::Convert(const Endpoint& oldEndpoint) const
     {
         auto iter = m_oldSlotsToNewSlots.find(oldEndpoint);
         return iter != m_oldSlotsToNewSlots.end() ? iter->second : AZStd::vector<Endpoint>{ oldEndpoint };
     }
 
-    bool GraphUpdateSlotReport::IsEmpty() const
+    bool GraphUpdateReport::IsEmpty() const
     {
         return m_deletedOldSlots.empty() && m_oldSlotsToNewSlots.empty();
     }
 
-    bool NodeUpdateSlotReport::IsEmpty() const
+    void NodeUpdateReport::Clear()
     {
-        return m_deletedOldSlots.empty() && m_oldSlotsToNewSlots.empty();
+        m_newNode = nullptr;
+        m_deletedOldSlots.clear();
+        m_oldSlotsToNewSlots.clear();
+    }
+
+    bool NodeUpdateReport::IsEmpty() const
+    {
+        return !m_newNode && m_deletedOldSlots.empty() && m_oldSlotsToNewSlots.empty();
     }
 
     void VersioningUtils::CopyOldValueToDataSlot(Slot* newSlot, const VariableId& oldVariableReference, const Datum* oldDatum)
@@ -49,7 +56,7 @@ namespace ScriptCanvas
         }
     }
 
-    void MergeUpdateSlotReport(const AZ::EntityId& scriptCanvasNodeId, GraphUpdateSlotReport& report, const NodeUpdateSlotReport& source)
+    void MergeUpdateSlotReport(const AZ::EntityId& scriptCanvasNodeId, GraphUpdateReport& report, const NodeUpdateReport& source)
     {
         report.m_deletedOldSlots.reserve(source.m_deletedOldSlots.size());
 
@@ -109,7 +116,7 @@ namespace ScriptCanvas
         return endpoints;
     }
 
-    void UpdateConnectionStatus(Graph& graph, const GraphUpdateSlotReport& report)
+    void UpdateConnectionStatus(Graph& graph, const GraphUpdateReport& report)
     {
          GraphData* graphData = graph.GetGraphData();
          if (!graphData)

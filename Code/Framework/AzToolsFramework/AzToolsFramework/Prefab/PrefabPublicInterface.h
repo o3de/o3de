@@ -41,37 +41,41 @@ namespace AzToolsFramework
         public:
             AZ_RTTI(PrefabPublicInterface, "{931AAE9D-C775-4818-9070-A2DA69489CBE}");
 
+            //! O3DE_DEPRECATION_NOTICE(GHI-12956)
+            //! This function is marked for deprecation. Please use CreatePrefabAndSaveToDisk instead.
+            virtual CreatePrefabResult CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+
             /**
              * Create a prefab out of the entities provided, at the path provided, and save it in disk immediately.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
+             * Note: It calls CreatePrefabInMemory internally and then saves the new template in disk.
              * @param entityIds The entities that should form the new prefab (along with their descendants).
              * @param filePath The absolute path for the new prefab file.
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual CreatePrefabResult CreatePrefabInDisk(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+            virtual CreatePrefabResult CreatePrefabAndSaveToDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Create a prefab out of the entities provided, at the path provided, and keep it in memory.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
+             * Note: The newly created prefab template cannot be undo/redo. Undo will not remove the templace in system.
              * @param entityIds The entities that should form the new prefab (along with their descendants).
              * @param filePath The absolute path for the new prefab file.
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual CreatePrefabResult CreatePrefabInMemory(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+            virtual CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.
              * @param filePath The path to the prefab file to instantiate.
-             * @param parent The entity the prefab should be a child of in the transform hierarchy.
+             * @param parentId The entity id the prefab should be a child of in the transform hierarchy.
              * @param position The position in world space the prefab should be instantiated in.
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
+            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) = 0;
 
             /**
              * Saves changes to prefab to disk.

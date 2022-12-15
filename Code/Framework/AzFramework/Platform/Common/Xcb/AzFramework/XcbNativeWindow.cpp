@@ -272,14 +272,14 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void XcbNativeWindow::ResizeClientArea(WindowSize clientAreaSize)
+    void XcbNativeWindow::ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options)
     {
         const uint32_t values[] = { clientAreaSize.m_width, clientAreaSize.m_height };
 
         xcb_configure_window(m_xcbConnection, m_xcbWindow, XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values);
 
-        m_width = clientAreaSize.m_width;
-        m_height = clientAreaSize.m_height;
+        //Notify the RHI to rebuild swapchain and swapchain images after updating the surface
+        WindowSizeChanged(clientAreaSize.m_width, clientAreaSize.m_height);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

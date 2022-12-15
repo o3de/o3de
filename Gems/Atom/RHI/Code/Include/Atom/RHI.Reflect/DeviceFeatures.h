@@ -12,6 +12,7 @@
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/QueryPoolDescriptor.h>
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
+#include <Atom/RHI.Reflect/VariableRateShadingEnums.h>
 
 #include <AzCore/std/containers/array.h>
 
@@ -78,8 +79,18 @@ namespace AZ
             //! Whether PipelineLibrary related serialized data needs to be loaded/saved explicitly as drivers (like dx12/vk) do not support it internally
             bool m_isPsoCacheFileOperationsNeeded = true;
 
-            //! Whether supports undefined swizzle tile resource
+            //! Whether supports tile resource.
             bool m_tiledResource = true;
+
+            //! Supported modes for setting the variable shading rate.
+            RHI::ShadingRateTypeFlags m_shadingRateTypeMask = RHI::ShadingRateTypeFlags::None;
+
+            //! Supported values for setting the shading rate.
+            RHI::ShadingRateFlags m_shadingRateMask = RHI::ShadingRateFlags::None;
+
+            //! Whether the shading rate attachment is read by the GPU during execution.
+            //! Otherwise, the image is read by the CPU during scope execution (so it must not be modified by either CPU or GPU at that time).
+            bool m_dynamicShadingRateImage = false;
             
             /// Additional features here.
         };

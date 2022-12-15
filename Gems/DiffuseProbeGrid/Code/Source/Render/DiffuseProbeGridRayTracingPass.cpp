@@ -98,7 +98,7 @@ namespace AZ
             RHI::RayTracingPipelineStateDescriptor descriptor;
             descriptor.Build()
                 ->PipelineState(m_globalPipelineState.get())
-                ->MaxPayloadSize(96)
+                ->MaxPayloadSize(108)
                 ->MaxAttributeSize(32)
                 ->MaxRecursionDepth(16)
                 ->ShaderLibrary(rayGenerationShaderDescriptor)
@@ -354,12 +354,13 @@ namespace AZ
 
                     const RHI::ShaderResourceGroup* shaderResourceGroups[] = {
                         diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup(),
-                        rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()
+                        rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup(),
+                        rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup()
                     };
 
                     RHI::DispatchRaysItem dispatchRaysItem;
                     dispatchRaysItem.m_width = diffuseProbeGrid->GetNumRaysPerProbe().m_rayCount;
-                    dispatchRaysItem.m_height = diffuseProbeGrid->GetTotalProbeCount();
+                    dispatchRaysItem.m_height = AZ::DivideAndRoundUp(diffuseProbeGrid->GetTotalProbeCount(), diffuseProbeGrid->GetFrameUpdateCount());
                     dispatchRaysItem.m_depth = 1;
                     dispatchRaysItem.m_rayTracingPipelineState = m_rayTracingPipelineState.get();
                     dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable.get();

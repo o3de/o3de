@@ -11,6 +11,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzQtComponents/Components/StyledBusyLabel.h>
@@ -18,6 +19,7 @@
 
 #include <QApplication>
 #include <QTextDocument>
+#include <QLineEdit>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
                                                                // 4800: 'uint': forcing value to bool 'true' or 'false' (performance warning)
@@ -53,6 +55,24 @@ namespace AzToolsFramework
                 baseHint.setHeight(m_iconSize);
             }
             return baseHint;
+        }
+
+        QWidget* EntryDelegate::createEditor(QWidget* parent, [[ maybe_unused]] const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
+        {
+            QWidget* widget = QStyledItemDelegate::createEditor(parent, option, index);
+            if (auto* lineEdit = qobject_cast<QLineEdit*>(widget))
+            {
+                connect(lineEdit, &QLineEdit::editingFinished,
+                    this, [this]()
+                    {
+                        auto sendingLineEdit = qobject_cast<QLineEdit*>(sender());
+                        if (sendingLineEdit)
+                        {
+                            emit RenameEntry(sendingLineEdit->text());
+                        }
+                    });
+            }
+            return widget;
         }
 
         void EntryDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const

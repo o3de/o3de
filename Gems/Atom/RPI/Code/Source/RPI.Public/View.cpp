@@ -56,6 +56,11 @@ namespace AZ
             AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::Constants::HalfPi, 1, 0.1f, 1000.f, true);
             SetViewToClipMatrix(viewToClipMatrix);
 
+            if ((usage & UsageFlags::UsageXR))
+            {
+                SetViewToClipMatrix(AZ::Matrix4x4::CreateIdentity());
+            }
+
             TryCreateShaderResourceGroup();
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
@@ -77,9 +82,12 @@ namespace AZ
 
         void View::SetDrawListMask(const RHI::DrawListMask& drawListMask)
         {
-            m_drawListMask = drawListMask;
-            m_drawListContext.Shutdown();
-            m_drawListContext.Init(m_drawListMask);
+            if (m_drawListMask != drawListMask)
+            {
+                m_drawListMask = drawListMask;
+                m_drawListContext.Shutdown();
+                m_drawListContext.Init(m_drawListMask);
+            }
         }
 
         void View::Reset()
@@ -115,6 +123,33 @@ namespace AZ
         void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties)
         {
             m_drawListContext.AddDrawItem(drawListTag, drawItemProperties);
+        }
+
+        void View::ApplyFlags(uint32_t flags)
+        {
+            AZStd::atomic_fetch_and(&m_andFlags, flags);
+            AZStd::atomic_fetch_or(&m_orFlags, flags);
+        }
+
+        void View::ClearFlags(uint32_t flags)
+        {
+            AZStd::atomic_fetch_or(&m_andFlags, flags);
+            AZStd::atomic_fetch_and(&m_orFlags, ~flags);
+        }
+
+        void View::ClearAllFlags()
+        {
+            ClearFlags(0xFFFFFFFF);
+        }
+
+        uint32_t View::GetAndFlags()
+        {
+            return m_andFlags;
+        }
+
+        uint32_t View::GetOrFlags()
+        {
+            return m_orFlags;
         }
 
         void View::SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView)
@@ -230,7 +265,7 @@ namespace AZ
                 // zNear -> n, zFar -> f
                 // A = 2n/(f-n), B = 2fn / (f - n)
                 // the formula of A and B should be the same as projection matrix's definition
-                // currently defined in CreateProjectionOffset in XRUtils.cpp
+                // currently defined in CreateStereoscopicProjection in XRUtils.cpp
                 double A = m_viewToClipMatrix.GetElement(2, 2);
                 double B = m_viewToClipMatrix.GetElement(2, 3);
 

@@ -106,7 +106,7 @@ namespace Audio
             AudioSystemImplementationRequestBus::BroadcastResult(fileLocation, &AudioSystemImplementationRequestBus::Events::GetAudioFileLocation, &fileEntryInfo);
             AZStd::string filePath;
             AZ::StringFunc::AssetDatabasePath::Join(fileLocation, fileEntryInfo.sFileName, filePath);
-            auto newAudioFileEntry = azcreate(CATLAudioFileEntry, (filePath.c_str(), fileEntryInfo.pImplData), Audio::AudioSystemAllocator, "ATLAudioFileEntry");
+            auto newAudioFileEntry = azcreate(CATLAudioFileEntry, (filePath.c_str(), fileEntryInfo.pImplData), Audio::AudioSystemAllocator);
 
             if (newAudioFileEntry)
             {
@@ -362,7 +362,7 @@ namespace Audio
     {
         if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::FileCacheInfo)))
         {
-            const auto frameTime = AZStd::chrono::system_clock::now();
+            const auto frameTime = AZStd::chrono::steady_clock::now();
 
             const float entryDrawSize = 0.8f;
             const float entryStepSize = 15.0f;
@@ -568,7 +568,7 @@ namespace Audio
                     audioFileEntry->m_flags.ClearFlags(eAFF_LOADING);
 
 #if !defined(AUDIO_RELEASE)
-                    audioFileEntry->m_timeCached = AZStd::chrono::system_clock::now();
+                    audioFileEntry->m_timeCached = AZStd::chrono::steady_clock::now();
 #endif // !AUDIO_RELEASE
 
                     SATLAudioFileEntryInfo fileEntryInfo;
@@ -736,7 +736,7 @@ namespace Audio
         audioFileEntry->m_useCount = 0;
 
     #if !defined(AUDIO_RELEASE)
-        audioFileEntry->m_timeCached = AZStd::chrono::system_clock::time_point();
+        audioFileEntry->m_timeCached = AZStd::chrono::steady_clock::time_point();
     #endif // !AUDIO_RELEASE
     }
 

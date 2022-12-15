@@ -615,6 +615,7 @@ namespace AZ::Render
 
         const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, GetModelAsset(), model);
+        MeshHandleStateNotificationBus::Event(m_entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &(*m_meshHandle));
 
         m_meshFeatureProcessor->SetVisible(*m_meshHandle, IsVisible());
     }
@@ -648,6 +649,7 @@ namespace AZ::Render
 
             // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
             meshDescriptor.m_isRayTracingEnabled = false;
+            meshDescriptor.m_isAlwaysDynamic = true;
 
             m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
                 m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));

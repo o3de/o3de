@@ -67,10 +67,10 @@ namespace PhysX
             AZStd::chrono::milliseconds totalTime = AZStd::chrono::milliseconds(0);
             do
             {
-                AZStd::chrono::system_clock::time_point startTime = AZStd::chrono::system_clock::now();
+                AZStd::chrono::steady_clock::time_point startTime = AZStd::chrono::steady_clock::now();
                 PhysX::TestUtils::UpdateScene(scene, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 1);
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
-                totalTime += AZStd::chrono::system_clock::now() - startTime;
+                totalTime += AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
             } while (totalTime < updateTimeLimit);
         }
     }
@@ -163,7 +163,7 @@ namespace PhysX
         RayCaster(const AZStd::thread_desc& threadDesc, const AzPhysics::RayCastRequest& request, AzPhysics::SceneHandle sceneHandle)
             : SceneQueryBase(threadDesc, request, sceneHandle)
         {
-            
+
         }
 
     private:
@@ -255,7 +255,7 @@ namespace PhysX
         AzPhysics::RayCastRequest request;
         request.m_start = AZ::Vector3::CreateZero();
         request.m_distance = 2000.0f;
-        
+
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "RMQFPThreads";  // RaycastMultiplesQueryFromParallelThreads
 
@@ -315,7 +315,7 @@ namespace PhysX
          ShapeCaster(const AZStd::thread_desc& threadDesc, const AzPhysics::ShapeCastRequest& request, AzPhysics::SceneHandle sceneHandle)
              : SceneQueryBase(threadDesc, request, sceneHandle)
          {
- 
+
          }
 
      private:
@@ -324,7 +324,7 @@ namespace PhysX
              m_result = m_sceneInterface->QueryScene(m_sceneHandle, &m_request);
          }
      };
- 
+
      TEST_P(PhysXMultithreadingTest, ShapeCastsQueryFromParallelThreads)
      {
          const int seed = GetParam();

@@ -111,7 +111,7 @@
     },
     "shaders": [
         {
-            "file": "./Eye.shader",
+            "file": "Shaders/Materials/Eye/Eye_ForwardPass.shader",
             "tag": "ForwardPass_EDS"
         },
         {
@@ -125,6 +125,14 @@
         {
             "file": "Shaders/MotionVector/MeshMotionVector.shader",
             "tag": "MeshMotionVector"
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "CastShadows.lua"
+            }
         }
     ],
     "uvNameMap": {

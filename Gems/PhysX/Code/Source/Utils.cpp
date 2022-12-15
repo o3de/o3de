@@ -898,7 +898,8 @@ namespace PhysX
             return str;
         }
 
-        void WarnEntityNames(const AZStd::vector<AZ::EntityId>& entityIds, [[maybe_unused]] const char* category, const char* message)
+        static AZStd::string FormatEntityNames(
+            const AZStd::vector<AZ::EntityId>& entityIds, const char* message)
         {
             AZStd::string messageOutput = message;
             messageOutput += "\n";
@@ -913,9 +914,21 @@ namespace PhysX
             }
 
             AZStd::string percentageSymbol("%");
-            AZStd::string percentageReplace("%%"); //Replacing % with %% serves to escape the % character when printing out the entity names in printf style.
+            AZStd::string percentageReplace(
+                "%%"); // Replacing % with %% serves to escape the % character when printing out the entity names in printf style.
             messageOutput = ReplaceAll(messageOutput, percentageSymbol, percentageReplace);
+            return messageOutput;
+        }
 
+        void PrintEntityNames(const AZStd::vector<AZ::EntityId>& entityIds, [[maybe_unused]] const char* category, const char* message)
+        {
+            const AZStd::string messageOutput = FormatEntityNames(entityIds, message);
+            AZ_Printf(category, messageOutput.c_str());
+        }
+
+        void WarnEntityNames(const AZStd::vector<AZ::EntityId>& entityIds, [[maybe_unused]] const char* category, const char* message)
+        {
+            const AZStd::string messageOutput = FormatEntityNames(entityIds, message);
             AZ_Warning(category, false, messageOutput.c_str());
         }
 
@@ -1164,17 +1177,11 @@ namespace PhysX
             }
         }
 
-        AZ::Vector3 GetTransformScale(AZ::EntityId entityId)
+        float GetTransformScale(AZ::EntityId entityId)
         {
-            float worldUniformScale = 1.0f;
-            AZ::TransformBus::EventResult(worldUniformScale, entityId, &AZ::TransformBus::Events::GetWorldUniformScale);
-            return AZ::Vector3(worldUniformScale);
-        }
-
-        AZ::Vector3 GetUniformScale(AZ::EntityId entityId)
-        {
-            const float uniformScale = GetTransformScale(entityId).GetMaxElement();
-            return AZ::Vector3(uniformScale);
+            float transformScale = 1.0f;
+            AZ::TransformBus::EventResult(transformScale, entityId, &AZ::TransformBus::Events::GetWorldUniformScale);
+            return transformScale;
         }
 
         AZ::Vector3 GetNonUniformScale(AZ::EntityId entityId)
@@ -1186,7 +1193,7 @@ namespace PhysX
 
         AZ::Vector3 GetOverallScale(AZ::EntityId entityId)
         {
-            return GetUniformScale(entityId) * GetNonUniformScale(entityId);
+            return GetTransformScale(entityId) * GetNonUniformScale(entityId);
         }
 
         const AZ::Vector3& Sanitize(const AZ::Vector3& input, const AZ::Vector3& defaultValue)

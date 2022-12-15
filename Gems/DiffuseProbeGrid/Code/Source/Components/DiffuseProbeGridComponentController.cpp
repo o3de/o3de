@@ -34,7 +34,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DiffuseProbeGridComponentConfig>()
-                    ->Version(4) // Added scrolling
+                    ->Version(5) // Added EdgeBlendIbl
                     ->Field("ProbeSpacing", &DiffuseProbeGridComponentConfig::m_probeSpacing)
                     ->Field("Extents", &DiffuseProbeGridComponentConfig::m_extents)
                     ->Field("AmbientMultiplier", &DiffuseProbeGridComponentConfig::m_ambientMultiplier)
@@ -42,6 +42,9 @@ namespace AZ
                     ->Field("NormalBias", &DiffuseProbeGridComponentConfig::m_normalBias)
                     ->Field("NumRaysPerProbe", &DiffuseProbeGridComponentConfig::m_numRaysPerProbe)
                     ->Field("Scrolling", &DiffuseProbeGridComponentConfig::m_scrolling)
+                    ->Field("EdgeBlendIbl", &DiffuseProbeGridComponentConfig::m_edgeBlendIbl)
+                    ->Field("FrameUpdateCount", &DiffuseProbeGridComponentConfig::m_frameUpdateCount)
+                    ->Field("TransparencyMode", &DiffuseProbeGridComponentConfig::m_transparencyMode)
                     ->Field("EditorMode", &DiffuseProbeGridComponentConfig::m_editorMode)
                     ->Field("RuntimeMode", &DiffuseProbeGridComponentConfig::m_runtimeMode)
                     ->Field("BakedIrradianceTextureRelativePath", &DiffuseProbeGridComponentConfig::m_bakedIrradianceTextureRelativePath)
@@ -138,13 +141,17 @@ namespace AZ
 
             // add this diffuse probe grid to the feature processor
             const AZ::Transform& transform = m_transformInterface->GetWorldTM();
-            m_handle = m_featureProcessor->AddProbeGrid(transform, m_configuration.m_extents, m_configuration.m_probeSpacing);
+            m_handle = m_featureProcessor->AddProbeGrid(
+                ComputeOverallTransform(transform), m_configuration.m_extents, m_configuration.m_probeSpacing);
 
             m_featureProcessor->SetAmbientMultiplier(m_handle, m_configuration.m_ambientMultiplier);
             m_featureProcessor->SetViewBias(m_handle, m_configuration.m_viewBias);
             m_featureProcessor->SetNormalBias(m_handle, m_configuration.m_normalBias);
             m_featureProcessor->SetNumRaysPerProbe(m_handle, m_configuration.m_numRaysPerProbe);
             m_featureProcessor->SetScrolling(m_handle, m_configuration.m_scrolling);
+            m_featureProcessor->SetEdgeBlendIbl(m_handle, m_configuration.m_edgeBlendIbl);
+            m_featureProcessor->SetFrameUpdateCount(m_handle, m_configuration.m_frameUpdateCount);
+            m_featureProcessor->SetTransparencyMode(m_handle, m_configuration.m_transparencyMode);
             m_featureProcessor->SetVisualizationEnabled(m_handle, m_configuration.m_visualizationEnabled);
             m_featureProcessor->SetVisualizationShowInactiveProbes(m_handle, m_configuration.m_visualizationShowInactiveProbes);
             m_featureProcessor->SetVisualizationSphereRadius(m_handle, m_configuration.m_visualizationSphereRadius);
@@ -186,6 +193,7 @@ namespace AZ
             }
 
             m_boxShapeInterface->SetBoxDimensions(extents);
+            m_boxChangedByGridEvent.Signal(true);
         }
 
         void DiffuseProbeGridComponentController::OnAssetReady(Data::Asset<Data::AssetData> asset)
@@ -244,7 +252,7 @@ namespace AZ
                 return;
             }
 
-            m_featureProcessor->SetTransform(m_handle, world);
+            m_featureProcessor->SetTransform(m_handle, ComputeOverallTransform(world));
         }
 
         void DiffuseProbeGridComponentController::OnShapeChanged(ShapeChangeReasons changeReason)
@@ -275,7 +283,11 @@ namespace AZ
                 {
                     // restore old dimensions
                     m_boxShapeInterface->SetBoxDimensions(m_configuration.m_extents);
+                    m_boxChangedByGridEvent.Signal(true);
                 }
+
+                // the shape translation offset may have changed, which would affect the overall transform
+                m_featureProcessor->SetTransform(m_handle, ComputeOverallTransform(m_transformInterface->GetWorldTM()));
             }
 
             m_inShapeChangeHandler = false;
@@ -284,6 +296,11 @@ namespace AZ
         AZ::Aabb DiffuseProbeGridComponentController::GetAabb() const
         {
             return m_shapeBus ? m_shapeBus->GetEncompassingAabb() : AZ::Aabb::CreateNull();
+        }
+
+        void DiffuseProbeGridComponentController::RegisterBoxChangedByGridHandler(AZ::Event<bool>::Handler& handler)
+        {
+            handler.Connect(m_boxChangedByGridEvent);
         }
 
         bool DiffuseProbeGridComponentController::ValidateProbeSpacing(const AZ::Vector3& newSpacing)
@@ -350,6 +367,39 @@ namespace AZ
 
             m_configuration.m_scrolling = scrolling;
             m_featureProcessor->SetScrolling(m_handle, m_configuration.m_scrolling);
+        }
+
+        void DiffuseProbeGridComponentController::SetEdgeBlendIbl(bool edgeBlendIbl)
+        {
+            if (!m_featureProcessor)
+            {
+                return;
+            }
+
+            m_configuration.m_edgeBlendIbl = edgeBlendIbl;
+            m_featureProcessor->SetEdgeBlendIbl(m_handle, m_configuration.m_edgeBlendIbl);
+        }
+
+        void DiffuseProbeGridComponentController::SetFrameUpdateCount(uint32_t frameUpdateCount)
+        {
+            if (!m_featureProcessor)
+            {
+                return;
+            }
+
+            m_configuration.m_frameUpdateCount = frameUpdateCount;
+            m_featureProcessor->SetFrameUpdateCount(m_handle, m_configuration.m_frameUpdateCount);
+        }
+
+        void DiffuseProbeGridComponentController::SetTransparencyMode(DiffuseProbeGridTransparencyMode transparencyMode)
+        {
+            if (!m_featureProcessor)
+            {
+                return;
+            }
+
+            m_configuration.m_transparencyMode = transparencyMode;
+            m_featureProcessor->SetTransparencyMode(m_handle, m_configuration.m_transparencyMode);
         }
 
         void DiffuseProbeGridComponentController::SetEditorMode(DiffuseProbeGridMode editorMode)
@@ -439,6 +489,22 @@ namespace AZ
            bakedTextures.m_probeDataImageRelativePath = m_configuration.m_bakedProbeDataTextureRelativePath;
 
            m_featureProcessor->SetBakedTextures(m_handle, bakedTextures);
+        }
+
+        AZ::Transform DiffuseProbeGridComponentController::ComputeOverallTransform(const AZ::Transform& entityTransform) const
+        {
+            const bool isTypeAxisAligned = m_boxShapeInterface ? m_boxShapeInterface->IsTypeAxisAligned() : false;
+            const AZ::Vector3 translationOffset = m_shapeBus ? m_shapeBus->GetTranslationOffset() : AZ::Vector3::CreateZero();
+            const AZ::Transform translationOffsetTransform = AZ::Transform::CreateTranslation(translationOffset);
+
+            if (isTypeAxisAligned)
+            {
+                AZ::Transform entityTransformNoRotation = entityTransform;
+                entityTransformNoRotation.SetRotation(AZ::Quaternion::CreateIdentity());
+                return entityTransformNoRotation * translationOffsetTransform;
+            }
+
+            return entityTransform * translationOffsetTransform;
         }
     } // namespace Render
 } // namespace AZ

@@ -29,6 +29,7 @@
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Task/TaskGraph.h>
+#include <AzCore/std/time.h>
 
 namespace AZ
 {
@@ -232,7 +233,7 @@ namespace AZ
 
             for (ScopeProducer* scopeProducer : m_scopeProducers)
             {
-                AZ_PROFILE_SCOPE(RHI, "FrameScheduler: PrepareProducers: Scope %s", scopeProducer->GetScopeId().GetCStr());
+                RHI_PROFILE_SCOPE_VERBOSE("FrameScheduler: PrepareProducers: Scope %s", scopeProducer->GetScopeId().GetCStr());
                 m_frameGraph->BeginScope(*scopeProducer->GetScope());
                 scopeProducer->SetupFrameGraphDependencies(*m_frameGraph);
                 

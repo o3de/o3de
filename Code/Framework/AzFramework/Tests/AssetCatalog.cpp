@@ -56,7 +56,7 @@ namespace UnitTest
     }
 
     class AssetCatalogDependencyTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
         AzFramework::AssetCatalog* m_assetCatalog;
 
@@ -108,7 +108,7 @@ namespace UnitTest
                 AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset1;
                 message.m_dependencies.emplace_back(asset2, 0);
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
             {
@@ -117,7 +117,7 @@ namespace UnitTest
                 message.m_assetId = asset2;
                 message.m_dependencies.emplace_back(asset3, 0);
                 message.m_dependencies.emplace_back(asset4, 0);
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
             {
@@ -125,21 +125,21 @@ namespace UnitTest
                 AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset3;
                 message.m_dependencies.emplace_back(asset5, 0);
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
             {
                 m_assetCatalog->RegisterAsset(asset4, info4);
                 AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset4;
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
             {
                 m_assetCatalog->RegisterAsset(asset5, info5);
                 AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset5;
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
 
         }
@@ -257,7 +257,7 @@ namespace UnitTest
     }
 
     class AssetCatalogDeltaTest :
-        public ScopedAllocatorSetupFixture
+        public LeakDetectionFixture
     {
     public:
         const char* path1 = "Asset1Path";
@@ -349,7 +349,7 @@ namespace UnitTest
                 AzFramework::AssetSystem::AssetNotificationMessage message(path3, AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset1;
                 message.m_dependencies.push_back(AZ::Data::ProductDependency(asset2, 0));
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
             AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::StopMonitoringAssets);
             // sourcecatalog1 - asset1 path3 (depends on asset 2), asset2 path2, asset4 path4
@@ -369,7 +369,7 @@ namespace UnitTest
                 AzFramework::AssetSystem::AssetNotificationMessage message(path5, AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset5;
                 message.m_dependencies.push_back(AZ::Data::ProductDependency(asset2, 0));
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
             AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::StopMonitoringAssets);
             // sourcecatalog2 - asset1 path3 (depends on asset 2), asset2 path2, asset4 path4, asset5 path5 (depends on asset 2)
@@ -389,7 +389,7 @@ namespace UnitTest
                 AzFramework::AssetSystem::AssetNotificationMessage message(path4, AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
                 message.m_assetId = asset5;
                 message.m_dependencies.push_back(AZ::Data::ProductDependency(asset2, 0));
-                notificationInterface->AssetChanged(message);
+                notificationInterface->AssetChanged({ message });
             }
             AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::StopMonitoringAssets);
             //sourcecatalog3 - asset1 path6, asset2 path2, asset5 path4 (depends on asset 2)
@@ -419,6 +419,7 @@ namespace UnitTest
             deltaCatalog3.reset();
             m_app->Stop();
             m_app.reset();
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GarbageCollect();
         }
 
         void CheckDirectDependencies(AZ::Data::AssetId assetId, AZStd::initializer_list<AZ::Data::AssetId> expectedDependencies)
@@ -456,7 +457,7 @@ namespace UnitTest
             AzFramework::AssetSystem::AssetNotificationMessage message("test", AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged, AZ::Uuid::CreateRandom(), "");
             message.m_assetId = updatedAsset;
             message.m_dependencies.emplace_back(asset2, 0);
-            notificationInterface->AssetChanged(message);
+            notificationInterface->AssetChanged({ message });
         }
 
         AZ::Data::AssetInfo assetInfo;
@@ -831,7 +832,7 @@ namespace UnitTest
     }
 
     class AssetCatalogAPITest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
@@ -1078,7 +1079,7 @@ namespace UnitTest
     };
 
     class AssetCatalogDisplayNameTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
         virtual AZ::IO::IStreamer* CreateStreamer() { return aznew AZ::IO::Streamer(AZStd::thread_desc{}, AZ::StreamerComponent::CreateStreamerStack()); }
         virtual void DestroyStreamer(AZ::IO::IStreamer* streamer) { delete streamer; }

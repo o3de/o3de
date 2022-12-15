@@ -19,10 +19,16 @@
 
 QT_FORWARD_DECLARE_CLASS(QCheckBox)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
 
 namespace MysticQt
 {
     class LinkWidget;
+}
+
+namespace AzToolsFramework
+{
+    class ReflectedPropertyEditor;
 }
 
 namespace EMStudio
@@ -43,6 +49,8 @@ namespace EMStudio
     public slots:
         void UpdateInterface();
         void OnMotionExtractionFlagsUpdated();
+        void OnRootMotionCheckboxClicked();
+        void OnSaveMotion();
 
         void OnSelectMotionExtractionNode();
         void OnMotionExtractionNodeSelected(AZStd::vector<SelectionItem> selection);
@@ -51,10 +59,16 @@ namespace EMStudio
         // helper functions
         void CreateFlagsWidget();
         void CreateWarningWidget();
+        void CreateRootMotionWidgets();
 
         // flags widget
         QWidget* m_flagsWidget = nullptr;
         QCheckBox* m_captureHeight = nullptr;
+
+        // Root motion extraction widgets
+        QCheckBox* m_extractRootMotionCheck = nullptr;
+        QPushButton* m_saveMotionButton = nullptr;
+        AzToolsFramework::ReflectedPropertyEditor* m_rootMotionExtractionWidget = nullptr;
 
         //
         QVBoxLayout* m_mainVerticalLayout = nullptr;

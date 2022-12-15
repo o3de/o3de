@@ -57,11 +57,9 @@ namespace AZ
             AZStd::string BuildScreenshotFilePath(const AZStd::string& imageName, bool useEnvPath) override;
             AZStd::string BuildOfficialBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) override;
             AZStd::string BuildLocalBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) override;
-            bool CompareScreenshots(
+            Utils::ImageDiffResult CompareScreenshots(
                 const AZStd::string& filePathA,
                 const AZStd::string& filePathB,
-                float* diffScore,
-                float* filteredDiffScore,
                 float minDiffFilter) override;
 
         private:

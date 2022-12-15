@@ -14,6 +14,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <PxPhysicsAPI.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/std/time.h>
 
 namespace PhysX
 {
@@ -59,7 +60,7 @@ namespace PhysX
                 {
                     m_pvdConfigurationChangedEvent.Signal(config.m_pvdConfigurationData);
                 }
-            }           
+            }
         }
 
         const DebugConfiguration& PhysXDebug::GetDebugConfiguration() const

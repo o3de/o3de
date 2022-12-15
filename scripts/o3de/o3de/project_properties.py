@@ -31,22 +31,39 @@ def get_project_props(name: str = None, path: pathlib.Path = None) -> dict:
 def _edit_gem_names(proj_json: dict,
                     new_gem_names: str or list = None,
                     delete_gem_names: str or list = None,
-                    replace_gem_names: str or list = None):
+                    replace_gem_names: str or list = None,
+                    is_optional: bool = False):
+    """
+    Edits and modifies the 'gem_names' list in the proj_json parameter.
+    :param proj_json: The project json data
+    :param new_gem_names: Any gem names to be added to the list
+    :param delete_gem_names: Any gem names to be removed from the list
+    :param replace_gem_names: A list of gem names that will completely replace the current list
+    :param is_optional: Only applies to new_gem_names, when true will add an 'optional' property to the gem(s)
+    """
     if new_gem_names:
-        tag_list = new_gem_names.split() if isinstance(new_gem_names, str) else new_gem_names
-        proj_json.setdefault('gem_names', []).extend(tag_list)
+        add_list = new_gem_names.split() if isinstance(new_gem_names, str) else new_gem_names
+        if is_optional:
+            add_list = [dict(name=gem_name, optional=True) for gem_name in add_list]
+        proj_json.setdefault('gem_names', []).extend(add_list)
+
     if delete_gem_names:
         removal_list = delete_gem_names.split() if isinstance(delete_gem_names, str) else delete_gem_names
         if 'gem_names' in proj_json:
-            for tag in removal_list:
-                if tag in proj_json['gem_names']:
-                    proj_json['gem_names'].remove(tag)
+            def in_list(gem: str or dict, remove_list: list) -> bool:
+                if isinstance(gem, dict):
+                    return gem.get('name', '') in remove_list
+                else:
+                    return gem in remove_list
+
+            proj_json['gem_names'] = [gem for gem in proj_json['gem_names'] if not in_list(gem, removal_list)]
+
     if replace_gem_names:
         tag_list = replace_gem_names.split() if isinstance(replace_gem_names, str) else replace_gem_names
         proj_json['gem_names'] = tag_list
 
     # Remove duplicates from list
-    proj_json['gem_names'] = list(dict.fromkeys(proj_json.get('gem_names', [])))
+    proj_json['gem_names'] = utils.remove_gem_duplicates(proj_json.get('gem_names', []))
 
 
 def edit_project_props(proj_path: pathlib.Path = None,
@@ -63,10 +80,11 @@ def edit_project_props(proj_path: pathlib.Path = None,
                        new_gem_names: str or list = None,
                        delete_gem_names: str or list = None,
                        replace_gem_names: str or list = None,
-                       new_engine_name: str or list = None
+                       new_engine_name: str or list = None,
+                       is_optional: bool = False
                        ) -> int:
     proj_json = get_project_props(proj_name, proj_path)
-    
+
     if not proj_json:
         return 1
     if new_name:
@@ -103,7 +121,7 @@ def edit_project_props(proj_path: pathlib.Path = None,
         tag_list = replace_tags.split() if isinstance(replace_tags, str) else replace_tags
         proj_json['user_tags'] = tag_list
     # Update the gem_names field in the project.json
-    _edit_gem_names(proj_json, new_gem_names, delete_gem_names, replace_gem_names)
+    _edit_gem_names(proj_json, new_gem_names, delete_gem_names, replace_gem_names, is_optional)
 
     return 0 if manifest.save_o3de_manifest(proj_json, pathlib.Path(proj_path) / 'project.json') else 1
 
@@ -150,15 +168,15 @@ def add_parser_args(parser):
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-at', '--add-tags', type=str, nargs='*', required=False,
                        help='Adds tag(s) to user_tags property. Space delimited list (ex. -at A B C)')
-    group.add_argument('-dt', '--delete-tags', type=str, nargs ='*', required=False,
+    group.add_argument('-dt', '--delete-tags', type=str, nargs='*', required=False,
                        help='Removes tag(s) from the user_tags property. Space delimited list (ex. -dt A B C')
-    group.add_argument('-rt', '--replace-tags', type=str, nargs ='*', required=False,
+    group.add_argument('-rt', '--replace-tags', type=str, nargs='*', required=False,
                        help='Replace entirety of user_tags property with space delimited list of values')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-agn', '--add-gem-names', type=str, nargs='*', required=False,
-                       help='Adds gem name(s) to gem_names field. Space delimited list (ex. -at A B C)')
+                       help='Adds gem name(s) to gem_names field. Space delimited list (ex. -agn A B C)')
     group.add_argument('-dgn', '--delete-gem-names', type=str, nargs='*', required=False,
-                       help='Removes gem name(s) from the gem_names field. Space delimited list (ex. -dt A B C')
+                       help='Removes gem name(s) from the gem_names field. Space delimited list (ex. -dgn A B C')
     group.add_argument('-rgn', '--replace-gem-names', type=str, nargs='*', required=False,
                        help='Replace entirety of gem_names field with space delimited list of values')
     parser.set_defaults(func=_edit_project_props)

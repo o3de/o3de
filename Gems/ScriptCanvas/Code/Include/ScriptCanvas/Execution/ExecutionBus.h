@@ -36,7 +36,7 @@
 #endif
 
 namespace ScriptCanvas
-{    
+{
     GraphInfo CreateGraphInfo(ScriptCanvasId executionId, const GraphIdentifier& graphIdentifier);
     class ExecutionState;
 
@@ -89,7 +89,7 @@ namespace ScriptCanvas
 
         protected:
             PerformanceKey m_key;
-            AZStd::chrono::system_clock::time_point m_startTime;
+            AZStd::chrono::steady_clock::time_point m_startTime;
         };
 
         class PerformanceScopeExecution : public PerformanceScope

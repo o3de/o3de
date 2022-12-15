@@ -45,6 +45,8 @@ namespace AzQtComponents
         //! Enable content modified styling.
         Q_PROPERTY(bool contentModified READ isContentModified WRITE setContentModified NOTIFY contentModifiedChanged)
     public:
+        static int s_iconSize;
+
         //! Enum used to determine which icon to use for the context menu button.
         enum ContextMenuIcon
         {
@@ -53,11 +55,16 @@ namespace AzQtComponents
         };
 
         static void applyContainerStyle(CardHeader* header);
+        static void applySectionStyle(CardHeader* header);
 
         CardHeader(QWidget* parent = nullptr);
 
         //! Sets the Card Header title. Passing an empty string will hide the Card Header.
         void setTitle(const QString& title);
+
+        //! Sets the tool tip for the card header and card header title.
+        void setTitleToolTip(const QString& toolTip);
+
         //! Returns the current title.
         QString title() const;
         //! Returns a direct pointer to the title label.
@@ -182,6 +189,6 @@ namespace AzQtComponents
         QIcon m_icon;
         QString m_helpUrl;
 
-        static int s_iconSize;
+        
     };
 } // namespace AzQtComponents

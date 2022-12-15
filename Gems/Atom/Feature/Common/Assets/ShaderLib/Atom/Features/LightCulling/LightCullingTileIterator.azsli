@@ -9,12 +9,14 @@
 #pragma once
 
 #include <Atom/Features/LightCulling/LightCullingShared.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
 
 // This class is used by forward shaders to iterate through lights (and decals) that are visible at this pixel position
 class LightCullingTileIterator
 {       
     void Init(float4 svPosition, StructuredBuffer<uint> lightListRemapped, Texture2D<uint4> tileLightDataTex)
     {
+#if ENABLE_LIGHT_CULLING
         m_lightListRemapped = lightListRemapped;
     
         uint2 tileId = ComputeTileId(svPosition.xy);
@@ -29,8 +31,12 @@ class LightCullingTileIterator
         TileLightData tileLightData = Tile_UnpackData(tileLightDataTex[tileId]);
         m_overflow = tileLightData.overflow;
         uint bin = NVLC_GetBin(viewz, tileLightData); 
-        m_readIndex = ((tileId.y * tileWidth + tileId.x) * NVLC_MAX_BINS + bin) * NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN; 
-        m_value = 0;               
+        m_readIndex = ((tileId.y * tileWidth + tileId.x) * NVLC_MAX_BINS + bin) * NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN;  
+        m_value = 0;  
+#else
+        m_readIndex = 0;
+        m_value = NVLC_END_OF_LIST;  
+#endif
     }
             
     uint LoadAdvance()

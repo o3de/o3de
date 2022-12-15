@@ -149,11 +149,11 @@ namespace UnitTest
 
     void BaseAssetManagerTest::BlockUntilAssetJobsAreComplete()
     {
-        auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+        auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
         while (AssetManager::Instance().HasActiveJobsOrStreamerRequests())
         {
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 break;
             }

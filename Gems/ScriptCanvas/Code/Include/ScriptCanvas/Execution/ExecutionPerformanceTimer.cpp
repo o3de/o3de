@@ -46,7 +46,7 @@ namespace ScriptCanvas
 
         PerformanceScope::PerformanceScope(const PerformanceKey& key)
             : m_key(key)
-            , m_startTime(AZStd::chrono::system_clock::now())
+            , m_startTime(AZStd::chrono::steady_clock::now())
         {}
 
         PerformanceScopeExecution::PerformanceScopeExecution(const PerformanceKey& key)
@@ -55,7 +55,7 @@ namespace ScriptCanvas
 
         PerformanceScopeExecution::~PerformanceScopeExecution()
         {
-            ModPerformanceTracker().ReportExecutionTime(m_key, AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_startTime).count());
+            ModPerformanceTracker().ReportExecutionTime(m_key, AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - m_startTime).count());
         }
 
         PerformanceScopeInitialization::PerformanceScopeInitialization(const PerformanceKey& key)
@@ -64,7 +64,7 @@ namespace ScriptCanvas
 
         PerformanceScopeInitialization::~PerformanceScopeInitialization()
         {
-            ModPerformanceTracker().ReportInitializationTime(m_key, AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_startTime).count());
+            ModPerformanceTracker().ReportInitializationTime(m_key, AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - m_startTime).count());
         }
 
         PerformanceScopeLatent::PerformanceScopeLatent(const PerformanceKey& key)
@@ -73,7 +73,7 @@ namespace ScriptCanvas
 
         PerformanceScopeLatent::~PerformanceScopeLatent()
         {
-            ModPerformanceTracker().ReportLatentTime(m_key, AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_startTime).count());
+            ModPerformanceTracker().ReportLatentTime(m_key, AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - m_startTime).count());
         }
 
         PerformanceTimer::PerformanceTimer()

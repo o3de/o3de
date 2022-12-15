@@ -89,7 +89,7 @@ namespace UnitTest
     };
 
     class WrappedComponentTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
 
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -99,7 +99,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             s_activateCalled = false;
             s_deactivateCalled = false;
@@ -119,7 +119,7 @@ namespace UnitTest
             m_testRuntimeComponentDescriptor.reset();
             m_serializeContext.reset();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 

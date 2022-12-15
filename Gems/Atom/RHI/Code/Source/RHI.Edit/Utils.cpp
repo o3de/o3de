@@ -20,6 +20,7 @@
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/Platform.h>
+#include <AzCore/std/time.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -188,6 +189,9 @@ namespace AZ
                 combinedFile = *sourceFileAbsolutePath;
             }
             combinedFile += (arguments.m_addSuffixToFileName ? "." + AZStd::string{ arguments.m_addSuffixToFileName } : "") + ".prepend";
+
+            // Make sure the slashes face the right way, so when this command line shows up in a log, the user can easily copy and paste the path.
+            AzFramework::StringFunc::Path::Normalize(combinedFile);
 
             if (arguments.m_destinationStringOpt)
             {

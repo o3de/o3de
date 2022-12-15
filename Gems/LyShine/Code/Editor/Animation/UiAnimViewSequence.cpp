@@ -833,7 +833,7 @@ CUiAnimViewSequence::GetMatchedPasteLocations(XmlNodeRef clipboardContent, CUiAn
     if (bPastingSingleTrack && pTargetNode && pTargetTrack)
     {
         // We have a target node & track, so try to match the value type
-        int valueType = 0;
+        unsigned int valueType = 0;
         if (singleTrack->getAttr("valueType", valueType))
         {
             if (pTargetTrack->GetValueType() == valueType)
@@ -902,7 +902,7 @@ std::deque<CUiAnimViewTrack*> CUiAnimViewSequence::GetMatchingTracks(CUiAnimView
     CUiAnimParamType animParamType;
     animParamType.Serialize(animationSystem, trackNode, true);
 
-    int valueType;
+    unsigned int valueType;
     if (!trackNode->getAttr("valueType", valueType))
     {
         return matchingTracks;

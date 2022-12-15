@@ -15,37 +15,41 @@
             { 
                 "$import": "MaterialInputs/BaseColorPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/MetallicPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/RoughnessPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/SpecularPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/NormalPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/UvPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/IrradiancePropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
             }
         ]
     },
     "shaders": [
         {
-            "file": "./BasePBR_ForwardPass.shader",
+            "file": "Shaders/Materials/BasePBR/BasePBR_ForwardPass.shader",
             "tag": "ForwardPass_EDS"
         },
         {
-            "file": "./BasePBR_LowEndForward.shader",
+            "file": "Shaders/Materials/BasePBR/BasePBR_LowEndForward.shader",
             "tag": "LowEndForward_EDS"
+        },
+        {
+            "file": "Shaders/Materials/BasePBR/BasePBR_MultiViewForward.shader",
+            "tag": "MultiViewForward_EDS"
         },
         {
             "file": "Shaders/Shadow/Shadowmap.shader",
@@ -61,6 +65,12 @@
         }
     ],
     "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "CastShadows.lua"
+            }
+        }
     ],
     "uvNameMap": {
         "UV0": "Tiled",

@@ -23,13 +23,28 @@
 #include <RHI/SwapChain.h>
 #include <RHI/Framebuffer.h>
 #include <RHI/Device.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 #include <RHI/BufferView.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
+        Scope::Barrier::Barrier(VkMemoryBarrier barrier)
+            : m_type(barrier.sType)
+            , m_memoryBarrier(barrier)
+        {}
+
+        Scope::Barrier::Barrier(VkBufferMemoryBarrier barrier)
+            : m_type(barrier.sType)
+            , m_bufferBarrier(barrier)
+        {}
+
+        Scope::Barrier::Barrier(VkImageMemoryBarrier barrier)
+            : m_type(barrier.sType)
+            , m_imageBarrier(barrier)
+        {}
+
         bool Scope::Barrier::BlocksResource(const ImageView& imageView, OverlapType overlapType) const
         {
             if (m_type != VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER ||
@@ -82,30 +97,6 @@ namespace AZ
         {
             commandList.EndDebugLabel();
             commandList.GetValidator().EndScope();
-        }
-
-        void Scope::QueueBarrier(BarrierSlot slot, const VkPipelineStageFlags src, const VkPipelineStageFlags dst, const VkImageMemoryBarrier& imageBarrier)
-        {
-            Barrier barrier;
-            barrier.m_dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-            barrier.m_dstStageMask = dst;
-            barrier.m_srcStageMask = src;
-            barrier.m_type = imageBarrier.sType;
-            barrier.m_imageBarrier = imageBarrier;
-
-            AddBarrier(slot, barrier);
-        }
-
-        void Scope::QueueBarrier(BarrierSlot slot, const VkPipelineStageFlags src, const VkPipelineStageFlags dst, const VkBufferMemoryBarrier& bufferBarrier)
-        {
-            Barrier barrier;
-            barrier.m_dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-            barrier.m_dstStageMask = dst;
-            barrier.m_srcStageMask = src;
-            barrier.m_type = bufferBarrier.sType;
-            barrier.m_bufferBarrier = bufferBarrier;
-
-            AddBarrier(slot, barrier);
         }
 
         template<class T>
@@ -358,7 +349,7 @@ namespace AZ
 
         bool Scope::CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const
         {
-            if (!UsesRenderpass())
+            if (!UsesRenderpass() || !barrier.m_attachment)
             {
                 return false;
             }
@@ -366,6 +357,16 @@ namespace AZ
             // Check that the destination pipeline stages are supported by the Pipeline
             VkPipelineStageFlags filteredDstStages = RHI::FilterBits(barrier.m_dstStageMask, GetSupportedPipelineStages(RHI::PipelineStateType::Draw));
             if (filteredDstStages == VkPipelineStageFlags(0))
+            {
+                return false;
+            }
+
+            const RHI::ScopeAttachment* scopeAttachment =
+                slot == BarrierSlot::Prologue ? barrier.m_attachment->GetPrevious() : barrier.m_attachment->GetNext();
+
+            // We don't optimize external barriers because they cause renderpass incompatiblity with the pipeline renderpass.
+            // The subpass dependencies added by the optimization causes the incompatibility.
+            if (!scopeAttachment || scopeAttachment->GetScope().GetFrameGraphGroupId() != GetFrameGraphGroupId())
             {
                 return false;
             }
@@ -380,29 +381,26 @@ namespace AZ
                 if (barrier.m_imageBarrier.srcQueueFamilyIndex == barrier.m_imageBarrier.dstQueueFamilyIndex)
                 {
                     // Check if the barrier is a renderpass image attachment (to replace it with a subpass dependency and an automatic subpass layout transition)
-                    for (const RHI::ScopeAttachment* scopeAttachment : FindScopeAttachments(barrier))
+                    const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment->GetUsageAndAccess();
+                    for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : usagesAndAccesses)
                     {
-                        const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment->GetUsageAndAccess();
-                        for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : usagesAndAccesses)
+                        if (IsRenderAttachmentUsage(usageAndAccess.m_usage))
                         {
-                            if (IsRenderAttachmentUsage(usageAndAccess.m_usage))
+                            // Since we need to preserve the order of the barriers, and scope barriers are execute before
+                            // subpass barriers, we need to check that there's no barrier for the same resource already in the
+                            // scope barrier list.
+                            const auto& scopeBarriers = m_scopeBarriers[static_cast<uint32_t>(slot)];
+                            auto findIt = AZStd::find_if(scopeBarriers.begin(), scopeBarriers.end(), [&barrier](const auto& scopeBarrier)
                             {
-                                // Since we need to preserve the order of the barriers, and scope barriers are execute before
-                                // subpass barriers, we need to check that there's no barrier for the same resource already in the
-                                // scope barrier list.
-                                const auto& scopeBarriers = m_scopeBarriers[static_cast<uint32_t>(slot)];
-                                auto findIt = AZStd::find_if(scopeBarriers.begin(), scopeBarriers.end(), [&barrier](const auto& scopeBarrier)
-                                {
-                                    return
-                                        scopeBarrier.m_type == VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER &&
-                                        scopeBarrier.m_imageBarrier.image == barrier.m_imageBarrier.image &&
-                                        SubresourceRangeOverlaps(scopeBarrier.m_imageBarrier.subresourceRange, barrier.m_imageBarrier.subresourceRange);
-                                });
+                                return
+                                    scopeBarrier.m_type == VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER &&
+                                    scopeBarrier.m_imageBarrier.image == barrier.m_imageBarrier.image &&
+                                    SubresourceRangeOverlaps(scopeBarrier.m_imageBarrier.subresourceRange, barrier.m_imageBarrier.subresourceRange);
+                            });
 
-                                if (findIt == scopeBarriers.end())
-                                {
-                                    return true;
-                                }
+                            if (findIt == scopeBarriers.end())
+                            {
+                                return true;
                             }
                         }
                     }
@@ -412,44 +410,6 @@ namespace AZ
                 AZ_Assert(false, "Invalid memory barrier type.");
                 return false;
             }
-        }
-
-        AZStd::vector<const RHI::ScopeAttachment*> Scope::FindScopeAttachments(const Barrier& barrier) const
-        {
-            AZStd::vector<const RHI::ScopeAttachment*> foundAttachments;
-            switch (barrier.m_type)
-            {
-            case VK_STRUCTURE_TYPE_MEMORY_BARRIER:
-                break;
-            case VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER:
-            {
-                const auto& bufferAttachments = GetBufferAttachments();
-                std::copy_if(bufferAttachments.begin(), bufferAttachments.end(), AZStd::back_inserter(foundAttachments), [&barrier](const RHI::BufferScopeAttachment* attachment)
-                {
-                    return barrier.BlocksResource(static_cast<const BufferView&>(*attachment->GetBufferView()), OverlapType::Complete);
-                });
-                break;
-            }
-            case VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER:
-            {
-                const auto& imageAttachments = GetImageAttachments();
-                std::copy_if(imageAttachments.begin(), imageAttachments.end(), AZStd::back_inserter(foundAttachments), [&barrier](const RHI::ImageScopeAttachment* attachment)
-                {
-                    return barrier.BlocksResource(static_cast<const ImageView&>(*attachment->GetImageView()), OverlapType::Complete);
-                });
-                break;
-            }
-            default:
-                AZ_Assert(false, "Unsupported barrier type %d", barrier.m_type);
-                break;
-            }
-
-            return foundAttachments;
-        }
-
-        void Scope::AddBarrier(BarrierSlot slot, const Barrier& barrier)
-        {
-            m_unoptimizedBarriers[static_cast<uint32_t>(slot)].push_back(barrier);
         }
 
         void Scope::OptimizeBarriers()

@@ -17,7 +17,6 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Module/ModuleManager.h>
-#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -40,9 +39,13 @@ namespace AZ
     class ModuleManager;
     class TimeSystem;
 }
-namespace AZ::Debug
+namespace AZ::Metrics
 {
-    class LocalFileEventLogger;
+    class IEventLoggerFactory;
+
+    enum class EventLoggerId : AZ::u32;
+
+    extern const EventLoggerId CoreEventLoggerId;
 }
 
 namespace AZ
@@ -126,8 +129,6 @@ namespace AZ
             Descriptor();
 
             bool            m_useExistingAllocator;     //!< True if the user is creating the system allocation and setup tracking modes, if this is true all other parameters are IGNORED. (default: false)
-            bool            m_grabAllMemory;            //!< True if we want to grab all available memory minus reserved fields. (default: false)
-            bool            m_allocationRecords;        //!< True if we want to track memory allocations, otherwise false. (default: true)
             bool            m_allocationRecordsSaveNames; //!< True if we want to allocate space for saving the name/filename of each allocation so unloaded module memory leaks have valid names to read, otherwise false. (default: false, automatically true with recording mode FULL)
             bool            m_allocationRecordsAttemptDecodeImmediately; ///< True if we want to attempt decoding frames at time of allocation, otherwise false. Very expensive, used specifically for debugging allocations that fail to decode. (default: false)
             bool            m_autoIntegrityCheck;       //!< True to check the heap integrity on each allocation/deallocation. (default: false)
@@ -135,14 +136,8 @@ namespace AZ
             bool            m_doNotUsePools;            //!< True of we want to pipe all allocation to a generic allocator (not pools), this can help debugging a memory stomp. (default: false)
             bool            m_enableScriptReflection;   //!< True if we want to enable reflection to the script context.
 
-            unsigned int    m_pageSize;                 //!< Page allocation size must be 1024 bytes aligned. (default: SystemAllocator::Descriptor::Heap::m_defaultPageSize)
-            unsigned int    m_poolPageSize;             //!< Page size used to small memory allocations. Must be less or equal to m_pageSize and a multiple of it. (default: SystemAllocator::Descriptor::Heap::m_defaultPoolPageSize)
-            unsigned int    m_memoryBlockAlignment;     //!< Alignment of memory block. (default: SystemAllocator::Descriptor::Heap::m_memoryBlockAlignment)
-            AZ::u64         m_memoryBlocksByteSize;     //!< Memory block size in bytes if. This parameter is ignored if m_grabAllMemory is set to true. (default: 0 - use memory on demand, no preallocation)
-            AZ::u64         m_reservedOS;               //!< Reserved memory for the OS in bytes. Used only when m_grabAllMemory is set to true. (default: 0)
-            AZ::u64         m_reservedDebug;            //!< Reserved memory for Debugging (allocation,etc.). Used only when m_grabAllMemory is set to true. (default: 0)
+            AZ::u64         m_memoryBlocksByteSize;     //!< Memory block size in bytes.
             Debug::AllocationRecords::Mode m_recordingMode; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE)
-            AZ::u64         m_stackRecordLevels;        //!< If stack recording is enabled, how many stack levels to record. (default: 5)
 
             ModuleDescriptorList m_modules;             //!< Dynamic modules used by the application.
                                                         //!< These will be loaded on startup.
@@ -300,6 +295,13 @@ namespace AZ
         void LoadDynamicModules();
 
     protected:
+        void InitializeSettingsRegistry();
+        void InitializeEventLoggerFactory();
+        void InitializeLifecyleEvents(SettingsRegistryInterface& settingsRegistry);
+        void InitializeConsole(SettingsRegistryInterface& settingsRegistry);
+
+        void RegisterCoreEventLogger();
+
         virtual void CreateReflectionManager();
         void DestroyReflectionManager();
 
@@ -369,7 +371,6 @@ namespace AZ
         bool                                        m_isStarted{ false };
         bool                                        m_isSystemAllocatorOwner{ false };
         bool                                        m_isOSAllocatorOwner{ false };
-        void*                                       m_fixedMemoryBlock{ nullptr }; //!< Pointer to the memory block allocator, so we can free it OnDestroy.
         IAllocator*                                 m_osAllocator{ nullptr };
         EntitySetType                               m_entities;
 
@@ -403,18 +404,16 @@ namespace AZ
 
         AZStd::unique_ptr<AZ::Entity>               m_systemEntity; ///< Track the system entity to ensure we free it on shutdown.
 
-        // Created early to allow events to be logged before anything else. These will be kept in memory until
-        // a file is associated with the logger. The internal buffer is limited to 64kb and once full unexpected
-        // behavior may happen. The LocalFileEventLogger will register itself automatically with AZ::Interface<IEventLogger>.
+        AZStd::unique_ptr<AZ::Metrics::IEventLoggerFactory> m_eventLoggerFactory;
 
-        struct EventLoggerDeleter
-        {
-            EventLoggerDeleter() noexcept;
-            EventLoggerDeleter(bool skipDelete) noexcept;
-            void operator()(AZ::Debug::LocalFileEventLogger* ptr);
-            bool m_skipDelete{};
-        };
-        using EventLoggerPtr = AZStd::unique_ptr<AZ::Debug::LocalFileEventLogger, EventLoggerDeleter>;
-        EventLoggerPtr m_eventLogger;
+        using TickTimepoint = AZStd::chrono::steady_clock::time_point;
+        TickTimepoint m_lastTickTime{};
+
+        //! Callback function for determining whether a call to record metrics in the Tick() member function
+        //! functionshould take place
+        //! @param currentMonotonicTime - The monotonic tick time of the application since launch
+        //! @return true to indicate a record event operation should occur in the current Tick() call
+        using RecordMetricsCallback = AZStd::function<bool(AZStd::chrono::steady_clock::time_point)>;
+        RecordMetricsCallback m_recordMetricsOnTickCallback;
     };
 }

@@ -8,6 +8,8 @@
 
 #include <AssetImporterPlugin.h>
 #include <AssetImporterWindow.h>
+#include <AzCore/Component/ComponentApplication.h>
+#include <ImporterRootDisplay.h>
 #include <QtViewPaneManager.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -37,6 +39,19 @@ AssetImporterPlugin::AssetImporterPlugin(IEditor* editor)
     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
         &AzToolsFramework::ToolsApplicationRequests::CreateAndAddEntityFromComponentTags,
         AZStd::vector<AZ::Crc32>({ AZ::SceneAPI::Events::AssetImportRequest::GetAssetImportRequestComponentTag() }), "AssetImportersEntity");
+
+    if (AZ::ReflectionEnvironment::GetReflectionManager())
+    {
+        AZ::ReflectionEnvironment::GetReflectionManager()->Reflect(
+            SceneSettingsAssetImporterForScriptRequestHandler::RTTI_Type(),
+            [](AZ::ReflectContext* context)
+            {
+                SceneSettingsAssetImporterForScriptRequestHandler::Reflect(context);
+                SceneSettingsRootDisplayScriptRequestHandler::Reflect(context);
+            });
+    }
+
+    m_requestHandler = AZStd::make_shared<SceneSettingsAssetImporterForScriptRequestHandler>();
 }
 
 void AssetImporterPlugin::Release()
@@ -85,20 +100,64 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> AssetImporterPlugin::LoadSceneLibrary
     }
 }
 
-void AssetImporterPlugin::EditImportSettings(const AZStd::string& sourceFilePath)
+QMainWindow* AssetImporterPlugin::EditImportSettings(const AZStd::string& sourceFilePath)
 {
     const QtViewPane* assetImporterPane = GetIEditor()->OpenView(m_toolName.c_str());
 
     if(!assetImporterPane)
     {
-        return;
+        return nullptr;
     }
 
     AssetImporterWindow* assetImporterWindow = qobject_cast<AssetImporterWindow*>(assetImporterPane->Widget());
     if (!assetImporterWindow)
     {
-        return;
+        return nullptr;
     }
 
     assetImporterWindow->OpenFile(sourceFilePath);
+    return assetImporterWindow;
+}
+
+SceneSettingsAssetImporterForScriptRequestHandler::SceneSettingsAssetImporterForScriptRequestHandler()
+{
+    SceneSettingsAssetImporterForScriptRequestBus::Handler::BusConnect();
+}
+
+SceneSettingsAssetImporterForScriptRequestHandler ::~SceneSettingsAssetImporterForScriptRequestHandler()
+{
+    SceneSettingsAssetImporterForScriptRequestBus::Handler::BusDisconnect();
+}
+
+void SceneSettingsAssetImporterForScriptRequestHandler::Reflect(AZ::ReflectContext* context)
+{
+    if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serialize->Class<SceneSettingsAssetImporterForScriptRequestHandler>()->Version(0);
+    }
+
+    if (AZ::BehaviorContext* behavior = azrtti_cast<AZ::BehaviorContext*>(context))
+    {
+        behavior->EBus<SceneSettingsAssetImporterForScriptRequestBus>("SceneSettingsAssetImporterForScriptRequestBus")
+            ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+            ->Attribute(AZ::Script::Attributes::Module, "qt")
+            ->Event("EditImportSettings", &SceneSettingsAssetImporterForScriptRequestBus::Events::EditImportSettings);
+    }
+}
+
+AZ::u64 SceneSettingsAssetImporterForScriptRequestHandler::EditImportSettings(const AZStd::string& sourceFilePath)
+{
+    QMainWindow* importSettingsWindow = AssetImporterPlugin::GetInstance()->EditImportSettings(sourceFilePath);
+
+    if (!importSettingsWindow)
+    {
+        // There doesn't seem to be a defined invalid Qt WId, so this matches
+        // the behavior of the QtForPythonSystemComponent.cpp, which uses a window ID of 0 if it
+        // can't find the real window ID.
+        return 0;
+    }
+
+    // This is a helper function, to let Python invoke the scene settings tool.
+    // Qt objects can't be passed back to Python, so pass the ID of the window.
+    return aznumeric_cast<AZ::u64>(importSettingsWindow->winId());
 }

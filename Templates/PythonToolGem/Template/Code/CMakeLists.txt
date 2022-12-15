@@ -19,13 +19,17 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${
 # is supported by this platform.
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
+# Check to see if building the Gem Modules are supported for the current platform
+if(NOT PAL_TRAIT_${NameUpper}_SUPPORTED)
+    return()
+endif()
 
-# If we are on a host platform, we want to add the host tools targets like the ${Name}.Editor target which
-# will also depend on ${Name}.Editor.API target
+# If we are on a host platform, we want to add the host tools targets like the ${gem_name}.Editor target which
+# will also depend on ${gem_name}.Editor.API target
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
-     # The ${Name}.Editor.API target can be used by other gems that want to interact with the ${Name}.Editor module
+     # The ${gem_name}.Editor.API target can be used by other gems that want to interact with the ${gem_name}.Editor module
     ly_add_target(
-        NAME ${Name}.Editor.API INTERFACE
+        NAME ${gem_name}.Editor.API INTERFACE
         NAMESPACE Gem
         FILES_CMAKE
             ${NameLower}_editor_api_files.cmake
@@ -38,11 +42,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
     )
 
-    # The ${Name}.Editor.Private.Object target is an internal target
+    # The ${gem_name}.Editor.Private.Object target is an internal target
     # which is only to be used by this gems CMakeLists.txt and any subdirectories
     # Other gems should not use this target
     ly_add_target(
-        NAME ${Name}.Editor.Private.Object STATIC
+        NAME ${gem_name}.Editor.Private.Object STATIC
         NAMESPACE Gem
         AUTORCC
         FILES_CMAKE
@@ -59,7 +63,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME ${Name}.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         AUTOMOC
         FILES_CMAKE
@@ -71,22 +75,22 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PUBLIC
-                Gem::${Name}.Editor.API
+                Gem::${gem_name}.Editor.API
             PRIVATE
-                Gem::${Name}.Editor.Private.Object
+                Gem::${gem_name}.Editor.Private.Object
         RUNTIME_DEPENDENCIES
             Gem::QtForPython.Editor
     )
 
-    # By default, we will specify that the above target ${Name} would be used by
+    # By default, we will specify that the above target ${gem_name} would be used by
     # Tool and Builder type targets when this gem is enabled.  If you don't want it
     # active in Tools or Builders by default, delete one of both of the following lines:
-    ly_create_alias(NAME ${Name}.Tools    NAMESPACE Gem TARGETS Gem::${Name}.Editor)
-    ly_create_alias(NAME ${Name}.Builders NAMESPACE Gem TARGETS Gem::${Name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
-    # For the Tools and Builders variants of ${Name} Gem, an alias to the ${Name}.Editor API target will be made
-    ly_create_alias(NAME ${Name}.Tools.API NAMESPACE Gem TARGETS Gem::${Name}.Editor.API)
-    ly_create_alias(NAME ${Name}.Builders.API NAMESPACE Gem TARGETS Gem::${Name}.Editor.API)
+    # For the Tools and Builders variants of ${gem_name} Gem, an alias to the ${gem_name}.Editor API target will be made
+    ly_create_alias(NAME ${gem_name}.Tools.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
+    ly_create_alias(NAME ${gem_name}.Builders.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
 
 endif()
 
@@ -95,7 +99,7 @@ endif()
 ################################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    # We globally support tests, see if we support tests on this platform for ${Name}.Editor.Tests
+    # We globally support tests, see if we support tests on this platform for ${gem_name}.Editor.Tests
 
     # If we are a host platform we want to add tools test like editor tests here
     if(PAL_TRAIT_BUILD_HOST_TOOLS)

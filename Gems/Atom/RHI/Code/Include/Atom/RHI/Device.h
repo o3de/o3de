@@ -19,7 +19,7 @@
 #include <Atom/RHI/PhysicalDevice.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
 
-#include <AzCore/std/chrono/types.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 
@@ -44,10 +44,10 @@ namespace AZ
         public:
             AZ_RTTI(Device, "{C7E70BE4-3AA5-4214-91E6-52A8ECC31A34}", Object);
             virtual ~Device() = default;
-            
+
             //! Returns whether the device is initialized.
             bool IsInitialized() const;
-            
+
             //! Initializes just the native device using the provided physical device. The
             //! device must be initialized before it can be used. Explicit shutdown is not exposed
             //! due to the number of dependencies. Instead, the device is reference counted by child
@@ -56,7 +56,7 @@ namespace AZ
             //! If initialization fails. The device is left in an uninitialized state (as if Init had never
             //! been called), and an error code is returned.
             ResultCode Init(PhysicalDevice& physicalDevice);
-            
+
             //! Begins execution of a frame. The device internally manages a set of command queues. This
             //! method will synchronize the CPU with the GPU according to the number of in-light frames
             //! configured on the device. This means you should make sure any manipulation of N-buffered
@@ -142,9 +142,12 @@ namespace AZ
                 return RHI::ResultCode::Success;
             };
 
+            //! Converts a shading rate enum to the proper texel value to be used in a shading rate image.
+            virtual ShadingRateImageValue ConvertShadingRate(ShadingRate rate) = 0;
+
             bool WasDeviceRemoved();
             void SetDeviceRemoved();
-            
+
             // Accessors
             void SetLastExecutingScope(const AZStd::string_view scopeName);
             AZStd::string_view GetLastExecutingScope() const;
@@ -218,7 +221,7 @@ namespace AZ
 
             bool m_wasDeviceRemoved = false;
 
-            // Cache the name of the last executing scope name. Used within AZ_FORCE_CPU_GPU_INSYNC 
+            // Cache the name of the last executing scope name. Used within AZ_FORCE_CPU_GPU_INSYNC
             AZStd::string m_lastExecutingScope;
 
         };

@@ -26,10 +26,7 @@ namespace StartingPointInput
         SCRIPTCANVAS_NODE(InputHandlerNodeable)
 
     public:
-        InputHandlerNodeable() = default;
-        virtual ~InputHandlerNodeable();
-        InputHandlerNodeable(const InputHandlerNodeable&) = default;
-        InputHandlerNodeable& operator=(const InputHandlerNodeable&) = default;
+        ~InputHandlerNodeable() override;
 
     protected:
         void OnDeactivate() override;

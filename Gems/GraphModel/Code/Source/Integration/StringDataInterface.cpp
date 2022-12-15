@@ -10,8 +10,9 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 // Graph Model
-#include <GraphModel/Integration/StringDataInterface.h>
+#include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Integration/IntegrationBus.h>
+#include <GraphModel/Integration/StringDataInterface.h>
 
 namespace GraphModelIntegration
 {
@@ -40,11 +41,14 @@ namespace GraphModelIntegration
 
             if (trimValue != slot->GetValue<AZStd::string>())
             {
-                GraphCanvas::GraphId graphCanvasSceneId;
-                IntegrationBus::BroadcastResult(graphCanvasSceneId, &IntegrationBusInterface::GetActiveGraphCanvasSceneId);
+                const GraphCanvas::GraphId graphCanvasSceneId = GetDisplay()->GetSceneId();
                 GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
 
                 slot->SetValue(trimValue);
+                GraphControllerNotificationBus::Event(
+                    graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
+                GraphControllerNotificationBus::Event(
+                    graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
             }
         }
     }

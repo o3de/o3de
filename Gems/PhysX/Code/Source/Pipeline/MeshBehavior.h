@@ -34,6 +34,10 @@ namespace PhysX
             void InitializeObject(const AZ::SceneAPI::Containers::Scene& scene, AZ::SceneAPI::DataTypes::IManifestObject& target) override;
             AZ::SceneAPI::Events::ProcessingResult UpdateManifest(AZ::SceneAPI::Containers::Scene& scene, ManifestAction action,
                 RequestingApplication requester) override;
+            void GetPolicyName(AZStd::string& result) const override
+            {
+                result = "PhysX::Pipeline::MeshBehavior";
+            }
 
         private:
             AZ::SceneAPI::Events::ProcessingResult BuildDefault(AZ::SceneAPI::Containers::Scene& scene) const;

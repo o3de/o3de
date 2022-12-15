@@ -12,6 +12,10 @@
 #include <AzCore/Math/VertexContainerInterface.h>
 #include <AzCore/std/sort.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
@@ -57,12 +61,130 @@ namespace std
 
 namespace AzToolsFramework
 {
+    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
+    static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
+
     static const char* const s_duplicateVerticesTitle = "Duplicate Vertices";
     static const char* const s_duplicateVerticesDesc = "Duplicate current vertex selection";
     static const char* const s_deleteVerticesTitle = "Delete Vertices";
     static const char* const s_deleteVerticesDesc = "Delete current vertex selection";
     static const char* const s_deselectVerticesTitle = "Deselect Vertices";
     static const char* const s_deselectVerticesDesc = "Deselect current vertex selection";
+
+    void EditorVertexSelectionActionManagement::RegisterEditorVertexSelectionActions()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(
+            actionManagerInterface,
+            "EditorVertexSelection - could not get ActionManagerInterface on RegisterActions.");
+
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        AZ_Assert(
+            hotKeyManagerInterface,
+            "EditorVertexSelection - could not get HotKeyManagerInterface on RegisterActions.");
+
+        // Duplicate Vertices
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.vertexSelection.duplicate";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = s_duplicateVerticesTitle;
+            actionProperties.m_description = s_duplicateVerticesDesc;
+            actionProperties.m_category = "Vertex Selection";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorVertexSelectionVariableRequestBus::Event(
+                                entityComponentIdPair, &EditorVertexSelectionVariableRequests::DuplicateSelectedVertices);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+D");
+        }
+
+        // Delete Vertices
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.vertexSelection.delete";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = s_deleteVerticesTitle;
+            actionProperties.m_description = s_deleteVerticesDesc;
+            actionProperties.m_category = "Vertex Selection";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorVertexSelectionVariableRequestBus::Event(
+                                entityComponentIdPair, &EditorVertexSelectionVariableRequests::DeleteSelectedVertices);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Delete");
+        }
+
+        // Clear Vertex Selection
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.vertexSelection.clearSelection";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = s_deselectVerticesTitle;
+            actionProperties.m_description = s_deselectVerticesDesc;
+            actionProperties.m_category = "Vertex Selection";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorVertexSelectionVariableRequestBus::Event(
+                                entityComponentIdPair, &EditorVertexSelectionVariableRequests::ClearVertexSelection);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Esc");
+        }
+    }
+
+    void EditorVertexSelectionActionManagement::BindEditorVertexSelectionActionsToMenus()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(
+            menuManagerInterface,
+            "EditorVertexSelection - could not get MenuManagerInterface on BindActionsToMenus.");
+
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.vertexSelection.duplicate", 6000);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.vertexSelection.delete", 6001);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.vertexSelection.clearSelection", 6002);
+    }
 
     static void RefreshUiAfterAddRemove(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
@@ -846,6 +968,24 @@ namespace AzToolsFramework
     }
 
     template<typename Vertex>
+    void EditorVertexSelectionVariable<Vertex>::DuplicateSelectedVertices()
+    {
+        DuplicateSelected();
+    }
+
+    template<typename Vertex>
+    void EditorVertexSelectionVariable<Vertex>::DeleteSelectedVertices()
+    {
+        DestroySelected();
+    }
+
+    template<typename Vertex>
+    void EditorVertexSelectionVariable<Vertex>::ClearVertexSelection()
+    {
+        EditorVertexSelectionBase<Vertex>::ClearSelected();
+    }
+
+    template<typename Vertex>
     void EditorVertexSelectionBase<Vertex>::SetSelectedPosition(const AZ::Vector3& localPosition)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
@@ -1098,6 +1238,21 @@ namespace AzToolsFramework
             });
     }
 
+    template<typename Vertex>
+    EditorVertexSelectionVariable<Vertex>::EditorVertexSelectionVariable(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    {
+        EditorVertexSelectionVariableRequestBus::Handler::BusConnect(entityComponentIdPair);
+    }
+
+    template<typename Vertex>
+    EditorVertexSelectionVariable<Vertex>::~EditorVertexSelectionVariable()
+    {
+        if (EditorVertexSelectionVariableRequestBus::Handler::BusIsConnected())
+        {
+            EditorVertexSelectionVariableRequestBus::Handler::BusDisconnect();
+        }
+    }
+
     // configure the selection manipulator for variable editor selection - this configures the view and action
     // of interacting with the selection manipulator. In this case, hovering the mouse with a modifier key held
     // will indicate removal, and clicking with a modifier key will remove the vertex.
@@ -1261,6 +1416,12 @@ namespace AzToolsFramework
     void EditorVertexSelectionVariable<Vertex>::DuplicateSelected()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        // if no vertex is selected, early out
+        if (!EditorVertexSelectionBase<Vertex>::m_translationManipulator)
+        {
+            return;
+        }
 
         ScopedUndoBatch duplicateUndo("Duplicate Vertices");
         ScopedUndoBatch::MarkEntityDirty(EditorVertexSelectionBase<Vertex>::GetEntityId());

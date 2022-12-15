@@ -10,33 +10,51 @@
 
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
+#include <AzToolsFramework/PaintBrush/PaintBrushSubModeCluster.h>
+#include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
+#include <GradientSignal/Ebuses/ImageGradientModificationBus.h>
 
 namespace GradientSignal
 {
+    class PaintBrushUndoBuffer;
+    class ImageTileBuffer;
+
     class EditorImageGradientComponentMode
         : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
-        , private AzToolsFramework::PaintBrushNotificationBus::Handler
+        , private ImageGradientModificationNotificationBus::Handler
     {
     public:
         EditorImageGradientComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         ~EditorImageGradientComponentMode() override;
 
-        // EditorBaseComponentMode
+        // EditorBaseComponentMode overrides...
         void Refresh() override;
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
         bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         AZStd::string GetComponentModeName() const override;
-
-        void AdjustRadius(float radiusDelta);
-        void AdjustIntensity(float intensityDelta);
-        void AdjustOpacity(float opacityDelta);
+        AZ::Uuid GetComponentModeType() const override;
 
     protected:
-        // PaintBrushNotificationBus overrides
-        void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn) override;
+        // ImageGradientModificationNotificationBus overrides...
+        void OnImageGradientBrushStrokeBegin() override;
+        void OnImageGradientBrushStrokeEnd(AZStd::shared_ptr<ImageTileBuffer> changedDataBuffer, const AZ::Aabb& dirtyRegion) override;
+
+        void BeginUndoBatch();
+        void EndUndoBatch();
 
     private:
+        //! The core paintbrush manipulator and painting logic.
         AZStd::shared_ptr<AzToolsFramework::PaintBrushManipulator> m_brushManipulator;
+
+        //! The undo information for the in-progress painting brush stroke.
+        AzToolsFramework::UndoSystem::URSequencePoint* m_undoBatch = nullptr;
+        PaintBrushUndoBuffer* m_paintBrushUndoBuffer = nullptr;
+
+        //! Track whether or not anything has changed while editing. If not, then don't prompt to save the image at the end.
+        bool m_anyValuesChanged = false;
+
+        //! The paint brush cluster that manages switching between paint/smooth/eyedropper modes
+        AzToolsFramework::PaintBrushSubModeCluster m_subModeCluster;
     };
 } // namespace GradientSignal

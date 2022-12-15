@@ -17,9 +17,9 @@ AzAssetBrowserWindow #previewWidgetWrapper
     border: 0 none;
 }
 
-AzAssetBrowserWindow QSplitter
+AzAssetBrowserWindow #m_separator
 {
-    margin-top: 2px;
+    background-color: #222222;
 }
 
 /* Component Palette Widget */
@@ -95,6 +95,7 @@ Ui--AssetEditorHeader #Location
 }
 
 #AssetEditorWidgetPropertyEditor AzToolsFramework--PropertyRowWidget[getLevel="1"][hasChildRows="true"]
+, #AssetEditorWidgetPropertyEditor AzToolsFramework--DPERowWidget[getLevel="2"][hasChildRows="true"]
 {
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }

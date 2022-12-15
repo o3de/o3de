@@ -352,31 +352,40 @@ def get_relative_file_paths(start_dir: str, ignore_list: Optional[List[str]] = N
                 all_files.append(os.path.relpath(full_path, start_dir))
     return all_files
 
+def get_differences_between_lists(first: List[str], second: List[str]) -> (List[str], List[str]):
+    """
+        Returns two lists that contain unique entries in lists, missing from the other list.
+    """
+    first_set = set(first)
+    second_set = set(second)
+    diff_first = [x for x in first_set if x not in second]
+    diff_second = [x for x in second_set if x not in first]
+    
+    if diff_first or diff_second:
+        # Print a simple header if there are differences, to make it easier to follow log output on build machines.
+        logger.info("Differences were found comparing the given lists.")
+
+    # Log difference between actual and expected (if any). Easier for troubleshooting
+    if diff_first:
+        logger.info("The following entries were actually found but not expected:")
+        for list_entry in diff_first:
+            logger.info("   " + list_entry)
+    if diff_second:
+        logger.info("The following entries were expected to be found but were actually not:")
+        for list_entry in diff_second:
+            logger.info("   " + list_entry)
+
+    return diff_first, diff_second
+    
 
 def compare_lists(actual: List[str], expected: List[str]) -> bool:
     """Compares the two lists of strings. Returns false and prints any discrepancies if present."""
 
     # Find difference between expected and actual
-    diff = {"actual": [], "expected": []}
-    for asset in actual:
-        if asset not in expected:
-            diff["actual"].append(asset)
-    for asset in expected:
-        if asset not in actual:
-            diff["expected"].append(asset)
-
-    # Log difference between actual and expected (if any). Easier for troubleshooting
-    if diff["actual"]:
-        logger.info("The following assets were actually found but not expected:")
-        for asset in diff["actual"]:
-            logger.info("   " + asset)
-    if diff["expected"]:
-        logger.info("The following assets were expected to be found but were actually not:")
-        for asset in diff["expected"]:
-            logger.info("   " + asset)
+    diff_actual, diff_expected = get_differences_between_lists(actual, expected)
 
     # True ONLY IF both diffs are empty
-    return not diff["actual"] and not diff["expected"]
+    return not diff_actual and not diff_expected
 
 
 def delete_MoveOutput_folders(search_path: List[str] or str) -> None:
@@ -539,29 +548,37 @@ def get_paths_from_wildcard(root_path: str, wildcard_str: str) -> List[str]:
     return [os.path.join(root_path, item) for item in rel_path_list]
 
 
-def check_for_perforce():
+def check_for_perforce(error_on_no_perforce=True):
     command_list = ['p4', 'info']
     try:
         p4_output = subprocess.check_output(command_list).decode('utf-8')
     except subprocess.CalledProcessError as e:
-        logger.error(f"Failed to call {command_list} in LyTestTools with error {e}")
+        if error_on_no_perforce:
+            logger.error(f"Failed to call {command_list} in LyTestTools with error {e}")
+        return False
+    except FileNotFoundError as e:
+        if error_on_no_perforce:
+            logger.error(f"Failed to call {command_list} in LyTestTools with error {e}")
         return False
 
     if not p4_output.startswith("User name:"):
-        logger.warning(f"Perforce not found, output was {p4_output}")
+        if error_on_no_perforce:
+            logger.warning(f"Perforce not found, output was {p4_output}")
         return False
 
     client_root_match = re.search(r"Client root: (.*)\r", p4_output)
     if client_root_match is None:
-        logger.warning(f"Could not determine client root for p4 workspace. Perforce output was {p4_output}")
+        if error_on_no_perforce:
+            logger.warning(f"Could not determine client root for p4 workspace. Perforce output was {p4_output}")
         return False
     else:
         # This requires the tests to be in the Perforce path that the tests run against.
         working_path = os.path.realpath(__file__).replace("\\", "/").lower()
         client_root = client_root_match.group(1).replace("\\", "/").lower()
         if not working_path.startswith(client_root):
-            logger.error(f"""Perforce client root '{client_root}' does not contain current test directory '{working_path}'.
-                        Please run this test with a Perforce workspace that contains the test asset directory path.""")
+            if error_on_no_perforce:
+                logger.error(f"""Perforce client root '{client_root}' does not contain current test directory '{working_path}'.
+                            Please run this test with a Perforce workspace that contains the test asset directory path.""")
             return False
 
     logger.info(f"Perforce found, output was {p4_output}")

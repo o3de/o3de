@@ -41,11 +41,8 @@ set(FILES
     AzCore/IO/SystemFile_Android.h
     AzCore/IO/SystemFile_Platform.h
     AzCore/IPC/SharedMemory_Platform.h
-    ../Common/Unimplemented/AzCore/Memory/OverrunDetectionAllocator_Unimplemented.h
     ../Common/UnixLike/AzCore/Memory/OSAllocator_UnixLike.h
-    AzCore/Memory/HeapSchema_Android.cpp
     AzCore/Memory/OSAllocator_Platform.h
-    AzCore/Memory/OverrunDetectionAllocator_Platform.h
     ../Common/Default/AzCore/Module/Internal/ModuleManagerSearchPathTool_Default.cpp
     AzCore/Math/Internal/MathTypes_Android.h
     AzCore/Math/Random_Platform.h

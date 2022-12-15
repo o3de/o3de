@@ -11,6 +11,7 @@
 
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RHI.Edit/ShaderBuildArguments.h>
+#include <Atom/RPI.Edit/Shader/ShaderOptionValuesSourceData.h>
 
 #include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 
@@ -66,7 +67,10 @@ namespace AZ
             // as most of the time this all they customize in terms of shader compilation arguments.
             AZStd::vector<AZStd::string> m_definitions;
 
-            AZStd::string m_drawListName;
+            // This can override the default shader option values specified in the shader code.
+            ShaderOptionValuesSourceData m_shaderOptionValues;
+
+            Name m_drawListName;
 
             ProgramSettings m_programSettings;
 

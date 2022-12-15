@@ -140,6 +140,11 @@ namespace UnitTest
         return m_helpersVisible;
     }
 
+    bool ViewportSettingsTestImpl::OnlyShowHelpersForSelectedEntities() const
+    {
+        return m_onlyShowForSelectedEntities;
+    }
+
     AZ::Vector3 ViewportSettingsTestImpl::DefaultEditorCameraPosition() const
     {
         return AZ::Vector3::CreateZero();
@@ -544,10 +549,10 @@ namespace UnitTest
 
         entity->Deactivate();
 
-        // add required components for the Editor entity
-        entity->CreateComponent<Components::TransformComponent>();
-        entity->CreateComponent<Components::EditorLockComponent>();
-        entity->CreateComponent<Components::EditorVisibilityComponent>();
+        // Add required components for the Editor entity if they are not added.
+        CreateComponentIfMissing<Components::TransformComponent>(entity);
+        CreateComponentIfMissing<Components::EditorLockComponent>(entity);
+        CreateComponentIfMissing<Components::EditorVisibilityComponent>(entity);
 
         // This is necessary to prevent a warning in the undo system.
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(

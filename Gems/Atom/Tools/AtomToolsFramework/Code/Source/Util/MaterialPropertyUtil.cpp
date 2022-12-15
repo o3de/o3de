@@ -32,39 +32,8 @@ namespace AtomToolsFramework
         return AZ::RPI::MaterialPropertyValue::ToAny(value);
     }
 
-    AtomToolsFramework::DynamicPropertyType ConvertToEditableType(const AZ::RPI::MaterialPropertyDataType dataType)
+    void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialPropertySourceData& propertyDefinition)
     {
-        switch (dataType)
-        {
-        case AZ::RPI::MaterialPropertyDataType::Bool:
-            return AtomToolsFramework::DynamicPropertyType::Bool;
-        case AZ::RPI::MaterialPropertyDataType::Int:
-            return AtomToolsFramework::DynamicPropertyType::Int;
-        case AZ::RPI::MaterialPropertyDataType::UInt:
-            return AtomToolsFramework::DynamicPropertyType::UInt;
-        case AZ::RPI::MaterialPropertyDataType::Float:
-            return AtomToolsFramework::DynamicPropertyType::Float;
-        case AZ::RPI::MaterialPropertyDataType::Vector2:
-            return AtomToolsFramework::DynamicPropertyType::Vector2;
-        case AZ::RPI::MaterialPropertyDataType::Vector3:
-            return AtomToolsFramework::DynamicPropertyType::Vector3;
-        case AZ::RPI::MaterialPropertyDataType::Vector4:
-            return AtomToolsFramework::DynamicPropertyType::Vector4;
-        case AZ::RPI::MaterialPropertyDataType::Color:
-            return AtomToolsFramework::DynamicPropertyType::Color;
-        case AZ::RPI::MaterialPropertyDataType::Image:
-            return AtomToolsFramework::DynamicPropertyType::Asset;
-        case AZ::RPI::MaterialPropertyDataType::Enum:
-            return AtomToolsFramework::DynamicPropertyType::Enum;
-        }
-
-        AZ_Assert(false, "Attempting to convert an unsupported property type.");
-        return AtomToolsFramework::DynamicPropertyType::Unspecified;
-    }
-
-    void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition)
-    {
-        propertyConfig.m_dataType = ConvertToEditableType(propertyDefinition.m_dataType);
         propertyConfig.m_name = propertyDefinition.GetName();
         propertyConfig.m_displayName = propertyDefinition.m_displayName;
         propertyConfig.m_description = propertyDefinition.m_description;
@@ -163,7 +132,7 @@ namespace AtomToolsFramework
     bool ConvertToExportFormat(
         const AZStd::string& exportPath,
         [[maybe_unused]] const AZ::Name& propertyId,
-        const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
+        const AZ::RPI::MaterialPropertySourceData& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue)
     {
         if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Enum && propertyValue.Is<uint32_t>())

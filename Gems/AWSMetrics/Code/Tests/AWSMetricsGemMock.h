@@ -23,12 +23,12 @@
 namespace AWSMetrics
 {
     class AWSMetricsGemAllocatorFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            UnitTest::ScopedAllocatorSetupFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
 
@@ -89,7 +89,7 @@ namespace AWSMetrics
 
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            UnitTest::ScopedAllocatorSetupFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         AZStd::string CreateClientConfigFile(bool offlineRecordingEnabled, double maxQueueSizeInMb, int queueFlushPeriodInSeconds, int MaxNumRetries)

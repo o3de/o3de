@@ -899,7 +899,7 @@ namespace AZ::Data
             priority = loadParams.m_priority.value();
         }
 
-        return make_pair(deadline, priority);
+        return { deadline, priority };
     }
 
     //=========================================================================
@@ -921,6 +921,8 @@ namespace AZ::Data
 
         Asset<AssetData> asset = FindOrCreateAsset(assetId, assetType, assetReferenceLoadBehavior);
 
+        // NOTE: Do not use assetId past this point, asset may have been assigned an "upgraded" id if assetId is actually a legacy id
+
         if(!asset || (!loadParams.m_reloadMissingDependencies && asset.IsReady()))
         {
             // If the asset is already ready, just return it and skip the container
@@ -937,7 +939,7 @@ namespace AZ::Data
         // Because it's a multimap, it is possible to add duplicate copies of the same AssetContainer by mistake.
         // Note that the same AssetId can have multiple containers due to different load settings
         bool entryExists = false;
-        auto rangeItr = m_ownedAssetContainerLookup.equal_range(assetId);
+        auto rangeItr = m_ownedAssetContainerLookup.equal_range(asset.GetId());
         for (auto itr = rangeItr.first; itr != rangeItr.second; ++itr)
         {
             if (itr->second == container.get())
@@ -950,7 +952,7 @@ namespace AZ::Data
         // Entry for this container doesn't exist yet, so add it.
         if (!entryExists)
         {
-            m_ownedAssetContainerLookup.insert({ assetId, container.get() });
+            m_ownedAssetContainerLookup.insert({ asset.GetId(), container.get() });
         }
 
         return asset;
@@ -1204,13 +1206,26 @@ namespace AZ::Data
 
     Asset<AssetData> AssetManager::FindOrCreateAsset(const AssetId& assetId, const AssetType& assetType, AssetLoadBehavior assetReferenceLoadBehavior)
     {
+        // Look up the asset id in the catalog, and use the result of that instead.
+        // If assetId is a legacy id, assetInfo.m_assetId will be the canonical id. Otherwise, assetInfo.m_assetID == assetId.
+        // This is because only canonical ids are stored in m_assets.
+        // Only do the look up if upgrading is enabled
+        AZ::Data::AssetInfo assetInfo;
+        if (GetAssetInfoUpgradingEnabled())
+        {
+            AssetCatalogRequestBus::BroadcastResult(assetInfo, &AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+        }
+
+        // If the catalog is not available, use the original assetId
+        const AssetId& assetToFind(assetInfo.m_assetId.IsValid() ? assetInfo.m_assetId : assetId);
+
         AZStd::scoped_lock<AZStd::recursive_mutex> asset_lock(m_assetMutex);
 
-        Asset<AssetData> asset = FindAsset(assetId, assetReferenceLoadBehavior);
+        Asset<AssetData> asset = FindAsset(assetToFind, assetReferenceLoadBehavior);
 
         if (!asset)
         {
-            asset = CreateAsset(assetId, assetType, assetReferenceLoadBehavior);
+            asset = CreateAsset(assetToFind, assetType, assetReferenceLoadBehavior);
         }
 
         return asset;
@@ -1974,7 +1989,7 @@ namespace AZ::Data
 
     }
 
-    void AssetManager::RescheduleStreamerRequest(AssetId assetId, AZStd::chrono::milliseconds newDeadline, AZ::IO::IStreamerTypes::Priority newPriority)
+    void AssetManager::RescheduleStreamerRequest(AssetId assetId, AZ::IO::IStreamerTypes::Deadline newDeadline, AZ::IO::IStreamerTypes::Priority newPriority)
     {
         AZStd::scoped_lock lock(m_activeJobOrRequestMutex);
 
@@ -2223,14 +2238,14 @@ namespace AZ::Data
         const AssetFilterCB& assetLoadFilterCB)
     {
 #ifdef AZ_ENABLE_TRACING
-        auto start = AZStd::chrono::system_clock::now();
+        auto start = AZStd::chrono::steady_clock::now();
 #endif
 
         LoadResult result = LoadAssetData(asset, stream, assetLoadFilterCB);
 
 #ifdef AZ_ENABLE_TRACING
         auto loadMs = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(
-            AZStd::chrono::system_clock::now() - start);
+            AZStd::chrono::steady_clock::now() - start);
         if (loadMs.count() > 0)
         {
             const double seconds = loadMs.count() / 1000.0;

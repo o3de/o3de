@@ -10,10 +10,13 @@
 
 #include <API/AssetDatabaseBus.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <Tests/Utils/Utils.h>
 #include <native/AssetManager/assetProcessorManager.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <resourcecompiler/rccontroller.h>
 #include <tests/UnitTestUtilities.h>
 #include <QCoreApplication>
@@ -29,23 +32,6 @@ namespace UnitTests
     {
     public:
         MOCK_METHOD2(CheckSufficientDiskSpace, bool(qint64, bool));
-    };
-
-    class TestingDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    {
-    public:
-        TestingDatabaseLocationListener()
-        {
-            BusConnect();
-        }
-        ~TestingDatabaseLocationListener() override
-        {
-            BusDisconnect();
-        }
-
-        bool GetAssetDatabaseLocation(AZStd::string& location) override;
-
-        AZStd::string m_databaseLocation;
     };
 
     class JobSignalReceiver : AZ::Interface<AssetProcessor::IRCJobSignal>::Registrar
@@ -84,18 +70,43 @@ namespace UnitTests
         void CheckJobEntries(int count);
     };
 
-    class AssetManagerTestingBase : public ::UnitTest::ScopedAllocatorSetupFixture
+    class AssetManagerTestingBase : public ::UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override;
         void TearDown() override;
 
     protected:
-        void CreateTestData(AZ::u64 hashA, AZ::u64 hashB, bool useSubId);
-        void RunTest(bool firstProductChanged, bool secondProductChanged);
-
         void RunFile(int expectedJobCount, int expectedFileCount = 1, int dependencyFileCount = 0);
         void ProcessJob(AssetProcessor::RCController& rcController, const AssetProcessor::JobDetails& jobDetails);
+
+        AZStd::string MakePath(const char* filename, bool intermediate);
+
+        void CheckProduct(const char* relativePath, bool exists = true);
+        void CheckIntermediate(const char* relativePath, bool exists = true);
+        void ProcessSingleStep(int expectedJobCount = 1, int expectedFileCount = 1, int jobToRun = 0, bool expectSuccess = true);
+
+        void ProcessFileMultiStage(
+            int endStage,
+            bool doProductOutputCheck,
+            const char* file = nullptr,
+            int startStage = 1,
+            bool expectAutofail = false,
+            bool hasExtraFile = false);
+
+        AssetBuilderSDK::CreateJobFunction CreateJobStage(
+            const AZStd::string& name, bool commonPlatform, const AZStd::string& sourceDependencyPath = "");
+
+        AssetBuilderSDK::ProcessJobFunction ProcessJobStage(
+            const AZStd::string& outputExtension, AssetBuilderSDK::ProductOutputFlags flags, bool outputExtraFile);
+
+        void CreateBuilder(
+            const char* name,
+            const char* inputFilter,
+            const char* outputExtension,
+            bool createJobCommonPlatform,
+            AssetBuilderSDK::ProductOutputFlags outputFlags,
+            bool outputExtraFile = false);
 
         int m_argc = 0;
         char** m_argv{};
@@ -108,8 +119,7 @@ namespace UnitTests
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
         AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> m_stateData;
         AZStd::unique_ptr<::testing::NiceMock<MockDiskSpaceResponder>> m_diskSpaceResponder;
-        AZ::Test::ScopedAutoTempDirectory m_tempDir;
-        TestingDatabaseLocationListener m_databaseLocationListener;
+        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry m_scanfolder;
         MockMultiBuilderInfoHandler m_builderInfoHandler;
         AZ::IO::LocalFileIO* m_localFileIo;
@@ -118,6 +128,15 @@ namespace UnitTests
         AZ::Entity* m_jobManagerEntity{};
         AZ::ComponentDescriptor* m_descriptor{};
 
+        AZStd::unique_ptr<AssetProcessor::RCController> m_rc;
+
         AZStd::vector<AssetProcessor::JobDetails> m_jobDetailsList;
+
+        bool m_fileCompiled = false;
+        bool m_fileFailed = false;
+        AZStd::string m_testFilePath;
+
+        AssetProcessor::JobEntry m_processedJobEntry;
+        AssetBuilderSDK::ProcessJobResponse m_processJobResponse;
     };
 } // namespace UnitTests

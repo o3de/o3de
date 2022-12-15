@@ -37,6 +37,9 @@ namespace AZ
             float m_normalBias = DefaultDiffuseProbeGridNormalBias;
             DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DefaultDiffuseProbeGridNumRaysPerProbe;
             bool m_scrolling = false;
+            bool m_edgeBlendIbl = true;
+            uint32_t m_frameUpdateCount = 1;
+            DiffuseProbeGridTransparencyMode m_transparencyMode = DiffuseProbeGridTransparencyMode::Full;
 
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
             DiffuseProbeGridMode m_runtimeMode = DiffuseProbeGridMode::RealTime;
@@ -84,6 +87,8 @@ namespace AZ
             // returns the Aabb for this grid
             AZ::Aabb GetAabb() const;
 
+            void RegisterBoxChangedByGridHandler(AZ::Event<bool>::Handler& handler);
+
         private:
 
             AZ_DISABLE_COPY(DiffuseProbeGridComponentController);
@@ -106,6 +111,9 @@ namespace AZ
             void SetNormalBias(float normalBias);
             void SetNumRaysPerProbe(const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe);
             void SetScrolling(bool scrolling);
+            void SetEdgeBlendIbl(bool edgeBlendIbl);
+            void SetFrameUpdateCount(uint32_t frameUpdateCount);
+            void SetTransparencyMode(DiffuseProbeGridTransparencyMode transparencyMode);
             void SetEditorMode(DiffuseProbeGridMode editorMode);
             void SetRuntimeMode(DiffuseProbeGridMode runtimeMode);
             void SetVisualizationEnabled(bool visualizationEnabled);
@@ -117,6 +125,9 @@ namespace AZ
 
             // Update the baked texture assets from the configuration
             void UpdateBakedTextures();
+
+            // Computes the effective transform taking both the entity transform and the shape translation offset into account
+            AZ::Transform ComputeOverallTransform(const AZ::Transform& entityTransform) const;
 
             // box shape component, used for defining the outer extents of the probe area
             LmbrCentral::BoxShapeComponentRequests* m_boxShapeInterface = nullptr;
@@ -130,6 +141,9 @@ namespace AZ
             AZ::EntityId m_entityId;
             DiffuseProbeGridComponentConfig m_configuration;
             bool m_inShapeChangeHandler = false;
+
+            // event for the diffuse probe grid modifying the underlying box dimensions
+            AZ::Event<bool> m_boxChangedByGridEvent;
         };
     } // namespace Render
 } // namespace AZ

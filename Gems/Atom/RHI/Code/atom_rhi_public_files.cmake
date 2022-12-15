@@ -157,7 +157,7 @@ set(FILES
     Source/RHI/ImageScopeAttachment.cpp
     Source/RHI/ResolveScopeAttachment.cpp
     Source/RHI/ScopeAttachment.cpp
-    Include/Atom/RHI/ShaderResourceGroup.h
+    Include/Atom/RHI/ShaderResourceGroup.h    
     Include/Atom/RHI/ShaderResourceGroupData.h
     Include/Atom/RHI/ShaderResourceGroupDebug.h
     Include/Atom/RHI/ShaderResourceGroupInvalidateRegistry.h

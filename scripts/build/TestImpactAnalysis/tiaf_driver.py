@@ -137,6 +137,7 @@ def parse_args():
         required=False
     )
 
+    # Target exclusion JSON file
     parser.add_argument(
         '--exclude-file',
         type=valid_file_path,
@@ -144,6 +145,7 @@ def parse_args():
         required=False
     )
 
+    # Runtime type (native or python)
     parser.add_argument(
         "--runtime-type",
         choices=SUPPORTED_RUNTIMES.keys(),
@@ -151,16 +153,26 @@ def parse_args():
         required=True
     )
 
+    # Runtime sequence override
     parser.add_argument(
         "--sequence-override",
         help="Override sequence type",
         required=False
     )
 
+    # Python test runner policy
     parser.add_argument(
         "--testrunner-policy",
         choices=["live","null"],
-        help="Test runner policy for TIAF.",
+        help="Test runner policy for TIAF",
+        required=False
+    )
+
+    # Test target output routing
+    parser.add_argument(
+        "--target-output",
+        choices=["stdout"],
+        help="Test target std/error output routing",
         required=False
     )
 

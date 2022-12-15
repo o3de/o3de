@@ -11,33 +11,29 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <qcoreapplication.h>
-#include "native/tests/AssetProcessorTest.h"
+#include <native/tests/AssetProcessorTest.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
-#include "native/assetprocessor.h"
-#include "native/unittests/UnitTestRunner.h"
-#include "native/AssetManager/assetProcessorManager.h"
-#include "native/utilities/PlatformConfiguration.h"
-#include "native/unittests/MockApplicationManager.h"
+#include <native/assetprocessor.h>
+#include <native/unittests/UnitTestUtils.h>
+#include <native/AssetManager/assetProcessorManager.h>
+#include <native/utilities/PlatformConfiguration.h>
+#include <native/unittests/MockApplicationManager.h>
 #include <AssetManager/FileStateCache.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-#include <QTemporaryDir>
 #include <QMetaObject>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobManager.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <tests/UnitTestUtilities.h>
 
 #include "resourcecompiler/rccontroller.h"
 
 class AssetProcessorManager_Test;
-
-class MockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-{
-public:
-    MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
-};
 
 class AssetProcessorManager_Test : public AssetProcessor::AssetProcessorManager
 {
@@ -58,6 +54,7 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_Reverse_BasicTest);
     friend class GTEST_TEST_CLASS_NAME_(
         AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_MissingFiles_ReturnsNoPathWithPlaceholders);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_DependenciesOnNonAssetsIncluded);
 
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_BeforeComputingDirtiness_AllDirty);
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_EmptyDatabase_AllDirty);
@@ -168,20 +165,28 @@ protected:
     void SetUp() override;
     void TearDown() override;
 
-    QTemporaryDir m_tempDir;
+    virtual void CreateSourceAndFile(const char* tempFolderRelativePath);
+    virtual void PopulateDatabase();
+
+    QDir m_assetRootDir;
 
     AZStd::unique_ptr<AssetProcessorManager_Test> m_assetProcessorManager;
     AZStd::unique_ptr<AssetProcessor::MockApplicationManager> m_mockApplicationManager;
+    AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
     AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_config;
     QString m_gameName;
     QDir m_normalizedCacheRootDir;
     AZStd::atomic_bool m_isIdling;
     QMetaObject::Connection m_idleConnection;
 
+    AZ::Uuid m_aUuid = AssetUtilities::CreateSafeSourceUUIDFromName("a.txt");
+    AZ::Uuid m_bUuid = AssetUtilities::CreateSafeSourceUUIDFromName("b.txt");
+    AZ::Uuid m_cUuid = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");
+    AZ::Uuid m_dUuid = AssetUtilities::CreateSafeSourceUUIDFromName("d.txt");
+
     struct StaticData
     {
         AZStd::string m_databaseLocation;
-        ::testing::NiceMock<MockDatabaseLocationListener> m_databaseLocationListener;
         AZ::Entity* m_jobManagerEntity{};
         AZ::ComponentDescriptor* m_descriptor{};
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -222,6 +227,8 @@ struct SourceFileDependenciesTest : AssetProcessorManagerTest
         bool primeMap,
         AssetProcessor::AssetProcessorManager::JobToProcessEntry& job);
 
+    void PopulateDatabase() override;
+
     auto GetDependencyList();
 
     AssetBuilderSDK::SourceFileDependency MakeSourceDependency(const char* file, bool wildcard = false);
@@ -239,6 +246,7 @@ struct SourceFileDependenciesTest : AssetProcessorManagerTest
     const AssetProcessor::ScanFolderInfo* m_scanFolder = nullptr;
 
     AZ::Uuid m_dummyBuilderUuid;
+    AZ::Uuid m_sourceFileUuid = AssetUtilities::CreateSafeSourceUUIDFromName("assetProcessorManagerTest.txt");
     AZ::Uuid m_uuidOfA = AssetUtilities::CreateSafeSourceUUIDFromName("a.txt");
     AZ::Uuid m_uuidOfB = AssetUtilities::CreateSafeSourceUUIDFromName("b.txt");
     AZ::Uuid m_uuidOfC = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");

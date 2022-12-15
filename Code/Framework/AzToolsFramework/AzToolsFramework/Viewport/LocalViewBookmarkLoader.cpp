@@ -192,7 +192,9 @@ namespace AzToolsFramework
         // to generate the file name in which we will store the view Bookmarks we use the name of the prefab + the timestamp
         // e.g. LevelName_1639763579377.setreg
         const AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-        return AZStd::string::format("%s_%llu.setreg", prefabTemplateName.c_str(), now.time_since_epoch().count());
+        AZStd::fixed_string<32> wallClockMicroseconds;
+        AZStd::to_string(wallClockMicroseconds, now.time_since_epoch().count());
+        return AZStd::string::format("%s_%s.setreg", prefabTemplateName.c_str(), wallClockMicroseconds.c_str());
     }
 
     static AZ::SettingsRegistryMergeUtils::DumperSettings CreateDumperSettings(AZStd::string_view bookmarkKey)
@@ -515,24 +517,28 @@ namespace AzToolsFramework
         }
 
         LocalViewBookmarkComponent* bookmarkComponent = containerEntity->FindComponent<LocalViewBookmarkComponent>();
-        if (!bookmarkComponent)
         {
-            // if we didn't find a component then we add it and return it.
-            containerEntity->Deactivate();
-            bookmarkComponent = containerEntity->CreateComponent<LocalViewBookmarkComponent>();
-            containerEntity->Activate();
-        }
+            // record an undo step if a local view bookmark component is added and configured
+            ScopedUndoBatch undoBatch("SetupLocalViewBookmarks");
 
-        AZ_Assert(bookmarkComponent, "Couldn't create LocalViewBookmarkComponent.");
+            if (!bookmarkComponent)
+            {
+                undoBatch.MarkEntityDirty(containerEntityId);
 
-        // record an undo step if a local view bookmark component is added and configured
-        ScopedUndoBatch undoBatch("SetupLocalViewBookmarks");
-        undoBatch.MarkEntityDirty(containerEntityId);
+                // if we didn't find a component then we add it and return it.
+                containerEntity->Deactivate();
+                bookmarkComponent = containerEntity->CreateComponent<LocalViewBookmarkComponent>();
+                containerEntity->Activate();
 
-        // if the field is empty, we don't have a file linked to the prefab, so we create one and we save it in the component
-        if (bookmarkComponent->GetLocalBookmarksFileName().empty())
-        {
-            bookmarkComponent->SetLocalBookmarksFileName(GenerateBookmarkFileName().Native());
+                AZ_Assert(bookmarkComponent, "Couldn't create LocalViewBookmarkComponent.");
+            }
+
+            // if the field is empty, we don't have a file linked to the prefab, so we create one and we save it in the component
+            if (bookmarkComponent->GetLocalBookmarksFileName().empty())
+            {
+                undoBatch.MarkEntityDirty(containerEntityId);
+                bookmarkComponent->SetLocalBookmarksFileName(GenerateBookmarkFileName().Native());
+            }
         }
 
         if (const auto localBookmarksFileName = AZ::IO::PathView(bookmarkComponent->GetLocalBookmarksFileName()); !m_fileExistsFn(localBookmarksFileName))

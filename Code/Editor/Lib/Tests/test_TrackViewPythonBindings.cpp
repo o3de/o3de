@@ -23,7 +23,7 @@ namespace TrackViewPythonBindingsUnitTests
 {
 
     class TrackViewPythonBindingsFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
@@ -82,7 +82,7 @@ namespace TrackViewPythonBindingsUnitTests
     }
 
     class TrackViewComponentFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;

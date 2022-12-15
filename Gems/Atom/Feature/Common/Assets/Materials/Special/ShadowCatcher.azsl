@@ -15,7 +15,7 @@ option enum class OpacityMode
     Blended, 
     TintedTransparent
     
-} o_opacity_mode = OpacityMode::Opaque;
+} o_opacity_mode = OpacityMode::Blended;
 
 struct VSInput
 {
@@ -41,7 +41,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 }
 
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
@@ -78,7 +78,7 @@ PSOutput ShadowCatcherPS(VSOutput IN)
         ViewSrg::DirectionalLightShadowDebugColoringBitMask)
     {
         float3 debugColor = float3(1,1,1) * litRatio * 0.5f;
-        debugColor = DirectionalLightShadow::AddDebugColoring(debugColor, ViewSrg::m_shadowIndexDirectionalLight, IN.m_worldPosition, IN.m_worldNormal, 0);
+        debugColor = DirectionalLightShadow::AddDebugColoring(debugColor, ViewSrg::m_shadowIndexDirectionalLight, IN.m_worldPosition, IN.m_worldNormal);
         OUT.m_color.rgb = debugColor;
         OUT.m_color.a = 1; 
     }

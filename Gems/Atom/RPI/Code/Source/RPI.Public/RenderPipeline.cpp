@@ -84,22 +84,27 @@ namespace AZ
         }
 
         RenderPipelinePtr RenderPipeline::CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext,
-                                                                        const WindowContext::SwapChainMode swapchainMode)
+                                                                        const ViewType viewType)
         {
-            RenderPipeline* pipeline = aznew RenderPipeline();
+            RenderPipelinePtr pipeline{aznew RenderPipeline()};
             PassSystemInterface* passSystem = PassSystemInterface::Get();
 
             PassDescriptor swapChainDescriptor(Name(desc.m_name));
             Name templateName = Name(desc.m_rootPassTemplate.c_str());
             swapChainDescriptor.m_passTemplate = passSystem->GetPassTemplate(templateName);
-            AZ_Assert(swapChainDescriptor.m_passTemplate, "Root-PassTemplate %s not found!", templateName.GetCStr());
 
-            pipeline->m_passTree.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, swapchainMode);
+            if (!swapChainDescriptor.m_passTemplate)
+            {
+                AZ_Error("RPISystem", false, "Root-PassTemplate %s not found!", templateName.GetCStr());
+                return nullptr;
+            }
+
+            pipeline->m_passTree.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, viewType);
             pipeline->m_windowHandle = windowContext.GetWindowHandle();
+            pipeline->m_viewType = viewType;
+            InitializeRenderPipeline(pipeline.get(), desc);
 
-            InitializeRenderPipeline(pipeline, desc);
-
-            return RenderPipelinePtr(pipeline);
+            return pipeline;
         }
 
         void RenderPipeline::InitializeRenderPipeline(RenderPipeline* pipeline, const RenderPipelineDescriptor& desc)
@@ -107,6 +112,7 @@ namespace AZ
             pipeline->m_descriptor = desc;
             pipeline->m_mainViewTag = Name(desc.m_mainViewTagName);
             pipeline->m_nameId = desc.m_name.data();
+            pipeline->m_materialPipelineTagName = Name{desc.m_materialPipelineTag};
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
             pipeline->m_passTree.m_rootPass->SetRenderPipeline(pipeline);
             pipeline->m_passTree.m_rootPass->m_flags.m_isPipelineRoot = true;
@@ -357,7 +363,8 @@ namespace AZ
             m_scene = nullptr;
             PassSystemInterface::Get()->RemoveRenderPipeline(this);
 
-            m_drawFilterTag.Reset();
+            m_drawFilterTagForPipelineInstanceName.Reset();
+            m_drawFilterTagForMaterialPipeline.Reset();
             m_drawFilterMask = 0;
         }
 
@@ -424,6 +431,8 @@ namespace AZ
                 if (m_scene)
                 {
                     SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelinePassesChanged, this);
+                    SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelineChanged, this,
+                        SceneNotification::RenderPipelineChangeType::PassChanged);
 
                     // Pipeline state lookup
                     if (PipelineStateLookupNeedsRebuild(m_pipelinePassChanges))
@@ -470,8 +479,6 @@ namespace AZ
                 }
                 else if (pipelineViews.m_type == PipelineViewType::Persistent)
                 {
-                    // Reset persistent view: clean draw list mask and draw lists
-                    pipelineViews.m_views[0]->Reset();
                     pipelineViews.m_views[0]->SetPassesByDrawList(&pipelineViews.m_passesByDrawList);
                 }
             }
@@ -488,6 +495,7 @@ namespace AZ
 
         void RenderPipeline::PassSystemFrameBegin(Pass::FramePrepareParams params)
         {
+            AZ_PROFILE_FUNCTION(RPI);
             if (GetRenderMode() != RenderPipeline::RenderMode::NoRender)
             {
                 m_passTree.m_rootPass->FrameBegin(params);
@@ -496,6 +504,7 @@ namespace AZ
 
         void RenderPipeline::PassSystemFrameEnd()
         {
+            AZ_PROFILE_FUNCTION(RPI);
             if (GetRenderMode() != RenderPipeline::RenderMode::NoRender)
             {
                 m_passTree.m_rootPass->FrameEnd();
@@ -628,27 +637,34 @@ namespace AZ
             return m_renderMode != RenderMode::NoRender;
         }
 
-        RHI::DrawFilterTag RenderPipeline::GetDrawFilterTag() const
-        {
-            return m_drawFilterTag;
-        }
-
         RHI::DrawFilterMask RenderPipeline::GetDrawFilterMask() const
         {
             return m_drawFilterMask;
         }
 
-        void RenderPipeline::SetDrawFilterTag(RHI::DrawFilterTag tag)
+        void RenderPipeline::SetDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry)
+        {   
+            m_drawFilterTagForPipelineInstanceName = tagRegistry->AcquireTag(m_nameId);
+            m_drawFilterTagForMaterialPipeline = tagRegistry->AcquireTag(m_materialPipelineTagName);
+                        
+            m_drawFilterMask = 0;
+            
+            if (m_drawFilterTagForPipelineInstanceName.IsValid())
+            {
+                m_drawFilterMask |= 1 << m_drawFilterTagForPipelineInstanceName.GetIndex();
+            }
+            if (m_drawFilterTagForMaterialPipeline.IsValid())
+            {
+                m_drawFilterMask |= 1 << m_drawFilterTagForMaterialPipeline.GetIndex();
+            }
+        }
+
+        void RenderPipeline::ReleaseDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry)
         {
-            m_drawFilterTag = tag;
-            if (m_drawFilterTag.IsValid())
-            {
-                m_drawFilterMask = 1 << tag.GetIndex();
-            }
-            else
-            {
-                m_drawFilterMask = 0;
-            }
+            tagRegistry->ReleaseTag(m_drawFilterTagForPipelineInstanceName);
+            tagRegistry->ReleaseTag(m_drawFilterTagForMaterialPipeline);
+            m_drawFilterTagForPipelineInstanceName.Reset();
+            m_drawFilterTagForMaterialPipeline.Reset();
         }
 
         const RenderPipelineDescriptor& RenderPipeline::GetDescriptor() const
@@ -704,6 +720,11 @@ namespace AZ
                 });
 
             return foundPass;
+        }
+
+        ViewType RenderPipeline::GetViewType() const
+        {
+            return m_viewType;
         }
     }
 }

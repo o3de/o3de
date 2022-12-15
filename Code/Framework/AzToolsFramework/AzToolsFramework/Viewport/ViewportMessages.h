@@ -32,7 +32,7 @@ namespace AzFramework
 namespace AzToolsFramework
 {
     enum class CursorInputMode;
-    
+
     namespace ViewportInteraction
     {
         //! Result of handling mouse interaction.
@@ -145,6 +145,8 @@ namespace AzToolsFramework
         };
 
         //! The EBusTraits for ViewportInteractionRequests.
+        //! @deprecated ViewportEBusTraits is deprecated, please use ViewportRequestsEBusTraits.
+        //! O3DE_DEPRECATION_NOTICE(GHI-13429)
         class ViewportEBusTraits : public AZ::EBusTraits
         {
         public:
@@ -153,8 +155,11 @@ namespace AzToolsFramework
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         };
 
+        //! The EBusTraits for ViewportInteractionRequests.
+        using ViewportRequestsEBusTraits = ViewportEBusTraits;
+
         //! A bus to listen to just the MouseViewportRequests.
-        using ViewportMouseRequestBus = AZ::EBus<MouseViewportRequests, ViewportEBusTraits>;
+        using ViewportMouseRequestBus = AZ::EBus<MouseViewportRequests, ViewportRequestsEBusTraits>;
 
         //! Requests that can be made to the viewport to query and modify its state.
         class ViewportInteractionRequests
@@ -179,7 +184,7 @@ namespace AzToolsFramework
         };
 
         //! Type to inherit to implement ViewportInteractionRequests.
-        using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportEBusTraits>;
+        using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportRequestsEBusTraits>;
 
         //! Utility function to return a viewport ray using the ViewportInteractionRequestBus.
         inline ProjectedViewportRay ViewportScreenToWorldRay(
@@ -191,6 +196,36 @@ namespace AzToolsFramework
 
             return viewportRay;
         }
+
+        //! The EBusTraits for ViewportInteractionNotifications.
+        class ViewportNotificationsEBusTraits : public AZ::EBusTraits
+        {
+        public:
+            using BusIdType = AzFramework::ViewportId; //!< ViewportId - used to address requests to this EBus.
+            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        };
+
+        //! Notifications for a specific viewport relating to user input/interactions.
+        class ViewportInteractionNotifications
+        {
+        public:
+            //! Notification to indicate when the viewport has gained focus.
+            virtual void OnViewportFocusIn()
+            {
+            }
+
+            //! Notification to indicate when the viewport has lost focus.
+            virtual void OnViewportFocusOut()
+            {
+            }
+
+        protected:
+            ~ViewportInteractionNotifications() = default;
+        };
+
+        //! Type to inherit to implement ViewportInteractionNotifications.
+        using ViewportInteractionNotificationBus = AZ::EBus<ViewportInteractionNotifications, ViewportNotificationsEBusTraits>;
 
         //! Interface to return only viewport specific settings (e.g. snapping).
         class ViewportSettingsRequests
@@ -220,13 +255,15 @@ namespace AzToolsFramework
             virtual bool IconsVisible() const = 0;
             //! Returns if viewport helpers (additional debug drawing) are visible in the viewport.
             virtual bool HelpersVisible() const = 0;
+            //! Returns if viewport helpers are only drawn for selected entities in the viewport.
+            virtual bool OnlyShowHelpersForSelectedEntities() const = 0;
 
         protected:
             ~ViewportSettingsRequests() = default;
         };
 
         //! Type to inherit to implement ViewportSettingsRequests.
-        using ViewportSettingsRequestBus = AZ::EBus<ViewportSettingsRequests, ViewportEBusTraits>;
+        using ViewportSettingsRequestBus = AZ::EBus<ViewportSettingsRequests, ViewportRequestsEBusTraits>;
 
         //! An interface to notify when changes to viewport settings have happened.
         class ViewportSettingNotifications
@@ -238,10 +275,22 @@ namespace AzToolsFramework
             virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled)
             {
             }
+            virtual void OnGridShowingChanged([[maybe_unused]] bool showing)
+            {
+            }
             virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled)
             {
             }
             virtual void OnIconsVisibilityChanged([[maybe_unused]] bool enabled)
+            {
+            }
+            virtual void OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_unused]] bool enabled)
+            {
+            }
+            virtual void OnCameraFovChanged([[maybe_unused]] float fovRadians)
+            {
+            }
+            virtual void OnCameraSpeedScaleChanged([[maybe_unused]] float value)
             {
             }
 
@@ -249,7 +298,7 @@ namespace AzToolsFramework
             ~ViewportSettingNotifications() = default;
         };
 
-        using ViewportSettingsNotificationBus = AZ::EBus<ViewportSettingNotifications, ViewportEBusTraits>;
+        using ViewportSettingsNotificationBus = AZ::EBus<ViewportSettingNotifications, ViewportRequestsEBusTraits>;
 
         //! Viewport requests that are only guaranteed to be serviced by the Main Editor viewport.
         class MainEditorViewportInteractionRequests
@@ -265,7 +314,7 @@ namespace AzToolsFramework
         };
 
         //! Type to inherit to implement MainEditorViewportInteractionRequests.
-        using MainEditorViewportInteractionRequestBus = AZ::EBus<MainEditorViewportInteractionRequests, ViewportEBusTraits>;
+        using MainEditorViewportInteractionRequestBus = AZ::EBus<MainEditorViewportInteractionRequests, ViewportRequestsEBusTraits>;
 
         //! Editor entity requests to be made about the viewport.
         class EditorEntityViewportInteractionRequests
@@ -278,7 +327,7 @@ namespace AzToolsFramework
             ~EditorEntityViewportInteractionRequests() = default;
         };
 
-        using EditorEntityViewportInteractionRequestBus = AZ::EBus<EditorEntityViewportInteractionRequests, ViewportEBusTraits>;
+        using EditorEntityViewportInteractionRequestBus = AZ::EBus<EditorEntityViewportInteractionRequests, ViewportRequestsEBusTraits>;
 
         //! An interface to query editor modifier keys.
         class EditorModifierKeyRequests : public AZ::EBusTraits
@@ -349,7 +398,7 @@ namespace AzToolsFramework
         };
 
         //! Type to inherit to implement MainEditorViewportInteractionRequests.
-        using ViewportMouseCursorRequestBus = AZ::EBus<ViewportMouseCursorRequests, ViewportEBusTraits>;
+        using ViewportMouseCursorRequestBus = AZ::EBus<ViewportMouseCursorRequests, ViewportRequestsEBusTraits>;
     } // namespace ViewportInteraction
 
     //! Utility function to return EntityContextId.

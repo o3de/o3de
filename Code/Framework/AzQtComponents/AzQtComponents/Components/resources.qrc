@@ -321,6 +321,7 @@
     <file>img/logging/copy.svg</file>
     <file>img/logging/reset.svg</file>
     <file>img/logging/add-filter.svg</file>
+    <file>img/logging/failure.svg</file>
     <file>img/logging/warning-yellow.svg</file>
     <file>img/branch_open.png</file>
     <file>img/branch_closed.png</file>
@@ -349,6 +350,7 @@
     <file>img/UI20/toolbar/Debugging.svg</file>
     <file>img/UI20/toolbar/Deploy.svg</file>
     <file>img/UI20/toolbar/Environment.svg</file>
+    <file>img/UI20/toolbar/Eyedropper.svg</file>
     <file>img/UI20/toolbar/Flowgraph.svg</file>
     <file>img/UI20/toolbar/Follow_terrain.svg</file>
     <file>img/UI20/toolbar/Get_physics_state.svg</file>
@@ -365,6 +367,7 @@
     <file>img/UI20/toolbar/Object_follow_terrain.svg</file>
     <file>img/UI20/toolbar/Object_height.svg</file>
     <file>img/UI20/toolbar/Object_list.svg</file>
+    <file>img/UI20/toolbar/Paint.svg</file>
     <file>img/UI20/toolbar/Parent.svg</file>
     <file>img/UI20/toolbar/particle.svg</file>
     <file>img/UI20/toolbar/Play.svg</file>
@@ -381,6 +384,7 @@
     <file>img/UI20/toolbar/Simulate_Physics.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics_on_selected_objects.svg</file>
     <file>img/UI20/toolbar/SketchMode.svg</file>
+    <file>img/UI20/toolbar/Smooth.svg</file>
     <file>img/UI20/toolbar/Terrain.svg</file>
     <file>img/UI20/toolbar/Terrain_Texture.svg</file>
     <file>img/UI20/toolbar/Rotate.svg</file>
@@ -554,7 +558,6 @@
     <file>img/UI20/spinbox-up-arrow.png</file>
 </qresource>
 <qresource prefix="/Breadcrumb">
-    <file>img/UI20/Breadcrumb/Next_level_arrow.svg</file>
     <file>img/UI20/Breadcrumb/arrow_left-default.svg</file>
     <file>img/UI20/Breadcrumb/arrow_left-default_hover.svg</file>
     <file>img/UI20/Breadcrumb/arrow_right-default.svg</file>

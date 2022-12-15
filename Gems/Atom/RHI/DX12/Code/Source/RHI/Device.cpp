@@ -144,7 +144,7 @@ namespace AZ
             if (options3.CopyQueueTimestampQueriesSupported)
             {
                 m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Copy)] = RHI::QueryTypeFlags::Timestamp;
-            }            
+            }
             m_features.m_predication = true;
             m_features.m_occlusionQueryPrecise = true;
             m_features.m_indirectCommandTier = RHI::IndirectCommandTiers::Tier2;
@@ -154,6 +154,7 @@ namespace AZ
                         
             D3D12_FEATURE_DATA_D3D12_OPTIONS options;
             GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options));
+            // DX12's tile resource implementation uses undefined swizzle tile layout which only requires tier 1
             m_features.m_tiledResource = options.TiledResourcesTier >= D3D12_TILED_RESOURCES_TIER_1;
 
 #ifdef AZ_DX12_DXR_SUPPORT
@@ -166,6 +167,50 @@ namespace AZ
 
             m_features.m_unboundedArrays = true;
 
+#ifdef O3DE_DX12_VRS_SUPPORT
+            D3D12_FEATURE_DATA_D3D12_OPTIONS6 options6;
+            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &options6, sizeof(options6));
+            switch (options6.VariableShadingRateTier)
+            {
+            case D3D12_VARIABLE_SHADING_RATE_TIER::D3D12_VARIABLE_SHADING_RATE_TIER_1:
+                {
+                    m_features.m_shadingRateTypeMask = RHI::ShadingRateTypeFlags::PerDraw;
+                    m_features.m_shadingRateMask =
+                        RHI::ShadingRateFlags::Rate1x1 |
+                        RHI::ShadingRateFlags::Rate1x2 |
+                        RHI::ShadingRateFlags::Rate2x1 |
+                        RHI::ShadingRateFlags::Rate2x2;                   
+                }
+                break;
+            case D3D12_VARIABLE_SHADING_RATE_TIER::D3D12_VARIABLE_SHADING_RATE_TIER_2:
+                {
+                    m_features.m_shadingRateTypeMask =
+                        RHI::ShadingRateTypeFlags::PerDraw |
+                        RHI::ShadingRateTypeFlags::PerRegion |
+                        RHI::ShadingRateTypeFlags::PerPrimitive;
+                    m_features.m_shadingRateMask =
+                        RHI::ShadingRateFlags::Rate1x1 |
+                        RHI::ShadingRateFlags::Rate1x2 |
+                        RHI::ShadingRateFlags::Rate2x1 |
+                        RHI::ShadingRateFlags::Rate2x2;
+                    m_features.m_dynamicShadingRateImage = true;
+                }
+                break;
+            default:
+                break;
+            }
+
+            if (options6.AdditionalShadingRatesSupported)
+            {
+                m_features.m_shadingRateMask |=
+                    RHI::ShadingRateFlags::Rate2x4 |
+                    RHI::ShadingRateFlags::Rate4x2 |
+                    RHI::ShadingRateFlags::Rate4x4;
+            }
+
+            m_limits.m_shadingRateTileSize = RHI::Size(options6.ShadingRateImageTileSize, options6.ShadingRateImageTileSize, 1);
+#endif
+
             m_limits.m_maxImageDimension1D = D3D12_REQ_TEXTURE1D_U_DIMENSION;
             m_limits.m_maxImageDimension2D = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
             m_limits.m_maxImageDimension3D = D3D12_REQ_TEXTURE3D_U_V_OR_W_DIMENSION;
@@ -174,6 +219,8 @@ namespace AZ
             m_limits.m_minConstantBufferViewOffset = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
             m_limits.m_maxIndirectDrawCount = static_cast<uint32_t>(-1);
             m_limits.m_maxIndirectDispatchCount = static_cast<uint32_t>(-1);
+            m_limits.m_maxConstantBufferSize = D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT * 4u * 4u; // 4096 vectors * 4 values per vector * 4 bytes per value
+            m_limits.m_maxBufferSize = D3D12_REQ_RESOURCE_SIZE_IN_MEGABYTES_EXPRESSION_C_TERM * (1024u * 1024u); // 2048 MB
         }
 
         void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder)
@@ -211,7 +258,7 @@ namespace AZ
         AZStd::chrono::microseconds Device::GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const
         {
             auto durationInSeconds = AZStd::chrono::duration<double>(double(gpuTimestamp) / m_commandQueueContext.GetCommandQueue(queueClass).GetGpuTimestampFrequency());
-            return AZStd::chrono::microseconds(durationInSeconds);
+            return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(durationInSeconds);
         }
 
         void Device::FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities)
@@ -269,6 +316,8 @@ namespace AZ
                     flags |= RHI::FormatCapabilities::AtomicBuffer;
                 }
             }
+
+            formatsCapabilities[static_cast<uint32_t>(RHI::Format::R8_UINT)] |= RHI::FormatCapabilities::ShadingRate;
         }
 
         RHI::ResourceMemoryRequirements Device::GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor)
@@ -633,6 +682,11 @@ namespace AZ
                 return m_descriptorContext->CompactDescriptorHeap();
             }
             return RHI::ResultCode::Success;
+        }
+
+        RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate)
+        {            
+            return RHI::ShadingRateImageValue{ static_cast<uint8_t>(ConvertShadingRateEnum(rate)), 0 };
         }
 
         void Device::DescriptorHeapCompactionNeeded()
