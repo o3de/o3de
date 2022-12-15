@@ -1306,6 +1306,8 @@ namespace AssetProcessor
             visitor.m_metaDataTypes.push_back({ AZStd::string::format("%s.assetinfo", entry.c_str()), entry });
         }
 
+        AddMetaDataType("meta", "");
+
         for (const auto& metaDataType : visitor.m_metaDataTypes)
         {
             QString fileType = AssetUtilities::NormalizeFilePath(QString::fromUtf8(metaDataType.m_fileType.c_str(),
