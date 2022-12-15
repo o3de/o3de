@@ -283,6 +283,9 @@ def CheckoutEngineBootstrapScripts(branchName, userRemoteConfig = [GetEngineRemo
 }
 
 def CheckoutRepo(String branchName, userRemoteConfigs, boolean disableSubmodules = false, boolean setEnvCommit = false) {
+    echo "Checkout Repo:"
+    echo "branchName:${branchName}"
+    echo "userRemoteConfigs.URL:${userRemoteConfigs.URL} userRemoteConfigs.BRANCH:${userRemoteConfigs.BRANCH}"
     if (fileExists('.git')) {
         // If the repository after checkout is locked, likely we took a snapshot while git was running,
         // to leave the repo in a usable state, garbage collect.
@@ -386,7 +389,6 @@ def ExecuteControlFile(controlFile) {
     //check out all repos
     controlFile.REPOS.each { repo ->
         if(!fileExists(repo.NAME)) {
-            echo "Checkout Repo: URL:${repo.URL} BRANCH:${repo.BRANCH}"
             CheckoutRepo(repo.BRANCH, GetRemoteConfig(repo.NAME, repo.URL))
 
             def repoControlFile = {}
@@ -511,6 +513,8 @@ def ExecuteControlFile(controlFile) {
 
 def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false) {
     echo 'Starting pre-build common steps...'
+    echo 'repositoryName:${repositoryName}'
+    echo 'branchName:${branchName}'
 
     if (mount) {
         if(env.RECREATE_VOLUME?.toBoolean()){
@@ -551,9 +555,11 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             def the_branch = branchName
             def remoteConfig = scm.userRemoteConfigs
             if(scm.userRemoteConfigs.url[0] == ENGINE_URL) {
+                echo 'This is an engine commit'
                 //the pr is for the engine repo, so we want to use the passed in branch name and record the change id and change date
                 setEnvCommit = true
             } else {
+                echo 'This is not an engine commit'
                 //this pr is for another repo so we want to use the development branch for the engine and do not set the commit id or change date
                 the_branch = ENGINE_DEVELOPMENT_BRANCH
                 remoteConfig = [GetEngineRemoteConfig()]
@@ -593,7 +599,6 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
 
         //if we are not committing to the engine repo then pull that repo in here
         if(scm.userRemoteConfigs.url[0] != ENGINE_URL) {
-            echo "Checkout Repo: URL:${scm.userRemoteConfigs.url[0]} BRANCH:{branchName}"
             CheckoutRepo(branchName, scm.userRemoteConfigs, disableSubmodules, true)
             def automatedTestingControlFile = {}
             def automatedTestingControlFileFound = False
