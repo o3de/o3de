@@ -223,10 +223,11 @@ namespace AZ
             // would get by performing the inverse rotation on the new axis, so we need to take the conjugate to get the inverse rotation.
             const Vector3 axisCoeffs = transform.GetUniformScale() * (transform.GetRotation().GetConjugate().TransformVector(axis));
 
-            // These contain the existing min and max corners of the AABB rotated, scaled, but not translated,
-            // and projected onto the current axis. The minimum and maximum contributions from both projected corners will get
-            // added into the new minimum and maximums. Note because of the rotation, the minimum contribution could come from
-            // the maximum existing corner, and vice versa.
+            // These contain the existing min and max corners of the AABB that are rotated and scaled (but not translated)
+            // and projected onto the current axis. The minimum and maximum contributions from both projected corners get
+            // added into the new minimum and maximums independently for each axis.
+            // Note that because of the rotation, a minimum contribution can come from the existing max corner, and a maximum
+            // contribution can come from the existing min corner.
             const Vector3 projectedContributionsFromMin = axisCoeffs * m_min;
             const Vector3 projectedContributionsFromMax = axisCoeffs * m_max;
 
