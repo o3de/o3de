@@ -283,8 +283,8 @@ def CheckoutEngineBootstrapScripts(branchName, userRemoteConfig = [GetEngineRemo
 
 def CheckoutRepo(String branchName, userRemoteConfigs, boolean disableSubmodules = false, boolean setEnvCommit = false) {
     echo "Checkout Repo:"
-    echo "branchName:${branchName}"
-    echo "userRemoteConfigs.URL:${userRemoteConfigs.URL} userRemoteConfigs.BRANCH:${userRemoteConfigs.BRANCH}"
+    //echo "branchName:${branchName}"
+    //echo "userRemoteConfigs.URL:${userRemoteConfigs.URL} userRemoteConfigs.BRANCH:${userRemoteConfigs.BRANCH}"
     if (fileExists('.git')) {
         // If the repository after checkout is locked, likely we took a snapshot while git was running,
         // to leave the repo in a usable state, garbage collect.
