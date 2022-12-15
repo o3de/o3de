@@ -4,6 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+from __future__ import annotations
 
 import os
 import re
@@ -11,12 +12,27 @@ from typing import List
 import ly_test_tools.o3de.pipeline_utils as utils
 import warnings
 import logging
+from automatedtesting_shared import asset_database_utils as asset_db_utils
 
 logger = logging.getLogger(__name__)
 
 
-def populate_expected_product_assets(assets_to_validate: List[str]):
-    # Check that each given source asset resulted in the expected jobs and products.
+def populate_expected_product_assets(assets_to_validate: List[asset_db_utils.DBSourceAsset]) -> List[str]:
+    """
+    Populate a list of expected product based on jobs completed for each source asset.
+    assets_to_validate: The expected job data for each source asset.
+    Example data:
+        "job_key": "Example Job",
+          "builder_guid": "Example_Guid",
+          "status": 4,
+          "error_count": 0,
+          "products": [
+            {
+              "product_name": "example_folder/example_asset.extension",
+              "sub_id": 0,
+              "asset_type": "Example_Asset_Type"
+            },
+    """
     expected_product_list = []
     for expected_source in assets_to_validate:
         for expected_job in expected_source.jobs:
@@ -27,29 +43,31 @@ def populate_expected_product_assets(assets_to_validate: List[str]):
 
 
 def trim_floating_point_values_from_same_length_lists(diff_actual: List[str], diff_expected: List[str],
-                                                      actual_file_path: str, expected_file_path: str) -> (
-        List[str], List[str]):
-    # Linux and non-Linux platforms generate slightly different values for floating points.
-    # Long term, it will be important to stabilize the output of product assets, because this difference
-    # will cause problems: If an Android asset is generated from a Linux versus Windows machine, for example,
-    # it will be different when it's not expected to be different.
-    # In the short term, it's not something addressed yet, so instead this function will
-    # truncate any floating point values to be short enough to be stable.
-    # It will then emit a warning, to help keep track of this issue.
+                                                      actual_file_path: str, expected_file_path: str) -> (List[str], List[str]):
+    """
+    GHI #13713
+    In the short term, this function will truncate any floating point values to be short enough to be stable.
+    Long term, it will be important to stabilize the output of product assets, so this will also emit a warning,
+    to help keep track of the related GHI.
+    diff_actual: A list containing the debug output (dbgsg file) of the processed source asset under test.
+    diff_expected: A list containing the expected debug output of the source asset under test.
+    actual_file_path: Path to the dbgsg file containing the debug output of the processed source asset under test.
+    expected_file_path: Path to the dbgsg file containing the expected debug output to compare against.
+    """
 
     # Get the initial list lengths, so they can be compared to the list lengths later to see if any differences were
     # removed due to floating point value drift.
     initial_diff_actual_len = len(diff_actual)
     initial_diff_expected_len = len(diff_expected)
 
+    # Decide the number of digits past the decimal point to preserve.
+    DECIMAL_DIGITS_TO_PRESERVE = 3
+
     # This function requires the two lists to be equal length.
     assert initial_diff_actual_len == initial_diff_expected_len, "Scene mismatch - different line counts"
 
-    # Floating point values between Linux and Windows aren't consistent yet.
-    # For now, trim these values for comparison.
     # Store the trimmed values and compare the un-trimmed values separately, emitting warnings.
     # Trim decimals from the lists to be compared, if any where found, re-compare and generate new lists.
-    DECIMAL_DIGITS_TO_PRESERVE = 3
     floating_point_regex = re.compile(
         f"(.*?-?[0-9]+\\.[0-9]{{{DECIMAL_DIGITS_TO_PRESERVE},{DECIMAL_DIGITS_TO_PRESERVE}}})[0-9]+(.*)")
     for index, diff_actual_line in enumerate(diff_actual):
@@ -87,24 +105,25 @@ def trim_floating_point_values_from_same_length_lists(diff_actual: List[str], di
 
 
 def scan_scene_debug_xml_file_for_issues(diff_actual: List[str], diff_expected: List[str],
-                                         actual_hashes_to_skip: List[str], expected_hashes_to_skip: List[str]) -> (
-        List[str], List[str]):
-    # Given the differences between the newly generated XML file versus the last known good, and the lists of hashes that were
-    # skipped in the non-XML debug scene graph comparison, check if the differences in the XML file are the same as the hashes
-    # that were skipped in the non-XML file.
-    # Hashes are generated differently on Linux than other platforms right now. Long term this is a problem, it will mean that
-    # product assets generated on Linux are different than other platforms. Short term, this is a known issue. This automated
-    # test handles this by emitting warnings when this occurs.
+                                         actual_hashes_to_skip: List[str], expected_hashes_to_skip: List[str]) -> (List[str], List[str]):
+    """
+    GHI #13714
+    Checks if the differences in the XML file are the same as the hashes that were skipped in the debug file.
+    Hashes are generated differently on different platforms right now, short term, this is a known issue,
+    Long term, it will be important to stabilize the output of product assets, so this will emit a warning,
+    to help keep track of the related GHI.
+    diff_actual: A list containing the xml debug output (dbgsg.xml file) of the processed source asset under test.
+    diff_expected: A list containing the expected xml debug output of the source asset under test.
+    actual_hashes_to_skip: A list containing the hashes, of products generated during the test, that will be skipped during comparison.
+    expected_hashes_to_skip: A list containing the expected hashes, of products generated during the test, that will be skipped during comparison.
+    """
 
     # If the difference count doesn't match the non-XML file, then it's not just hash mis-matches in the XML file, and the test has failed.
     assert len(expected_hashes_to_skip) == len(diff_expected), "Scene mismatch"
     assert len(actual_hashes_to_skip) == len(diff_actual), "Scene mismatch"
 
-    # This test did a simple line by line comparison, and didn't actually load the XML data into a graph to compare.
-    # Which means that the relevant info for this field to make it clear that it is a hash and not another number is not immediately available.
-    # So instead, extract the number and compare it to the known list of hashes.
+    # Extract the number and compare it to the known list of hashes.
     # If this regex fails or the number isn't in the hash list, then it means this is a non-hash difference and should cause a test failure.
-    # Otherwise, if it's just a hash difference, it can be a warning for now, while the information being hashed is not stable across platforms.
     xml_number_regex = re.compile(
         '.*<Class name="AZ::u64" field="m_data" value="([0-9]*)" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"\\/>')
 
@@ -127,13 +146,17 @@ def scan_scene_debug_xml_file_for_issues(diff_actual: List[str], diff_expected: 
 def scan_scene_debug_scene_graph_file_differences_for_issues(diff_actual: List[str], diff_expected: List[str],
                                                              actual_file_path: str,
                                                              expected_file_path: str) -> (List[str], List[str]):
-    # Given the set of differences between two debug scene graph files, check for any known issues and emit warnings.
-    # For unknown issues, fail the test. This primarily checks for hashes that are different.
-    # Right now, hash generation is sometimes different on Linux from other platforms, and the test assets were generated on Windows,
-    # so the hashes may be different when run on Linux. Also, it's been a pain point to need to re-generate debug scene graphs
-    # when small changes occur in the scenes. This layer of data changing hasn't been causing issues yet, and is caught by other
-    # automated tests focused on the specific set of data. This automated test is to verify that the basic structure of the scene
-    # is the same with each run.
+    """
+    GHI #13714
+    Hashes are generated differently on different platforms right now, short term, this is a known issue,
+    Long term, it will be important to stabilize the output of product assets, so this will emit a warning,
+    to help keep track of the related GHI.
+    diff_actual: A list containing the debug output (dbgsg file) of the processed source asset under test.
+    diff_expected: A list containing the expected debug output of the source asset under test.
+    actual_file_path: Path to the dbgsg file containing the debug output of the processed source asset under test.
+    expected_file_path: Path to the dbgsg file containing the expected debug output to compare against.
+    """
+
     diff_actual_hashes_removed = []
     diff_expected_hashes_removed = []
 
@@ -164,11 +187,23 @@ def scan_scene_debug_scene_graph_file_differences_for_issues(diff_actual: List[s
     return expected_hashes, actual_hashes
 
 
-def compare_scene_debug_file(asset_processor, expected_file_path: str, actual_file_path: str,
-                             expected_hashes_to_skip: List[str] = None, actual_hashes_to_skip: List[str] = None):
-    # Given the paths to the debug scene graph generated by re-processing the test scene file and the path to the
-    # last known good debug scene graph for that file, load both debug scene graphs into memory and scan them for differences.
-    # Warns on known issues, and fails on unknown issues.
+def compare_scene_debug_file(asset_processor: object, expected_file_path: str, actual_file_path: str,
+                             expected_hashes_to_skip: List[str] = None,
+                             actual_hashes_to_skip: List[str] = None) -> tuple[None, None] | tuple[list[str], list[str]]:
+    """
+    GHI #13713 and GHI #13714
+    Loads both the debug scene graph generated by re-processing the test scene file and the last known good debug scene
+    graph for that file. Scans both files for differences, emitting warnings on known issues and failing on
+    unknown issues.
+    asset_processor: Instance of the asset_processor used in test.
+    expected_file_path: Path to the dbgsg file containing the expected debug output to compare against.
+    actual_file_path: Path to the dbgsg file containing the debug output of the processed source asset under test.
+    expected_hashes_to_skip: A list, generated by the 'compare_scene_debug_file' function, containing hashes from the
+    actual_hashes_to_skip: A list containing the hashes, of products generated during the test, that will be skipped
+    during comparison.
+    expected_hashes_to_skip: A list containing the expected hashes, of products generated during the test, that will
+    be skipped during comparison.
+    """
     debug_graph_path = actual_file_path
     expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug",
                                              expected_file_path)
@@ -184,15 +219,9 @@ def compare_scene_debug_file(asset_processor, expected_file_path: str, actual_fi
     if diff_actual == None and diff_expected == None:
         return None, None
 
-    # There are some differences that are currently considered warnings.
-    # Long term these should become errors, but right now product assets on Linux and non-Linux
-    # are showing differences in hashes.
-    # Linux and non-Linux platforms are also generating different floating point values.
     diff_actual, diff_expected = trim_floating_point_values_from_same_length_lists(
         diff_actual, diff_expected, actual_file_path, expected_file_path)
 
-    # If this is the XML debug file, then it will be difficult to verify if a line is a hash line or another integer.
-    # However, because XML files are always compared after standard dbgsg files, the hashes from that initial comparison can be used here to check.
     is_xml_dbgsg = os.path.splitext(expected_file_path)[-1].lower() == ".xml"
 
     if is_xml_dbgsg:

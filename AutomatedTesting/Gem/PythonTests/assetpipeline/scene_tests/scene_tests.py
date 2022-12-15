@@ -5,40 +5,41 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import os
-import pytest
 import logging
+import os
 import re
 from pprint import pformat
+import pytest
+
+import ly_test_tools.o3de.pipeline_utils as utils
+from _pytest.mark import ParameterSet
+from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
 from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
 
-from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
-from assetpipeline.ap_fixtures.ap_setup_fixture import ap_setup_fixture as ap_setup_fixture
+from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor
+from assetpipeline.ap_fixtures.ap_setup_fixture import ap_setup_fixture
 
+import assetpipeline.ap_fixtures.debug_parse_and_compare as parse_and_compare
+import assetpipeline.ap_fixtures.scene_test_builder as test_builder
 from automatedtesting_shared import asset_database_utils as asset_db_utils
-import assetpipeline.ap_fixtures.test_builder as test_builder
-import assetpipeline.ap_fixtures.test_debug_parse_and_compare as parse_and_compare
-import ly_test_tools.o3de.pipeline_utils as utils
 
 logger = logging.getLogger(__name__)
 targetProjects = ["AutomatedTesting"]
+test_dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tests")
+blackbox_scene_tests, blackbox_test_ids = test_builder.parametrize_blackbox_scene_test(test_dir_path)
 
 
-# Helper: Gets a case correct version of the cache folder
-def get_cache_folder(asset_processor):
-    # Make sure the folder being checked is fully lowercase.
+def get_cache_folder(asset_processor: object) -> str:
+    """Helper: Gets a case correct version of the cache folder."""
+
     # Leave the "c" in Cache uppercase.
     return re.sub("ache[/\\\\](.*)", lambda m: m.group().lower(), asset_processor.project_test_cache_folder())
 
 
 @pytest.fixture
-def local_resources(request, workspace, ap_setup_fixture):
+def local_resources(request: any, workspace: AbstractWorkspaceManager, ap_setup_fixture: dict) -> None:
+    """Test-level asset folder. Directory contains a subfolder for each test."""
     ap_setup_fixture["tests_dir"] = os.path.dirname(os.path.realpath(__file__))
-
-
-# Set the path of the directory containing the tests, then parametrize the tests using the test_builder
-dir_test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tests")
-blackbox_scene_tests, blackbox_test_ids = test_builder.parametrize_blackbox_scene_test(dir_test_path)
 
 
 @pytest.mark.usefixtures("asset_processor")
@@ -51,8 +52,10 @@ class TestScene_AllPlatforms(object):
 
     @pytest.mark.BAT
     @pytest.mark.parametrize("blackbox_param", blackbox_scene_tests, ids=blackbox_test_ids)
-    def test_SceneBlackboxTest_SourceFiles_Processed_ResultInExpectedProducts(self, workspace, ap_setup_fixture,
-                                                                              asset_processor, project, blackbox_param):
+    def test_SceneBlackboxTest_SourceFiles_Processed_ResultInExpectedProducts(self, workspace: AbstractWorkspaceManager,
+                                                                              ap_setup_fixture: dict,
+                                                                              asset_processor: object, project: any,
+                                                                              blackbox_param: ParameterSet) -> None:
         """
         Please see run_fbx_test(...) for details
         Test Steps:
@@ -62,43 +65,41 @@ class TestScene_AllPlatforms(object):
         4. If not, re-run FBX test and validate the information in override assets
         """
 
-        if blackbox_param is None:
-            return
         self.run_scene_test(workspace, ap_setup_fixture, asset_processor, project, blackbox_param)
 
-        override_assets = blackbox_param.override_assets
-        # If override_assets is set, run the test again and validate the information in the override assets
-        if override_assets is not None:
+        if blackbox_param.override_assets is not None:
+            # Run the test again and validate the information in the override assets
             self.run_scene_test(workspace, ap_setup_fixture,
                                 asset_processor, project, blackbox_param, True)
 
-    # Helper: Run Asset Processor with debug output enabled and Atom output disabled.
+
     @staticmethod
-    def run_ap_debug_skip_atom_output(asset_processor):
+    def run_ap_debug_skip_atom_output(asset_processor: object) -> None:
+        """Helper: Run Asset Processor with debug output enabled and Atom output disabled."""
         result, output = asset_processor.batch_process(capture_output=True, extra_params=["--debugOutput",
                                                                                           "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
         # If the test fails, it's helpful to have the output from asset processor in the logs, to track the failure down.
         logger.info(f"Asset Processor Output: {pformat(output)}")
         assert result, "Asset Processor Failed"
 
-    # Helper: Compare expected products with products in cache, report on missing products.
     @staticmethod
-    def check_missing_assets(expected_product_list, cache_folder):
+    def check_missing_assets(expected_product_list: list, cache_folder: str) -> None:
+        """Helper: Compare expected products with products in cache, report on missing products."""
         missing_assets, _ = utils.compare_assets_with_cache(expected_product_list,
                                                             cache_folder)
 
         # If the test is going to fail, print information to help track down the cause of failure.
         if missing_assets:
-            logger.info(f"The following assets were missing from cache: {pformat(missing_assets)}")
             in_cache = os.listdir(cache_folder)
+            logger.info(f"The following assets were missing from cache: {pformat(missing_assets)}")
             logger.info(f"The cache {cache_folder} contains this content: {pformat(in_cache)}")
 
         assert not missing_assets, \
             f'The following assets were expected to be in, but not found in cache: {str(missing_assets)}'
 
-    # Helper: Populates the platform info for each given source asset in the expected jobs and products.
     @staticmethod
-    def populate_asset_info(workspace, project, assets):
+    def populate_asset_info(workspace: AbstractWorkspaceManager, project: any, assets: iter) -> None:
+        """Helper: Populates the platform info for each given source asset in the expected jobs and products."""
 
         for expected_source in assets:
             for expected_job in expected_source.jobs:
@@ -107,8 +108,8 @@ class TestScene_AllPlatforms(object):
                     expected_product.product_name = expected_job.platform + "/" \
                                            + expected_product.product_name
 
-    def run_scene_test(self, workspace, ap_setup_fixture, asset_processor,
-                       project, blackbox_params: "BlackboxAssetTest", overrideAsset=False):
+    def run_scene_test(self, workspace: AbstractWorkspaceManager, ap_setup_fixture: dict, asset_processor: object,
+                       project: any, blackbox_params: "BlackboxAssetTest", overrideAsset: bool = False) -> None:
         """
         These tests work by having the test case ingest the test data and determine the run pattern.
         Tests will process scene settings files and will additionally do a verification against a provided debug file
@@ -140,7 +141,6 @@ class TestScene_AllPlatforms(object):
         logger.info(f"{blackbox_params.test_name}: Processing assets in folder '"
                     f"{test_assets_folder}' and verifying they match expected output.")
 
-        # Run AP and generate scene product outputs - Skip atom product output.
         self.run_ap_debug_skip_atom_output(asset_processor)
 
         logger.info(f"Validating assets.")
