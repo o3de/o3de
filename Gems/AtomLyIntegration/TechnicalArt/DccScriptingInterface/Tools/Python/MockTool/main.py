@@ -50,6 +50,7 @@ from dynaconf import settings
 from PySide2 import QtWidgets, QtCore, QtGui
 from SDK.Python import general_utilities as utils
 from azpy.shared import qt_process
+from azpy.dcc.maya.utils import maya_client
 
 # O3DE Imports
 # import azlmbr.bus as bus
@@ -151,6 +152,12 @@ class MockTool(QtWidgets.QWidget):
         self.dcc_test_button.setFixedHeight(25)
         self.dcc_test_button.setObjectName('Primary')
         self.main_container.addWidget(self.dcc_test_button)
+        self.audit_button = QtWidgets.QPushButton('Audit File')
+        self.audit_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.audit_button.clicked.connect(self.audit_file_clicked)
+        self.audit_button.setFixedHeight(25)
+        self.audit_button.setObjectName('Secondary')
+        self.main_container.addWidget(self.audit_button)
         self.get_dcc_apps()
         self.test_environment()
 
@@ -253,6 +260,26 @@ class MockTool(QtWidgets.QWidget):
         app = qt_process.QtProcess(connection_info['exe'], connection_info['file'], env_data)
         app.start_process(socket_connection=True)
 
+    def audit_file_clicked(self):
+        client = maya_client.MayaClient(17344, timeout=10)
+        if client.connect():
+            _LOGGER.info('Connected successfully')
+            script_path = 'E:/Depot/o3de-engine/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/azpy/dcc/maya/' \
+                          'utils/maya_scene_audit.py'
+            arguments = {
+                'class':              'MayaSceneAuditor',
+                'target_application': 'maya',
+                'target_files':       'current',
+                'operation':          'audit'
+            }
+            return_data = client.run_script(script_path, arguments)
+            _LOGGER.info(f'Return data: {return_data}')
+
+            if client.disconnect():
+                _LOGGER.info('Disconnected successfully')
+        else:
+            _LOGGER.info('Failed to connect')
+
 
 def get_tool(*args, **kwargs):
     _LOGGER.info('Get tool fired')
@@ -261,5 +288,6 @@ def get_tool(*args, **kwargs):
 
 if __name__ == '__main__':
     MockTool()
+
 
 

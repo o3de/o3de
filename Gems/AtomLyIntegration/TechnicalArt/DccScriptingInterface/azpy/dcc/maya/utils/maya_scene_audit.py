@@ -34,7 +34,7 @@ class MayaSceneAuditor(SceneAuditor):
         self.material_data = {}
         self.animation_data = {}
         self.camera_data = {}
-        self.start_operation()
+        # self.start_operation()
 
     def start_operation(self):
         _LOGGER.info(f'Operation: {self.operation}')
@@ -46,7 +46,8 @@ class MayaSceneAuditor(SceneAuditor):
                     self.get_scene_info()
                 elif self.operation == 'track_object':
                     _LOGGER.info('Track Object')
-            self.clear_data()
+            # self.clear_data()
+        return self.audit_data
 
     def clear_data(self):
         self.audit_data = {}
@@ -118,5 +119,6 @@ class MayaSceneAuditor(SceneAuditor):
     def get_animation_information(self, target='all'):
         pass
 
-    def get_script_data(self):
-        return self.audit_data
+    # def get_script_data(self):
+    #     _LOGGER.info('Get Script Data firing')
+    #     return self.audit_data

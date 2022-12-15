@@ -16,7 +16,7 @@
 """! @brief This module is the main server for handling communications/commands between the DCCsi and Maya """
 
 ##
-# @file maya_server.py
+# @file o3de_server.py
 #
 # @brief Socket communication between DCCsi tools and DCCsi supported applications (such as Maya and Blender) can be
 # extended using the following files:
@@ -26,28 +26,8 @@
 # These will be expanded to enable standalone QT Controllers to operate between the O3DE python distribution and DCC
 # packages and APIs, which will be launched most of the time as a detached QProcess
 #
-# @section Maya Server Description
-# The Maya Server can be launched alongside launching a bootstrapped Maya UI session (as opposed to a Maya Standalone
-# session to allow commands to be sent directly into Maya). The most likely use would be to launch a scene file and
-# then run one or more utility scripts on these files.
-#
-# In order for Maya communication to be possible, you must add
-# snippet below to your userSetup.py file in your:
-#
-# Documents/maya/scripts
-#
-# directory This will enable commandPort communication for all
-# versions of Maya. Active port is established by combining
-# Maya version number with either a 0 for MEL communication or
-# 1 for Python - ex. 20231 for Maya 2023/Python. Use below snippet:
-#
-# import maya.cmds as mc
-#
-# version = mc.about(version=True)
-# if not mc.about(batch=True):
-#     print(f'Command Port set: {version}1')
-#     mc.commandPort(name=f':{version}0', sourceType='mel')
-#     mc.commandPort(name=f':{version}1', sourceType='python')
+# @section O3DE Server Description
+# <add description here>
 #
 # @section Launcher Notes
 # - Comments are Doxygen compatible
@@ -61,8 +41,7 @@ from importlib import import_module
 from PySide2 import QtWidgets, QtCore
 from PySide2.QtCore import Signal, Slot
 from azpy.shared.server_base import ServerBase
-from shiboken2 import wrapInstance
-from maya import OpenMayaUI as omui
+
 import os
 
 
@@ -70,18 +49,14 @@ _MODULENAME = 'azpy.dcc.maya.utils.maya_server'
 _LOGGER = _logging.getLogger(_MODULENAME)
 
 
-mayaMainWindowPtr = omui.MQtUtil.mainWindow()
-mayaMainWindow = wrapInstance(int(mayaMainWindowPtr), QtWidgets.QWidget)
-
-
-class MayaServer(ServerBase):
+class O3DEServer(ServerBase):
     def __init__(self):
-        super(MayaServer, self).__init__()
+        super(O3DEServer, self).__init__()
 
-        self.setParent(mayaMainWindow)
+        # self.setParent(mayaMainWindow)
         self.setWindowFlags(QtCore.Qt.Window)
-        self.setObjectName('MayaServer')
-        self.setWindowTitle('Maya Server')
+        self.setObjectName('O3DEServer')
+        self.setWindowTitle('O3DE Server')
         self.setGeometry(50, 50, 240, 150)
         self.container = QtWidgets.QVBoxLayout(self)
         self.window = QtWidgets.QPlainTextEdit()
@@ -102,7 +77,7 @@ class MayaServer(ServerBase):
         elif cmd == 'set_title':
             self.set_title(data, reply)
         else:
-            super(MayaServer, self).process_cmd(cmd, data, reply)
+            super(O3DEServer, self).process_cmd(cmd, data, reply)
 
     def echo(self, data, reply):
         """! Tests communication channel """
@@ -159,6 +134,6 @@ class MayaServer(ServerBase):
 
 
 def launch():
-    _LOGGER.info('Starting Maya Communication Server...')
-    MayaServer()
+    _LOGGER.info('Starting O3DE Communication Server...')
+    O3DEServer()
 
