@@ -5,7 +5,6 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-
 # fmt: off
 class Tests():
     game_mode_entered    = ("Successfully entered game mode",         "Failed to enter game mode")
@@ -13,16 +12,26 @@ class Tests():
     game_mode_exited     = ("Successfully exited game mode", "Failed to exit game mode")
 # fmt: on
 
+class testEntity:
 
-def setup_level_entities(dictionaries):
-    """
-    Helper function for setting up the 3 entities and their script canvas components needed for this test
+    def __init__(self, name: str, status: str, file: str):
 
-    Incomming dictionaries use the format String : String and use the keys; name, status, path.
-    name - the name of the test entity
-    status - the active status of the entity
-    path - the file path on disk to the script canvas file which will be added to the entity
+        import os
+        import azlmbr.paths as paths
+
+        self.name = name
+        self.status = status
+        self.file_path = os.path.join(paths.projectroot, "ScriptCanvas", "OnEntityActivatedScripts", file)
+
+
+def setup_level_entities(entities: [testEntity]) -> None:
     """
+    Helper function for setting up the 3 entities and their script canvas components needed for this test. Entity name,
+    activation status and path to sc file are stored in testEntity objects defined above.
+
+    returns None
+    """
+
     import azlmbr.math as math
     import scripting_utils.scripting_tools as scripting_tools
     from editor_python_test_tools.editor_entity_utils import EditorEntity
@@ -33,17 +42,19 @@ def setup_level_entities(dictionaries):
 
     position = math.Vector3(512.0, 512.0, 32.0)
 
-    for entity_dictionary in dictionaries:
+    for entity in entities:
 
         #create entity, give it a script canvas component and set its active status
-        editor_entity = EditorEntity.create_editor_entity_at(position, entity_dictionary["name"])
+        editor_entity = EditorEntity.create_editor_entity_at(position, entity.name)
+
         scriptcanvas_component = ScriptCanvasComponent(editor_entity)
-        scriptcanvas_component.set_component_graph_file_from_path(entity_dictionary["path"])
-        scripting_tools.change_entity_start_status(entity_dictionary["name"], entity_dictionary["status"])
+        scriptcanvas_component.set_component_graph_file_from_path(entity.file_path)
+        scripting_tools.change_entity_start_status(entity.name, entity.status)
+
         TestHelper.wait_for_condition(lambda: editor_entity is not None, WAIT_TIME_3)
 
         # the controller entity needs extra steps to be set up properly
-        if entity_dictionary["name"] == "Controller":
+        if entity.name == "Controller":
 
             # get the ids of the two other entities we created
             activated_entity_id = EditorEntity.find_editor_entity("ActivationTest").id
@@ -79,30 +90,17 @@ def ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
 
     :return: None
     """
-    import os
-    import azlmbr.paths as paths
     import scripting_utils.scripting_tools as scripting_tools
-    from editor_python_test_tools.utils import TestHelper as TestHelper
+    from editor_python_test_tools.utils import TestHelper
     from editor_python_test_tools.utils import Report, Tracer
     import azlmbr.legacy.general as general
     from scripting_utils.scripting_constants import (WAIT_TIME_3, WAIT_TIME_1)
 
-    controller_dict = {
-        "name": "Controller",
-        "status": "active",
-        "path": os.path.join(paths.projectroot, "ScriptCanvas", "OnEntityActivatedScripts", "controller.scriptcanvas"),
-    }
-    activated_dict = {
-        "name": "ActivationTest",
-        "status": "inactive",
-        "path": os.path.join(paths.projectroot, "ScriptCanvas", "OnEntityActivatedScripts", "activator.scriptcanvas"),
-    }
-    deactivated_dict = {
-        "name": "DeactivationTest",
-        "status": "active",
-        "path": os.path.join(paths.projectroot, "ScriptCanvas", "OnEntityActivatedScripts", "deactivator.scriptcanvas"),
-    }
-
+    test_entities = [
+        testEntity("ActivationTest", "inactive", "activator.scriptcanvas"),
+        testEntity("DeactivationTest", "active", "deactivator.scriptcanvas"),
+        testEntity("Controller", "active", "controller.scriptcanvas"),
+    ]
     EXPECTED_LINES = ["Activator Script: Activated", "Deactivator Script: Deactivated"]
 
     # Preconditions
@@ -112,8 +110,7 @@ def ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
     TestHelper.open_level("", "Base")
 
     # 2) create all the entities we need for the test
-    dictionaries = [activated_dict, deactivated_dict, controller_dict]
-    setup_level_entities(dictionaries)
+    setup_level_entities(test_entities)
 
     # 3) Start the Tracer
     with Tracer() as section_tracer:
