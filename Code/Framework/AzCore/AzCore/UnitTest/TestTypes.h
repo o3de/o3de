@@ -10,7 +10,6 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/base.h>
-#include <AzCore/UnitTest/DLLTestVirtualClass.h>
 #include <AzCore/UnitTest/UnitTest.h>
 
 #include <AzCore/Debug/BudgetTracker.h>
