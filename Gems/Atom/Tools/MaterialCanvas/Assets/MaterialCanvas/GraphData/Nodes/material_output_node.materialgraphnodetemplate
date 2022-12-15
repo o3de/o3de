@@ -14,7 +14,7 @@
             {
                 "name": "inDescription",
                 "displayName": "Description",
-                "description": "Description",
+                "description": "Provide a description or overview of what this material graph is doing",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
                 "visibleOnNode": false,

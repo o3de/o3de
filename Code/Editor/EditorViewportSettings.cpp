@@ -66,6 +66,8 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraNearPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/NearPlaneDistance";
     constexpr AZStd::string_view CameraFarPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/FarPlaneDistance";
     constexpr AZStd::string_view CameraFovDegreesSetting = "/Amazon/Preferences/Editor/Camera/FovDegrees";
+    constexpr AZStd::string_view CameraGoToPositionInstantlySetting = "/Amazon/Preferences/Editor/Camera/GoToPositionInstantly";
+    constexpr AZStd::string_view CameraGoToPositionDurationSetting = "/Amazon/Preferences/Editor/Camera/GoToPositionDuration";
 
     struct EditorViewportSettingsCallbacksImpl : public EditorViewportSettingsCallbacks
     {
@@ -491,6 +493,26 @@ namespace SandboxEditor
         AzToolsFramework::SetRegistry(CameraDefaultOrbitDistanceSetting, distance);
     }
 
+    bool CameraGoToPositionInstantlyEnabled()
+    {
+        return AzToolsFramework::GetRegistry(CameraGoToPositionInstantlySetting, false);
+    }
+
+    void SetCameraGoToPositionInstantlyEnabled(const bool instant)
+    {
+        AzToolsFramework::SetRegistry(CameraGoToPositionInstantlySetting, instant);
+    }
+
+    float CameraGoToPositionDuration()
+    {
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraGoToPositionDurationSetting, 1.0));
+    }
+
+    void SetCameraGoToPositionDuration(const float duration)
+    {
+        AzToolsFramework::SetRegistry(CameraGoToPositionDurationSetting, duration);
+    }
+
     AzFramework::InputChannelId CameraTranslateForwardChannelId()
     {
         return AzFramework::InputChannelId(
@@ -650,7 +672,7 @@ namespace SandboxEditor
         return aznumeric_caster(AzToolsFramework::GetRegistry(CameraNearPlaneDistanceSetting, 0.1));
     }
 
-    void SetCameraDefaultNearPlaneDistance(float distance)
+    void SetCameraDefaultNearPlaneDistance(const float distance)
     {
         AzToolsFramework::SetRegistry(CameraNearPlaneDistanceSetting, aznumeric_cast<double>(distance));
     }
@@ -660,7 +682,7 @@ namespace SandboxEditor
         return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFarPlaneDistanceSetting, 100.0));
     }
 
-    void SetCameraDefaultFarPlaneDistance(float distance)
+    void SetCameraDefaultFarPlaneDistance(const float distance)
     {
         AzToolsFramework::SetRegistry(CameraFarPlaneDistanceSetting, aznumeric_cast<double>(distance));
     }
@@ -670,7 +692,7 @@ namespace SandboxEditor
         return AZ::DegToRad(CameraDefaultFovDegrees());
     }
 
-    void SetCameraDefaultFovRadians(float fovRadians)
+    void SetCameraDefaultFovRadians(const float fovRadians)
     {
         SetCameraDefaultFovDegrees(AZ::RadToDeg(fovRadians));
     }
@@ -680,7 +702,7 @@ namespace SandboxEditor
         return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovDegreesSetting, aznumeric_cast<double>(60.0)));
     }
 
-    void SetCameraDefaultFovDegrees(float fovDegrees)
+    void SetCameraDefaultFovDegrees(const float fovDegrees)
     {
         AzToolsFramework::SetRegistry(CameraFovDegreesSetting, aznumeric_cast<double>(fovDegrees));
     }
@@ -776,6 +798,16 @@ namespace SandboxEditor
     {
         AzToolsFramework::ClearRegistry(CameraDefaultStartingPitch);
         AzToolsFramework::ClearRegistry(CameraDefaultStartingYaw);
+    }
+
+    void ResetCameraGoToPositionInstantlyEnabled()
+    {
+        AzToolsFramework::ClearRegistry(CameraGoToPositionInstantlySetting);
+    }
+
+    void ResetCameraGoToPositionDuration()
+    {
+        AzToolsFramework::ClearRegistry(CameraGoToPositionDurationSetting);
     }
 
     void ResetCameraTranslateForwardChannelId()

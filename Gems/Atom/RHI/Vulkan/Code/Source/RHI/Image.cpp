@@ -161,6 +161,11 @@ namespace AZ
             m_layout.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), layout);
         }
 
+        VkImageUsageFlags Image::GetUsageFlags() const
+        {
+            return m_usageFlags;
+        }
+
         RHI::ResultCode Image::Init(Device& device, const RHI::ImageDescriptor& descriptor)
         {
             RHI::DeviceObject::Init(device);
@@ -200,10 +205,12 @@ namespace AZ
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             createInfo.pNext = nullptr;
             createInfo.format = ConvertFormat(descriptor.m_format);
-            createInfo.flags = GetImageCreateFlags();
+            createInfo.flags = CalculateImageCreateFlags();
             createInfo.imageType = ConvertToImageType(descriptor.m_dimension);
             createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-            createInfo.usage = GetImageUsageFlags();
+            createInfo.usage = CalculateImageUsageFlags();
+
+            m_usageFlags = createInfo.usage;
 
             VkImageFormatProperties formatProps{};
             AssertSuccess(device.GetContext().GetPhysicalDeviceImageFormatProperties(
@@ -243,7 +250,7 @@ namespace AZ
             return ConvertResult(result);
         }
 
-        VkImageCreateFlags Image::GetImageCreateFlags() const
+        VkImageCreateFlags Image::CalculateImageCreateFlags() const
         {
             auto& device = static_cast<Device&>(GetDevice());
             const RHI::ImageDescriptor& descriptor = GetDescriptor();
@@ -276,8 +283,9 @@ namespace AZ
             return flags;
         }
 
-        VkImageUsageFlags Image::GetImageUsageFlags() const
+        VkImageUsageFlags Image::CalculateImageUsageFlags() const
         {
+            auto& device = static_cast<Device&>(GetDevice());
             const RHI::ImageBindFlags bindFlags = GetDescriptor().m_bindFlags;
             VkImageUsageFlags usageFlags{};
 
@@ -306,11 +314,31 @@ namespace AZ
             {
                 usageFlags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
             }
+            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::ShadingRate))
+            {
+                switch (device.GetImageShadingRateMode())
+                {
+                case Device::ShadingRateImageMode::DensityMap:
+                {
+                    usageFlags |= VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
+                }
+                break;
+                case Device::ShadingRateImageMode::ImageAttachment:
+                {
+                    usageFlags |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+                }
+                break;
+                default:
+                {
+                    AZ_Error("Image", false, "Image Shading Rate mode not supported on this platform");
+                }
+                break;
+                }
+            }
 
             // add transfer src usage for all images since we may want them to be copyied for preview or readback
             usageFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
-            auto& device = static_cast<Device&>(GetDevice());
             const VkImageUsageFlags usageMask = device.GetImageUsageFromFormat(GetDescriptor().m_format);
 
             auto finalFlags = usageFlags & usageMask;

@@ -285,10 +285,10 @@ namespace UnitTest
     TEST(MATH_Vector3, TestEquality)
     {
         AZ::Vector3 v3(1.0f, 2.0f, 3.0f);
-        AZ_TEST_ASSERT(v3 == AZ::Vector3(1.0f, 2.0f, 3.0f));
-        AZ_TEST_ASSERT(!(v3 == AZ::Vector3(1.0f, 2.0f, 4.0f)));
-        AZ_TEST_ASSERT(v3 != AZ::Vector3(1.0f, 2.0f, 5.0f));
-        AZ_TEST_ASSERT(!(v3 != AZ::Vector3(1.0f, 2.0f, 3.0f)));
+        EXPECT_TRUE(v3 == AZ::Vector3(1.0f, 2.0f, 3.0f));
+        EXPECT_FALSE((v3 == AZ::Vector3(1.0f, 2.0f, 4.0f)));
+        EXPECT_TRUE(v3 != AZ::Vector3(1.0f, 2.0f, 5.0f));
+        EXPECT_FALSE((v3 != AZ::Vector3(1.0f, 2.0f, 3.0f)));
     }
 
     TEST(MATH_Vector3, TestIsLessThan)
@@ -410,9 +410,9 @@ namespace UnitTest
         v1.BuildTangentBasis(v2, v3);
         EXPECT_TRUE(v2.IsNormalized());
         EXPECT_TRUE(v3.IsNormalized());
-        EXPECT_TRUE(fabsf(v2.Dot(v1)) < 0.001f);
-        EXPECT_TRUE(fabsf(v3.Dot(v1)) < 0.001f);
-        EXPECT_TRUE(fabsf(v2.Dot(v3)) < 0.001f);
+        EXPECT_LT(fabsf(v2.Dot(v1)), 0.001f);
+        EXPECT_LT(fabsf(v3.Dot(v1)), 0.001f);
+        EXPECT_LT(fabsf(v2.Dot(v3)), 0.001f);
     }
 
     TEST(MATH_Vector3, TestMadd)
@@ -548,14 +548,14 @@ namespace UnitTest
 
         // compare equal
         AZ::Vector3 rEq = AZ::Vector3::CreateSelectCmpEqual(vA, vB, AZ::Vector3(1.0f), AZ::Vector3(0.0f));
-        EXPECT_TRUE(rEq.IsClose(AZ::Vector3(0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(rEq, IsClose(AZ::Vector3(0.0f, 0.0f, 1.0f)));
 
         // compare greater equal
         AZ::Vector3 rGr = AZ::Vector3::CreateSelectCmpGreaterEqual(vA, vB, AZ::Vector3(1.0f), AZ::Vector3(0.0f));
-        EXPECT_TRUE(rGr.IsClose(AZ::Vector3(0.0f, 1.0f, 1.0f)));
+        EXPECT_THAT(rGr, IsClose(AZ::Vector3(0.0f, 1.0f, 1.0f)));
 
         // compare greater
         AZ::Vector3 rGrEq = AZ::Vector3::CreateSelectCmpGreater(vA, vB, AZ::Vector3(1.0f), AZ::Vector3(0.0f));
-        EXPECT_TRUE(rGrEq.IsClose(AZ::Vector3(0.0f, 1.0f, 0.0f)));
+        EXPECT_THAT(rGrEq, IsClose(AZ::Vector3(0.0f, 1.0f, 0.0f)));
     }
 }

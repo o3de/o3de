@@ -43,4 +43,9 @@ namespace AZStd
         timeNowSecond =  GetTimeNowTicks()/GetTimeTicksPerSecond();
         return timeNowSecond;
     }
+
+    AZStd::chrono::microseconds GetCpuThreadTimeNowMicrosecond()
+    {
+        return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::nanoseconds(clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID)));
+    }
 }

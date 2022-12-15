@@ -35,7 +35,7 @@ namespace AzToolsFramework
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_brushMode, "Brush Mode", "Brush functionality.")
                         ->Attribute(
                             AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<AzFramework::PaintBrushMode>())
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnBrushModeChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_size, "Size",
                         "Size/diameter of the brush stamp in meters.")
@@ -202,6 +202,10 @@ namespace AzToolsFramework
 
     void GlobalPaintBrushSettings::OnBrushModeChanged()
     {
+        // Notify listeners that the paint brush mode has changed.
+        GlobalPaintBrushSettingsNotificationBus::Broadcast(
+            &GlobalPaintBrushSettingsNotificationBus::Events::OnPaintBrushModeChanged, m_brushMode);
+
         // Notify listeners that a change occurred that affects how the properties are displayed.
         GlobalPaintBrushSettingsNotificationBus::Broadcast(&GlobalPaintBrushSettingsNotificationBus::Events::OnVisiblePropertiesChanged);
     }

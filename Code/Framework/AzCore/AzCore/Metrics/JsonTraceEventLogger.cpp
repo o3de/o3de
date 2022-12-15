@@ -133,18 +133,18 @@ namespace AZ::Metrics
         ResetStream(nullptr);
     }
 
-    JsonTraceEventLogger::JsonTraceEventLogger(JsonTraceLoggerEventConfig config)
+    JsonTraceEventLogger::JsonTraceEventLogger(JsonTraceEventLoggerConfig config)
         : JsonTraceEventLogger(nullptr, AZStd::move(config))
     {
     }
 
     JsonTraceEventLogger::JsonTraceEventLogger(AZStd::unique_ptr<AZ::IO::GenericStream> stream)
-        : JsonTraceEventLogger(AZStd::move(stream), JsonTraceLoggerEventConfig{})
+        : JsonTraceEventLogger(AZStd::move(stream), JsonTraceEventLoggerConfig{})
     {
     }
 
     JsonTraceEventLogger::JsonTraceEventLogger(AZStd::unique_ptr<AZ::IO::GenericStream> stream,
-        JsonTraceLoggerEventConfig config)
+        JsonTraceEventLoggerConfig config)
         : m_stream(AZStd::move(stream))
         , m_name(AZStd::move(config.m_loggerName))
         , m_settingsRegistry{ config.m_settingsRegistry }

@@ -21,7 +21,7 @@
 #include <Editor/ObjectEditor.h>
 #include <Editor/NotificationWidget.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedJointWidget.h>
-#include <Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.h>
+#include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Editor/SimulatedObjectHelpers.h>
 #include <Editor/SkeletonModel.h>

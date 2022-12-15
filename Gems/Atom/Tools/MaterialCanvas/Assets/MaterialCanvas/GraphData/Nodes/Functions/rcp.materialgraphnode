@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{5B845EBE-180E-42AE-9BCC-27559E6CBA56}",
         "category": "Math Functions",
-        "title": "Rcp",
+        "title": "Reciprocal",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Calculates a fast, approximate, per-component reciprocal (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

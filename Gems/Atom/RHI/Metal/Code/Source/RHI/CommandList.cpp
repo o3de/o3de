@@ -79,7 +79,7 @@ namespace AZ
                               destinationOffset: descriptor.m_destinationOffset
                                            size: descriptor.m_size];
 
-                    Platform::SynchronizeBufferOnGPU(blitEncoder, destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>());
+                    Platform::PublishBufferGpuChangeOnCpu(blitEncoder, destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>());
                     break;
                 }
                 case RHI::CopyItemType::Image:
@@ -110,7 +110,7 @@ namespace AZ
                                 destinationLevel: descriptor.m_destinationSubresource.m_mipSlice
                                destinationOrigin: destinationOrigin];
 
-                    Platform::SynchronizeTextureOnGPU(blitEncoder, destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>());
+                    Platform::PublishTextureGpuChangeOnCpu(blitEncoder, destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>());
                     break;
                 }
                 case RHI::CopyItemType::BufferToImage:
@@ -139,7 +139,7 @@ namespace AZ
                               destinationOrigin: destinationOrigin
                                         options: mtlBlitOption];
 
-                    Platform::SynchronizeTextureOnGPU(blitEncoder, destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>());
+                    Platform::PublishTextureGpuChangeOnCpu(blitEncoder, destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>());
                     break;
                 }
                 case RHI::CopyItemType::ImageToBuffer:
@@ -168,7 +168,7 @@ namespace AZ
                         destinationBytesPerImage: descriptor.m_destinationBytesPerImage
                                          options: mtlBlitOption];
 
-                    Platform::SynchronizeBufferOnGPU(blitEncoder, destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>());
+                    Platform::PublishBufferGpuChangeOnCpu(blitEncoder, destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>());
                     break;
                 }
                 default:
@@ -261,21 +261,10 @@ namespace AZ
             uint32_t bufferVertexRegisterIdMax = 0;
             uint32_t bufferFragmentOrComputeRegisterIdMax = 0;
 
-            //Arrays to cache all the buffers and offsets in order to make batch calls
-            MetalArgumentBufferArray mtlVertexArgBuffers;
-            MetalArgumentBufferArrayOffsets mtlVertexArgBufferOffsets;
-            MetalArgumentBufferArray mtlFragmentOrComputeArgBuffers;
-            MetalArgumentBufferArrayOffsets mtlFragmentOrComputeArgBufferOffsets;
-
-            mtlVertexArgBuffers.fill(nil);
-            mtlFragmentOrComputeArgBuffers.fill(nil);
-            mtlVertexArgBufferOffsets.fill(0);
-            mtlFragmentOrComputeArgBufferOffsets.fill(0);
-
-            //Map to cache all the resources based on the usage as we can batch all the resources for a given usage
-            ArgumentBuffer::ComputeResourcesToMakeResidentMap resourcesToMakeResidentCompute;
-            //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage
-            ArgumentBuffer::GraphicsResourcesToMakeResidentMap resourcesToMakeResidentGraphics;
+            m_mtlVertexArgBuffers.fill(nil);
+            m_mtlFragmentOrComputeArgBuffers.fill(nil);
+            m_mtlVertexArgBufferOffsets.fill(0);
+            m_mtlFragmentOrComputeArgBufferOffsets.fill(0);
 
             for (uint32_t slot = 0; slot < RHI::Limits::Pipeline::ShaderResourceGroupCountMax; ++slot)
             {
@@ -285,7 +274,7 @@ namespace AZ
                 //Check explicitly for Bindless SRG. This needs to be data driven (todo)
                 if (slotIndex != RHI::Limits::Pipeline::ShaderResourceGroupCountMax && shaderResourceGroup == nullptr)
                 {
-                    // Skip in case the global static heap is already bound
+                    //Skip if the global static bindless heap is already bound
                     if (m_state.m_bindBindlessHeap)
                     {
                         continue;
@@ -296,15 +285,16 @@ namespace AZ
                     
                     //Add the bindless AB info to the arrays in order to bind it to the appropriate encoder
                     m_device->GetBindlessArgumentBuffer().BindBindlessArgumentBuffer(slotIndex, m_commandEncoderType,
-                                                                        mtlVertexArgBuffers, mtlVertexArgBufferOffsets,
-                                                                        mtlFragmentOrComputeArgBuffers, mtlFragmentOrComputeArgBufferOffsets,
+                                                                        m_mtlVertexArgBuffers, m_mtlVertexArgBufferOffsets,
+                                                                        m_mtlFragmentOrComputeArgBuffers, m_mtlFragmentOrComputeArgBufferOffsets,
                                                                         bufferVertexRegisterIdMin, bufferVertexRegisterIdMax,
                                                                         bufferFragmentOrComputeRegisterIdMin, bufferFragmentOrComputeRegisterIdMax);
                     
                     //Make all the relevant ABs resident. This only applies to ABs related to unbounded array support
                     m_device->GetBindlessArgumentBuffer().MakeBindlessArgumentBuffersResident(m_commandEncoderType,
-                                                                                              resourcesToMakeResidentGraphics,
-                                                                                              resourcesToMakeResidentCompute);                                 
+                                                                                              m_untrackedResourcesGfxRead,
+                                                                                              m_untrackedResourcesComputeRead);
+                     
                     m_state.m_bindBindlessHeap = true;
                     continue;
                 }
@@ -334,11 +324,11 @@ namespace AZ
                         //For graphics and compute shader stages, cache all the argument buffers, offsets and track the min/max indices
                         if(m_commandEncoderType == CommandEncoderType::Render)
                         {
-                            uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint64_t>(srgVisInfo));
+                            uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint32_t>(srgVisInfo));
                             if( numBitsSet > 1 || srgVisInfo == RHI::ShaderStageMask::Vertex)
                             {
-                                mtlVertexArgBuffers[slotIndex] = argBuffer;
-                                mtlVertexArgBufferOffsets[slotIndex] = argBufferOffset;
+                                m_mtlVertexArgBuffers[slotIndex] = argBuffer;
+                                m_mtlVertexArgBufferOffsets[slotIndex] = argBufferOffset;
                                 bufferVertexRegisterIdMin = AZStd::min(slotIndex, bufferVertexRegisterIdMin);
                                 bufferVertexRegisterIdMax = AZStd::max(slotIndex, bufferVertexRegisterIdMax);
                                 mtlRenderStagesForNullDescHeap = shaderResourceGroup->IsNullHeapNeededForVertexStage(srgResourcesVisInfo) ?
@@ -347,8 +337,8 @@ namespace AZ
 
                             if( numBitsSet > 1 || srgVisInfo == RHI::ShaderStageMask::Fragment)
                             {
-                                mtlFragmentOrComputeArgBuffers[slotIndex] = argBuffer;
-                                mtlFragmentOrComputeArgBufferOffsets[slotIndex] = argBufferOffset;
+                                m_mtlFragmentOrComputeArgBuffers[slotIndex] = argBuffer;
+                                m_mtlFragmentOrComputeArgBufferOffsets[slotIndex] = argBufferOffset;
                                 bufferFragmentOrComputeRegisterIdMin = AZStd::min(slotIndex, bufferFragmentOrComputeRegisterIdMin);
                                 bufferFragmentOrComputeRegisterIdMax = AZStd::max(slotIndex, bufferFragmentOrComputeRegisterIdMax);
                                 mtlRenderStagesForNullDescHeap = isNullDescHeapNeeded ? mtlRenderStagesForNullDescHeap | MTLRenderStageFragment : mtlRenderStagesForNullDescHeap;
@@ -356,8 +346,8 @@ namespace AZ
                         }
                         else if(m_commandEncoderType == CommandEncoderType::Compute)
                         {
-                            mtlFragmentOrComputeArgBuffers[slotIndex] = argBuffer;
-                            mtlFragmentOrComputeArgBufferOffsets[slotIndex] = argBufferOffset;
+                            m_mtlFragmentOrComputeArgBuffers[slotIndex] = argBuffer;
+                            m_mtlFragmentOrComputeArgBufferOffsets[slotIndex] = argBufferOffset;
                             bufferFragmentOrComputeRegisterIdMin = AZStd::min(slotIndex, bufferFragmentOrComputeRegisterIdMin);
                             bufferFragmentOrComputeRegisterIdMax = AZStd::max(slotIndex, bufferFragmentOrComputeRegisterIdMax);
                         }
@@ -372,70 +362,33 @@ namespace AZ
                     bindings.m_srgVisHashByIndex[slot] = srgResourcesVisHash;
                     if(srgVisInfo != RHI::ShaderStageMask::None)
                     {
-                        //Make all the bindless resource views that are referenced indirectly by this SRG resident.
-                        const uint32_t bindlessViewsSize = shaderResourceGroup->GetData().GetBindlessViewsSize();
-                        if(bindlessViewsSize>0)
-                        {
-                            const AZStd::vector<RHI::ShaderResourceGroupData::BindlessResourceViews> bindlessResourcesVec =
-                                                    shaderResourceGroup->GetData().GetAllBindlessViews();
-                            for(const auto& it : bindlessResourcesVec)
-                            {
-                                // Iterate through all the ResourceViews
-                                for(const auto& resourceViewsIt : it.m_bindlessResources)
-                                {
-                                    id<MTLResource> mtlResourceView = nil;
-                                    MTLResourceUsage resourceUsage = MTLResourceUsageRead;
-                                    //Figure out the correct resource usage and resource pointer
-                                    switch(it.m_bindlessResourceType)
-                                    {
-                                        case RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture:
-                                        {
-                                            resourceUsage |= MTLResourceUsageWrite;
-                                        }
-                                        case RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture:
-                                        {
-                                            const ImageView* imageView = static_cast<const ImageView*>(resourceViewsIt.get());
-                                            mtlResourceView = imageView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
-                                            break;
-                                        }
-                                        case RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer:
-                                        {
-                                            resourceUsage |= MTLResourceUsageWrite;
-                                        }
-                                        case RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer:
-                                        {
-                                            const BufferView* bufferView = static_cast<const BufferView*>(resourceViewsIt.get());
-                                            mtlResourceView = bufferView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
-                                            break;
-                                        }
-                                    }
-                                    
-                                    // Cache it in the appropriate map so that we can make a single UseResources call per key
-                                    // which is composed of usage and renderstage(only graphics)
-                                    if(m_commandEncoderType == CommandEncoderType::Render)
-                                    {
-                                        AZStd::pair <MTLResourceUsage,MTLRenderStages> key =
-                                                    AZStd::make_pair(resourceUsage, MTLRenderStageVertex|MTLRenderStageFragment);
-                                        resourcesToMakeResidentGraphics[key].emplace(mtlResourceView);
-                                    }
-                                    else if(m_commandEncoderType == CommandEncoderType::Compute)
-                                    {
-                                        resourcesToMakeResidentCompute[resourceUsage].emplace(mtlResourceView);
-                                    }
-                                }
-                            }
-                        }
-                        
-                        //For graphics and compute encoder make the resource resident (call UseResource) for the duration
+                        //For graphics and compute encoder cache all the resources used by the pass in order
+                        //to eventually make them resident (call UseResource) for the duration
                         //of the work associated with the current scope and ensure that it's in a
                         //format compatible with the appropriate metal function.
                         if(m_commandEncoderType == CommandEncoderType::Render)
                         {
-                            shaderResourceGroup->CollectUntrackedResources(srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
+                            //Collect resources bound via Bindless SRG
+                            CollectBindlessGfxUntrackedResources(shaderResourceGroup,
+                                                                 m_untrackedResourcesGfxRead,
+                                                                 m_untrackedResourcesGfxReadWrite);
+                            
+                            //Collect resources bound via shaderResourceGroup
+                            shaderResourceGroup->CollectUntrackedResources(srgResourcesVisInfo,
+                                                                           m_untrackedResourcesGfxRead,
+                                                                           m_untrackedResourcesGfxReadWrite);
                         }
                         else if(m_commandEncoderType == CommandEncoderType::Compute)
                         {
-                            shaderResourceGroup->CollectUntrackedResources(srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
+                            //Collect resources bound via Bindless SRG
+                            CollectBindlessComputeUntrackedResources(shaderResourceGroup,
+                                                                     m_untrackedResourcesComputeRead,
+                                                                     m_untrackedResourcesComputeReadWrite);
+                            
+                            //Collect resources bound via shaderResourceGroup
+                            shaderResourceGroup->CollectUntrackedResources(srgResourcesVisInfo,
+                                                                           m_untrackedResourcesComputeRead,
+                                                                           m_untrackedResourcesComputeReadWrite);
                         }
                     }
                 }
@@ -447,48 +400,22 @@ namespace AZ
                 BindArgumentBuffers(RHI::ShaderStage::Vertex,
                                     bufferVertexRegisterIdMin,
                                     bufferVertexRegisterIdMax,
-                                    mtlVertexArgBuffers,
-                                    mtlVertexArgBufferOffsets);
+                                    m_mtlVertexArgBuffers,
+                                    m_mtlVertexArgBufferOffsets);
 
                 BindArgumentBuffers(RHI::ShaderStage::Fragment,
                                     bufferFragmentOrComputeRegisterIdMin,
                                     bufferFragmentOrComputeRegisterIdMax,
-                                    mtlFragmentOrComputeArgBuffers,
-                                    mtlFragmentOrComputeArgBufferOffsets);
+                                    m_mtlFragmentOrComputeArgBuffers,
+                                    m_mtlFragmentOrComputeArgBufferOffsets);
             }
             else if(m_commandEncoderType == CommandEncoderType::Compute)
             {
                 BindArgumentBuffers(RHI::ShaderStage::Compute,
                                     bufferFragmentOrComputeRegisterIdMin,
                                     bufferFragmentOrComputeRegisterIdMax,
-                                    mtlFragmentOrComputeArgBuffers,
-                                    mtlFragmentOrComputeArgBufferOffsets);
-            }
-
-            id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
-            id<MTLComputeCommandEncoder> computeEncoder = GetEncoder<id<MTLComputeCommandEncoder>>();
-
-            //Call UseResource on all resources for Compute stage
-            for (const auto& key : resourcesToMakeResidentCompute)
-            {
-                AZStd::vector<id <MTLResource>> resourcesToProcessVec(key.second.begin(), key.second.end());
-
-                [computeEncoder useResources: &resourcesToProcessVec[0]
-                                       count: resourcesToProcessVec.size()
-                                       usage: key.first];
-
-            }
-
-            //Call UseResource on all resources for Vertex and Fragment stages
-            for (const auto& key : resourcesToMakeResidentGraphics)
-            {
-
-                AZStd::vector<id <MTLResource>> resourcesToProcessVec(key.second.begin(), key.second.end());
-
-                [renderEncoder useResources: &resourcesToProcessVec[0]
-                                      count: resourcesToProcessVec.size()
-                                      usage: key.first.first
-                                     stages: key.first.second];
+                                    m_mtlFragmentOrComputeArgBuffers,
+                                    m_mtlFragmentOrComputeArgBufferOffsets);
             }
 
             if(bindNullDescriptorHeap)
@@ -498,6 +425,96 @@ namespace AZ
             return true;
         }
 
+        CommandList::ResourceProperties CommandList::GetResourceInfo(RHI::ShaderResourceGroupData::BindlessResourceType resourceType,
+                                                                        const RHI::ResourceView* resourceView)
+        {
+            id<MTLResource> mtlResourceView = nil;
+            bool isReadOnlyResource = false;
+            switch(resourceType)
+            {
+                case RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture:
+                {
+                    isReadOnlyResource = true;
+                }
+                case RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture:
+                {
+                    const ImageView* imageView = static_cast<const ImageView*>(resourceView);
+                    mtlResourceView = imageView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
+                    break;
+                }
+                case RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer:
+                {
+                    isReadOnlyResource = true;
+                }
+                case RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer:
+                {
+                    const BufferView* bufferView = static_cast<const BufferView*>(resourceView);
+                    mtlResourceView = bufferView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
+                    break;
+                }
+            }
+            return CommandList::ResourceProperties(isReadOnlyResource, mtlResourceView);
+        }
+    
+        void CommandList::CollectBindlessComputeUntrackedResources(const ShaderResourceGroup* shaderResourceGroup,
+                                                ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeRead,
+                                                ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeReadWrite)
+        {
+            if(shaderResourceGroup->GetData().GetBindlessViewsSize()==0)
+            {
+                return;
+            }
+            
+            for (const auto& it : shaderResourceGroup->GetData().GetBindlessResourceViews())
+            {
+                for(const auto& resourceViewsIt : it.second.m_bindlessResources)
+                {
+                    CommandList::ResourceProperties resourceInfo = GetResourceInfo(it.second.m_bindlessResourceType,
+                                                                                    resourceViewsIt.get());
+                    //Check if the resource is read only
+                    if(resourceInfo.first)
+                    {
+                        m_untrackedResourcesComputeRead.insert(resourceInfo.second);
+                    }
+                    else
+                    {
+                        m_untrackedResourcesComputeReadWrite.insert(resourceInfo.second);
+                    }
+                }
+            }
+        }
+    
+        void CommandList::CollectBindlessGfxUntrackedResources(const ShaderResourceGroup* shaderResourceGroup,
+                                            ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesGfxRead,
+                                            ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesGfxReadWrite)
+        {
+            if(shaderResourceGroup->GetData().GetBindlessViewsSize()==0)
+            {
+                return;
+            }
+            
+            for (const auto& it : shaderResourceGroup->GetData().GetBindlessResourceViews())
+            {
+                // Iterate through all the ResourceViews
+                for(const auto& resourceViewsIt : it.second.m_bindlessResources)
+                {
+                    CommandList::ResourceProperties resourceInfo = GetResourceInfo(it.second.m_bindlessResourceType,
+                                                                     resourceViewsIt.get());
+                    //Check if the resource is read only
+                    if(resourceInfo.first)
+                    {
+                        untrackedResourcesGfxRead[RHI::ShaderStageVertex].insert(resourceInfo.second);
+                        untrackedResourcesGfxRead[RHI::ShaderStageFragment].insert(resourceInfo.second);
+                    }
+                    else
+                    {
+                        untrackedResourcesGfxReadWrite[RHI::ShaderStageVertex].insert(resourceInfo.second);
+                        untrackedResourcesGfxReadWrite[RHI::ShaderStageFragment].insert(resourceInfo.second);
+                    }
+                }
+            }
+        }
+    
         void CommandList::BindArgumentBuffers(RHI::ShaderStage shaderStage,
                                               uint16_t registerIdMin,
                                               uint16_t registerIdMax,
