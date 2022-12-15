@@ -7,7 +7,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import logging
 import pytest
 
-from ly_test_tools import LINUX
 from ly_test_tools.o3de.atom_tools_test import AtomToolsBatchedTest, AtomToolsTestSuite, AtomToolsSingleTest
 
 logger = logging.getLogger(__name__)
