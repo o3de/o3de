@@ -87,6 +87,8 @@ set(FILES
     Source/Editor/Plugins/ColliderWidgets/HitDetectionJointWidget.cpp
     Source/Editor/Plugins/ColliderWidgets/HitDetectionOutlinerNotificationHandler.h
     Source/Editor/Plugins/ColliderWidgets/HitDetectionOutlinerNotificationHandler.cpp
+    Source/Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.cpp
+    Source/Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h
     Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h
     Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h
     Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.cpp
@@ -117,14 +119,12 @@ set(FILES
     Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.h
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.cpp
-    Source/Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h
-    Source/Editor/Plugins/SimulatedObject/SimulatedObjectWidget.cpp
-    Source/Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.h
-    Source/Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectSelectionWindow.h
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectSelectionWindow.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectSelectionWidget.h
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectSelectionWidget.cpp
+    Source/Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h
+    Source/Editor/Plugins/SimulatedObject/SimulatedObjectWidget.cpp
     Source/Editor/PropertyWidgets/AnimGraphNodeHandler.h
     Source/Editor/PropertyWidgets/AnimGraphNodeHandler.cpp
     Source/Editor/PropertyWidgets/AnimGraphNodeNameHandler.h

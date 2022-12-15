@@ -156,6 +156,15 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_assetBrowserTreeViewWidget->SelectFolder(path.toUtf8().constData());
     });
     connect(m_ui->m_pathBreadCrumbs, &AzQtComponents::BreadCrumbs::pathChanged, this, &AzAssetBrowserWindow::BreadcrumbsPathChangedSlot);
+    connect(m_ui->m_pathBreadCrumbs, &AzQtComponents::BreadCrumbs::pathEdited, this, [this](const QString& path) {
+        const auto* entry = m_ui->m_assetBrowserTreeViewWidget->GetEntryByPath(path);
+        const auto* folderEntry = AzToolsFramework::AssetBrowser::Utils::FolderForEntry(entry);
+        if (folderEntry)
+        {
+            // No need to select the folder ourselves, callback from Breadcrumbs will take care of that
+            m_ui->m_pathBreadCrumbs->pushPath(QString::fromUtf8(folderEntry->GetVisiblePath().c_str()));
+        }
+    });
 
     connect(m_ui->m_thumbnailViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_thumbnailView); });
     connect(m_ui->m_tableViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_tableView); });
@@ -326,10 +335,12 @@ void AzAssetBrowserWindow::SetNarrowMode(bool narrow)
     {
         m_ui->scrollAreaVerticalLayout->insertWidget(1, m_ui->m_breadcrumbsWrapper);
         m_ui->m_searchWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        m_ui->m_breadcrumbsWrapper->setContentsMargins(0, 0, 0, 5);
     }
     else
     {
         m_ui->horizontalLayout->insertWidget(0, m_ui->m_breadcrumbsWrapper);
+        m_ui->m_breadcrumbsWrapper->setContentsMargins(0, 0, 0, 0);
         m_ui->horizontalLayout->setAlignment(m_ui->m_breadcrumbsWrapper, Qt::AlignTop);
 
         // Once we fully move to new design this cvar will be gone and the condition can be deleted
@@ -526,7 +537,7 @@ void AzAssetBrowserWindow::BreadcrumbsPathChangedSlot(const QString& path) const
 
     const AssetBrowserEntry* folderForCurrent = Utils::FolderForEntry(currentEntry);
     const QString currentFolderPath =
-        folderForCurrent ? QString::fromUtf8(folderForCurrent->GetRelativePath().c_str()).replace('\\', '/') : QString();
+        folderForCurrent ? QString::fromUtf8(folderForCurrent->GetVisiblePath().c_str()).replace('\\', '/') : QString();
 
     if (path != currentFolderPath)
     {

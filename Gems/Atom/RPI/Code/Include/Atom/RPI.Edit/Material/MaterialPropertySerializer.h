@@ -25,7 +25,6 @@ namespace AZ
         public:
             AZ_RTTI(JsonMaterialPropertySerializer, "{1AFEC5BD-AB2E-4BDB-911B-80727EDA0C26}", BaseJsonSerializer);
             AZ_CLASS_ALLOCATOR_DECL;
-
             JsonSerializationResult::Result Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
                 JsonDeserializerContext& context) override;
 
