@@ -20,7 +20,7 @@ class testEntity:
         import azlmbr.paths as paths
 
         self.name = name
-        self.status = status
+        self.entity_state = status
         self.file_path = os.path.join(paths.projectroot, "ScriptCanvas", "OnEntityActivatedScripts", file)
 
 
@@ -49,7 +49,7 @@ def setup_level_entities(entities: [testEntity]) -> None:
 
         scriptcanvas_component = ScriptCanvasComponent(editor_entity)
         scriptcanvas_component.set_component_graph_file_from_path(entity.file_path)
-        scripting_tools.change_entity_start_status(entity.name, entity.status)
+        scripting_tools.change_entity_start_status(entity.name, entity.entity_state)
 
         TestHelper.wait_for_condition(lambda: editor_entity is not None, WAIT_TIME_3)
 
