@@ -106,7 +106,7 @@ namespace PhysX
         }
     } // namespace Internal
 
-    static bool IsDefaultSceneCcdEnabled()
+    bool IsDefaultSceneCcdEnabled()
     {
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
