@@ -94,13 +94,13 @@ namespace TrackView
         m_captureFinishedCallback = AZStd::move(captureFinishedCallback);
 
         // note: "Output" (slot name) maps to MainPipeline.pass CopyToSwapChain
-        AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
+        AZ::Outcome<AZ::Render::FrameCaptureId, AZ::Render::FrameCaptureId> captureOutcome;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-            frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
+            captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
             AZStd::string("Output"), attachmentReadbackCallback, AZ::RPI::PassAttachmentReadbackOption::Output);
-        if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
+        if (captureOutcome.IsSuccess())
         {
-            AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(frameCaptureId);
+            AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(captureOutcome.GetValue());
             return true;
         }
 

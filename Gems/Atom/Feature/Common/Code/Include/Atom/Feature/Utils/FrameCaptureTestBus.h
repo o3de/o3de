@@ -41,24 +41,24 @@ namespace AZ
             //! Build the screenshot file path: screenshotFolder + envPath + imageName
             //! @imageName the image name of the screenshot; when empty string is passed, returns the folder.
             //! @return the full path of the screenshot.
-            virtual AZStd::string BuildScreenshotFilePath(const AZStd::string& imageName, bool useEnvPath) = 0;
+            virtual AZ::Outcome<AZStd::string> BuildScreenshotFilePath(const AZStd::string& imageName, bool useEnvPath) = 0;
 
             //! Build the screenshot file path: officialBaselineImageFolder + imageName
             //! @param imageName the image name of the screenshot; when empty string is passed, returns the folder.
             //! @return the full path of the screenshot.
-            virtual AZStd::string BuildOfficialBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) = 0;
+            virtual AZ::Outcome<AZStd::string> BuildOfficialBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) = 0;
 
             //! Build the screenshot file path: localBaselineImageFolder + envPath + imageName
             //! @param imageName the image name of the screenshot; when empty string is passed, returns the folder.
             //! @return the full path of the screenshot.
-            virtual AZStd::string BuildLocalBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) = 0;
+            virtual AZ::Outcome<AZStd::string> BuildLocalBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) = 0;
 
             //! Compare 2 screenshots files and give scores (using root mean square RMS) for the difference.
             //! @param filePathA the full path of screenshot A
             //! @param filePathB the full path of screenshot B
             //! @param minDiffFilter diff values less than this will be filtered out before calculating ImageDiffResult::m_filteredDiffScore.
             //! @return the result code, diff score and filtered diff score.
-            virtual Utils::ImageDiffResult CompareScreenshots(
+            virtual AZ::Outcome<Utils::ImageDiffResult, Utils::ImageDiffResultCode> CompareScreenshots(
                 const AZStd::string& filePathA,
                 const AZStd::string& filePathB,
                 float minDiffFilter) = 0;

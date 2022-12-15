@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Preprocessor/Enum.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
@@ -46,18 +47,18 @@ namespace AZ
             //! @param filepath The output file path. 
             //! @param windowHandle The handle to the AzFrameWork::NativeWindow that is being captured
             //! @return value is the frame capture Id, on failure it will return InvalidFrameCaptureId
-            virtual FrameCaptureId CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle) = 0;
+            virtual AZ::Outcome<FrameCaptureId, FrameCaptureId> CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle) = 0;
 
             //! Similar to CaptureScreenshotForWindow except it's capturing the screen shot for default window 
             //! @param filepath The output file path. 
             //! @return value is the frame capture Id, on failure it will return InvalidFrameCaptureId
-            virtual FrameCaptureId CaptureScreenshot(const AZStd::string& filePath) = 0;
+            virtual AZ::Outcome<FrameCaptureId, FrameCaptureId> CaptureScreenshot(const AZStd::string& filePath) = 0;
 
             //! Capture a screenshot and save it to a file if the pass image attachment preview is enabled.
             //! It will return InvalidFrameCaptureId if the preview is not enabled.
             //! @param outputFilePath The output file path. 
             //! @return value is the frame capture Id, on failure it will return InvalidFrameCaptureId
-            virtual FrameCaptureId CaptureScreenshotWithPreview(const AZStd::string& outputFilePath) = 0;
+            virtual AZ::Outcome<FrameCaptureId, FrameCaptureId> CaptureScreenshotWithPreview(const AZStd::string& outputFilePath) = 0;
             
             //! Save a buffer attachment or a image attachment binded to a pass's slot to a data file.
             //! @param passHierarchy For finding the pass by using a pass hierarchy filter. Check PassFilter::CreateWithPassHierarchy() function for detail
@@ -66,7 +67,7 @@ namespace AZ
             //!               and use PassAttachmentReadbackOption::Output to capture the output state
             //! @param outputFilePath The output file path. 
             //! @return value is the frame capture Id, on failure it will return InvalidFrameCaptureId
-            virtual FrameCaptureId CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
+            virtual AZ::Outcome<FrameCaptureId, FrameCaptureId> CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
                 , const AZStd::string& outputFilePath, RPI::PassAttachmentReadbackOption option) = 0;
 
             //! Similar to CapturePassAttachment. But instead of saving the read back result to a file, it will call the callback function provide
@@ -77,7 +78,7 @@ namespace AZ
             //! @param option Only valid for an InputOutput attachment. Use PassAttachmentReadbackOption::Input to capture the input state
             //!               and use PassAttachmentReadbackOption::Output to capture the output state
             //! @return value is the frame capture Id, on failure it will return InvalidFrameCaptureId
-            virtual FrameCaptureId CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
+            virtual AZ::Outcome<FrameCaptureId, FrameCaptureId> CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
                 , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option) = 0;
         };
         using FrameCaptureRequestBus = EBus<FrameCaptureRequests>;
