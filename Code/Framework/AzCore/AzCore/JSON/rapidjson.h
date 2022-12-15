@@ -139,3 +139,6 @@
 #pragma clang diagnostic pop
 #endif
 
+// retain backward compatibility by aliasing rapidjson_ly to rapidjson
+namespace rapidjson_ly = rapidjson;
+

@@ -28,7 +28,7 @@ namespace AzToolsFramework
 
     bool MetadataManager::GetValue(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId)
     {
-        rapidjson::Value value;
+        rapidjson::Document value;
 
         if (!GetJson(file, key, value))
         {
