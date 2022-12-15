@@ -21,7 +21,6 @@ PIPELINE_TIMEOUT = 60
 
 EMPTY_JSON = readJSON text: '{}'
 
-ENGINE_DEFAULT_ORGANIZATION_NAME = 'o3de'
 ENGINE_REPOSITORY_NAME = 'o3de'
 ENGINE_DEVELOPMENT_BRANCH = 'development'
 ENGINE_URL = "https://github.com/o3de/o3de.git"
@@ -533,19 +532,12 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         }
     }
 
-    //def workspace_retry = 5
     dir(workspace) {
-        //while(!fileExists(workspace) || workspace_retry > 0) {
-        //    sleep 1 // sleep in case directory creation is slow
-        //    PlatformSh("ls ${workspace}", "Printing directory listing")
-        //    workspace_retry--
-        //}
-
         // Add folder where we will store the 3rdParty downloads and packages
         dir('3rdParty') {
         }
 
-        //we always get the engine repo first and get python, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the engine repo
+        //we always get the engine repo first and get python, setEnvCommit only if the repo is the engine repo
         def engineAutomatedTestingControlFile = {}
         def engineAutomatedTestingControlFileFound = False
         dir(ENGINE_REPOSITORY_NAME) {
