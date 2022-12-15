@@ -20,6 +20,8 @@
 #include <resourcecompiler/rccontroller.h>
 #include <tests/UnitTestUtilities.h>
 #include <QCoreApplication>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <utilities/UuidManager.h>
 
 namespace AZ::IO
 {
