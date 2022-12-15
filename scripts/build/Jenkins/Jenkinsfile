@@ -530,13 +530,13 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         }
     }
 
-    def workspace_retry = 5
+    //def workspace_retry = 5
     dir(workspace) {
-        while(!fileExists(workspace) || workspace_retry > 0) {
-            sleep 1 // sleep in case directory creation is slow
-            PlatformSh("ls ${workspace}", "Printing directory listing")
-            workspace_retry--
-        }
+        //while(!fileExists(workspace) || workspace_retry > 0) {
+        //    sleep 1 // sleep in case directory creation is slow
+        //    PlatformSh("ls ${workspace}", "Printing directory listing")
+        //    workspace_retry--
+        //}
 
         // Add folder where we will store the 3rdParty downloads and packages
         dir('3rdParty') {
