@@ -65,13 +65,13 @@ def verify_one_material_document_opened(
     :return: bool
     """
     if not is_document_open(material_document_ids_list[opened_document_index]):
-        return is_document_open(material_document_ids_list[opened_document_index])
+        return False
 
     material_document_ids_verification_list = material_document_ids_list.copy()
     material_document_ids_verification_list.pop(opened_document_index)
     for closed_material_document_id in material_document_ids_verification_list:
         if is_document_open(closed_material_document_id):
-            return is_document_open(closed_material_document_id)
+            return False
 
     return True
 
