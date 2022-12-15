@@ -361,6 +361,12 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
 //this should assume it will always be executed from the workspace root
 def ExecuteControlFile(controlFile) {
     echo "ExecuteControlFile: ${controlFile}"
+
+    def ext = ''
+    if(env.IS_UNIX) {
+        ext = '.sh'
+    }
+
     dir(ENGINE_REPOSITORY_NAME) {
         //register all the objects specified in this controlFile
         controlFile.REGISTER_ENGINES.each { engineName ->
@@ -572,7 +578,11 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             }
 
             //register the engine
-            echo "Register engine: ${ENGINE_URL}"
+            echo "Register --this-engine"
+            def ext = ''
+            if(env.IS_UNIX) {
+                ext = '.sh'
+            }
             PlatformSh("scripts/o3de${ext} register --this-engine", "Registering this engine, will generate the o3de_manifest")
 
             //if the engine has an automatedtesting.json execute it
