@@ -261,6 +261,10 @@ set(FILES
     Manipulators/TranslationManipulators.h
     Metadata/MetadataManager.h
     Metadata/MetadataManager.cpp
+    Metadata/UuidUtils.h
+    Metadata/UuidUtils.cpp
+    Metadata/UuidEntry.h
+    Metadata/UuidEntry.cpp
     Maths/TransformUtils.h
     PaintBrush/PaintBrushSubModeCluster.cpp
     PaintBrush/PaintBrushSubModeCluster.h

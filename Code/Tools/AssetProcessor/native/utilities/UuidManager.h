@@ -12,7 +12,9 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 #include <native/AssetManager/SourceAssetReference.h>
+#include <AzToolsFramework/Metadata/UuidEntry.h>
 
 namespace AzToolsFramework
 {
@@ -61,7 +63,7 @@ namespace AssetProcessor
     public:
         AZ_RTTI(UuidManager, "{49FA0129-7272-4256-A5C6-D789C156E6BA}", IUuidRequests);
 
-        static constexpr const char* UuidKey = "/UUID";
+
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -72,33 +74,17 @@ namespace AssetProcessor
         void EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types) override;
 
     private:
-        struct UuidEntry
-        {
-            AZ_TYPE_INFO(UuidEntry, "{FAD60D80-9B1D-421D-A4CA-DD2CA2EA80BB}");
-
-            static void Reflect(AZ::ReflectContext* context);
-
-            // The canonical UUID
-            AZ::Uuid m_uuid;
-            // A list of UUIDs that used to refer to this file
-            AZStd::unordered_set<AZ::Uuid> m_legacyUuids;
-            // The relative path of the file when it was originally created
-            AZStd::string m_originalPath;
-            // Creation time of the UUID entry
-            AZ::u64 m_millisecondsSinceUnixEpoch;
-        };
-
         AZStd::string GetCanonicalPath(AZ::IO::PathView file);
-        UuidEntry GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset);
+        AzToolsFramework::UuidEntry GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset);
         AzToolsFramework::IMetadataRequests* GetMetadataManager();
-        UuidEntry CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType);
+        AzToolsFramework::UuidEntry CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType);
         AZ::Uuid CreateUuid();
         AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file);
         void InvalidateCacheEntry(AZ::IO::FixedMaxPath file);
 
         AZStd::recursive_mutex m_uuidMutex;
         // Cache of uuids.  AbsPath -> UUIDEntry
-        AZStd::unordered_map<AZStd::string, UuidEntry> m_uuids;
+        AZStd::unordered_map<AZStd::string, AzToolsFramework::UuidEntry> m_uuids;
         // Types which should use randomly generated UUIDs
         AZStd::unordered_set<AZStd::string> m_enabledTypes;
         AzToolsFramework::IMetadataRequests* m_metadataManager{};

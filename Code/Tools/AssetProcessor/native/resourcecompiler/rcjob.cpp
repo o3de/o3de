@@ -795,7 +795,7 @@ namespace AssetProcessor
                 AZ_Error(
                     AssetProcessor::ConsoleChannel, false,
                     "Product asset outputs are not currently supported for the %s platform.  "
-                    "Either change the Job platform a normal platform or change the output flag to AssetBuilderSDK::ProductOutputFlags::IntermediateAsset",
+                    "Either change the Job platform to a normal platform or change the output flag to AssetBuilderSDK::ProductOutputFlags::IntermediateAsset",
                     AssetBuilderSDK::CommonPlatformName);
                 return false;
             }
