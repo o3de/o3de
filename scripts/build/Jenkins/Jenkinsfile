@@ -544,18 +544,18 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             echo "Checkout Engine: ${ENGINE_URL}"
             def setEnvCommit = false
             def the_branch = branchName
+            def remoteConfig = scm.userRemoteConfigs
             if(COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME) {
-                echo 'This is an engine commit'
                 //the pr is for the engine repo, so we want to use the passed in branch name and record the change id and change date
                 setEnvCommit = true
             } else {
-                echo 'This is not an engine commit'
                 //this pr is for another repo so we want to use the development branch for the engine and do not set the commit id or change date
                 the_branch = ENGINE_DEVELOPMENT_BRANCH
+                remoteConfig = [GetEngineRemoteConfig()]
             }
 
             //checkout the engine branch
-            CheckoutRepo(the_branch, [GetEngineRemoteConfig()], disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, remoteConfig, disableSubmodules, setEnvCommit)
 
             // Get python and clean.
             // Always run the clean step, the scripts detect what variables were set, but it also cleans if
