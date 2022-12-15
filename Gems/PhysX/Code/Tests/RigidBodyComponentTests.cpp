@@ -17,6 +17,11 @@
 #include <Tests/EditorTestUtilities.h>
 #include <Tests/PhysXTestCommon.h>
 
+namespace PhysX
+{
+    bool IsDefaultSceneCcdEnabled();
+}
+
 namespace PhysXEditorTests
 {
     TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_EntityLocalScaleChangedAndPhysicsUpdateHappened_RigidBodyScaleWasUpdated)
@@ -230,5 +235,25 @@ namespace PhysXEditorTests
         const AZ::u8 subdivisionsTooLarge = PhysX::Utils::MaxFrustumSubdivisions + 1;
         PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooLarge);
         EXPECT_EQ(expectedError.GetExpectedWarningCount(), 2);
+    }
+
+    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_PhysXConfigButtonVisibilityFunctionUpdatesOnSceneConfigurationChange)
+    {
+        // Given a scene configuration
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        auto config = physicsSystem->GetDefaultSceneConfiguration();
+
+        // When the scene CCD is disabled the component CCD button is disabled
+        // (the buttons read-only attribute is linked to IsDefaultSceneCcdEnabled)
+        config.m_enableCcd = false;
+        physicsSystem->UpdateDefaultSceneConfiguration(config);
+
+        EXPECT_FALSE(PhysX::IsDefaultSceneCcdEnabled());
+
+        // Then when CCD is enabled the opposite is true
+        config.m_enableCcd = true;
+        physicsSystem->UpdateDefaultSceneConfiguration(config);
+
+        EXPECT_TRUE(PhysX::IsDefaultSceneCcdEnabled());
     }
 } // namespace PhysXEditorTests
