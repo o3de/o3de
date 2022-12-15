@@ -91,7 +91,7 @@ namespace UnitTest
         //! After prefab template is updated, we need to propagate the changes to all prefab instances.
         void PropagateAllTemplateChanges();
 
-        //! Helper function to compare two instances.
+        //! Helper function to compare two instances and asserts will be thrown if two instances are not identical.
         //! @param instanceA The given first instance.
         //! @param instanceB The given second instance.
         //! @param shouldCompareLinkIds Flag of whether it compares two link ids.
