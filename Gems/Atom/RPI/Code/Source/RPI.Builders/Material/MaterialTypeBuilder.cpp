@@ -43,7 +43,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 25; // Refactored material functor code
+            materialBuilderDescriptor.m_version = 36; // pipeline material functors
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -148,9 +148,9 @@ namespace AZ
                 addPossibleDependencies(request.m_sourceFile, materialTypeSourceData.m_materialShaderCode);
             }
 
-            // Add dependencies for each material pipeline, since the output of this builder is a combination of the .materialtype data and the .materialpipeline data.
-            AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> materialPipelines = LoadMaterialPipelines();
-            for (const auto& [materialPipelineFilePath, materialPipeline] : materialPipelines)
+            // Note we report dependencies based on GetMaterialPipelinePaths() rather than LoadMaterialPipelines(), because dependencies are
+            // needed even for pipelines that fail to load, so that the job will re-process when the broken pipeline gets fixed.
+            for (AZ::IO::Path materialPipelineFilePath : GetMaterialPipelinePaths())
             {
                 // We have to resolve the path to remove any path aliases like @projectroot@ because source dependencies don't support those.
                 auto resolvedMaterialPipelineFilePath = AZ::IO::LocalFileIO::GetInstance()->ResolvePath(materialPipelineFilePath);
@@ -162,7 +162,12 @@ namespace AZ
 
                 response.m_sourceFileDependencyList.push_back({});
                 response.m_sourceFileDependencyList.back().m_sourceFileDependencyPath = resolvedMaterialPipelineFilePath.value().Native();
+            }
 
+            // Add dependencies for each material pipeline, since the output of this builder is a combination of the .materialtype data and the .materialpipeline data.
+            AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> materialPipelines = LoadMaterialPipelines();
+            for (const auto& [materialPipelineFilePath, materialPipeline] : materialPipelines)
+            {
                 for (const MaterialPipelineSourceData::ShaderTemplate& shaderTemplate : materialPipeline.m_shaderTemplates)
                 {
                     addPossibleDependencies(materialPipelineFilePath.Native(), shaderTemplate.m_shader);
@@ -350,6 +355,11 @@ namespace AZ
             return materialPipelines;
         }
 
+        Name MaterialTypeBuilder::PipelineStage::GetMaterialPipelineName(const AZ::IO::Path& materialPipelineFilePath) const
+        {
+            return Name{materialPipelineFilePath.Stem().Native()};
+        }
+
         void MaterialTypeBuilder::PipelineStage::ProcessJobHelper(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
             const AZStd::string materialTypeName = AZ::IO::Path{request.m_sourceFile}.Stem().Native();
@@ -365,6 +375,8 @@ namespace AZ
 
             MaterialTypeSourceData materialType = materialTypeLoadResult.TakeValue();
 
+            AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> materialPipelines = LoadMaterialPipelines();
+
             // Some shader templates may be reused by multiple pipelines, so first collect a full picture of all the dependencies
             AZStd::unordered_map<MaterialPipelineSourceData::ShaderTemplate, AZStd::vector<Name/*materialPipielineName*/>> shaderTemplateReferences;
             {
@@ -372,7 +384,6 @@ namespace AZ
 
                 MaterialPipelineScriptRunner scriptRunner;
 
-                AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> materialPipelines = LoadMaterialPipelines();
                 for (const auto& [materialPipelineFilePath, materialPipeline] : materialPipelines)
                 {
                     AZ_TraceContext("Material Pipeline", materialPipelineFilePath.c_str());
@@ -384,7 +395,7 @@ namespace AZ
                         continue;
                     }
 
-                    const AZStd::string materialPipelineName = materialPipelineFilePath.Stem().Native();
+                    const Name materialPipelineName = GetMaterialPipelineName(materialPipelineFilePath);
 
                     for (const MaterialPipelineSourceData::ShaderTemplate& shaderTemplate : scriptRunner.GetRelevantShaderTemplates())
                     {
@@ -411,7 +422,7 @@ namespace AZ
                         resolveTemplateFilePathReference(materialPipelineFilePath, normalizedShaderTemplate.m_shader);
                         resolveTemplateFilePathReference(materialPipelineFilePath, normalizedShaderTemplate.m_azsli);
 
-                        shaderTemplateReferences[normalizedShaderTemplate].push_back(Name{materialPipelineName});
+                        shaderTemplateReferences[normalizedShaderTemplate].push_back(materialPipelineName);
                     }
                 }
 
@@ -528,9 +539,10 @@ namespace AZ
 
                 for (const Name& materialPipelineName : materialPipelineList)
                 {
-                    MaterialTypeSourceData::MaterialPipelineData& pipelineData = materialType.m_pipelineData[materialPipelineName];
+                    MaterialTypeSourceData::MaterialPipelineState& pipelineData = materialType.m_pipelineData[materialPipelineName];
                     pipelineData.m_shaderCollection.push_back({});
                     pipelineData.m_shaderCollection.back().m_shaderFilePath = AZ::IO::Path{outputShaderFilePath.Filename()}.c_str();
+                    pipelineData.m_shaderCollection.back().m_shaderTag = shaderTemplate.m_shaderTag;
 
                     // Files in the cache, including intermediate files, end up using lower case for all files and folders. We have to match this
                     // in the output .materialtype file, because the asset system's source dependencies are case-sensitive on some platforms.
@@ -548,6 +560,14 @@ namespace AZ
                     {
                         return a.m_shaderFilePath < b.m_shaderFilePath;
                     });
+            }
+
+            // Add the material pipeline functors
+            for (const auto& [materialPipelineFilePath, materialPipeline] : materialPipelines)
+            {
+                const Name materialPipelineName = GetMaterialPipelineName(materialPipelineFilePath);
+                materialType.m_pipelineData[materialPipelineName].m_materialFunctorSourceData = materialPipeline.m_runtimeControls.m_materialFunctorSourceData;
+                materialType.m_pipelineData[materialPipelineName].m_pipelinePropertyLayout = materialPipeline.m_runtimeControls.m_materialTypeInternalProperties;
             }
 
             AZ::IO::Path outputMaterialTypeFilePath = request.m_tempDirPath;

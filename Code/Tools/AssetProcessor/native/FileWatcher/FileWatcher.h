@@ -15,11 +15,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/thread.h>
-#include <QMap>
-#include <QVector>
 #include <QString>
 #include <QObject>
-
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -41,8 +38,17 @@ public:
     void ClearFolderWatches() override;
     //////////////////////////////////////////////////////////////////////////
 
+    //////////////////////////////////////////////////////////////////////////
     void StartWatching() override;
     void StopWatching() override;
+    //////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////////////
+    void AddExclusion(const AssetBuilderSDK::FilePatternMatcher& excludeMatch) override;
+    bool IsExcluded(QString filePath) const override;
+    //////////////////////////////////////////////////////////////////////////
+
+    void InstallDefaultExclusionRules(QString cacheRootPath, QString projectRootPath) override;
 
 private:
     bool PlatformStart();
@@ -60,7 +66,12 @@ private:
 
     AZStd::unique_ptr<PlatformImplementation> m_platformImpl;
     AZStd::vector<WatchRoot> m_folderWatchRoots;
+    AZStd::vector<AssetBuilderSDK::FilePatternMatcher> m_excludes;
     AZStd::thread m_thread;
     bool m_startedWatching = false;
     AZStd::atomic_bool m_shutdownThreadSignal = false;
+
+    // platform implementations must signal this to indicate they have fully initialized
+    // and will not be dropping events.
+    AZStd::atomic_bool m_startedSignal = false;
 };

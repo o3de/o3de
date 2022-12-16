@@ -16,7 +16,7 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <Tests/DLLTestVirtualClass.h>
 
 #include "ModuleTestBus.h"
 

@@ -112,7 +112,16 @@ namespace GradientSignal
         WrappingType GetWrappingType() const;
 
         //! Return the AABB bounds for this GradientTransform
+        //! The bounds that are returned are in the local space of the shape, not world space.
         AZ::Aabb GetBounds() const;
+
+        //! Return the scale for this GradientTransform
+        AZ::Vector3 GetScale() const;
+
+        //! Return the frequency zoom for this GradientTransform
+        float GetFrequencyZoom() const;
+
+        AZ::Matrix3x4 GetTransform() const;
 
     private:
 
@@ -129,13 +138,21 @@ namespace GradientSignal
 
         /**
          * The relative transform to use for converting from world space to gradient space, stored as an inverse transform.
-         * We only ever need to use the inverse transform, so we compute it once and store it instead of keeping the original
-         * transform around. Note that the GradientTransformComponent has many options for choosing which relative space to use
+         * We only ever need to use the inverse transform, so we compute it once and store it instead of using the original
+         * transform. Note that the GradientTransformComponent has many options for choosing which relative space to use
          * for the transform, so the transform passed in to this class might already have many modifications applied to it.
          * The inverse transform will also get its 3rd row cleared out if "use3d" is false and we're only performing 2D gradient
          * transformations, so that the W component of the UVW output will always be 0.
          */
         AZ::Matrix3x4 m_inverseTransform = AZ::Matrix3x4::CreateIdentity();
+
+        /**
+         * The transform that goes from gradient space to world space. The GradientTransform class itself doesn't need this
+         * for its computations, since it only needs to go from world space to gradient space with the inverse transform.
+         * However, we'll keep it around to be able to provide the transform or parts of it (like scale) to other classes
+         * that need deeper knowledge about how things are being transformed.
+         */
+        AZ::Matrix3x4 m_transform = AZ::Matrix3x4::CreateIdentity();
 
         /**
          * Whether or not to always accept the input point as a valid output point.
