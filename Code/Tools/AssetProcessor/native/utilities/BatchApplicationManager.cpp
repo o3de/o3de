@@ -123,6 +123,9 @@ void BatchApplicationManager::MakeActivationConnections()
         {
             m_processedAssetCount++;
 
+            // If a file fails and later succeeds, don't count it as a failure
+            m_failedAssets.erase(entry.GetAbsoluteSourcePath().toUtf8().constData());
+
             AssetProcessor::JobDiagnosticInfo info{};
             AssetProcessor::JobDiagnosticRequestBus::BroadcastResult(info, &AssetProcessor::JobDiagnosticRequestBus::Events::GetDiagnosticInfo, entry.m_jobRunKey);
 
