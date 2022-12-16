@@ -359,8 +359,9 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
 }
 
 //this should assume it will always be executed from the workspace root
-def ExecuteControlFile(controlFile) {
+def ExecuteControlFile(controlFile, repoName) {
     echo "ExecuteControlFile: ${controlFile}"
+    echo "repoName: ${repoName}"
 
     def ext = ''
     if(env.IS_UNIX) {
@@ -372,38 +373,38 @@ def ExecuteControlFile(controlFile) {
         if(controlFile.REGISTER_ENGINES) {
             echo 'REGISTER_ENGINES'
             controlFile.REGISTER_ENGINES.each { engineName ->
-                PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.NAME}/${engineName} || ver>nul", "Registering engine in ${workspace}/${repo.NAME}/${engineName}")
+                PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repoName}/${engineName} || ver>nul", "Registering engine in ${workspace}/${repoName}/${engineName}")
             }
         }
         if(controlFile.REGISTER_PROJECTS) {
             echo 'REGISTER_PROJECTS'
             controlFile.REGISTER_PROJECTS.each { projectName ->
-                PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.NAME}/${projectName} || ver>nul", "Registering project in ${workspace}/${repo.NAME}/${projectName}")
+                PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repoName}/${projectName} || ver>nul", "Registering project in ${workspace}/${repoName}/${projectName}")
             }
         }
         if(controlFile.REGISTER_GEMS) {
             echo 'REGISTER_GEMS'
             controlFile.REGISTER_GEMS.each { gemName ->
-                PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.NAME}/${gemName} || ver>nul", "Registering gem in ${workspace}/${repo.NAME}/${gemName}")
+                PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repoName}/${gemName} || ver>nul", "Registering gem in ${workspace}/${repoName}/${gemName}")
             }
         }
         if(controlFile.REGISTER_TEMPLATES) {
             echo 'REGISTER_TEMPLATES'
             controlFile.REGISTER_TEMPLATES.each { templateName ->
-                PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.NAME}/${templateName} || ver>nul", "Registering template in ${workspace}/${repo.NAME}/${templateName}")
+                PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repoName}/${templateName} || ver>nul", "Registering template in ${workspace}/${repoName}/${templateName}")
             }
         }
         if(controlFile.REGISTER_RESTRICTED) {
             echo 'REGISTER_RESTRICTED'
             controlFile.REGISTER_RESTRICTED.each { restrictedName ->
-                PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.NAME}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repo.NAME}/${restrictedName}")
+                PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repoName}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repoName}/${restrictedName}")
             }
         }
         //enable all gems specified in the control file
         if(controlFile.ENABLE_GEMS) {
             echo 'ENABLE_GEMS'
             controlFile.ENABLE_GEMS.each { gemName ->
-                PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repo.NAME}/${gemName} --project-name AutomatedTesting || ver>nul", "Enabling ${workspace}/${repo.NAME}/${gemName} for AutomatedTesting")
+                PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name AutomatedTesting || ver>nul", "Enabling ${workspace}/${repoName}/${gemName} for AutomatedTesting")
             }
         }
     }
@@ -427,7 +428,7 @@ def ExecuteControlFile(controlFile) {
 
             if(foundRepoControlFile) {
                 //There is a control file, execute it
-                ExecuteControlFile(repoControlFile)
+                ExecuteControlFile(repoControlFile, repo.NAME)
             } else {
                 //There is no control file so we must determine if this is a composite repo or a singular repo
                 //A standard composite repo has the form
@@ -613,7 +614,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             }
         }
         if(engineAutomatedTestingControlFileFound) {
-            ExecuteControlFile(engineAutomatedTestingControlFile)
+            ExecuteControlFile(engineAutomatedTestingControlFile, ENGINE_REPOSITORY_NAME)
         }
 
         //if we are not committing to the engine repo then pull that repo in here
@@ -632,7 +633,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 }
             }
             if(automatedTestingControlFileFound){
-                ExecuteControlFile(automatedTestingControlFile)
+                ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME)
             }
         }
     }
