@@ -17,6 +17,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             LINUX64
         COMPILATION
             -msse4.1
+            -mavx2
         LINK_NON_STATIC
             -Wl,--no-undefined
             -fpie
@@ -47,6 +48,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
             LINUX64
         COMPILATION
             -msse4.1
+            -mavx2
         LINK_NON_STATIC
             ${LY_GCC_GCOV_LFLAGS}
             ${LY_GCC_GPROF_LFLAGS}
