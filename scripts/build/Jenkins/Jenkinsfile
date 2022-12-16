@@ -398,8 +398,8 @@ def ExecuteControlFile(controlFile) {
             def repoControlFile = {}
             def foundRepoControlFile = false
             dir(repo.NAME) {
-                if(fileExists(".automatedtesting.json")) {
-                    echo 'Loading ${repo.URL} .automatedtesting.json'
+                if(fileExists('.automatedtesting.json')) {
+                    echo "Loading ${repo.URL} .automatedtesting.json"
                     repoControlFile = readJSON file: '.automatedtesting.json'
                     foundRepoControlFile = true
                 }
