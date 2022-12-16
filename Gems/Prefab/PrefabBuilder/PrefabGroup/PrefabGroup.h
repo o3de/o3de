@@ -77,5 +77,7 @@ namespace AZ::SceneAPI::SceneData
 
         ProceduralMeshGroupRule() = default;
         ~ProceduralMeshGroupRule() override = default;
+
+        bool ModifyTooltip(AZStd::string& tooltip) override;
     };
 }

@@ -17,7 +17,6 @@
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
-#include <SceneAPI/SceneCore/DataTypes/Rules/ReadOnlyRule.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
 #include <SceneAPI/SceneUI/RowWidgets/HeaderWidget.h>
@@ -44,7 +43,6 @@ namespace AZ
                 : QWidget(parent)
                 , ui(new Ui::HeaderWidget())
                 , m_target(nullptr)
-                , m_nameIsEditable(false)
                 , m_sceneManifest(nullptr)
             {
                 InitSceneUIHeaderWidgetResources();
@@ -81,6 +79,39 @@ namespace AZ
             const DataTypes::IManifestObject* HeaderWidget::GetManifestObject() const
             {
                 return m_target;
+            }
+
+            bool HeaderWidget::ModifyTooltip(QString& toolTipString)
+            {
+                if (!m_target)
+                {
+                    return false;
+                }
+                if (m_target->RTTI_IsTypeOf(DataTypes::IGroup::TYPEINFO_Uuid()))
+                {
+                    const DataTypes::IGroup* group = azrtti_cast<const DataTypes::IGroup*>(m_target);
+
+                    const Containers::RuleContainer& rules = group->GetRuleContainerConst();
+                    // Multiple rules might change the tooltip, so loop through all rules.
+                    bool ruleChangedTooltip = false;
+                    // Rules don't have all have access to Qt
+                    AZStd::string ruleTooltip;
+                    for (size_t ruleIndex = 0; ruleIndex < rules.GetRuleCount(); ++ruleIndex)
+                    {
+                        if (rules.GetRule(ruleIndex)->ModifyTooltip(ruleTooltip))
+                        {
+                            ruleChangedTooltip = true;
+                        }
+                    }
+                    if (ruleChangedTooltip)
+                    {
+                        toolTipString = QString("%1%2").arg(ruleTooltip.c_str()).arg(toolTipString);
+                    }
+
+                    return ruleChangedTooltip;
+                }
+
+                return false;
             }
 
             void HeaderWidget::DeleteObject()

@@ -50,6 +50,8 @@ namespace AZ
                 void SetManifestObject(const DataTypes::IManifestObject* target);
                 const DataTypes::IManifestObject* GetManifestObject() const;
 
+                bool ModifyTooltip(QString& toolTipString);
+
             protected:
                 bool InitSceneManifest();
 
@@ -63,7 +65,6 @@ namespace AZ
                 QScopedPointer<Ui::HeaderWidget> ui;
                 Containers::SceneManifest* m_sceneManifest; // Reference only, does not point to a local instance.
                 const DataTypes::IManifestObject* m_target; // Reference only, does not point to a local instance.
-                bool m_nameIsEditable;
             };
         } // namespace UI
     } // namespace SceneAPI

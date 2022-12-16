@@ -26,6 +26,8 @@ namespace AZ
                 AZ_RTTI(IRule, "{81267F8B-3963-423B-9FF7-D276D82CD110}", IManifestObject);
 
                 virtual ~IRule() override = default;
+
+                virtual bool ModifyTooltip(AZStd::string& /*tooltip*/) {return false; }
             };
         }  // DataTypes
     }  // SceneAPI

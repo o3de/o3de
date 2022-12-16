@@ -24,6 +24,12 @@ namespace AZ
                 AZ_RTTI(ReadOnlyRule, "{071A7F4A-70A5-4D32-AC9C-1D49AFCB1480}", IRule);
 
                 virtual ~ReadOnlyRule() override = default;
+
+                bool ModifyTooltip(AZStd::string& tooltip) override
+                {
+                    tooltip = AZStd::string::format("This group is read only. %.*s", AZ_STRING_ARG(tooltip));
+                    return true;
+                }
             };
         } // namespace DataTypes
     } // namespace SceneAPI
