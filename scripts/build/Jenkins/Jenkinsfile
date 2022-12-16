@@ -360,8 +360,7 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
 
 //this should assume it will always be executed from the workspace root
 def ExecuteControlFile(controlFile, repoName) {
-    echo "ExecuteControlFile: ${controlFile}"
-    echo "repoName: ${repoName}"
+    echo "${repoName}: ExecuteControlFile(${controlFile})"
 
     def ext = ''
     if(env.IS_UNIX) {
@@ -415,7 +414,6 @@ def ExecuteControlFile(controlFile, repoName) {
         controlFile.REPOS.each { repo ->
             def repoControlFile = {}
             def foundRepoControlFile = false
-
             dir(repo.NAME) {
                 CheckoutRepo(repo.BRANCH, [GetRemoteConfig(repo.NAME, repo.URL)])
 
@@ -599,7 +597,6 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             }
 
             //register the engine
-            echo "Register --this-engine"
             def ext = ''
             if(env.IS_UNIX) {
                 ext = '.sh'
@@ -619,15 +616,16 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
 
         //if we are not committing to the engine repo then pull that repo in here
         if(COMMIT_REPOSITORY_NAME != ENGINE_REPOSITORY_NAME) {
-            echo 'Checkout commit repo'
-            CheckoutRepo(branchName, scm.userRemoteConfigs, disableSubmodules, true)
+            echo "Commit repo: ${scm.userRemoteConfigs.url[0]}"
             def automatedTestingControlFile = {}
             def automatedTestingControlFileFound = false
             dir(COMMIT_REPOSITORY_NAME)
             {
+                CheckoutRepo(branchName, scm.userRemoteConfigs, disableSubmodules, true)
+
                 //if the repo has an automatedtesting.json execute it
-                if(fileExists(".automatedtesting.json")) {
-                    echo 'Loading ${COMMIT_REPOSITORY_NAME} .automatedtesting.json'
+                if(fileExists('.automatedtesting.json')) {
+                    echo "Loading ${COMMIT_REPOSITORY_NAME} .automatedtesting.json"
                     automatedTestingControlFile = readJSON file: '.automatedtesting.json'
                     automatedTestingControlFileFound = true
                 }
