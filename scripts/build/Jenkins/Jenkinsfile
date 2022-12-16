@@ -369,25 +369,31 @@ def ExecuteControlFile(controlFile) {
 
     dir(ENGINE_REPOSITORY_NAME) {
         //register all the objects specified in this controlFile
-        controlFile.REGISTER_ENGINES.each { engineName ->
-            PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.NAME}/${engineName} || ver>nul", "Registering engine in ${workspace}/${repo.NAME}/${engineName}")
-        }
+        if(controlFile.containsKey(REGISTER_ENGINES)) {
+            controlFile.REGISTER_ENGINES.each { engineName ->
+                PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.NAME}/${engineName} || ver>nul", "Registering engine in ${workspace}/${repo.NAME}/${engineName}")
+        }}
+        if(controlFile.containsKey(REGISTER_PROJECTS)) {
         controlFile.REGISTER_PROJECTS.each { projectName ->
             PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.NAME}/${projectName} || ver>nul", "Registering project in ${workspace}/${repo.NAME}/${projectName}")
-        }
+        }}
+        if(controlFile.containsKey(REGISTER_GEMS)) {
         controlFile.REGISTER_GEMS.each { gemName ->
             PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.NAME}/${gemName} || ver>nul", "Registering gem in ${workspace}/${repo.NAME}/${gemName}")
-        }
+        }}
+        if(controlFile.containsKey(REGISTER_TEMPLATES)) {
         controlFile.REGISTER_TEMPLATES.each { templateName ->
             PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.NAME}/${templateName} || ver>nul", "Registering template in ${workspace}/${repo.NAME}/${templateName}")
-        }
+        }}
+        if(controlFile.containsKey(REGISTER_RESTRICTED)) {
         controlFile.REGISTER_RESTRICTED.each { restrictedName ->
             PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.NAME}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repo.NAME}/${restrictedName}")
-        }
+        }}
         //enable all gems specified in the control file
+        if(controlFile.containsKey(ENABLE_GEMS)) {
         controlFile.ENABLE_GEMS.each { gemName ->
             PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repo.NAME}/${gemName} --project-name AutomatedTesting || ver>nul", "Enabling ${workspace}/${repo.NAME}/${gemName} for AutomatedTesting")
-        }
+        }}
     }
 
     //check out all repos
