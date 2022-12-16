@@ -24,6 +24,7 @@ namespace AZ
         void WindowContext::Initialize(RHI::Device& device, AzFramework::NativeWindowHandle windowHandle)
         {
             m_windowHandle = windowHandle;
+            m_device = &device;
 
             CreateSwapChains(device);
 
@@ -65,7 +66,7 @@ namespace AZ
             return GetSwapChain(viewType)->GetAttachmentId();
         }
 
-        const RHI::Ptr<RHI::DeviceSwapChain>& WindowContext::GetSwapChain(ViewType viewType) const
+        const RHI::Ptr<RHI::SwapChain>& WindowContext::GetSwapChain(ViewType viewType) const
         {
             uint32_t swapChainIndex = static_cast<uint32_t>(viewType);
             AZ_Assert(swapChainIndex < GetSwapChainsSize(), "Swapchain with index %i does not exist", swapChainIndex);
@@ -93,7 +94,7 @@ namespace AZ
 
         void WindowContext::OnWindowResized(uint32_t width, uint32_t height)
         {
-            RHI::Ptr<RHI::DeviceSwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             const AZ::RHI::SwapChainDimensions& currentDimensions = defaultSwapChain->GetDescriptor().m_dimensions;
             if (width != currentDimensions.m_imageWidth || height != currentDimensions.m_imageHeight)
             {
@@ -101,7 +102,7 @@ namespace AZ
                 RHI::SwapChainDimensions dimensions = defaultSwapChain->GetDescriptor().m_dimensions;
                 dimensions.m_imageWidth = AZStd::max(width, 1u);
                 dimensions.m_imageHeight = AZStd::max(height, 1u);
-                dimensions.m_imageFormat = GetSwapChainFormat(defaultSwapChain->GetDevice());
+                dimensions.m_imageFormat = GetSwapChainFormat(*m_device);
 
                 FillWindowState(dimensions.m_imageWidth, dimensions.m_imageHeight);
 
@@ -123,7 +124,7 @@ namespace AZ
 
         void WindowContext::OnVsyncIntervalChanged(uint32_t interval)
         {
-            RHI::Ptr<RHI::DeviceSwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             if (defaultSwapChain->GetDescriptor().m_verticalSyncInterval != interval)
             {
                 defaultSwapChain->SetVerticalSyncInterval(interval);
@@ -132,25 +133,25 @@ namespace AZ
 
         bool WindowContext::IsExclusiveFullScreenPreferred() const
         {
-            RHI::Ptr<RHI::DeviceSwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             return defaultSwapChain->IsExclusiveFullScreenPreferred();
         }
 
         bool WindowContext::GetExclusiveFullScreenState() const
         {
-            RHI::Ptr<RHI::DeviceSwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             return defaultSwapChain->GetExclusiveFullScreenState();
         }
 
         bool WindowContext::SetExclusiveFullScreenState(bool fullScreenState)
         {
-            RHI::Ptr<RHI::DeviceSwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             return defaultSwapChain->SetExclusiveFullScreenState(fullScreenState);
         }
 
         void WindowContext::CreateSwapChains(RHI::Device& device)
         {
-            RHI::Ptr<RHI::DeviceSwapChain> swapChain = RHI::Factory::Get().CreateSwapChain();
+            RHI::Ptr<RHI::SwapChain> swapChain = aznew RHI::SwapChain();
 
             AzFramework::WindowSize windowSize;
             AzFramework::WindowRequestBus::EventResult(
@@ -177,7 +178,7 @@ namespace AZ
 
             AZStd::string attachmentName = AZStd::string::format("WindowContextAttachment_%p", m_windowHandle);
             descriptor.m_attachmentId = RHI::AttachmentId{ attachmentName.c_str() };
-            swapChain->Init(device, descriptor);
+            swapChain->Init(1 << device.GetIndex(), descriptor);
             descriptor = swapChain->GetDescriptor(); // Get descriptor from swapchain because it can set different values during initialization
 
             RHI::Viewport viewport;
@@ -209,7 +210,7 @@ namespace AZ
                 AZ_Assert(numXrViews <= 2, "Atom only supports two XR views");
                 for (AZ::u32 i = 0; i < numXrViews; i++)
                 {
-                    RHI::Ptr<RHI::DeviceSwapChain> xrSwapChain = RHI::Factory::Get().CreateSwapChain();
+                    RHI::Ptr<RHI::SwapChain> xrSwapChain = aznew RHI::SwapChain();
                     RHI::SwapChainDescriptor xrDescriptor;
                     xrDescriptor.m_dimensions.m_imageWidth = xrSystem->GetSwapChainWidth(i);
                     xrDescriptor.m_dimensions.m_imageHeight = xrSystem->GetSwapChainHeight(i);
@@ -220,7 +221,7 @@ namespace AZ
 
                     const AZStd::string xrAttachmentName = AZStd::string::format("XRSwapChain_View_%i", i);
                     xrDescriptor.m_attachmentId = RHI::AttachmentId{ xrAttachmentName.c_str() };
-                    xrSwapChain->Init(device, xrDescriptor);
+                    xrSwapChain->Init(RHI::AllDevices, xrDescriptor);
                     xrDescriptor = xrSwapChain->GetDescriptor(); // Get descriptor from swapchain because it can set different values during initialization
 
                     RHI::Viewport xrViewport;

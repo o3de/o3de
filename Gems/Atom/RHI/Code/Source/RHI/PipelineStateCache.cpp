@@ -17,13 +17,13 @@ namespace AZ
 {
     namespace RHI
     {
-        Ptr<PipelineStateCache> PipelineStateCache::Create(Device& device)
+        Ptr<PipelineStateCache> PipelineStateCache::Create(DeviceMask deviceMask)
         {
-            return aznew PipelineStateCache(device);
+            return aznew PipelineStateCache(deviceMask);
         }
 
-        PipelineStateCache::PipelineStateCache(Device& device)
-            : m_device{&device}
+        PipelineStateCache::PipelineStateCache(DeviceMask deviceMask)
+            : m_deviceMask{ deviceMask }
         {}
 
         void PipelineStateCache::ValidateCacheIntegrity() const
@@ -81,7 +81,7 @@ namespace AZ
             }
         }
 
-        PipelineLibraryHandle PipelineStateCache::CreateLibrary(const PipelineLibraryData* serializedData, const AZStd::string& filePath)
+        PipelineLibraryHandle PipelineStateCache::CreateLibrary(const PipelineLibraryDescriptor& pipelineLibraryDescriptor)
         {
             AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
 
@@ -110,8 +110,7 @@ namespace AZ
             m_globalLibraryActiveBits[handle.GetIndex()] = true;
 
             GlobalLibraryEntry& libraryEntry = m_globalLibrarySet[handle.GetIndex()];
-            libraryEntry.m_pipelineLibraryDescriptor.m_serializedData = serializedData;
-            libraryEntry.m_pipelineLibraryDescriptor.m_filePath = filePath;
+            libraryEntry.m_pipelineLibraryDescriptor = pipelineLibraryDescriptor;
             AZ_Assert(libraryEntry.m_readOnlyCache.empty() && libraryEntry.m_pendingCache.empty(), "Library entry has entries in its caches!");
 
             return handle;
@@ -128,9 +127,8 @@ namespace AZ
 
                 GlobalLibraryEntry& libraryEntry = m_globalLibrarySet[handle.GetIndex()];
                 libraryEntry.m_readOnlyCache.clear();
-                libraryEntry.m_pipelineLibraryDescriptor.m_serializedData = nullptr;
-                libraryEntry.m_pipelineLibraryDescriptor.m_filePath = "";
-                
+                libraryEntry.m_pipelineLibraryDescriptor.m_devicePipelineLibraryDescriptors.clear();
+
                 m_globalLibraryActiveBits[handle.GetIndex()] = false;
                 m_libraryFreeList.push_back(handle);
             }
@@ -163,7 +161,7 @@ namespace AZ
             libraryEntry.m_pendingCacheMutex.unlock();
         }
 
-        Ptr<DevicePipelineLibrary> PipelineStateCache::GetMergedLibrary(PipelineLibraryHandle handle) const
+        Ptr<PipelineLibrary> PipelineStateCache::GetMergedLibrary(PipelineLibraryHandle handle) const
         {
             if (handle.IsNull())
             {
@@ -177,7 +175,7 @@ namespace AZ
             //! coalesce data from each individual library by merging the thread-local ones into a single
             //! global (temporary) library. The data is then extracted from this global library and returned.
             //! This operation is designed to happen once at application shutdown; certainly not every frame.
-            AZStd::vector<const DevicePipelineLibrary*> threadLibraries;
+            AZStd::vector<const PipelineLibrary*> threadLibraries;
             m_threadLibrarySet.ForEach([handle, &threadLibraries](const ThreadLibrarySet& threadLibrarySet)
             {
                 const ThreadLibraryEntry& threadLibraryEntry = threadLibrarySet[handle.GetIndex()];
@@ -189,17 +187,24 @@ namespace AZ
                 }
             });
 
-            bool doesPSODataExist = entry.m_pipelineLibraryDescriptor.m_serializedData.get();
-            for (const RHI::DevicePipelineLibrary* libraryBase : threadLibraries)
+            bool doesPSODataExist = false;
+
+            for (auto& [deviceIndex, devicePipelineLibraryDescriptor] :
+                 entry.m_pipelineLibraryDescriptor.m_devicePipelineLibraryDescriptors)
             {
-                const DevicePipelineLibrary* library = static_cast<const DevicePipelineLibrary*>(libraryBase);
+                doesPSODataExist |= devicePipelineLibraryDescriptor.m_serializedData.get() != nullptr;
+            }
+
+            for (const RHI::PipelineLibrary* libraryBase : threadLibraries)
+            {
+                const PipelineLibrary* library = static_cast<const PipelineLibrary*>(libraryBase);
                 doesPSODataExist |= library->IsMergeRequired();
             }
 
             if (doesPSODataExist)
             {
-                Ptr<DevicePipelineLibrary> pipelineLibrary = Factory::Get().CreatePipelineLibrary();
-                ResultCode resultCode = pipelineLibrary->Init(*m_device, entry.m_pipelineLibraryDescriptor);
+                Ptr<PipelineLibrary> pipelineLibrary = aznew PipelineLibrary();
+                ResultCode resultCode = pipelineLibrary->Init(m_deviceMask, entry.m_pipelineLibraryDescriptor);
 
                 if (resultCode == ResultCode::Success)
                 {
@@ -265,7 +270,8 @@ namespace AZ
             ValidateCacheIntegrity();
         }
 
-        const DevicePipelineState* PipelineStateCache::FindPipelineState(const PipelineStateSet& pipelineStateSet, const PipelineStateDescriptor& descriptor)
+        const PipelineState* PipelineStateCache::FindPipelineState(
+            const PipelineStateSet& pipelineStateSet, const PipelineStateDescriptor& descriptor)
         {
             auto pipelineStateIt = pipelineStateSet.find(PipelineStateEntry(descriptor.GetHash(), nullptr, descriptor));
             if (pipelineStateIt != pipelineStateSet.end())
@@ -281,7 +287,8 @@ namespace AZ
             return ret.second;
         }
 
-        const DevicePipelineState* PipelineStateCache::AcquirePipelineState(PipelineLibraryHandle handle, const PipelineStateDescriptor& descriptor)
+        const PipelineState* PipelineStateCache::AcquirePipelineState(
+            PipelineLibraryHandle handle, const PipelineStateDescriptor& descriptor)
         {
             if (handle.IsNull())
             {
@@ -294,7 +301,7 @@ namespace AZ
             PipelineStateHash pipelineStateHash = descriptor.GetHash();
 
             // Search the read-only cache first.
-            if (const DevicePipelineState* pipelineState = FindPipelineState(globalLibraryEntry.m_readOnlyCache, descriptor))
+            if (const PipelineState* pipelineState = FindPipelineState(globalLibraryEntry.m_readOnlyCache, descriptor))
             {
                 return pipelineState;
             }
@@ -305,7 +312,7 @@ namespace AZ
                 ThreadLibraryEntry& threadLibraryEntry = threadLibrarySet[handle.GetIndex()];
                 PipelineStateSet& threadLocalCache = threadLibraryEntry.m_threadLocalCache;
 
-                if (const DevicePipelineState* pipelineState = FindPipelineState(threadLocalCache, descriptor))
+                if (const PipelineState* pipelineState = FindPipelineState(threadLocalCache, descriptor))
                 {
                     return pipelineState;
                 }
@@ -316,8 +323,8 @@ namespace AZ
                     // Lazy-init the library on first access.
                     if (!threadLibraryEntry.m_library)
                     {
-                        Ptr<DevicePipelineLibrary> pipelineLibrary = Factory::Get().CreatePipelineLibrary();
-                        RHI::ResultCode resultCode = pipelineLibrary->Init(*m_device, globalLibraryEntry.m_pipelineLibraryDescriptor);
+                        Ptr<PipelineLibrary> pipelineLibrary = aznew PipelineLibrary();
+                        RHI::ResultCode resultCode = pipelineLibrary->Init(m_deviceMask, globalLibraryEntry.m_pipelineLibraryDescriptor);
                         if (resultCode != RHI::ResultCode::Success)
                         {
                             AZ_Warning("PipelineStateCache", false, "Failed to initialize pipeline library. PipelineLibrary usage is disabled.");
@@ -328,7 +335,8 @@ namespace AZ
                         threadLibraryEntry.m_library = AZStd::move(pipelineLibrary);
                     }
 
-                    ConstPtr<DevicePipelineState> pipelineState = CompilePipelineState(globalLibraryEntry, threadLibraryEntry, descriptor, pipelineStateHash);
+                    ConstPtr<PipelineState> pipelineState =
+                        CompilePipelineState(globalLibraryEntry, threadLibraryEntry, descriptor, pipelineStateHash);
 
                     [[maybe_unused]] bool success = InsertPipelineState(threadLocalCache, PipelineStateEntry(pipelineStateHash, pipelineState, descriptor));
                     AZ_Assert(success, "PipelineStateEntry already exists in the thread cache.");
@@ -338,13 +346,13 @@ namespace AZ
             }
         }
 
-        ConstPtr<DevicePipelineState> PipelineStateCache::CompilePipelineState(
+        ConstPtr<PipelineState> PipelineStateCache::CompilePipelineState(
             GlobalLibraryEntry& globalLibraryEntry,
             ThreadLibraryEntry& threadLibraryEntry,
             const PipelineStateDescriptor& descriptor,
             PipelineStateHash pipelineStateHash)
         {
-            Ptr<DevicePipelineState> pipelineState;
+            Ptr<PipelineState> pipelineState;
 
             PipelineStateSet& pendingCache = globalLibraryEntry.m_pendingCache;
 
@@ -352,14 +360,14 @@ namespace AZ
                 AZStd::lock_guard<AZStd::mutex> lock(globalLibraryEntry.m_pendingCacheMutex);
 
                 // Another thread may have started compiling this pipeline state. Check the pending cache.
-                if (const DevicePipelineState* pipeline = FindPipelineState(pendingCache, descriptor))
+                if (const PipelineState* pipeline = FindPipelineState(pendingCache, descriptor))
                 {
                     return pipeline;
                 }
 
                 // We need to create and insert the pipeline state into the locked cache. Create the pipeline state
                 // but don't initialize it yet. We can safely allocate the 'empty' instance and cache it.
-                pipelineState = Factory::Get().CreatePipelineState();
+                pipelineState = aznew PipelineState();
 
                 [[maybe_unused]] bool success = InsertPipelineState(pendingCache, PipelineStateEntry(pipelineStateHash, pipelineState, descriptor));
                 AZ_Assert(success, "PipelineStateEntry already exists in the pending cache.");
@@ -375,7 +383,7 @@ namespace AZ
             }
 
             // If the pipeline library failed to initialize, then we don't use it.
-            DevicePipelineLibrary* pipelineLibrary = threadLibraryEntry.m_library.get();
+            PipelineLibrary* pipelineLibrary = threadLibraryEntry.m_library.get();
             if (!pipelineLibrary->IsInitialized())
             {
                 pipelineLibrary = nullptr;
@@ -386,15 +394,18 @@ namespace AZ
             switch (descriptor.GetType())
             {
             case PipelineStateType::Draw:
-                resultCode = pipelineState->Init(*m_device, static_cast<const PipelineStateDescriptorForDraw&>(descriptor), pipelineLibrary);
+                resultCode =
+                    pipelineState->Init(m_deviceMask, static_cast<const PipelineStateDescriptorForDraw&>(descriptor), pipelineLibrary);
                 break;
 
             case PipelineStateType::Dispatch:
-                resultCode = pipelineState->Init(*m_device, static_cast<const PipelineStateDescriptorForDispatch&>(descriptor), pipelineLibrary);
+                resultCode =
+                    pipelineState->Init(m_deviceMask, static_cast<const PipelineStateDescriptorForDispatch&>(descriptor), pipelineLibrary);
                 break;
 
             case PipelineStateType::RayTracing:
-                resultCode = pipelineState->Init(*m_device, static_cast<const PipelineStateDescriptorForRayTracing&>(descriptor), pipelineLibrary);
+                resultCode = pipelineState->Init(
+                    m_deviceMask, static_cast<const PipelineStateDescriptorForRayTracing&>(descriptor), pipelineLibrary);
                 break;
 
             default:
@@ -413,7 +424,8 @@ namespace AZ
             return AZStd::move(pipelineState);
         }
 
-        PipelineStateCache::PipelineStateEntry::PipelineStateEntry(PipelineStateHash hash, ConstPtr<DevicePipelineState> pipelineState, const PipelineStateDescriptor& descriptor)
+        PipelineStateCache::PipelineStateEntry::PipelineStateEntry(
+            PipelineStateHash hash, ConstPtr<PipelineState> pipelineState, const PipelineStateDescriptor& descriptor)
             : m_hash{ hash }
             , m_pipelineState{ AZStd::move(pipelineState) }
         {

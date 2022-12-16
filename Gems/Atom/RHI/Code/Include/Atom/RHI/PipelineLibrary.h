@@ -17,6 +17,9 @@ namespace AZ
 {
     namespace RHI
     {
+        /// A handle typed to the pipeline library. Used by the PipelineStateCache to abstract access.
+        using PipelineLibraryHandle = Handle<uint32_t, class PipelineLibrary>;
+
         struct PipelineLibraryDescriptor
         {
             // A map of DevicePipelineLibraryDescriptor for each device where available.

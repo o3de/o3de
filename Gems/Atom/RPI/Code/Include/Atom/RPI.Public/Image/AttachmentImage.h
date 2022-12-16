@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <Atom/RHI/DeviceImagePool.h>
-
 #include <Atom/RPI.Reflect/Image/Image.h>
 
 

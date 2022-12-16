@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <Atom/RHI/DeviceBufferPool.h>
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Format.h>
+#include <Atom/RHI/BufferPool.h>
 
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/Instance/InstanceId.h>
@@ -71,7 +71,7 @@ namespace AZ
             }
 
             //! Get default buffer pool provided by RPI
-            virtual RHI::Ptr<RHI::DeviceBufferPool> GetCommonBufferPool(CommonBufferPoolType poolType) = 0;
+            virtual RHI::Ptr<RHI::BufferPool> GetCommonBufferPool(CommonBufferPoolType poolType) = 0;
 
             //! Create buffer from common buffer pool
             virtual Data::Instance<Buffer> CreateBufferFromCommonPool(const CommonBufferDescriptor& descriptor) = 0;

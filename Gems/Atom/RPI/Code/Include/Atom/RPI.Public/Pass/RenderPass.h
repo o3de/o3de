@@ -63,8 +63,7 @@ namespace AZ
             ViewPtr GetView() const;
 
             // Add a srg to srg list to be bound for this pass
-            void BindSrg(const RHI::DeviceShaderResourceGroup* srg);
-            
+            void BindSrg(const RHI::ShaderResourceGroup* srg);
 
         protected:
             explicit RenderPass(const PassDescriptor& descriptor);

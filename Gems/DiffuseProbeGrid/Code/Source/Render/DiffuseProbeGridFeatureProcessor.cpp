@@ -6,21 +6,21 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/View.h>
-#include <Atom/RPI.Public/Pass/PassFilter.h>
-#include <Render/DiffuseProbeGridFeatureProcessor.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
-#include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/DevicePipelineState.h>
-#include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
+#include <Render/DiffuseProbeGridFeatureProcessor.h>
 
 // This component invokes shaders based on Nvidia's RTX-GI SDK.
 // Please refer to "Shaders/DiffuseGlobalIllumination/Nvidia RTX-GI License.txt" for license information.
@@ -57,9 +57,9 @@ namespace AZ
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             desc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
 
-            m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_bufferPool = aznew RHI::BufferPool();
             m_bufferPool->SetName(Name("DiffuseProbeGridBoxBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(*device, desc);
+            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(RHI::AllDevices, desc);
             AZ_Error("DiffuseProbeGridFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices
@@ -70,8 +70,8 @@ namespace AZ
                 RHI::ImagePoolDescriptor imagePoolDesc;
                 imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead;
 
-                m_probeGridRenderData.m_imagePool = RHI::Factory::Get().CreateImagePool();
-                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(*device, imagePoolDesc);
+                m_probeGridRenderData.m_imagePool = aznew RHI::ImagePool();
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(RHI::AllDevices, imagePoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output image pool");
             }
 
@@ -80,8 +80,8 @@ namespace AZ
                 RHI::BufferPoolDescriptor bufferPoolDesc;
                 bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
 
-                m_probeGridRenderData.m_bufferPool = RHI::Factory::Get().CreateBufferPool();
-                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(*device, bufferPoolDesc);
+                m_probeGridRenderData.m_bufferPool = aznew RHI::BufferPool();
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(RHI::AllDevices, bufferPoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output buffer pool");
             }
 
@@ -116,8 +116,8 @@ namespace AZ
             if (device->GetFeatures().m_rayTracing)
             {
                 // initialize the buffer pools for the DiffuseProbeGrid visualization
-                m_visualizationBufferPools = RHI::DeviceRayTracingBufferPools::CreateRHIRayTracingBufferPools();
-                m_visualizationBufferPools->Init(device);
+                m_visualizationBufferPools = RHI::RayTracingBufferPools::Create();
+                m_visualizationBufferPools->Init(RHI::AllDevices);
 
                 // load probe visualization model, the BLAS will be created in OnAssetReady()
                 m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
@@ -681,8 +681,8 @@ namespace AZ
             m_boxStreamLayout = layoutBuilder.End();
 
             // create index buffer
-            AZ::RHI::DeviceBufferInitRequest request;
-            m_boxIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            AZ::RHI::BufferInitRequest request;
+            m_boxIndexBuffer = aznew AZ::RHI::Buffer();
             request.m_buffer = m_boxIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxIndices.size() * sizeof(uint16_t) };
             request.m_initialData = m_boxIndices.data();
@@ -690,8 +690,7 @@ namespace AZ
             AZ_Error("DiffuseProbeGridFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create index buffer view
-            AZ::RHI::DeviceIndexBufferView indexBufferView =
-            {
+            AZ::RHI::IndexBufferView indexBufferView = {
                 *m_boxIndexBuffer,
                 0,
                 sizeof(indices),
@@ -701,7 +700,7 @@ namespace AZ
             m_probeGridRenderData.m_boxIndexCount = numIndices;
 
             // create position buffer
-            m_boxPositionBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            m_boxPositionBuffer = aznew AZ::RHI::Buffer();
             request.m_buffer = m_boxPositionBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxPositions.size() * sizeof(Position) };
             request.m_initialData = m_boxPositions.data();
@@ -709,8 +708,7 @@ namespace AZ
             AZ_Error("DiffuseProbeGridFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create position buffer view
-            RHI::DeviceStreamBufferView positionBufferView =
-            {
+            RHI::StreamBufferView positionBufferView = {
                 *m_boxPositionBuffer,
                 0,
                 (uint32_t)(m_boxPositions.size() * sizeof(Position)),
@@ -718,7 +716,8 @@ namespace AZ
             };
             m_probeGridRenderData.m_boxPositionBufferView = { { positionBufferView } };
 
-            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_probeGridRenderData.m_boxPositionBufferView);
+            AZ::RHI::ValidateStreamBufferViews(
+                m_boxStreamLayout, static_cast<AZStd::span<const RHI::StreamBufferView>>(m_probeGridRenderData.m_boxPositionBufferView));
         }
 
         void DiffuseProbeGridFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
@@ -900,7 +899,7 @@ namespace AZ
             m_visualizationIB = mesh.m_indexBufferView;
 
             // create the BLAS object
-            RHI::DeviceRayTracingBlasDescriptor blasDescriptor;
+            RHI::RayTracingBlasDescriptor blasDescriptor;
             blasDescriptor.Build()
                 ->Geometry()
                 ->VertexFormat(PositionStreamFormat)
@@ -909,10 +908,10 @@ namespace AZ
             ;
 
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            m_visualizationBlas = AZ::RHI::DeviceRayTracingBlas::CreateRHIRayTracingBlas();
+            m_visualizationBlas = AZ::RHI::RayTracingBlas::Create();
             if (device->GetFeatures().m_rayTracing)
             {
-                m_visualizationBlas->CreateBuffers(*device, &blasDescriptor, *m_visualizationBufferPools);
+                m_visualizationBlas->CreateBuffers(RHI::AllDevices, &blasDescriptor, *m_visualizationBufferPools);
             }
         }
 

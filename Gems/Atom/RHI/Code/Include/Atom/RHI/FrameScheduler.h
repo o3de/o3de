@@ -10,13 +10,13 @@
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RHI/DeviceRayTracingShaderTable.h>
-#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI/ScopeProducerEmpty.h>
+#include <Atom/RHI/TransientAttachmentPool.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
@@ -26,14 +26,14 @@ namespace AZ
 
     namespace RHI
     {
-        class DeviceShaderResourceGroupPool;
+        class ShaderResourceGroupPool;
         class FrameGraphExecuteGroup;
 
         //! @brief Fill this descriptor when initializing a FrameScheduler instance.
         struct FrameSchedulerDescriptor
         {
             // The descriptor used to initialize the transient attachment pool.
-            DeviceTransientAttachmentPoolDescriptor m_transientAttachmentPoolDescriptor;
+            TransientAttachmentPoolDescriptor m_transientAttachmentPoolDescriptor;
 
             // Platform specific limits
             ConstPtr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
@@ -124,8 +124,7 @@ namespace AZ
         //! if the ResourceEventBus is replaced with a non-singleton queue data structure. Currently, it
         //! is only possible to flush this queue globally, which is incompatible with multiple frame schedulers.
         //! See [LY-83241] for more information.
-        class FrameScheduler final
-            : public FrameGraphBuilder
+        class FrameScheduler final : public FrameGraphBuilder
         {
         public:
             AZ_CLASS_ALLOCATOR(FrameScheduler, AZ::SystemAllocator, 0);
@@ -137,7 +136,7 @@ namespace AZ
             bool IsInitialized() const;
 
             /// Initializes the frame scheduler and connects it to the buses.
-            ResultCode Init(Device& device, const FrameSchedulerDescriptor& descriptor);
+            ResultCode Init(DeviceMask deviceMask, const FrameSchedulerDescriptor& descriptor);
 
             /// Shuts down the frame scheduler.
             void Shutdown();
@@ -177,8 +176,8 @@ namespace AZ
             //! Returns the implicit root scope id.
             ScopeId GetRootScopeId() const;
 
-            //! Returns the descriptor which has information on the properties of a DeviceTransientAttachmentPool.
-            const DeviceTransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const;
+            //! Returns the descriptor which has information on the properties of a TransientAttachmentPool.
+            const TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const;
 
             //! Adds a RayTracingShaderTable to be built this frame
             void QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable);
@@ -187,7 +186,7 @@ namespace AZ
             const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor();
 
         private:
-            const ScopeId m_rootScopeId{"Root"};
+            const ScopeId m_rootScopeId{ "Root" };
 
             bool ValidateIsInitialized() const;
             bool ValidateIsProcessing() const;
@@ -210,7 +209,7 @@ namespace AZ
 
             bool m_isProcessing = false;
 
-            Device* m_device = nullptr;
+            DeviceMask m_deviceMask = 0;
 
             AZStd::unique_ptr<FrameGraph> m_frameGraph;
             FrameGraphAttachmentDatabase* m_frameGraphAttachmentDatabase = nullptr;
@@ -218,7 +217,7 @@ namespace AZ
             Ptr<FrameGraphCompiler> m_frameGraphCompiler;
             Ptr<FrameGraphExecuter> m_frameGraphExecuter;
 
-            Ptr<DeviceTransientAttachmentPool> m_transientAttachmentPool;
+            Ptr<TransientAttachmentPool> m_transientAttachmentPool;
 
             AZStd::sys_time_t m_lastFrameEndTime{};
             MemoryStatistics m_memoryStatistics;
@@ -235,5 +234,5 @@ namespace AZ
 
             AZ::TaskGraphActiveInterface* m_taskGraphActive = nullptr;
         };
-    }
-}
+    } // namespace RHI
+} // namespace AZ

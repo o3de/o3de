@@ -10,7 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DeviceDrawItem.h>
+#include <Atom/RHI/DrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -57,7 +57,7 @@ namespace AZ
             Data::Instance<Shader> m_shader;
 
             // The draw item submitted by this pass
-            RHI::DeviceDrawItem m_item;
+            RHI::DrawItem m_item;
 
             // The stencil reference value for the draw item
             uint32_t m_stencilRef;

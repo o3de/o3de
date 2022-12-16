@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI/CommandList.h>
 #include <Atom/RPI.Public/GpuQuery/TimestampQueryPool.h>
 
 namespace AZ
@@ -24,20 +25,21 @@ namespace AZ
             return AZStd::unique_ptr<QueryPool>(aznew TimestampQueryPool(queryCount, RhiQueriesPerTimestampResult, RHI::QueryType::Timestamp, RHI::PipelineStatisticsFlags::None));
         }
 
-        RHI::ResultCode TimestampQueryPool::BeginQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
+        RHI::ResultCode TimestampQueryPool::BeginQueryInternal(
+            int deviceIndex, RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
         {
-            AZStd::span<const RHI::Ptr<RHI::DeviceQuery>> rhiQueryArray = GetRhiQueryArray();
-            AZ::RHI::Ptr<AZ::RHI::DeviceQuery> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
+            AZStd::span<const RHI::Ptr<RHI::Query>> rhiQueryArray = GetRhiQueryArray();
+            AZ::RHI::Ptr<AZ::RHI::Query> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
 
-            return beginQuery->WriteTimestamp(commandList);
+            return beginQuery->GetDeviceQuery(deviceIndex)->WriteTimestamp(commandList);
         }
 
-        RHI::ResultCode TimestampQueryPool::EndQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
+        RHI::ResultCode TimestampQueryPool::EndQueryInternal(int deviceIndex, RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
         {
-            AZStd::span<const RHI::Ptr<RHI::DeviceQuery>> rhiQueryArray = GetRhiQueryArray();
-            AZ::RHI::Ptr<AZ::RHI::DeviceQuery> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
+            AZStd::span<const RHI::Ptr<RHI::Query>> rhiQueryArray = GetRhiQueryArray();
+            AZ::RHI::Ptr<AZ::RHI::Query> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
 
-            return endQuery->WriteTimestamp(commandList);
+            return endQuery->GetDeviceQuery(deviceIndex)->WriteTimestamp(commandList);
         }
     };  // Namespace RPI
 };  // Namespace AZ

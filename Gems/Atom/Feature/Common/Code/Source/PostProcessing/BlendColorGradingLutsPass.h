@@ -10,14 +10,14 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DeviceDrawItem.h>
+#include <Atom/RHI/DrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
+#include <Atom/RHI/ImagePool.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <Atom/RHI/DeviceImagePool.h>
 
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 
@@ -123,7 +123,7 @@ namespace AZ
             struct ShaderVariantInfo
             {
                 const bool m_isFullyBaked = false;
-                const RHI::DevicePipelineState* m_pipelineState = nullptr;
+                const RHI::PipelineState* m_pipelineState = nullptr;
             };
 
             AZStd::vector<ShaderVariantInfo> m_shaderVariant;

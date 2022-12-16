@@ -59,7 +59,7 @@ namespace AZ
         }
 
         RHI::BufferViewDescriptor SkinnedMeshInputLod::CreateInputViewDescriptor(
-            SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::DeviceStreamBufferView& streamBufferView)
+            SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::StreamBufferView& streamBufferView)
         {
             RHI::BufferViewDescriptor descriptor;
             uint32_t elementOffset = streamBufferView.GetByteOffset() / streamBufferView.GetByteStride();
@@ -67,7 +67,7 @@ namespace AZ
 
             if (inputStream == SkinnedMeshInputVertexStreams::BlendIndices)
             {
-                // Create a descriptor for a raw view from the DeviceStreamBufferView
+                // Create a descriptor for a raw view from the StreamBufferView
                 descriptor = RHI::BufferViewDescriptor::CreateRaw(streamBufferView.GetByteOffset(), streamBufferView.GetByteCount());
             }
             else if (elementFormat == RHI::Format::R32G32B32_FLOAT)
@@ -79,7 +79,7 @@ namespace AZ
             }
             else
             {
-                // Create a descriptor for a typed buffer view from the DeviceStreamBufferView
+                // Create a descriptor for a typed buffer view from the StreamBufferView
                 descriptor =
                     RHI::BufferViewDescriptor::CreateTyped(elementOffset, elementCount, elementFormat);
             }
@@ -107,13 +107,13 @@ namespace AZ
                 const SkinnedMeshVertexStreamInfo* streamInfo = SkinnedMeshVertexStreamPropertyInterface::Get()->GetInputStreamInfo(
                     inputLayout.GetStreamChannels()[meshStreamIndex].m_semantic);
 
-                const RHI::DeviceStreamBufferView& streamBufferView = streamBufferViews[meshStreamIndex];
+                const RHI::StreamBufferView& streamBufferView = streamBufferViews[meshStreamIndex];
                 if (streamInfo && streamBufferView.GetByteCount() > 0)
                 {
                     RHI::BufferViewDescriptor descriptor =
                         CreateInputViewDescriptor(streamInfo->m_enum, streamInfo->m_elementFormat, streamBufferView);
 
-                    AZ::RHI::Ptr<AZ::RHI::DeviceBufferView> bufferView = RHI::Factory::Get().CreateBufferView();
+                    AZ::RHI::Ptr<AZ::RHI::BufferView> bufferView = aznew RHI::BufferView();
                     {
                         // Initialize the buffer view
                         AZStd::string bufferViewName = AZStd::string::format(

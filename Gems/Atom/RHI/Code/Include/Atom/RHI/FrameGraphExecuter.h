@@ -8,10 +8,10 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
-#include <Atom/RHI/DeviceObject.h>
-#include <Atom/RHI/FrameGraphExecuteGroup.h>
-#include <AzCore/Memory/PoolAllocator.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/FrameGraphExecuteGroup.h>
+#include <Atom/RHI/MultiDeviceObject.h>
+#include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ
 {
@@ -22,7 +22,7 @@ namespace AZ
         //! Fill this descriptor when initializing a FrameScheduler instance.
         struct FrameGraphExecuterDescriptor
         {
-            Device* m_device = nullptr;
+            DeviceMask m_deviceMask = 0;
             ConstPtr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
         };
 
@@ -57,8 +57,7 @@ namespace AZ
         //! To implement this class, assign the job policy specific to your platform, and every Begin call, use the provided
         //! AddGroup method to partition the FrameGraph into execution groups. Each group and context will have platform
         //! specific overrides.
-        class FrameGraphExecuter
-            : public DeviceObject
+        class FrameGraphExecuter : public MultiDeviceObject
         {
         public:
             virtual ~FrameGraphExecuter() = default;

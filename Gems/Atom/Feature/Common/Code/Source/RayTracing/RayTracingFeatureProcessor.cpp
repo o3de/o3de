@@ -49,15 +49,15 @@ namespace AZ
             m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessor>();
 
             // initialize the ray tracing buffer pools
-            m_bufferPools = RHI::DeviceRayTracingBufferPools::CreateRHIRayTracingBufferPools();
-            m_bufferPools->Init(device);
+            m_bufferPools = RHI::RayTracingBufferPools::Create();
+            m_bufferPools->Init(RHI::AllDevices);
 
             // create TLAS attachmentId
             AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
             m_tlasAttachmentId = RHI::AttachmentId(AZStd::string::format("RayTracingTlasAttachmentId_%s", uuidString.c_str()));
 
             // create the TLAS object
-            m_tlas = AZ::RHI::DeviceRayTracingTlas::CreateRHIRayTracingTlas();
+            m_tlas = AZ::RHI::RayTracingTlas::Create();
 
             // load the RayTracingSrg asset asset
             m_rayTracingSrgAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>("shaderlib/atom/features/rayTracing/raytracingsrgs.azshader");
@@ -83,8 +83,6 @@ namespace AZ
             {
                 return;
             }
-
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
 
             // lock the mutex to protect the mesh and BLAS lists
             AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
@@ -146,7 +144,7 @@ namespace AZ
             {
                 SubMesh& subMesh = m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]];
 
-                RHI::DeviceRayTracingBlasDescriptor blasDescriptor;
+                RHI::RayTracingBlasDescriptor blasDescriptor;
                 blasDescriptor.Build()
                     ->Geometry()
                         ->VertexFormat(subMesh.m_positionFormat)
@@ -168,11 +166,11 @@ namespace AZ
                     AZ_Assert(blasInstanceFound == false, "Partial set of RayTracingBlas objects found for mesh");
 
                     // create the BLAS object and store it in the BLAS list
-                    RHI::Ptr<RHI::DeviceRayTracingBlas> rayTracingBlas = AZ::RHI::DeviceRayTracingBlas::CreateRHIRayTracingBlas();
+                    RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = AZ::RHI::RayTracingBlas::Create();
                     itMeshBlasInstance->second.m_subMeshes.push_back({ rayTracingBlas });
 
                     // create the buffers from the BLAS descriptor
-                    rayTracingBlas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
+                    rayTracingBlas->CreateBuffers(RHI::AllDevices, &blasDescriptor, *m_bufferPools);
 
                     // store the BLAS in the mesh
                     subMesh.m_blas = rayTracingBlas;
@@ -188,6 +186,8 @@ namespace AZ
             AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
             rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
             Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
+            Matrix3x4 world3x4 = Matrix3x4::CreateFromTransform(mesh.m_transform);
+            world3x4.MultiplyByScale(mesh.m_nonUniformScale);
 
             // store the mesh buffers and material textures in the resource lists
             for (uint32_t subMeshIndex : mesh.m_subMeshIndices)
@@ -198,6 +198,7 @@ namespace AZ
 
                 subMesh.m_irradianceColor.StoreToFloat4(meshInfo.m_irradianceColor.data());
                 worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
+                world3x4.StoreToRowMajorFloat12(meshInfo.m_worldTransform.data());
                 meshInfo.m_bufferFlags = subMesh.m_bufferFlags;
 
                 // add mesh buffers
@@ -359,12 +360,15 @@ namespace AZ
                 AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
                 rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
                 Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
+                Matrix3x4 world3x4 = Matrix3x4::CreateFromTransform(mesh.m_transform);
+                world3x4.MultiplyByScale(mesh.m_nonUniformScale);
 
                 // update all MeshInfos for this Mesh with the new transform
                 for (const auto& subMeshIndex : mesh.m_subMeshIndices)
                 {
                     MeshInfo& meshInfo = m_meshInfos[subMeshIndex];
                     worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
+                    world3x4.StoreToRowMajorFloat12(meshInfo.m_worldTransform.data());
                 }
             }
 

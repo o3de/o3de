@@ -5,10 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/DeviceBufferPoolBase.h>
-#include <Atom/RHI/DeviceImagePoolBase.h>
-#include <Atom/RHI/ResourcePoolDatabase.h>
 #include <Atom/RHI/Scope.h>
+
+#include <Atom/RHI/ImagePoolBase.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/ResourcePoolDatabase.h>
 
 namespace AZ
 {
@@ -22,6 +23,16 @@ namespace AZ
         bool Scope::IsActive() const
         {
             return m_isActive;
+        }
+
+        int Scope::GetDeviceIndex() const
+        {
+            return m_deviceIndex;
+        }
+
+        Device& Scope::GetDevice() const
+        {
+            return *RHI::RHISystemInterface::Get()->GetDevice(m_deviceIndex);
         }
 
         void Scope::Init(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass)
@@ -45,10 +56,13 @@ namespace AZ
             m_isActive = true;
         }
 
-        void Scope::Compile(Device& device)
+        void Scope::Compile(int deviceIndex)
         {
             AZ_Assert(m_isActive, "Scope being compiled but is not active");
-            CompileInternal(device);
+
+            m_deviceIndex = deviceIndex;
+
+            CompileInternal();
         }
 
         void Scope::Deactivate()
@@ -99,14 +113,17 @@ namespace AZ
             resourcePoolDatabase.ForEachPoolResolver<decltype(queuePoolResolverFunction)>(queuePoolResolverFunction);
         }
 
-        void Scope::AddQueryPoolUse(Ptr<DeviceQueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access)
+        void Scope::AddQueryPoolUse(
+            Ptr<QueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access)
         {
             m_queryPools.push_back(queryPool);
         }
 
         void Scope::InitInternal() {}
         void Scope::ActivateInternal() {}
-        void Scope::CompileInternal([[maybe_unused]] Device& device) {}
+        void Scope::CompileInternal()
+        {
+        }
         void Scope::DeactivateInternal() {}
         void Scope::ShutdownInternal() {}
 
@@ -175,7 +192,7 @@ namespace AZ
             return m_resourcePoolResolves;
         }
 
-        const AZStd::vector<DeviceSwapChain*>& Scope::GetSwapChainsToPresent() const
+        const AZStd::vector<SwapChain*>& Scope::GetSwapChainsToPresent() const
         {
             return m_swapChainsToPresent;
         }

@@ -216,4 +216,4 @@ namespace AZ
             return RHI::Ptr<ObjectType>(objectRawPtr);
         }
     }
-}
+} // namespace AZ

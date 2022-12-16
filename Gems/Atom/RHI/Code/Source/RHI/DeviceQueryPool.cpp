@@ -6,8 +6,9 @@
  *
  */
 
-#include <Atom/RHI/DeviceQueryPool.h>
 #include <Atom/RHI/DeviceQuery.h>
+#include <Atom/RHI/DeviceQueryPool.h>
+#include <Atom/RHI/Factory.h>
 
 #include <AzCore/std/parallel/lock.h>
 

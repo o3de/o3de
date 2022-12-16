@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <Atom/RHI/DeviceBufferPoolBase.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
-#include <Atom/RHI/DeviceSwapChain.h>
+#include <Atom/RHI/QueryPool.h>
+#include <Atom/RHI/SwapChain.h>
 
 #include <Atom/RHI.Reflect/BufferScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
@@ -24,8 +24,6 @@ namespace AZ
 {
     namespace RHI
     {
-        class DeviceResourcePool;
-        class DeviceQueryPool;
         class DeviceFence;
         struct Interval;
 
@@ -184,10 +182,7 @@ namespace AZ
             //! @param type The type of query pool attachment.
             //! @param access How the attachment is accessed by the scope.
             ResultCode UseQueryPool(
-                Ptr<DeviceQueryPool> queryPool,
-                const RHI::Interval& interval,
-                QueryPoolScopeAttachmentType type,
-                ScopeAttachmentAccess access)
+                Ptr<QueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access)
             {
                 return m_frameGraph.UseQueryPool(queryPool, interval, type, access);
             }
@@ -233,5 +228,5 @@ namespace AZ
             //! Reference to the underlying FrameGraph. All function calls are forwarded to this member
             FrameGraph& m_frameGraph;
         };
-    }
+    } // namespace RHI
 }

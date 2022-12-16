@@ -45,8 +45,7 @@ namespace AZ
              * pointer around at all times, and then only initialize the buffer view once.
              */
 
-            auto& factory = RHI::Factory::Get();
-            m_rhiBuffer = factory.CreateBuffer();
+            m_rhiBuffer = aznew RHI::Buffer();
             AZ_Assert(m_rhiBuffer, "Failed to acquire an buffer instance from the RHI. Is the RHI initialized?");
         }
 
@@ -55,17 +54,17 @@ namespace AZ
             WaitForUpload();
         }
 
-        RHI::DeviceBuffer* Buffer::GetRHIBuffer()
+        RHI::Buffer* Buffer::GetRHIBuffer()
         {
             return m_rhiBuffer.get();
         }
 
-        const RHI::DeviceBuffer* Buffer::GetRHIBuffer() const
+        const RHI::Buffer* Buffer::GetRHIBuffer() const
         {
             return m_rhiBuffer.get();
         }
 
-        const RHI::DeviceBufferView* Buffer::GetBufferView() const
+        const RHI::BufferView* Buffer::GetBufferView() const
         {
             if (m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::InputAssembly ||
                 m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::DynamicInputAssembly)
@@ -128,7 +127,7 @@ namespace AZ
 
             bool initWithData = (bufferAsset.GetBuffer().size() > 0 && bufferAsset.GetBuffer().size() <= MinStreamSize);
 
-            RHI::DeviceBufferInitRequest request;
+            RHI::BufferInitRequest request;
             request.m_buffer = m_rhiBuffer.get();
             request.m_descriptor = bufferAsset.GetBufferDescriptor();
             request.m_initialData = initWithData ? bufferAsset.GetBuffer().data() : nullptr;
@@ -142,15 +141,15 @@ namespace AZ
                 if (bufferAsset.GetBuffer().size() > 0 && !initWithData)
                 {
                     AZ_PROFILE_SCOPE(RPI, "Stream Upload");
-                    m_streamFence = RHI::Factory::Get().CreateFence();
+                    m_streamFence = aznew RHI::Fence();
                     if (m_streamFence)
                     {
-                        m_streamFence->Init(m_rhiBufferPool->GetDevice(), RHI::FenceState::Reset);
+                        m_streamFence->Init(m_rhiBufferPool->GetDeviceMask(), RHI::FenceState::Reset);
                     }
 
                     RHI::BufferDescriptor bufferDescriptor = bufferAsset.GetBufferDescriptor();
 
-                    RHI::DeviceBufferStreamRequest request2;
+                    RHI::BufferStreamRequest request2;
                     request2.m_buffer = m_rhiBuffer.get();
                     request2.m_fenceToSignal = m_streamFence.get();
                     request2.m_byteCount = bufferDescriptor.m_byteCount;
@@ -183,12 +182,12 @@ namespace AZ
         
         void Buffer::Resize(uint64_t bufferSize)
         {
-            RHI::BufferDescriptor desc = m_rhiBuffer->GetDescriptor();            
-            m_rhiBuffer = RHI::Factory::Get().CreateBuffer();
+            RHI::BufferDescriptor desc = m_rhiBuffer->GetDescriptor();
+            m_rhiBuffer = aznew RHI::Buffer();
             AZ_Assert(m_rhiBuffer, "Failed to acquire an buffer instance from the RHI. Is the RHI initialized?");
             
             desc.m_byteCount = bufferSize;
-            RHI::DeviceBufferInitRequest request;
+            RHI::BufferInitRequest request;
             request.m_buffer = m_rhiBuffer.get();
             request.m_descriptor = desc;
 
@@ -229,17 +228,17 @@ namespace AZ
                 return nullptr;
             }
 
-            RHI::DeviceBufferMapRequest request;
+            RHI::BufferMapRequest request;
             request.m_buffer = m_rhiBuffer.get();
             request.m_byteCount = byteCount;
             request.m_byteOffset = byteOffset;
 
-            RHI::DeviceBufferMapResponse response;
+            RHI::BufferMapResponse response;
             RHI::ResultCode result = m_rhiBufferPool->MapBuffer(request, response);
 
             if (result == RHI::ResultCode::Success)
             {
-                return response.m_data;
+                return response.m_data[0];
             }
             else
             {

@@ -419,11 +419,21 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator, 0);
 
         private:
-            void InitInternal() override {}
-            void ActivateInternal() override {}
-            void CompileInternal([[maybe_unused]] AZ::RHI::Device& device) override {}
-            void DeactivateInternal() override {}
-            void ShutdownInternal() override {}
+            void InitInternal() override
+            {
+            }
+            void ActivateInternal() override
+            {
+            }
+            void CompileInternal() override
+            {
+            }
+            void DeactivateInternal() override
+            {
+            }
+            void ShutdownInternal() override
+            {
+            }
         };
 
         class FrameGraphCompiler
@@ -433,9 +443,17 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator, 0);
 
         private:
-            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&) override { return AZ::RHI::ResultCode::Success; }
-            AZ::RHI::MessageOutcome CompileInternal(const AZ::RHI::FrameGraphCompileRequest&) override { return AZ::Success(); }
-            void ShutdownInternal() override {}
+            AZ::RHI::ResultCode InitInternal(AZ::RHI::DeviceMask) override
+            {
+                return AZ::RHI::ResultCode::Success;
+            }
+            AZ::RHI::MessageOutcome CompileInternal(const AZ::RHI::FrameGraphCompileRequest&) override
+            {
+                return AZ::Success();
+            }
+            void ShutdownInternal() override
+            {
+            }
         };
 
         class FrameGraphExecuter : public AZ::RHI::FrameGraphExecuter

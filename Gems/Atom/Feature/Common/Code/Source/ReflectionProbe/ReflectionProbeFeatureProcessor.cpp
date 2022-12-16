@@ -8,17 +8,16 @@
 
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
+#include <Atom/Feature/RenderCommon.h>
+#include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
+#include <Atom/RHI/DevicePipelineState.h>
+#include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
-#include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/DevicePipelineState.h>
-#include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
-#include <Atom/Feature/RenderCommon.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
@@ -36,17 +35,15 @@ namespace AZ
 
         void ReflectionProbeFeatureProcessor::Activate()
         {
-            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-
             m_reflectionProbes.reserve(InitialProbeAllocationSize);
 
             RHI::BufferPoolDescriptor desc;
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             desc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
 
-            m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_bufferPool = aznew RHI::BufferPool();
             m_bufferPool->SetName(Name("ReflectionProbeBoxBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(*rhiSystem->GetDevice(), desc);
+            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(RHI::AllDevices, desc);
             AZ_Error("ReflectionProbeFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices
@@ -608,8 +605,8 @@ namespace AZ
             m_boxStreamLayout = layoutBuilder.End();
 
             // create index buffer
-            AZ::RHI::DeviceBufferInitRequest request;
-            m_boxIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            AZ::RHI::BufferInitRequest request;
+            m_boxIndexBuffer = aznew AZ::RHI::Buffer();
             request.m_buffer = m_boxIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxIndices.size() * sizeof(uint16_t) };
             request.m_initialData = m_boxIndices.data();
@@ -617,8 +614,7 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create index buffer view
-            AZ::RHI::DeviceIndexBufferView indexBufferView =
-            {
+            AZ::RHI::IndexBufferView indexBufferView = {
                 *m_boxIndexBuffer,
                 0,
                 sizeof(indices),
@@ -628,7 +624,7 @@ namespace AZ
             m_reflectionRenderData.m_boxIndexCount = numIndices;
 
             // create position buffer
-            m_boxPositionBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            m_boxPositionBuffer = aznew AZ::RHI::Buffer();
             request.m_buffer = m_boxPositionBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxPositions.size() * sizeof(Position) };
             request.m_initialData = m_boxPositions.data();
@@ -636,8 +632,7 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create position buffer view
-            RHI::DeviceStreamBufferView positionBufferView =
-            {
+            RHI::StreamBufferView positionBufferView = {
                 *m_boxPositionBuffer,
                 0,
                 (uint32_t)(m_boxPositions.size() * sizeof(Position)),
@@ -645,7 +640,7 @@ namespace AZ
             };
             m_reflectionRenderData.m_boxPositionBufferView = { { positionBufferView } };
 
-            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_reflectionRenderData.m_boxPositionBufferView);
+            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, AZStd::span(m_reflectionRenderData.m_boxPositionBufferView));
         }
 
         void ReflectionProbeFeatureProcessor::LoadShader(

@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/SwapChain.h>
 #include <RHI/FrameGraphExecuteGroup.h>
 #include <RHI/SwapChain.h>
 
@@ -40,9 +41,10 @@ namespace AZ
                 auto& swapChainsToPresent = m_workRequest.m_swapChainsToPresent;
 
                 swapChainsToPresent.reserve(scope.GetSwapChainsToPresent().size());
-                for (RHI::DeviceSwapChain* swapChain : scope.GetSwapChainsToPresent())
+                for (RHI::SwapChain* swapChain : scope.GetSwapChainsToPresent())
                 {
-                    swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
+                    m_workRequest.m_swapChainsToPresent.emplace_back(
+                        static_cast<SwapChain*>(swapChain->GetDeviceSwapChain(scope.GetDeviceIndex()).get()));
                 }
             }
 
@@ -52,7 +54,7 @@ namespace AZ
             request.m_commandLists = reinterpret_cast<RHI::CommandList* const*>(m_workRequest.m_commandLists.data());
             request.m_commandListCount = commandListCount;
             request.m_jobPolicy = globalJobPolicy;
-            Base::Init(request);
+            Base::Init(device.GetIndex(), request);
         }
 
         void FrameGraphExecuteGroup::BeginContextInternal(

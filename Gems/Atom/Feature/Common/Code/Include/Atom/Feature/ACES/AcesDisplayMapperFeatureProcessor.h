@@ -105,7 +105,7 @@ namespace AZ
             static const int ImagePoolBudget = 1 << 20; // 1 Megabyte
 
             // LUTs that are baked through shaders
-            RHI::Ptr<RHI::DeviceImagePool>                                    m_displayMapperImagePool;
+            RHI::Ptr<RHI::ImagePool> m_displayMapperImagePool;
             AZStd::unordered_map<AZ::Name, DisplayMapperLut>            m_ownedLuts;
             // LUTs loaded from assets
             AZStd::unordered_map<AZStd::string, DisplayMapperAssetLut>  m_assetLuts;

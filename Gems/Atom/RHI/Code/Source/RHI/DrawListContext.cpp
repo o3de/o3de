@@ -60,14 +60,14 @@ namespace AZ
 
                 if (m_drawListMask[drawListTag.GetIndex()])
                 {
-                    DeviceDrawItemProperties drawItem = drawPacket->GetDrawItem(i);
+                    DrawItemProperties drawItem = drawPacket->GetDrawItem(i);
                     drawItem.m_depth = depth;
                     threadListsByTag[drawListTag.GetIndex()].push_back(drawItem);
                 }
             }
         }
 
-        void DrawListContext::AddDrawItem(DrawListTag drawListTag, DeviceDrawItemProperties drawItemProperties)
+        void DrawListContext::AddDrawItem(DrawListTag drawListTag, DrawItemProperties drawItemProperties)
         {
             if (Validation::IsEnabled())
             {

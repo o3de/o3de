@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/RHI/DevicePipelineState.h>
+#include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -50,11 +50,11 @@ namespace AZ
 
             //! Re-create the RHI::PipelineState for the input Scene.
             //! The created RHI::PipelineState will be cached and can be acquired by using GetPipelineState()
-            const RHI::DevicePipelineState* Finalize();
+            const RHI::PipelineState* Finalize();
 
             //! Get cached RHI::PipelineState.
             //! It triggers an assert if the pipeline state is dirty.
-            const RHI::DevicePipelineState* GetRHIPipelineState() const;
+            const RHI::PipelineState* GetRHIPipelineState() const;
 
             //! Return the reference of the RenderStates overlay which will be applied to original m_renderState which are loaded from shader variant
             //! Use this function to modify pipeline states RenderStates. 
@@ -96,7 +96,7 @@ namespace AZ
             RHI::RenderStates m_renderStatesOverlay;
 
             Data::Instance<Shader> m_shader;
-            const RHI::DevicePipelineState* m_pipelineState = nullptr;
+            const RHI::PipelineState* m_pipelineState = nullptr;
 
             ShaderVariantId m_shaderVariantId;
             

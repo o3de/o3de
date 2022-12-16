@@ -28,10 +28,10 @@ namespace AZ
                 resourcePoolAsset);
         }
 
-        Data::Instance<BufferPool> BufferPool::CreateInternal(RHI::Device& device, ResourcePoolAsset& poolAsset)
+        Data::Instance<BufferPool> BufferPool::CreateInternal(RHI::DeviceMask deviceMask, ResourcePoolAsset& poolAsset)
         {
             Data::Instance<BufferPool> bufferPool = aznew BufferPool();
-            RHI::ResultCode resultCode = bufferPool->Init(device, poolAsset);
+            RHI::ResultCode resultCode = bufferPool->Init(deviceMask, poolAsset);
             if (resultCode == RHI::ResultCode::Success)
             {
                 return bufferPool;
@@ -40,9 +40,9 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode BufferPool::Init(RHI::Device& device, ResourcePoolAsset& poolAsset)
+        RHI::ResultCode BufferPool::Init(RHI::DeviceMask deviceMask, ResourcePoolAsset& poolAsset)
         {
-            RHI::Ptr<RHI::DeviceBufferPool> bufferPool = RHI::Factory::Get().CreateBufferPool();
+            RHI::Ptr<RHI::BufferPool> bufferPool = aznew RHI::BufferPool();
             if (!bufferPool)
             {
                 AZ_Error("RPI::BufferPool", false, "Failed to create RHI::BufferPool");
@@ -56,7 +56,7 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            RHI::ResultCode resultCode = bufferPool->Init(device, *desc);
+            RHI::ResultCode resultCode = bufferPool->Init(deviceMask, *desc);
             if (resultCode == RHI::ResultCode::Success)
             {
                 bufferPool->SetName(AZ::Name{ poolAsset.GetPoolName() });
@@ -66,12 +66,12 @@ namespace AZ
             return resultCode;
         }
 
-        const RHI::DeviceBufferPool* BufferPool::GetRHIPool() const
+        const RHI::BufferPool* BufferPool::GetRHIPool() const
         {
             return m_pool.get();
         }
 
-        RHI::DeviceBufferPool* BufferPool::GetRHIPool()
+        RHI::BufferPool* BufferPool::GetRHIPool()
         {
             return m_pool.get();
         }

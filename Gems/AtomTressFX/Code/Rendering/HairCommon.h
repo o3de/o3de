@@ -10,7 +10,7 @@
 
 #include <AtomCore/Instance/InstanceData.h>
 
-#include <Atom/RHI/DeviceImagePool.h>
+#include <Atom/RHI/ImagePool.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
@@ -81,11 +81,9 @@ namespace AZ
                     const char* textureFilePath, [[maybe_unused]] const char* sampleName
                 );
 
-                static Data::Instance<RHI::DeviceImagePool> CreateImagePool(
-                    RHI::ImagePoolDescriptor& imagePoolDesc);
+                static Data::Instance<RHI::ImagePool> CreateImagePool(RHI::ImagePoolDescriptor& imagePoolDesc);
 
-                static Data::Instance<RHI::DeviceImage> CreateImage2D(
-                    RHI::DeviceImagePool* imagePool, RHI::ImageDescriptor& imageDesc);
+                static Data::Instance<RHI::Image> CreateImage2D(RHI::ImagePool* imagePool, RHI::ImageDescriptor& imageDesc);
             };
 
             //! The following class matches between a constant buffer structure in CPU and its counter

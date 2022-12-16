@@ -12,7 +12,7 @@
 
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 
-#include <Atom/RHI/DeviceStreamingImagePool.h>
+#include <Atom/RHI/StreamingImagePool.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 
@@ -47,16 +47,17 @@ namespace AZ
             //! @param streamingImagePoolAsset The asset used to instantiate an instance of the streaming image pool.
             static Data::Instance<StreamingImagePool> FindOrCreate(const Data::Asset<StreamingImagePoolAsset>& streamingImagePoolAsset);
 
-            RHI::DeviceStreamingImagePool* GetRHIPool();
+            RHI::StreamingImagePool* GetRHIPool();
 
-            const RHI::DeviceStreamingImagePool* GetRHIPool() const;
+            const RHI::StreamingImagePool* GetRHIPool() const;
 
         private:
             StreamingImagePool() = default;
 
             // Standard init path from asset data.
-            static Data::Instance<StreamingImagePool> CreateInternal(RHI::Device& device, StreamingImagePoolAsset& streamingImagePoolAsset);
-            RHI::ResultCode Init(RHI::Device& device, StreamingImagePoolAsset& poolAsset);
+            static Data::Instance<StreamingImagePool> CreateInternal(
+                RHI::DeviceMask deviceMask, StreamingImagePoolAsset& streamingImagePoolAsset);
+            RHI::ResultCode Init(RHI::DeviceMask deviceMask, StreamingImagePoolAsset& poolAsset);
 
             // Updates the streaming controller (ticked by the system component).
             void Update();
@@ -68,7 +69,7 @@ namespace AZ
             ///////////////////////////////////////////////////////////////////
 
             // The RHI streaming image pool instance.
-            RHI::Ptr<RHI::DeviceStreamingImagePool> m_pool;
+            RHI::Ptr<RHI::StreamingImagePool> m_pool;
 
             // The controller used to manage streaming events on the pool.
             Data::Instance<StreamingImageController> m_controller;

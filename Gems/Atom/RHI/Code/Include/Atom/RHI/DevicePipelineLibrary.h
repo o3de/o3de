@@ -16,9 +16,6 @@ namespace AZ
 {
     namespace RHI
     {
-        /// A handle typed to the pipeline library. Used by the PipelineStateCache to abstract access.
-        using PipelineLibraryHandle = Handle<uint32_t, class DevicePipelineLibrary>;
-
         struct DevicePipelineLibraryDescriptor
         {
             //Serialized data with which to init the PipelineLibrary
@@ -27,7 +24,7 @@ namespace AZ
             //to the RHI backend to do load/save operation via the drivers.
             AZStd::string m_filePath;
         };
-
+            
         //! PipelineState initialization is an expensive operation on certain platforms. If multiple pipeline states
         //! are created with little variation between them, the contents are still duplicated. This class is an allocation
         //! context for pipeline states, provided at PipelineState::Init, which will perform de-duplication of
@@ -72,7 +69,7 @@ namespace AZ
             //! this method to extract serialized data prior to application shutdown, save it to disk, and
             //! use it when initializing on subsequent runs.
             ConstPtr<PipelineLibraryData> GetSerializedData() const;
-
+            
             //! Saves the platform-specific data to disk using the filePath provided. This is done through RHI backend drivers.
             bool SaveSerializedData(const AZStd::string& filePath) const;
 
@@ -99,11 +96,11 @@ namespace AZ
 
             /// Called when the library is serializing out platform-specific data.
             virtual ConstPtr<PipelineLibraryData> GetSerializedDataInternal() const = 0;
-
+            
             /// Called when we want the RHI backend to save out the Pipeline Library via the drivers
             virtual bool SaveSerializedDataInternal(const AZStd::string& filePath) const = 0;
 
             //////////////////////////////////////////////////////////////////////////
         };
-    } // namespace RHI
+    }
 }

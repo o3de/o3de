@@ -11,8 +11,8 @@
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
 #include <Atom/RHI/DeviceFence.h>
-#include <Atom/RHI/DeviceQueryPool.h>
-#include <Atom/RHI/DeviceResourcePool.h>
+#include <Atom/RHI/QueryPool.h>
+#include <Atom/RHI/ResourcePool.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 
@@ -20,17 +20,15 @@ namespace AZ
 {
     namespace RHI
     {
-        class DeviceSwapChain;
+        class SwapChain;
         class ScopeAttachment;
         class ImageScopeAttachment;
         class BufferScopeAttachment;
         class ResolveScopeAttachment;
-        class DeviceBufferPoolBase;
-        class DeviceImagePoolBase;
         class ResourcePoolDatabase;
         class FrameGraph;
         class Device;
-        class DeviceQueryPool;
+        class QueryPool;
 
         using GraphGroupId = Handle<uint32_t>;
 
@@ -56,6 +54,10 @@ namespace AZ
 
             /// Returns whether the scope is currently active on a frame.
             bool IsActive() const;
+
+            int GetDeviceIndex() const;
+
+            Device& GetDevice() const;
 
             /// Returns the scope id associated with this scope.
             const ScopeId& GetId() const;
@@ -117,7 +119,7 @@ namespace AZ
             const AZStd::vector<ResourcePoolResolver*>& GetResourcePoolResolves() const;
 
             /// Returns a list of swap chains which require presentation at the end of the scope.
-            const AZStd::vector<DeviceSwapChain*>& GetSwapChainsToPresent() const;
+            const AZStd::vector<SwapChain*>& GetSwapChainsToPresent() const;
 
             /// Returns a list of fences to signal on completion of the scope.
             const AZStd::vector<Ptr<DeviceFence>>& GetFencesToSignal() const;
@@ -128,8 +130,9 @@ namespace AZ
             /// Activates the scope for the current frame.
             void Activate(const FrameGraph* frameGraph, uint32_t index, const GraphGroupId& groupId);
 
+            // TODO: give the deviceIndex to the scope earlier
             /// Called when the scope is being compiled at the end of the graph-building phase.
-            void Compile(Device& device);
+            void Compile(int deviceIndex);
 
             /// Deactivates the scope for the current frame.
             void Deactivate();
@@ -161,7 +164,7 @@ namespace AZ
 
         protected:
             /// Called when the scope will use a query pool during it's execution. Some platforms need this information.
-            virtual void AddQueryPoolUse(Ptr<DeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access);
+            virtual void AddQueryPoolUse(Ptr<QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access);
 
         private:
             //////////////////////////////////////////////////////////////////////////
@@ -174,7 +177,7 @@ namespace AZ
             virtual void ActivateInternal();
 
             /// Called when the scope is being compiled into platform-dependent actions (after graph compilation).
-            virtual void CompileInternal(Device& device);
+            virtual void CompileInternal();
 
             /// Called when the scope is deactivating at the end of the frame (after execution).
             virtual void DeactivateInternal();
@@ -211,6 +214,8 @@ namespace AZ
             /// Tracks whether the scope is active, which happens once per frame.
             bool m_isActive = false;
 
+            int m_deviceIndex = 0;
+
             /// The cross-queue producers / consumers, indexed by hardware queue.
             AZStd::array<Scope*, HardwareQueueClassCount> m_producersByQueueLast = {{nullptr}};
             AZStd::array<Scope*, HardwareQueueClassCount> m_producersByQueue     = {{nullptr}};
@@ -235,13 +240,13 @@ namespace AZ
             AZStd::vector<ResourcePoolResolver*>     m_resourcePoolResolves;
 
             /// The set of swap chain present actions requested.
-            AZStd::vector<DeviceSwapChain*>                m_swapChainsToPresent;
+            AZStd::vector<SwapChain*> m_swapChainsToPresent;
 
             /// The set of fences to signal on scope completion.
             AZStd::vector<Ptr<DeviceFence>>                m_fencesToSignal;
 
             /// The set query pools.
-            AZStd::vector<Ptr<DeviceQueryPool>>                m_queryPools;
+            AZStd::vector<Ptr<QueryPool>> m_queryPools;
         };
     }
 }

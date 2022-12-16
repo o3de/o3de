@@ -88,7 +88,8 @@ namespace AZ
             Shutdown();
         }
 
-        static bool GetPipelineLibraryPath(char* pipelineLibraryPath, size_t pipelineLibraryPathLength, const ShaderAsset& shaderAsset)
+        static bool GetPipelineLibraryPath(
+            RHI::Device& device, char* pipelineLibraryPath, size_t pipelineLibraryPathLength, const ShaderAsset& shaderAsset)
         {
             if (auto* fileIOBase = IO::FileIOBase::GetInstance())
             {
@@ -100,8 +101,7 @@ namespace AZ
                 AZStd::string uuidString;
                 assetId.m_guid.ToString<AZStd::string>(uuidString, false, false);
 
-                RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-                RHI::PhysicalDeviceDescriptor physicalDeviceDesc = rhiSystem->GetDevice()->GetPhysicalDevice().GetDescriptor();
+                RHI::PhysicalDeviceDescriptor physicalDeviceDesc = device.GetPhysicalDevice().GetDescriptor();
 
                 AZStd::string configString;
                 if (RHI::BuildOptions::IsDebugBuild)
@@ -143,8 +143,6 @@ namespace AZ
             m_asset = { &shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad };
             m_pipelineStateType = shaderAsset.GetPipelineStateType();
 
-            GetPipelineLibraryPath(m_pipelineLibraryPath, AZ_MAX_PATH_LEN, *m_asset);
-
             {
                 AZStd::unique_lock<decltype(m_variantCacheMutex)> lock(m_variantCacheMutex);
                 m_shaderVariants.clear();
@@ -160,8 +158,8 @@ namespace AZ
                 // in a new pipeline library every time.
 
                 RHI::PipelineStateCache* pipelineStateCache = rhiSystem->GetPipelineStateCache();
-                ConstPtr<RHI::PipelineLibraryData> serializedData = LoadPipelineLibrary();
-                RHI::PipelineLibraryHandle pipelineLibraryHandle = pipelineStateCache->CreateLibrary(serializedData.get(), m_pipelineLibraryPath);
+                RHI::PipelineLibraryDescriptor pipelineLibraryDescriptor = LoadPipelineLibrary();
+                RHI::PipelineLibraryHandle pipelineLibraryHandle = pipelineStateCache->CreateLibrary(pipelineLibraryDescriptor);
 
                 if (pipelineLibraryHandle.IsNull())
                 {
@@ -334,42 +332,69 @@ namespace AZ
             ShaderReloadNotificationBus::Event(m_asset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderVariantReinitialized, updatedVariant);
         }
         ///////////////////////////////////////////////////////////////////
-        
-        ConstPtr<RHI::PipelineLibraryData> Shader::LoadPipelineLibrary() const
+
+        RHI::PipelineLibraryDescriptor Shader::LoadPipelineLibrary() const
         {
-            RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
-            //Check if explicit file load/save operation is needed as the RHI backend api may not support it
-            if (m_pipelineLibraryPath[0] != 0 && device->GetFeatures().m_isPsoCacheFileOperationsNeeded)
+            RHI::PipelineLibraryDescriptor result;
+
+            auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+
+            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
             {
-                return Utils::LoadObjectFromFile<RHI::PipelineLibraryData>(m_pipelineLibraryPath);
+                RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
+
+                char pipelineLibraryPath[AZ_MAX_PATH_LEN] = { 0 };
+
+                bool pathGood = GetPipelineLibraryPath(*device, pipelineLibraryPath, AZ_MAX_PATH_LEN, *m_asset);
+
+                auto& devicePipelineLibraryDescriptor = result.m_devicePipelineLibraryDescriptors[deviceIndex];
+                devicePipelineLibraryDescriptor.m_filePath = pipelineLibraryPath;
+
+                // Check if explicit file load/save operation is needed as the RHI backend api may not support it
+                if (pathGood && device->GetFeatures().m_isPsoCacheFileOperationsNeeded)
+                {
+                    devicePipelineLibraryDescriptor.m_serializedData =
+                        Utils::LoadObjectFromFile<RHI::PipelineLibraryData>(pipelineLibraryPath);
+                }
             }
-            return nullptr;
+
+            return result;
         }
 
         void Shader::SavePipelineLibrary() const
         {
-            RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (m_pipelineLibraryPath[0] != 0)
+            auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+
+            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
             {
-                RHI::ConstPtr<RHI::DevicePipelineLibrary> pipelineLib = m_pipelineStateCache->GetMergedLibrary(m_pipelineLibraryHandle);
-                if(!pipelineLib)
+                RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
+
+                char pipelineLibraryPath[AZ_MAX_PATH_LEN] = { 0 };
+
+                if (GetPipelineLibraryPath(*device, pipelineLibraryPath, AZ_MAX_PATH_LEN, *m_asset))
                 {
-                    return;
-                }
-                
-                //Check if explicit file load/save operation is needed as the RHI backend api may not support it
-                if (device->GetFeatures().m_isPsoCacheFileOperationsNeeded)
-                {
-                    RHI::ConstPtr<RHI::PipelineLibraryData> serializedData = pipelineLib->GetSerializedData();
-                    if(serializedData)
+                    auto pipelineLibrary{ m_pipelineStateCache->GetMergedLibrary(m_pipelineLibraryHandle) };
+                    if (!pipelineLibrary)
                     {
-                        Utils::SaveObjectToFile<RHI::PipelineLibraryData>(m_pipelineLibraryPath, DataStream::ST_BINARY, serializedData.get());
+                        return;
                     }
-                }
-                else
-                {
-                    [[maybe_unused]] bool result = pipelineLib->SaveSerializedData(m_pipelineLibraryPath);
-                    AZ_Error("Shader", result, "Pipeline Library %s was not saved", &m_pipelineLibraryPath);
+                    RHI::ConstPtr<RHI::DevicePipelineLibrary> pipelineLib = pipelineLibrary->GetDevicePipelineLibrary(deviceIndex);
+
+                    // Check if explicit file load/save operation is needed as the RHI backend api may not support it
+                    if (device->GetFeatures().m_isPsoCacheFileOperationsNeeded)
+                    {
+                        RHI::ConstPtr<RHI::PipelineLibraryData> serializedData = pipelineLib->GetSerializedData();
+                        if (serializedData)
+                        {
+                            Utils::SaveObjectToFile<RHI::PipelineLibraryData>(
+                                pipelineLibraryPath, DataStream::ST_BINARY, serializedData.get());
+                        }
+                    }
+                    else
+                    {
+                        [[maybe_unused]] bool result = pipelineLib->SaveSerializedData(pipelineLibraryPath);
+                        AZ_Error("Shader", result, "Pipeline Library %s was not saved", &pipelineLibraryPath);
+                    }
                 }
             }
         }
@@ -495,7 +520,7 @@ namespace AZ
             return m_asset->GetOutputContract(m_supervariantIndex);
         }
 
-        const RHI::DevicePipelineState* Shader::AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const
+        const RHI::PipelineState* Shader::AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const
         {
             return m_pipelineStateCache->AcquirePipelineState(m_pipelineLibraryHandle, descriptor);
         }

@@ -23,13 +23,13 @@ namespace AZ
         //! Command types that can be used when doing Indirect Rendering.
         enum class IndirectCommandType : uint32_t
         {
-            Draw,               // A Draw operation
-            DrawIndexed,        // An Indexed Draw operation
-            Dispatch,           // A Dispatch operation
-            DispatchRays,       // A Ray Tracing operation
-            VertexBufferView,   // Set a Vertex Buffer View into a specific slot
-            IndexBufferView,    // Set the Index Buffer View
-            RootConstants     // Set the values of all Inline Constants
+            Draw, // A Draw operation
+            DrawIndexed, // An Indexed Draw operation
+            Dispatch, // A Dispatch operation
+            DispatchRays, // A Ray Tracing operation
+            VertexBufferView, // Set a Vertex Buffer View into a specific slot
+            IndexBufferView, // Set the Index Buffer View
+            RootConstants // Set the values of all Inline Constants
         };
 
         //! Indirect Rendering tiers that define which commands are supported by the RHI implementation.
@@ -98,9 +98,10 @@ namespace AZ
         enum class IndirectBufferLayoutType : uint8_t
         {
             Undefined = 0,
-            LinearDraw, // The main command is a draw
-            IndexedDraw,// The main command is an indexed draw
-            Dispach     // The main command is a dispatch
+            LinearDraw,  // The main command is a draw
+            IndexedDraw, // The main command is an indexed draw
+            Dispatch,    // The main command is a dispatch
+            DispatchRays,// The main command is a ray dispatch
         };
 
         /// Index of a command in an IndirectBufferLayout.

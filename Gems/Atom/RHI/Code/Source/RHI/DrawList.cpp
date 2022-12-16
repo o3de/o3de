@@ -31,51 +31,59 @@ namespace AZ
             switch (sortType)
             {
             case DrawListSortType::KeyThenDepth:
-                AZStd::sort(drawList.begin(), drawList.end(), [](const DeviceDrawItemProperties& a, const DeviceDrawItemProperties& b)
+                AZStd::sort(
+                    drawList.begin(),
+                    drawList.end(),
+                    [](const DrawItemProperties& a, const DrawItemProperties& b)
                     {
                         if (a.m_sortKey != b.m_sortKey)
                         {
                             return a.m_sortKey < b.m_sortKey;
                         }
                         return a.m_depth < b.m_depth;
-                    }
-                );
+                    });
                 break;
 
             case DrawListSortType::KeyThenReverseDepth:
-                AZStd::sort(drawList.begin(), drawList.end(), [](const DeviceDrawItemProperties& a, const DeviceDrawItemProperties& b)
+                AZStd::sort(
+                    drawList.begin(),
+                    drawList.end(),
+                    [](const DrawItemProperties& a, const DrawItemProperties& b)
                     {
                         if (a.m_sortKey != b.m_sortKey)
                         {
                             return a.m_sortKey < b.m_sortKey;
                         }
                         return a.m_depth > b.m_depth;
-                    }
-                );
+                    });
                 break;
 
             case DrawListSortType::DepthThenKey:
-                AZStd::sort(drawList.begin(), drawList.end(), [](const DeviceDrawItemProperties& a, const DeviceDrawItemProperties& b)
+                AZStd::sort(
+                    drawList.begin(),
+                    drawList.end(),
+                    [](const DrawItemProperties& a, const DrawItemProperties& b)
                     {
                         if (a.m_depth != b.m_depth)
                         {
                             return a.m_depth < b.m_depth;
                         }
                         return a.m_sortKey < b.m_sortKey;
-                    }
-                );
+                    });
                 break;
 
             case DrawListSortType::ReverseDepthThenKey:
-                AZStd::sort(drawList.begin(), drawList.end(), [](const DeviceDrawItemProperties& a, const DeviceDrawItemProperties& b)
+                AZStd::sort(
+                    drawList.begin(),
+                    drawList.end(),
+                    [](const DrawItemProperties& a, const DrawItemProperties& b)
                     {
                         if (a.m_depth != b.m_depth)
                         {
                             return a.m_depth > b.m_depth;
                         }
                         return a.m_sortKey < b.m_sortKey;
-                    }
-                );
+                    });
                 break;
             }
         }

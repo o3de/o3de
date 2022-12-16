@@ -59,8 +59,8 @@ namespace AZ
             const FenceValueSet& GetWaitFences() const;
 
             // Returns true if the resource within the scopeAttachment is scheduled to be discarded
-            bool IsResourceDiscarded(const RHI::ImageScopeAttachment& scopeAttachment) const;
-            bool IsResourceDiscarded(const RHI::BufferScopeAttachment& scopeAttachment) const;
+            bool IsResourceDiscarded(const AZ::RHI::ImageScopeAttachment& scopeAttachment) const;
+            bool IsResourceDiscarded(const AZ::RHI::BufferScopeAttachment& scopeAttachment) const;
             
         private:
             Scope() = default;
@@ -68,7 +68,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::Scope
             void DeactivateInternal() override;
-            void CompileInternal(RHI::Device& device) override;
+            void CompileInternal() override;
             //////////////////////////////////////////////////////////////////////////
 
             void CompileAttachmentInternal(

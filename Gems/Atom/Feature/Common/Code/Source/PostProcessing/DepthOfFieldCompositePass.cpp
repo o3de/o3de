@@ -145,7 +145,7 @@ namespace AZ
 
             m_item.m_pipelineState = GetPipelineStateFromShaderVariant();
 
-            commandList->Submit(m_item);
+            commandList->Submit(m_item.GetDeviceDrawItem(context.GetDeviceIndex(), nullptr, nullptr, nullptr));
         }
 
         void DepthOfFieldCompositePass::SetEnabledDebugColoring(bool enabled)

@@ -124,7 +124,8 @@ namespace AZ
             // import this attachment if it wasn't imported
             if (!frameGraph.GetAttachmentDatabase().IsAttachmentValid(imageAttachmentId))
             {
-                [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_blendedLut.m_lutImage);
+                [[maybe_unused]] RHI::ResultCode result =
+                    frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_blendedLut.m_lutImage);
                 AZ_Error("BlendColorGradingLutsPass", result == RHI::ResultCode::Success, "Failed to import BlendColorGradingLutImageAttachmentId with error %d", result);
             }
 

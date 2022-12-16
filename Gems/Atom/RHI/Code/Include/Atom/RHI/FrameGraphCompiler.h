@@ -8,10 +8,11 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
+#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/MultiDeviceObject.h>
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI/ObjectCache.h>
-#include <Atom/RHI/DeviceImageView.h>
-#include <Atom/RHI/DeviceBufferView.h>
 
 //! Struct used as a key for m_imageReverseLookupHash map below. The reason for using a struct instead of a hash directly is
 //! so that the map can handle hash collision correctly by using the == operator. This struct contains
@@ -83,7 +84,7 @@ namespace AZ
         class FrameGraph;
         class FrameGraphAttachmentDatabase;
         class ResourcePoolFrameAttachment;
-        class DeviceTransientAttachmentPool;
+        class TransientAttachmentPool;
 
         /**
          * @brief Fill this request structure and pass to FrameGraphCompiler::Compile.
@@ -96,7 +97,7 @@ namespace AZ
             FrameGraph* m_frameGraph = nullptr;
 
             /// The transient attachment pool used for transient attachment allocations. Must be a valid instance.
-            DeviceTransientAttachmentPool* m_transientAttachmentPool = nullptr;
+            TransientAttachmentPool* m_transientAttachmentPool = nullptr;
 
             /// The verbosity requested for compilation. Logs are emitted using the AzCore logging functions.
             FrameSchedulerLogVerbosity m_logVerbosity = FrameSchedulerLogVerbosity::None;
@@ -171,13 +172,12 @@ namespace AZ
          *  1) Derive transition barriers by walking the scope attachment chain on each frame attachment.
          *  2) Derive queue fence values by walking the queue-centric scope graph.
          */
-        class FrameGraphCompiler
-            : public DeviceObject
+        class FrameGraphCompiler : public MultiDeviceObject
         {
         public:
             AZ_RTTI(FrameGraphCompiler, "{A126F362-C163-432E-94DE-61AA4DFDF102}", Object);
 
-            ResultCode Init(Device& device);
+            ResultCode Init(DeviceMask deviceMask);
 
             void Shutdown() override final;
 
@@ -188,6 +188,8 @@ namespace AZ
              */
             MessageOutcome Compile(const FrameGraphCompileRequest& request);
 
+            static constexpr int STATIC_DEVICE_INDEX_FOR_DEBUGGING_PURPOSES{ 0 };
+
         protected:
             FrameGraphCompiler() = default;
 
@@ -196,7 +198,7 @@ namespace AZ
             // Platform API
 
             /// Called when the compiler is initializing.
-            virtual ResultCode InitInternal(Device& device) = 0;
+            virtual ResultCode InitInternal(DeviceMask deviceMask) = 0;
 
             /// Called when the compiler is shutting down.
             virtual void ShutdownInternal() = 0;
@@ -219,7 +221,7 @@ namespace AZ
 
             void CompileTransientAttachments(
                 FrameGraph& frameGraph,
-                DeviceTransientAttachmentPool& transientAttachmentPool,
+                TransientAttachmentPool& transientAttachmentPool,
                 FrameSchedulerCompileFlags compileFlags,
                 FrameSchedulerStatisticsFlags statisticsFlags);
 
@@ -232,14 +234,14 @@ namespace AZ
                                  ObjectCache<ObjectCacheType>& objectCache);
             
             // Returns the resource from local cache if it exists within it or create one if it doesn't and add it to the cache
-            DeviceImageView* GetImageViewFromLocalCache(DeviceImage* image, const ImageViewDescriptor& imageViewDescriptor);
-            DeviceBufferView* GetBufferViewFromLocalCache(DeviceBuffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
-            
+            ImageView* GetImageViewFromLocalCache(Image* image, const ImageViewDescriptor& imageViewDescriptor);
+            BufferView* GetBufferViewFromLocalCache(Buffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
+
             // This cache is mainly for transient resources. It adds a dependency to the resource views and hence they wont be
-            // deleted at the end of the frame and re-created at the start. Mainly used as an optimization.  
-            ObjectCache<DeviceImageView> m_imageViewCache;
-            ObjectCache<DeviceBufferView> m_bufferViewCache;
-            
+            // deleted at the end of the frame and re-created at the start. Mainly used as an optimization.
+            ObjectCache<ImageView> m_imageViewCache;
+            ObjectCache<BufferView> m_bufferViewCache;
+
             // The maps below are used to reverse look up view hashes so we can clear them out of m_imageViewCache/m_bufferViewCache
             // once they have been replaced with a new view instance. 
             AZStd::unordered_map<ImageResourceViewData, HashValue64> m_imageReverseLookupHash;

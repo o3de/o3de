@@ -8,20 +8,20 @@
 
 #include <CoreLights/LightCullingRemap.h>
 
-#include <Atom/RHI/Factory.h>
-#include <Atom/RHI/DevicePipelineState.h>
-#include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/Device.h>
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/FrameGraphAttachmentInterface.h>
+#include <Atom/RHI/FrameGraphInterface.h>
+#include <Atom/RHI/PipelineState.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
-#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
-#include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
-#include <CoreLights/PointLightFeatureProcessor.h>
-#include <CoreLights/DiskLightFeatureProcessor.h>
+#include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <AzCore/Casting/lossy_cast.h>
+#include <CoreLights/DiskLightFeatureProcessor.h>
+#include <CoreLights/PointLightFeatureProcessor.h>
 
 namespace AZ
 {
@@ -81,7 +81,7 @@ namespace AZ
             m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = m_tileDim.m_height;
             m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
 
-            commandList->Submit(m_dispatchItem);
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
 
         void LightCullingRemap::ResetInternal()

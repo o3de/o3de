@@ -535,7 +535,7 @@ namespace AZ
             desc.m_byteCount = 16;
             desc.m_bufferData = instanceData;
             m_instanceBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-            m_instanceBufferView = RHI::DeviceStreamBufferView(*m_instanceBuffer->GetRHIBuffer(), 0, 16, 1);
+            m_instanceBufferView = RHI::StreamBufferView(*m_instanceBuffer->GetRHIBuffer(), 0, 16, 1);
 
             ImGui::NewFrame();
             AzFramework::InputChannelEventListener::Connect();
@@ -670,11 +670,15 @@ namespace AZ
             AZ_PROFILE_SCOPE(AzRender, "ImGuiPass: BuildCommandListInternal");
 
             context.GetCommandList()->SetViewport(m_viewportState);
-            context.GetCommandList()->SetShaderResourceGroupForDraw(*m_resourceGroup->GetRHIShaderResourceGroup());
+            context.GetCommandList()->SetShaderResourceGroupForDraw(
+                *m_resourceGroup->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()));
+
+            RHI::DeviceIndexBufferView deviceIndexBufferView;
+            AZStd::array<RHI::DeviceStreamBufferView, 2> deviceStreamBufferViews;
 
             for (uint32_t i = context.GetSubmitRange().m_startIndex; i < context.GetSubmitRange().m_endIndex; ++i)
             {
-                RHI::DeviceDrawItem drawItem;
+                RHI::DrawItem drawItem;
                 drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
                 drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState();
                 drawItem.m_indexBufferView = &m_indexBufferView;
@@ -683,7 +687,9 @@ namespace AZ
                 drawItem.m_scissorsCount = 1;
                 drawItem.m_scissors = &m_draws.at(i).m_scissor;
 
-                context.GetCommandList()->Submit(drawItem, i);
+                context.GetCommandList()->Submit(
+                    drawItem.GetDeviceDrawItem(context.GetDeviceIndex(), &deviceIndexBufferView, deviceStreamBufferViews.data(), nullptr),
+                    i);
             }
         }
 
@@ -752,7 +758,7 @@ namespace AZ
             m_vertexBufferView[0] = vertexBuffer->GetStreamBufferView(vertexSize);
             m_vertexBufferView[1] = m_instanceBufferView;
 
-            RHI::ValidateStreamBufferViews(m_pipelineState->ConstDescriptor().m_inputStreamLayout, m_vertexBufferView);
+            RHI::ValidateStreamBufferViews(m_pipelineState->ConstDescriptor().m_inputStreamLayout, AZStd::span(m_vertexBufferView));
 
             return drawCount;
         }

@@ -55,7 +55,7 @@ namespace AZ
         void DiffuseProbeGridBorderUpdatePass::LoadShader(
             AZStd::string shaderFilePath,
             Data::Instance<RPI::Shader>& shader,
-            const RHI::DevicePipelineState*& pipelineState,
+            const RHI::PipelineState*& pipelineState,
             RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout,
             RHI::DispatchDirect& dispatchArgs)
         {
@@ -187,12 +187,15 @@ namespace AZ
 
                 // row irradiance
                 {
-                    const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateRowIrradianceSrg()->GetRHIShaderResourceGroup();
+                    const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateRowIrradianceSrg()
+                                                                                    ->GetRHIShaderResourceGroup()
+                                                                                    ->GetDeviceShaderResourceGroup(context.GetDeviceIndex())
+                                                                                    .get();
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DeviceDispatchItem dispatchItem;
                     dispatchItem.m_arguments = m_rowDispatchArgs;
-                    dispatchItem.m_pipelineState = m_rowPipelineState;
+                    dispatchItem.m_pipelineState = m_rowPipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumIrradianceTexels + 2);
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
@@ -202,12 +205,15 @@ namespace AZ
 
                 // column irradiance
                 {
-                    const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateColumnIrradianceSrg()->GetRHIShaderResourceGroup();
+                    const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateColumnIrradianceSrg()
+                                                                                    ->GetRHIShaderResourceGroup()
+                                                                                    ->GetDeviceShaderResourceGroup(context.GetDeviceIndex())
+                                                                                    .get();
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DeviceDispatchItem dispatchItem;
                     dispatchItem.m_arguments = m_columnDispatchArgs;
-                    dispatchItem.m_pipelineState = m_columnPipelineState;
+                    dispatchItem.m_pipelineState = m_columnPipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY * (DiffuseProbeGrid::DefaultNumIrradianceTexels + 2);
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
@@ -217,12 +223,15 @@ namespace AZ
 
                 // row distance
                 {
-                    const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateRowDistanceSrg()->GetRHIShaderResourceGroup();
+                    const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateRowDistanceSrg()
+                                                                                    ->GetRHIShaderResourceGroup()
+                                                                                    ->GetDeviceShaderResourceGroup(context.GetDeviceIndex())
+                                                                                    .get();
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DeviceDispatchItem dispatchItem;
                     dispatchItem.m_arguments = m_rowDispatchArgs;
-                    dispatchItem.m_pipelineState = m_rowPipelineState;
+                    dispatchItem.m_pipelineState = m_rowPipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumDistanceTexels + 2);
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
@@ -232,12 +241,15 @@ namespace AZ
 
                 // column distance
                 {
-                    const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateColumnDistanceSrg()->GetRHIShaderResourceGroup();
+                    const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateColumnDistanceSrg()
+                                                                                    ->GetRHIShaderResourceGroup()
+                                                                                    ->GetDeviceShaderResourceGroup(context.GetDeviceIndex())
+                                                                                    .get();
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DeviceDispatchItem dispatchItem;
                     dispatchItem.m_arguments = m_columnDispatchArgs;
-                    dispatchItem.m_pipelineState = m_columnPipelineState;
+                    dispatchItem.m_pipelineState = m_columnPipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY * (DiffuseProbeGrid::DefaultNumDistanceTexels + 2);
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;

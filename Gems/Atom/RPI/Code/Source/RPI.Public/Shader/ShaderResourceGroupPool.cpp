@@ -8,9 +8,6 @@
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroupPool.h>
 
-#include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RHISystemInterface.h>
-
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
@@ -47,9 +44,7 @@ namespace AZ
         RHI::ResultCode ShaderResourceGroupPool::Init(
             ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
-            m_pool = RHI::Factory::Get().CreateShaderResourceGroupPool();
+            m_pool = aznew RHI::ShaderResourceGroupPool();
             if (!m_pool)
             {
                 AZ_Error("ShaderResourceGroupPool", false, "Failed to create RHI::ShaderResourceGroupPool");
@@ -59,15 +54,15 @@ namespace AZ
             RHI::ShaderResourceGroupPoolDescriptor poolDescriptor;
             poolDescriptor.m_layout = shaderAsset.FindShaderResourceGroupLayout(srgName, supervariantIndex).get();
 
-            m_pool->SetName(AZ::Name(AZStd::string::format("%s_%s",shaderAsset.GetName().GetCStr(),srgName.GetCStr())));
- 
-            const RHI::ResultCode resultCode = m_pool->Init(*device, poolDescriptor);
+            m_pool->SetName(AZ::Name(AZStd::string::format("%s_%s", shaderAsset.GetName().GetCStr(), srgName.GetCStr())));
+
+            const RHI::ResultCode resultCode = m_pool->Init(RHI::AllDevices, poolDescriptor);
             return resultCode;
         }
 
-        RHI::Ptr<RHI::DeviceShaderResourceGroup> ShaderResourceGroupPool::CreateRHIShaderResourceGroup()
+        RHI::Ptr<RHI::ShaderResourceGroup> ShaderResourceGroupPool::CreateRHIShaderResourceGroup()
         {
-            RHI::Ptr<RHI::DeviceShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
+            RHI::Ptr<RHI::ShaderResourceGroup> srg = aznew RHI::ShaderResourceGroup();
             AZ_Error("ShaderResourceGroupPool", srg, "Failed to create RHI::ShaderResourceGroup");
 
             if (srg)
@@ -83,12 +78,12 @@ namespace AZ
             return srg;
         }
 
-        RHI::DeviceShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool()
+        RHI::ShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool()
         {
             return m_pool.get();
         }
 
-        const RHI::DeviceShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool() const
+        const RHI::ShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool() const
         {
             return m_pool.get();
         }

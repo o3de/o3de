@@ -15,8 +15,10 @@
 #include <RHI/ResourcePoolResolver.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
-#include <Atom/RHI/DeviceResourcePool.h>
+#include <Atom/RHI/ResourcePool.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
+#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
@@ -158,15 +160,15 @@ namespace AZ
             return true;
         }
     
-        bool Scope::IsResourceDiscarded(const RHI::ImageScopeAttachment& scopeAttachment) const
+        bool Scope::IsResourceDiscarded(const AZ::RHI::ImageScopeAttachment& scopeAttachment) const
         {
-            const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment.GetImageView());
+            const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment.GetImageView()->GetDeviceImageView(0).get());
             return IsInDiscardResourceRequests(imageView->GetMemory());
         }
 
-        bool Scope::IsResourceDiscarded(const RHI::BufferScopeAttachment& scopeAttachment) const
+        bool Scope::IsResourceDiscarded(const AZ::RHI::BufferScopeAttachment& scopeAttachment) const
         {
-            const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment.GetBufferView());
+            const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment.GetBufferView()->GetDeviceBufferView(0).get());
             return IsInDiscardResourceRequests(bufferView->GetMemory());
         }
 
@@ -187,7 +189,7 @@ namespace AZ
             }
         }
 
-        void Scope::CompileInternal([[maybe_unused]] RHI::Device& device)
+        void Scope::CompileInternal()
         {
             for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
             {
@@ -201,7 +203,7 @@ namespace AZ
             for (const RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
             {
                 const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment->GetUsageAndAccess();
-                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView());
+                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(0).get());
                 const RHI::ImageScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
 
                 const bool isFullView           = imageView->IsFullView();
@@ -270,7 +272,8 @@ namespace AZ
             for (const RHI::BufferScopeAttachment* scopeAttachment : GetBufferAttachments())
             {
                 const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment->GetUsageAndAccess();
-                const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment->GetBufferView());
+                const BufferView* bufferView =
+                    static_cast<const BufferView*>(scopeAttachment->GetBufferView()->GetDeviceBufferView(0).get());
                 const RHI::BufferScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
 
                 const bool isClearAction = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
@@ -402,8 +405,9 @@ namespace AZ
                     {
                         if (imageAttachment->GetDescriptor().m_attachmentId == resolveAttachment->GetDescriptor().m_resolveAttachmentId)
                         {
-                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView());
-                            auto dstImageView = static_cast<const ImageView*>(resolveAttachment->GetImageView());
+                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView()->GetDeviceImageView(0).get());
+                            auto dstImageView =
+                                static_cast<const ImageView*>(resolveAttachment->GetImageView()->GetDeviceImageView(0).get());
                             commandList.GetCommandList()->ResolveSubresource(
                                 dstImageView->GetMemory(),
                                 0, 

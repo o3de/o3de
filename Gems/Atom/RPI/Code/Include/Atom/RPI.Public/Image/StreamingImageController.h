@@ -22,7 +22,7 @@ namespace AZ
 {
     namespace RHI
     {
-        class DeviceStreamingImagePool;
+        class StreamingImagePool;
     }
 
     namespace RPI
@@ -40,7 +40,8 @@ namespace AZ
             //! automatically create the appropriate controller type that corresponds to the given asset's type (both 
             //! the asset class and the instance class must be registered with InstanceDatabase<StreamingImageController>).
             //! \param pool  The streaming image pool that the controller should use.
-            static Data::Instance<StreamingImageController> Create(const Data::Asset<StreamingImageControllerAsset>& asset, RHI::DeviceStreamingImagePool& pool);
+            static Data::Instance<StreamingImageController> Create(
+                const Data::Asset<StreamingImageControllerAsset>& asset, AZ::RHI::StreamingImagePool& pool);
 
             virtual ~StreamingImageController() = default;
 
@@ -85,7 +86,7 @@ namespace AZ
 
             ///////////////////////////////////////////////////////////////////
 
-            RHI::DeviceStreamingImagePool* m_pool = nullptr;
+            RHI::StreamingImagePool* m_pool = nullptr;
 
             // The mutex used to serialize attachment, detachment, and update; as they would otherwise stomp on each other.
             AZStd::mutex m_mutex;

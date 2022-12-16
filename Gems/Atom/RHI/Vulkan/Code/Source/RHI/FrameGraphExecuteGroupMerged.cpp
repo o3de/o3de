@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/SwapChain.h>
 #include <RHI/FrameGraphExecuteGroupMerged.h>
 #include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
@@ -36,9 +37,9 @@ namespace AZ
             {
                 scopeEntries.push_back({ scope->GetId(), scope->GetEstimatedItemCount() });
                 swapChainsToPresent.reserve(swapChainsToPresent.size() + scope->GetSwapChainsToPresent().size());
-                for (RHI::DeviceSwapChain* swapChain : scope->GetSwapChainsToPresent())
+                for (RHI::SwapChain* swapChain : scope->GetSwapChainsToPresent())
                 {
-                    swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
+                    swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain->GetDeviceSwapChain(scope->GetDeviceIndex()).get()));
                 }
                 const auto& waitSemaphores = scope->GetWaitSemaphores();
                 const auto& signalSemaphores = scope->GetSignalSemaphores();
@@ -52,7 +53,7 @@ namespace AZ
             InitMergedRequest request;
             request.m_scopeEntries = scopeEntries.data();
             request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
-            Base::Init(request);
+            Base::Init(device.GetIndex(), request);
 
             m_workRequest.m_debugLabel = "FrameGraph Merged Group";
         }

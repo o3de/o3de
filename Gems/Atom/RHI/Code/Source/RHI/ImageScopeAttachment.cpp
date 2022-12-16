@@ -6,9 +6,9 @@
  *
  */
 
-#include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
-#include <Atom/RHI/DeviceImageView.h>
+#include <Atom/RHI/ImageScopeAttachment.h>
+#include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <Atom/RHI/Scope.h>
 namespace AZ
@@ -36,12 +36,12 @@ namespace AZ
             return m_descriptor;
         }
 
-        const DeviceImageView* ImageScopeAttachment::GetImageView() const
+        const ImageView* ImageScopeAttachment::GetImageView() const
         {
-            return static_cast<const DeviceImageView*>(GetResourceView());
+            return static_cast<const ImageView*>(GetResourceView());
         }
 
-        void ImageScopeAttachment::SetImageView(ConstPtr<DeviceImageView> imageView)
+        void ImageScopeAttachment::SetImageView(ConstPtr<ImageView> imageView)
         {
             SetResourceView(AZStd::move(imageView));
         }

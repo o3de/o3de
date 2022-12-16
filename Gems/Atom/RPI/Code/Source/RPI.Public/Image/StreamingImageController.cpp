@@ -20,7 +20,8 @@ namespace AZ
 {
     namespace RPI
     {
-        Data::Instance<StreamingImageController> StreamingImageController::Create(const Data::Asset<StreamingImageControllerAsset>& asset, RHI::DeviceStreamingImagePool& pool)
+        Data::Instance<StreamingImageController> StreamingImageController::Create(
+            const Data::Asset<StreamingImageControllerAsset>& asset, RHI::StreamingImagePool& pool)
         {
             Data::Instance<StreamingImageController> controller = 
                 Data::InstanceDatabase<StreamingImageController>::Instance().FindOrCreate(Data::InstanceId::CreateRandom(), asset);

@@ -101,5 +101,5 @@ namespace AZ
             /// Global shader pipeline state
             const DevicePipelineState* m_globalPipelineState = nullptr;
         };
-    }
-}
+    } // namespace RHI
+} // namespace AZ

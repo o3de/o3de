@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI.Reflect/ScopeId.h>
 #include <Atom/RHI/FrameGraph.h>
+#include <Atom/RHI/SwapChain.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandPool.h>
 #include <RHI/Device.h>
@@ -29,9 +30,10 @@ namespace AZ
             m_secondaryCommands.resize(commandListCount);
 
             m_workRequest.m_swapChainsToPresent.reserve(scope.GetSwapChainsToPresent().size());
-            for (RHI::DeviceSwapChain* swapchainBase : scope.GetSwapChainsToPresent())
+            for (RHI::SwapChain* swapchainBase : scope.GetSwapChainsToPresent())
             {
-                m_workRequest.m_swapChainsToPresent.emplace_back(static_cast<SwapChain*>(swapchainBase));
+                m_workRequest.m_swapChainsToPresent.emplace_back(
+                    static_cast<SwapChain*>(swapchainBase->GetDeviceSwapChain(scope.GetDeviceIndex()).get()));
             }
 
             m_workRequest.m_semaphoresToWait = scope.GetWaitSemaphores();
@@ -44,7 +46,7 @@ namespace AZ
             request.m_commandLists = reinterpret_cast<RHI::CommandList*const*>(m_secondaryCommands.data());
             request.m_commandListCount = commandListCount;
             request.m_jobPolicy = globalJobPolicy;
-            Base::Init(request);
+            Base::Init(device.GetIndex(), request);
 
             m_workRequest.m_debugLabel = AZStd::string::format("Framegraph %s Group", m_scope->GetId().GetCStr());
         }

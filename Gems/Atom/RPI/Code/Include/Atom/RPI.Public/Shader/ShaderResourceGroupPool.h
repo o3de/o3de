@@ -8,10 +8,9 @@
 
 #pragma once
 
-#include <Atom/RHI/DeviceShaderResourceGroupPool.h>
-#include <AtomCore/Instance/InstanceData.h>
+#include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-
+#include <AtomCore/Instance/InstanceData.h>
 
 namespace AZ
 {
@@ -48,11 +47,11 @@ namespace AZ
              */
             static Data::Instance<ShaderResourceGroupPool> FindOrCreate(
                 const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
-            
-            RHI::Ptr<RHI::DeviceShaderResourceGroup> CreateRHIShaderResourceGroup();
 
-            RHI::DeviceShaderResourceGroupPool* GetRHIPool();
-            const RHI::DeviceShaderResourceGroupPool* GetRHIPool() const;
+            RHI::Ptr<RHI::ShaderResourceGroup> CreateRHIShaderResourceGroup();
+
+            RHI::ShaderResourceGroupPool* GetRHIPool();
+            const RHI::ShaderResourceGroupPool* GetRHIPool() const;
 
         private:
             ShaderResourceGroupPool() = default;
@@ -63,7 +62,7 @@ namespace AZ
 
             RHI::ResultCode Init(ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
 
-            RHI::Ptr<RHI::DeviceShaderResourceGroupPool> m_pool;
+            RHI::Ptr<RHI::ShaderResourceGroupPool> m_pool;
         };
     }
 }

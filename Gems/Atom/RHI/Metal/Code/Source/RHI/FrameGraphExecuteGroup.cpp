@@ -31,10 +31,10 @@ namespace AZ
             m_workRequest.m_signalFenceValue = scope.GetSignalFenceValue();            
             m_workRequest.m_commandLists.resize(commandListCount);
             m_workRequest.m_swapChainsToPresent.reserve(scope.GetSwapChainsToPresent().size());
-            for (RHI::DeviceSwapChain* swapChain : scope.GetSwapChainsToPresent())
+            for (RHI::SwapChain* swapChain : scope.GetSwapChainsToPresent())
             {
                 m_workRequest.m_swapChainsToPresent.emplace_back(
-                    static_cast<SwapChain*>(swapChain));
+                    static_cast<SwapChain*>(swapChain->GetDeviceSwapChain(scope.GetDeviceIndex()).get()));
             }
             
             auto& fencesToSignal = m_workRequest.m_scopeFencesToSignal;
@@ -53,7 +53,7 @@ namespace AZ
             
             m_commandBuffer.Init(device.GetCommandQueueContext().GetCommandQueue(m_hardwareQueueClass).GetPlatformQueue());
 
-            Base::Init(request);
+            Base::Init(device.GetIndex(), request);
         }
         
         FrameGraphExecuteGroup::~FrameGraphExecuteGroup()

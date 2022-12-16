@@ -6,16 +6,17 @@
  *
  */
 
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
+#include <Atom/RHI/SwapChain.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/FrameGraphCompiler.h>
 #include <RHI/Image.h>
@@ -32,7 +33,7 @@ namespace AZ
             return aznew FrameGraphCompiler();
         }
 
-        RHI::ResultCode FrameGraphCompiler::InitInternal([[maybe_unused]] RHI::Device& device)
+        RHI::ResultCode FrameGraphCompiler::InitInternal([[maybe_unused]] RHI::DeviceMask deviceMask)
         {
             return RHI::ResultCode::Success;
         }
@@ -102,14 +103,16 @@ namespace AZ
 
         void FrameGraphCompiler::CompileBufferBarriers(RHI::BufferFrameAttachment& frameGraphAttachment)
         {
-            auto& device = static_cast<Device&>(GetDevice());
-            auto& queueContext = device.GetCommandQueueContext();
-
             RHI::BufferScopeAttachment* scopeAttachment = frameGraphAttachment.GetFirstScopeAttachment();
-            Buffer& buffer = static_cast<Buffer&>(*frameGraphAttachment.GetBuffer());
             while (scopeAttachment)
             {
                 Scope& scope = static_cast<Scope&>(scopeAttachment->GetScope());
+
+                auto& device = static_cast<Device&>(scope.GetDevice());
+                auto& queueContext = device.GetCommandQueueContext();
+
+                Buffer& buffer = static_cast<Buffer&>(*frameGraphAttachment.GetBuffer()->GetDeviceBuffer(scope.GetDeviceIndex()));
+
                 if (NeedsClearBarrier(*scopeAttachment, scopeAttachment->GetDescriptor()))
                 {
                     // We need to add a barrier before clearing the buffer.
@@ -141,14 +144,16 @@ namespace AZ
 
         void FrameGraphCompiler::CompileImageBarriers(RHI::ImageFrameAttachment& imageFrameAttachment)
         {
-            auto& device = static_cast<Device&>(GetDevice());
-            auto& queueContext = device.GetCommandQueueContext();
-
-            Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage());
             RHI::ImageScopeAttachment* scopeAttachment = imageFrameAttachment.GetFirstScopeAttachment();
             while (scopeAttachment)
             {
                 Scope& scope = static_cast<Scope&>(scopeAttachment->GetScope());
+
+                auto& device = static_cast<Device&>(scope.GetDevice());
+                auto& queueContext = device.GetCommandQueueContext();
+
+                Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage()->GetDeviceImage(scope.GetDeviceIndex()));
+
                 if (NeedsClearBarrier(*scopeAttachment, scopeAttachment->GetDescriptor()))
                 {
                     RHI::ImageScopeAttachment clearAttachment(
@@ -166,7 +171,8 @@ namespace AZ
                         scope,
                         clearAttachment,
                         image,
-                        static_cast<const ImageView*>(scopeAttachment->GetImageView())->GetImageSubresourceRange(),
+                        static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get())
+                            ->GetImageSubresourceRange(),
                         Scope::BarrierSlot::Clear,
                         GetResourcePipelineStateFlags(*scopeAttachment),
                         GetResourceAccessFlags(*scopeAttachment),
@@ -198,7 +204,8 @@ namespace AZ
                         scope,
                         resolveSourceAttachment,
                         image,
-                        static_cast<const ImageView*>(scopeAttachment->GetImageView())->GetImageSubresourceRange(),
+                        static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get())
+                            ->GetImageSubresourceRange(),
                         Scope::BarrierSlot::Resolve,
                         GetResourcePipelineStateFlags(*scopeAttachment),
                         GetResourceAccessFlags(*scopeAttachment),
@@ -211,7 +218,17 @@ namespace AZ
             // If this is the last usage of a swap chain, we require that it be in the common state for presentation.
             if (auto swapchainAttachment = azrtti_cast<RHI::SwapChainFrameAttachment*>(&imageFrameAttachment))
             {
-                SwapChain* swapChain = static_cast<SwapChain*>(swapchainAttachment->GetSwapChain());
+                auto* lastScopeAttachment = imageFrameAttachment.GetLastScopeAttachment();
+                Scope& lastScope = static_cast<Scope&>(lastScopeAttachment->GetScope());
+
+                auto& device = static_cast<Device&>(lastScope.GetDevice());
+                auto& queueContext = device.GetCommandQueueContext();
+
+                Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage()->GetDeviceImage(lastScope.GetDeviceIndex()));
+
+                // TODO: swap chain always on the last device's scope?
+                SwapChain* swapChain =
+                    static_cast<SwapChain*>(swapchainAttachment->GetSwapChain()->GetDeviceSwapChain(lastScope.GetDeviceIndex()).get());
 
                 // Skip adding synchronization constructs for XR swapchain as that is managed by OpenXr api
                 if (swapChain->GetDescriptor().m_isXrSwapChain)
@@ -225,8 +242,6 @@ namespace AZ
                 Scope& firstScope = static_cast<Scope&>(imageFrameAttachment.GetFirstScopeAttachment()->GetScope());
                 firstScope.AddWaitSemaphore(AZStd::make_pair(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, frameContext.m_imageAvailableSemaphore));
 
-                auto* lastScopeAttachment = imageFrameAttachment.GetLastScopeAttachment();
-                Scope& lastScope = static_cast<Scope&>(lastScopeAttachment->GetScope());
                 QueueId srcQueueId = queueContext.GetCommandQueue(lastScope.GetHardwareQueueClass()).GetId();
                 QueueId dstQueueId = swapChain->GetPresentationQueue().GetId();
                 VkImageMemoryBarrier imageBarrier = {};
@@ -273,7 +288,7 @@ namespace AZ
             const QueueId& srcQueueId,
             const QueueId& dstQueueId) const
         {
-            auto& device = static_cast<Device&>(GetDevice());
+            auto& device = static_cast<Device&>(scope.GetDevice());
             auto& queueContext = device.GetCommandQueueContext();
             QueueId scopeQueueId = queueContext.GetCommandQueue(scope.GetHardwareQueueClass()).GetId();
 
@@ -320,7 +335,7 @@ namespace AZ
             const QueueId& srcQueueId,
             const QueueId& dstQueueId) const
         {
-            auto& device = static_cast<Device&>(GetDevice());
+            auto& device = static_cast<Device&>(scope.GetDevice());
             auto& queueContext = device.GetCommandQueueContext();
 
             // Check if we are transferring between queues because the src and dst access flags must be 0 for the release and request barriers.
@@ -372,10 +387,10 @@ namespace AZ
 
         void FrameGraphCompiler::CompileAsyncQueueSemaphores(const RHI::FrameGraph& frameGraph)
         {
-            auto& device = static_cast<Device&>(GetDevice());
             for (RHI::Scope* scopeBase : frameGraph.GetScopes())
             {
                 Scope* scope = static_cast<Scope*>(scopeBase);
+                auto& device = static_cast<Device&>(scope->GetDevice());
 
                 for (uint32_t hardwareQueueClassIdx = 0; hardwareQueueClassIdx < RHI::HardwareQueueClassCount; ++hardwareQueueClassIdx)
                 {
@@ -397,8 +412,10 @@ namespace AZ
 
         RHI::ImageSubresourceRange FrameGraphCompiler::GetSubresourceRange(const RHI::ImageScopeAttachment& scopeAttachment) const
         {
-            auto &physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
-            const auto* imageView = static_cast<const ImageView*>(scopeAttachment.GetImageView());
+            auto& scope = scopeAttachment.GetScope();
+            auto& physicalDevice = static_cast<const PhysicalDevice&>(scope.GetDevice().GetPhysicalDevice());
+            const auto* imageView =
+                static_cast<const ImageView*>(scopeAttachment.GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get());
             auto range = RHI::ImageSubresourceRange(imageView->GetDescriptor());
             RHI::ImageAspectFlags imageAspectFlags = imageView->GetImage().GetAspectFlags();
             // If separate depth/stencil is not supported, then the barrier must ALWAYS include both image aspects (depth and stencil).

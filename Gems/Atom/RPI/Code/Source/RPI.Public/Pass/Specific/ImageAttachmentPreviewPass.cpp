@@ -101,8 +101,8 @@ namespace AZ
         void ImageAttachmentCopy::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             // copy descriptor for copying image
-            RHI::DeviceCopyImageDescriptor copyImage;
-            const AZ::RHI::DeviceImage* image = context.GetImage(m_srcAttachmentId);
+            RHI::CopyImageDescriptor copyImage;
+            const AZ::RHI::Image* image = context.GetImage(m_srcAttachmentId);
             copyImage.m_sourceImage = image;
             copyImage.m_sourceSize = image->GetDescriptor().m_size;
             copyImage.m_destinationImage = context.GetImage(m_destAttachmentId);
@@ -112,7 +112,7 @@ namespace AZ
 
         void ImageAttachmentCopy::BuildCommandList(const RHI::FrameGraphExecuteContext& context)
         {
-            context.GetCommandList()->Submit(m_copyItem);
+            context.GetCommandList()->Submit(m_copyItem.GetDeviceCopyItem(context.GetDeviceIndex()));
         }
 
         Ptr<ImageAttachmentPreviewPass> ImageAttachmentPreviewPass::Create(const PassDescriptor& descriptor)
@@ -427,7 +427,7 @@ namespace AZ
                 float aspectRatio = 1;
 
                 // Find image type
-                const RHI::DeviceImageView* inputImageView = context.GetImageView(m_imageAttachmentId);
+                const RHI::ImageView* inputImageView = context.GetImageView(m_imageAttachmentId);
                 if (!inputImageView)
                 {
                     AZ_Warning("RPI", false, "Image attachment [%s] doesn't have image view in current context", m_imageAttachmentId.GetCStr());
@@ -467,7 +467,7 @@ namespace AZ
                 }
                 
                 // config pipeline states related to output attachment
-                const RHI::DeviceImageView* outputImageView = context.GetImageView(m_outputColorAttachment->GetAttachmentId());
+                const RHI::ImageView* outputImageView = context.GetImageView(m_outputColorAttachment->GetAttachmentId());
                 RHI::Format outputFormat = outputImageView->GetDescriptor().m_overrideFormat;
                 if (outputFormat == RHI::Format::Unknown)
                 {
@@ -519,7 +519,7 @@ namespace AZ
                     RHI::DrawLinear drawLinear;
                     drawLinear.m_vertexCount = 4;
                     drawLinear.m_instanceCount = previewInfo.m_imageCount;
-                    previewInfo.m_item.m_arguments = RHI::DeviceDrawArguments(drawLinear);
+                    previewInfo.m_item.m_arguments = RHI::DrawArguments(drawLinear);
                     previewInfo.m_item.m_pipelineState = m_shader->AcquirePipelineState(previewInfo.m_pipelineStateDescriptor);
                 }
             }
@@ -533,7 +533,8 @@ namespace AZ
             commandList->SetScissor(m_scissor);
 
             // submit srg
-            commandList->SetShaderResourceGroupForDraw(*m_passSrg->GetRHIShaderResourceGroup());
+            commandList->SetShaderResourceGroupForDraw(
+                *m_passSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()));
 
             // submit draw call
             for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
@@ -541,7 +542,7 @@ namespace AZ
                 const ImageTypePreviewInfo& previewInfo = m_imageTypePreviewInfo[index];
                 if (previewInfo.m_imageCount > 0)
                 {
-                    commandList->Submit(previewInfo.m_item, index);
+                    commandList->Submit(previewInfo.m_item.GetDeviceDrawItem(context.GetDeviceIndex(), nullptr, nullptr, nullptr), index);
                 }
             }
         }

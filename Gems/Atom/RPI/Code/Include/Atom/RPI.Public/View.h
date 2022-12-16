@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <Atom/RHI/DeviceShaderResourceGroup.h>
 #include <Atom/RHI/DrawListContext.h>
+#include <Atom/RHI/ShaderResourceGroup.h>
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
@@ -65,7 +65,7 @@ namespace AZ
             RHI::DrawListMask GetDrawListMask() const { return m_drawListMask; }
             void Reset();
 
-            RHI::DeviceShaderResourceGroup* GetRHIShaderResourceGroup() const;
+            RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
             Data::Instance<RPI::ShaderResourceGroup> GetShaderResourceGroup();
             
@@ -77,7 +77,7 @@ namespace AZ
             void AddDrawPacket(const RHI::DrawPacket* drawPacket, Vector3 worldPosition);
 
             //! Add a draw item to this view with its associated draw list tag
-            void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DeviceDrawItemProperties& drawItemProperties);
+            void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties);
 
             //! Sets the worldToView matrix and recalculates the other matrices.
             void SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView);

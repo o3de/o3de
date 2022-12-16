@@ -203,12 +203,12 @@ namespace UnitTest
     TEST_F(PipelineStateTests, PipelineStateCache_Init_Test)
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
-        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(*device);
+        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(1u << device->GetIndex());
 
         AZStd::array<RHI::PipelineLibraryHandle, RHI::PipelineStateCache::LibraryCountMax> handles;
         for (size_t i = 0; i < handles.size(); ++i)
         {
-            handles[i] = pipelineStateCache->CreateLibrary(nullptr);
+            handles[i] = pipelineStateCache->CreateLibrary(RHI::PipelineLibraryDescriptor{});
 
             EXPECT_TRUE(handles[i].IsValid());
 
@@ -220,7 +220,7 @@ namespace UnitTest
 
         // Creating more than the maximum number of libraries should assert but still function.
         AZ_TEST_START_ASSERTTEST;
-        EXPECT_EQ(pipelineStateCache->CreateLibrary(nullptr), RHI::PipelineLibraryHandle{});
+        EXPECT_EQ(pipelineStateCache->CreateLibrary(RHI::PipelineLibraryDescriptor{}), RHI::PipelineLibraryHandle{});
         AZ_TEST_STOP_ASSERTTEST(1);
 
         // Reset should no-op.
@@ -236,7 +236,7 @@ namespace UnitTest
 
         for (size_t i = 0; i < handles.size(); ++i)
         {
-            handles[i] = pipelineStateCache->CreateLibrary(nullptr);
+            handles[i] = pipelineStateCache->CreateLibrary(RHI::PipelineLibraryDescriptor{});
             EXPECT_FALSE(handles[i].IsNull());
         }
     }
@@ -244,7 +244,7 @@ namespace UnitTest
     TEST_F(PipelineStateTests, PipelineStateCache_NullHandle_Test)
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
-        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(*device);
+        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(1u << device->GetIndex());
 
         // Calling library methods with a null handle should early out.
         pipelineStateCache->ResetLibrary({});
@@ -258,34 +258,36 @@ namespace UnitTest
     TEST_F(PipelineStateTests, PipelineStateCache_PipelineStateThreading_Same_Test)
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
-        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(*device);
+        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(1u << device->GetIndex());
 
         static const size_t IterationCountMax = 10000;
         static const size_t ThreadCountMax = 8;
 
         RHI::PipelineStateDescriptorForDraw descriptor = CreatePipelineStateDescriptor(0);
 
-        RHI::PipelineLibraryHandle libraryHandle = pipelineStateCache->CreateLibrary(nullptr);
+        RHI::PipelineLibraryHandle libraryHandle = pipelineStateCache->CreateLibrary(RHI::PipelineLibraryDescriptor{});
 
         AZStd::mutex mutex;
         AZStd::unordered_set<const RHI::DevicePipelineState*> pipelineStatesMerged;
 
-        ThreadTester::Dispatch(ThreadCountMax, [&] ([[maybe_unused]] size_t threadIndex)
-        {
-            AZStd::unordered_set<const RHI::DevicePipelineState*> pipelineStates;
-
-            for (size_t i = 0; i < IterationCountMax; ++i)
+        ThreadTester::Dispatch(
+            ThreadCountMax,
+            [&]([[maybe_unused]] size_t threadIndex)
             {
-                pipelineStates.insert(pipelineStateCache->AcquirePipelineState(libraryHandle, descriptor));
-            }
+                AZStd::unordered_set<const RHI::PipelineState*> pipelineStates;
 
-            EXPECT_EQ(pipelineStates.size(), 1);
-            EXPECT_NE(*pipelineStates.begin(), nullptr);
+                for (size_t i = 0; i < IterationCountMax; ++i)
+                {
+                    pipelineStates.insert(pipelineStateCache->AcquirePipelineState(libraryHandle, descriptor));
+                }
 
-            mutex.lock();
-            pipelineStatesMerged.insert(*pipelineStates.begin());
-            mutex.unlock();
-        });
+                EXPECT_EQ(pipelineStates.size(), 1);
+                EXPECT_NE(*pipelineStates.begin(), nullptr);
+
+                mutex.lock();
+                pipelineStatesMerged.insert((*pipelineStates.begin())->GetDevicePipelineState(device->GetIndex()).get());
+                mutex.unlock();
+            });
 
         pipelineStateCache->Compact();
         ValidateCacheIntegrity(pipelineStateCache);
@@ -296,7 +298,7 @@ namespace UnitTest
     TEST_F(PipelineStateTests, PipelineStateCache_PipelineStateThreading_Fuzz_Test)
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
-        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(*device);
+        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(1u << device->GetIndex());
 
         static const size_t CycleIterationCountMax = 4;
         static const size_t AcquireIterationCountMax = 2000;
@@ -314,7 +316,7 @@ namespace UnitTest
         AZStd::vector<RHI::PipelineLibraryHandle> libraryHandles;
         for (size_t i = 0; i < LibraryCountMax; ++i)
         {
-            libraryHandles.push_back(pipelineStateCache->CreateLibrary(nullptr));
+            libraryHandles.push_back(pipelineStateCache->CreateLibrary(RHI::PipelineLibraryDescriptor{}));
         }
 
         AZStd::mutex mutex;
@@ -325,13 +327,13 @@ namespace UnitTest
             {
                 RHI::PipelineLibraryHandle libraryHandle = libraryHandles[libraryIndex];
 
-                AZStd::unordered_set<const RHI::DevicePipelineState*> pipelineStatesMerged;
+                AZStd::unordered_set<const RHI::PipelineState*> pipelineStatesMerged;
 
                 ThreadTester::Dispatch(ThreadCountMax, [&](size_t threadIndex)
                 {
                     SimpleLcgRandom random(threadIndex);
 
-                    AZStd::unordered_set<const RHI::DevicePipelineState*> pipelineStates;
+                    AZStd::unordered_set<const RHI::PipelineState*> pipelineStates;
 
                     for (size_t i = 0; i < AcquireIterationCountMax; ++i)
                     {
@@ -341,7 +343,7 @@ namespace UnitTest
                     }
 
                     mutex.lock();
-                    for (const RHI::DevicePipelineState* pipelineState : pipelineStates)
+                    for (const RHI::PipelineState* pipelineState : pipelineStates)
                     {
                         pipelineStatesMerged.emplace(pipelineState);
                     }

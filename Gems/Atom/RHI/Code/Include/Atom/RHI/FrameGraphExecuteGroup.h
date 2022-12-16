@@ -88,7 +88,7 @@ namespace AZ
                 JobPolicy m_jobPolicy = JobPolicy::Serial;
             };
 
-            void Init(const InitRequest& request);
+            void Init(int deviceIndex, const InitRequest& request);
 
             /**
              * Used when a context group consists of a single command list partitions across several scopes.
@@ -114,7 +114,7 @@ namespace AZ
                 uint32_t m_scopeCount = 0;
             };
 
-            void Init(const InitMergedRequest& request);
+            void Init(int deviceIndex, const InitMergedRequest& request);
 
         private:
             //////////////////////////////////////////////////////////////////////////

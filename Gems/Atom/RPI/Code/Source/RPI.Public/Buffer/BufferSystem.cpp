@@ -36,8 +36,6 @@ namespace AZ
 
         void BufferSystem::Init()
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             {
                 Data::InstanceHandler<Buffer> handler;
                 handler.m_createFunction = [](Data::AssetData* bufferAsset)
@@ -49,9 +47,9 @@ namespace AZ
 
             {
                 Data::InstanceHandler<BufferPool> handler;
-                handler.m_createFunction = [device](Data::AssetData* poolAsset)
+                handler.m_createFunction = [](Data::AssetData* poolAsset)
                 {
-                    return BufferPool::CreateInternal(*device, *(azrtti_cast<ResourcePoolAsset*>(poolAsset)));
+                    return BufferPool::CreateInternal(RHI::AllDevices, *(azrtti_cast<ResourcePoolAsset*>(poolAsset)));
                 };
                 Data::InstanceDatabase<BufferPool>::Create(azrtti_typeid<ResourcePoolAsset>(), handler);
             }
@@ -75,8 +73,8 @@ namespace AZ
             Data::InstanceDatabase<BufferPool>::Destroy();
             m_initialized = false;
         }
-        
-        RHI::Ptr<RHI::DeviceBufferPool> BufferSystem::GetCommonBufferPool(CommonBufferPoolType poolType)
+
+        RHI::Ptr<RHI::BufferPool> BufferSystem::GetCommonBufferPool(CommonBufferPoolType poolType)
         {
             const uint8_t index = static_cast<uint8_t>(poolType);
             if (!m_commonPools[index])
@@ -93,9 +91,8 @@ namespace AZ
             {
                 return false;
             }
-            auto* device = RHI::RHISystemInterface::Get()->GetDevice();
-            
-            RHI::Ptr<RHI::DeviceBufferPool> bufferPool = RHI::Factory::Get().CreateBufferPool();
+
+            RHI::Ptr<RHI::BufferPool> bufferPool = aznew RHI::BufferPool();
 
             RHI::BufferPoolDescriptor bufferPoolDesc;
             switch (poolType)
@@ -144,7 +141,7 @@ namespace AZ
             }
 
             bufferPool->SetName(Name(AZStd::string::format("RPI::CommonBufferPool_%i", static_cast<uint32_t>(poolType))));
-            RHI::ResultCode resultCode = bufferPool->Init(*device, bufferPoolDesc);
+            RHI::ResultCode resultCode = bufferPool->Init(RHI::AllDevices, bufferPoolDesc);
             if (resultCode != RHI::ResultCode::Success)
             {
                 AZ_Error("BufferSystem", false, "Failed to create buffer pool: %d", poolType);
@@ -174,7 +171,7 @@ namespace AZ
                 bufferId = Uuid::CreateRandom();
             }
 
-            RHI::Ptr<RHI::DeviceBufferPool> bufferPool = GetCommonBufferPool(descriptor.m_poolType);
+            RHI::Ptr<RHI::BufferPool> bufferPool = GetCommonBufferPool(descriptor.m_poolType);
 
             if (!bufferPool)
             {

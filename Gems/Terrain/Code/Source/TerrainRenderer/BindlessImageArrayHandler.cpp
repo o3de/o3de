@@ -54,7 +54,7 @@ namespace AZ::Render
         return m_texturesIndex.IsValid();
     }
 
-    uint16_t BindlessImageArrayHandler::AppendBindlessImage(const AZ::RHI::DeviceImageView* imageView)
+    uint16_t BindlessImageArrayHandler::AppendBindlessImage(const AZ::RHI::ImageView* imageView)
     {
         uint16_t imageIndex = 0xFFFF;
 
@@ -73,7 +73,7 @@ namespace AZ::Render
         return imageIndex;
     }
 
-    void BindlessImageArrayHandler::UpdateBindlessImage(uint16_t index, const AZ::RHI::DeviceImageView* imageView)
+    void BindlessImageArrayHandler::UpdateBindlessImage(uint16_t index, const AZ::RHI::ImageView* imageView)
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_updateMutex);
         m_bindlessImageViews.at(index) = imageView;
@@ -97,7 +97,7 @@ namespace AZ::Render
             return false;
         }
 
-        AZStd::span<const AZ::RHI::DeviceImageView* const> imageViews(m_bindlessImageViews.data(), m_bindlessImageViews.size());
+        AZStd::span<const AZ::RHI::ImageView* const> imageViews(m_bindlessImageViews.data(), m_bindlessImageViews.size());
         return srg->SetImageViewUnboundedArray(m_texturesIndex, imageViews);
     }
 

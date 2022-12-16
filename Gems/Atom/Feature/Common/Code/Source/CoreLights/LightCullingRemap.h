@@ -9,15 +9,15 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DeviceDrawItem.h>
-#include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
+#include <Atom/RHI/CommandList.h>
+#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/ScopeProducer.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Reflect/Pass/PassName.h>
-#include <Atom/RPI.Public/Image/AttachmentImage.h>
 
 namespace AZ
 {

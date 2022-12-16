@@ -8,13 +8,14 @@
 
 #pragma once
 
-#include <AzCore/Debug/Budget.h>
-#include <AzCore/Name/Name.h>
-#include <AzCore/EBus/EBus.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
+#include <Atom/RHI/Device.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/XRRenderingInterface.h>
+#include <AzCore/Debug/Budget.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzCore/Name/Name.h>
 
 AZ_DECLARE_BUDGET(RHI);
 
@@ -22,16 +23,14 @@ namespace AZ
 {
     namespace RHI
     {
-        class Device;
         class FrameGraphBuilder;
-        class DevicePipelineState;
         class PipelineStateCache;
         class PlatformLimitsDescriptor;
         class PhysicalDeviceDescriptor;
         class DeviceRayTracingShaderTable;
         struct FrameSchedulerCompileRequest;
         struct TransientAttachmentStatistics;
-        struct DeviceTransientAttachmentPoolDescriptor;
+        struct TransientAttachmentPoolDescriptor;
 
         class RHISystemInterface
         {
@@ -62,7 +61,7 @@ namespace AZ
 
             virtual const RHI::MemoryStatistics* GetMemoryStatistics() const = 0;
 
-            virtual const RHI::DeviceTransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const = 0;
+            virtual const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const = 0;
 
             virtual ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const = 0;
 
@@ -84,5 +83,5 @@ namespace AZ
         };
 
         using RHISystemNotificationBus = AZ::EBus<RHISystemNotificiationInterface>;
-    }
+    } // namespace RHI
 }

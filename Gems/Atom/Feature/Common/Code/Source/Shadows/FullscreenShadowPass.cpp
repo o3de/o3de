@@ -9,13 +9,13 @@
 #include <Shadows/FullscreenShadowPass.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/DevicePipelineState.h>
-#include <Atom/RPI.Public/Pass/PassUtils.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
-#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
+#include <Atom/RPI.Public/Pass/PassUtils.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 
 namespace AZ
 {

@@ -6,20 +6,19 @@
  *
  */
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
-#include <Atom/RHI/DeviceBuffer.h>
-#include <Atom/RHI/DeviceImage.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        void FrameGraphExecuteGroup::Init(const InitMergedRequest& request)
+        void FrameGraphExecuteGroup::Init(int deviceIndex, const InitMergedRequest& request)
         {
             AZ_Assert(request.m_scopeCount, "Must have at least one scope.");
 
             m_jobPolicy = JobPolicy::Serial;
 
             FrameGraphExecuteContext::Descriptor descriptor;
+            descriptor.m_deviceIndex = deviceIndex;
             descriptor.m_commandList = request.m_commandList;
             descriptor.m_commandListCount = 1;
             descriptor.m_commandListIndex = 0;
@@ -32,7 +31,7 @@ namespace AZ
             }
         }
 
-        void FrameGraphExecuteGroup::Init(const InitRequest& request)
+        void FrameGraphExecuteGroup::Init(int deviceIndex, const InitRequest& request)
         {
             AZ_Assert(request.m_commandListCount > 0, "Must have at least one command list.");
 
@@ -40,6 +39,7 @@ namespace AZ
 
             FrameGraphExecuteContext::Descriptor descriptor;
             descriptor.m_scopeId = request.m_scopeId;
+            descriptor.m_deviceIndex = deviceIndex;
             descriptor.m_commandListCount = request.m_commandListCount;
 
             // build the execute contexts

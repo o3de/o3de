@@ -8,17 +8,12 @@
 
 #pragma once
 
-#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/BufferPool.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 
 namespace AZ
 {
-    namespace RHI
-    {
-        class Device;
-    }
-
     namespace RPI
     {
         class ResourcePoolAsset;
@@ -37,18 +32,18 @@ namespace AZ
 
             ~BufferPool() = default;
 
-            RHI::DeviceBufferPool* GetRHIPool();
+            RHI::BufferPool* GetRHIPool();
 
-            const RHI::DeviceBufferPool* GetRHIPool() const;
+            const RHI::BufferPool* GetRHIPool() const;
 
         private:
             BufferPool() = default;
 
             // Standard asset creation path.
-            static Data::Instance<BufferPool> CreateInternal(RHI::Device& device, ResourcePoolAsset& poolAsset);
-            RHI::ResultCode Init(RHI::Device& device, ResourcePoolAsset& poolAsset);
+            static Data::Instance<BufferPool> CreateInternal(RHI::DeviceMask deviceMask, ResourcePoolAsset& poolAsset);
+            RHI::ResultCode Init(RHI::DeviceMask deviceMask, ResourcePoolAsset& poolAsset);
 
-            RHI::Ptr<RHI::DeviceBufferPool> m_pool;
+            RHI::Ptr<RHI::BufferPool> m_pool;
         };
     }
 }

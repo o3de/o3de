@@ -16,7 +16,7 @@ namespace AZ
     {
         class Scope;
         class ScopeAttachment;
-        class DeviceResource;
+        class Resource;
 
         /**
          * FrameAttachment is the base class for all attachments stored in the frame graph. Attachments
@@ -37,8 +37,8 @@ namespace AZ
             const AttachmentId& GetId() const;
 
             /// Returns the resource associated with this frame attachment.
-            DeviceResource* GetResource();
-            const DeviceResource* GetResource() const;
+            Resource* GetResource();
+            const Resource* GetResource() const;
 
             /// Returns the attachment lifetime type.
             AttachmentLifetimeType GetLifetimeType() const;
@@ -67,7 +67,7 @@ namespace AZ
             HardwareQueueClassMask GetSupportedQueueMask() const;
 
             /// [Internal] Assigns the resource. This may only be done once.
-            void SetResource(Ptr<DeviceResource> resource);
+            void SetResource(Ptr<Resource> resource);
 
         protected:
             FrameAttachment(
@@ -80,7 +80,7 @@ namespace AZ
 
         private:
             AttachmentId m_attachmentId;
-            Ptr<DeviceResource> m_resource;
+            Ptr<Resource> m_resource;
             AttachmentLifetimeType m_lifetimeType;
             HardwareQueueClassMask m_usedQueueMask = HardwareQueueClassMask::None;
             HardwareQueueClassMask m_supportedQueueMask = HardwareQueueClassMask::None;

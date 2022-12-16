@@ -8,7 +8,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/DeviceQuery.h>
+#include <Atom/RHI/Query.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Scope.h>
 
@@ -26,8 +26,6 @@ namespace AZ
 
         QueryPool::QueryPool(uint32_t queryCapacity, uint32_t queriesPerResult, RHI::QueryType queryType, RHI::PipelineStatisticsFlags statisticsFlags)
         {
-            RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
-
             m_queryCapacity = queryCapacity;
             m_queriesPerResult = queriesPerResult;
             m_statisticsFlags = statisticsFlags;
@@ -52,19 +50,19 @@ namespace AZ
                 queryPoolDesc.m_type = m_queryType;
                 queryPoolDesc.m_pipelineStatisticsMask = m_statisticsFlags;
 
-                m_rhiQueryPool = RHI::Factory::Get().CreateQueryPool();
-                [[maybe_unused]] auto result = m_rhiQueryPool->Init(*device, queryPoolDesc);
+                m_rhiQueryPool = aznew RHI::QueryPool();
+                [[maybe_unused]] auto result = m_rhiQueryPool->Init(RHI::AllDevices, queryPoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to create the query pool");
             }
 
             // Create the RHI queries.
             {
-                AZStd::vector<RHI::DeviceQuery*> rawQueryArray;
+                AZStd::vector<RHI::Query*> rawQueryArray;
                 rawQueryArray.reserve(m_rhiQueryArray.size());
 
-                for (RHI::Ptr<RHI::DeviceQuery>& query : m_rhiQueryArray)
+                for (RHI::Ptr<RHI::Query>& query : m_rhiQueryArray)
                 {
-                    query = RHI::Factory::Get().CreateQuery();
+                    query = aznew RHI::Query();
                     rawQueryArray.emplace_back(query.get());
                 }
 
@@ -131,23 +129,23 @@ namespace AZ
             m_queryRegistry.erase(query);
         }
 
-        RHI::ResultCode QueryPool::BeginQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
+        RHI::ResultCode QueryPool::BeginQueryInternal(int deviceIndex, RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
         {
             auto rhiQueryArray = GetRhiQueryArray();
-            RHI::Ptr<RHI::DeviceQuery> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
+            RHI::Ptr<RHI::Query> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
 
-            return beginQuery->Begin(commandList);
+            return beginQuery->GetDeviceQuery(deviceIndex)->Begin(commandList);
         }
 
-        RHI::ResultCode QueryPool::EndQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
+        RHI::ResultCode QueryPool::EndQueryInternal(int deviceIndex, RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
         {
             auto rhiQueryArray = GetRhiQueryArray();
-            RHI::Ptr<RHI::DeviceQuery> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
+            RHI::Ptr<RHI::Query> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
 
-            return endQuery->End(commandList);
+            return endQuery->GetDeviceQuery(deviceIndex)->End(commandList);
         }
 
-        AZStd::span<const RHI::Ptr<RHI::DeviceQuery>> RPI::QueryPool::GetRhiQueryArray() const
+        AZStd::span<const RHI::Ptr<RHI::Query>> RPI::QueryPool::GetRhiQueryArray() const
         {
             return m_rhiQueryArray;
         }
@@ -155,7 +153,7 @@ namespace AZ
         QueryResultCode QueryPool::GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag)
         {
             // Get the raw RHI Query pointers.
-            AZStd::vector<RHI::DeviceQuery*> queryArray = GetRawRhiQueriesFromInterval(rhiQueryIndices);
+            AZStd::vector<RHI::Query*> queryArray = GetRawRhiQueriesFromInterval(rhiQueryIndices);
 
             // RHI Query results are readback with values that are a multiple of uint64_t.
             const uint32_t resultCount = m_queryResultSize / sizeof(uint64_t);
@@ -230,21 +228,21 @@ namespace AZ
             return m_queriesPerResult;
         }
 
-        AZStd::span<const RHI::Ptr<RHI::DeviceQuery>> QueryPool::GetRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const
+        AZStd::span<const RHI::Ptr<RHI::Query>> QueryPool::GetRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const
         {
             const uint32_t queryCount = rhiQueryIndices.m_max - rhiQueryIndices.m_min + 1u;
             AZ_Assert(rhiQueryIndices.m_max < m_rhiQueryCapacity, "Query array index is going over the limit");
 
-            return AZStd::span<const RHI::Ptr<RHI::DeviceQuery>>(m_rhiQueryArray.begin() + rhiQueryIndices.m_min, queryCount);
+            return AZStd::span<const RHI::Ptr<RHI::Query>>(m_rhiQueryArray.begin() + rhiQueryIndices.m_min, queryCount);
         }
 
-        AZStd::vector<RHI::DeviceQuery*> QueryPool::GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const
+        AZStd::vector<RHI::Query*> QueryPool::GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const
         {
             auto rhiQueries = GetRhiQueriesFromInterval(rhiQueryIndices);
 
-            AZStd::vector<RHI::DeviceQuery*> queryArray;
+            AZStd::vector<RHI::Query*> queryArray;
             queryArray.reserve(rhiQueries.size());
-            for (RHI::Ptr<RHI::DeviceQuery> rhiQuery : rhiQueries)
+            for (RHI::Ptr<RHI::Query> rhiQuery : rhiQueries)
             {
                 queryArray.emplace_back(rhiQuery.get());
             }

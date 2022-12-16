@@ -54,9 +54,9 @@ namespace AZ
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             desc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
 
-            m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_bufferPool = aznew RHI::BufferPool();
             m_bufferPool->SetName(Name("AuxGeomFixedShapeBufferPool"));
-            RHI::ResultCode resultCode = m_bufferPool->Init(rhiDevice, desc);
+            RHI::ResultCode resultCode = m_bufferPool->Init(1 << rhiDevice.GetIndex(), desc);
 
             if (resultCode != RHI::ResultCode::Success)
             {
@@ -1223,10 +1223,10 @@ namespace AZ
         {
             AZ::RHI::ResultCode result = AZ::RHI::ResultCode::Fail;
 
-            AZ::RHI::DeviceBufferInitRequest request;
+            AZ::RHI::BufferInitRequest request;
 
             // setup m_pointIndexBuffer
-            objectBuffers.m_pointIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_pointIndexBuffer = aznew AZ::RHI::Buffer();
             const auto pointIndexDataSize = static_cast<uint32_t>(meshData.m_pointIndices.size() * sizeof(uint16_t));
 
             request.m_buffer = objectBuffers.m_pointIndexBuffer.get();
@@ -1241,7 +1241,7 @@ namespace AZ
             }
 
             // setup m_lineIndexBuffer
-            objectBuffers.m_lineIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_lineIndexBuffer = aznew AZ::RHI::Buffer();
             const auto lineIndexDataSize = static_cast<uint32_t>(meshData.m_lineIndices.size() * sizeof(uint16_t));
 
             request.m_buffer = objectBuffers.m_lineIndexBuffer.get();
@@ -1256,7 +1256,7 @@ namespace AZ
             }
 
             // setup m_triangleIndexBuffer
-            objectBuffers.m_triangleIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_triangleIndexBuffer = aznew AZ::RHI::Buffer();
             const auto triangleIndexDataSize = static_cast<uint32_t>(meshData.m_triangleIndices.size() * sizeof(uint16_t));
             request.m_buffer = objectBuffers.m_triangleIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, triangleIndexDataSize };
@@ -1270,7 +1270,7 @@ namespace AZ
             }
 
             // setup m_positionBuffer
-            objectBuffers.m_positionBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_positionBuffer = aznew AZ::RHI::Buffer();
             const auto positionDataSize = static_cast<uint32_t>(meshData.m_positions.size() * sizeof(AuxGeomPosition));
 
             request.m_buffer = objectBuffers.m_positionBuffer.get();
@@ -1284,7 +1284,7 @@ namespace AZ
             }
 
             // setup m_normalBuffer
-            objectBuffers.m_normalBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_normalBuffer = aznew AZ::RHI::Buffer();
             const auto normalDataSize = static_cast<uint32_t>(meshData.m_normals.size() * sizeof(AuxGeomNormal));
 
             request.m_buffer = objectBuffers.m_normalBuffer.get();
@@ -1299,8 +1299,7 @@ namespace AZ
 
             // Setup point index buffer view
             objectBuffers.m_pointIndexCount = static_cast<uint32_t>(meshData.m_pointIndices.size());
-            AZ::RHI::DeviceIndexBufferView pointIndexBufferView =
-            {
+            AZ::RHI::IndexBufferView pointIndexBufferView = {
                 *objectBuffers.m_pointIndexBuffer,
                 0,
                 static_cast<uint32_t>(objectBuffers.m_pointIndexCount * sizeof(uint16_t)),
@@ -1310,8 +1309,7 @@ namespace AZ
 
             // Setup line index buffer view
             objectBuffers.m_lineIndexCount = static_cast<uint32_t>(meshData.m_lineIndices.size());
-            AZ::RHI::DeviceIndexBufferView lineIndexBufferView =
-            {
+            AZ::RHI::IndexBufferView lineIndexBufferView = {
                 *objectBuffers.m_lineIndexBuffer,
                 0,
                 static_cast<uint32_t>(objectBuffers.m_lineIndexCount * sizeof(uint16_t)),
@@ -1321,8 +1319,7 @@ namespace AZ
 
             // Setup triangle index buffer view
             objectBuffers.m_triangleIndexCount = static_cast<uint32_t>(meshData.m_triangleIndices.size());
-            AZ::RHI::DeviceIndexBufferView triangleIndexBufferView =
-            {
+            AZ::RHI::IndexBufferView triangleIndexBufferView = {
                 *objectBuffers.m_triangleIndexBuffer,
                 0,
                 static_cast<uint32_t>(objectBuffers.m_triangleIndexCount * sizeof(uint16_t)),
@@ -1334,8 +1331,7 @@ namespace AZ
             const auto positionCount = static_cast<uint32_t>(meshData.m_positions.size());
             const uint32_t positionSize = sizeof(float) * 3;
 
-            AZ::RHI::DeviceStreamBufferView positionBufferView =
-            {
+            AZ::RHI::StreamBufferView positionBufferView = {
                 *objectBuffers.m_positionBuffer,
                 0,
                 positionCount * positionSize,
@@ -1346,8 +1342,7 @@ namespace AZ
             const auto normalCount = static_cast<uint32_t>(meshData.m_normals.size());
             const uint32_t normalSize = sizeof(float) * 3;
 
-            AZ::RHI::DeviceStreamBufferView normalBufferView =
-            {
+            AZ::RHI::StreamBufferView normalBufferView = {
                 *objectBuffers.m_normalBuffer,
                 0,
                 normalCount * normalSize,
@@ -1557,7 +1552,8 @@ namespace AZ
             destPipelineState->Finalize();
         }
 
-        const AZ::RHI::DeviceIndexBufferView& FixedShapeProcessor::GetShapeIndexBufferView(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const
+        const AZ::RHI::IndexBufferView& FixedShapeProcessor::GetShapeIndexBufferView(
+            AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const
         {
             switch(drawStyle)
             {
@@ -1659,7 +1655,7 @@ namespace AZ
             return nullptr;
         }
 
-        const AZ::RHI::DeviceIndexBufferView& FixedShapeProcessor::GetBoxIndexBufferView(int drawStyle) const
+        const AZ::RHI::IndexBufferView& FixedShapeProcessor::GetBoxIndexBufferView(int drawStyle) const
         {
             switch(drawStyle)
             {
@@ -1756,10 +1752,10 @@ namespace AZ
             RHI::DrawPacketBuilder& drawPacketBuilder,
             AZ::Data::Instance<RPI::ShaderResourceGroup>& srg,
             uint32_t indexCount,
-            const RHI::DeviceIndexBufferView& indexBufferView,
+            const RHI::IndexBufferView& indexBufferView,
             const StreamBufferViewsForAllStreams& streamBufferViews,
             RHI::DrawListTag drawListTag,
-            const AZ::RHI::DevicePipelineState* pipelineState,
+            const AZ::RHI::PipelineState* pipelineState,
             RHI::DrawItemSortKey sortKey)
         {
             RHI::DrawIndexed drawIndexed;

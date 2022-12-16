@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <Atom/RHI/DeviceBuffer.h>
-#include <Atom/RHI/DeviceBufferPool.h>
-#include <Atom/RHI/DeviceIndexBufferView.h>
-#include <Atom/RHI/DeviceStreamBufferView.h>
-#include <Atom/RHI/DevicePipelineState.h>
+#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/StreamBufferView.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/PipelineState.h>
@@ -51,7 +51,8 @@ namespace AZ
         class FixedShapeProcessor final
         {
         public:
-            using StreamBufferViewsForAllStreams = AZStd::fixed_vector<AZ::RHI::DeviceStreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax>;
+            using StreamBufferViewsForAllStreams =
+                AZStd::fixed_vector<AZ::RHI::StreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax>;
 
             using AuxGeomNormal = AuxGeomPosition;
 
@@ -85,19 +86,19 @@ namespace AZ
             struct ObjectBuffers
             {
                 uint32_t m_pointIndexCount;
-                AZ::RHI::Ptr<AZ::RHI::DeviceBuffer> m_pointIndexBuffer;
-                AZ::RHI::DeviceIndexBufferView m_pointIndexBufferView;
+                AZ::RHI::Ptr<AZ::RHI::Buffer> m_pointIndexBuffer;
+                AZ::RHI::IndexBufferView m_pointIndexBufferView;
 
                 uint32_t m_lineIndexCount;
-                AZ::RHI::Ptr<AZ::RHI::DeviceBuffer> m_lineIndexBuffer;
-                AZ::RHI::DeviceIndexBufferView m_lineIndexBufferView;
+                AZ::RHI::Ptr<AZ::RHI::Buffer> m_lineIndexBuffer;
+                AZ::RHI::IndexBufferView m_lineIndexBufferView;
 
                 uint32_t m_triangleIndexCount;
-                AZ::RHI::Ptr<AZ::RHI::DeviceBuffer> m_triangleIndexBuffer;
-                AZ::RHI::DeviceIndexBufferView m_triangleIndexBufferView;
+                AZ::RHI::Ptr<AZ::RHI::Buffer> m_triangleIndexBuffer;
+                AZ::RHI::IndexBufferView m_triangleIndexBufferView;
 
-                AZ::RHI::Ptr<AZ::RHI::DeviceBuffer> m_positionBuffer;
-                AZ::RHI::Ptr<AZ::RHI::DeviceBuffer> m_normalBuffer;
+                AZ::RHI::Ptr<AZ::RHI::Buffer> m_positionBuffer;
+                AZ::RHI::Ptr<AZ::RHI::Buffer> m_normalBuffer;
                 StreamBufferViewsForAllStreams m_streamBufferViews;
                 StreamBufferViewsForAllStreams m_streamBufferViewsWithNormals;
             };
@@ -170,7 +171,7 @@ namespace AZ
             void InitPipelineState(const PipelineStateOptions& options);
             RPI::Ptr<RPI::PipelineStateForDraw>& GetPipelineState(const PipelineStateOptions& pipelineStateOptions);
 
-            const AZ::RHI::DeviceIndexBufferView& GetShapeIndexBufferView(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const;
+            const AZ::RHI::IndexBufferView& GetShapeIndexBufferView(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const;
             const StreamBufferViewsForAllStreams& GetShapeStreamBufferViews(AuxGeomShapeType shapeType, LodIndex lodIndex, int drawStyle) const;
             uint32_t GetShapeIndexCount(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex);
 
@@ -184,7 +185,7 @@ namespace AZ
                 LodIndex lodIndex,
                 RHI::DrawItemSortKey sortKey = 0);
 
-            const AZ::RHI::DeviceIndexBufferView& GetBoxIndexBufferView(int drawStyle) const;
+            const AZ::RHI::IndexBufferView& GetBoxIndexBufferView(int drawStyle) const;
             const StreamBufferViewsForAllStreams& GetBoxStreamBufferViews(int drawStyle) const;
             uint32_t GetBoxIndexCount(int drawStyle);
 
@@ -202,16 +203,16 @@ namespace AZ
                 RHI::DrawPacketBuilder& drawPacketBuilder,
                 AZ::Data::Instance<RPI::ShaderResourceGroup>& srg,
                 uint32_t indexCount,
-                const RHI::DeviceIndexBufferView& indexBufferView,
+                const RHI::IndexBufferView& indexBufferView,
                 const StreamBufferViewsForAllStreams& streamBufferViews,
                 RHI::DrawListTag drawListTag,
-                const RHI::DevicePipelineState* pipelineState,
+                const RHI::PipelineState* pipelineState,
                 RHI::DrawItemSortKey sortKey);
 
         private: // data
 
             //! The buffer pool that manages the index and vertex buffers for each shape
-            RHI::Ptr<AZ::RHI::DeviceBufferPool> m_bufferPool;
+            RHI::Ptr<AZ::RHI::BufferPool> m_bufferPool;
 
             //! The descriptor for drawing an object of each draw style using predefined streams
             RHI::InputStreamLayout m_objectStreamLayout[DrawStyle_Count];

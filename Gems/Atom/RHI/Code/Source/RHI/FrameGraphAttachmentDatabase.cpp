@@ -5,13 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/FrameGraphAttachmentDatabase.h>
-#include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
-#include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
+#include <Atom/RHI/FrameGraphAttachmentDatabase.h>
+#include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
-#include <Atom/RHI/DeviceSwapChain.h>
+#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/SwapChainFrameAttachment.h>
 namespace AZ
 {
     namespace RHI
@@ -24,7 +24,7 @@ namespace AZ
             return seed;
         }
 
-        ScopeId FrameGraphAttachmentDatabase::EmplaceResourcePoolUse(DeviceResourcePool& pool, ScopeId scopeId)
+        ScopeId FrameGraphAttachmentDatabase::EmplaceResourcePoolUse(ResourcePool& pool, ScopeId scopeId)
         {
             ScopeId lastScope;
             auto found = m_resourcePoolLastScopeUse.find(&pool);        
@@ -56,9 +56,7 @@ namespace AZ
             return true;
         }
 
-        ResultCode FrameGraphAttachmentDatabase::ImportSwapChain(
-            const AttachmentId& attachmentId,
-            Ptr<DeviceSwapChain> swapChain)
+        ResultCode FrameGraphAttachmentDatabase::ImportSwapChain(const AttachmentId& attachmentId, Ptr<SwapChain> swapChain)
         {
             if (!ValidateAttachmentIsUnregistered(attachmentId))
             {
@@ -71,9 +69,7 @@ namespace AZ
             return ResultCode::Success;
         }
 
-        ResultCode FrameGraphAttachmentDatabase::ImportImage(
-            const AttachmentId& attachmentId,
-            Ptr<DeviceImage> image)
+        ResultCode FrameGraphAttachmentDatabase::ImportImage(const AttachmentId& attachmentId, Ptr<Image> image)
         {
             // Only import the attachment if it hasn't already been imported
             if (FindAttachment(attachmentId) == nullptr)
@@ -85,7 +81,7 @@ namespace AZ
             return ResultCode::Success;
         }
 
-        ResultCode FrameGraphAttachmentDatabase::ImportBuffer(const AttachmentId& attachmentId, Ptr<DeviceBuffer> buffer)
+        ResultCode FrameGraphAttachmentDatabase::ImportBuffer(const AttachmentId& attachmentId, Ptr<Buffer> buffer)
         {
             // Only import the attachment if it hasn't already been imported
             if (FindAttachment(attachmentId) == nullptr)

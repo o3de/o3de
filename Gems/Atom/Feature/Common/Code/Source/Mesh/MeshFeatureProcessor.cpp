@@ -909,26 +909,26 @@ namespace AZ
                 // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using
                 // a ByteAddressBuffer in the raytracing shaders and passing the byte offset to the shader in a constant buffer.
                 uint32_t positionBufferByteCount =
-                    static_cast<uint32_t>(const_cast<RHI::DeviceBuffer*>(streamBufferViews[0].GetBuffer())->GetDescriptor().m_byteCount);
+                    static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor positionBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, positionBufferByteCount);
 
                 uint32_t normalBufferByteCount =
-                    static_cast<uint32_t>(const_cast<RHI::DeviceBuffer*>(streamBufferViews[1].GetBuffer())->GetDescriptor().m_byteCount);
+                    static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor normalBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, normalBufferByteCount);
 
                 uint32_t tangentBufferByteCount =
-                    static_cast<uint32_t>(const_cast<RHI::DeviceBuffer*>(streamBufferViews[2].GetBuffer())->GetDescriptor().m_byteCount);
+                    static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor tangentBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, tangentBufferByteCount);
 
                 uint32_t bitangentBufferByteCount =
-                    static_cast<uint32_t>(const_cast<RHI::DeviceBuffer*>(streamBufferViews[3].GetBuffer())->GetDescriptor().m_byteCount);
+                    static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor bitangentBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, bitangentBufferByteCount);
 
                 uint32_t uvBufferByteCount =
-                    static_cast<uint32_t>(const_cast<RHI::DeviceBuffer*>(streamBufferViews[4].GetBuffer())->GetDescriptor().m_byteCount);
+                    static_cast<uint32_t>(const_cast<RHI::Buffer*>(streamBufferViews[4].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor uvBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, uvBufferByteCount);
 
-                const RHI::DeviceIndexBufferView& indexBufferView = mesh.m_indexBufferView;
+                const RHI::IndexBufferView& indexBufferView = mesh.m_indexBufferView;
                 uint32_t indexElementSize = indexBufferView.GetIndexFormat() == RHI::IndexFormat::Uint16 ? 2 : 4;
                 uint32_t indexElementCount = (uint32_t)indexBufferView.GetBuffer()->GetDescriptor().m_byteCount / indexElementSize;
                 RHI::BufferViewDescriptor indexBufferDescriptor;
@@ -942,12 +942,12 @@ namespace AZ
                 subMesh.m_positionFormat = PositionStreamFormat;
                 subMesh.m_positionVertexBufferView = streamBufferViews[0];
                 subMesh.m_positionShaderBufferView =
-                    const_cast<RHI::DeviceBuffer*>(streamBufferViews[0].GetBuffer())->GetBufferView(positionBufferDescriptor);
+                    const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetBufferView(positionBufferDescriptor);
 
                 subMesh.m_normalFormat = NormalStreamFormat;
                 subMesh.m_normalVertexBufferView = streamBufferViews[1];
                 subMesh.m_normalShaderBufferView =
-                    const_cast<RHI::DeviceBuffer*>(streamBufferViews[1].GetBuffer())->GetBufferView(normalBufferDescriptor);
+                    const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetBufferView(normalBufferDescriptor);
 
                 if (tangentBufferByteCount > 0)
                 {
@@ -955,7 +955,7 @@ namespace AZ
                     subMesh.m_tangentFormat = TangentStreamFormat;
                     subMesh.m_tangentVertexBufferView = streamBufferViews[2];
                     subMesh.m_tangentShaderBufferView =
-                        const_cast<RHI::DeviceBuffer*>(streamBufferViews[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
+                        const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
                 }
 
                 if (bitangentBufferByteCount > 0)
@@ -964,7 +964,7 @@ namespace AZ
                     subMesh.m_bitangentFormat = BitangentStreamFormat;
                     subMesh.m_bitangentVertexBufferView = streamBufferViews[3];
                     subMesh.m_bitangentShaderBufferView =
-                        const_cast<RHI::DeviceBuffer*>(streamBufferViews[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
+                        const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
                 }
 
                 if (uvBufferByteCount > 0)
@@ -973,12 +973,12 @@ namespace AZ
                     subMesh.m_uvFormat = UVStreamFormat;
                     subMesh.m_uvVertexBufferView = streamBufferViews[4];
                     subMesh.m_uvShaderBufferView =
-                        const_cast<RHI::DeviceBuffer*>(streamBufferViews[4].GetBuffer())->GetBufferView(uvBufferDescriptor);
+                        const_cast<RHI::Buffer*>(streamBufferViews[4].GetBuffer())->GetBufferView(uvBufferDescriptor);
                 }
 
                 subMesh.m_indexBufferView = mesh.m_indexBufferView;
                 subMesh.m_indexShaderBufferView =
-                    const_cast<RHI::DeviceBuffer*>(mesh.m_indexBufferView.GetBuffer())->GetBufferView(indexBufferDescriptor);
+                    const_cast<RHI::Buffer*>(mesh.m_indexBufferView.GetBuffer())->GetBufferView(indexBufferDescriptor);
 
                 // add material data
                 if (material)

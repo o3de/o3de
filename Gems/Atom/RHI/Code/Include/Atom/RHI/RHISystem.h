@@ -26,9 +26,6 @@ namespace AZ
         struct PerDeviceObjects
         {
             RHI::Ptr<RHI::Device> m_device;
-            RHI::Ptr<RHI::PipelineStateCache> m_pipelineStateCache;
-            RHI::FrameScheduler m_frameScheduler;
-            RHI::FrameSchedulerCompileRequest m_compileRequest;
         };
 
         class RHISystem final
@@ -63,7 +60,7 @@ namespace AZ
             double GetCpuFrameTime() const override;
             const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
             const RHI::MemoryStatistics* GetMemoryStatistics() const override;
-            const RHI::DeviceTransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
+            const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
             ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const override;
             void QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable) override;
             XRRenderingInterface* GetXRSystem() const override;
@@ -75,7 +72,10 @@ namespace AZ
             void InitInternalDevice();
 
             AZStd::vector<PerDeviceObjects> m_perDeviceObjects;
+            RHI::FrameScheduler m_frameScheduler;
+            RHI::FrameSchedulerCompileRequest m_compileRequest;
             RHI::Ptr<RHI::DrawListTagRegistry> m_drawListTagRegistry;
+            RHI::Ptr<RHI::PipelineStateCache> m_pipelineStateCache;
             XRRenderingInterface* m_xrSystem = nullptr;
         };
     } // namespace RPI

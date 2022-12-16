@@ -980,17 +980,30 @@ namespace Terrain
         const int32_t left = textureUpdateAabb.m_min.m_x;
         const int32_t top = textureUpdateAabb.m_min.m_y;
 
-        AZ::RHI::DeviceImageUpdateRequest imageUpdateRequest;
+        AZ::RHI::ImageUpdateRequest imageUpdateRequest;
         imageUpdateRequest.m_imageSubresourcePixelOffset.m_left = aznumeric_cast<uint32_t>(left);
         imageUpdateRequest.m_imageSubresourcePixelOffset.m_top = aznumeric_cast<uint32_t>(top);
-        imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerRow = width * sizeof(DetailMaterialPixel);
-        imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerImage = width * height * sizeof(DetailMaterialPixel);
-        imageUpdateRequest.m_sourceSubresourceLayout.m_rowCount = height;
-        imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_width = width;
-        imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_height = height;
-        imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_depth = 1;
+        AZ::RHI::ImageSubresourceLayoutPlaced layout;
+        int deviceIndex{ 0 };
+        for (AZ::RHI::DeviceMask deviceMask{ m_detailTextureImage->GetRHIImage()->GetDeviceMask() }; deviceMask;
+             deviceMask >>= 1, ++deviceIndex)
+        {
+            if (deviceMask & 1)
+            {
+                AZ::RHI::DeviceImageSubresourceLayoutPlaced layoutPlaced;
+                layoutPlaced.m_bytesPerRow = width * sizeof(DetailMaterialPixel);
+                layoutPlaced.m_bytesPerImage = width * height * sizeof(DetailMaterialPixel);
+                layoutPlaced.m_rowCount = height;
+                layoutPlaced.m_size.m_width = width;
+                layoutPlaced.m_size.m_height = height;
+                layoutPlaced.m_size.m_depth = 1;
+                layout.m_deviceImageSubresourceLayoutPlaced[deviceIndex] = layoutPlaced;
+            }
+        }
+        imageUpdateRequest.m_sourceSubresourceLayout = layout;
+
         imageUpdateRequest.m_sourceData = pixels.data();
-        imageUpdateRequest.m_image = m_detailTextureImage->GetRHIImage();
+        imageUpdateRequest.m_image = m_detailTextureImage->GetActualRHIImage();
 
         m_detailTextureImage->UpdateImageContents(imageUpdateRequest);
     }

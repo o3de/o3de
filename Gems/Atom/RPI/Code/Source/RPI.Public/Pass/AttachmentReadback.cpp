@@ -277,7 +277,7 @@ namespace AZ
 
             m_dispatchItem.m_arguments = dispatchArgs;
 
-            const RHI::DeviceImageView* imageView = context.GetImageView(m_attachmentId);
+            const RHI::ImageView* imageView = context.GetImageView(m_attachmentId);
             m_decomposeSrg->SetImageView(m_decomposeInputImageIndex, imageView);
 
             imageView = context.GetImageView(m_copyAttachmentId);
@@ -288,7 +288,7 @@ namespace AZ
 
         void AttachmentReadback::DecomposeExecute(const RHI::FrameGraphExecuteContext& context)
         {
-            context.GetCommandList()->Submit(m_dispatchItem);
+            context.GetCommandList()->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
         
         void AttachmentReadback::CopyPrepare(RHI::FrameGraphInterface frameGraph)
@@ -351,7 +351,7 @@ namespace AZ
         {
             if (m_attachmentType == RHI::AttachmentType::Buffer)
             {
-                const AZ::RHI::DeviceBuffer* buffer = context.GetBuffer(m_copyAttachmentId);
+                const AZ::RHI::Buffer* buffer = context.GetBuffer(m_copyAttachmentId);
 
                 RPI::CommonBufferDescriptor desc;
                 desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
@@ -361,7 +361,7 @@ namespace AZ
                 m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
                 // copy buffer
-                RHI::DeviceCopyBufferDescriptor copyBuffer;
+                RHI::CopyBufferDescriptor copyBuffer;
                 copyBuffer.m_sourceBuffer = buffer;
                 copyBuffer.m_destinationBuffer = m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
                 copyBuffer.m_size = aznumeric_cast<uint32_t>(desc.m_byteCount);
@@ -371,7 +371,7 @@ namespace AZ
             else if (m_attachmentType == RHI::AttachmentType::Image)
             {
                 // copy image to read back buffer since only buffer can be accessed by host
-                const AZ::RHI::DeviceImage* image = context.GetImage(m_copyAttachmentId);
+                const AZ::RHI::Image* image = context.GetImage(m_copyAttachmentId);
                 if (!image)
                 {
                     AZ_Warning("AttachmentReadback", false, "Failed to find attachment image %s for copy to buffer", m_copyAttachmentId.GetCStr());
@@ -381,8 +381,7 @@ namespace AZ
 
                 // [GFX TODO] [ATOM-14140] [Pass Tree] Add the ability to output all the mipmaps, array and planars
                 // only copy mip level 0, array 0, and one aspect (planar) at this moment
-                RHI::ImageSubresourceRange range(0, 0, 0, 0);
-                range.m_aspectFlags = RHI::ImageAspectFlags::Color;
+                auto aspectFlags = RHI::ImageAspectFlags::Color;
 
                 // setup aspect 
                 RHI::ImageAspect imageAspect = RHI::ImageAspect::Color;
@@ -390,16 +389,25 @@ namespace AZ
                 if (RHI::CheckBitsAll(imageAspectFlags, RHI::ImageAspectFlags::Depth))
                 {
                     imageAspect = RHI::ImageAspect::Depth;
-                    range.m_aspectFlags = RHI::ImageAspectFlags::Depth;
+                    aspectFlags = RHI::ImageAspectFlags::Depth;
                 }
 
-                RHI::DeviceImageSubresourceLayoutPlaced imageSubresourceLayout;
-                image->GetSubresourceLayouts(range, &imageSubresourceLayout, nullptr);
+                RHI::ImageSubresourceLayoutPlaced imageSubresourceLayout;
+                image->GetSubresourceLayout(imageSubresourceLayout, aspectFlags);
+
+                uint32_t maxBytesPerImage = 0;
+                uint32_t maxBytesPerRow = 0;
+
+                for (auto& [deviceIndex, subresourceLayout] : imageSubresourceLayout.m_deviceImageSubresourceLayoutPlaced)
+                {
+                    maxBytesPerImage = AZStd::max(subresourceLayout.m_bytesPerImage, maxBytesPerImage);
+                    maxBytesPerRow = AZStd::max(subresourceLayout.m_bytesPerRow, maxBytesPerRow);
+                }
 
                 RPI::CommonBufferDescriptor desc;
                 desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
                 desc.m_bufferName = m_readbackName.GetStringView();
-                desc.m_byteCount = imageSubresourceLayout.m_bytesPerImage;
+                desc.m_byteCount = maxBytesPerImage;
 
                 m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
@@ -407,13 +415,13 @@ namespace AZ
                 m_imageDescriptor.m_format = FindFormatForAspect(m_imageDescriptor.m_format, imageAspect);
 
                 // copy descriptor for copying image to buffer
-                RHI::DeviceCopyImageToBufferDescriptor copyImageToBuffer;
+                RHI::CopyImageToBufferDescriptor copyImageToBuffer;
                 copyImageToBuffer.m_sourceImage = image;
                 copyImageToBuffer.m_sourceSize = m_imageDescriptor.m_size;
                 copyImageToBuffer.m_sourceSubresource = RHI::ImageSubresource(0 /*mipslice*/, 0 /*arraySlice*/, imageAspect);
                 copyImageToBuffer.m_destinationOffset = 0;
-                copyImageToBuffer.m_destinationBytesPerRow = imageSubresourceLayout.m_bytesPerRow;
-                copyImageToBuffer.m_destinationBytesPerImage = imageSubresourceLayout.m_bytesPerImage;
+                copyImageToBuffer.m_destinationBytesPerRow = maxBytesPerRow;
+                copyImageToBuffer.m_destinationBytesPerImage = maxBytesPerImage;
                 copyImageToBuffer.m_destinationBuffer = m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
                 copyImageToBuffer.m_destinationFormat = m_imageDescriptor.m_format;
 
@@ -428,13 +436,13 @@ namespace AZ
                 return;
             }
 
-            context.GetCommandList()->Submit(m_copyItem);
+            context.GetCommandList()->Submit(m_copyItem.GetDeviceCopyItem(context.GetDeviceIndex()));
         }
         
         void AttachmentReadback::Reset()
         {
             m_attachmentId = RHI::AttachmentId{};
-            m_copyItem = RHI::DeviceCopyItem{};
+            m_copyItem = RHI::CopyItem{};
             m_state = ReadbackState::Idle;
             m_readbackName = AZ::Name{};
             m_dataBuffer = nullptr;

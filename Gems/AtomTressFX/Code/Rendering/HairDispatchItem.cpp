@@ -16,8 +16,8 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 
+#include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/DeviceBufferView.h>
 
 #include <limits>
 

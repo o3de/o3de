@@ -41,7 +41,10 @@ namespace AZ
             RHI::ResultCode OrphanBufferInternal([[maybe_unused]] RHI::DeviceBuffer& buffer) override { return RHI::ResultCode::Success;}
             RHI::ResultCode MapBufferInternal([[maybe_unused]] const RHI::DeviceBufferMapRequest& mapRequest, [[maybe_unused]] RHI::DeviceBufferMapResponse& response) override { return RHI::ResultCode::Success;}
             void UnmapBufferInternal([[maybe_unused]] RHI::DeviceBuffer& buffer) override {}
-            RHI::ResultCode StreamBufferInternal([[maybe_unused]] const RHI::DeviceBufferStreamRequest& request) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode StreamBufferInternal([[maybe_unused]] const RHI::DeviceBufferStreamRequest& request) override
+            {
+                return RHI::ResultCode::Success;
+            }
             void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
 

@@ -49,8 +49,11 @@ namespace AZ
             void ApplySettingsTo(ExposureControlSettings* target, float alpha) const;
 
             void UpdateBuffer();
-            const RHI::DeviceBufferView* GetBufferView() const { return m_buffer->GetBufferView(); }
-            
+            const RHI::BufferView* GetBufferView() const
+            {
+                return m_buffer->GetBufferView();
+            }
+
             // Generate all getters and override setters.
             // Declare non-override setters, which will be defined in the .cpp
 #define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                                  \

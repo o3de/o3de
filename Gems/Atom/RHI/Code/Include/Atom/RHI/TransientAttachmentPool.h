@@ -14,7 +14,6 @@
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/ObjectCache.h>
 #include <Atom/RHI/Scope.h>
-#include <Atom/RHI/ResourcePool.h>
 
 #include <AzCore/std/optional.h>
 

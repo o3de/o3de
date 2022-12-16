@@ -94,8 +94,11 @@ namespace AZ
                 case IndirectCommandType::DrawIndexed:
                     result = SetType(IndirectBufferLayoutType::IndexedDraw);
                     break;
-                 case IndirectCommandType::Dispatch:
-                    result = SetType(IndirectBufferLayoutType::Dispach);
+                case IndirectCommandType::Dispatch:
+                    result = SetType(IndirectBufferLayoutType::Dispatch);
+                    break;
+                case IndirectCommandType::DispatchRays:
+                    result = SetType(IndirectBufferLayoutType::DispatchRays);
                     break;
                  default:
                      // Skip command
@@ -190,8 +193,8 @@ namespace AZ
                 case IndirectCommandType::Draw:
                 case IndirectCommandType::DrawIndexed:
                 case IndirectCommandType::Dispatch:
-                case IndirectCommandType::IndexBufferView:
                 case IndirectCommandType::DispatchRays:
+                case IndirectCommandType::IndexBufferView:
                 case IndirectCommandType::RootConstants:
                 case IndirectCommandType::VertexBufferView:
                     if (AZStd::find(m_commands.begin(), m_commands.end(), command) != m_commands.end())

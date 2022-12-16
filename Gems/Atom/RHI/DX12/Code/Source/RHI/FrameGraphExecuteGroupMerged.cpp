@@ -39,9 +39,10 @@ namespace AZ
                     auto& swapChainsToPresent = m_workRequest.m_swapChainsToPresent;
 
                     swapChainsToPresent.reserve(swapChainsToPresent.size() + scope->GetSwapChainsToPresent().size());
-                    for (RHI::DeviceSwapChain* swapChain : scope->GetSwapChainsToPresent())
+                    for (RHI::SwapChain* swapChain : scope->GetSwapChainsToPresent())
                     {
-                        swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
+                        swapChainsToPresent.push_back(
+                            static_cast<SwapChain*>(swapChain->GetDeviceSwapChain(scope->GetDeviceIndex()).get()));
                     }
                 }
 
@@ -59,7 +60,7 @@ namespace AZ
             InitMergedRequest request;
             request.m_scopeEntries = scopeEntries.data();
             request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
-            Base::Init(request);
+            Base::Init(device.GetIndex(), request);
         }
 
         void FrameGraphExecuteGroupMerged::BeginInternal()

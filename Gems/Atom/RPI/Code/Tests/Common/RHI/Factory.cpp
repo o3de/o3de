@@ -16,7 +16,7 @@
 #include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/FrameGraphExecuter.h>
-#include <Atom/RHI/DevicePipelineState.h>
+#include <Atom/RHI/PipelineState.h>
 #include <Common/RHI/Factory.h>
 #include <Common/RHI/Stubs.h>
 

@@ -14,7 +14,7 @@
 #include <Atom/RPI.Public/Shader/ShaderVariant.h>
 
 #include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/DevicePipelineState.h>
+#include <Atom/RHI/PipelineState.h>
 
 #include <AzCore/Console/Console.h>
 
@@ -251,7 +251,7 @@ namespace AZ
 
             m_item.m_pipelineState = GetPipelineStateFromShaderVariant();
 
-            commandList->Submit(m_item);
+            commandList->Submit(m_item.GetDeviceDrawItem(context.GetDeviceIndex(), nullptr, nullptr, nullptr));
         }
 
         void LookModificationCompositePass::SetShaperParameters(const ShaperParams& shaperParams)

@@ -50,8 +50,6 @@ namespace AZ
 
         void RayTracingAccelerationStructurePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             RPI::Scene* scene = m_pipeline->GetScene();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
 
@@ -64,8 +62,8 @@ namespace AZ
                     uint32_t rayTracingSubMeshCount = rayTracingFeatureProcessor->GetSubMeshCount();
 
                     // create the TLAS descriptor
-                    RHI::DeviceRayTracingTlasDescriptor tlasDescriptor;
-                    RHI::DeviceRayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
+                    RHI::RayTracingTlasDescriptor tlasDescriptor;
+                    RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
                     uint32_t instanceIndex = 0;
                     for (auto& subMesh : subMeshes)
@@ -84,10 +82,10 @@ namespace AZ
 
                     // create the TLAS buffers based on the descriptor
                     auto& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
-                    rayTracingTlas->CreateBuffers(*device, &tlasDescriptor, rayTracingBufferPools);
+                    rayTracingTlas->CreateBuffers(RHI::AllDevices, &tlasDescriptor, rayTracingBufferPools);
 
                     // import and attach the TLAS buffer
-                    const RHI::Ptr<RHI::DeviceBuffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
+                    const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
                     if (rayTracingTlasBuffer && rayTracingSubMeshCount)
                     {
                         AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
@@ -155,7 +153,8 @@ namespace AZ
                 {
                     for (auto& blasInstanceSubMesh : blasInstance.second.m_subMeshes)
                     {
-                        context.GetCommandList()->BuildBottomLevelAccelerationStructure(*blasInstanceSubMesh.m_blas);
+                        context.GetCommandList()->BuildBottomLevelAccelerationStructure(
+                            *blasInstanceSubMesh.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
                     }
 
                     blasInstance.second.m_blasBuilt = true;
@@ -163,7 +162,8 @@ namespace AZ
             }
 
             // build the TLAS object
-            context.GetCommandList()->BuildTopLevelAccelerationStructure(*rayTracingFeatureProcessor->GetTlas());
+            context.GetCommandList()->BuildTopLevelAccelerationStructure(
+                *rayTracingFeatureProcessor->GetTlas()->GetDeviceRayTracingTlas(context.GetDeviceIndex()).get());
         }
     }   // namespace RPI
 }   // namespace AZ

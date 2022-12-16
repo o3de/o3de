@@ -7,12 +7,13 @@
  */
 
 #include "RHITestFixture.h"
-#include <Tests/Factory.h>
-#include <Tests/Device.h>
 #include <Tests/Buffer.h>
+#include <Tests/Factory.h>
 #include <Tests/IndirectBuffer.h>
 
+#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/FrameEventBus.h>
+#include <Atom/RHI/IndirectBufferSignature.h>
 
 #include <Atom/RHI.Reflect/ReflectSystemComponent.h>
 
@@ -144,7 +145,7 @@ namespace UnitTest
                 .Times(1)
                 .WillOnce(
                     Return(AZ::RHI::ResultCode::Success));
-            EXPECT_EQ(signature->Init(*m_device, m_signatureDescriptor), RHI::ResultCode::Success);            
+            EXPECT_EQ(signature->Init(*m_device, m_signatureDescriptor), RHI::ResultCode::Success);
             return signature;
         }
 
@@ -157,7 +158,9 @@ namespace UnitTest
         RHI::Ptr<IndirectBufferWriter> CreateInitializedWriter()
         {
             auto writer = aznew NiceIndirectBufferWriter;
-            EXPECT_EQ(writer->Init(m_buffer.get(), m_writerOffset, m_writerCommandStride, m_writerNumCommands, *m_writerSignature), RHI::ResultCode::Success);
+            EXPECT_EQ(
+                writer->Init(m_buffer.get(), m_writerOffset, m_writerCommandStride, m_writerNumCommands, *m_writerSignature.get()),
+                RHI::ResultCode::Success);
             return writer;
         }
 
@@ -290,7 +293,7 @@ namespace UnitTest
         {
             auto signature = CreateInitializedSignature();
             EXPECT_TRUE(signature != nullptr);
-            ValidateSignature(*signature);
+            ValidateSignature(*signature.get());
         }
 
         // Failure initializing.
@@ -301,7 +304,7 @@ namespace UnitTest
                 .WillOnce(
                     testing::Return(RHI::ResultCode::InvalidOperation));
             RHI::DeviceIndirectBufferSignatureDescriptor descriptor;
-            EXPECT_TRUE(signature->Init(*m_device, descriptor) == RHI::ResultCode::InvalidOperation);
+            EXPECT_TRUE(signature->Init(*m_device.get(), descriptor) == RHI::ResultCode::InvalidOperation);
             EXPECT_FALSE(signature->IsInitialized());
         }
 
@@ -379,7 +382,9 @@ namespace UnitTest
         {
             RHI::Ptr<IndirectBufferWriter> writer = aznew NiceIndirectBufferWriter;
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EXPECT_EQ(writer->Init(m_buffer.get(), 1, m_writerCommandStride, m_writerNumCommands, *m_writerSignature), RHI::ResultCode::InvalidArgument);
+            EXPECT_EQ(
+                writer->Init(m_buffer.get(), 1, m_writerCommandStride, m_writerNumCommands, *m_writerSignature.get()),
+                RHI::ResultCode::InvalidArgument);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
@@ -387,7 +392,9 @@ namespace UnitTest
         {
             RHI::Ptr<IndirectBufferWriter> writer = aznew NiceIndirectBufferWriter;
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EXPECT_EQ(writer->Init(m_buffer.get(), m_writerOffset, 0, m_writerNumCommands, *m_writerSignature), RHI::ResultCode::InvalidArgument);
+            EXPECT_EQ(
+                writer->Init(m_buffer.get(), m_writerOffset, 0, m_writerNumCommands, *m_writerSignature.get()),
+                RHI::ResultCode::InvalidArgument);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
@@ -395,7 +402,9 @@ namespace UnitTest
         {
             RHI::Ptr<IndirectBufferWriter> writer = aznew NiceIndirectBufferWriter;
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EXPECT_EQ(writer->Init(m_buffer.get(), m_writerOffset, m_writerCommandStride, 0, *m_writerSignature), RHI::ResultCode::InvalidArgument);
+            EXPECT_EQ(
+                writer->Init(m_buffer.get(), m_writerOffset, m_writerCommandStride, 0, *m_writerSignature.get()),
+                RHI::ResultCode::InvalidArgument);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
@@ -403,7 +412,9 @@ namespace UnitTest
         {
             RHI::Ptr<IndirectBufferWriter> writer = aznew NiceIndirectBufferWriter;
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EXPECT_EQ(writer->Init(m_buffer.get(), m_writerOffset, m_writerCommandStride - 1, m_writerNumCommands, *m_writerSignature), RHI::ResultCode::InvalidArgument);
+            EXPECT_EQ(
+                writer->Init(m_buffer.get(), m_writerOffset, m_writerCommandStride - 1, m_writerNumCommands, *m_writerSignature.get()),
+                RHI::ResultCode::InvalidArgument);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
@@ -412,7 +423,9 @@ namespace UnitTest
             RHI::Ptr<IndirectBufferWriter> writer = aznew NiceIndirectBufferWriter;
             auto signature = CreateUnInitializedSignature();
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EXPECT_EQ(writer->Init(m_buffer.get(), m_writerOffset, m_writerCommandStride, m_writerNumCommands, *signature), RHI::ResultCode::InvalidArgument);
+            EXPECT_EQ(
+                writer->Init(m_buffer.get(), m_writerOffset, m_writerCommandStride, m_writerNumCommands, *signature.get()),
+                RHI::ResultCode::InvalidArgument);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
@@ -420,14 +433,17 @@ namespace UnitTest
         {
             RHI::Ptr<IndirectBufferWriter> writer = aznew NiceIndirectBufferWriter;
             size_t offset = 16;
-            EXPECT_EQ(writer->Init(m_buffer.get(), offset, m_writerCommandStride, 5, *m_writerSignature), RHI::ResultCode::Success);
+            EXPECT_EQ(writer->Init(m_buffer.get(), offset, m_writerCommandStride, 5, *m_writerSignature.get()), RHI::ResultCode::Success);
             EXPECT_EQ(writer->GetData(), m_buffer->GetData().data() + offset);
         }
 
         // Initialization with memory pointer
         {
             RHI::Ptr<IndirectBufferWriter> writer = aznew NiceIndirectBufferWriter;
-            EXPECT_EQ(writer->Init(const_cast<uint8_t*>(m_buffer->GetData().data()), m_writerCommandStride, m_writerNumCommands, *m_writerSignature), RHI::ResultCode::Success);
+            EXPECT_EQ(
+                writer->Init(
+                    const_cast<uint8_t*>(m_buffer->GetData().data()), m_writerCommandStride, m_writerNumCommands, *m_writerSignature.get()),
+                RHI::ResultCode::Success);
             EXPECT_EQ(writer->GetData(), m_buffer->GetData().data());
         }
 
@@ -435,7 +451,9 @@ namespace UnitTest
         {
             auto writer = CreateInitializedWriter();
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EXPECT_EQ(writer->Init(m_buffer.get(), m_writerOffset, m_writerCommandStride, m_writerNumCommands, *m_writerSignature), RHI::ResultCode::InvalidOperation);
+            EXPECT_EQ(
+                writer->Init(m_buffer.get(), m_writerOffset, m_writerCommandStride, m_writerNumCommands, *m_writerSignature.get()),
+                RHI::ResultCode::InvalidOperation);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
@@ -539,13 +557,13 @@ namespace UnitTest
 
         // Write command on uninitialized writer
         {
-             RHI::Ptr<IndirectBufferWriter> writer = aznew NiceIndirectBufferWriter;
-;
-             AZ::RHI::DrawIndexed arguments(1, 2, 3, 4, 5);
-             EXPECT_CALL(*writer, DrawIndexedInternal(testing::_, testing::_)).Times(0);
-             AZ_TEST_START_TRACE_SUPPRESSION;
-             writer->DrawIndexed(arguments);
-             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+            RHI::Ptr<IndirectBufferWriter> writer = aznew NiceIndirectBufferWriter;
+            ;
+            AZ::RHI::DrawIndexed arguments(1, 2, 3, 4, 5);
+            EXPECT_CALL(*writer, DrawIndexedInternal(testing::_, testing::_)).Times(0);
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            writer->DrawIndexed(arguments);
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
         // Flush

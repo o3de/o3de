@@ -7,18 +7,18 @@
  */
 
 #include <Atom/RHI.Loader/FunctionLoader.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/DeviceTransientAttachmentPool.h>
+#include <AzCore/Debug/Trace.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/Debug/Trace.h>
 #include <RHI/AsyncUploadQueue.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
@@ -334,7 +334,11 @@ namespace AZ
             m_semaphoreAllocator.Init(semaphoreAllocDescriptor);
 
             m_imageMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
-            m_bufferMemoryRequirementsCache.SetInitFunction([](auto& cache) { cache.set_capacity(MemoryRequirementsCacheSize); });
+            m_bufferMemoryRequirementsCache.SetInitFunction(
+                [](auto& cache)
+                {
+                    cache.set_capacity(MemoryRequirementsCacheSize);
+                });
 
             m_stagingBufferPool = BufferPool::Create();
             RHI::BufferPoolDescriptor poolDesc;
@@ -503,7 +507,7 @@ namespace AZ
             }
 
             return *m_asyncUploadQueue;
-        }        
+        }
 
         RHI::Ptr<Buffer> Device::AcquireStagingBuffer(AZStd::size_t byteCount)
         {

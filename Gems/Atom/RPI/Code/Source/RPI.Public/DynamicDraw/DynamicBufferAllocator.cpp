@@ -11,6 +11,9 @@
 #include <Atom/RPI.Public/DynamicDraw/DynamicBufferAllocator.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicBuffer.h>
 
+#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/StreamBufferView.h>
+
 namespace AZ
 {
     namespace RPI
@@ -129,24 +132,16 @@ namespace AZ
             return allocatedBuffer;
         }
 
-        RHI::DeviceIndexBufferView DynamicBufferAllocator::GetIndexBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, RHI::IndexFormat format)
+        RHI::IndexBufferView DynamicBufferAllocator::GetIndexBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, RHI::IndexFormat format)
         {
-            return RHI::DeviceIndexBufferView(
-                *m_ringBuffer->GetRHIBuffer(),
-                GetBufferAddressOffset(dynamicBuffer),
-                dynamicBuffer->m_size,
-                format
-            );
+            return RHI::IndexBufferView(
+                *m_ringBuffer->GetRHIBuffer(), GetBufferAddressOffset(dynamicBuffer), dynamicBuffer->m_size, format);
         }
 
-        RHI::DeviceStreamBufferView DynamicBufferAllocator::GetStreamBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, uint32_t strideByteCount)
+        RHI::StreamBufferView DynamicBufferAllocator::GetStreamBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, uint32_t strideByteCount)
         {
-            return RHI::DeviceStreamBufferView(
-                *m_ringBuffer->GetRHIBuffer(),
-                GetBufferAddressOffset(dynamicBuffer),
-                dynamicBuffer->m_size,
-                strideByteCount
-            );
+            return RHI::StreamBufferView(
+                *m_ringBuffer->GetRHIBuffer(), GetBufferAddressOffset(dynamicBuffer), dynamicBuffer->m_size, strideByteCount);
         }
 
         uint32_t DynamicBufferAllocator::GetBufferAddressOffset(RHI::Ptr<DynamicBuffer> dynamicBuffer)

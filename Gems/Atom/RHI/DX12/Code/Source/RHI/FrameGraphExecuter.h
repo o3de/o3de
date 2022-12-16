@@ -28,8 +28,6 @@ namespace AZ
 
             static RHI::Ptr<FrameGraphExecuter> Create();
 
-            Device& GetDevice() const;
-
         private:
             FrameGraphExecuter();
 

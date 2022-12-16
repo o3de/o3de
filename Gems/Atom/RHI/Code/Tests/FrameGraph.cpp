@@ -11,7 +11,7 @@ namespace UnitTest
 {
     using namespace AZ;
 
-    RHI::ResultCode FrameGraphCompiler::InitInternal(RHI::Device&)
+    RHI::ResultCode FrameGraphCompiler::InitInternal(RHI::DeviceMask)
     {
         return RHI::ResultCode::Success;
     }
@@ -34,7 +34,7 @@ namespace UnitTest
         request.m_scopeId = scopeId;
         request.m_commandListCount = 1;
         request.m_commandLists = &m_commandList;
-        Base::Init(request);
+        Base::Init(0, request);
     }
 
     const RHI::ScopeId& FrameGraphExecuteGroup::GetId() const

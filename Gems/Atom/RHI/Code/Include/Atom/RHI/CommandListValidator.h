@@ -16,10 +16,10 @@ namespace AZ
     namespace RHI
     {
         class Scope;
-        class DeviceShaderResourceGroup;
+        class ShaderResourceGroup;
         struct ShaderResourceGroupBindingInfo;
-        class DeviceResource;
-        class DeviceResourceView;
+        class Resource;
+        class ResourceView;
         class ScopeAttachment;
         class FrameAttachment;
 
@@ -43,7 +43,8 @@ namespace AZ
              * Validates that the shader resource group is usable on the current scope. Emits a warning
              * otherwise and returns false.
              */
-            bool ValidateShaderResourceGroup(const DeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupBindingInfo& bindingInfo) const;
+            bool ValidateShaderResourceGroup(
+                const ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupBindingInfo& bindingInfo) const;
 
             /**
              * Ends validation for the current scope.
@@ -57,7 +58,7 @@ namespace AZ
                 const char* m_srgName = "";
                 const char* m_shaderInputTypeName = "";
                 ScopeAttachmentAccess m_scopeAttachmentAccess = ScopeAttachmentAccess::Read;
-                const DeviceResourceView* m_resourceView = nullptr;
+                const ResourceView* m_resourceView = nullptr;
             };
 
             static ScopeAttachmentAccess GetAttachmentAccess(ShaderInputBufferAccess bufferInputAccess);
@@ -65,8 +66,8 @@ namespace AZ
 
             bool ValidateView(const ValidateViewContext& context, bool ignoreAttachmentValidation) const;
             bool ValidateAttachment(const ValidateViewContext& context, const FrameAttachment* frameAttachment) const;
-            
-            AZStd::unordered_map<const DeviceResource*, AZStd::vector<const ScopeAttachment*>> m_attachments;
+
+            AZStd::unordered_map<const Resource*, AZStd::vector<const ScopeAttachment*>> m_attachments;
             const Scope* m_scope = nullptr;
         };
     }

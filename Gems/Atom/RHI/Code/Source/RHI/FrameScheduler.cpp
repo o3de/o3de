@@ -7,6 +7,8 @@
  */
 
 #include <Atom/RHI/DeviceRayTracingShaderTable.h>
+#include <Atom/RHI/FrameScheduler.h>
+
 #include <Atom/RHI/DeviceResourceInvalidateBus.h>
 #include <Atom/RHI/DeviceShaderResourceGroupPool.h>
 #include <Atom/RHI/DeviceTransientAttachmentPool.h>
@@ -18,9 +20,9 @@
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraphLogger.h>
-#include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI/MemoryStatisticsBus.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
 #include <Atom/RHI/ScopeProducer.h>
 
@@ -38,7 +40,7 @@ namespace AZ
         static constexpr const char* frameTimeMetricName = "Frame to Frame Time";
         static constexpr AZ::Crc32 frameTimeMetricId = AZ_CRC_CE(frameTimeMetricName);
 
-        ResultCode FrameScheduler::Init(Device& device, const FrameSchedulerDescriptor& descriptor)
+        ResultCode FrameScheduler::Init(DeviceMask deviceMask, const FrameSchedulerDescriptor& descriptor)
         {
             ResultCode resultCode = ResultCode::Success;
 
@@ -46,7 +48,7 @@ namespace AZ
             m_frameGraphAttachmentDatabase = &m_frameGraph->GetAttachmentDatabase();
 
             m_frameGraphCompiler = Factory::Get().CreateFrameGraphCompiler();
-            resultCode = m_frameGraphCompiler->Init(device);
+            resultCode = m_frameGraphCompiler->Init(deviceMask);
 
             if (resultCode != ResultCode::Success)
             {
@@ -56,7 +58,7 @@ namespace AZ
 
             m_frameGraphExecuter = Factory::Get().CreateFrameGraphExecuter();
             FrameGraphExecuterDescriptor executerDesc;
-            executerDesc.m_device = &device;
+            executerDesc.m_deviceMask = deviceMask;
             executerDesc.m_platformLimitsDescriptor = descriptor.m_platformLimitsDescriptor;
             resultCode = m_frameGraphExecuter->Init(executerDesc);
 
@@ -66,10 +68,10 @@ namespace AZ
                 return resultCode;
             }
 
-            if (DeviceTransientAttachmentPool::NeedsTransientAttachmentPool(descriptor.m_transientAttachmentPoolDescriptor))
+            if (TransientAttachmentPool::NeedsTransientAttachmentPool(descriptor.m_transientAttachmentPoolDescriptor))
             {
-                m_transientAttachmentPool = Factory::Get().CreateTransientAttachmentPool();
-                resultCode = m_transientAttachmentPool->Init(device, descriptor.m_transientAttachmentPoolDescriptor);
+                m_transientAttachmentPool = aznew TransientAttachmentPool();
+                resultCode = m_transientAttachmentPool->Init(deviceMask, descriptor.m_transientAttachmentPoolDescriptor);
 
                 if (resultCode != ResultCode::Success)
                 {
@@ -80,7 +82,7 @@ namespace AZ
 
             m_rootScopeProducer.reset(aznew ScopeProducerEmpty(GetRootScopeId()));
             m_rootScope = m_rootScopeProducer->GetScope();
-            m_device = &device;
+            m_deviceMask = deviceMask;
 
             m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
 
@@ -89,7 +91,8 @@ namespace AZ
                 statsProfiler->ActivateProfiler(rhiMetricsId, true);
 
                 auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
-                rhiMetrics.GetStatsManager().AddStatistic(frameTimeMetricId, frameTimeMetricName, /*units=*/"clocks", /*failIfExist=*/false);
+                rhiMetrics.GetStatsManager().AddStatistic(
+                    frameTimeMetricId, frameTimeMetricName, /*units=*/"clocks", /*failIfExist=*/false);
             }
 
             m_lastFrameEndTime = AZStd::GetTimeNowTicks();
@@ -99,7 +102,7 @@ namespace AZ
 
         void FrameScheduler::Shutdown()
         {
-            m_device = nullptr;
+            m_deviceMask = 0;
             m_taskGraphActive = nullptr;
             m_rootScopeProducer = nullptr;
             m_rootScope = nullptr;
@@ -131,7 +134,8 @@ namespace AZ
                 if (m_isProcessing == false)
                 {
                     AZ_Error(
-                        "FrameScheduler", false,
+                        "FrameScheduler",
+                        false,
                         "This operation is not allowed because the frame scheduler is not currently processing the frame.");
                     return false;
                 }
@@ -142,7 +146,7 @@ namespace AZ
 
         bool FrameScheduler::IsInitialized() const
         {
-            return m_device != nullptr;
+            return m_deviceMask != 0;
         }
 
         FrameGraphAttachmentInterface FrameScheduler::GetAttachmentDatabase()
@@ -173,7 +177,11 @@ namespace AZ
             {
                 if (!isUnique)
                 {
-                    AZ_Error("FrameScheduler", false, "Scope %s already exists. You must specify a unique name.", scopeProducer.GetScopeId().GetCStr());
+                    AZ_Error(
+                        "FrameScheduler",
+                        false,
+                        "Scope %s already exists. You must specify a unique name.",
+                        scopeProducer.GetScopeId().GetCStr());
                     return RHI::ResultCode::InvalidArgument;
                 }
             }
@@ -236,7 +244,7 @@ namespace AZ
                 AZ_PROFILE_SCOPE(RHI, "FrameScheduler: PrepareProducers: Scope %s", scopeProducer->GetScopeId().GetCStr());
                 m_frameGraph->BeginScope(*scopeProducer->GetScope());
                 scopeProducer->SetupFrameGraphDependencies(*m_frameGraph);
-                
+
                 // All scopes depend on the root scope.
                 if (scopeProducer->GetScopeId() != m_rootScopeId)
                 {
@@ -268,119 +276,135 @@ namespace AZ
                 DeviceResourceInvalidateBus::ExecuteQueuedEvents();
             }
 
-            const ResourcePoolDatabase& resourcePoolDatabase = m_device->GetResourcePoolDatabase();
+            int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
 
-            if (m_compileRequest.m_jobPolicy == JobPolicy::Parallel)
+            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
             {
-                // Iterate over each SRG pool and fork jobs to compile SRGs.
-                const uint32_t compilesPerJob = m_compileRequest.m_shaderResourceGroupCompilesPerJob;
-                if (m_taskGraphActive && m_taskGraphActive->IsTaskGraphActive())
+                if (((m_deviceMask >> deviceIndex) & 1) == 0)
                 {
-                    AZ::TaskGraph taskGraph{ "SRG Compilation" };
+                    continue;
+                }
 
-                    const auto compileIntervalsFunction = [compilesPerJob, &taskGraph](DeviceShaderResourceGroupPool* srgPool)
+                Device* device = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
+
+                const ResourcePoolDatabase& resourcePoolDatabase = device->GetResourcePoolDatabase();
+
+                if (m_compileRequest.m_jobPolicy == JobPolicy::Parallel)
+                {
+                    // Iterate over each SRG pool and fork jobs to compile SRGs.
+                    const uint32_t compilesPerJob = m_compileRequest.m_shaderResourceGroupCompilesPerJob;
+                    if (m_taskGraphActive && m_taskGraphActive->IsTaskGraphActive())
                     {
-                        srgPool->CompileGroupsBegin();
-                        const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
-                        const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
-                        AZ::TaskDescriptor srgCompileDesc{"SrgCompile", "Graphics"};
-                        AZ::TaskDescriptor srgCompileEndDesc{"SrgCompileEnd", "Graphics"};
+                        AZ::TaskGraph taskGraph{ "SRG Compilation" };
 
-                        auto srgCompileEndTask = taskGraph.AddTask(
-                            srgCompileEndDesc,
-                            [srgPool]()
-                            {
-                                srgPool->CompileGroupsEnd();
-                            });
-
-                        for (uint32_t i = 0; i < jobCount; ++i)
+                        const auto compileIntervalsFunction = [compilesPerJob, &taskGraph](DeviceShaderResourceGroupPool* srgPool)
                         {
-                            Interval interval;
-                            interval.m_min = i * compilesPerJob;
-                            interval.m_max = AZStd::min(interval.m_min + compilesPerJob, compilesInPool);
+                            srgPool->CompileGroupsBegin();
+                            const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
+                            const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
+                            AZ::TaskDescriptor srgCompileDesc{ "SrgCompile", "Graphics" };
+                            AZ::TaskDescriptor srgCompileEndDesc{ "SrgCompileEnd", "Graphics" };
 
-                            auto compileTask = taskGraph.AddTask(
-                                srgCompileDesc,
-                                [srgPool, interval]()
+                            auto srgCompileEndTask = taskGraph.AddTask(
+                                srgCompileEndDesc,
+                                [srgPool]()
                                 {
-                                AZ_PROFILE_SCOPE(RHI, "FrameScheduler : compileGroupsForIntervalLambda");
-                                    srgPool->CompileGroupsForInterval(interval);
+                                    srgPool->CompileGroupsEnd();
                                 });
-                                compileTask.Precedes(srgCompileEndTask);
-                        }
-                    };
 
-                    resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileIntervalsFunction)>(AZStd::move(compileIntervalsFunction));
-                    if (!taskGraph.IsEmpty())
+                            for (uint32_t i = 0; i < jobCount; ++i)
+                            {
+                                Interval interval;
+                                interval.m_min = i * compilesPerJob;
+                                interval.m_max = AZStd::min(interval.m_min + compilesPerJob, compilesInPool);
+
+                                auto compileTask = taskGraph.AddTask(
+                                    srgCompileDesc,
+                                    [srgPool, interval]()
+                                    {
+                                        AZ_PROFILE_SCOPE(RHI, "FrameScheduler : compileGroupsForIntervalLambda");
+                                        srgPool->CompileGroupsForInterval(interval);
+                                    });
+                                compileTask.Precedes(srgCompileEndTask);
+                            }
+                        };
+
+                        resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileIntervalsFunction)>(
+                            AZStd::move(compileIntervalsFunction));
+                        if (!taskGraph.IsEmpty())
+                        {
+                            AZ::TaskGraphEvent finishedEvent{ "SRG Compile Wait" };
+                            taskGraph.Submit(&finishedEvent);
+                            finishedEvent.Wait();
+                        }
+                    }
+                    else // use Job system
                     {
-                        AZ::TaskGraphEvent finishedEvent{ "SRG Compile Wait" };
-                        taskGraph.Submit(&finishedEvent);
-                        finishedEvent.Wait();
+                        const auto compileGroupsBeginFunction = [](DeviceShaderResourceGroupPool* srgPool)
+                        {
+                            srgPool->CompileGroupsBegin();
+                        };
+
+                        resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileGroupsBeginFunction)>(
+                            compileGroupsBeginFunction);
+
+                        // Iterate over each SRG pool and fork jobs to compile SRGs.
+                        AZ::JobCompletion jobCompletion;
+
+                        const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](DeviceShaderResourceGroupPool* srgPool)
+                        {
+                            const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
+                            const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
+
+                            for (uint32_t i = 0; i < jobCount; ++i)
+                            {
+                                Interval interval;
+                                interval.m_min = i * compilesPerJob;
+                                interval.m_max = AZStd::min(interval.m_min + compilesPerJob, compilesInPool);
+
+                                const auto compileGroupsForIntervalLambda = [srgPool, interval]()
+                                {
+                                    AZ_PROFILE_SCOPE(RHI, "FrameScheduler : compileGroupsForIntervalLambda");
+                                    srgPool->CompileGroupsForInterval(interval);
+                                };
+
+                                AZ::Job* executeGroupJob =
+                                    AZ::CreateJobFunction(AZStd::move(compileGroupsForIntervalLambda), true, nullptr);
+                                executeGroupJob->SetDependent(&jobCompletion);
+                                executeGroupJob->Start();
+                            }
+                        };
+
+                        resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileIntervalsFunction)>(
+                            AZStd::move(compileIntervalsFunction));
+
+                        jobCompletion.StartAndWaitForCompletion();
+
+                        const auto compileGroupsEndFunction = [](DeviceShaderResourceGroupPool* srgPool)
+                        {
+                            srgPool->CompileGroupsEnd();
+                        };
+
+                        resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileGroupsEndFunction)>(compileGroupsEndFunction);
                     }
                 }
-                else // use Job system
+                else
                 {
-                    const auto compileGroupsBeginFunction = [](DeviceShaderResourceGroupPool* srgPool)
+                    const auto compileAllLambda = [](DeviceShaderResourceGroupPool* srgPool)
                     {
                         srgPool->CompileGroupsBegin();
-                    };
-
-                    resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileGroupsBeginFunction)>(compileGroupsBeginFunction);
-
-                    // Iterate over each SRG pool and fork jobs to compile SRGs.
-                    AZ::JobCompletion jobCompletion;
-
-                    const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](DeviceShaderResourceGroupPool* srgPool)
-                    {
-                        const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
-                        const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
-
-                        for (uint32_t i = 0; i < jobCount; ++i)
-                        {
-                            Interval interval;
-                            interval.m_min = i * compilesPerJob;
-                            interval.m_max = AZStd::min(interval.m_min + compilesPerJob, compilesInPool);
-
-                            const auto compileGroupsForIntervalLambda = [srgPool, interval]()
-                            {
-                                AZ_PROFILE_SCOPE(RHI, "FrameScheduler : compileGroupsForIntervalLambda");
-                                srgPool->CompileGroupsForInterval(interval);
-                            };
-
-                            AZ::Job* executeGroupJob = AZ::CreateJobFunction(AZStd::move(compileGroupsForIntervalLambda), true, nullptr);
-                            executeGroupJob->SetDependent(&jobCompletion);
-                            executeGroupJob->Start();
-                        }
-                    };
-
-                    resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileIntervalsFunction)>(AZStd::move(compileIntervalsFunction));
-
-                    jobCompletion.StartAndWaitForCompletion();
-
-                    const auto compileGroupsEndFunction = [](DeviceShaderResourceGroupPool* srgPool)
-                    {
+                        srgPool->CompileGroupsForInterval(Interval(0, srgPool->GetGroupsToCompileCount()));
                         srgPool->CompileGroupsEnd();
                     };
 
-                    resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileGroupsEndFunction)>(compileGroupsEndFunction);
+                    resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileAllLambda)>(compileAllLambda);
                 }
-            }
-            else
-            {
-                const auto compileAllLambda = [](DeviceShaderResourceGroupPool* srgPool)
-                {
-                    srgPool->CompileGroupsBegin();
-                    srgPool->CompileGroupsForInterval(Interval(0, srgPool->GetGroupsToCompileCount()));
-                    srgPool->CompileGroupsEnd();
-                };
 
-                resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileAllLambda)>(compileAllLambda);
+                // It is possible for certain back ends to run out of SRG memory (due to fragmentation) in which case
+                // we try to compact and re-compile SRGs.
+                [[maybe_unused]] RHI::ResultCode resultCode = device->CompactSRGMemory();
+                AZ_Assert(resultCode == RHI::ResultCode::Success, "SRG compaction failed and this can lead to a gpu crash.");
             }
-
-            //It is possible for certain back ends to run out of SRG memory (due to fragmentation) in which case
-            //we try to compact and re-compile SRGs.
-            [[maybe_unused]] RHI::ResultCode resultCode = m_device->CompactSRGMemory();
-            AZ_Assert(resultCode == RHI::ResultCode::Success, "SRG compaction failed and this can lead to a gpu crash.");
         }
 
         void FrameScheduler::BuildRayTracingShaderTables()
@@ -421,21 +445,42 @@ namespace AZ
 
             m_isProcessing = true;
 
-            if (m_device->BeginFrame() == ResultCode::Success)
-            {
-                m_frameGraph->Begin();
+            int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
 
-                ImportScopeProducer(*m_rootScopeProducer);
+            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
+            {
+                if (((m_deviceMask >> deviceIndex) & 1) == 0)
+                {
+                    continue;
+                }
+
+                Device* device = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
+
+                if (device->BeginFrame() != ResultCode::Success)
+                    return ResultCode::Fail;
+            }
+
+            m_frameGraph->Begin();
+
+            ImportScopeProducer(*m_rootScopeProducer);
+
+            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
+            {
+                if (((m_deviceMask >> deviceIndex) & 1) == 0)
+                {
+                    continue;
+                }
+
+                Device* device = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
 
                 // Queue resource pool resolves onto the root scope.
-                m_rootScope->QueueResourcePoolResolves(m_device->GetResourcePoolDatabase());
+                m_rootScope->QueueResourcePoolResolves(device->GetResourcePoolDatabase());
 
                 // This is broadcast after beginning the frame so that the CPU and GPU are synchronized.
-                FrameEventBus::Event(m_device, &FrameEventBus::Events::OnFrameBegin);
-
-                return ResultCode::Success;
+                FrameEventBus::Event(device, &FrameEventBus::Events::OnFrameBegin);
             }
-            return ResultCode::Fail;
+
+            return ResultCode::Success;
         }
 
         ResultCode FrameScheduler::EndFrame()
@@ -454,28 +499,52 @@ namespace AZ
             m_isProcessing = false;
             m_frameGraphExecuter->End();
             m_frameGraph->Clear();
-            m_device->EndFrame();
 
-            if (CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherMemoryStatistics))
-            {
-                m_device->CompileMemoryStatistics(m_memoryStatistics, MemoryStatisticsReportFlags::Detail);
-                m_memoryStatistics.m_detailedCapture = true;
-            }
-            else
-            {
-                m_device->CompileMemoryStatistics(m_memoryStatistics, MemoryStatisticsReportFlags::Basic);
-                m_memoryStatistics.m_detailedCapture = false;
-            }
+            int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
 
-            m_device->UpdateCpuTimingStatistics();
+            m_memoryStatistics.m_heaps.clear();
+            m_memoryStatistics.m_pools.clear();
+
+            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
+            {
+                if (((m_deviceMask >> deviceIndex) & 1) == 0)
+                {
+                    continue;
+                }
+
+                Device* device = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
+
+                device->EndFrame();
+
+                MemoryStatistics memoryStatistics;
+
+                if (CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherMemoryStatistics))
+                {
+                    device->CompileMemoryStatistics(memoryStatistics, MemoryStatisticsReportFlags::Detail);
+                    memoryStatistics.m_detailedCapture = true;
+                }
+                else
+                {
+                    device->CompileMemoryStatistics(memoryStatistics, MemoryStatisticsReportFlags::Basic);
+                    memoryStatistics.m_detailedCapture = false;
+                }
+
+                m_memoryStatistics.m_heaps.insert(
+                    m_memoryStatistics.m_heaps.end(), memoryStatistics.m_heaps.begin(), memoryStatistics.m_heaps.end());
+                m_memoryStatistics.m_pools.insert(
+                    m_memoryStatistics.m_pools.end(), memoryStatistics.m_pools.begin(), memoryStatistics.m_pools.end());
+                m_memoryStatistics.m_detailedCapture = memoryStatistics.m_detailedCapture;
+
+                device->UpdateCpuTimingStatistics();
+
+                {
+                    AZ_PROFILE_SCOPE(RHI, "FrameScheduler: EndFrame: OnFrameEnd");
+                    FrameEventBus::Event(device, &FrameEventBus::Events::OnFrameEnd);
+                }
+            }
 
             m_scopeProducers.clear();
             m_scopeProducerLookup.clear();
-
-            {
-                AZ_PROFILE_SCOPE(RHI, "FrameScheduler: EndFrame: OnFrameEnd");
-                FrameEventBus::Event(m_device, &FrameEventBus::Events::OnFrameEnd);
-            }
 
             const AZStd::sys_time_t timeNowTicks = AZStd::GetTimeNowTicks();
             if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
@@ -570,8 +639,7 @@ namespace AZ
              * The scheduler itself can force serial execution even if the platform supports it (e.g. as a debugging flag).
              * We must run serially if the scheduler or the platform forces us to.
              */
-            if (overrideJobPolicy == JobPolicy::Serial ||
-                platformJobPolicy == JobPolicy::Serial)
+            if (overrideJobPolicy == JobPolicy::Serial || platformJobPolicy == JobPolicy::Serial)
             {
                 for (uint32_t groupIndex = 0; groupIndex < groupCount; ++groupIndex)
                 {
@@ -616,8 +684,7 @@ namespace AZ
 
         const TransientAttachmentStatistics* FrameScheduler::GetTransientAttachmentStatistics() const
         {
-            return
-                CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherTransientAttachmentStatistics)
+            return CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherTransientAttachmentStatistics)
                 ? &m_transientAttachmentPool->GetStatistics()
                 : nullptr;
         }
@@ -638,7 +705,7 @@ namespace AZ
             return m_rootScopeId;
         }
 
-        const DeviceTransientAttachmentPoolDescriptor* FrameScheduler::GetTransientAttachmentPoolDescriptor() const
+        const TransientAttachmentPoolDescriptor* FrameScheduler::GetTransientAttachmentPoolDescriptor() const
         {
             return m_transientAttachmentPool ? &m_transientAttachmentPool->GetDescriptor() : nullptr;
         }
@@ -647,5 +714,5 @@ namespace AZ
         {
             m_rayTracingShaderTablesToBuild.push_back(rayTracingShaderTable);
         }
-    }
-}
+    } // namespace RHI
+} // namespace AZ

@@ -9,10 +9,10 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DeviceDrawItem.h>
-#include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
+#include <Atom/RHI/CommandList.h>
+#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -74,7 +74,7 @@ namespace AZ
             AZ::RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
 
             // The shader variant (for choosing the different MSAA version) is sent to the RHI via the PipelineState
-            AZ::RHI::ConstPtr<AZ::RHI::DevicePipelineState> m_msaaPipelineState;
+            AZ::RHI::ConstPtr<AZ::RHI::PipelineState> m_msaaPipelineState;
 
             AZ::Name m_msaaNoneName;
             AZ::Name m_msaaMode2xName;

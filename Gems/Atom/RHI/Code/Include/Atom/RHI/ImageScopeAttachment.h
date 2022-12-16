@@ -15,7 +15,7 @@ namespace AZ
 {
     namespace RHI
     {
-        class DeviceImageView;
+        class ImageView;
         class ImageFrameAttachment;
 
         
@@ -50,10 +50,10 @@ namespace AZ
             ImageScopeAttachment* GetNext();
 
             //! Returns the image view set on the scope attachment.
-            const DeviceImageView* GetImageView() const;
+            const ImageView* GetImageView() const;
 
             //! Assigns an image view to the scope attachment.
-            void SetImageView(ConstPtr<DeviceImageView> imageView);
+            void SetImageView(ConstPtr<ImageView> imageView);
 
             bool IsBeingResolved() const;
 

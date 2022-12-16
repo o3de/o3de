@@ -8,14 +8,14 @@
 
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/DeviceBufferView.h>
+#include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/Factory.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        BufferFrameAttachment::BufferFrameAttachment(const AttachmentId& attachmentId, Ptr<DeviceBuffer> buffer)
+        BufferFrameAttachment::BufferFrameAttachment(const AttachmentId& attachmentId, Ptr<Buffer> buffer)
             : FrameAttachment(attachmentId, HardwareQueueClassMask::All, AttachmentLifetimeType::Imported)
             , m_bufferDescriptor{ buffer->GetDescriptor() }
         {
@@ -55,14 +55,14 @@ namespace AZ
             return m_bufferDescriptor;
         }
 
-        const DeviceBuffer* BufferFrameAttachment::GetBuffer() const
+        const Buffer* BufferFrameAttachment::GetBuffer() const
         {
-            return static_cast<const DeviceBuffer*>(GetResource());
+            return static_cast<const Buffer*>(GetResource());
         }
 
-        DeviceBuffer* BufferFrameAttachment::GetBuffer()
+        Buffer* BufferFrameAttachment::GetBuffer()
         {
-            return static_cast<DeviceBuffer*>(GetResource());
+            return static_cast<Buffer*>(GetResource());
         }
     }
 }

@@ -13,14 +13,9 @@ namespace AZ
 {
     namespace RHI
     {
-        ImageFrameAttachment::ImageFrameAttachment(
-            const AttachmentId& attachmentId,
-            Ptr<DeviceImage> image)
-            : FrameAttachment(
-                attachmentId,
-                HardwareQueueClassMask::All,
-                AttachmentLifetimeType::Imported)
-            , m_imageDescriptor{image->GetDescriptor()}
+        ImageFrameAttachment::ImageFrameAttachment(const AttachmentId& attachmentId, Ptr<Image> image)
+            : FrameAttachment(attachmentId, HardwareQueueClassMask::All, AttachmentLifetimeType::Imported)
+            , m_imageDescriptor{ image->GetDescriptor() }
         {
             SetResource(AZStd::move(image));
         }
@@ -64,14 +59,14 @@ namespace AZ
             return m_imageDescriptor;
         }
 
-        const DeviceImage* ImageFrameAttachment::GetImage() const
+        const Image* ImageFrameAttachment::GetImage() const
         {
-            return static_cast<const DeviceImage*>(GetResource());
+            return static_cast<const Image*>(GetResource());
         }
 
-        DeviceImage* ImageFrameAttachment::GetImage()
+        Image* ImageFrameAttachment::GetImage()
         {
-            return static_cast<DeviceImage*>(GetResource());
+            return static_cast<Image*>(GetResource());
         }
 
         ClearValue ImageFrameAttachment::GetOptimizedClearValue() const

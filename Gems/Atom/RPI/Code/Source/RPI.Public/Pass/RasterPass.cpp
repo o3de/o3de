@@ -9,7 +9,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/DeviceShaderResourceGroup.h>
+#include <Atom/RHI/ShaderResourceGroup.h>
 
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
@@ -188,10 +188,10 @@ namespace AZ
             }
             PassSystemInterface::Get()->IncrementFrameDrawItemCount(m_drawItemCount);
             m_combinedDrawList.resize(m_drawItemCount);
-            RHI::DeviceDrawItemProperties* currentBuffer = m_combinedDrawList.data();
+            RHI::DrawItemProperties* currentBuffer = m_combinedDrawList.data();
             for (auto drawList : drawLists)
             {
-                memcpy(currentBuffer, drawList.data(), drawList.size()*sizeof(RHI::DeviceDrawItemProperties));
+                memcpy(currentBuffer, drawList.data(), drawList.size() * sizeof(RHI::DrawItemProperties));
                 currentBuffer += drawList.size();
             }
             SortDrawList(m_combinedDrawList);
@@ -237,12 +237,28 @@ namespace AZ
                 commandList->SetScissor(m_scissorState);
                 SetSrgsForDraw(commandList);
 
+                AZStd::vector<const RHI::DeviceShaderResourceGroup*> deviceShaderResourceGroups;
+                AZStd::vector<RHI::DeviceStreamBufferView> deviceStreamBufferViews;
+                RHI::DeviceIndexBufferView deviceIndexBufferView;
+
                 for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
                 {
-                    const RHI::DeviceDrawItemProperties& drawItemProperties = m_drawListView[index];
+                    const RHI::DrawItemProperties& drawItemProperties = m_drawListView[index];
                     if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
                     {
-                        commandList->Submit(*drawItemProperties.m_item, index);
+                        if (deviceShaderResourceGroups.size() < drawItemProperties.m_item->m_shaderResourceGroupCount)
+                            deviceShaderResourceGroups.resize(drawItemProperties.m_item->m_shaderResourceGroupCount);
+
+                        if (deviceStreamBufferViews.size() < drawItemProperties.m_item->m_streamBufferViewCount)
+                            deviceStreamBufferViews.resize(drawItemProperties.m_item->m_streamBufferViewCount);
+
+                        commandList->Submit(
+                            drawItemProperties.m_item->GetDeviceDrawItem(
+                                context.GetDeviceIndex(),
+                                &deviceIndexBufferView,
+                                deviceStreamBufferViews.data(),
+                                deviceShaderResourceGroups.data()),
+                            index);
                     }
                 }
             }

@@ -346,16 +346,14 @@ namespace AZ::Render
 
     void AcesDisplayMapperFeatureProcessor::InitializeImagePool()
     {
-        AZ::RHI::Factory& factory = RHI::Factory::Get();
-        m_displayMapperImagePool = factory.CreateImagePool();
+        m_displayMapperImagePool = aznew RHI::ImagePool();
         m_displayMapperImagePool->SetName(Name("DisplayMapperImagePool"));
 
         RHI::ImagePoolDescriptor   imagePoolDesc = {};
         imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite;
         imagePoolDesc.m_budgetInBytes = ImagePoolBudget;
 
-        RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
-        RHI::ResultCode resultCode = m_displayMapperImagePool->Init(*device, imagePoolDesc);
+        RHI::ResultCode resultCode = m_displayMapperImagePool->Init(RHI::AllDevices, imagePoolDesc);
         if (resultCode != RHI::ResultCode::Success)
         {
             AZ_Error("AcesDisplayMapperFeatureProcessor", false, "Failed to initialize image pool.");
@@ -371,10 +369,10 @@ namespace AZ::Render
         }
 
         DisplayMapperLut lutResource;
-        lutResource.m_lutImage = RHI::Factory::Get().CreateImage();
+        lutResource.m_lutImage = aznew RHI::Image();
         lutResource.m_lutImage->SetName(lutName);
 
-        RHI::DeviceImageInitRequest imageRequest;
+        RHI::ImageInitRequest imageRequest;
         imageRequest.m_image = lutResource.m_lutImage.get();
         static const int LutSize = 32;
         imageRequest.m_descriptor = RHI::ImageDescriptor::Create3D(RHI::ImageBindFlags::ShaderReadWrite, LutSize, LutSize, LutSize, LutFormat);

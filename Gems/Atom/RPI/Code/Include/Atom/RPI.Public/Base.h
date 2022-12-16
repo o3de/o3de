@@ -29,12 +29,13 @@ namespace AZ
 
     namespace RHI
     {
-        class DeviceShaderResourceGroup;
+        class ShaderResourceGroup;
     }
 
     namespace RPI
     {
-        using ShaderResourceGroupList = AZStd::fixed_vector<const RHI::DeviceShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
+        using ShaderResourceGroupList =
+            AZStd::fixed_vector<const RHI::ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
 
         class View;
         using ViewPtr = AZStd::shared_ptr<View>;

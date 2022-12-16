@@ -915,9 +915,11 @@ namespace AZ
                         }
                         else
                         {
-                            AZ_Assert(currentAttachment->GetResource() == image->GetRHIImage(),
+                            AZ_Assert(
+                                currentAttachment->GetResource() == image->GetRHIImage(),
                                 "Importing image attachment named \"%s\" but a different attachment with the "
-                                "same name already exists in the database.\n", attachmentId.GetCStr());
+                                "same name already exists in the database.\n",
+                                attachmentId.GetCStr());
                         }
                     }
                     else if (azrtti_istypeof<Buffer>(attachment->m_importedResource.get()))
@@ -929,9 +931,11 @@ namespace AZ
                         }
                         else
                         {
-                            AZ_Assert(currentAttachment->GetResource() == buffer->GetRHIBuffer(),
+                            AZ_Assert(
+                                currentAttachment->GetResource() == buffer->GetRHIBuffer(),
                                 "Importing buffer attachment named \"%s\" but a different attachment with the "
-                                "same name already exists in the database.\n", attachmentId.GetCStr());
+                                "same name already exists in the database.\n",
+                                attachmentId.GetCStr());
                         }
                     }
                     else

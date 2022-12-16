@@ -67,9 +67,9 @@ namespace AZ
                 desc.m_bufferData = nullptr;
                 m_readbackBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
-                m_copyDescriptor.m_sourceBuffer = m_bufferRef->GetRHIBuffer();
+                m_copyDescriptor.m_sourceBuffer = m_bufferRef->GetRHIBuffer()->GetDeviceBuffer(0).get();
                 m_copyDescriptor.m_sourceOffset = 0;
-                m_copyDescriptor.m_destinationBuffer = m_readbackBuffer->GetRHIBuffer();
+                m_copyDescriptor.m_destinationBuffer = m_readbackBuffer->GetRHIBuffer()->GetDeviceBuffer(0).get();
                 m_copyDescriptor.m_destinationOffset = 0;
                 m_copyDescriptor.m_size = sizeof(float);
 

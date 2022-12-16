@@ -103,7 +103,6 @@ namespace AZ
 
         void DiffuseProbeGridVisualizationPreparePass::FrameBeginInternal(FramePrepareParams params)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
@@ -115,8 +114,8 @@ namespace AZ
                 }
 
                 // create the TLAS descriptor by adding an instance entry for each probe in the grid
-                RHI::DeviceRayTracingTlasDescriptor tlasDescriptor;
-                RHI::DeviceRayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
+                RHI::RayTracingTlasDescriptor tlasDescriptor;
+                RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
                 // initialize the transform for each probe to Identity(), they will be updated by the compute shader
                 AZ::Transform transform = AZ::Transform::Identity();
@@ -134,7 +133,8 @@ namespace AZ
 
                 // create the TLAS buffers from on the descriptor
                 auto& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
-                visualizationTlas->CreateBuffers(*device, &tlasDescriptor, diffuseProbeGridFeatureProcessor->GetVisualizationBufferPools());                    
+                visualizationTlas->CreateBuffers(
+                    RHI::AllDevices, &tlasDescriptor, diffuseProbeGridFeatureProcessor->GetVisualizationBufferPools());
             }
 
             RenderPass::FrameBeginInternal(params);
@@ -158,8 +158,8 @@ namespace AZ
 
                 // import and attach the visualization TLAS and probe data
                 auto& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
-                const RHI::Ptr<RHI::DeviceBuffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
-                const RHI::Ptr<RHI::DeviceBuffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
+                const RHI::Ptr<RHI::Buffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
+                const RHI::Ptr<RHI::Buffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
                 if (tlasBuffer && tlasInstancesBuffer)
                 {
                     // TLAS buffer
@@ -217,7 +217,8 @@ namespace AZ
                         AZ::RHI::AttachmentId attachmentId = diffuseProbeGrid->GetProbeDataImageAttachmentId();
                         if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId) == false)
                         {
-                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetProbeDataImage());
+                            [[maybe_unused]] RHI::ResultCode result =
+                                frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetProbeDataImage());
                             AZ_Assert(result == RHI::ResultCode::Success, "Failed to import DiffuseProbeGrid probe data buffer with error %d", result);
                         }
 
@@ -267,12 +268,15 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetVisualizationPrepareSrg()->GetRHIShaderResourceGroup();
+                const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetVisualizationPrepareSrg()
+                                                                                ->GetRHIShaderResourceGroup()
+                                                                                ->GetDeviceShaderResourceGroup(context.GetDeviceIndex())
+                                                                                .get();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                 RHI::DeviceDispatchItem dispatchItem;
                 dispatchItem.m_arguments = m_dispatchArgs;
-                dispatchItem.m_pipelineState = m_pipelineState;
+                dispatchItem.m_pipelineState = m_pipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = diffuseProbeGrid->GetTotalProbeCount();
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = 1;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;

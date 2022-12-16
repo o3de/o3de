@@ -13,6 +13,8 @@
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
+#include <Atom/RHI/StreamingImagePool.h>
+
 // Enable streaming image hot reloading
 #define AZ_RPI_STREAMING_IMAGE_HOT_RELOADING
 
@@ -201,7 +203,7 @@ namespace AZ
             Data::Instance<StreamingImagePool> m_pool;
 
             // RHI pool reference cached at init time from the parent pool asset.
-            RHI::DeviceStreamingImagePool* m_rhiPool = nullptr;
+            RHI::StreamingImagePool* m_rhiPool = nullptr;
 
             // The image asset associated with this image instance.
             Data::Asset<StreamingImageAsset> m_imageAsset;

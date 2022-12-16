@@ -39,7 +39,7 @@ namespace AZ
                 uploadRequest.m_stagingBuffer = stagingBuffer;
                 uploadRequest.m_byteSize = request.m_byteCount;
 
-                return stagingBuffer->GetBufferMemoryView()->Map(RHI::HostMemoryAccess::Write);
+                return static_cast<Buffer*>(stagingBuffer.get())->GetBufferMemoryView()->Map(RHI::HostMemoryAccess::Write);
             }
 
             return nullptr;
@@ -55,7 +55,7 @@ namespace AZ
 
             for (BufferUploadPacket& packet : m_uploadPackets)
             {
-                packet.m_stagingBuffer->GetBufferMemoryView()->Unmap(RHI::HostMemoryAccess::Write);
+                static_cast<Buffer*>(packet.m_stagingBuffer.get())->GetBufferMemoryView()->Unmap(RHI::HostMemoryAccess::Write);
 
                 // Filter stages and access flags
                 VkPipelineStageFlags bufferPipelineFlags = RHI::FilterBits(GetResourcePipelineStateFlags(packet.m_attachmentBuffer->GetDescriptor().m_bindFlags), supportedQueuePipelineStages);

@@ -50,7 +50,7 @@ namespace AZ
 
             if (resultCode == RHI::ResultCode::Success)
             {
-                DeviceObject::Init(*descriptor.m_device);
+                MultiDeviceObject::Init(descriptor.m_deviceMask);
             }
 
             return resultCode;
@@ -62,7 +62,7 @@ namespace AZ
             {
                 AZ_Assert(m_pendingGroups.empty(), "Pending contexts in queue.");
                 ShutdownInternal();
-                DeviceObject::Shutdown();
+                MultiDeviceObject::Shutdown();
             }
         }
 

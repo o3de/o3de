@@ -9,13 +9,13 @@
 #include <CoreLights/LightCullingTilePreparePass.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/DevicePipelineState.h>
-#include <Atom/RPI.Public/Pass/PassUtils.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
-#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
+#include <Atom/RPI.Public/Pass/PassUtils.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 
 namespace AZ
 {
@@ -55,7 +55,7 @@ namespace AZ
             m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = resolution.m_height;
             m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
             m_dispatchItem.m_pipelineState = m_msaaPipelineState.get();
-            commandList->Submit(m_dispatchItem);
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
 
         AZ::RHI::Size LightCullingTilePreparePass::GetDepthBufferDimensions()

@@ -385,27 +385,43 @@ namespace AZ
             // set RayTracing pipeline state
             commandList->SetPipelineState1(rayTracingPipelineState->Get());
 
-            // setup DispatchRays() shader table and ray counts
-            const RayTracingShaderTable* shaderTable = static_cast<const RayTracingShaderTable*>(dispatchRaysItem.m_rayTracingShaderTable);
-            const RayTracingShaderTable::ShaderTableBuffers& shaderTableBuffers = shaderTable->GetBuffers();
+            switch (dispatchRaysItem.m_arguments.m_type)
+            {
+            case RHI::DispatchRaysType::Direct:
+                {
+                    // setup DispatchRays() shader table and ray counts
+                    const RayTracingShaderTable* shaderTable = static_cast<const RayTracingShaderTable*>(dispatchRaysItem.m_rayTracingShaderTable);
+                    const RayTracingShaderTable::ShaderTableBuffers& shaderTableBuffers = shaderTable->GetBuffers();
 
-            D3D12_DISPATCH_RAYS_DESC desc = {};
-            desc.RayGenerationShaderRecord.StartAddress = shaderTableBuffers.m_rayGenerationTable->GetMemoryView().GetGpuAddress();
-            desc.RayGenerationShaderRecord.SizeInBytes = shaderTableBuffers.m_rayGenerationTableSize;
-            
-            desc.MissShaderTable.StartAddress = shaderTableBuffers.m_missTable->GetMemoryView().GetGpuAddress();
-            desc.MissShaderTable.SizeInBytes = shaderTableBuffers.m_missTableSize;
-            desc.MissShaderTable.StrideInBytes = shaderTableBuffers.m_missTableStride;
-            
-            desc.HitGroupTable.StartAddress = shaderTableBuffers.m_hitGroupTable->GetMemoryView().GetGpuAddress();
-            desc.HitGroupTable.SizeInBytes = shaderTableBuffers.m_hitGroupTableSize;
-            desc.HitGroupTable.StrideInBytes = shaderTableBuffers.m_hitGroupTableStride;
+                    D3D12_DISPATCH_RAYS_DESC desc = {};
+                    desc.RayGenerationShaderRecord.StartAddress = shaderTableBuffers.m_rayGenerationTable->GetMemoryView().GetGpuAddress();
+                    desc.RayGenerationShaderRecord.SizeInBytes = shaderTableBuffers.m_rayGenerationTableSize;
 
-            desc.Width = dispatchRaysItem.m_arguments.m_direct.m_width;
-            desc.Height = dispatchRaysItem.m_arguments.m_direct.m_height;
-            desc.Depth = dispatchRaysItem.m_arguments.m_direct.m_depth;
-           
-            commandList->DispatchRays(&desc);
+                    desc.MissShaderTable.StartAddress = shaderTableBuffers.m_missTable->GetMemoryView().GetGpuAddress();
+                    desc.MissShaderTable.SizeInBytes = shaderTableBuffers.m_missTableSize;
+                    desc.MissShaderTable.StrideInBytes = shaderTableBuffers.m_missTableStride;
+
+                    desc.HitGroupTable.StartAddress = shaderTableBuffers.m_hitGroupTable->GetMemoryView().GetGpuAddress();
+                    desc.HitGroupTable.SizeInBytes = shaderTableBuffers.m_hitGroupTableSize;
+                    desc.HitGroupTable.StrideInBytes = shaderTableBuffers.m_hitGroupTableStride;
+
+                    desc.Width = dispatchRaysItem.m_arguments.m_direct.m_width;
+                    desc.Height = dispatchRaysItem.m_arguments.m_direct.m_height;
+                    desc.Depth = dispatchRaysItem.m_arguments.m_direct.m_depth;
+
+                    commandList->DispatchRays(&desc);
+
+                    break;
+                }
+            case RHI::DispatchRaysType::Indirect:
+                {
+                    ExecuteIndirect(dispatchRaysItem.m_arguments.m_indirect);
+                    break;
+                }
+            default:
+                AZ_Assert(false, "Invalid dispatch type");
+                break;
+            }
 #endif
         }
 

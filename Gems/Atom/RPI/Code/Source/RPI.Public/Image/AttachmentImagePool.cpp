@@ -11,7 +11,7 @@
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/DeviceImagePool.h>
+#include <Atom/RHI/ImagePool.h>
 
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 
@@ -28,10 +28,10 @@ namespace AZ
                 resourcePoolAsset);
         }
 
-        Data::Instance<AttachmentImagePool> AttachmentImagePool::CreateInternal(RHI::Device& device, ResourcePoolAsset& poolAsset)
+        Data::Instance<AttachmentImagePool> AttachmentImagePool::CreateInternal(RHI::DeviceMask deviceMask, ResourcePoolAsset& poolAsset)
         {
             Data::Instance<AttachmentImagePool> imagePool = aznew AttachmentImagePool();
-            RHI::ResultCode resultCode = imagePool->Init(device, poolAsset);
+            RHI::ResultCode resultCode = imagePool->Init(deviceMask, poolAsset);
 
             if (resultCode == RHI::ResultCode::Success)
             {
@@ -41,9 +41,9 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode AttachmentImagePool::Init(RHI::Device& device, ResourcePoolAsset& poolAsset)
+        RHI::ResultCode AttachmentImagePool::Init(RHI::DeviceMask deviceMask, ResourcePoolAsset& poolAsset)
         {
-            RHI::Ptr<RHI::DeviceImagePool> imagePool = RHI::Factory::Get().CreateImagePool();
+            RHI::Ptr<RHI::ImagePool> imagePool = aznew RHI::ImagePool();
             if (!imagePool)
             {
                 AZ_Error("RPI::ImagePool", false, "Failed to create RHI::ImagePool");
@@ -57,7 +57,7 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            RHI::ResultCode resultCode = imagePool->Init(device, *desc);
+            RHI::ResultCode resultCode = imagePool->Init(deviceMask, *desc);
             if (resultCode == RHI::ResultCode::Success)
             {
                 m_pool = imagePool;
@@ -66,12 +66,12 @@ namespace AZ
             return resultCode;
         }
 
-        const RHI::DeviceImagePool* AttachmentImagePool::GetRHIPool() const
+        const RHI::ImagePool* AttachmentImagePool::GetRHIPool() const
         {
             return m_pool.get();
         }
 
-        RHI::DeviceImagePool* AttachmentImagePool::GetRHIPool()
+        RHI::ImagePool* AttachmentImagePool::GetRHIPool()
         {
             return m_pool.get();
         }

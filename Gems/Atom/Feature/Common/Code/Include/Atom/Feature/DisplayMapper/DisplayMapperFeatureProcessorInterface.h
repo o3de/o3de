@@ -23,8 +23,8 @@ namespace AZ
     {
         struct DisplayMapperLut
         {
-            RHI::Ptr<RHI::DeviceImage>        m_lutImage;
-            RHI::Ptr<RHI::DeviceImageView>    m_lutImageView;
+            RHI::Ptr<RHI::Image> m_lutImage;
+            RHI::Ptr<RHI::ImageView> m_lutImageView;
             RHI::ImageViewDescriptor    m_lutImageViewDescriptor = {};
         };
 

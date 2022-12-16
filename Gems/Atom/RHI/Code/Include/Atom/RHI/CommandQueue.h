@@ -15,6 +15,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/functional.h>
 
+#include <Atom/RHI/DeviceSwapChain.h>
 #include <Atom/RHI/Scope.h>
 
 namespace AZ

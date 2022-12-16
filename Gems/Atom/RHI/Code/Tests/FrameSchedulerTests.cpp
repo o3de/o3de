@@ -20,13 +20,13 @@ namespace UnitTest
     struct ImportedImage
     {
         RHI::AttachmentId m_id;
-        RHI::Ptr<RHI::DeviceImage> m_image;
+        RHI::Ptr<RHI::Image> m_image;
     };
 
     struct ImportedBuffer
     {
         RHI::AttachmentId m_id;
-        RHI::Ptr<RHI::DeviceBuffer> m_buffer;
+        RHI::Ptr<RHI::Buffer> m_buffer;
     };
 
     struct TransientImage
@@ -154,29 +154,26 @@ namespace UnitTest
 
             m_rootFactory.reset(aznew Factory());
 
-            RHI::Ptr<RHI::Device> device = MakeTestDevice();
-
-            m_device = device;
             m_state.reset(new State);
 
             {
-                m_state->m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+                m_state->m_bufferPool = aznew RHI::BufferPool;
 
                 RHI::BufferPoolDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
-                m_state->m_bufferPool->Init(*device, desc);
+                m_state->m_bufferPool->Init(RHI::AllDevices, desc);
             }
 
             for (uint32_t i = 0; i < ImportedBufferCount; ++i)
             {
-                RHI::Ptr<RHI::DeviceBuffer> buffer;
-                buffer = RHI::Factory::Get().CreateBuffer();
+                RHI::Ptr<RHI::Buffer> buffer;
+                buffer = aznew RHI::Buffer();
 
                 RHI::BufferDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
                 desc.m_byteCount = BufferSize;
 
-                RHI::DeviceBufferInitRequest request;
+                RHI::BufferInitRequest request;
                 request.m_descriptor = desc;
                 request.m_buffer = buffer.get();
                 m_state->m_bufferPool->InitBuffer(request);
@@ -186,17 +183,17 @@ namespace UnitTest
             }
 
             {
-                m_state->m_imagePool = RHI::Factory::Get().CreateImagePool();
+                m_state->m_imagePool = aznew RHI::ImagePool();
 
                 RHI::ImagePoolDescriptor desc;
                 desc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite;
-                m_state->m_imagePool->Init(*device, desc);
+                m_state->m_imagePool->Init(RHI::AllDevices, desc);
             }
 
             for (uint32_t i = 0; i < ImportedImageCount; ++i)
             {
-                RHI::Ptr<RHI::DeviceImage> image;
-                image = RHI::Factory::Get().CreateImage();
+                RHI::Ptr<RHI::Image> image;
+                image = aznew RHI::Image();
 
                 RHI::ImageDescriptor desc = RHI::ImageDescriptor::Create2D(
                     RHI::ImageBindFlags::ShaderReadWrite,
@@ -204,7 +201,7 @@ namespace UnitTest
                     ImageSize,
                     RHI::Format::R8G8B8A8_UNORM);
 
-                RHI::DeviceImageInitRequest request;
+                RHI::ImageInitRequest request;
                 request.m_descriptor = desc;
                 request.m_image = image.get();
                 m_state->m_imagePool->InitImage(request);
@@ -222,7 +219,6 @@ namespace UnitTest
         void TearDown() override
         {
             m_state.reset();
-            m_device = nullptr;
             m_rootFactory.reset();
             RHITestFixture::TearDown();
         }
@@ -233,7 +229,7 @@ namespace UnitTest
 
             RHI::FrameSchedulerDescriptor descriptor;
             descriptor.m_transientAttachmentPoolDescriptor.m_bufferBudgetInBytes = 80 * 1024 * 1024;
-            frameScheduler.Init(*m_device, descriptor);
+            frameScheduler.Init(RHI::AllDevices, descriptor);
 
             RHI::ImageScopeAttachmentDescriptor imageBindingDescs[2];
             imageBindingDescs[0].m_imageViewDescriptor = RHI::ImageViewDescriptor();
@@ -414,8 +410,8 @@ namespace UnitTest
 
         struct State
         {
-            RHI::Ptr<RHI::DeviceBufferPool> m_bufferPool;
-            RHI::Ptr<RHI::DeviceImagePool> m_imagePool;
+            RHI::Ptr<RHI::BufferPool> m_bufferPool;
+            RHI::Ptr<RHI::ImagePool> m_imagePool;
             ImportedImage m_imageAttachments[ImportedImageCount];
             ImportedBuffer m_bufferAttachments[ImportedBufferCount];
             AZStd::vector<AZStd::unique_ptr<ScopeProducer>> m_producers;

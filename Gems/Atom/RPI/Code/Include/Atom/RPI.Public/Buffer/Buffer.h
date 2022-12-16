@@ -11,7 +11,7 @@
 #include <Atom/RHI/DeviceBuffer.h>
 #include <Atom/RHI/DeviceBufferPool.h>
 #include <Atom/RHI/DeviceBufferView.h>
-#include <Atom/RHI/DeviceFence.h>
+#include <Atom/RHI/Fence.h>
 
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/Base.h>
@@ -48,11 +48,11 @@ namespace AZ
             //! Blocks until a streaming upload has completed (if one is currently in flight).
             void WaitForUpload();
 
-            RHI::DeviceBuffer* GetRHIBuffer();
+            RHI::Buffer* GetRHIBuffer();
 
-            const RHI::DeviceBuffer* GetRHIBuffer() const;
+            const RHI::Buffer* GetRHIBuffer() const;
 
-            const RHI::DeviceBufferView* GetBufferView() const;
+            const RHI::BufferView* GetBufferView() const;
 
             //! Update buffer's content with sourceData at an offset of bufferByteOffset
             bool UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset = 0);
@@ -94,9 +94,9 @@ namespace AZ
             RHI::ResultCode Init(BufferAsset& bufferAsset);
             void InitBufferView();
 
-            RHI::Ptr<RHI::DeviceBuffer> m_rhiBuffer;
-            RHI::Ptr<RHI::DeviceBufferView> m_bufferView;
-            RHI::DeviceBufferPool* m_rhiBufferPool = nullptr;
+            RHI::Ptr<RHI::Buffer> m_rhiBuffer;
+            RHI::Ptr<RHI::BufferView> m_bufferView;
+            RHI::BufferPool* m_rhiBufferPool = nullptr;
 
             Data::Instance<BufferPool> m_bufferPool;
 
@@ -104,7 +104,7 @@ namespace AZ
             Data::Asset<BufferAsset> m_bufferAsset;
 
             // Tracks the streaming upload of the buffer.
-            RHI::Ptr<RHI::DeviceFence> m_streamFence;
+            RHI::Ptr<RHI::Fence> m_streamFence;
             AZStd::mutex m_pendingUploadMutex;
 
             RHI::BufferViewDescriptor m_bufferViewDescriptor;

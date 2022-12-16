@@ -21,9 +21,7 @@
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
 
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
-#include <Atom/RHI/DeviceImagePool.h>
-
-#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/ImagePool.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
@@ -69,8 +67,6 @@ namespace AZ
 
         void ImageSystem::Init(const ImageSystemDescriptor& desc)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             // Register attachment image instance database.
 
             {
@@ -84,9 +80,9 @@ namespace AZ
 
             {
                 Data::InstanceHandler<AttachmentImagePool> handler;
-                handler.m_createFunction = [device](Data::AssetData* poolAsset)
+                handler.m_createFunction = [](Data::AssetData* poolAsset)
                 {
-                    return AttachmentImagePool::CreateInternal(*device, *(azrtti_cast<ResourcePoolAsset*>(poolAsset)));
+                    return AttachmentImagePool::CreateInternal(RHI::AllDevices, *(azrtti_cast<ResourcePoolAsset*>(poolAsset)));
                 };
                 Data::InstanceDatabase<AttachmentImagePool>::Create(azrtti_typeid<ResourcePoolAsset>(), handler);
             }
@@ -104,9 +100,10 @@ namespace AZ
 
             {
                 Data::InstanceHandler<StreamingImagePool> handler;
-                handler.m_createFunction = [this, device](Data::AssetData* poolAsset)
+                handler.m_createFunction = [this](Data::AssetData* poolAsset)
                 {
-                    Data::Instance<StreamingImagePool> instance = StreamingImagePool::CreateInternal(*device, *(azrtti_cast<StreamingImagePoolAsset*>(poolAsset)));
+                    Data::Instance<StreamingImagePool> instance =
+                        StreamingImagePool::CreateInternal(RHI::AllDevices, *(azrtti_cast<StreamingImagePoolAsset*>(poolAsset)));
                     if (instance)
                     {
                         m_activeStreamingPoolMutex.lock();

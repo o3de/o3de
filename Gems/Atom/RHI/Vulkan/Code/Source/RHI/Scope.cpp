@@ -5,10 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <RHI/Scope.h>
+
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI/BufferProperty.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
+#include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <RHI/BufferView.h>
@@ -16,14 +20,11 @@
 #include <RHI/Device.h>
 #include <RHI/Framebuffer.h>
 #include <RHI/GraphicsPipeline.h>
-#include <RHI/ImageView.h>
 #include <RHI/PipelineState.h>
 #include <RHI/QueryPool.h>
 #include <RHI/RenderPass.h>
 #include <RHI/ResourcePoolResolver.h>
-#include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <algorithm>
 
 namespace AZ
@@ -201,7 +202,8 @@ namespace AZ
                     continue;
                 }
 
-                queryPoolAttachment.m_pool->ResetQueries(commandList, queryPoolAttachment.m_interval);
+                static_cast<QueryPool*>(queryPoolAttachment.m_pool->GetDeviceQueryPool(GetDeviceIndex()).get())
+                    ->ResetQueries(commandList, queryPoolAttachment.m_interval);
             }
         }
 
@@ -314,12 +316,14 @@ namespace AZ
                 const auto& bindingDescriptor = scopeAttachment->GetDescriptor();
                 if (HasExplicitClear(*scopeAttachment, bindingDescriptor))
                 {
-                    clearRequests.push_back({ bindingDescriptor.m_loadStoreAction.m_clearValue, scopeAttachment->GetResourceView() });
+                    clearRequests.push_back(
+                        { bindingDescriptor.m_loadStoreAction.m_clearValue,
+                          scopeAttachment->GetResourceView()->GetDeviceResourceView(scopeAttachment->GetScope().GetDeviceIndex()).get() });
                 }
             }
         }
 
-        void Scope::CompileInternal(RHI::Device& deviceBase)
+        void Scope::CompileInternal()
         {
             for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
             {
@@ -336,15 +340,17 @@ namespace AZ
                 m_signalFences.push_back(AZStd::static_pointer_cast<Fence>(fence));
             }
 
+            RHI::Device& deviceBase = GetDevice();
+
             Device& device = static_cast<Device&>(deviceBase);
             m_deviceSupportedPipelineStageFlags = device.GetCommandQueueContext().GetCommandQueue(GetHardwareQueueClass()).GetSupportedPipelineStages();
 
-            RHI::FrameEventBus::Handler::BusConnect(&deviceBase);
+            RHI::FrameEventBus::Handler::BusConnect(&device);
         }
 
-        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::DeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
+        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
         {
-            m_queryPoolAttachments.push_back({ AZStd::static_pointer_cast<QueryPool>(queryPool), interval, access });
+            m_queryPoolAttachments.push_back({ queryPool, interval, access });
         }
 
         bool Scope::CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const
@@ -552,8 +558,9 @@ namespace AZ
                     {
                         if (imageAttachment->GetDescriptor().m_attachmentId == resolveAttachment->GetDescriptor().m_resolveAttachmentId)
                         {
-                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView());
-                            auto dstImageView = static_cast<const ImageView*>(resolveAttachment->GetImageView());
+                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView()->GetDeviceImageView(0).get());
+                            auto dstImageView =
+                                static_cast<const ImageView*>(resolveAttachment->GetImageView()->GetDeviceImageView(0).get());
                             auto srcImageSubresourceRange = srcImageView->GetVkImageSubresourceRange();
                             auto dstImageSubresourceRange = dstImageView->GetVkImageSubresourceRange();
                             auto& srcImage = static_cast<const Image&>(srcImageView->GetImage());

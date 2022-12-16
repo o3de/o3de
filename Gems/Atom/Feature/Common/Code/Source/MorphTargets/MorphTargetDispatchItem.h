@@ -10,17 +10,17 @@
 
 #include <Atom/Feature/MorphTargets/MorphTargetInputBuffers.h>
 
-#include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
-#include <Atom/RHI/DeviceDispatchItem.h>
 #include <Atom/RHI/ConstantsData.h>
+#include <Atom/RHI/DispatchItem.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 #include <AtomCore/Instance/Instance.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        class DeviceBufferView;
-        class DevicePipelineState;
+        class BufferView;
+        class PipelineState;
     }
 
     namespace RPI
@@ -58,7 +58,7 @@ namespace AZ
 
             bool Init();
 
-            const RHI::DeviceDispatchItem& GetRHIDispatchItem() const;
+            const RHI::DispatchItem& GetRHIDispatchItem() const;
 
             void SetWeight(float weight);
             float GetWeight() const;
@@ -71,7 +71,7 @@ namespace AZ
             void OnShaderAssetReinitialized(const Data::Asset<RPI::ShaderAsset>& shaderAsset) override;
             void OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant) override;
 
-            RHI::DeviceDispatchItem m_dispatchItem;
+            RHI::DispatchItem m_dispatchItem;
 
             // The morph target shader used for this instance
             Data::Instance<RPI::Shader> m_morphTargetShader;

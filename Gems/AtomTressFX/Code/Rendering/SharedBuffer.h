@@ -11,9 +11,9 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Name/Name.h>
 
-#include <Atom/RHI/FreeListAllocator.h>
 #include <Atom/RHI.Reflect/Format.h>
-#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/FreeListAllocator.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 

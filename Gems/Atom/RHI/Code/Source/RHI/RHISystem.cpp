@@ -42,64 +42,66 @@ namespace AZ
         {
             m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
 
+            Ptr<RHI::PlatformLimitsDescriptor> platformLimitsDescriptor = nullptr;
+
             for (auto& perDeviceObjects : m_perDeviceObjects)
             {
-                Ptr<RHI::PlatformLimitsDescriptor> platformLimitsDescriptor =
-                    perDeviceObjects.m_device->GetDescriptor().m_platformLimitsDescriptor;
-
-                RHI::FrameSchedulerDescriptor frameSchedulerDescriptor;
-
-                perDeviceObjects.m_pipelineStateCache = RHI::PipelineStateCache::Create(*perDeviceObjects.m_device);
-
-                frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_renderTargetBudgetInBytes =
-                    platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_renderTargetBudgetInBytes;
-                frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_imageBudgetInBytes =
-                    platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_imageBudgetInBytes;
-                frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_bufferBudgetInBytes =
-                    platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_bufferBudgetInBytes;
-
-                switch (platformLimitsDescriptor->m_heapAllocationStrategy)
-                {
-                case HeapAllocationStrategy::Fixed:
-                    {
-                        frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_heapParameters = RHI::HeapAllocationParameters();
-                        break;
-                    }
-                case HeapAllocationStrategy::Paging:
-                    {
-                        RHI::HeapPagingParameters heapAllocationParameters;
-                        heapAllocationParameters.m_collectLatency = platformLimitsDescriptor->m_pagingParameters.m_collectLatency;
-                        heapAllocationParameters.m_initialAllocationPercentage =
-                            platformLimitsDescriptor->m_pagingParameters.m_initialAllocationPercentage;
-                        heapAllocationParameters.m_pageSizeInBytes = platformLimitsDescriptor->m_pagingParameters.m_pageSizeInBytes;
-                        frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_heapParameters =
-                            RHI::HeapAllocationParameters(heapAllocationParameters);
-                        break;
-                    }
-                case HeapAllocationStrategy::MemoryHint:
-                    {
-                        RHI::HeapMemoryHintParameters heapAllocationParameters;
-                        heapAllocationParameters.m_heapSizeScaleFactor =
-                            platformLimitsDescriptor->m_usageHintParameters.m_heapSizeScaleFactor;
-                        heapAllocationParameters.m_collectLatency = platformLimitsDescriptor->m_usageHintParameters.m_collectLatency;
-                        heapAllocationParameters.m_maxHeapWastedPercentage =
-                            platformLimitsDescriptor->m_usageHintParameters.m_maxHeapWastedPercentage;
-                        heapAllocationParameters.m_minHeapSizeInBytes =
-                            platformLimitsDescriptor->m_usageHintParameters.m_minHeapSizeInBytes;
-                        frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_heapParameters =
-                            RHI::HeapAllocationParameters(heapAllocationParameters);
-                        break;
-                    }
-                default:
-                    {
-                        AZ_Assert(false, "UnSupported type");
-                        break;
-                    }
-                }
-
-                frameSchedulerDescriptor.m_platformLimitsDescriptor = platformLimitsDescriptor;
-                perDeviceObjects.m_frameScheduler.Init(*perDeviceObjects.m_device, frameSchedulerDescriptor);
+                // TODO: consider limits of all devices?
+                if (!platformLimitsDescriptor)
+                    platformLimitsDescriptor = perDeviceObjects.m_device->GetDescriptor().m_platformLimitsDescriptor;
             }
+
+            m_pipelineStateCache = RHI::PipelineStateCache::Create(RHI::AllDevices);
+
+            RHI::FrameSchedulerDescriptor frameSchedulerDescriptor;
+
+            frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_renderTargetBudgetInBytes =
+                platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_renderTargetBudgetInBytes;
+            frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_imageBudgetInBytes =
+                platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_imageBudgetInBytes;
+            frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_bufferBudgetInBytes =
+                platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_bufferBudgetInBytes;
+
+            switch (platformLimitsDescriptor->m_heapAllocationStrategy)
+            {
+            case HeapAllocationStrategy::Fixed:
+                {
+                    frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_heapParameters = RHI::HeapAllocationParameters();
+                    break;
+                }
+            case HeapAllocationStrategy::Paging:
+                {
+                    RHI::HeapPagingParameters heapAllocationParameters;
+                    heapAllocationParameters.m_collectLatency = platformLimitsDescriptor->m_pagingParameters.m_collectLatency;
+                    heapAllocationParameters.m_initialAllocationPercentage =
+                        platformLimitsDescriptor->m_pagingParameters.m_initialAllocationPercentage;
+                    heapAllocationParameters.m_pageSizeInBytes = platformLimitsDescriptor->m_pagingParameters.m_pageSizeInBytes;
+                    frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_heapParameters =
+                        RHI::HeapAllocationParameters(heapAllocationParameters);
+                    break;
+                }
+            case HeapAllocationStrategy::MemoryHint:
+                {
+                    RHI::HeapMemoryHintParameters heapAllocationParameters;
+                    heapAllocationParameters.m_heapSizeScaleFactor = platformLimitsDescriptor->m_usageHintParameters.m_heapSizeScaleFactor;
+                    heapAllocationParameters.m_collectLatency = platformLimitsDescriptor->m_usageHintParameters.m_collectLatency;
+                    heapAllocationParameters.m_maxHeapWastedPercentage =
+                        platformLimitsDescriptor->m_usageHintParameters.m_maxHeapWastedPercentage;
+                    heapAllocationParameters.m_minHeapSizeInBytes = platformLimitsDescriptor->m_usageHintParameters.m_minHeapSizeInBytes;
+                    frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_heapParameters =
+                        RHI::HeapAllocationParameters(heapAllocationParameters);
+                    break;
+                }
+            default:
+                {
+                    AZ_Assert(false, "UnSupported type");
+                    break;
+                }
+            }
+
+            frameSchedulerDescriptor.m_platformLimitsDescriptor = platformLimitsDescriptor;
+
+            m_frameScheduler.Init(RHI::AllDevices, frameSchedulerDescriptor);
         }
 
         void RHISystem::InitInternalDevice()
@@ -198,7 +200,7 @@ namespace AZ
                 RHI::Ptr<RHI::Device> device = RHI::Factory::Get().CreateDevice();
                 if (device->Init(static_cast<int>(m_perDeviceObjects.size()), *physicalDevice) == RHI::ResultCode::Success)
                 {
-                    m_perDeviceObjects.emplace_back(PerDeviceObjects{ AZStd::move(device), nullptr, {}, {} });
+                    m_perDeviceObjects.emplace_back(PerDeviceObjects{ AZStd::move(device) });
                 }
             }
 
@@ -208,9 +210,10 @@ namespace AZ
 
         void RHISystem::Shutdown()
         {
+            m_frameScheduler.Shutdown();
+
             while (!m_perDeviceObjects.empty())
             {
-                m_perDeviceObjects.back().m_frameScheduler.Shutdown();
                 m_perDeviceObjects.back().m_device->PreShutdown();
                 m_perDeviceObjects.pop_back();
             }
@@ -220,37 +223,35 @@ namespace AZ
         void RHISystem::FrameUpdate(FrameGraphCallback frameGraphCallback)
         {
             AZ_PROFILE_SCOPE(RHI, "RHISystem: FrameUpdate");
-            auto& perDeviceObjects = m_perDeviceObjects[0];
 
             {
                 AZ_PROFILE_SCOPE(RHI, "main per-frame work");
-                if (perDeviceObjects.m_frameScheduler.BeginFrame() == ResultCode::Success)
+                if (m_frameScheduler.BeginFrame() == ResultCode::Success)
                 {
-                    frameGraphCallback(perDeviceObjects.m_frameScheduler);
+                    frameGraphCallback(m_frameScheduler);
 
                     // This exists as a hook to enable RHI sample tests, which are allowed to queue their
                     // own RHI scopes to the frame scheduler. This happens prior to the RPI pass graph registration.
                     {
                         AZ_PROFILE_SCOPE(RHI, "RHISystem: FrameUpdate: OnFramePrepare");
-                        RHISystemNotificationBus::Broadcast(
-                            &RHISystemNotificationBus::Events::OnFramePrepare, perDeviceObjects.m_frameScheduler);
+                        RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnFramePrepare, m_frameScheduler);
                     }
 
-                    RHI::MessageOutcome outcome = perDeviceObjects.m_frameScheduler.Compile(perDeviceObjects.m_compileRequest);
+                    RHI::MessageOutcome outcome = m_frameScheduler.Compile(m_compileRequest);
                     if (outcome.IsSuccess())
                     {
-                        perDeviceObjects.m_frameScheduler.Execute(RHI::JobPolicy::Parallel);
+                        m_frameScheduler.Execute(RHI::JobPolicy::Parallel);
                     }
                     else
                     {
                         AZ_Error("RHISystem", false, "Frame Scheduler Compilation Failure: %s", outcome.GetError().c_str());
                     }
 
-                    perDeviceObjects.m_pipelineStateCache->Compact();
+                    m_pipelineStateCache->Compact();
                 }
             }
 
-            perDeviceObjects.m_frameScheduler.EndFrame();
+            m_frameScheduler.EndFrame();
         }
 
         RHI::Device* RHISystem::GetDevice(size_t index)
@@ -265,7 +266,7 @@ namespace AZ
 
         RHI::PipelineStateCache* RHISystem::GetPipelineStateCache()
         {
-            return m_perDeviceObjects[0].m_pipelineStateCache.get();
+            return m_pipelineStateCache.get();
         }
 
         RHI::DrawListTagRegistry* RHISystem::GetDrawListTagRegistry()
@@ -275,29 +276,28 @@ namespace AZ
 
         void RHISystem::ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags)
         {
-            m_perDeviceObjects[0].m_compileRequest.m_statisticsFlags = enableFlags
-                ? RHI::SetBits(m_perDeviceObjects[0].m_compileRequest.m_statisticsFlags, statisticsFlags)
-                : RHI::ResetBits(m_perDeviceObjects[0].m_compileRequest.m_statisticsFlags, statisticsFlags);
+            m_compileRequest.m_statisticsFlags = enableFlags ? RHI::SetBits(m_compileRequest.m_statisticsFlags, statisticsFlags)
+                                                             : RHI::ResetBits(m_compileRequest.m_statisticsFlags, statisticsFlags);
         }
 
         double RHISystem::GetCpuFrameTime() const
         {
-            return m_perDeviceObjects[0].m_frameScheduler.GetCpuFrameTime();
+            return m_frameScheduler.GetCpuFrameTime();
         }
 
         const RHI::TransientAttachmentStatistics* RHISystem::GetTransientAttachmentStatistics() const
         {
-            return m_perDeviceObjects[0].m_frameScheduler.GetTransientAttachmentStatistics();
+            return m_frameScheduler.GetTransientAttachmentStatistics();
         }
 
         const RHI::MemoryStatistics* RHISystem::GetMemoryStatistics() const
         {
-            return m_perDeviceObjects[0].m_frameScheduler.GetMemoryStatistics();
+            return m_frameScheduler.GetMemoryStatistics();
         }
 
-        const AZ::RHI::DeviceTransientAttachmentPoolDescriptor* RHISystem::GetTransientAttachmentPoolDescriptor() const
+        const AZ::RHI::TransientAttachmentPoolDescriptor* RHISystem::GetTransientAttachmentPoolDescriptor() const
         {
-            return m_perDeviceObjects[0].m_frameScheduler.GetTransientAttachmentPoolDescriptor();
+            return m_frameScheduler.GetTransientAttachmentPoolDescriptor();
         }
 
         ConstPtr<PlatformLimitsDescriptor> RHISystem::GetPlatformLimitsDescriptor() const
@@ -307,7 +307,7 @@ namespace AZ
 
         void RHISystem::QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable)
         {
-            m_perDeviceObjects[0].m_frameScheduler.QueueRayTracingShaderTableForBuild(rayTracingShaderTable);
+            m_frameScheduler.QueueRayTracingShaderTableForBuild(rayTracingShaderTable);
         }
 
         void RHISystem::RegisterXRSystem(XRRenderingInterface* xrRenderingInterface)

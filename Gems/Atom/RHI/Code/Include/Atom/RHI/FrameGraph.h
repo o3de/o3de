@@ -14,7 +14,6 @@
 #include <Atom/RHI.Reflect/ResolveScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
 
-#include <Atom/RHI/DeviceBufferPoolBase.h>
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/Scope.h>
 
@@ -23,14 +22,11 @@ namespace AZ
     namespace RHI
     {
         class ImageFrameAttachment;
-        class SwapChainFrameAttachment;
         class BufferFrameAttachment;
         class ImageScopeAttachment;
         class BufferScopeAttachment;
         class ResolveScopeAttachment;
-        class DeviceSwapChain;
-        class DeviceResourcePool;
-        class DeviceQueryPool;
+        class QueryPool;
         class DeviceFence;
         struct Interval;
 
@@ -114,7 +110,8 @@ namespace AZ
             ResultCode UseShaderAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
             ResultCode UseCopyAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
             ResultCode UseCopyAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
-            ResultCode UseQueryPool(Ptr<DeviceQueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access);
+            ResultCode UseQueryPool(
+                Ptr<QueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access);
             void ExecuteAfter(const ScopeId& scopeId);
             void ExecuteBefore(const ScopeId& scopeId);
             void SignalFence(DeviceFence& fence);

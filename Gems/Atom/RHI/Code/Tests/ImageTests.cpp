@@ -8,7 +8,6 @@
 
 #include "RHITestFixture.h"
 #include <Tests/Factory.h>
-#include <Tests/Device.h>
 
 namespace UnitTest
 {
@@ -40,46 +39,44 @@ namespace UnitTest
 
     TEST_F(ImageTests, TestNoop)
     {
-        RHI::Ptr<RHI::DeviceImage> noopImage;
-        noopImage = RHI::Factory::Get().CreateImage();
+        RHI::Ptr<RHI::Image> noopImage;
+        noopImage = aznew RHI::Image();
     }
 
     TEST_F(ImageTests, Test)
     {
-        RHI::Ptr<RHI::Device> device = MakeTestDevice();
-
-        RHI::Ptr<RHI::DeviceImage> imageA;
-        imageA = RHI::Factory::Get().CreateImage();
+        RHI::Ptr<RHI::Image> imageA;
+        imageA = aznew RHI::Image();
         imageA->SetName(Name("ImageA"));
 
         ASSERT_TRUE(imageA->GetName().GetStringView() == "ImageA");
         ASSERT_TRUE(imageA->use_count() == 1);
 
         {
-            RHI::Ptr<RHI::DeviceImage> imageB;
-            imageB = RHI::Factory::Get().CreateImage();
+            RHI::Ptr<RHI::Image> imageB;
+            imageB = aznew RHI::Image();
 
             ASSERT_TRUE(imageB->use_count() == 1);
 
-            RHI::Ptr<RHI::DeviceImagePool> imagePool;
-            imagePool = RHI::Factory::Get().CreateImagePool();
+            RHI::Ptr<RHI::ImagePool> imagePool;
+            imagePool = aznew RHI::ImagePool();
 
             ASSERT_TRUE(imagePool->use_count() == 1);
 
             RHI::ImagePoolDescriptor imagePoolDesc;
             imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::Color;
-            imagePool->Init(*device, imagePoolDesc);
+            imagePool->Init(RHI::AllDevices, imagePoolDesc);
 
             ASSERT_TRUE(imageA->IsInitialized() == false);
             ASSERT_TRUE(imageB->IsInitialized() == false);
 
-            RHI::DeviceImageInitRequest initRequest;
+            RHI::ImageInitRequest initRequest;
             initRequest.m_image = imageA.get();
             initRequest.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::Color, 16, 16, RHI::Format::R8G8B8A8_UNORM_SRGB);
             imagePool->InitImage(initRequest);
             ASSERT_TRUE(imageA->use_count() == 1);
 
-            RHI::Ptr<RHI::DeviceImageView> imageView;
+            RHI::Ptr<RHI::ImageView> imageView;
             imageView = imageA->GetImageView(RHI::ImageViewDescriptor(RHI::Format::R8G8B8A8_UINT));
             AZ_TEST_ASSERT(imageView->IsStale() == false);
             ASSERT_TRUE(imageView->IsInitialized());
@@ -100,26 +97,27 @@ namespace UnitTest
             {
                 uint32_t imageIndex = 0;
 
-                const RHI::DeviceImage* images[] =
+                const RHI::Image* images[] =
                 {
                     imageA.get(),
                     imageB.get()
                 };
 
-                imagePool->ForEach<RHI::DeviceImage>([&imageIndex, &images]([[maybe_unused]] const RHI::DeviceImage& image)
-                {
-                    AZ_UNUSED(images); // Prevent unused warning in release builds
-                    AZ_Assert(images[imageIndex] == &image, "images don't match");
-                    imageIndex++;
-                });
+                imagePool->ForEach<RHI::Image>(
+                    [&imageIndex, &images]([[maybe_unused]] const RHI::Image& image)
+                    {
+                        AZ_UNUSED(images); // Prevent unused warning in release builds
+                        AZ_Assert(images[imageIndex] == &image, "images don't match");
+                        imageIndex++;
+                    });
             }
 
             imageB->Shutdown();
             ASSERT_TRUE(imageB->GetPool() == nullptr);
 
-            RHI::Ptr<RHI::DeviceImagePool> imagePoolB;
-            imagePoolB = RHI::Factory::Get().CreateImagePool();
-            imagePoolB->Init(*device, imagePoolDesc);
+            RHI::Ptr<RHI::ImagePool> imagePoolB;
+            imagePoolB = aznew RHI::ImagePool();
+            imagePoolB->Init(RHI::AllDevices, imagePoolDesc);
 
             initRequest.m_image = imageB.get();
             initRequest.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::Color, 8, 8, RHI::Format::R8G8B8A8_UNORM_SRGB);
@@ -128,7 +126,7 @@ namespace UnitTest
 
             //Since we are switching imagePools for imageB it adds a refcount and invalidates the views.
             //We need this to ensure the views are fully invalidated in order to release the refcount and avoid a leak.
-            RHI::DeviceResourceInvalidateBus::ExecuteQueuedEvents();
+            RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
 
             imagePoolB->Shutdown();
             ASSERT_TRUE(imagePoolB->GetResourceCount() == 0);
@@ -140,22 +138,20 @@ namespace UnitTest
 
     TEST_F(ImageTests, TestViews)
     {
-        RHI::Ptr<RHI::Device> device = MakeTestDevice();
+        RHI::Ptr<RHI::ImageView> imageViewA;
 
-        RHI::Ptr<RHI::DeviceImageView> imageViewA;
-        
         {
-            RHI::Ptr<RHI::DeviceImagePool> imagePool;
-            imagePool = RHI::Factory::Get().CreateImagePool();
+            RHI::Ptr<RHI::ImagePool> imagePool;
+            imagePool = aznew RHI::ImagePool();
 
             RHI::ImagePoolDescriptor imagePoolDesc;
             imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::Color;
-            imagePool->Init(*device, imagePoolDesc);
+            imagePool->Init(RHI::AllDevices, imagePoolDesc);
 
-            RHI::Ptr<RHI::DeviceImage> image;
-            image = RHI::Factory::Get().CreateImage();
+            RHI::Ptr<RHI::Image> image;
+            image = aznew RHI::Image();
 
-            RHI::DeviceImageInitRequest initRequest;
+            RHI::ImageInitRequest initRequest;
             initRequest.m_image = image.get();
             initRequest.m_descriptor = RHI::ImageDescriptor::Create2DArray(RHI::ImageBindFlags::Color, 8, 8, 2, RHI::Format::R8G8B8A8_UNORM_SRGB);
             imagePool->InitImage(initRequest);
@@ -177,7 +173,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(imageViewA->IsInitialized());
 
             // This should re-initialize the views.
-            RHI::DeviceResourceInvalidateBus::ExecuteQueuedEvents();
+            RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
             AZ_TEST_ASSERT(imageViewA->IsInitialized());
             AZ_TEST_ASSERT(imageViewA->IsStale() == false);
 
@@ -187,7 +183,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(imageViewA->IsInitialized());
 
             // This should re-initialize the views.
-            RHI::DeviceResourceInvalidateBus::ExecuteQueuedEvents();
+            RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
             AZ_TEST_ASSERT(imageViewA->IsInitialized());
             AZ_TEST_ASSERT(imageViewA->IsStale() == false);
 
@@ -225,28 +221,25 @@ namespace UnitTest
         {
             ImageTests::SetUp();
 
-            m_device = MakeTestDevice();
-
             // Create a pool and image with the image bind flags from the parameterized test
-            m_imagePool = RHI::Factory::Get().CreateImagePool();
+            m_imagePool = aznew RHI::ImagePool();
             RHI::ImagePoolDescriptor imagePoolDesc;
             imagePoolDesc.m_bindFlags = GetParam().imageBindFlags;
-            m_imagePool->Init(*m_device, imagePoolDesc);
+            m_imagePool->Init(RHI::AllDevices, imagePoolDesc);
 
             RHI::ImageDescriptor imageDescriptor;
             imageDescriptor.m_bindFlags = GetParam().imageBindFlags;
 
-            m_image = RHI::Factory::Get().CreateImage();
-            RHI::DeviceImageInitRequest initRequest;
+            m_image = aznew RHI::Image();
+            RHI::ImageInitRequest initRequest;
             initRequest.m_image = m_image.get();
             initRequest.m_descriptor = imageDescriptor;
             m_imagePool->InitImage(initRequest);
         }
 
-        RHI::Ptr<RHI::Device> m_device;
-        RHI::Ptr<RHI::DeviceImagePool> m_imagePool;
-        RHI::Ptr<RHI::DeviceImage> m_image;
-        RHI::Ptr<RHI::DeviceImageView> m_imageView;
+        RHI::Ptr<RHI::ImagePool> m_imagePool;
+        RHI::Ptr<RHI::Image> m_image;
+        RHI::Ptr<RHI::ImageView> m_imageView;
     };
 
     TEST_P(ImageBindFlagTests, InitView_ViewIsCreated)

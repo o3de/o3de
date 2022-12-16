@@ -65,7 +65,8 @@ namespace AZ
 
                 SetSrgsForDispatch(commandList);
 
-                m_skinnedMeshFeatureProcessor->SubmitMorphTargetDispatchItems(commandList, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex);
+                m_skinnedMeshFeatureProcessor->SubmitMorphTargetDispatchItems(
+                    commandList, context.GetDeviceIndex(), context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex);
             }
         }
     }   // namespace Render

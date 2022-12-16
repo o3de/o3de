@@ -108,8 +108,8 @@ namespace AZ
                 };
 
                 m_readBuffersViews.resize(2);
-           
-                RHI::DeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+
+                RHI::Buffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
                 for (uint8_t index = 0; index < 2 ; ++index)
                 {
                     // Buffer view creation from the shared buffer
@@ -123,7 +123,7 @@ namespace AZ
                         streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderRead    // No need for ReadWrite in the raster fill
                     );
 
-                    m_readBuffersViews[index] = RHI::Factory::Get().CreateBufferView();
+                    m_readBuffersViews[index] = aznew RHI::BufferView();
                     RHI::ResultCode resultCode = m_readBuffersViews[index]->Init(*rhiBuffer, viewDescriptor);
                     if (resultCode != RHI::ResultCode::Success)
                     {
@@ -233,7 +233,7 @@ namespace AZ
                 m_dynamicBuffersViews.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
                 m_dynamicViewAllocators.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
 
-                RHI::DeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+                RHI::Buffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
                 for (int stream=0; stream< uint8_t(HairDynamicBuffersSemantics::NumBufferStreams) ; ++stream)
                 {
                     SrgBufferDescriptor& streamDesc = m_dynamicBuffersDescriptors[stream];
@@ -258,7 +258,7 @@ namespace AZ
                         streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderReadWrite
                     );
 
-                    m_dynamicBuffersViews[stream] = RHI::Factory::Get().CreateBufferView();
+                    m_dynamicBuffersViews[stream] = aznew RHI::BufferView();
                     RHI::ResultCode resultCode = m_dynamicBuffersViews[stream]->Init(*rhiBuffer, viewDescriptor);
                     if (resultCode != RHI::ResultCode::Success)
                     {
@@ -575,17 +575,18 @@ namespace AZ
                 //------------ Index Buffer  ------------
                 m_TotalIndices = asset.GetNumHairTriangleIndices();
 
-                RHI::DeviceBufferInitRequest request;
+                RHI::BufferInitRequest request;
                 uint32_t indexBufferSize = m_TotalIndices * sizeof(uint32_t);
-                m_indexBuffer = RHI::Factory::Get().CreateBuffer();
+                m_indexBuffer = aznew RHI::Buffer();
                 request.m_buffer = m_indexBuffer.get();
                 request.m_descriptor = RHI::BufferDescriptor{
                     RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::InputAssembly,
                     indexBufferSize
                 };
                 request.m_initialData = (void*)asset.m_triangleIndices.data();
-                
-                RHI::Ptr<RHI::DeviceBufferPool> bufferPool = RPI::BufferSystemInterface::Get()->GetCommonBufferPool(RPI::CommonBufferPoolType::StaticInputAssembly);
+
+                RHI::Ptr<RHI::BufferPool> bufferPool =
+                    RPI::BufferSystemInterface::Get()->GetCommonBufferPool(RPI::CommonBufferPoolType::StaticInputAssembly);
                 if (!bufferPool)
                 {
                     AZ_Error("Hair Gem", false, "Common buffer pool for index buffer could not be created");
@@ -596,8 +597,8 @@ namespace AZ
                 AZ_Error("Hair Gem", result == RHI::ResultCode::Success, "Failed to initialize index buffer - error [%d]", result);
 
                 // create index buffer view
-                m_indexBufferView = RHI::DeviceIndexBufferView(*m_indexBuffer.get(), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
- 
+                m_indexBufferView = RHI::IndexBufferView(*m_indexBuffer, 0, indexBufferSize, RHI::IndexFormat::Uint32);
+
                 return true;
             }
 
@@ -1192,7 +1193,7 @@ namespace AZ
                 return iter->second;
             }
 
-            const RHI::DeviceDispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)
+            const RHI::DispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)
             {
                 auto dispatchIter = m_dispatchItems.find(computeShader);
                 if (dispatchIter == m_dispatchItems.end())

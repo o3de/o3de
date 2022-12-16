@@ -12,7 +12,9 @@
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
 
-#include <Atom/RHI/DeviceDrawItem.h>
+#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/StreamBufferView.h>
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Limits.h>
@@ -69,8 +71,8 @@ namespace AZ
             //! Mesh data associated with a specific material.
             struct Mesh final
             {
-                RHI::DeviceDrawArguments m_drawArguments;
-                RHI::DeviceIndexBufferView m_indexBufferView;
+                RHI::DrawArguments m_drawArguments;
+                RHI::IndexBufferView m_indexBufferView;
 
                 StreamInfoList m_streamInfo;
 
@@ -81,7 +83,7 @@ namespace AZ
                 Data::Instance<Material> m_material;
             };
 
-            using StreamBufferViewList = AZStd::fixed_vector<RHI::DeviceStreamBufferView, RHI::Limits::Pipeline::StreamCountMax>;
+            using StreamBufferViewList = AZStd::fixed_vector<RHI::StreamBufferView, RHI::Limits::Pipeline::StreamCountMax>;
 
             AZ_INSTANCE_DATA(ModelLod, "{3C796FC9-2067-4E0F-A660-269F8254D1D5}");
             AZ_CLASS_ALLOCATOR(ModelLod, AZ::SystemAllocator, 0);

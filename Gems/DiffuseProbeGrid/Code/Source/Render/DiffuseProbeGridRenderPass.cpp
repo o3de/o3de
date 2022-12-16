@@ -131,7 +131,8 @@ namespace AZ
                     if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked && !frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
                     {
                         // import the irradiance image now, since it is baked and therefore was not imported during the raytracing pass
-                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetIrradianceImage());
+                        [[maybe_unused]] RHI::ResultCode result =
+                            frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetIrradianceImage());
                         AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeIrradianceImage");
                     }
 
@@ -149,7 +150,8 @@ namespace AZ
                     if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked && !frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
                     {
                         // import the distance image now, since it is baked and therefore was not imported during the raytracing pass
-                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetDistanceImage());
+                        [[maybe_unused]] RHI::ResultCode result =
+                            frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetDistanceImage());
                         AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeDistanceImage");
                     }
 
@@ -167,7 +169,8 @@ namespace AZ
                     if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked && !frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
                     {
                         // import the probe data image now, since it is baked and therefore was not imported during the raytracing pass
-                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetProbeDataImage());
+                        [[maybe_unused]] RHI::ResultCode result =
+                            frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetProbeDataImage());
                         AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ProbeDataImage");
                     }
 

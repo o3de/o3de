@@ -30,6 +30,7 @@ namespace AZ
             struct Descriptor
             {
                 ScopeId m_scopeId;
+                int m_deviceIndex = 0;
                 uint32_t m_commandListIndex = 0;
                 uint32_t m_commandListCount = 0;
                 CommandList* m_commandList = nullptr;
@@ -40,6 +41,12 @@ namespace AZ
 
             /// Returns the scope id associated with this context.
             const ScopeId& GetScopeId() const { return m_descriptor.m_scopeId; }
+
+            /// Returns the index of the device this batch runs on.
+            int GetDeviceIndex() const
+            {
+                return m_descriptor.m_deviceIndex;
+            }
 
             /// Returns the index of the command list in the batch.
             uint32_t GetCommandListIndex() const { return m_descriptor.m_commandListIndex; }

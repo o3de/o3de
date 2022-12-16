@@ -17,7 +17,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/DevicePipelineState.h>
+#include <Atom/RHI/PipelineState.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -171,7 +171,7 @@ namespace AZ
 
             pipelineStateDescriptor.m_inputStreamLayout = inputStreamLayout;
 
-            m_item.m_arguments = RHI::DeviceDrawArguments(draw);
+            m_item.m_arguments = RHI::DrawArguments(draw);
             m_item.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
             m_item.m_stencilRef = static_cast<uint8_t>(m_stencilRef);
         }
@@ -242,7 +242,7 @@ namespace AZ
             commandList->SetViewport(m_viewportState);
             commandList->SetScissor(m_scissorState);
 
-            commandList->Submit(m_item);
+            commandList->Submit(m_item.GetDeviceDrawItem(context.GetDeviceIndex(), nullptr, nullptr, nullptr));
         }
         
     }   // namespace RPI

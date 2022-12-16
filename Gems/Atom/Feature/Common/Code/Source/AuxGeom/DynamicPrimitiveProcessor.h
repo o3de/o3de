@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include <Atom/RHI/DeviceBuffer.h>
-#include <Atom/RHI/DeviceBufferPool.h>
-#include <Atom/RHI/DeviceIndexBufferView.h>
-#include <Atom/RHI/DevicePipelineState.h>
-#include <Atom/RHI/DeviceStreamBufferView.h>
+#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/DrawList.h>
+#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/StreamBufferView.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
 #include <Atom/RHI.Reflect/Limits.h>
@@ -73,13 +73,13 @@ namespace AZ
             void SetUpdatePipelineStates();
 
         private: // types
-
-            using StreamBufferViewsForAllStreams = AZStd::fixed_vector<AZ::RHI::DeviceStreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax>;
+            using StreamBufferViewsForAllStreams =
+                AZStd::fixed_vector<AZ::RHI::StreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax>;
 
             struct DynamicBufferGroup
             {
                 //! The view into the index buffer
-                AZ::RHI::DeviceIndexBufferView m_indexBufferView;
+                AZ::RHI::IndexBufferView m_indexBufferView;
 
                 //! The stream views into the vertex buffer (we only have one in our case)
                 StreamBufferViewsForAllStreams m_streamBufferViews;
