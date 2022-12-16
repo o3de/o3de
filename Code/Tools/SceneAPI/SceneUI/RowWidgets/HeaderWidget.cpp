@@ -94,7 +94,7 @@ namespace AZ
                     const Containers::RuleContainer& rules = group->GetRuleContainerConst();
                     // Multiple rules might change the tooltip, so loop through all rules.
                     bool ruleChangedTooltip = false;
-                    // Rules don't have all have access to Qt
+                    // Rules don't all have access to Qt
                     AZStd::string ruleTooltip;
                     for (size_t ruleIndex = 0; ruleIndex < rules.GetRuleCount(); ++ruleIndex)
                     {
