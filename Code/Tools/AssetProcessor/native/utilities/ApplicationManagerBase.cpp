@@ -1474,14 +1474,14 @@ bool ApplicationManagerBase::Activate()
          
     QObject::connect(
         m_assetProcessorManager,
-        &AssetProcessorManager::IntermediateAssetCreated,
+        &AssetProcessor::AssetProcessorManager::IntermediateAssetCreated,
         this,
         notifyFileStateCache,
         Qt::DirectConnection);
 
     QObject::connect(
         m_assetProcessorManager,
-        &AssetProcessorManager::IntermediateAssetCreated,
+        &AssetProcessor::AssetProcessorManager::IntermediateAssetCreated,
         this,
         notifyUuidManagerAndFileProcessor,
         Qt::QueuedConnection);
