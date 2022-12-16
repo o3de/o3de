@@ -7,49 +7,84 @@
  */
 
 #include <Mesh/MeshInstanceList.h>
+#include <AzCore/std/numeric.h>
 
 namespace AZ
 {
     namespace Render
     {
-        template<class Key, class Data>
-        uint32_t SlotMap<Key, Data>::Add(Key key)
+        template<class Key, class DataType, uint16_t ElementsPerPage>
+        InsertResult SlotMap<Key, DataType, ElementsPerPage>::Add(Key key)
         {
-            uint32_t indirectionIndex = 0;
+            // The page to use
+            uint16_t pageIndexResult = Invalid16BitIndex;
+            // The element within the page
+            uint16_t elementIndexResult = Invalid16BitIndex;
+            // The combined index that encodes both the page and the element
+            uint32_t dataIndex = InvalidIndex;
+
+            bool wasIndexInserted = false;
             typename DataMap::iterator it = m_dataMap.find(key);
             if (it == m_dataMap.end())
             {
-                // key not found, add it to the data list and the indirection list
-                m_data.push_back(Data{});
-                uint32_t dataIndex = aznumeric_cast<uint32_t>(m_data.size()) - 1;
+                // key not found, add it to the data list
 
-                indirectionIndex = m_indirectionList.AddEntry(dataIndex);
+                // Iterate over the free list for each page, and find the first available index
+                for (size_t pageIndex = 0; pageIndex < m_indexFreeLists.size(); ++pageIndex)
+                {
+                    if (!m_indexFreeLists[pageIndex].empty())
+                    {
+                        // We have found a free index, use it
+                        pageIndexResult = static_cast<uint16_t>(pageIndex);
+                        elementIndexResult = m_indexFreeLists[pageIndexResult].back();
+                        m_indexFreeLists[pageIndexResult].pop_back();
+                        dataIndex = EncodeIndex(pageIndexResult, elementIndexResult);
+                        break;
+                    }
+                }
 
-                // add the data map entry containing the true index, indirection index, and reference count
+                // If there are no free list entries, create a new page
+                if (pageIndexResult == Invalid16BitIndex)
+                {
+                    m_data.push_back(new DataPage{});
+                    m_indexFreeLists.push_back(CreateFreeList());
+
+                    // Now we have a free index, use it
+                    pageIndexResult = static_cast<uint16_t>(m_data.size() - 1);
+                    elementIndexResult = m_indexFreeLists[pageIndexResult].back();
+                    m_indexFreeLists[pageIndexResult].pop_back();
+                    dataIndex = EncodeIndex(pageIndexResult, elementIndexResult);
+                }
+
+                // add the data map entry containing the dataIndex and reference count
                 IndexMapEntry entry;
                 entry.m_index = dataIndex;
-                entry.m_indirectionIndex = indirectionIndex;
                 entry.m_count = 1;
                 m_dataMap.insert({ key, entry });
 
-                // Keep track of any new entries, since the actual data vector is uninitialized
-                m_newEntryList.push_back(indirectionIndex);
+                wasIndexInserted = true;
+                m_itemCount++;
             }
             else
             {
                 // data is already known, update the reference count and return the indirection index
                 it->second.m_count++;
-                indirectionIndex = it->second.m_indirectionIndex;
+                dataIndex = it->second.m_index;
             }
 
-            return indirectionIndex;
+            return InsertResult{ dataIndex, wasIndexInserted };
         }
 
-        template<class Key, class Data>
-        void SlotMap<Key, Data>::Remove(Key key)
+        template<class Key, class DataType, uint16_t ElementsPerPage>
+        void SlotMap<Key, DataType, ElementsPerPage>::Remove(Key key)
         {
             typename DataMap::iterator it = m_dataMap.find(key);
-            AZ_Assert(it != m_dataMap.end(), "Unable to find key in the DataMap");
+            if (it == m_dataMap.end())
+            {
+                AZ_Assert(false, "Unable to find key in the DataMap");
+                it = m_dataMap.find(key);
+                return;
+            }
 
             // decrement reference count
             it->second.m_count--;
@@ -58,70 +93,70 @@ namespace AZ
             if (it->second.m_count == 0)
             {
                 uint32_t dataIndex = it->second.m_index;
-                uint32_t indirectionIndex = it->second.m_indirectionIndex;
-                uint32_t lastDataIndex = static_cast<uint32_t>(m_data.size() - 1);
 
-                // Since this is being removed, make sure it's no longer in the list of uninitialized data
-                m_newEntryList.erase(AZStd::remove(m_newEntryList.begin(), m_newEntryList.end(), indirectionIndex));
+                PageElementIndex decodedIndex = DecodeIndex(dataIndex);
 
-                if (dataIndex < lastDataIndex)
-                {
-                    // the key we're removing is in the middle of the list - swap the last entry to this position
-                    // this only works performantly if the key is also the data entry, so we have a direct lookup of last data entry->data map entry
-                    bool found = false;
-                    for (auto& [currentKey, currentValue] : m_dataMap)
-                    {
-                        if (currentValue.m_index == lastDataIndex)
-                        {
-                            m_data[dataIndex] = m_data.back();
+                // Clear the entry with one that is default constructed
+                (*m_data[decodedIndex.m_pageIndex])[decodedIndex.m_elementIndex] = DataType{};
 
-                            // update the swapped entry with its new index in the resource list
-                            currentValue.m_index = dataIndex;
+                // Add the entry to the freelist
+                m_indexFreeLists[decodedIndex.m_pageIndex].push_back(decodedIndex.m_elementIndex);
 
-                            // update the indirection vector entry of the swapped entry to point to the new position
-                            // Note: any indirection indices returned by AddResource for other resources remain stable, this just updates
-                            // the indirection entry
-                            m_indirectionList.SetEntry(currentValue.m_indirectionIndex, dataIndex);
-                            found = true;
-                            break;
-                        }
-                    }
-                    
-                    AZ_Assert(found || m_dataMap.empty(), "Unable to find the last data entry in the DataMap");                                  
-                }
-
-                // cache the indirection index so that its okay to erase the iterator
-                uint32_t cachedIndirectionIndex = it->second.m_indirectionIndex;
-
-                // remove the last entry from the resource list
-                m_data.pop_back();
-
-                // remove the entry from the resource map
+                // Remove it from the data map
                 m_dataMap.erase(it);
 
-                // remove the entry from the indirection list
-                m_indirectionList.RemoveEntry(cachedIndirectionIndex);
+                AZ_Assert(m_itemCount > 0, "Attempting to remove an item from an empty container.");
+                m_itemCount--;
             }
         }
 
-        template<class Key, class Data>
-        Data& SlotMap<Key, Data>::operator[](uint32_t index)
+        template<class Key, class DataType, uint16_t ElementsPerPage>
+        DataType& SlotMap<Key, DataType, ElementsPerPage>::operator[](uint32_t index)
         {
-            return m_data[m_indirectionList[index]];
+            PageElementIndex decodedIndex = DecodeIndex(index);
+            return (*m_data[decodedIndex.m_pageIndex])[decodedIndex.m_elementIndex];
         }
 
-        template<class Key, class Data>
-        const Data& SlotMap<Key, Data>::operator[](uint32_t index) const
+        template<class Key, class DataType, uint16_t ElementsPerPage>
+        const DataType& SlotMap<Key, DataType, ElementsPerPage>::operator[](uint32_t index) const
         {
-            return m_data[m_indirectionList[index]];
+            PageElementIndex decodedIndex = DecodeIndex(index);
+            return (*m_data[decodedIndex.m_pageIndex])[decodedIndex.m_elementIndex];
         }
 
-        template<class Key, class Data>
-        void SlotMap<Key, Data>::Reset()
+        template<class Key, class DataType, uint16_t ElementsPerPage>
+        void SlotMap<Key, DataType, ElementsPerPage>::Reset()
         {
             m_data.clear();
             m_dataMap.clear();
-            m_indirectionList.Reset();
+            m_indexFreeLists.clear();
         }
-    }
-}
+
+        template<class Key, class DataType, uint16_t ElementsPerPage>
+        uint32_t SlotMap<Key, DataType, ElementsPerPage>::EncodeIndex(uint16_t pageIndex, uint16_t elementIndex) const
+        {
+            return static_cast<uint32_t>(pageIndex) << 16 | static_cast<uint32_t>(elementIndex);
+        }
+        
+        template<class Key, class DataType, uint16_t ElementsPerPage>
+        PageElementIndex SlotMap<Key, DataType, ElementsPerPage>::DecodeIndex(uint32_t encodedIndex) const
+        {
+            uint16_t elementIndex = encodedIndex & 0xFFFF;
+            uint16_t pageIndex = encodedIndex >> 16;
+            return PageElementIndex{ pageIndex, elementIndex };
+        }
+
+        template<class Key, class DataType, uint16_t ElementsPerPage>
+        constexpr typename SlotMap<Key, DataType, ElementsPerPage>::PageFreeList SlotMap<Key, DataType, ElementsPerPage>::
+            CreateFreeList() const
+        {
+            PageFreeList freeList{};
+            // We pop from the back of the freeList, so populate it with decreasing numbers to fill the data pages from front to back
+            for (uint16_t i = 0; i < ElementsPerPage; ++i)
+            {
+                freeList.push_back(ElementsPerPage - i - 1);
+            }
+            return freeList;
+        }
+    } // namespace Render
+} // namespace AZ

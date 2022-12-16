@@ -12,12 +12,12 @@
 namespace
 {
     constexpr size_t keyCount = 4;
-    AZ::Data::AssetId modelIdA = AZ::Data::AssetId{ AZ::Uuid::CreateRandom(), 0 };
-    AZ::Data::AssetId modelIdB = AZ::Data::AssetId{ AZ::Uuid::CreateRandom(), 0 };
+    AZ::Data::InstanceId modelIdA = AZ::Data::InstanceId{ AZ::Uuid::CreateRandom(), 0 };
+    AZ::Data::InstanceId modelIdB = AZ::Data::InstanceId{ AZ::Uuid::CreateRandom(), 0 };
     uint32_t lodIndex = 0;
     uint32_t meshIndex = 0;
-    AZ::Data::AssetId materialIdA = AZ::Data::AssetId{ AZ::Uuid::CreateRandom(), 0 };
-    AZ::Data::AssetId materialIdB = AZ::Data::AssetId{ AZ::Uuid::CreateRandom(), 0 };
+    AZ::Data::InstanceId materialIdA = AZ::Data::InstanceId{ AZ::Uuid::CreateRandom(), 0 };
+    AZ::Data::InstanceId materialIdB = AZ::Data::InstanceId{ AZ::Uuid::CreateRandom(), 0 };
 }
 
 namespace UnitTest
@@ -41,12 +41,14 @@ namespace UnitTest
     public:
         MeshInstanceManager m_meshInstanceManager;
 
-        AZStd::array<MeshInstanceKey, keyCount> m_uniqueKeys{ MeshInstanceKey{ modelIdA, lodIndex, meshIndex, materialIdA },
-                                                      MeshInstanceKey{ modelIdA, lodIndex, meshIndex, materialIdB },
-                                                      MeshInstanceKey{ modelIdB, lodIndex, meshIndex, materialIdA },
-                                                        MeshInstanceKey{ modelIdB, lodIndex, meshIndex, materialIdB } };
+        AZStd::array<MeshInstanceKey, keyCount> m_uniqueKeys{ MeshInstanceKey{
+                                                                  modelIdA, lodIndex, meshIndex, materialIdA, Uuid::CreateNull(), 0, 0 },
+            MeshInstanceKey{ modelIdA, lodIndex, meshIndex, materialIdB, Uuid::CreateNull(), 0, 0 },
+            MeshInstanceKey{ modelIdB, lodIndex, meshIndex, materialIdA, Uuid::CreateNull(), 0, 0 },
+            MeshInstanceKey{ modelIdB, lodIndex, meshIndex, materialIdB, Uuid::CreateNull(), 0, 0 }
+        };
 
-        AZStd::array<uint32_t, keyCount> m_indices{};
+        AZStd::array<InsertResult, keyCount> m_indices{};
     };
 
     TEST_F(MeshInstanceManagerTestFixture, AddInstance)
@@ -56,23 +58,15 @@ namespace UnitTest
         {
             for (size_t j = i + 1; j < m_indices.size(); ++j)
             {
-                EXPECT_NE(m_indices[i], m_indices[j]);
+                EXPECT_NE(m_indices[i].m_index, m_indices[j].m_index);
             }
-        }
 
-        // None of these have been intiailized yet, so they should all exist in the new entry list
-        for (size_t i = 0; i < m_indices.size(); ++i)
-        {
-            EXPECT_NE(
-                AZStd::find(
-                    m_meshInstanceManager.GetUninitializedInstances().begin(),
-                    m_meshInstanceManager.GetUninitializedInstances().end(),
-                    m_indices[i]),
-                m_meshInstanceManager.GetUninitializedInstances().end());
+            // None of these have been intiailized yet, so they should not have been found
+            EXPECT_TRUE(m_indices[i].m_wasInserted);
         }
     }
 
-    TEST_F(MeshInstanceManagerTestFixture, RemoveInstance)
+    TEST_F(MeshInstanceManagerTestFixture, RemoveInstanceByKey)
     {
         // Remove all of the entries
         for (size_t i = 0; i < m_uniqueKeys.size(); ++i)
@@ -81,28 +75,31 @@ namespace UnitTest
         }
 
         // All objects were removed, the size of the data vector should be 0
-        EXPECT_EQ(m_meshInstanceManager.GetDataList().size(), 0);
+        EXPECT_EQ(m_meshInstanceManager.GetItemCount(), 0);
+    }
 
-        // The objects were removed so they should not be in the new entry list
+    TEST_F(MeshInstanceManagerTestFixture, RemoveInstanceByIndex)
+    {
+        // Remove all of the entries
         for (size_t i = 0; i < m_indices.size(); ++i)
         {
-            EXPECT_EQ(
-                AZStd::find(
-                    m_meshInstanceManager.GetUninitializedInstances().begin(),
-                    m_meshInstanceManager.GetUninitializedInstances().end(),
-                    m_indices[i]),
-                m_meshInstanceManager.GetUninitializedInstances().end());
+            m_meshInstanceManager.RemoveInstance(m_indices[i].m_index);
         }
+
+        // All objects were removed, the size of the data vector should be 0
+        EXPECT_EQ(m_meshInstanceManager.GetItemCount(), 0);
     }
 
     TEST_F(MeshInstanceManagerTestFixture, IncreaseRefCount)
     {
         // Increase the refcount of one of the keys
         size_t refCountIncreaseIndex = 2;
-        uint32_t instanceIndex = m_meshInstanceManager.AddInstance(m_uniqueKeys[refCountIncreaseIndex]);
+        InsertResult instanceIndex = m_meshInstanceManager.AddInstance(m_uniqueKeys[refCountIncreaseIndex]);
 
         // We should get back the same instace index that was given originally
-        EXPECT_EQ(instanceIndex, m_indices[refCountIncreaseIndex]);
+        EXPECT_EQ(instanceIndex.m_index, m_indices[refCountIncreaseIndex].m_index);
+        // It was not inserted, since it already existed
+        EXPECT_FALSE(instanceIndex.m_wasInserted);
         
         // Remove all of the entries
         for (size_t i = 0; i < m_uniqueKeys.size(); ++i)
@@ -111,31 +108,29 @@ namespace UnitTest
         }
 
         // The entry at instanceIndex should still exist. The rest should not.
-        // Use the uninitialized instances list to verify
+        // Try adding them again to see if they still exist
         for (size_t i = 0; i < m_indices.size(); ++i)
         {
-            auto iter = AZStd::find(
-                m_meshInstanceManager.GetUninitializedInstances().begin(),
-                m_meshInstanceManager.GetUninitializedInstances().end(),
-                m_indices[i]);
+            InsertResult existenceCheck = m_meshInstanceManager.AddInstance(m_uniqueKeys[i]);
+            m_meshInstanceManager.RemoveInstance(m_uniqueKeys[i]);
 
             if (i == refCountIncreaseIndex)
             {
-                EXPECT_NE(iter, m_meshInstanceManager.GetUninitializedInstances().end());
+                EXPECT_FALSE(existenceCheck.m_wasInserted);
             }
             else
             {
-                EXPECT_EQ(iter, m_meshInstanceManager.GetUninitializedInstances().end());
+                EXPECT_TRUE(existenceCheck.m_wasInserted);
             }
         }
 
-        // If we remove the entry one more time, it should no longer exist in the new entry list
+        // If we remove the entry one more time, it should no longer exist
         m_meshInstanceManager.RemoveInstance(m_uniqueKeys[refCountIncreaseIndex]);
-        auto iter = AZStd::find(
-            m_meshInstanceManager.GetUninitializedInstances().begin(),
-            m_meshInstanceManager.GetUninitializedInstances().end(),
-            m_indices[refCountIncreaseIndex]);
-        EXPECT_EQ(iter, m_meshInstanceManager.GetUninitializedInstances().end());
+
+        // Check by adding it again
+        InsertResult existenceCheck = m_meshInstanceManager.AddInstance(m_uniqueKeys[refCountIncreaseIndex]);
+        m_meshInstanceManager.RemoveInstance(m_uniqueKeys[refCountIncreaseIndex]);
+        EXPECT_TRUE(existenceCheck.m_wasInserted);
     }
 
 } // namespace UnitTest

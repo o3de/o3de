@@ -63,6 +63,7 @@ namespace AZ
 
             bool IsValid() const;
 
+            bool operator<(const InstanceId& rhs) const;
             bool operator==(const InstanceId& rhs) const;
             bool operator!=(const InstanceId& rhs) const;
 

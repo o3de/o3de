@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -17,6 +19,21 @@ namespace AZ
 {
     namespace Render
     {
+        static const uint16_t Invalid16BitIndex = AZStd::numeric_limits<uint16_t>::max();
+        // When adding a new entry, we get back both the index and whether or not
+        // a pre-existing entry for that key was found
+        struct InsertResult
+        {
+            uint32_t m_index = InvalidIndex;
+            bool m_wasInserted = false;
+        };
+
+        
+        struct PageElementIndex
+        {
+            uint16_t m_pageIndex = Invalid16BitIndex;
+            uint16_t m_elementIndex = Invalid16BitIndex;
+        };
         //! Manages an index list used by MeshInstancing.
         //!
         //! This class behaves simlarly to RayTracingResourceList, however the value it uses for the key to the map
@@ -29,59 +46,58 @@ namespace AZ
         //! The indirection list provides a stable index for resources, and is returned to clients of this class.
         //! This allows resources to be moved in the resource array without affecting externally held indices,
         //! since these refer to the indirection list, which in turn points to the resource list.
-        template<class Key, class Data>
+        template<class Key, class DataType, uint16_t ElementsPerPage = 512>
         class SlotMap
         {
         public:
 
-            using DataVector = AZStd::vector<Data>;
-            using IndexVector = AZStd::vector<uint32_t>;
-
             SlotMap() = default;
-            ~SlotMap() = default;
+            ~SlotMap() = default;            
 
             // adds a data entry to the list, or increments the reference count, and returns the index of the data
             // Note: the index returned is an indirection index, meaning it is stable when other entries are removed
-            uint32_t Add(Key key);
+            InsertResult Add(Key key);
 
             // removes a data entry from the list, or decrements the reference count
             // Note: removing a data entry will not affect any previously returned indices for other resources
             void Remove(Key key);
 
-            // returns the data list
-            DataVector& GetDataList() { return m_data; }
-
-            // returns the indirection list
-            const IndexVector& GetIndirectionList() const { return m_indirectionList.GetIndexList(); }
-
-            // returns the list of indices to entries that have not had their data initialized yet
-            AZStd::vector<uint32_t>& GetNewEntryList() { return m_newEntryList; }
-
             // clears the data list and all associated state
             void Reset();
 
-            Data& operator[](uint32_t index);
-            const Data& operator[](uint32_t index) const;
+            uint32_t GetItemCount() const { return m_itemCount; }
+
+            DataType& operator[](uint32_t index);
+            const DataType& operator[](uint32_t index) const;
         private:
+
+            uint32_t EncodeIndex(uint16_t pageIndex, uint16_t elementIndex) const;
+
+
+            PageElementIndex DecodeIndex(uint32_t encodedIndex) const;
+
 
             struct IndexMapEntry
             {
                 // index of the entry in the main list
                 uint32_t m_index = InvalidIndex;
 
-                // index of the entry in the indirection list
-                uint32_t m_indirectionIndex = InvalidIndex;
-
                 // reference count
                 uint32_t m_count = 0;
             };
 
-            using DataMap = AZStd::map<Key, IndexMapEntry>;
+            using DataMap = AZStd::unordered_map<Key, IndexMapEntry>;
+            using DataPage = AZStd::array<DataType, ElementsPerPage>;
+            using DataVector = AZStd::vector<DataPage*>;
+            using PageFreeList = AZStd::fixed_vector<uint16_t, ElementsPerPage>;
+            using IndexFreeListVector = AZStd::vector<PageFreeList>;
+
+            constexpr PageFreeList CreateFreeList() const;
 
             DataVector m_data;
+            IndexFreeListVector m_indexFreeLists;
             DataMap m_dataMap;
-            RayTracingIndexList<1> m_indirectionList;
-            AZStd::vector<uint32_t> m_newEntryList;
+            uint32_t m_itemCount = 0;
         };
     }
 }
