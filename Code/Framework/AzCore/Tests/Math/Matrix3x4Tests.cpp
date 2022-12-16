@@ -416,7 +416,7 @@ namespace UnitTest
         const AZ::Vector3 result = matrix3x4.TransformPoint(AZ::Vector3(1.0f, 0.0f, 0.0f));
         const AZ::Vector3 expected = AZ::Vector3(5.0f, 0.0f, -1.0f);
 
-        EXPECT_THAT(result, expected);
+        EXPECT_THAT(result, IsClose(expected));
     }
 
     TEST(MATH_Matrix3x4, CreateScale)

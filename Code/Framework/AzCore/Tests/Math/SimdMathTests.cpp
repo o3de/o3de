@@ -14,6 +14,76 @@ using namespace AZ;
 
 namespace UnitTest
 {
+    template<typename VectorType>
+    void TestToVec1()
+    {
+        float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
+        float testStoreValues[4] = { -1.0f, -1.0f, -1.0f, -1.0f };
+
+        typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
+        Simd::Vec1::FloatType testVec1 = VectorType::ToVec1(testVector);
+        Simd::Vec1::StoreUnaligned(testStoreValues, testVec1);
+
+        for (int32_t i = 0; i < Simd::Vec1::ElementCount; ++i)
+        {
+            EXPECT_NEAR(testLoadValues[i], testStoreValues[i], AZ::Constants::Tolerance);
+        }
+    }
+    template<typename VectorType>
+    void TestFromVec1()
+    {
+        float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
+        float testStoreValues[4] = { -1.0f, -1.0f, -1.0f, -1.0f };
+
+        Simd::Vec1::FloatType testVec1 = Simd::Vec1::LoadUnaligned(testLoadValues);
+        typename VectorType::FloatType testVector = VectorType::FromVec1(testVec1);
+        VectorType::StoreUnaligned(testStoreValues, testVector);
+
+        // All the elements must be set to the Vec1.x value
+        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
+        {
+            EXPECT_NEAR(testLoadValues[0], testStoreValues[i], AZ::Constants::Tolerance);
+        }
+    }
+
+    template<typename VectorType>
+    void TestToVec2()
+    {
+        float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
+        float testStoreValues[4] = { -1.0f, -1.0f, -1.0f, -1.0f };
+
+        typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
+        Simd::Vec2::FloatType testVec2 = VectorType::ToVec2(testVector);
+        Simd::Vec2::StoreUnaligned(testStoreValues, testVec2);
+
+        for (int32_t i = 0; i < Simd::Vec2::ElementCount; ++i)
+        {
+            EXPECT_NEAR(testLoadValues[i], testStoreValues[i], AZ::Constants::Tolerance);
+        }
+    }
+
+    template<typename VectorType>
+    void TestFromVec2()
+    {
+        float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
+        float testStoreValues[4] = { -1.0f, -1.0f, -1.0f, -1.0f };
+
+        Simd::Vec2::FloatType testVec2 = Simd::Vec2::LoadUnaligned(testLoadValues);
+        typename VectorType::FloatType testVector = VectorType::FromVec2(testVec2);
+        VectorType::StoreUnaligned(testStoreValues, testVector);
+
+        // The first 2 elements must be set to (Vec2.x, Vec2.y)
+        for (int32_t i = 0; i < Simd::Vec2::ElementCount; ++i)
+        {
+            EXPECT_NEAR(testLoadValues[i], testStoreValues[i], AZ::Constants::Tolerance);
+        }
+        // The rest of elements must be set to zero
+        for (int32_t i = Simd::Vec2::ElementCount; i < VectorType::ElementCount; ++i)
+        {
+            EXPECT_NEAR(0.0f, testStoreValues[i], AZ::Constants::Tolerance);
+        }
+    }
+
     template <typename VectorType>
     void TestLoadStoreFloat()
     {
@@ -25,7 +95,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_NEAR(testLoadValues[i], testStoreValues[i], 1e-6f);
+            EXPECT_NEAR(testLoadValues[i], testStoreValues[i], AZ::Constants::Tolerance);
         }
     }
 
@@ -40,7 +110,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_NEAR(testLoadValues[i], testStoreValues[i], 1e-6f);
+            EXPECT_NEAR(testLoadValues[i], testStoreValues[i], AZ::Constants::Tolerance);
         }
     }
 
@@ -50,9 +120,9 @@ namespace UnitTest
         float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
 
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
-        const float firstFloat = VectorType::SelectFirst(testVector);
+        const float selectedValue = VectorType::SelectFirst(testVector);
 
-        EXPECT_NEAR(testLoadValues[0], firstFloat, 1e-6f);
+        EXPECT_NEAR(testLoadValues[0], selectedValue, AZ::Constants::Tolerance);
     }
 
     template <typename VectorType>
@@ -61,9 +131,9 @@ namespace UnitTest
         float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
 
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
-        const float firstFloat = VectorType::SelectSecond(testVector);
+        const float selectedValue = VectorType::SelectSecond(testVector);
 
-        EXPECT_NEAR(testLoadValues[1], firstFloat, 1e-6f);
+        EXPECT_NEAR(testLoadValues[1], selectedValue, AZ::Constants::Tolerance);
     }
 
     template <typename VectorType>
@@ -72,9 +142,9 @@ namespace UnitTest
         float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
 
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
-        const float firstFloat = VectorType::SelectThird(testVector);
+        const float selectedValue = VectorType::SelectThird(testVector);
 
-        EXPECT_NEAR(testLoadValues[2], firstFloat, 1e-6f);
+        EXPECT_NEAR(testLoadValues[2], selectedValue, AZ::Constants::Tolerance);
     }
 
     template <typename VectorType>
@@ -83,9 +153,53 @@ namespace UnitTest
         float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
 
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
-        const float firstFloat = VectorType::SelectFourth(testVector);
+        const float selectedValue = VectorType::SelectFourth(testVector);
 
-        EXPECT_NEAR(testLoadValues[3], firstFloat, 1e-6f);
+        EXPECT_NEAR(testLoadValues[3], selectedValue, AZ::Constants::Tolerance);
+    }
+
+    template<typename VectorType>
+    void TestSelectFirstInt()
+    {
+        int32_t testLoadValues[4] = { 1, 2, 3, 4 };
+
+        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
+        const int32_t selectedValue = VectorType::SelectFirst(testVector);
+
+        EXPECT_THAT(testLoadValues[0], ::testing::Eq(selectedValue));
+    }
+
+    template<typename VectorType>
+    void TestSelectSecondInt()
+    {
+        int32_t testLoadValues[4] = { 1, 2, 3, 4 };
+
+        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
+        const int32_t selectedValue = VectorType::SelectSecond(testVector);
+
+        EXPECT_THAT(testLoadValues[1], ::testing::Eq(selectedValue));
+    }
+
+    template<typename VectorType>
+    void TestSelectThirdInt()
+    {
+        int32_t testLoadValues[4] = { 1, 2, 3, 4 };
+
+        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
+        const int32_t selectedValue = VectorType::SelectThird(testVector);
+
+        EXPECT_THAT(testLoadValues[2], ::testing::Eq(selectedValue));
+    }
+
+    template<typename VectorType>
+    void TestSelectFourthInt()
+    {
+        int32_t testLoadValues[4] = { 1, 2, 3, 4 };
+
+        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
+        const int32_t selectedValue = VectorType::SelectFourth(testVector);
+
+        EXPECT_THAT(testLoadValues[3], ::testing::Eq(selectedValue));
     }
 
     template <typename VectorType>
@@ -98,11 +212,30 @@ namespace UnitTest
         {
             if (i == replaceIndex)
             {
-                EXPECT_THAT(testStoreValues[i], testLoadValues2[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(testLoadValues2[i], AZ::Constants::Tolerance));
             }
             else
             {
-                EXPECT_THAT(testStoreValues[i], testLoadValues1[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(testLoadValues1[i], AZ::Constants::Tolerance));
+            }
+        }
+    }
+
+    template<typename VectorType>
+    void ValidateReplaceIntResults(const int32_t* testLoadValues1, const int32_t* testLoadValues2, typename VectorType::Int32ArgType result, uint32_t replaceIndex)
+    {
+        int32_t testStoreValues[4] = { 0, 0, 0, 0 };
+        VectorType::StoreUnaligned(testStoreValues, result);
+
+        for (uint32_t i = 0; i < VectorType::ElementCount; ++i)
+        {
+            if (i == replaceIndex)
+            {
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(testLoadValues2[i]));
+            }
+            else
+            {
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(testLoadValues1[i]));
             }
         }
     }
@@ -167,6 +300,66 @@ namespace UnitTest
         ValidateReplaceResults<VectorType>(testLoadValues1, testLoadValues2, result2, 3);
     }
 
+    template<typename VectorType>
+    void TestReplaceFirstInt()
+    {
+        int32_t testLoadValues1[4] = { 1, 2, 3, 4 };
+        const typename VectorType::Int32Type testVector1 = VectorType::LoadUnaligned(testLoadValues1);
+        int32_t testLoadValues2[4] = { -1, -2, -3, -4 };
+        const typename VectorType::Int32Type testVector2 = VectorType::LoadUnaligned(testLoadValues2);
+
+        typename VectorType::Int32Type result1 = VectorType::ReplaceFirst(testVector1, testVector2);
+        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result1, 0);
+
+        typename VectorType::Int32Type result2 = VectorType::ReplaceFirst(testVector1, testLoadValues2[0]);
+        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result2, 0);
+    }
+
+    template<typename VectorType>
+    void TestReplaceSecondInt()
+    {
+        int32_t testLoadValues1[4] = { 1, 2, 3, 4 };
+        const typename VectorType::Int32Type testVector1 = VectorType::LoadUnaligned(testLoadValues1);
+        int32_t testLoadValues2[4] = { -1, -2, -3, -4 };
+        const typename VectorType::Int32Type testVector2 = VectorType::LoadUnaligned(testLoadValues2);
+
+        typename VectorType::Int32Type result1 = VectorType::ReplaceSecond(testVector1, testVector2);
+        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result1, 1);
+
+        typename VectorType::Int32Type result2 = VectorType::ReplaceSecond(testVector1, testLoadValues2[1]);
+        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result2, 1);
+    }
+
+    template<typename VectorType>
+    void TestReplaceThirdInt()
+    {
+        int32_t testLoadValues1[4] = { 1, 2, 3, 4 };
+        const typename VectorType::Int32Type testVector1 = VectorType::LoadUnaligned(testLoadValues1);
+        int32_t testLoadValues2[4] = { -1, -2, -3, -4 };
+        const typename VectorType::Int32Type testVector2 = VectorType::LoadUnaligned(testLoadValues2);
+
+        typename VectorType::Int32Type result1 = VectorType::ReplaceThird(testVector1, testVector2);
+        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result1, 2);
+
+        typename VectorType::Int32Type result2 = VectorType::ReplaceThird(testVector1, testLoadValues2[2]);
+        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result2, 2);
+    }
+
+    template<typename VectorType>
+    void TestReplaceFourthInt()
+    {
+        int32_t testLoadValues1[4] = { 1, 2, 3, 4 };
+        const typename VectorType::Int32Type testVector1 = VectorType::LoadUnaligned(testLoadValues1);
+        int32_t testLoadValues2[4] = { -1, -2, -3, -4 };
+        const typename VectorType::Int32Type testVector2 = VectorType::LoadUnaligned(testLoadValues2);
+
+        typename VectorType::Int32Type result1 = VectorType::ReplaceFourth(testVector1, testVector2);
+        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result1, 3);
+
+        typename VectorType::Int32Type result2 = VectorType::ReplaceFourth(testVector1, testLoadValues2[3]);
+        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result2, 3);
+    }
+
     template <typename VectorType>
     void TestSplatFloat()
     {
@@ -177,7 +370,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_THAT(testStoreValues[i], 1.0f);
+            EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(1.0f, AZ::Constants::Tolerance));
         }
     }
 
@@ -191,7 +384,135 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_THAT(testStoreValues[i], 1);
+            EXPECT_THAT(testStoreValues[i], ::testing::Eq(1));
+        }
+    }
+
+    template<typename VectorType>
+    void TestSplatFirst()
+    {
+        float testLoadValues[4] = { 3.5f, 0.0f, 0.0f, 0.0f };
+        float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
+        testVector = VectorType::SplatFirst(testVector);
+        VectorType::StoreUnaligned(testStoreValues, testVector);
+
+        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
+        {
+            EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(3.5f, AZ::Constants::Tolerance));
+        }
+    }
+
+    template<typename VectorType>
+    void TestSplatSecond()
+    {
+        float testLoadValues[4] = { 0.0f, 3.5f, 0.0f, 0.0f };
+        float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
+        testVector = VectorType::SplatSecond(testVector);
+        VectorType::StoreUnaligned(testStoreValues, testVector);
+
+        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
+        {
+            EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(3.5f, AZ::Constants::Tolerance));
+        }
+    }
+
+    template<typename VectorType>
+    void TestSplatThird()
+    {
+        float testLoadValues[4] = { 0.0f, 0.0f, 3.5f, 0.0f };
+        float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
+        testVector = VectorType::SplatThird(testVector);
+        VectorType::StoreUnaligned(testStoreValues, testVector);
+
+        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
+        {
+            EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(3.5f, AZ::Constants::Tolerance));
+        }
+    }
+
+    template<typename VectorType>
+    void TestSplatFourth()
+    {
+        float testLoadValues[4] = { 0.0f, 0.0f, 0.0f, 3.5f };
+        float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
+        testVector = VectorType::SplatFourth(testVector);
+        VectorType::StoreUnaligned(testStoreValues, testVector);
+
+        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
+        {
+            EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(3.5f, AZ::Constants::Tolerance));
+        }
+    }
+
+    template<typename VectorType>
+    void TestSplatFirstInt()
+    {
+        int32_t testLoadValues[4] = { 3, 0, 0, 0 };
+        int32_t testStoreValues[4] = { 0, 0, 0, 0 };
+
+        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
+        testVector = VectorType::SplatFirst(testVector);
+        VectorType::StoreUnaligned(testStoreValues, testVector);
+
+        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
+        {
+            EXPECT_THAT(testStoreValues[i], ::testing::Eq(3));
+        }
+    }
+
+    template<typename VectorType>
+    void TestSplatSecondInt()
+    {
+        int32_t testLoadValues[4] = { 0, 3, 0, 0 };
+        int32_t testStoreValues[4] = { 0, 0, 0, 0 };
+
+        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
+        testVector = VectorType::SplatSecond(testVector);
+        VectorType::StoreUnaligned(testStoreValues, testVector);
+
+        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
+        {
+            EXPECT_THAT(testStoreValues[i], ::testing::Eq(3));
+        }
+    }
+
+    template<typename VectorType>
+    void TestSplatThirdInt()
+    {
+        int32_t testLoadValues[4] = { 0, 0, 3, 0 };
+        int32_t testStoreValues[4] = { 0, 0, 0, 0 };
+
+        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
+        testVector = VectorType::SplatThird(testVector);
+        VectorType::StoreUnaligned(testStoreValues, testVector);
+
+        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
+        {
+            EXPECT_THAT(testStoreValues[i], ::testing::Eq(3));
+        }
+    }
+
+    template<typename VectorType>
+    void TestSplatFourthInt()
+    {
+        int32_t testLoadValues[4] = { 0, 0, 0, 3 };
+        int32_t testStoreValues[4] = { 0, 0, 0, 0 };
+
+        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
+        testVector = VectorType::SplatFourth(testVector);
+        VectorType::StoreUnaligned(testStoreValues, testVector);
+
+        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
+        {
+            EXPECT_THAT(testStoreValues[i], ::testing::Eq(3));
         }
     }
 
@@ -206,7 +527,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_THAT(testStoreValues[i], testLoadValues[i]);
+            EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(testLoadValues[i], AZ::Constants::Tolerance));
         }
     }
 
@@ -221,7 +542,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_THAT(testStoreValues[i], testLoadValues[i]);
+            EXPECT_THAT(testStoreValues[i], ::testing::Eq(testLoadValues[i]));
         }
     }
 
@@ -241,7 +562,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -253,7 +574,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -265,7 +586,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -277,7 +598,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
     }
@@ -298,7 +619,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -310,7 +631,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -322,7 +643,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
     }
@@ -367,7 +688,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -378,7 +699,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], testLoadValues[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(testLoadValues[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -390,7 +711,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
     }
@@ -408,7 +729,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_THAT(testStoreValues[i], -testLoadValues[i]);
+            EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(-testLoadValues[i], AZ::Constants::Tolerance));
         }
     }
 
@@ -423,7 +744,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_THAT(testStoreValues[i], 0x7FFFFFFF);
+            EXPECT_THAT(testStoreValues[i], ::testing::Eq(0x7FFFFFFF));
         }
     }
 
@@ -442,7 +763,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], 0);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(0));
             }
         }
 
@@ -453,7 +774,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], 0x0000FFFF);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(0x0000FFFF));
             }
         }
 
@@ -464,7 +785,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], 0xFFFFFFFF);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(0xFFFFFFFF));
             }
         }
     }
@@ -481,7 +802,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_THAT(testStoreValues[i], 0xFFF00FFF);
+            EXPECT_THAT(testStoreValues[i], ::testing::Eq(0xFFF00FFF));
         }
     }
 
@@ -503,7 +824,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -515,7 +836,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
     }
@@ -535,7 +856,7 @@ namespace UnitTest
         int32_t results[4] = { -8, 8, -5, 5 };
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_THAT(testStoreValues[i], results[i]);
+            EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
         }
     }
 
@@ -552,7 +873,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], 0.0f);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(0.0f, AZ::Constants::Tolerance));
             }
         }
 
@@ -566,7 +887,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], -1.0f);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(-1.0f, AZ::Constants::Tolerance));
             }
         }
 
@@ -580,7 +901,7 @@ namespace UnitTest
             float results[4] = { 0.0f, -1.0f, 1.0f, -2.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -593,7 +914,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], testWholeLoadValues[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(testWholeLoadValues[i], AZ::Constants::Tolerance));
             }
         }
     }
@@ -611,7 +932,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], 1.0f);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(1.0f, AZ::Constants::Tolerance));
             }
         }
 
@@ -624,7 +945,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], 0.0f);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(0.0f, AZ::Constants::Tolerance));
             }
         }
 
@@ -638,7 +959,7 @@ namespace UnitTest
             float results[4] = { 1.0f, 0.0f, 2.0f, -1.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -651,7 +972,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], testWholeLoadValues[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(testWholeLoadValues[i], AZ::Constants::Tolerance));
             }
         }
     }
@@ -670,7 +991,7 @@ namespace UnitTest
             float results[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -684,7 +1005,7 @@ namespace UnitTest
             float results[4] = { 0.0f, 0.0f, -1.0f, -1.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -699,7 +1020,7 @@ namespace UnitTest
             float results[4] = { 0.0f, 0.0f, 2.0f, -2.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -712,7 +1033,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], testWholeLoadValues[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(testWholeLoadValues[i], AZ::Constants::Tolerance));
             }
         }
     }
@@ -731,7 +1052,7 @@ namespace UnitTest
             float results[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -745,7 +1066,7 @@ namespace UnitTest
             float results[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -759,7 +1080,7 @@ namespace UnitTest
             float results[4] = { 0.0f, 0.0f, 1.0f, -1.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -772,7 +1093,7 @@ namespace UnitTest
 
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], testWholeLoadValues[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(testWholeLoadValues[i], AZ::Constants::Tolerance));
             }
         }
     }
@@ -795,7 +1116,7 @@ namespace UnitTest
             float results[4] = { -1.0f, 0.0f, -1.0f, 0.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
 
@@ -807,7 +1128,7 @@ namespace UnitTest
             float results[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
             }
         }
     }
@@ -827,7 +1148,7 @@ namespace UnitTest
         float results[4] = { -8.0f, 8.0f, -5.0f, 5.0f };
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_THAT(testStoreValues[i], results[i]);
+            EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(results[i], AZ::Constants::Tolerance));
         }
     }
 
@@ -849,7 +1170,7 @@ namespace UnitTest
             int32_t results[4] = { 0, 0, -1, -1 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -861,7 +1182,7 @@ namespace UnitTest
             int32_t results[4] = { -1, -1, 0, 0 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -873,7 +1194,7 @@ namespace UnitTest
             int32_t results[4] = { 0, -1, 0, 0 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -885,7 +1206,7 @@ namespace UnitTest
             int32_t results[4] = { 0, -1, -1, -1 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -897,7 +1218,7 @@ namespace UnitTest
             int32_t results[4] = { -1, 0, 0, 0 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -909,7 +1230,7 @@ namespace UnitTest
             int32_t results[4] = { -1, 0, -1, -1 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
     }
@@ -961,7 +1282,7 @@ namespace UnitTest
             int32_t results[4] = { 0, 0, -1, -1 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -973,7 +1294,7 @@ namespace UnitTest
             int32_t results[4] = { -1, -1, 0, 0 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -985,7 +1306,7 @@ namespace UnitTest
             int32_t results[4] = { 0, -1, 0, 0 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -997,7 +1318,7 @@ namespace UnitTest
             int32_t results[4] = { 0, -1, -1, -1 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -1009,7 +1330,7 @@ namespace UnitTest
             int32_t results[4] = { -1, 0, 0, 0 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -1021,7 +1342,7 @@ namespace UnitTest
             int32_t results[4] = { -1, 0, -1, -1 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
     }
@@ -1375,7 +1696,7 @@ namespace UnitTest
             int32_t results[4] = { 0, 0, 0, 0 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -1389,7 +1710,7 @@ namespace UnitTest
             int32_t results[4] = { 0, 0, 0, 0 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -1403,7 +1724,7 @@ namespace UnitTest
             int32_t results[4] = { 0, 0, 1, -1 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -1414,9 +1735,10 @@ namespace UnitTest
             typename VectorType::Int32Type testVector = VectorType::ConvertToInt(sourceVector);
             VectorType::StoreUnaligned(testStoreValues, testVector);
 
+            int32_t results[4] = { 0, 1, -1, 2 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], testWholeLoadValues[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
     }
@@ -1435,7 +1757,7 @@ namespace UnitTest
             int32_t results[4] = { 0, 0, 1, 1 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -1449,7 +1771,7 @@ namespace UnitTest
             int32_t results[4] = { 0, 0, -1, -1 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -1464,7 +1786,7 @@ namespace UnitTest
             int32_t results[4] = { 0, 0, 2, -2 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], results[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
 
@@ -1475,9 +1797,10 @@ namespace UnitTest
             typename VectorType::Int32Type testVector = VectorType::ConvertToIntNearest(sourceVector);
             VectorType::StoreUnaligned(testStoreValues, testVector);
 
+            int32_t results[4] = { 0, 1, -1, 2 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_THAT(testStoreValues[i], testWholeLoadValues[i]);
+                EXPECT_THAT(testStoreValues[i], ::testing::Eq(results[i]));
             }
         }
     }
@@ -1531,7 +1854,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_THAT(testStoreInt32Values[i], testLoadValues[i]);
+            EXPECT_THAT(testStoreInt32Values[i], ::testing::Eq(testLoadValues[i]));
         }
     }
 
@@ -1546,7 +1869,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_THAT(testStoreValues[i], 0.0f);
+            EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(0.0f, AZ::Constants::Tolerance));
         }
     }
 
@@ -1561,10 +1884,95 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_THAT(testStoreValues[i], 0);
+            EXPECT_THAT(testStoreValues[i], ::testing::Eq(0));
         }
     }
 
+    TEST(MATH_SimdMath, TestToVec1InVec2)
+    {
+        TestToVec1<Simd::Vec2>();
+    }
+
+    TEST(MATH_SimdMath, TestFromVec1InVec2)
+    {
+        TestFromVec1<Simd::Vec2>();
+    }
+
+    TEST(MATH_SimdMath, TestToVec1InVec3)
+    {
+        TestToVec1<Simd::Vec3>();
+    }
+
+    TEST(MATH_SimdMath, TestFromVec1InVec3)
+    {
+        TestFromVec1<Simd::Vec3>();
+    }
+
+    TEST(MATH_SimdMath, TestToVec2InVec3)
+    {
+        TestToVec2<Simd::Vec3>();
+    }
+
+    TEST(MATH_SimdMath, TestFromVec2InVec3)
+    {
+        TestFromVec2<Simd::Vec3>();
+    }
+
+    TEST(MATH_SimdMath, TestToVec1InVec4)
+    {
+        TestToVec1<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestFromVec1InVec4)
+    {
+        TestFromVec1<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestToVec2InVec4)
+    {
+        TestToVec2<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestFromVec2InVec4)
+    {
+        TestFromVec2<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestToVec3InVec4)
+    {
+        float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
+        float testStoreValues[4] = { -1.0f, -1.0f, -1.0f, -1.0f };
+
+        typename Simd::Vec4::FloatType testVector = Simd::Vec4::LoadUnaligned(testLoadValues);
+        Simd::Vec3::FloatType testVec3 = Simd::Vec4::ToVec3(testVector);
+        Simd::Vec3::StoreUnaligned(testStoreValues, testVec3);
+
+        for (int32_t i = 0; i < Simd::Vec3::ElementCount; ++i)
+        {
+            EXPECT_NEAR(testLoadValues[i], testStoreValues[i], AZ::Constants::Tolerance);
+        }
+    }
+
+    TEST(MATH_SimdMath, TestFromVec3InVec4)
+    {
+        float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
+        float testStoreValues[4] = { -1.0f, -1.0f, -1.0f, -1.0f };
+
+        Simd::Vec3::FloatType testVec3 = Simd::Vec3::LoadUnaligned(testLoadValues);
+        typename Simd::Vec4::FloatType testVector = Simd::Vec4::FromVec3(testVec3);
+        Simd::Vec4::StoreUnaligned(testStoreValues, testVector);
+
+        // The first 3 elements must be set to (Vec3.x, Vec3.y, Vec3.z)
+        for (int32_t i = 0; i < Simd::Vec3::ElementCount; ++i)
+        {
+            EXPECT_NEAR(testLoadValues[i], testStoreValues[i], AZ::Constants::Tolerance);
+        }
+        // The rest of elements must be set to zero
+        for (int32_t i = Simd::Vec3::ElementCount; i < Simd::Vec4::ElementCount; ++i)
+        {
+            EXPECT_NEAR(0.0f, testStoreValues[i], AZ::Constants::Tolerance);
+        }
+    }
 
     TEST(MATH_SimdMath, TestLoadStoreFloatVec1)
     {
@@ -1656,6 +2064,26 @@ namespace UnitTest
         TestSelectFourth<Simd::Vec4>();
     }
 
+    TEST(MATH_SimdMath, TestSelectFirstIntVec4)
+    {
+        TestSelectFirstInt<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestSelectSecondIntVec4)
+    {
+        TestSelectSecondInt<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestSelectThirdIntVec4)
+    {
+        TestSelectThirdInt<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestSelectFourthIntVec4)
+    {
+        TestSelectFourthInt<Simd::Vec4>();
+    }
+
     TEST(MATH_SimdMath, TestSplatFloatVec1)
     {
         TestSplatFloat<Simd::Vec1>();
@@ -1694,6 +2122,71 @@ namespace UnitTest
     TEST(MATH_SimdMath, TestSplatIntVec4)
     {
         TestSplatInt<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestSplatFirstVec2)
+    {
+        TestSplatFirst<Simd::Vec2>();
+    }
+
+    TEST(MATH_SimdMath, TestSplatSecondVec2)
+    {
+        TestSplatSecond<Simd::Vec2>();
+    }
+
+    TEST(MATH_SimdMath, TestSplatFirstVec3)
+    {
+        TestSplatFirst<Simd::Vec3>();
+    }
+
+    TEST(MATH_SimdMath, TestSplatSecondVec3)
+    {
+        TestSplatSecond<Simd::Vec3>();
+    }
+
+    TEST(MATH_SimdMath, TestSplatThirdVec3)
+    {
+        TestSplatThird<Simd::Vec3>();
+    }
+
+    TEST(MATH_SimdMath, TestSplatFirstVec4)
+    {
+        TestSplatFirst<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestSplatSecondVec4)
+    {
+        TestSplatSecond<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestSplatThirdVec4)
+    {
+        TestSplatThird<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestSplatFourthVec4)
+    {
+        TestSplatFourth<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestSplatFirstIntVec4)
+    {
+        TestSplatFirstInt<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestSplatSecondIntVec4)
+    {
+        TestSplatSecondInt<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestSplatThirdIntVec4)
+    {
+        TestSplatThirdInt<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestSplatFourthIntVec4)
+    {
+        TestSplatFourthInt<Simd::Vec4>();
     }
 
     TEST(MATH_SimdMath, TestReplaceFirstVec2)
@@ -1739,6 +2232,26 @@ namespace UnitTest
     TEST(MATH_SimdMath, TestReplaceFourthVec4)
     {
         TestReplaceFourth<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestReplaceFirstIntVec4)
+    {
+        TestReplaceFirstInt<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestReplaceSecondIntVec4)
+    {
+        TestReplaceSecondInt<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestReplaceThirdIntVec4)
+    {
+        TestReplaceThirdInt<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestReplaceFourthIntVec4)
+    {
+        TestReplaceFourthInt<Simd::Vec4>();
     }
 
     TEST(MATH_SimdMath, TestLoadImmediateFloatVec1)
