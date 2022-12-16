@@ -17,6 +17,10 @@
             {
                 "name": "VertexShader",
                 "type": "Vertex"
+            },
+            {
+                "name": "PixelShader",
+                "type": "Fragment"
             }
         ]
     },
