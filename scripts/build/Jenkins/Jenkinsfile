@@ -370,160 +370,164 @@ def ExecuteControlFile(controlFile) {
     dir(ENGINE_REPOSITORY_NAME) {
         //register all the objects specified in this controlFile
         if(controlFile.REGISTER_ENGINES) {
+            echo 'REGISTER_ENGINES'
             controlFile.REGISTER_ENGINES.each { engineName ->
                 PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.NAME}/${engineName} || ver>nul", "Registering engine in ${workspace}/${repo.NAME}/${engineName}")
             }
         }
         if(controlFile.REGISTER_PROJECTS) {
-        controlFile.REGISTER_PROJECTS.each { projectName ->
-            PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.NAME}/${projectName} || ver>nul", "Registering project in ${workspace}/${repo.NAME}/${projectName}")
+            echo 'REGISTER_PROJECTS'
+            controlFile.REGISTER_PROJECTS.each { projectName ->
+                PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.NAME}/${projectName} || ver>nul", "Registering project in ${workspace}/${repo.NAME}/${projectName}")
             }
         }
         if(controlFile.REGISTER_GEMS) {
-        controlFile.REGISTER_GEMS.each { gemName ->
-            PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.NAME}/${gemName} || ver>nul", "Registering gem in ${workspace}/${repo.NAME}/${gemName}")
+            echo 'REGISTER_GEMS'
+            controlFile.REGISTER_GEMS.each { gemName ->
+                PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.NAME}/${gemName} || ver>nul", "Registering gem in ${workspace}/${repo.NAME}/${gemName}")
             }
         }
         if(controlFile.REGISTER_TEMPLATES) {
-        controlFile.REGISTER_TEMPLATES.each { templateName ->
-            PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.NAME}/${templateName} || ver>nul", "Registering template in ${workspace}/${repo.NAME}/${templateName}")
+            echo 'REGISTER_TEMPLATES'
+            controlFile.REGISTER_TEMPLATES.each { templateName ->
+                PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.NAME}/${templateName} || ver>nul", "Registering template in ${workspace}/${repo.NAME}/${templateName}")
             }
         }
         if(controlFile.REGISTER_RESTRICTED) {
-        controlFile.REGISTER_RESTRICTED.each { restrictedName ->
-            PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.NAME}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repo.NAME}/${restrictedName}")
+            echo 'REGISTER_RESTRICTED'
+            controlFile.REGISTER_RESTRICTED.each { restrictedName ->
+                PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.NAME}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repo.NAME}/${restrictedName}")
             }
         }
         //enable all gems specified in the control file
         if(controlFile.ENABLE_GEMS) {
-        controlFile.ENABLE_GEMS.each { gemName ->
-            PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repo.NAME}/${gemName} --project-name AutomatedTesting || ver>nul", "Enabling ${workspace}/${repo.NAME}/${gemName} for AutomatedTesting")
+            echo 'ENABLE_GEMS'
+            controlFile.ENABLE_GEMS.each { gemName ->
+                PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repo.NAME}/${gemName} --project-name AutomatedTesting || ver>nul", "Enabling ${workspace}/${repo.NAME}/${gemName} for AutomatedTesting")
             }
         }
     }
 
     //check out all repos
     if(controlFile.REPOS) {
+        echo 'REPOS'
         controlFile.REPOS.each { repo ->
-            if(!fileExists(repo.NAME)) {
+            def repoControlFile = {}
+            def foundRepoControlFile = false
 
-                def repoControlFile = {}
-                def foundRepoControlFile = false
+            dir(repo.NAME) {
+                CheckoutRepo(repo.BRANCH, [GetRemoteConfig(repo.NAME, repo.URL)])
+
+                if(fileExists('.automatedtesting.json')) {
+                    echo "Loading ${repo.URL} .automatedtesting.json"
+                    repoControlFile = readJSON file: '.automatedtesting.json'
+                    foundRepoControlFile = true
+                }
+            }
+
+            if(foundRepoControlFile) {
+                //There is a control file, execute it
+                ExecuteControlFile(repoControlFile)
+            } else {
+                //There is no control file so we must determine if this is a composite repo or a singular repo
+                //A standard composite repo has the form
+                //root
+                //  Engines
+                //  Projects
+                //  Gems
+                //  Templates
+                //  Restricted
+                def enginesExist = false
+                def projectsExist = false
+                def gemsExist = false
+                def templatesExist = false
+                def restrictedExist = false
+                def engineRepo = false
+                def projectRepo = false
+                def gemRepo = false
+                def templateRepo = false
+                def restrictedRepo = false
 
                 dir(repo.NAME) {
-                    CheckoutRepo(repo.BRANCH, [GetRemoteConfig(repo.NAME, repo.URL)])
+                    if(fileExists("Engines")) {
+                        enginesExist = true
+                    }
+                    if(fileExists("Projects")) {
+                        projectsExist = true
+                    }
+                    if(fileExists("Gems")) {
+                        gemsExist = true
+                    }
+                    if(fileExists("Templates")) {
+                        templatesExist = true
+                    }
+                    if(fileExists("Restricted")) {
+                        restrictedExist = true
+                    }
 
-                    if(fileExists('.automatedtesting.json')) {
-                        echo "Loading ${repo.URL} .automatedtesting.json"
-                        repoControlFile = readJSON file: '.automatedtesting.json'
-                        foundRepoControlFile = true
+                    //If this is not a standard composite repo, then it wont have any composite dirs, then we know
+                    //its a singular object repo, see what kind it is.
+                    if(!enginesExist && !projectsExist && !gemsExist && !templatesExist && !restrictedExist) {
+                        if(fileExists("engine.json")) {
+                            engineRepo = true
+                        }
+                        if(fileExists("project.json")) {
+                            projectRepo = true
+                        }
+                        if(fileExists("gem.json")) {
+                            gemRepo = true
+                        }
+                        if(fileExists("template.json")) {
+                            templateRepo = true
+                        }
+                        if(fileExists("restricted.json")) {
+                            restrictedRepo = true
+                        }
                     }
                 }
 
-                if(foundRepoControlFile) {
-                    //There is a control file, execute it
-                    ExecuteControlFile(repoControlFile)
-                } else {
-                    //There is no control file so we must determine if this is a composite repo or a singular repo
-                    //A standard composite repo has the form
-                    //root
-                    //  Engines
-                    //  Projects
-                    //  Gems
-                    //  Templates
-                    //  Restricted
-                    def enginesExist = false
-                    def projectsExist = false
-                    def gemsExist = false
-                    def templatesExist = false
-                    def restrictedExist = false
-                    def engineRepo = false
-                    def projectRepo = false
-                    def gemRepo = false
-                    def templateRepo = false
-                    def restrictedRepo = false
-
-                    dir(repo.NAME) {
-                        if(fileExists("Engines")) {
-                            enginesExist = true
-                        }
-                        if(fileExists("Projects")) {
-                            projectsExist = true
-                        }
-                        if(fileExists("Gems")) {
-                            gemsExist = true
-                        }
-                        if(fileExists("Templates")) {
-                            templatesExist = true
-                        }
-                        if(fileExists("Restricted")) {
-                            restrictedExist = true
-                        }
-
-                        //If this is not a standard composite repo, then it wont have any composite dirs, then we know
-                        //its a singular object repo, see what kind it is.
-                        if(!enginesExist && !projectsExist && !gemsExist && !templatesExist && !restrictedExist) {
-                            if(fileExists("engine.json")) {
-                                engineRepo = true
-                            }
-                            if(fileExists("project.json")) {
-                                projectRepo = true
-                            }
-                            if(fileExists("gem.json")) {
-                                gemRepo = true
-                            }
-                            if(fileExists("template.json")) {
-                                templateRepo = true
-                            }
-                            if(fileExists("restricted.json")) {
-                                restrictedRepo = true
-                            }
-                        }
+                dir(ENGINE_REPOSITORY_NAME) {
+                    //register all the objects in this repo
+                    //if it is a composite repo then use the --all-<type>-path to register all of them
+                    if(enginesExist) {
+                        PlatformSh("scripts/o3de${ext} register --all-engines-path ${workspace}/${repo.NAME}/Engines || ver>nul", "Registering all engines in ${workspace}/${repo.NAME}/Engines")
+                    }
+                    if(projectsExist) {
+                        PlatformSh("scripts/o3de${ext} register --all-projects-path ${workspace}/${repo.NAME}/Projects || ver>nul", "Registering all projects in ${workspace}/${repo.NAME}/Projects")
+                    }
+                    if(gemsExist) {
+                        PlatformSh("scripts/o3de${ext} register --all-gems-path ${workspace}/${repo.NAME}/Gems || ver>nul", "Registering all gems in ${workspace}/${repo.NAME}/Gems")
+                    }
+                    if(templatesExist) {
+                        PlatformSh("scripts/o3de${ext} register --all-templates-path ${workspace}/${repo.NAME}/Templates || ver>nul", "Registering all templates in ${workspace}/${repo.NAME}/Templates")
+                    }
+                    if(restrictedExist) {
+                        PlatformSh("scripts/o3de${ext} register --all-restricted-path ${workspace}/${repo.NAME}/Restricted || ver>nul", "Registering all restricted in ${workspace}/${repo.NAME}/Restricted")
+                    }
+                    //enable all gems in this repo
+                    if(gemsExist) {
+                        PlatformSh("scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repo.NAME}/Gems --project-name AutomatedTesting || ver>nul", "Enabling all gems in AutomatedTesting")
                     }
 
-                    dir(ENGINE_REPOSITORY_NAME) {
-                        //register all the objects in this repo
-                        //if it is a composite repo then use the --all-<type>-path to register all of them
-                        if(enginesExist) {
-                            PlatformSh("scripts/o3de${ext} register --all-engines-path ${workspace}/${repo.NAME}/Engines || ver>nul", "Registering all engines in ${workspace}/${repo.NAME}/Engines")
-                        }
-                        if(projectsExist) {
-                            PlatformSh("scripts/o3de${ext} register --all-projects-path ${workspace}/${repo.NAME}/Projects || ver>nul", "Registering all projects in ${workspace}/${repo.NAME}/Projects")
-                        }
-                        if(gemsExist) {
-                            PlatformSh("scripts/o3de${ext} register --all-gems-path ${workspace}/${repo.NAME}/Gems || ver>nul", "Registering all gems in ${workspace}/${repo.NAME}/Gems")
-                        }
-                        if(templatesExist) {
-                            PlatformSh("scripts/o3de${ext} register --all-templates-path ${workspace}/${repo.NAME}/Templates || ver>nul", "Registering all templates in ${workspace}/${repo.NAME}/Templates")
-                        }
-                        if(restrictedExist) {
-                            PlatformSh("scripts/o3de${ext} register --all-restricted-path ${workspace}/${repo.NAME}/Restricted || ver>nul", "Registering all restricted in ${workspace}/${repo.NAME}/Restricted")
-                        }
-                        //enable all gems in this repo
-                        if(gemsExist) {
-                            PlatformSh("scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repo.NAME}/Gems --project-name AutomatedTesting || ver>nul", "Enabling all gems in AutomatedTesting")
-                        }
-
-                        //if its a singular repo register it using the --<type>-path
-                        if(engineRepo) {
-                            PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.NAME} || ver>nul", "Registering engine in ${workspace}/${repo.NAME}")
-                        }
-                        if(projectRepo) {
-                            PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.NAME} || ver>nul", "Registering project in ${workspace}/${repo.NAME}")
-                        }
-                        if(gemRepo) {
-                            PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.NAME} || ver>nul", "Registering gem in ${workspace}/${repo.NAME}")
-                        }
-                        if(templateRepo) {
-                            PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.NAME} || ver>nul", "Registering template in ${workspace}/${repo.NAME}")
-                        }
-                        if(restrictedRepo) {
-                            PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.NAME} || ver>nul", "Registering restricted in ${workspace}/${repo.NAME}")
-                        }
-                        //if this singular repo is a gem enable it
-                        if(gemRepo) {
-                            PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repo.NAME} --project-name AutomatedTesting || ver>nul", "Enabling ${gemName} in AutomatedTesting")
-                        }
+                    //if its a singular repo register it using the --<type>-path
+                    if(engineRepo) {
+                        PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.NAME} || ver>nul", "Registering engine in ${workspace}/${repo.NAME}")
+                    }
+                    if(projectRepo) {
+                        PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.NAME} || ver>nul", "Registering project in ${workspace}/${repo.NAME}")
+                    }
+                    if(gemRepo) {
+                        PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.NAME} || ver>nul", "Registering gem in ${workspace}/${repo.NAME}")
+                    }
+                    if(templateRepo) {
+                        PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.NAME} || ver>nul", "Registering template in ${workspace}/${repo.NAME}")
+                    }
+                    if(restrictedRepo) {
+                        PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.NAME} || ver>nul", "Registering restricted in ${workspace}/${repo.NAME}")
+                    }
+                    //if this singular repo is a gem enable it
+                    if(gemRepo) {
+                        PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repo.NAME} --project-name AutomatedTesting || ver>nul", "Enabling ${gemName} in AutomatedTesting")
                     }
                 }
             }
