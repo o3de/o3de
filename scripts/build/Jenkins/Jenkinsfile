@@ -393,11 +393,13 @@ def ExecuteControlFile(controlFile) {
     //check out all repos
     controlFile.REPOS.each { repo ->
         if(!fileExists(repo.NAME)) {
-            CheckoutRepo(repo.BRANCH, [GetRemoteConfig(repo.NAME, repo.URL)])
 
             def repoControlFile = {}
             def foundRepoControlFile = false
+
             dir(repo.NAME) {
+                CheckoutRepo(repo.BRANCH, [GetRemoteConfig(repo.NAME, repo.URL)])
+
                 if(fileExists('.automatedtesting.json')) {
                     echo "Loading ${repo.URL} .automatedtesting.json"
                     repoControlFile = readJSON file: '.automatedtesting.json'
