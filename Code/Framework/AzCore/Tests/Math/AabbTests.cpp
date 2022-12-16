@@ -529,9 +529,9 @@ namespace UnitTest
         const Vector3 expectedMax(2.40615965e+38f, 2141.42139f, 10.0f);
 
         EXPECT_NEAR(aabbFromMatrix.GetMin().GetX(), expectedMin.GetX(), AZ::Constants::Tolerance);
-        EXPECT_NEAR(aabbFromMatrix.GetMin().GetY(), expectedMin.GetY(), 0.000001e+38f);  // Extremely large values have large steps and therefore large precision loss
+        EXPECT_TRUE(IsCloseMag(aabbFromMatrix.GetMin().GetY(), expectedMin.GetY(), AZ::Constants::Tolerance));
         EXPECT_NEAR(aabbFromMatrix.GetMin().GetZ(), expectedMin.GetZ(), AZ::Constants::Tolerance);
-        EXPECT_NEAR(aabbFromMatrix.GetMax().GetX(), expectedMax.GetX(), 0.000001e+38f);  // Extremely large values have large steps and therefore large precision loss
+        EXPECT_TRUE(IsCloseMag(aabbFromMatrix.GetMax().GetX(), expectedMax.GetX(), AZ::Constants::Tolerance));
         EXPECT_NEAR(aabbFromMatrix.GetMax().GetY(), expectedMax.GetY(), AZ::Constants::Tolerance);
         EXPECT_NEAR(aabbFromMatrix.GetMax().GetZ(), expectedMax.GetZ(), AZ::Constants::Tolerance);
     }
@@ -560,9 +560,9 @@ namespace UnitTest
         const Vector3 expectedMax(2.40615965e+38f, 2141.42139f, 10.0f);
 
         EXPECT_NEAR(aabbFromTransform.GetMin().GetX(), expectedMin.GetX(), AZ::Constants::Tolerance);
-        EXPECT_NEAR(aabbFromTransform.GetMin().GetY(), expectedMin.GetY(), 0.000001e+38f); // Extremely large values have large steps and therefore large precision loss
+        EXPECT_TRUE(IsCloseMag(aabbFromTransform.GetMin().GetY(), expectedMin.GetY(), AZ::Constants::Tolerance));
         EXPECT_NEAR(aabbFromTransform.GetMin().GetZ(), expectedMin.GetZ(), AZ::Constants::Tolerance);
-        EXPECT_NEAR(aabbFromTransform.GetMax().GetX(), expectedMax.GetX(), 0.000001e+38f); // Extremely large values have large steps and therefore large precision loss
+        EXPECT_TRUE(IsCloseMag(aabbFromTransform.GetMax().GetX(), expectedMax.GetX(), AZ::Constants::Tolerance));
         EXPECT_NEAR(aabbFromTransform.GetMax().GetY(), expectedMax.GetY(), AZ::Constants::Tolerance);
         EXPECT_NEAR(aabbFromTransform.GetMax().GetZ(), expectedMax.GetZ(), AZ::Constants::Tolerance);
     }
