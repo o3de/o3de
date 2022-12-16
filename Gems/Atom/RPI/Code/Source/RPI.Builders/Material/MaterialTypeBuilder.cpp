@@ -516,7 +516,7 @@ namespace AZ
 
                 AZStd::string azslFileReference = AZ::IO::Path{outputAzslFilePath.Filename()}.c_str();
                 AZStd::to_lower(azslFileReference.begin(), azslFileReference.end());
-                AzFramework::StringFunc::Replace(shaderFile.GetValue(), "INSERT_AZSL_PATH_HERE", azslFileReference.c_str());
+                AzFramework::StringFunc::Replace(shaderFile.GetValue(), "TEMPLATE_AZSL_PATH", azslFileReference.c_str());
 
                 AZ::IO::Path outputShaderFilePath = request.m_tempDirPath;
                 outputShaderFilePath /= AZStd::string::format("%s_%s_%s.shader", materialTypeName.c_str(), materialPipelineIndicator.c_str(), shaderName.c_str());

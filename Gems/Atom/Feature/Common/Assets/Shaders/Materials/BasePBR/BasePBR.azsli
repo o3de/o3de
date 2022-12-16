@@ -39,6 +39,11 @@ COMMON_OPTIONS_NORMAL()
 
 // ------- Shader Stitching -------
 
+bool NeedsTangentFrame()
+{
+    return o_normal_useTexture;
+}
+
 #include "BasePBR_VertexData.azsli"
 #include "BasePBR_VertexEval.azsli"
 
