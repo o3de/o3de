@@ -33,6 +33,7 @@ namespace PhysX
         EditorJointLimitLinearPairConfig::Reflect(context);
         EditorJointLimitConeConfig::Reflect(context);
         EditorJointConfig::Reflect(context);
+        EditorJointMotorConfig::Reflect(context);
 
         EditorMaterialAsset::Reflect(context);
         ReflectLegacyMaterialClasses(context);

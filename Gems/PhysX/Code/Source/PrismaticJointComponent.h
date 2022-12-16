@@ -9,7 +9,8 @@
 
 #include <AzCore/Component/Component.h>
 #include <Source/JointComponent.h>
-
+#include <PhysX/Joint/PhysXJointBus.h>
+#include <AzCore/Component/TickBus.h>
 namespace PhysX
 {
     //! Provides runtime support for prismatic joints.
@@ -17,6 +18,7 @@ namespace PhysX
     //! joint frames.
     class PrismaticJointComponent
         : public JointComponent
+        , public JointInterfaceRequestBus::Handler
     {
     public:
         AZ_COMPONENT(PrismaticJointComponent, "{9B34CA1B-C063-4D42-A15B-CE6CD7C828DC}", JointComponent);
@@ -27,8 +29,23 @@ namespace PhysX
         PrismaticJointComponent(
             const JointComponentConfiguration& configuration,
             const JointGenericProperties& genericProperties,
-            const JointLimitProperties& limitProperties);
+            const JointLimitProperties& limitProperties,
+            const JointMotorProperties& motorProperties);
         ~PrismaticJointComponent() = default;
+
+        // JointInterfaceRequestBus::Handler
+        float GetPosition() override;
+        float GetVelocity() override;
+        AZ::Transform GetTransform() override;
+
+        // JointMotorRequestBus ::Handler
+        void SetVelocity(float velocity) override;
+        void SetMaximumForce(float force) override;
+
+        AZStd::pair<float, float> GetLimits();
+        // AZ::Component
+        void Activate() override;
+        void Deactivate() override;
 
     protected:
         // JointComponent

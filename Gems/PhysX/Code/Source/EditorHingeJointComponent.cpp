@@ -25,8 +25,9 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorHingeJointComponent, EditorJointComponent>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("Angular Limit", &EditorHingeJointComponent::m_angularLimit)
+                ->Field("Motor", &EditorHingeJointComponent::m_motorConfiguration)
                 ->Field("Component Mode", &EditorHingeJointComponent::m_componentModeDelegate)
                 ;
 
@@ -40,6 +41,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/hinge-joint/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &EditorHingeJointComponent::m_angularLimit, "Angular Limit", "The rotation angle limit around the joint's axis.")
+                    ->DataElement(0, &EditorHingeJointComponent::m_motorConfiguration, "Motor Configuration", "Joint's motor configuration.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorHingeJointComponent::m_componentModeDelegate, "Component Mode", "Hinge Joint Component Mode.")
                       ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
@@ -95,7 +97,8 @@ namespace PhysX
         gameEntity->CreateComponent<HingeJointComponent>(
             m_config.ToGameTimeConfig(), 
             m_config.ToGenericProperties(),
-            m_angularLimit.ToGameTimeConfig());
+            m_angularLimit.ToGameTimeConfig(),
+            m_motorConfiguration.ToGameTimeConfig());
     }
 
     float EditorHingeJointComponent::GetLinearValue(const AZStd::string& parameterName)

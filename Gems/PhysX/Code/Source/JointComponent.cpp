@@ -49,10 +49,11 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<JointComponent, AZ::Component>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("Joint Configuration", &JointComponent::m_configuration)
                 ->Field("Joint Generic Properties", &JointComponent::m_genericProperties)
                 ->Field("Joint Limits", &JointComponent::m_limits)
+                ->Field("Joint Motor", &JointComponent::m_motor )
                 ;
         }
     }
@@ -72,6 +73,18 @@ namespace PhysX
         : m_configuration(configuration)
         , m_genericProperties(genericProperties)
         , m_limits(limitProperties)
+    {
+    }
+
+    JointComponent::JointComponent(
+            const JointComponentConfiguration& configuration,
+            const JointGenericProperties& genericProperties,
+            const JointLimitProperties& limitProperties,
+            const JointMotorProperties& motorProperties)
+            : m_configuration(configuration)
+            , m_genericProperties(genericProperties)
+            , m_limits(limitProperties)
+            , m_motor(motorProperties)
     {
     }
 

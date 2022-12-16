@@ -1805,6 +1805,7 @@ namespace PhysX
             BallJointConfiguration::Reflect(context);
             HingeJointConfiguration::Reflect(context);
             PrismaticJointConfiguration::Reflect(context);
+            JointMotorProperties::Reflect(context);
 
             MaterialConfiguration::Reflect(context);
         }

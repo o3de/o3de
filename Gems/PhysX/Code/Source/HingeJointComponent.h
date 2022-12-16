@@ -9,11 +9,13 @@
 
 #include <AzCore/Component/Component.h>
 #include <Source/JointComponent.h>
+#include <PhysX/Joint/PhysXJointBus.h>
 
 namespace PhysX
 {
     class HingeJointComponent
         : public JointComponent
+        , public JointInterfaceRequestBus::Handler
     {
     public:
         AZ_COMPONENT(HingeJointComponent, "{A5CA0031-72E4-4908-B764-EDECD3091882}", JointComponent);
@@ -24,8 +26,23 @@ namespace PhysX
         HingeJointComponent(
             const JointComponentConfiguration& configuration, 
             const JointGenericProperties& genericProperties,
-            const JointLimitProperties& limitProperties);
+            const JointLimitProperties& limitProperties,
+            const JointMotorProperties& motorProperties = JointMotorProperties());
         ~HingeJointComponent() = default;
+
+        // JointInterfaceRequestBus::Handler
+        float GetPosition() override;
+        float GetVelocity() override;
+        AZ::Transform GetTransform() override;
+
+        // JointMotorRequestBus ::Handler
+        void SetVelocity(float velocity) override;
+        void SetMaximumForce(float force) override;
+
+        AZStd::pair<float, float> GetLimits();
+        // AZ::Component
+        void Activate() override;
+        void Deactivate() override;
 
     protected:
         // JointComponent

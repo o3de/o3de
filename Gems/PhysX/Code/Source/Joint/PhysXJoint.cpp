@@ -133,6 +133,7 @@ namespace PhysX
         : PhysXJoint(sceneHandle, parentBodyHandle, childBodyHandle)
     {
         m_pxJoint = Utils::PxJointFactories::CreatePxPrismaticJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
+        AZ_Printf("PhysXPrismaticJoint::PhysXPrismaticJoint", " PhysXPrismaticJoint %d", m_pxJoint.get());
     }
 
     AZ::Crc32 PhysXD6Joint::GetNativeType() const

@@ -58,6 +58,12 @@ namespace PhysX
             const JointComponentConfiguration& configuration,
             const JointGenericProperties& genericProperties,
             const JointLimitProperties& limitProperties);
+        JointComponent(
+            const JointComponentConfiguration& configuration,
+            const JointGenericProperties& genericProperties,
+            const JointLimitProperties& limitProperties,
+            const JointMotorProperties& motorProperties);
+
 
     protected:
         /// Struct to provide subclasses with native pointers during joint initialization.
@@ -73,8 +79,8 @@ namespace PhysX
         };
 
         // AZ::Component
-        void Activate() override;
-        void Deactivate() override;
+        virtual void Activate() override;
+        virtual void Deactivate() override;
 
         // AZ::EntityBus
         void OnEntityActivated(const AZ::EntityId&) override;
@@ -100,6 +106,7 @@ namespace PhysX
         JointComponentConfiguration m_configuration;
         JointGenericProperties m_genericProperties;
         JointLimitProperties m_limits;
+        JointMotorProperties m_motor;
         AzPhysics::JointHandle m_jointHandle = AzPhysics::InvalidJointHandle;
         AzPhysics::SceneHandle m_jointSceneOwner = AzPhysics::InvalidSceneHandle;
     };

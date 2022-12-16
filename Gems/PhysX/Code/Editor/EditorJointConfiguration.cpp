@@ -39,6 +39,8 @@ namespace PhysX
     const float EditorJointConfig::s_breakageMax = 10000000.0f;
     const float EditorJointConfig::s_breakageMin = 0.01f;
 
+    const float EditorJointMotorConfig::MaxMotorForce = 10000000.0f;
+
     void EditorJointLimitConfig::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -511,5 +513,38 @@ namespace PhysX
                 "Cannot find instance of lead entity given its entity ID. Please check that joint in entity %s has valid lead entity.",
                 followerEntityName.c_str());
         }
+    }
+
+    void EditorJointMotorConfig::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<EditorJointMotorConfig>()
+                    ->Version(1)
+                    ->Field("Use Motor", &EditorJointMotorConfig::m_useMotor)
+                    ->Field("Force Limit", &EditorJointMotorConfig::m_driveForceLimit)
+                    ->Field("Gear Ratio", &EditorJointMotorConfig::m_gearRatio)
+                    ;
+
+            if (auto* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<PhysX::EditorJointMotorConfig>(
+                                "PhysX Joint Motor Configuration", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(0, &PhysX::EditorJointMotorConfig::m_useMotor, "Use Motor"
+                                , "Enable motor in the joint")
+                        ->DataElement(0, &PhysX::EditorJointMotorConfig::m_gearRatio, "Gear Ratio"
+                                , "Sets gear ratio")
+                        ->DataElement(0, &PhysX::EditorJointMotorConfig::m_driveForceLimit, "Force Limit Value"
+                                , "Sets force limit value")
+                        ;
+            }
+        }
+    }
+
+    JointMotorProperties EditorJointMotorConfig::ToGameTimeConfig() const{
+        return JointMotorProperties(m_useMotor, m_gearRatio, m_driveForceLimit);
     }
 } // namespace PhysX

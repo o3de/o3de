@@ -54,5 +54,6 @@ namespace PhysX
 
         bool m_linearLimitFlag = false;
         EditorJointLimitLinearPairConfig m_linearLimit;
+        EditorJointMotorConfig m_motorConfiguration;
     };
 } // namespace PhysX

@@ -104,6 +104,7 @@ set(FILES
     Include/PhysX/Debug/PhysXDebugConfiguration.h
     Include/PhysX/Debug/PhysXDebugInterface.h
     Include/PhysX/Configuration/PhysXConfiguration.h
+    Include/PhysX/Joint/PhysXJointBus.h
     Include/PhysX/Joint/Configuration/PhysXJointConfiguration.h
     Source/Common/PhysXSceneQueryHelpers.h
     Source/Common/PhysXSceneQueryHelpers.cpp

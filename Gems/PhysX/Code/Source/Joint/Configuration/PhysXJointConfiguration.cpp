@@ -35,6 +35,14 @@ namespace PhysX
 
     }
 
+    JointMotorProperties::JointMotorProperties(bool enabled, float gear_ratio, float force_limit)
+            : m_enabled(enabled)
+            , m_gearRatio(gear_ratio)
+            , m_forceLimit(force_limit)
+    {
+
+    }
+
     bool JointGenericProperties::IsFlagSet(GenericJointFlag flag) const
     {
         return static_cast<bool>(m_flags & flag);
@@ -230,6 +238,7 @@ namespace PhysX
                 ->Version(1)
                 ->Field("Generic Properties", &HingeJointConfiguration::m_genericProperties)
                 ->Field("Limit Properties", &HingeJointConfiguration::m_limitProperties)
+                ->Field("Motor Properties", &HingeJointConfiguration::m_motorProperties)
                 ;
         }
     }
@@ -242,7 +251,21 @@ namespace PhysX
                 ->Version(1)
                 ->Field("Generic Properties", &PrismaticJointConfiguration::m_genericProperties)
                 ->Field("Limit Properties", &PrismaticJointConfiguration::m_limitProperties)
+                ->Field("Motor Properties", &PrismaticJointConfiguration::m_motorProperties)
                 ;
+        }
+    }
+
+    void JointMotorProperties::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<JointMotorProperties>()
+                    ->Version(1)
+                    ->Field("Enabled", &JointMotorProperties::m_enabled)
+                    ->Field("Gear ration", &JointMotorProperties::m_gearRatio)
+                    ->Field("Force limit", &JointMotorProperties::m_forceLimit)
+                    ;
         }
     }
 } // namespace PhysX
