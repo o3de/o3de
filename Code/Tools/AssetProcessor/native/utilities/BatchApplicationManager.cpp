@@ -123,7 +123,8 @@ void BatchApplicationManager::MakeActivationConnections()
         {
             m_processedAssetCount++;
 
-            // If a file fails and later succeeds, don't count it as a failure
+            // If a file fails and later succeeds, don't count it as a failure.
+            // This avoids marking the entire run as a failure (returning non-zero) when everything compiled successfully *eventually*
             m_failedAssets.erase(entry.GetAbsoluteSourcePath().toUtf8().constData());
 
             AssetProcessor::JobDiagnosticInfo info{};
