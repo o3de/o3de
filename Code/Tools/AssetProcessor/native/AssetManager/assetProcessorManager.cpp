@@ -1558,8 +1558,8 @@ namespace AssetProcessor
                 {
                     // Now that we've verified that the output doesn't conflict with an existing source
                     // And we've updated the database, trigger processing the output
-
-                    AssessFileInternal(productPath.GetIntermediatePath().c_str(), false);
+                    Q_EMIT IntermediateAssetCreated(QString::fromUtf8(productPath.GetIntermediatePath().c_str()));
+                    AssessFileInternal(QString::fromUtf8(productPath.GetIntermediatePath().c_str()), false);
                 }
             }
 
