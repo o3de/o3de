@@ -27,6 +27,10 @@ namespace AZ
 {
     namespace RHI
     {
+        using DeviceMask = uint32_t;
+
+        static constexpr DeviceMask AllDevices{ static_cast<DeviceMask>(-1) };
+
         //! The Device is a context for managing GPU state and memory on a physical device. The user creates
         //! a device instance from a PhysicalDevice. Each device has its own capabilities and limits, and can
         //! be configured to buffer a specific number of frames.
