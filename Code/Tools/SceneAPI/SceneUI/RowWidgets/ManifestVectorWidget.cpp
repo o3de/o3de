@@ -22,7 +22,6 @@
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/DataTypes/IManifestObject.h>
-#include <SceneAPI/SceneCore/DataTypes/Rules/ReadOnlyRule.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
 #include <SceneAPI/SceneUI/RowWidgets/ManifestVectorWidget.h>
@@ -48,7 +47,6 @@ namespace AZ
                 m_propertyEditor = new AzToolsFramework::ReflectedPropertyEditor(this);
                 m_propertyEditor->Setup(m_serializeContext, this, false, 175);
                 m_propertyEditor->show();
-
                 m_ui->m_mainLayout->insertWidget(1, m_propertyEditor);
 
                 m_ui->m_addObjectButton->setProperty("class", "FixedMenu");
