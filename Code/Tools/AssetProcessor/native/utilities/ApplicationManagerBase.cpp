@@ -1457,7 +1457,7 @@ bool ApplicationManagerBase::Activate()
 
     // now that apm, statecache, processor, and uuid manager are all alive, hook them up to the signal that AP
     // gives when it modifies an intermediate asset.  For the file cache, we hook it up directly so that there is
-    // no delay between the notificatin and the invalidation/creation of its cache entry.
+    // no delay between the notification and the invalidation/creation of its cache entry.
 
     auto notifyFileStateCache = [this](QString changedFile)
     {
