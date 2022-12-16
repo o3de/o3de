@@ -48,7 +48,7 @@ namespace AZ
                 m_propertyEditor = new AzToolsFramework::ReflectedPropertyEditor(this);
                 m_propertyEditor->Setup(m_serializeContext, this, false, 175);
                 m_propertyEditor->show();
-                //m_propertyEditor->setDisabled(true);
+
                 m_ui->m_mainLayout->insertWidget(1, m_propertyEditor);
 
                 m_ui->m_addObjectButton->setProperty("class", "FixedMenu");
@@ -235,20 +235,6 @@ namespace AZ
                 }
                 m_propertyEditor->InvalidateAll();
                 m_propertyEditor->ExpandAll();
-
-                for (auto& object : m_manifestVector)
-                {
-                    if (object)
-                    {
-                        if (object->RTTI_IsTypeOf(AZ::SceneAPI::DataTypes::ReadOnlyRule::TYPEINFO_Uuid()))
-                        {
-                            // TODO - Don't disable foldouts, just editable elements.
-                            // TODO - This isn't disabling the name editing field for some reason
-                            parentWidget()->setDisabled(true);
-                            m_propertyEditor->setDisabled(true);
-                        }
-                    }
-                }
             }
 
             void ManifestVectorWidget::EmitObjectChanged(const DataTypes::IManifestObject* object)

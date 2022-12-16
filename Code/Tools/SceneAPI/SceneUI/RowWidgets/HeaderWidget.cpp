@@ -198,15 +198,6 @@ namespace AZ
                 if (target->RTTI_IsTypeOf(DataTypes::IGroup::TYPEINFO_Uuid()))
                 {
                     sceneNodeGroup = azrtti_cast<const DataTypes::IGroup*>(target);
-                    
-                    if (sceneNodeGroup &&
-                        sceneNodeGroup->GetRuleContainerConst().FindFirstByType<AZ::SceneAPI::DataTypes::ReadOnlyRule>())
-                    {
-                        // Don't let users delete this group, it was marked read only.
-                        // Not disabling everything here because the group should still be able to be toggled open/closed
-                        ui->m_deleteButton->hide();
-                    }
-                    
                     AZ::SerializeContext* serializeContext = nullptr;
                     AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
                     AZ_Assert(serializeContext, "No serialize context");

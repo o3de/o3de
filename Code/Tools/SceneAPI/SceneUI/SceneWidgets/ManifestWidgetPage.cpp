@@ -15,7 +15,9 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/string/conversions.h>
 #include <SceneWidgets/ui_ManifestWidgetPage.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/IGroup.h>
 #include <SceneAPI/SceneCore/DataTypes/IManifestObject.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/ReadOnlyRule.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
@@ -40,6 +42,13 @@ namespace AZ
 
                 m_propertyEditor = new AzToolsFramework::ReflectedPropertyEditor(nullptr);
                 m_propertyEditor->Setup(context, this, true, 250);
+
+                m_propertyEditor->SetReadOnlyQueryFunction(
+                    [this](const AzToolsFramework::InstanceDataNode* node)
+                    {
+                        return SetNodeReadOnlyStatus(node);
+                    });
+
                 ui->m_mainLayout->insertWidget(0, m_propertyEditor);
 
                 BuildAndConnectAddButton();
@@ -416,6 +425,20 @@ namespace AZ
                         m_propertyEditor->InvalidateAttributesAndValues();
                     }
                 }
+            }
+
+            bool ManifestWidgetPage::SetNodeReadOnlyStatus(const AzToolsFramework::InstanceDataNode* node)
+            {
+                if (AzToolsFramework::InstanceDataNode* parentNode = node ? node->GetRoot() : nullptr)
+                {
+                    AZ::SceneAPI::DataTypes::IGroup* group = m_context->Cast<AZ::SceneAPI::DataTypes::IGroup*>(
+                        parentNode->FirstInstance(), parentNode->GetClassMetadata()->m_typeId);
+                    if (group && group->GetRuleContainerConst().FindFirstByType<AZ::SceneAPI::DataTypes::ReadOnlyRule>())
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
         } // namespace UI
     } // namespace SceneAPI
