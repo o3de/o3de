@@ -95,7 +95,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(SingleInstanceMultiplePatchesBenchmarks, GetLinkDom)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             LinkReference link = m_prefabSystemComponent->FindLink(m_linkId);
             AZ_Assert(link.has_value(), "Link between prefabs is missing.");
@@ -107,7 +107,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(SingleInstanceMultiplePatchesBenchmarks, SetLinkDom)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             LinkReference link = m_prefabSystemComponent->FindLink(m_linkId);
             AZ_Assert(link.has_value(), "Link between prefabs is missing.");
