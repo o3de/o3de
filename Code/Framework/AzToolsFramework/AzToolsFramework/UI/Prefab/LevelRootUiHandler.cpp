@@ -114,7 +114,7 @@ namespace AzToolsFramework
 
             QRect tempRect = option.rect;
             tempRect.setTop(tempRect.top() + 2);
-            tempRect.setHeight(tempRect.height() - 2); // tweaking capsule height
+            tempRect.setHeight(tempRect.height() - 4); // tweaking capsule height
 
             if (isFirstColumn)
             {
@@ -124,7 +124,7 @@ namespace AzToolsFramework
 
             if (isLastColumn)
             {
-                tempRect.setLeft(tempRect.left() - 1); // remove the gray line between columns
+                tempRect.setLeft(tempRect.left() - 2); // remove the gray line between columns
                 tempRect.setWidth(tempRect.width() - 1);
             }
 
