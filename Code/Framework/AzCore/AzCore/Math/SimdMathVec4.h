@@ -59,11 +59,6 @@ namespace AZ
             static float SelectSecond(FloatArgType value);
             static float SelectThird(FloatArgType value);
             static float SelectFourth(FloatArgType value);
-            
-            static int32_t SelectFirst(Int32ArgType value);
-            static int32_t SelectSecond(Int32ArgType value);
-            static int32_t SelectThird(Int32ArgType value);
-            static int32_t SelectFourth(Int32ArgType value);
 
             static FloatType Splat(float value);
             static Int32Type Splat(int32_t value);
@@ -72,11 +67,6 @@ namespace AZ
             static FloatType SplatSecond(FloatArgType value);
             static FloatType SplatThird(FloatArgType value);
             static FloatType SplatFourth(FloatArgType value);
-            
-            static Int32Type SplatFirst(Int32ArgType value);
-            static Int32Type SplatSecond(Int32ArgType value);
-            static Int32Type SplatThird(Int32ArgType value);
-            static Int32Type SplatFourth(Int32ArgType value);
 
             static FloatType ReplaceFirst(FloatArgType a, float b);
             static FloatType ReplaceFirst(FloatArgType a, FloatArgType b);
@@ -86,15 +76,6 @@ namespace AZ
             static FloatType ReplaceThird(FloatArgType a, FloatArgType b);
             static FloatType ReplaceFourth(FloatArgType a, float b);
             static FloatType ReplaceFourth(FloatArgType a, FloatArgType b);
-            
-            static Int32Type ReplaceFirst(Int32ArgType a, int32_t b);
-            static Int32Type ReplaceFirst(Int32ArgType a, Int32ArgType b);
-            static Int32Type ReplaceSecond(Int32ArgType a, int32_t b);
-            static Int32Type ReplaceSecond(Int32ArgType a, Int32ArgType b);
-            static Int32Type ReplaceThird(Int32ArgType a, int32_t b);
-            static Int32Type ReplaceThird(Int32ArgType a, Int32ArgType b);
-            static Int32Type ReplaceFourth(Int32ArgType a, int32_t b);
-            static Int32Type ReplaceFourth(Int32ArgType a, Int32ArgType b);
 
             static FloatType LoadImmediate(float x, float y, float z, float w);
             static Int32Type LoadImmediate(int32_t x, int32_t y, int32_t z, int32_t w);

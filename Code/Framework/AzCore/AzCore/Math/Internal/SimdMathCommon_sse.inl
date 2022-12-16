@@ -128,12 +128,6 @@ namespace AZ
             }
 
 
-            AZ_MATH_INLINE int32_t SelectFirst(__m128i value)
-            {
-                return _mm_cvtsi128_si32(value);
-            }
-
-
             AZ_MATH_INLINE __m128 Splat(float value)
             {
                 return _mm_set1_ps(value);
@@ -167,30 +161,6 @@ namespace AZ
             AZ_MATH_INLINE __m128 SplatFourth(__m128 value)
             {
                 return _mm_shuffle_ps(value, value, _MM_SHUFFLE(3, 3, 3, 3));
-            }
-
-
-            AZ_MATH_INLINE __m128i SplatFirst(__m128i value)
-            {
-                return _mm_shuffle_epi32(value, _MM_SHUFFLE(0, 0, 0, 0));
-            }
-
-
-            AZ_MATH_INLINE __m128i SplatSecond(__m128i value)
-            {
-                return _mm_shuffle_epi32(value, _MM_SHUFFLE(1, 1, 1, 1));
-            }
-
-
-            AZ_MATH_INLINE __m128i SplatThird(__m128i value)
-            {
-                return _mm_shuffle_epi32(value, _MM_SHUFFLE(2, 2, 2, 2));
-            }
-
-
-            AZ_MATH_INLINE __m128i SplatFourth(__m128i value)
-            {
-                return _mm_shuffle_epi32(value, _MM_SHUFFLE(3, 3, 3, 3));
             }
 
 
@@ -237,54 +207,6 @@ namespace AZ
 
 
             AZ_MATH_INLINE __m128 ReplaceFourth(__m128 a, float b)
-            {
-                return ReplaceFourth(a, Splat(b));
-            }
-
-
-            AZ_MATH_INLINE __m128i ReplaceFirst(__m128i a, __m128i b)
-            {
-                return _mm_blend_epi32(a, b, 0b0001);
-            }
-
-
-            AZ_MATH_INLINE __m128i ReplaceFirst(__m128i a, int32_t b)
-            {
-                return ReplaceFirst(a, Splat(b));
-            }
-
-
-            AZ_MATH_INLINE __m128i ReplaceSecond(__m128i a, __m128i b)
-            {
-                return _mm_blend_epi32(a, b, 0b0010);
-            }
-
-
-            AZ_MATH_INLINE __m128i ReplaceSecond(__m128i a, int32_t b)
-            {
-                return ReplaceSecond(a, Splat(b));
-            }
-
-
-            AZ_MATH_INLINE __m128i ReplaceThird(__m128i a, __m128i b)
-            {
-                return _mm_blend_epi32(a, b, 0b0100);
-            }
-
-
-            AZ_MATH_INLINE __m128i ReplaceThird(__m128i a, int32_t b)
-            {
-                return ReplaceThird(a, Splat(b));
-            }
-
-
-            AZ_MATH_INLINE __m128i ReplaceFourth(__m128i a, __m128i b)
-            {
-                return _mm_blend_epi32(a, b, 0b1000);
-            }
-
-
-            AZ_MATH_INLINE __m128i ReplaceFourth(__m128i a, int32_t b)
             {
                 return ReplaceFourth(a, Splat(b));
             }

@@ -158,50 +158,6 @@ namespace UnitTest
         EXPECT_NEAR(testLoadValues[3], selectedValue, AZ::Constants::Tolerance);
     }
 
-    template<typename VectorType>
-    void TestSelectFirstInt()
-    {
-        int32_t testLoadValues[4] = { 1, 2, 3, 4 };
-
-        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
-        const int32_t selectedValue = VectorType::SelectFirst(testVector);
-
-        EXPECT_THAT(testLoadValues[0], ::testing::Eq(selectedValue));
-    }
-
-    template<typename VectorType>
-    void TestSelectSecondInt()
-    {
-        int32_t testLoadValues[4] = { 1, 2, 3, 4 };
-
-        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
-        const int32_t selectedValue = VectorType::SelectSecond(testVector);
-
-        EXPECT_THAT(testLoadValues[1], ::testing::Eq(selectedValue));
-    }
-
-    template<typename VectorType>
-    void TestSelectThirdInt()
-    {
-        int32_t testLoadValues[4] = { 1, 2, 3, 4 };
-
-        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
-        const int32_t selectedValue = VectorType::SelectThird(testVector);
-
-        EXPECT_THAT(testLoadValues[2], ::testing::Eq(selectedValue));
-    }
-
-    template<typename VectorType>
-    void TestSelectFourthInt()
-    {
-        int32_t testLoadValues[4] = { 1, 2, 3, 4 };
-
-        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
-        const int32_t selectedValue = VectorType::SelectFourth(testVector);
-
-        EXPECT_THAT(testLoadValues[3], ::testing::Eq(selectedValue));
-    }
-
     template <typename VectorType>
     void ValidateReplaceResults(const float* testLoadValues1, const float* testLoadValues2, typename VectorType::FloatArgType result, uint32_t replaceIndex)
     {
@@ -217,25 +173,6 @@ namespace UnitTest
             else
             {
                 EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(testLoadValues1[i], AZ::Constants::Tolerance));
-            }
-        }
-    }
-
-    template<typename VectorType>
-    void ValidateReplaceIntResults(const int32_t* testLoadValues1, const int32_t* testLoadValues2, typename VectorType::Int32ArgType result, uint32_t replaceIndex)
-    {
-        int32_t testStoreValues[4] = { 0, 0, 0, 0 };
-        VectorType::StoreUnaligned(testStoreValues, result);
-
-        for (uint32_t i = 0; i < VectorType::ElementCount; ++i)
-        {
-            if (i == replaceIndex)
-            {
-                EXPECT_THAT(testStoreValues[i], ::testing::Eq(testLoadValues2[i]));
-            }
-            else
-            {
-                EXPECT_THAT(testStoreValues[i], ::testing::Eq(testLoadValues1[i]));
             }
         }
     }
@@ -298,66 +235,6 @@ namespace UnitTest
 
         typename VectorType::FloatType result2 = VectorType::ReplaceFourth(testVector1, testLoadValues2[3]);
         ValidateReplaceResults<VectorType>(testLoadValues1, testLoadValues2, result2, 3);
-    }
-
-    template<typename VectorType>
-    void TestReplaceFirstInt()
-    {
-        int32_t testLoadValues1[4] = { 1, 2, 3, 4 };
-        const typename VectorType::Int32Type testVector1 = VectorType::LoadUnaligned(testLoadValues1);
-        int32_t testLoadValues2[4] = { -1, -2, -3, -4 };
-        const typename VectorType::Int32Type testVector2 = VectorType::LoadUnaligned(testLoadValues2);
-
-        typename VectorType::Int32Type result1 = VectorType::ReplaceFirst(testVector1, testVector2);
-        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result1, 0);
-
-        typename VectorType::Int32Type result2 = VectorType::ReplaceFirst(testVector1, testLoadValues2[0]);
-        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result2, 0);
-    }
-
-    template<typename VectorType>
-    void TestReplaceSecondInt()
-    {
-        int32_t testLoadValues1[4] = { 1, 2, 3, 4 };
-        const typename VectorType::Int32Type testVector1 = VectorType::LoadUnaligned(testLoadValues1);
-        int32_t testLoadValues2[4] = { -1, -2, -3, -4 };
-        const typename VectorType::Int32Type testVector2 = VectorType::LoadUnaligned(testLoadValues2);
-
-        typename VectorType::Int32Type result1 = VectorType::ReplaceSecond(testVector1, testVector2);
-        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result1, 1);
-
-        typename VectorType::Int32Type result2 = VectorType::ReplaceSecond(testVector1, testLoadValues2[1]);
-        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result2, 1);
-    }
-
-    template<typename VectorType>
-    void TestReplaceThirdInt()
-    {
-        int32_t testLoadValues1[4] = { 1, 2, 3, 4 };
-        const typename VectorType::Int32Type testVector1 = VectorType::LoadUnaligned(testLoadValues1);
-        int32_t testLoadValues2[4] = { -1, -2, -3, -4 };
-        const typename VectorType::Int32Type testVector2 = VectorType::LoadUnaligned(testLoadValues2);
-
-        typename VectorType::Int32Type result1 = VectorType::ReplaceThird(testVector1, testVector2);
-        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result1, 2);
-
-        typename VectorType::Int32Type result2 = VectorType::ReplaceThird(testVector1, testLoadValues2[2]);
-        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result2, 2);
-    }
-
-    template<typename VectorType>
-    void TestReplaceFourthInt()
-    {
-        int32_t testLoadValues1[4] = { 1, 2, 3, 4 };
-        const typename VectorType::Int32Type testVector1 = VectorType::LoadUnaligned(testLoadValues1);
-        int32_t testLoadValues2[4] = { -1, -2, -3, -4 };
-        const typename VectorType::Int32Type testVector2 = VectorType::LoadUnaligned(testLoadValues2);
-
-        typename VectorType::Int32Type result1 = VectorType::ReplaceFourth(testVector1, testVector2);
-        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result1, 3);
-
-        typename VectorType::Int32Type result2 = VectorType::ReplaceFourth(testVector1, testLoadValues2[3]);
-        ValidateReplaceIntResults<VectorType>(testLoadValues1, testLoadValues2, result2, 3);
     }
 
     template <typename VectorType>
@@ -449,70 +326,6 @@ namespace UnitTest
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
             EXPECT_THAT(testStoreValues[i], ::testing::FloatNear(3.5f, AZ::Constants::Tolerance));
-        }
-    }
-
-    template<typename VectorType>
-    void TestSplatFirstInt()
-    {
-        int32_t testLoadValues[4] = { 3, 0, 0, 0 };
-        int32_t testStoreValues[4] = { 0, 0, 0, 0 };
-
-        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
-        testVector = VectorType::SplatFirst(testVector);
-        VectorType::StoreUnaligned(testStoreValues, testVector);
-
-        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
-        {
-            EXPECT_THAT(testStoreValues[i], ::testing::Eq(3));
-        }
-    }
-
-    template<typename VectorType>
-    void TestSplatSecondInt()
-    {
-        int32_t testLoadValues[4] = { 0, 3, 0, 0 };
-        int32_t testStoreValues[4] = { 0, 0, 0, 0 };
-
-        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
-        testVector = VectorType::SplatSecond(testVector);
-        VectorType::StoreUnaligned(testStoreValues, testVector);
-
-        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
-        {
-            EXPECT_THAT(testStoreValues[i], ::testing::Eq(3));
-        }
-    }
-
-    template<typename VectorType>
-    void TestSplatThirdInt()
-    {
-        int32_t testLoadValues[4] = { 0, 0, 3, 0 };
-        int32_t testStoreValues[4] = { 0, 0, 0, 0 };
-
-        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
-        testVector = VectorType::SplatThird(testVector);
-        VectorType::StoreUnaligned(testStoreValues, testVector);
-
-        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
-        {
-            EXPECT_THAT(testStoreValues[i], ::testing::Eq(3));
-        }
-    }
-
-    template<typename VectorType>
-    void TestSplatFourthInt()
-    {
-        int32_t testLoadValues[4] = { 0, 0, 0, 3 };
-        int32_t testStoreValues[4] = { 0, 0, 0, 0 };
-
-        typename VectorType::Int32Type testVector = VectorType::LoadUnaligned(testLoadValues);
-        testVector = VectorType::SplatFourth(testVector);
-        VectorType::StoreUnaligned(testStoreValues, testVector);
-
-        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
-        {
-            EXPECT_THAT(testStoreValues[i], ::testing::Eq(3));
         }
     }
 
@@ -2064,26 +1877,6 @@ namespace UnitTest
         TestSelectFourth<Simd::Vec4>();
     }
 
-    TEST(MATH_SimdMath, TestSelectFirstIntVec4)
-    {
-        TestSelectFirstInt<Simd::Vec4>();
-    }
-
-    TEST(MATH_SimdMath, TestSelectSecondIntVec4)
-    {
-        TestSelectSecondInt<Simd::Vec4>();
-    }
-
-    TEST(MATH_SimdMath, TestSelectThirdIntVec4)
-    {
-        TestSelectThirdInt<Simd::Vec4>();
-    }
-
-    TEST(MATH_SimdMath, TestSelectFourthIntVec4)
-    {
-        TestSelectFourthInt<Simd::Vec4>();
-    }
-
     TEST(MATH_SimdMath, TestSplatFloatVec1)
     {
         TestSplatFloat<Simd::Vec1>();
@@ -2169,26 +1962,6 @@ namespace UnitTest
         TestSplatFourth<Simd::Vec4>();
     }
 
-    TEST(MATH_SimdMath, TestSplatFirstIntVec4)
-    {
-        TestSplatFirstInt<Simd::Vec4>();
-    }
-
-    TEST(MATH_SimdMath, TestSplatSecondIntVec4)
-    {
-        TestSplatSecondInt<Simd::Vec4>();
-    }
-
-    TEST(MATH_SimdMath, TestSplatThirdIntVec4)
-    {
-        TestSplatThirdInt<Simd::Vec4>();
-    }
-
-    TEST(MATH_SimdMath, TestSplatFourthIntVec4)
-    {
-        TestSplatFourthInt<Simd::Vec4>();
-    }
-
     TEST(MATH_SimdMath, TestReplaceFirstVec2)
     {
         TestReplaceFirst<Simd::Vec2>();
@@ -2232,26 +2005,6 @@ namespace UnitTest
     TEST(MATH_SimdMath, TestReplaceFourthVec4)
     {
         TestReplaceFourth<Simd::Vec4>();
-    }
-
-    TEST(MATH_SimdMath, TestReplaceFirstIntVec4)
-    {
-        TestReplaceFirstInt<Simd::Vec4>();
-    }
-
-    TEST(MATH_SimdMath, TestReplaceSecondIntVec4)
-    {
-        TestReplaceSecondInt<Simd::Vec4>();
-    }
-
-    TEST(MATH_SimdMath, TestReplaceThirdIntVec4)
-    {
-        TestReplaceThirdInt<Simd::Vec4>();
-    }
-
-    TEST(MATH_SimdMath, TestReplaceFourthIntVec4)
-    {
-        TestReplaceFourthInt<Simd::Vec4>();
     }
 
     TEST(MATH_SimdMath, TestLoadImmediateFloatVec1)

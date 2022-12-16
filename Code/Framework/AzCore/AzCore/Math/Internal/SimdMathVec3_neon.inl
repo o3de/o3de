@@ -355,47 +355,27 @@ namespace AZ
 
         AZ_MATH_INLINE bool Vec3::CmpAllEq(FloatArgType arg1, FloatArgType arg2)
         {
-            // NeonQuad::CmpAllEq compares all 4 elements.
-            // This makes sure unused fourth element of arg1 == arg2.
-            return NeonQuad::CmpAllEq(
-                NeonQuad::ReplaceFourth(arg1, 0.0f),
-                NeonQuad::ReplaceFourth(arg2, 0.0f));
+            return NeonQuad::CmpFirstThreeEq(arg1, arg2);
         }
 
         AZ_MATH_INLINE bool Vec3::CmpAllLt(FloatArgType arg1, FloatArgType arg2)
         {
-            // NeonQuad::CmpAllLt compares all 4 elements.
-            // This makes sure unused fourth element of arg1 < arg2.
-            return NeonQuad::CmpAllLt(
-                NeonQuad::ReplaceFourth(arg1, 0.0f),
-                NeonQuad::ReplaceFourth(arg2, 1.0f));
+            return NeonQuad::CmpFirstThreeLt(arg1, arg2);
         }
 
         AZ_MATH_INLINE bool Vec3::CmpAllLtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            // NeonQuad::CmpAllLtEq compares all 4 elements.
-            // This makes sure unused fourth element of arg1 <= arg2.
-            return NeonQuad::CmpAllLtEq(
-                NeonQuad::ReplaceFourth(arg1, 0.0f),
-                NeonQuad::ReplaceFourth(arg2, 1.0f));
+            return NeonQuad::CmpFirstThreeLtEq(arg1, arg2);
         }
 
         AZ_MATH_INLINE bool Vec3::CmpAllGt(FloatArgType arg1, FloatArgType arg2)
         {
-            // NeonQuad::CmpAllGt compares all 4 elements.
-            // This makes sure unused fourth element of arg1 > arg2.
-            return NeonQuad::CmpAllGt(
-                NeonQuad::ReplaceFourth(arg1, 1.0f),
-                NeonQuad::ReplaceFourth(arg2, 0.0f));
+            return NeonQuad::CmpFirstThreeGt(arg1, arg2);
         }
 
         AZ_MATH_INLINE bool Vec3::CmpAllGtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            // NeonQuad::CmpAllGtEq compares all 4 elements.
-            // This makes sure unused fourth element of arg1 >= arg2.
-            return NeonQuad::CmpAllGtEq(
-                NeonQuad::ReplaceFourth(arg1, 1.0f),
-                NeonQuad::ReplaceFourth(arg2, 0.0f));
+            return NeonQuad::CmpFirstThreeGtEq(arg1, arg2);
         }
 
         AZ_MATH_INLINE Vec3::Int32Type Vec3::CmpEq(Int32ArgType arg1, Int32ArgType arg2)
@@ -430,11 +410,7 @@ namespace AZ
 
         AZ_MATH_INLINE bool Vec3::CmpAllEq(Int32ArgType arg1, Int32ArgType arg2)
         {
-            // NeonQuad::CmpAllEq compares all 4 elements.
-            // This makes sure unused fourth element of arg1 == arg2.
-            return NeonQuad::CmpAllEq(
-                NeonQuad::ReplaceFourth(arg1, 0),
-                NeonQuad::ReplaceFourth(arg2, 0));
+            return NeonQuad::CmpFirstThreeEq(arg1, arg2);
         }
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::Select(FloatArgType arg1, FloatArgType arg2, FloatArgType mask)

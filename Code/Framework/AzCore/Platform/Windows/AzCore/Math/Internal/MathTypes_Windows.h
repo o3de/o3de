@@ -13,5 +13,4 @@
 #   include <xmmintrin.h>
 #   include <pmmintrin.h>
 #   include <emmintrin.h>
-#   include <immintrin.h>
 #endif
