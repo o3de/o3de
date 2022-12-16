@@ -133,9 +133,9 @@ namespace AZ::Dom
         //! Old node and its children at the path would be destroyed. The new subtree will be moved to the path.
         //! @param path The path which corresponds to the root node to which the subtree would be overwritten.
         //! @param subtree The subtree to move to the provided path.
-        //! @param shouldCreateNodes Create all nodes for the provided path if the flag is on.
+        //! @param shouldCreateNodes Create nodes for the provided path if they are missing. Default to true.
         //! @return True if the subtree was overwritten successfully, false if shouldCreateNodes is off and no target path exists.
-        bool OverwritePath(const Path& path, DomPrefixTree&& subtree, bool shouldCreateNodes = false);
+        bool OverwritePath(const Path& path, DomPrefixTree&& subtree, bool shouldCreateNodes = true);
 
         //! Removes all entries from this tree.
         void Clear();
@@ -168,9 +168,9 @@ namespace AZ::Dom
         //! Old node and its children at the path would be destroyed. New nodes will be moved to the path.
         //! @param path The path which corresponds to the root node to be overwritten.
         //! @param newNode The new node to move to the provided path.
-        //! @param shouldCreateNodes Create all nodes for the provided path if the flag is on.
+        //! @param shouldCreateNodes Create nodes for the provided path if they are missing. Default to true.
         //! @return True if the node was overwritten successfully, false if shouldCreateNodes is off and no target path exists.
-        bool OverwritePath(const Path& path, Node&& newNode, bool shouldCreateNodes = false);
+        bool OverwritePath(const Path& path, Node&& newNode, bool shouldCreateNodes = true);
 
         Node m_rootNode;
     };
