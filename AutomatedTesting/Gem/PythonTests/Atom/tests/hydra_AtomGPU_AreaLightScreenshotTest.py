@@ -86,7 +86,7 @@ def AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages():
         enter_exit_game_mode_take_screenshot,
         compare_screenshot_to_golden_image)
 
-    from Atom.atom_utils.screenshot_utils import (FOLDER_PATH, screenshot_compare_result_code_to_string)
+    from Atom.atom_utils.screenshot_utils import FOLDER_PATH
 
     DEGREE_RADIAN_FACTOR = 0.0174533
 
@@ -206,8 +206,7 @@ def AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages():
             image_diff_result = compare_screenshot_to_golden_image(FOLDER_PATH, screenshot_name, screenshot_name)
             screenshot_compare_execution = (
                     f"Screenshot {screenshot_name} comparison succeeded.",
-                    f"Screenshot {screenshot_name} comparison failed due to "
-                    + f"{screenshot_compare_result_code_to_string(image_diff_result.result_code)}.");
+                    f"Screenshot {screenshot_name} comparison failed.");
             Report.result(
                 screenshot_compare_execution,
                 image_diff_result.result_code == azlmbr.utils.ImageDiffResultCode_Success

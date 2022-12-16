@@ -58,11 +58,11 @@ class ScreenshotHelper(object):
         """
         self.done = False
         self.capturedScreenshot = False
-        frameCaptureId = azlmbr.atom.FrameCaptureRequestBus(
+        outcome = azlmbr.atom.FrameCaptureRequestBus(
             azlmbr.bus.Broadcast, "CaptureScreenshot", f"{folder_path}/{filename}")
-        if frameCaptureId != -1:
+        if outcome.IsSuccess():
             self.handler = azlmbr.atom.FrameCaptureNotificationBusHandler()
-            self.handler.connect(frameCaptureId)
+            self.handler.connect(outcome.GetValue())
             self.handler.add_callback('OnFrameCaptureFinished', self.on_screenshot_captured)
             self.wait_until_screenshot()
             general.log("Screenshot taken.")
@@ -117,13 +117,18 @@ def compare_screenshots(imageA, imageB, min_diff_filter=0.01):
     :param imageA: one of the image.
     :param imageB: the other image.
     :param min_diff_filter: diff values less than this will be filtered out when calculating filtered_diff_score.
-    :return: a class ImageDiffResult, containing result_code (Success, FormatMismatch, SizeMismatch, UnsupportedFormat),
-        diff_score, filtered_diff_score.
+    :return: Outcome, if success, outcome contains a class ImageDiffResult, containing
+        result_code (Success, FormatMismatch, SizeMismatch, UnsupportedFormat),
+        diff_score, filtered_diff_score. If failure, out come contains result_code only.
     """
-    imageDiffResult = azlmbr.atom.FrameCaptureTestRequestBus(
+    outcome = azlmbr.atom.FrameCaptureTestRequestBus(
         azlmbr.bus.Broadcast, "CompareScreenshots", imageA, imageB, min_diff_filter)
 
-    return imageDiffResult
+    if not outcome.IsSuccess():
+        error = screenshot_compare_result_code_to_string(outcome.GetError())
+        assert False, f"Failed to comparison because of {error} for {imageA} and {imageB}"
+
+    return outcome.GetValue()
 
 def screenshot_compare_result_code_to_string(result_code):
     """
