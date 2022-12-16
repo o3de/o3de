@@ -10,7 +10,7 @@
 
 option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opacity_mode;
 
-void CheckClipping(float alpha, float opacityFactor)
+void CheckClipping(real alpha, real opacityFactor)
 {
     switch(o_opacity_mode)
     {

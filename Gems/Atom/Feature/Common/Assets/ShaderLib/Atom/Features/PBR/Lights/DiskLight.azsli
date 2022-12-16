@@ -213,7 +213,6 @@ void ValidateDiskLight(ViewSrg::DiskLight light, Surface surface, inout Lighting
 
 void ApplyDiskLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_DISK_LIGHTS
     if (o_enableDiskLights)
     {
         ViewSrg::DiskLight light = ViewSrg::m_diskLights[lightIndex];
@@ -229,11 +228,14 @@ void ApplyDiskLightInternal(uint lightIndex, Surface surface, inout LightingData
             ApplyDiskLight(light, surface, lightingData);
         }
     }
-#endif // ENABLE_DISK_LIGHTS
 }
 
 void ApplyDiskLights(Surface surface, inout LightingData lightingData)
 {    
+#if !ENABLE_DISK_LIGHTS
+    return;
+#endif
+
 #if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
 

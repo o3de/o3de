@@ -473,7 +473,7 @@ void CullDiskLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
         float3 lightDirection = WorldToView_Vector(light.m_direction);
 
         bool potentiallyIntersects;
-        if (light.m_flags & DiskLightFlag::UseConeAngle > 0)
+        if ((light.m_flags & DiskLightFlag::UseConeAngle) > 0)
         {
             potentiallyIntersects = TestSphereVsCone(aabb_center, length(aabb_extents), lightPosition, lightDirection, light.m_cosOuterConeAngle, rsqrt(light.m_invAttenuationRadiusSquared) + light.m_bulbPositionOffset);
         }

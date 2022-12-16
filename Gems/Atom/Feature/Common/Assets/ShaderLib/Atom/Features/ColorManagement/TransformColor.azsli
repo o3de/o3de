@@ -30,20 +30,20 @@ enum class ColorSpaceId
     Invalid
 };
 
-float3 TransformColor(in float3 color, ColorSpaceId fromColorSpace, ColorSpaceId toColorSpace)
+real3 TransformColor(in real3 color, ColorSpaceId fromColorSpace, ColorSpaceId toColorSpace)
 {
     if(fromColorSpace == toColorSpace)
     {
         return color;
     }
-    
-    if (fromColorSpace == ColorSpaceId::LinearSRGB && toColorSpace == ColorSpaceId::ACEScg)
-    {
-        color = LinearSrgb_To_AcesCg(color);
-    }
-    else if (fromColorSpace == ColorSpaceId::LinearSRGB && toColorSpace == ColorSpaceId::SRGB)
+        
+    if (fromColorSpace == ColorSpaceId::LinearSRGB && toColorSpace == ColorSpaceId::SRGB)
     {
         color = LinearSrgb_To_Srgb(color);
+    }
+    else if (fromColorSpace == ColorSpaceId::LinearSRGB && toColorSpace == ColorSpaceId::ACEScg)
+    {
+        color = LinearSrgb_To_AcesCg(color);
     }
     else if (fromColorSpace == ColorSpaceId::SRGB && toColorSpace == ColorSpaceId::ACEScg)
     {
@@ -73,15 +73,16 @@ float3 TransformColor(in float3 color, ColorSpaceId fromColorSpace, ColorSpaceId
     }
     else
     {
-        color = float3(1, 0, 1);
+        color = real3(1, 0, 1);
     }
 
     return color;
+    
 }
 
-float CalculateLuminance(in float3 color, ColorSpaceId colorSpace)
+real CalculateLuminance(in real3 color, ColorSpaceId colorSpace)
 {
-    float luminance = 0.0f;
+    real luminance = 0.0;
     switch (colorSpace)
     {
         case ColorSpaceId::LinearSRGB:

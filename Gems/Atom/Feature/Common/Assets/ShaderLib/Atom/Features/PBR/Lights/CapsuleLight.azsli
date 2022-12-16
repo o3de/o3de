@@ -229,7 +229,6 @@ void ValidateCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout Li
 
 void ApplyCapsuleLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_CAPSULE_LIGHTS
     if (o_enableCapsuleLights)
     {
         ViewSrg::CapsuleLight light = ViewSrg::m_capsuleLights[lightIndex];
@@ -245,11 +244,14 @@ void ApplyCapsuleLightInternal(uint lightIndex, Surface surface, inout LightingD
             ApplyCapsuleLight(light, surface, lightingData);
         }
     }
-#endif // ENABLE_CAPSULE_LIGHTS
 }
 
 void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
 {    
+#if !ENABLE_CAPSULE_LIGHTS
+    return;
+#endif
+
 #if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
                 

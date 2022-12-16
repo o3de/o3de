@@ -253,8 +253,6 @@ void ValidateQuadLight(ViewSrg::QuadLight light, Surface surface, inout Lighting
 
 void ApplyQuadLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_QUAD_LIGHTS
-
     if (o_enableQuadLightApprox || o_enableQuadLightLTC)
     {
         ViewSrg::QuadLight light = ViewSrg::m_quadLights[lightIndex];
@@ -270,11 +268,14 @@ void ApplyQuadLightInternal(uint lightIndex, Surface surface, inout LightingData
             ApplyQuadLight(light, surface, lightingData);
         }
     }
-#endif // ENABLE_QUAD_LIGHTS
 }
 
 void ApplyQuadLights(Surface surface, inout LightingData lightingData)
 {
+#if !ENABLE_QUAD_LIGHTS
+    return;
+#endif
+
 #if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
                 

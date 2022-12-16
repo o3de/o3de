@@ -22,9 +22,9 @@
 PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
     inout float4 positionSV,
     float3 positionWS,
-    float3 normal,
-    float3 tangent,
-    float3 bitangent,
+    real3 normal,
+    real3 tangent,
+    real3 bitangent,
     float2 uvs[UvSetCount],
     float2 detailUvs[UvSetCount],
     bool isFrontFace)
@@ -52,13 +52,13 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
 
 PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(inout VsOutput IN, bool isFrontFace)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    real4x4 objectToWorld = real4x4(ObjectSrg::GetWorldMatrix());
+    real3x3 objectToWorldIT = real3x3(ObjectSrg::GetWorldMatrixInverseTranspose());
 
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
-
-    return EvaluatePixelGeometry_EnhancedPBR(
+    real3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    
+    PixelGeometryData geoData = EvaluatePixelGeometry_EnhancedPBR(
         IN.position,
         IN.worldPosition,
         vertexNormal,
@@ -67,4 +67,6 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(inout VsOutput IN, bool isFr
         IN.uvs,
         IN.detailUvs,
         isFrontFace);
+
+    return geoData;
 }

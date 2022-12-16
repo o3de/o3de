@@ -183,6 +183,7 @@ float3 GetApplicableBlendMaskValues(LayerBlendSource blendSource, float2 blendMa
         switch(blendSource)
         {
             case LayerBlendSource::Displacement:
+            case LayerBlendSource::Fallback:
                 // In this case the blend mask has no effect, returning (1,1,1) disables any impact of the mask.
                 blendSourceValues = float3(1,1,1);
                 break;

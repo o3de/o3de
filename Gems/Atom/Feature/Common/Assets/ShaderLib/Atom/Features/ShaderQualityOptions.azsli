@@ -50,4 +50,24 @@
     #define ENABLE_MERGE_FILMIC_TONEMAP           1
     #endif
 
+    #ifndef ENABLE_DECALS
+    #define ENABLE_DECALS              0
+    #endif
+
+    #ifndef ENABLE_SHADER_DEBUGGING
+    #define ENABLE_SHADER_DEBUGGING           0
+    #endif
+
+    #ifndef ENABLE_REFLECTIONPROBE_PARALLAXCORRECTION
+    #define ENABLE_REFLECTIONPROBE_PARALLAXCORRECTION 0
+    #endif
+
+    #ifndef ENABLE_REFLECTIONPROBE_BLENDING
+    #define ENABLE_REFLECTIONPROBE_BLENDING 0
+    #endif
+
+    #ifndef ENABLE_SPECULARAA
+    #define ENABLE_SPECULARAA 0
+    #endif
+
 #endif

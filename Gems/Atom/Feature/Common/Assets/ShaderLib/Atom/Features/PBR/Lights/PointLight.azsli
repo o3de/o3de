@@ -184,7 +184,6 @@ void ValidatePointLight(ViewSrg::PointLight light, Surface surface, inout Lighti
 
 void ApplyPointLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_SPHERE_LIGHTS
     if (o_enableSphereLights)
     {
         ViewSrg::PointLight light = ViewSrg::m_pointLights[lightIndex];
@@ -200,11 +199,14 @@ void ApplyPointLightInternal(uint lightIndex, Surface surface, inout LightingDat
             ApplyPointLight(light, surface, lightingData);
         }
     }
-#endif // ENABLE_SPHERE_LIGHTS
 }
 
 void ApplyPointLights(Surface surface, inout LightingData lightingData)
 {
+#if !ENABLE_SPHERE_LIGHTS
+    return;
+#endif
+
 #if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
     

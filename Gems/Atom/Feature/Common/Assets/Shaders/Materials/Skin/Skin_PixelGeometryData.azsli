@@ -21,13 +21,13 @@ class PixelGeometryData_Skin
 {
     // BasePBR
     float3 positionWS;
-    float3 vertexNormal;
+    real3 vertexNormal;
     float2 uvs[UvSetCount];
-    float3 tangents[UvSetCount];
-    float3 bitangents[UvSetCount];
+    real3 tangents[UvSetCount];
+    real3 bitangents[UvSetCount];
     bool isFrontFace;    
 
     // Skin
     float2 detailUv;
-    float4 wrinkleBlendFactors;
+    real4 wrinkleBlendFactors;
 };

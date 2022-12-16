@@ -8,7 +8,6 @@
 
 #pragma once
 
-
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/PostProcessing/Tonemap.azsli>
 
@@ -39,12 +38,15 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     ForwardPassOutput OUT;
 
-    float3 color = lightingData.diffuseLighting.rgb + lightingData.specularLighting.rgb + lightingData.emissiveLighting.rgb;
+    real3 color = lightingData.diffuseLighting.rgb + lightingData.specularLighting.rgb + lightingData.emissiveLighting.rgb;
 
 #if ENABLE_MERGE_FILMIC_TONEMAP
     // Apply manual exposure compensation
-    color = ApplyManualExposure(color, ViewSrg::GetExposureValueCompensation());
+    color = ApplyManualExposure(color, real(ViewSrg::GetExposureValueCompensation()));
     
+    //Convert to linearsrg space as we are in acescg space and we will not be applying aces tonemap
+    color = AcesCg_To_LinearSrgb(color);
+
     // We could add Aces support here as well if perf allows.
     color = ApplyFilmicTonemap(color);
 #endif

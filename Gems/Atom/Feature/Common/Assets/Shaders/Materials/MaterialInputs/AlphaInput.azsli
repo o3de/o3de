@@ -13,19 +13,19 @@
 enum class OpacitySource {Packed, Split, None};
 option OpacitySource o_opacity_source;
 
-float SampleAlpha(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColorUv, float2 opacityUv, sampler mapSampler, OpacitySource opacitySource)
+real SampleAlpha(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColorUv, float2 opacityUv, sampler mapSampler, OpacitySource opacitySource)
 {
-    float alpha = 1.0;
+    real alpha = 1.0;
     switch(opacitySource)
     {
         case OpacitySource::Packed:
         {
-            alpha = baseColorMap.Sample(mapSampler, baseColorUv).a;
+            alpha = real(baseColorMap.Sample(mapSampler, baseColorUv).a);
             break;
         }
         case OpacitySource::Split:  
         {
-            alpha = opacityMap.Sample(mapSampler, opacityUv).r;
+            alpha = real(opacityMap.Sample(mapSampler, opacityUv).r);
             break;
         }
         case OpacitySource::None:
@@ -34,9 +34,9 @@ float SampleAlpha(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColor
     return alpha;
 }
 
-float GetAlphaInputAndClip(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColorUv, float2 opacityUv, sampler mapSampler, float opacityFactor, OpacitySource opacitySource)
+real GetAlphaInputAndClip(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColorUv, float2 opacityUv, sampler mapSampler, real opacityFactor, OpacitySource opacitySource)
 {
-    float alpha = SampleAlpha(baseColorMap, opacityMap, baseColorUv, opacityUv, mapSampler, opacitySource);
+    real alpha = SampleAlpha(baseColorMap, opacityMap, baseColorUv, opacityUv, mapSampler, opacitySource);
     CheckClipping(alpha, opacityFactor);
     return (alpha * opacityFactor);
 }

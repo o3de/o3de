@@ -92,14 +92,14 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     if(ShouldHandleParallaxInDepthShaders())
     {
-        float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-        float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+        real4x4 objectToWorld = real4x4(ObjectSrg::GetWorldMatrix());
+        real3x3 objectToWorldIT = real3x3(ObjectSrg::GetWorldMatrixInverseTranspose());
 
-        float3 vertexNormal, vertexTangent, vertexBitangent;
-        ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+        real3 vertexNormal, vertexTangent, vertexBitangent;
+        ConstructTBN(real3(IN.m_normal), real4(IN.m_tangent), objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
 
-        float3 tangents[UvSetCount] = { vertexTangent, vertexTangent };
-        float3 bitangents[UvSetCount] = { vertexBitangent, vertexBitangent };
+        real3 tangents[UvSetCount] = { vertexTangent, vertexTangent };
+        real3 bitangents[UvSetCount] = { vertexBitangent, vertexBitangent };
 
         for (int i = 0; i != UvSetCount; ++i)
         {

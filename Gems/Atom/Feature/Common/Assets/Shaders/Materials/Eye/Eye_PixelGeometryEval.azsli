@@ -22,9 +22,9 @@
 // way to handle this.
 PixelGeometryData EvaluatePixelGeometry_Eye(
     float3 positionWS,
-    float3 normal,
-    float3 tangent,
-    float3 bitangent,
+    real3 normal,
+    real3 tangent,
+    real3 bitangent,
     float2 uvs[UvSetCount],
     bool isFrontFace,
     bool evaluateTangentFrame)
@@ -57,9 +57,9 @@ PixelGeometryData EvaluatePixelGeometry_Eye(
 
 PixelGeometryData EvaluatePixelGeometry_Eye(
     float3 positionWS,
-    float3 normal,
-    float3 tangent,
-    float3 bitangent,
+    real3 normal,
+    real3 tangent,
+    real3 bitangent,
     float2 uv[UvSetCount],
     float3 localPosition,
     bool isFrontFace)
@@ -76,13 +76,13 @@ PixelGeometryData EvaluatePixelGeometry_Eye(
 
 PixelGeometryData EvaluatePixelGeometry_Eye(VsOutput IN, bool isFrontFace)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    real4x4 objectToWorld = real4x4(ObjectSrg::GetWorldMatrix());
+    real3x3 objectToWorldIT = real3x3(ObjectSrg::GetWorldMatrixInverseTranspose());
 
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    real3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
     // Bitangent is temporarily added back to fix the eye material screenshot test.
-    vertexBitangent = normalize(mul(objectToWorld, float4(IN.bitangent, 0.0)).xyz);
+    vertexBitangent = normalize(mul(objectToWorld, real4(IN.bitangent, 0.0)).xyz);
 
     return EvaluatePixelGeometry_Eye(
         IN.worldPosition,

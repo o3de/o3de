@@ -61,7 +61,7 @@ UNDISCLOSED.
 
 #include <Atom/Features/PostProcessing/Aces.azsli>
 
-float AcesCcToLinear(float value)
+real AcesCcToLinear(real value)
 {
   if (value < -0.3013698630) // (9.72-15)/17.52
     return (pow( 2., value*17.52-9.72) - pow( 2.,-16.))*2.0;
@@ -71,9 +71,9 @@ float AcesCcToLinear(float value)
     return HALF_MAX;
 }
 
-float3 AcesCcToAcesCg(float3 color)
+real3 AcesCcToAcesCg(real3 color)
 {
-    return float3(
+    return real3(
         AcesCcToLinear(color.r),
         AcesCcToLinear(color.g),
         AcesCcToLinear(color.b));

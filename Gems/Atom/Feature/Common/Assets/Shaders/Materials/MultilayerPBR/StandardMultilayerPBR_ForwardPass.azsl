@@ -475,7 +475,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     lightingData.CalculateMultiscatterCompensation(surface.specularF0, o_specularF0_enableMultiScatterCompensation);
 
     // ------- Combine Clearcoat -------
-    
+#if ENABLE_CLEAR_COAT
     if(o_clearCoat_feature_enabled)
     {
         surface.clearCoat.factor = BlendLayers(lightingInputLayer1.m_clearCoat.factor, lightingInputLayer2.m_clearCoat.factor, lightingInputLayer3.m_clearCoat.factor, blendWeights);
@@ -487,17 +487,20 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         
         ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
     }
+#endif
 
     // Diffuse and Specular response (used in IBL calculations)
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0 - lightingData.specularResponse;
 
+#if ENABLE_CLEAR_COAT
     if(o_clearCoat_feature_enabled)
     {
         // Clear coat layer has fixed IOR = 1.5 and transparent => F0 = (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04
         lightingData.diffuseResponse *= 1.0 - (FresnelSchlickWithRoughness(lightingData.NdotV, float3(0.04, 0.04, 0.04), surface.clearCoat.roughness) * surface.clearCoat.factor);
     }
-    
+#endif
+
     // ------- Lighting Calculation -------
 
     // Apply Decals

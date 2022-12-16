@@ -28,11 +28,13 @@ void InitializeLightingData_StandardPBR(inout Surface surface, float4 screenPosi
     lightingData.diffuseAmbientOcclusion = surface.diffuseAmbientOcclusion;
     lightingData.specularOcclusion = surface.specularOcclusion;
 
+#if ENABLE_CLEAR_COAT
     if(o_clearCoat_feature_enabled)
     {
         // Clear coat layer has fixed IOR = 1.5 and transparent => F0 = (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04
-        lightingData.diffuseResponse *= 1.0 - (FresnelSchlickWithRoughness(lightingData.NdotV, float3(0.04, 0.04, 0.04), surface.clearCoat.roughness) * surface.clearCoat.factor);
+        lightingData.diffuseResponse *= 1.0 - (FresnelSchlickWithRoughness(lightingData.NdotV, real3(0.04, 0.04, 0.04), surface.clearCoat.roughness) * surface.clearCoat.factor);
     }
+#endif
 }
 
 void HandleOpacity(inout Surface surface, inout LightingData lightingData)
@@ -42,7 +44,7 @@ void HandleOpacity(inout Surface surface, inout LightingData lightingData)
         lightingData.diffuseLighting.rgb *= surface.alpha; // pre-multiply diffuse
         
         // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
-        float3 specular = lightingData.specularLighting.rgb;
+        real3 specular = lightingData.specularLighting.rgb;
         specular = lerp(specular, specular * surface.alpha, surface.opacityAffectsSpecularFactor);
         lightingData.diffuseLighting.rgb += specular;
 
@@ -51,8 +53,8 @@ void HandleOpacity(inout Surface surface, inout LightingData lightingData)
         // like glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor
         // values close to 1.0, that indicates the absence of a surface entirely, so this effect should
         // not apply.
-        float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.NdotV, surface.alpha, surface.roughnessLinear).x;
-        float alpha = lerp(fresnelAlpha, surface.alpha, surface.opacityAffectsSpecularFactor);
+        real fresnelAlpha = FresnelSchlickWithRoughness(lightingData.NdotV, surface.alpha, surface.roughnessLinear).x;
+        real alpha = lerp(fresnelAlpha, surface.alpha, surface.opacityAffectsSpecularFactor);
 
         if (o_opacity_mode == OpacityMode::Blended)
         {
