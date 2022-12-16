@@ -115,6 +115,14 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_tableModel->setDynamicSortFilter(true);
         m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
 
+        m_createMenu = new QMenu("Create Menu", this);
+        m_ui->m_createButton->setMenu(m_createMenu);
+        m_ui->m_createButton->setEnabled(true);
+        m_ui->m_createButton->setAutoRaise(true);
+        m_ui->m_createButton->setPopupMode(QToolButton::InstantPopup);
+
+        connect(m_createMenu, &QMenu::aboutToShow, this, [this] { AddCreateMenu(); });
+
         connect(m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged,
             this, &AzAssetBrowserWindow::UpdateWidgetAfterFilter);
 
@@ -140,6 +148,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_treeViewButton->hide();
         m_ui->m_thumbnailViewButton->hide();
         m_ui->m_tableViewButton->hide();
+        m_ui->m_createButton->hide();
         m_ui->m_searchWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     }
 
@@ -148,6 +157,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->horizontalLayout->setAlignment(m_ui->m_tableViewButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_thumbnailViewButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_breadcrumbsWrapper, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_createButton, Qt::AlignTop);
 
     m_ui->m_breadcrumbsLayout->insertWidget(0, m_ui->m_pathBreadCrumbs->createSeparator());
     m_ui->m_breadcrumbsLayout->insertWidget(0, m_ui->m_pathBreadCrumbs->createBackForwardToolBar());
@@ -198,6 +208,63 @@ AzAssetBrowserWindow::~AzAssetBrowserWindow()
 {
     m_assetBrowserModel->DisableTickBus();
     m_ui->m_assetBrowserTreeViewWidget->SaveState();
+}
+
+void AzAssetBrowserWindow::AddCreateMenu()
+{
+    using namespace AzToolsFramework::AssetBrowser;
+    m_createMenu->clear();
+
+    const auto& selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible() ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
+                                                                                 : m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
+    AssetBrowserEntry* entry = selectedAssets.empty() ? nullptr : selectedAssets.front();
+    if (!entry || selectedAssets.size() != 1)
+    {
+        return;
+    }
+    AZStd::string fullFilePath;
+
+    if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+    {
+        entry = entry->GetParent();
+        if (!entry)
+        {
+            return;
+        }
+    }
+    fullFilePath = entry->GetFullPath();
+
+    AZStd::string folderPath;
+
+    if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+    {
+        folderPath = fullFilePath;
+    }
+    else
+    {
+        AzFramework::StringFunc::Path::GetFolderPath(fullFilePath.c_str(), folderPath);
+    }
+
+    AZ::Uuid sourceID = AZ::Uuid::CreateNull();
+    SourceFileCreatorList creators;
+    AssetBrowserInteractionNotificationBus::Broadcast(
+        &AssetBrowserInteractionNotificationBus::Events::AddSourceFileCreators, folderPath.c_str(), sourceID, creators);
+    if (!creators.empty())
+    {
+        for (const SourceFileCreatorDetails& creatorDetails : creators)
+        {
+            if (creatorDetails.m_creator)
+            {
+                m_createMenu->addAction(
+                    creatorDetails.m_iconToUse,
+                    tr("New ") + tr(creatorDetails.m_displayText.c_str()),
+                    [sourceID, fullFilePath, creatorDetails]()
+                    {
+                        creatorDetails.m_creator(fullFilePath.c_str(), sourceID);
+                    });
+            }
+        }
+    }
 }
 
 void AzAssetBrowserWindow::RegisterViewClass()
@@ -329,7 +396,7 @@ void AzAssetBrowserWindow::SetNarrowMode(bool narrow)
     }
     else
     {
-        m_ui->horizontalLayout->insertWidget(0, m_ui->m_breadcrumbsWrapper);
+        m_ui->horizontalLayout->insertWidget(4, m_ui->m_breadcrumbsWrapper);
         m_ui->horizontalLayout->setAlignment(m_ui->m_breadcrumbsWrapper, Qt::AlignTop);
 
         // Once we fully move to new design this cvar will be gone and the condition can be deleted
