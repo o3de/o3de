@@ -28,6 +28,8 @@
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 
+#include <Mesh/MeshInstanceManager.h>
+
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
@@ -79,20 +81,20 @@ namespace AZ
                 ModelDataInstance* m_parent = nullptr;
             };
 
-            void DeInit();
+            void DeInit(MeshInstanceManager& meshInstanceManager);
             void QueueInit(const Data::Instance<RPI::Model>& model);
-            void Init();
-            void BuildDrawPacketList(size_t modelLodIndex);
+            void Init(MeshInstanceManager& meshInstanceManager);
+            void BuildDrawPacketList(MeshInstanceManager& meshInstanceManager, size_t modelLodIndex);
             void SetRayTracingData();
             void RemoveRayTracingData();
             void SetIrradianceData(RayTracingFeatureProcessor::SubMesh& subMesh,
                     const Data::Instance<RPI::Material> material, const Data::Instance<RPI::Image> baseColorImage);
-            void SetSortKey(RHI::DrawItemSortKey sortKey);
+            void SetSortKey(MeshInstanceManager& meshInstanceManager, RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
-            void UpdateDrawPackets(bool forceUpdate = false);
-            void BuildCullable();
+            void UpdateDrawPackets(MeshInstanceManager& meshInstanceManager, bool forceUpdate = false);
+            void BuildCullable(MeshInstanceManager& meshInstanceManager);
             void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);
             void UpdateObjectSrg();
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
@@ -103,6 +105,7 @@ namespace AZ
             // MaterialAssignmentNotificationBus overrides
             void OnRebuildMaterialInstance() override;
 
+            AZStd::vector<AZStd::vector<uint32_t>> m_instanceIndicesByLod;
             RPI::MeshDrawPacketLods m_drawPacketListsByLod;
 
             RPI::Cullable m_cullable;
@@ -231,6 +234,7 @@ namespace AZ
                         
             AZStd::concurrency_checker m_meshDataChecker;
             StableDynamicArray<ModelDataInstance> m_modelData;
+            MeshInstanceManager m_meshInstanceManager;
             TransformServiceFeatureProcessor* m_transformService;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;

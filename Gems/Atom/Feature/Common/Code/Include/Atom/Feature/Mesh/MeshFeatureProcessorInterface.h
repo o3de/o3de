@@ -30,6 +30,14 @@ namespace AZ
             "Enable allowing systems to set shader options on a per-mesh basis."
         );
 
+        AZ_CVAR(
+            bool,
+            r_enableHardwareInstancing,
+            false,
+            nullptr,
+            AZ::ConsoleFunctorFlags::Null,
+            "Experimental Work In Progress HW instancing support. Enabling this has added overhead without the benefits of instancing, so it should be left disabled for now.");
+
         class ModelDataInstance;
         
         //! Settings to apply to a mesh handle when acquiring it for the first time

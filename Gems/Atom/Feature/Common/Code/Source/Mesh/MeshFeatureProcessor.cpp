@@ -110,6 +110,17 @@ namespace AZ
                 // push the cvars value so anything in this dll can access it directly.
                 console->PerformCommand(AZStd::string::format("r_enablePerMeshShaderOptionFlags %s", enablePerMeshShaderOptionFlagsCvar ? "true" : "false").c_str());
             }
+
+            bool enableHardwareInstancingFlagsCvar = false;
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                console->GetCvarValue("r_enableHardwareInstancing", enableHardwareInstancingFlagsCvar);
+
+                // push the cvars value so anything in this dll can access it directly.
+                console->PerformCommand(
+                    AZStd::string::format("r_enableHardwareInstancing %s", enableHardwareInstancingFlagsCvar ? "true" : "false")
+                        .c_str());
+            }
         }
 
         void MeshFeatureProcessor::Deactivate()
@@ -165,7 +176,7 @@ namespace AZ
 
                         if (meshDataIter->m_needsInit)
                         {
-                            meshDataIter->Init();
+                            meshDataIter->Init(m_meshInstanceManager);
                         }
 
                         if (meshDataIter->m_objectSrgNeedsUpdate)
@@ -177,11 +188,11 @@ namespace AZ
                         // material properties can impact which actual shader is used, which impacts the SRG in the draw packet.
                         // This is scheduled to be optimized so the work is only done on draw packets that need it instead of having
                         // to check every one.
-                        meshDataIter->UpdateDrawPackets(m_forceRebuildDrawPackets);
+                        meshDataIter->UpdateDrawPackets(m_meshInstanceManager, m_forceRebuildDrawPackets);
 
                         if (meshDataIter->m_cullableNeedsRebuild)
                         {
-                            meshDataIter->BuildCullable();
+                            meshDataIter->BuildCullable(m_meshInstanceManager);
                         }
 
                         if (meshDataIter->m_cullBoundsNeedsUpdate)
@@ -219,8 +230,13 @@ namespace AZ
         void MeshFeatureProcessor::OnBeginPrepareRender()
         {
             m_meshDataChecker.soft_lock();
-
-            if (!r_enablePerMeshShaderOptionFlags && m_enablePerMeshShaderOptionFlags)
+            AZ_Error("MeshFeatureProcessor::OnBeginPrepareRender", !(r_enablePerMeshShaderOptionFlags && r_enableHardwareInstancing),
+                "r_enablePerMeshShaderOptionFlags and r_enableHardwareInstancing are incompatible at this time. r_enablePerMeshShaderOptionFlags results "
+                "in a unique shader permutation for a given object depending on which light types are in range of the object. This isn't known until "
+                "immediately before rendering. Determining whether or not two meshes can be instanced happens when the object is first set up, and we don't "
+                "want to update that instance map every frame, so if instancing is enabled we treat r_enablePerMeshShaderOptionFlags as disabled. "
+                "This can be relaxed for static meshes in the future when we know they won't be moving. ");
+            if (!r_enablePerMeshShaderOptionFlags && m_enablePerMeshShaderOptionFlags && !r_enableHardwareInstancing)
             {
                 // Per mesh shader option flags was on, but now turned off, so reset all the shader options.
                 for (auto& model : m_modelData)
@@ -241,11 +257,16 @@ namespace AZ
                     model.m_cullable.m_flags = 0;
                     model.m_cullable.m_prevFlags = 0;
                     model.m_cullableNeedsRebuild = true;
-                    model.BuildCullable();
+
+                    // [GHI-13619]
+                    // Update the draw packets on the cullable, since we just set a shader item.
+                    // BuildCullable is a bit overkill here, this could be reduced to just updating the drawPacket specific info
+                    // It's also going to cause m_cullableNeedsUpdate to be set, which will execute next frame, which we don't need
+                    model.BuildCullable(m_meshInstanceManager);
                 }
             }
 
-            m_enablePerMeshShaderOptionFlags = r_enablePerMeshShaderOptionFlags;
+            m_enablePerMeshShaderOptionFlags = r_enablePerMeshShaderOptionFlags && !r_enableHardwareInstancing;
 
             if (m_enablePerMeshShaderOptionFlags)
             {
@@ -269,7 +290,12 @@ namespace AZ
                             }
                         }
                         model.m_cullableNeedsRebuild = true;
-                        model.BuildCullable();
+
+                        // [GHI-13619]
+                        // Update the draw packets on the cullable, since we just set a shader item.
+                        // BuildCullable is a bit overkill here, this could be reduced to just updating the drawPacket specific info
+                        // It's also going to cause m_cullableNeedsUpdate to be set, which will execute next frame, which we don't need
+                        model.BuildCullable(m_meshInstanceManager);
                     }
                 }
             }
@@ -329,7 +355,7 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 meshHandle->m_meshLoader.reset();
-                meshHandle->DeInit();
+                meshHandle->DeInit(m_meshInstanceManager);
                 m_transformService->ReleaseObjectId(meshHandle->m_objectId);
 
                 AZStd::concurrency_check_scope scopeCheck(m_meshDataChecker);
@@ -400,7 +426,7 @@ namespace AZ
                 if (meshHandle->m_model)
                 {
                     Data::Instance<RPI::Model> model = meshHandle->m_model;
-                    meshHandle->DeInit();
+                    meshHandle->DeInit(m_meshInstanceManager);
                     meshHandle->m_materialAssignments = materials;
                     meshHandle->QueueInit(model);
                 }
@@ -500,7 +526,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->SetSortKey(sortKey);
+                meshHandle->SetSortKey(m_meshInstanceManager, sortKey);
             }
         }
 
@@ -632,7 +658,7 @@ namespace AZ
                     const size_t modelLodCount = meshHandle->m_model->GetLodCount();
                     for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
                     {
-                        meshHandle->BuildDrawPacketList(modelLodIndex);
+                        meshHandle->BuildDrawPacketList(m_meshInstanceManager, modelLodIndex);
                     }
                 }
             }
@@ -853,7 +879,7 @@ namespace AZ
             }
         }
 
-        void ModelDataInstance::DeInit()
+        void ModelDataInstance::DeInit(MeshInstanceManager& meshInstanceManager)
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
@@ -868,7 +894,22 @@ namespace AZ
 
             RemoveRayTracingData();
 
-            m_drawPacketListsByLod.clear();
+            if (!r_enableHardwareInstancing)
+            {
+                m_drawPacketListsByLod.clear();
+            }
+            else
+            {
+                // Release the instance indices
+                for (auto& lodInstanceIndexList : m_instanceIndicesByLod)
+                {
+                    for (auto& instanceIndex : lodInstanceIndexList)
+                    {
+                        meshInstanceManager.RemoveInstance(instanceIndex);
+                    }
+                }
+                m_instanceIndicesByLod.clear();
+            }
             m_materialAssignments.clear();
             m_materialChangeIds.clear();
             m_objectSrgList = {};
@@ -882,13 +923,23 @@ namespace AZ
             m_aabb = m_model->GetModelAsset()->GetAabb();
         }
 
-        void ModelDataInstance::Init()
+        void ModelDataInstance::Init(MeshInstanceManager& meshInstanceManager)
         {
             const size_t modelLodCount = m_model->GetLodCount();
-            m_drawPacketListsByLod.resize(modelLodCount);
+
+            // If HW Instancing is enabled, the draw packets will reside in the MeshInstanceManager
+            if (!r_enableHardwareInstancing)
+            {
+                m_drawPacketListsByLod.resize(modelLodCount);
+            }
+            else
+            {
+                m_instanceIndicesByLod.resize(modelLodCount);
+            }
+
             for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
             {
-                BuildDrawPacketList(modelLodIndex);
+                BuildDrawPacketList(meshInstanceManager, modelLodIndex);
             }
 
             for(auto& objectSrg : m_objectSrgList)
@@ -919,16 +970,23 @@ namespace AZ
             m_needsInit = false;
         }
 
-        void ModelDataInstance::BuildDrawPacketList(size_t modelLodIndex)
+        void ModelDataInstance::BuildDrawPacketList(MeshInstanceManager& meshInstanceManager, size_t modelLodIndex)
         {
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
-            
-            RPI::MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
-            drawPacketListOut.clear();
-            drawPacketListOut.reserve(meshCount);
 
-            m_hasForwardPassIblSpecularMaterial = false;
+            if (!r_enableHardwareInstancing)
+            {
+                RPI::MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
+                drawPacketListOut.clear();
+                drawPacketListOut.reserve(meshCount);
+            }
+            else
+            {
+                AZStd::vector<uint32_t>& meshInstanceIndices = m_instanceIndicesByLod[modelLodIndex];
+                meshInstanceIndices.clear();
+                meshInstanceIndices.reserve(meshCount);
+            }
 
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
@@ -982,28 +1040,64 @@ namespace AZ
                     m_objectSrgList.push_back(meshObjectSrg);
                 }
 
-                // setup the mesh draw packet
-                RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, meshObjectSrg, materialAssignment.m_matModUvOverrides);
-
-                // set the shader option to select forward pass IBL specular if necessary
-                if (!drawPacket.SetShaderOption(s_o_meshUseForwardPassIBLSpecular_Name, AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
-                {
-                    AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
-                }
-
+                
                 bool materialRequiresForwardPassIblSpecular = MaterialRequiresForwardPassIblSpecular(material);
 
-                // track whether any materials in this mesh require ForwardPassIblSpecular, we need this information when the ObjectSrg is updated
+                // Track whether any materials in this mesh require ForwardPassIblSpecular, we need this information when the ObjectSrg is
+                // updated
                 m_hasForwardPassIblSpecularMaterial |= materialRequiresForwardPassIblSpecular;
 
                 // stencil bits
-                uint8_t stencilRef = m_descriptor.m_useForwardPassIblSpecular || materialRequiresForwardPassIblSpecular ? Render::StencilRefs::None : Render::StencilRefs::UseIBLSpecularPass;
+                uint8_t stencilRef = m_descriptor.m_useForwardPassIblSpecular || materialRequiresForwardPassIblSpecular
+                    ? Render::StencilRefs::None
+                    : Render::StencilRefs::UseIBLSpecularPass;
                 stencilRef |= Render::StencilRefs::UseDiffuseGIPass;
 
-                drawPacket.SetStencilRef(stencilRef);
-                drawPacket.SetSortKey(m_sortKey);
-                drawPacket.Update(*m_scene, false);
-                drawPacketListOut.emplace_back(AZStd::move(drawPacket));
+                InsertResult index{ InvalidIndex, false };
+
+                if (r_enableHardwareInstancing)
+                {
+                    // Get thi instance index for referencing the draw packet
+                    MeshInstanceKey key{};
+                    key.m_modelId = m_model->GetId();
+                    key.m_lodIndex = static_cast<uint32_t>(modelLodIndex);
+                    key.m_meshIndex = static_cast<uint32_t>(meshIndex);
+                    key.m_materialId = material->GetId();
+                    key.m_forceInstancingOff = Uuid::CreateRandom();
+                    key.m_stencilRef = stencilRef;
+                    key.m_sortKey = m_sortKey;
+                    index = meshInstanceManager.AddInstance(key);
+
+                    m_instanceIndicesByLod[modelLodIndex].push_back(index.m_index);
+                }
+
+                // We're dealing with a new, uninitialized draw packet, so we need to initialize it
+                // Ideally we defer the actual draw packet creation until later, but for now, just build it here
+                if (!r_enableHardwareInstancing || index.m_wasInserted)
+                {
+                    // setup the mesh draw packet
+                    RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, meshObjectSrg, materialAssignment.m_matModUvOverrides);
+
+                    // set the shader option to select forward pass IBL specular if necessary
+                    if (!drawPacket.SetShaderOption(s_o_meshUseForwardPassIBLSpecular_Name, AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
+                    {
+                        AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
+                    }
+
+                    drawPacket.SetStencilRef(stencilRef);
+                    drawPacket.SetSortKey(m_sortKey);
+                    drawPacket.Update(*m_scene, false);
+
+                    if (!r_enableHardwareInstancing)
+                    {
+                        m_drawPacketListsByLod[modelLodIndex].emplace_back(AZStd::move(drawPacket));
+                    }
+                    else
+                    {
+                        MeshInstanceData& instanceData = meshInstanceManager[index.m_index];
+                        instanceData.m_drawPacket = drawPacket;
+                    }
+                }
             }
         }
 
@@ -1460,14 +1554,36 @@ namespace AZ
             }
         }
 
-        void ModelDataInstance::SetSortKey(RHI::DrawItemSortKey sortKey)
+        void ModelDataInstance::SetSortKey(MeshInstanceManager& meshInstanceManager, RHI::DrawItemSortKey sortKey)
         {
+            RHI::DrawItemSortKey previousSortKey = m_sortKey;
             m_sortKey = sortKey;
-            for (auto& drawPacketList : m_drawPacketListsByLod)
+            if (previousSortKey != m_sortKey)
             {
-                for (auto& drawPacket : drawPacketList)
+                if (!r_enableHardwareInstancing)
                 {
-                    drawPacket.SetSortKey(sortKey);
+                    for (auto& drawPacketList : m_drawPacketListsByLod)
+                    {
+                        for (auto& drawPacket : drawPacketList)
+                        {
+                            drawPacket.SetSortKey(sortKey);
+                        }
+                    }
+                }
+                else
+                {
+                    // If the ModelDataInstance has already been initialized
+                    if (m_model && !m_needsInit)
+                    {
+                        // The sort key is part of the instance key, so we need to update the
+                        // instance map since it has changed
+                        Data::Instance<RPI::Model> model = m_model;
+
+                        // DeInit/ReInit is overkill (destroys and re-creates ray-tracing data)
+                        // but it works for now since SetSortKey is infrequent
+                        DeInit(meshInstanceManager);
+                        QueueInit(model);
+                    }
                 }
             }
         }
@@ -1487,21 +1603,41 @@ namespace AZ
             return m_cullable.m_lodData.m_lodConfiguration;
         }
 
-        void ModelDataInstance::UpdateDrawPackets(bool forceUpdate /*= false*/)
+        void ModelDataInstance::UpdateDrawPackets(MeshInstanceManager& meshInstanceManager, bool forceUpdate /*= false*/)
         {
-            for (auto& drawPacketList : m_drawPacketListsByLod)
+            if (!r_enableHardwareInstancing)
             {
-                for (auto& drawPacket : drawPacketList)
+                for (auto& drawPacketList : m_drawPacketListsByLod)
                 {
-                    if (drawPacket.Update(*m_scene, forceUpdate))
+                    for (auto& drawPacket : drawPacketList)
                     {
-                        m_cullableNeedsRebuild = true;
+                        if (drawPacket.Update(*m_scene, forceUpdate))
+                        {
+                            m_cullableNeedsRebuild = true;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // TODO Eventually, this should be split into a separate function that operates on a per-instance basis
+                // instead of a per-ModelDataInstance basis, but since the initial commit uses a unique key to prevent
+                // anything from actually being instanced, we can still treat this like per-ModelDataInstance data
+                for (const auto& instanceIndexList : m_instanceIndicesByLod)
+                {
+                    for (const auto& instanceIndex : instanceIndexList)
+                    {
+                        RPI::MeshDrawPacket& drawPacket = meshInstanceManager[instanceIndex].m_drawPacket;
+                        if (drawPacket.Update(*m_scene, forceUpdate))
+                        {
+                            m_cullableNeedsRebuild = true;
+                        }
                     }
                 }
             }
         }
 
-        void ModelDataInstance::BuildCullable()
+        void ModelDataInstance::BuildCullable(MeshInstanceManager& meshInstanceManager)
         {
             AZ_Assert(m_cullableNeedsRebuild, "This function only needs to be called if the cullable to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
@@ -1547,9 +1683,18 @@ namespace AZ
                 }
 
                 lod.m_drawPackets.clear();
-                for (const RPI::MeshDrawPacket& meshDrawPacket : m_drawPacketListsByLod[lodIndex])
+                size_t meshCount = lodAssets[lodIndex]->GetMeshes().size();
+                for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
                 {
-                    const RHI::DrawPacket* rhiDrawPacket = meshDrawPacket.GetRHIDrawPacket();
+                    const RHI::DrawPacket* rhiDrawPacket = nullptr;
+                    if (!r_enableHardwareInstancing)
+                    {
+                        rhiDrawPacket = m_drawPacketListsByLod[lodIndex][meshIndex].GetRHIDrawPacket();
+                    }
+                    else
+                    {
+                        rhiDrawPacket = meshInstanceManager[m_instanceIndicesByLod[lodIndex][meshIndex]].m_drawPacket.GetRHIDrawPacket();
+                    }
 
                     if (rhiDrawPacket)
                     {
