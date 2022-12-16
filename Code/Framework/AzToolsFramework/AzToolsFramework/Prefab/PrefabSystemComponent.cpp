@@ -400,7 +400,7 @@ namespace AzToolsFramework
 
             // Convert our instance into a serialized template dom
             PrefabDom serializedInstance;
-            if (!PrefabDomUtils::StoreInstanceInPrefabDom(instance, serializedInstance))
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(instance, serializedInstance, PrefabDomUtils::StoreFlags::StripLinkIds))
             {
                 return InvalidTemplateId;
             }
