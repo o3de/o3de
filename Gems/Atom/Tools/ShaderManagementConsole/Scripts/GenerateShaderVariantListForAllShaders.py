@@ -9,36 +9,16 @@ import re
 import json
 import GenerateShaderVariantListUtil
 
-def search_and_save_shadervariant(searchPath):
-    for subdir, dirs, files in os.walk(searchPath):
-        for file in files:
-            filename = os.path.join(subdir, file)
-            if re.search('^.*\.shader$', filename):
-                shaderVariantList, defaultShaderVariantListFilePath = GenerateShaderVariantListUtil.create_shadervariantlist_for_shader(filename)
-                if shaderVariantList.shaderVariants:
-                    azlmbr.shader.SaveShaderVariantListSourceData(defaultShaderVariantListFilePath, shaderVariantList)
-
-
 def main():
-    print("==== Begin processing shader ==========================================================")
-    # Search all .shader in Engine Gems folder
-    search_and_save_shadervariant(azlmbr.paths.engroot + '/Gems')
+    print("==== Begin generate shader variant list for all built material assets ==========")
+    
+    assetIds = azlmbr.shadermanagementconsole.ShaderManagementConsoleRequestBus(
+        azlmbr.bus.Broadcast, 
+        'GetAllMaterialAssetIds'
+    )
+    GenerateShaderVariantListUtil.create_shadervariantlists_from_material(assetIds)
 
-    # Search in project folder
-    search_and_save_shadervariant(azlmbr.paths.projectroot + '/Shaders')
-    search_and_save_shadervariant(azlmbr.paths.projectroot + '/Assets')
+    print("==== Finish generate shader variant list for all built material assets ==========")
 
-    # Search in externel gems
-    # Read from external_subdirectories project.json
-    projectPath = azlmbr.paths.projectroot + '/project.json'
-    jsonFile = open(projectPath)
-    data = json.load(jsonFile)
-
-    for path in data['external_subdirectories']:
-        search_and_save_shadervariant(azlmbr.paths.projectroot + '/' + path)
-
-    jsonFile.close()
-
-    print("==== Finish processing shader ==========================================================")
 if __name__ == "__main__":
     main()
