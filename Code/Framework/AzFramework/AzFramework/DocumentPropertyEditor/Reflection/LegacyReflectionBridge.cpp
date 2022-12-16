@@ -180,7 +180,7 @@ namespace AZ::Reflection
                 , m_serializeContext(serializeContext)
             {
                 m_stack.push_back({ instance, nullptr, typeId });
-                RegisterPrimitiveHandlers<bool, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, float, double>();
+                RegisterPrimitiveHandlers<bool, char, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, float, double>();
             }
 
             template<typename T>
@@ -755,9 +755,6 @@ namespace AZ::Reflection
                 {
                     nodeData.m_cachedAttributes.push_back({
                         group, DocumentPropertyEditor::Nodes::PropertyEditor::EnumValues.GetName(), enumValueCache });
-                    nodeData.m_cachedAttributes.push_back({
-                        group,
-                        DocumentPropertyEditor::Nodes::PropertyEditor::Value.GetName(), enumValueCache.GetArray()[0]["value"] });
                 }
 
                 if (!nodeData.m_labelOverride.empty())
