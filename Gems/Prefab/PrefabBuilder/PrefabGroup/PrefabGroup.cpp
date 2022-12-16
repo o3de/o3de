@@ -17,8 +17,6 @@
 #include <AzCore/std/optional.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 
-#include <QObject>
-
 namespace AZ::SceneAPI::SceneData
 {
      // PrefabGroup
