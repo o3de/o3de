@@ -133,9 +133,9 @@ namespace AZ::Dom
         //! Old node and its children at the path would be destroyed. The new subtree will be moved to the path.
         //! @param path The path which corresponds to the root node to which the subtree would be overwritten.
         //! @param subtree The subtree to move to the provided path.
-        //! @param createParentsIfNeeded Create parent entries for the provided path if the flag is on.
-        //! @return True if the subtree was overwritten successfully, false if createParentsIfNeeded is off and no target path exists.
-        bool OverwritePath(const Path& path, DomPrefixTree&& subtree, bool createParentsIfNeeded = false);
+        //! @param shouldCreateNodes Create all nodes for the provided path if the flag is on.
+        //! @return True if the subtree was overwritten successfully, false if shouldCreateNodes is off and no target path exists.
+        bool OverwritePath(const Path& path, DomPrefixTree&& subtree, bool shouldCreateNodes = false);
 
         //! Removes all entries from this tree.
         void Clear();
@@ -166,11 +166,11 @@ namespace AZ::Dom
 
         //! Overwrites the node at the path and replaces it with the given node.
         //! Old node and its children at the path would be destroyed. New nodes will be moved to the path.
-        //! @param path The path which corresponds to the root node to which the subtree would be overwritten.
+        //! @param path The path which corresponds to the root node to be overwritten.
         //! @param newNode The new node to move to the provided path.
-        //! @param createParentsIfNeeded Create parent entries for the provided path if the flag is on.
-        //! @return True if the node was overwritten successfully, false if createParentsIfNeeded is off and no target path exists.
-        bool OverwritePath(const Path& path, Node&& newNode, bool createParentsIfNeeded = false);
+        //! @param shouldCreateNodes Create all nodes for the provided path if the flag is on.
+        //! @return True if the node was overwritten successfully, false if shouldCreateNodes is off and no target path exists.
+        bool OverwritePath(const Path& path, Node&& newNode, bool shouldCreateNodes = false);
 
         Node m_rootNode;
     };

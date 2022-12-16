@@ -263,12 +263,12 @@ namespace AZ::Dom::Tests
         DomPrefixTree<int> subtree;
         subtree.SetValue(Path(), 80);
         subtree.SetValue(Path("/1"), 120);
-        bool isOverwritten = tree.OverwritePath(Path("/foo/0"), AZStd::move(subtree));
+        bool isOverwritten = tree.OverwritePath(Path("/foo"), AZStd::move(subtree));
 
         // Validate that the subtree is overwritten and new values are present at the paths in the original tree.
         EXPECT_TRUE(isOverwritten);
-        EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::ExactPath));
-        EXPECT_EQ(120, *tree.ValueAtPath(Path("/foo/0/1"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(120, *tree.ValueAtPath(Path("/foo/1"), PrefixTreeMatch::ExactPath));
     }
 
     TEST_F(DomPrefixTreeTests, OverwritePathReplacesExistingNodeAndChildren)
@@ -297,13 +297,26 @@ namespace AZ::Dom::Tests
 
         DomPrefixTree<int> subtree;
         subtree.SetValue(Path(), 80);
+        bool isOverwritten = tree.OverwritePath(Path("/foo/bar"), AZStd::move(subtree)); // 'bar' node does not exist
+
+        // Validate that the subtree could not be overwritten.
+        EXPECT_FALSE(isOverwritten);
+    }
+
+    TEST_F(DomPrefixTreeTests, OverwritePathFailsAtNonExistingPathWithMissingParents)
+    {
+        DomPrefixTree<int> tree;
+        tree.SetValue(Path("/foo"), 40);
+
+        DomPrefixTree<int> subtree;
+        subtree.SetValue(Path(), 80);
         bool isOverwritten = tree.OverwritePath(Path("/foo/bar/baz"), AZStd::move(subtree)); // Parent entry 'bar' does not exist
 
         // Validate that the subtree could not be overwritten.
         EXPECT_FALSE(isOverwritten);
     }
 
-    TEST_F(DomPrefixTreeTests, OverwritePathAddsNewNodeAtNonExistingPathIfCreateParents)
+    TEST_F(DomPrefixTreeTests, OverwritePathSucceedsAtNonExistingPathIfCreateNodes)
     {
         DomPrefixTree<int> tree;
         tree.SetValue(Path("/foo"), 40);
@@ -311,7 +324,22 @@ namespace AZ::Dom::Tests
         DomPrefixTree<int> subtree;
         subtree.SetValue(Path(), 80);
         subtree.SetValue(Path("/1"), 120);
-        tree.OverwritePath(Path("/foo/bar/baz"), AZStd::move(subtree), true); // create parent entries if needed
+        tree.OverwritePath(Path("/foo/bar"), AZStd::move(subtree), true); // create the node if needed
+
+        // Validate that the subtree is overwritten and new values are present at the paths in the original tree.
+        EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo/bar"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(120, *tree.ValueAtPath(Path("/foo/bar/1"), PrefixTreeMatch::ExactPath));
+    }
+
+    TEST_F(DomPrefixTreeTests, OverwritePathSucceedsAtNonExistingPathWithoutParentsIfCreateNodes)
+    {
+        DomPrefixTree<int> tree;
+        tree.SetValue(Path("/foo"), 40);
+
+        DomPrefixTree<int> subtree;
+        subtree.SetValue(Path(), 80);
+        subtree.SetValue(Path("/1"), 120);
+        tree.OverwritePath(Path("/foo/bar/baz"), AZStd::move(subtree), true); // create all nodes if needed
 
         // Validate that the subtree is overwritten and new values are present at the paths in the original tree.
         EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo/bar/baz"), PrefixTreeMatch::ExactPath));
