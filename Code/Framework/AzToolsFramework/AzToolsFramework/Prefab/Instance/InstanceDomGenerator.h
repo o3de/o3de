@@ -58,10 +58,10 @@ namespace AzToolsFramework
             void UpdateContainerEntityInDomFromHighestAncestor(PrefabDom& instanceDom, const Instance& instance) const;
 
             //! Given an instance and a provided DOM, populates the DOM with the container entity DOM as seen
-            //! from the highest ancestor template DOM that contains the data.
-            //! @param[out] containerEntityDom The DOM of the container entity as seen from the highest ancestor.
+            //! from the template DOM of the highest ancestor that contains the data, or from the instance if it's the root.
+            //! @param[out] containerEntityDom The DOM of the container entity as seen from the highest ancestor or root.
             //! @param instance The given instance object.
-            void GenerateContainerEntityDomFromHighestAncestor(PrefabDom& containerEntityDom, const Instance& instance) const;
+            void GenerateContainerEntityDomFromHighestAncestorOrSelf(PrefabDom& containerEntityDom, const Instance& instance) const;
 
             //! Given a climb-up path and a provided DOM, populates the DOM with the container entity DOM as seen
             //! from the highest ancestor template DOM that contains the data.
