@@ -123,7 +123,6 @@ namespace AZ
                     Containers::SceneManifest::Index index = m_sceneManifest->FindIndex(m_target);
                     if (index != Containers::SceneManifest::s_invalidIndex)
                     {
-                        AZ_TraceContext("Manifest index", static_cast<int>(index));
                         ManifestWidget* root = ManifestWidget::FindRoot(this);
                         // The manifest object could be a root element at the manifest page level so it needs to be
                         //      removed from there as well in that case.
