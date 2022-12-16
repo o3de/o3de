@@ -557,6 +557,10 @@ namespace AZ::Reflection
 
                 AZ::Name handlerName;
 
+                // This array node is for caching related EnumValue attributes if any are seen
+                Dom::Value enumValueCache = Dom::Value(Dom::Type::Array);
+                const AZ::Name enumValueName = AZ::Name("EnumValue");
+
                 auto checkAttribute = [&](const AZ::AttributePair* it, void* instance, bool shouldDescribeChildren)
                 {
                     if (it->second->m_describesChildren != shouldDescribeChildren)
@@ -567,8 +571,9 @@ namespace AZ::Reflection
                     AZ::Name name = propertyEditorSystem->LookupNameFromId(it->first);
                     if (!name.IsEmpty())
                     {
-                        // If a more specific attribute is already loaded, ignore the new value
-                        if (visitedAttributes.find(name) != visitedAttributes.end())
+                        // If a more specific attribute is already loaded, ignore the new value unless it is an
+                        // EnumValue attribute since those may come in multiples
+                        if (visitedAttributes.find(name) != visitedAttributes.end() && name != enumValueName)
                         {
                             return;
                         }
@@ -594,6 +599,12 @@ namespace AZ::Reflection
                                 }
                             });
 
+                        // Collect related EnumValue attributes for later
+                        if (name == enumValueName && !attributeValue.IsNull())
+                        {
+                            enumValueCache.ArrayPushBack(attributeValue);
+                        }
+
                         // Fall back on a generic read that handles primitives.
                         if (attributeValue.IsNull())
                         {
@@ -609,6 +620,12 @@ namespace AZ::Reflection
                             {
                                 handlerName = AZ::Name();
                             }
+
+                            if (name == enumValueName)
+                            {
+                                return;
+                            }
+
                             cachedAttributes.push_back({ group, AZStd::move(name), AZStd::move(attributeValue) });
                         }
                     }
@@ -732,6 +749,15 @@ namespace AZ::Reflection
                             labelAttributeValue = labelAttributeBuffer;
                         }
                     }
+                }
+
+                if (enumValueCache.ArraySize() > 0)
+                {
+                    nodeData.m_cachedAttributes.push_back({
+                        group, DocumentPropertyEditor::Nodes::PropertyEditor::EnumValues.GetName(), enumValueCache });
+                    nodeData.m_cachedAttributes.push_back({
+                        group,
+                        DocumentPropertyEditor::Nodes::PropertyEditor::Value.GetName(), enumValueCache.GetArray()[0]["value"] });
                 }
 
                 if (!nodeData.m_labelOverride.empty())
