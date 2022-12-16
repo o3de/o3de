@@ -1082,17 +1082,25 @@ namespace GradientSignal
 
     AZ::Vector2 ImageGradientComponent::GetImagePixelsPerMeter() const
     {
-        // Get the number of pixels in our image that maps to each meter based on the tiling settings.
+        // Get the number of pixels in our image that maps to each meter based on the tiling and gradient transform settings.
 
         const auto width = m_imageDescriptor.m_size.m_width;
         const auto height = m_imageDescriptor.m_size.m_height;
 
         if (width > 0 && height > 0)
         {
-            const AZ::Aabb bounds = m_gradientTransform.GetBounds();
-            const AZ::Vector2 boundsMeters(bounds.GetExtents());
-            const AZ::Vector2 imagePixelsInBounds(width / GetTilingX(), height / GetTilingY());
-            return imagePixelsInBounds / boundsMeters;
+            // The number of pixels per meter depends on a combination of the tiling, the scale, and the frequency zoom.
+            // All of these numbers together determine how often the image repeats within the shape bounds.
+            const AZ::Vector3 transformScale = m_gradientTransform.GetScale();
+            const float transformZoom = m_gradientTransform.GetFrequencyZoom();
+
+            // Get the local bounds for the gradient. This determines the total number of meters in each direction that the image
+            // repeats are mapped onto.
+            const AZ::Aabb localBounds = m_gradientTransform.GetBounds();
+
+            const AZ::Vector2 boundsMeters(localBounds.GetExtents());
+            const AZ::Vector2 imagePixelsInBounds(width * GetTilingX(), height * GetTilingY());
+            return (imagePixelsInBounds * transformZoom) / (boundsMeters * AZ::Vector2(transformScale));
         }
 
         return AZ::Vector2::CreateZero();

@@ -215,7 +215,7 @@ namespace GradientSignal
         AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
 
         // Track if we've changed image values, so we know to prompt to save on exit.
-        m_anyValuesChanged = dirtyRegion.IsValid();
+        m_anyValuesChanged = m_anyValuesChanged || !changedDataBuffer->Empty();
 
         // Hand over ownership of the paint stroke buffer to the undo/redo buffer.
         m_paintBrushUndoBuffer->SetUndoBufferAndDirtyArea(changedDataBuffer, dirtyRegion);

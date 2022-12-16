@@ -208,7 +208,7 @@ namespace Terrain
     {
         m_terrainSrg = {};
 
-        for (auto& shaderItem : m_materialInstance->GetShaderCollection(AZ::RPI::MaterialPipelineNameCommon))
+        for (auto& shaderItem : m_materialInstance->GetGeneralShaderCollection())
         {
             if (shaderItem.GetShaderAsset()->GetDrawListName() == AZ::Name("forward"))
             {

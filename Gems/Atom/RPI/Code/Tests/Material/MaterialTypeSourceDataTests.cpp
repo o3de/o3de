@@ -828,7 +828,7 @@ namespace UnitTest
 
         // Check the results...
 
-        const ShaderCollection& shaderCollection = materialTypeAsset->GetShaderCollection(MaterialPipelineNameCommon);
+        const ShaderCollection& shaderCollection = materialTypeAsset->GetGeneralShaderCollection();
 
         EXPECT_EQ(m_testMaterialSrgLayout, materialTypeAsset->GetMaterialSrgLayout());
         EXPECT_EQ(3, shaderCollection.size());
@@ -1439,7 +1439,7 @@ namespace UnitTest
         EXPECT_TRUE(materialTypeOutcome.IsSuccess());
         Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeOutcome.GetValue();
 
-        const ShaderCollection& shaderCollection = materialTypeAsset->GetShaderCollection(MaterialPipelineNameCommon);
+        const ShaderCollection& shaderCollection = materialTypeAsset->GetGeneralShaderCollection();
 
         // This option is not a dependency of the functor and therefore is not owned by the material
         EXPECT_FALSE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_quality"}));
@@ -1612,12 +1612,13 @@ namespace UnitTest
         // these errors will cause this test to fail.
     }
 
-    TEST_F(MaterialTypeSourceDataTests, LoadAndStoreJson_AllFields)
+    TEST_F(MaterialTypeSourceDataTests, LoadAndStoreJson_CommonFields_Direct)
     {
         // Note that serialization of individual fields within material properties is thoroughly tested in
         // MaterialPropertySerializerTests, so the sample property data used here is cursory.
         // We also don't cover fields related to providing name contexts for nested property groups, like
         // "shaderInputsPrefix" and "shaderOptionsPrefix" as those are covered in CreateMaterialTypeAsset_NestedGroups*.
+        // We also don't cover fields related to the "Abstract" format, only the "Direct" format.
         //
         // NOTE: The keys in the actions lists of versionUpdates need to be given in alphabetical
         // order to ensure exact json string match after serialization + deserialization.
@@ -1724,8 +1725,8 @@ namespace UnitTest
                 },
                 "shaders": [
                     {
-                        "file": "ForwardPass.shader",
-                        "tag": "ForwardPass",
+                        "file": "ShadowPass.shader",
+                        "tag": "ShadowPass",
                         "options": {
                             "o_optionA": "False",
                             "o_optionB": "True"
@@ -1746,12 +1747,61 @@ namespace UnitTest
                             "enableProperty": "groupA.foo"
                         }
                     }
-                ]
+                ],
+                "materialPipelines": {
+                    "DeferredPipeline": {
+                        "properties": [
+                            {
+                                "name": "doubleSided",
+                                "type": "Bool"
+                            }
+                        ],
+                        "shaders": [
+                            {
+                                "file": "testmaterial_deferredpipeline_deferredmaterialpass.shader",
+                                "tag": "deferred"
+                            }
+                        ]
+                    },
+                    "ForwardPipeline": {
+                        "properties": [
+                            {
+                                "name": "isTransparent",
+                                "type": "Bool"
+                            },
+                            {
+                                "name": "doubleSided",
+                                "type": "Bool"
+                            }
+                        ],
+                        "shaders": [
+                            {
+                                "file": "testmaterial_forwardpipeline_forwardpass.shader",
+                                "tag": "forward"
+                            },
+                            {
+                                "file": "testmaterial_forwardpipeline_transparentpass.shader",
+                                "tag": "transparent"
+                            }
+                        ],
+                        "functors": [
+                            {
+                                "type": "EnableShader",
+                                "args": {
+                                    "enablePassProperty": "isTransparent",
+                                    "shaderIndex": 1
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         )";
 
         MaterialTypeSourceData material;
         JsonTestResult loadResult = LoadTestDataFromJson(material, inputJson);
+
+        EXPECT_EQ(material.GetFormat(), MaterialTypeSourceData::Format::Direct);
 
         EXPECT_EQ(material.m_description, "This is a general description about the material");
 
@@ -1858,7 +1908,7 @@ namespace UnitTest
         EXPECT_EQ(azrtti_cast<const Splat3FunctorSourceData*>(functorB.get())->m_float3ShaderSettingOutputId, "m_someFloat3");
 
         EXPECT_EQ(material.m_shaderCollection.size(), 2);
-        EXPECT_EQ(material.m_shaderCollection[0].m_shaderFilePath, "ForwardPass.shader");
+        EXPECT_EQ(material.m_shaderCollection[0].m_shaderFilePath, "ShadowPass.shader");
         EXPECT_EQ(material.m_shaderCollection[1].m_shaderFilePath, "DepthPass.shader");
         EXPECT_EQ(material.m_shaderCollection[0].m_shaderOptionValues.size(), 2);
         EXPECT_EQ(material.m_shaderCollection[1].m_shaderOptionValues.size(), 2);
@@ -1866,13 +1916,37 @@ namespace UnitTest
         EXPECT_EQ(material.m_shaderCollection[0].m_shaderOptionValues[Name{"o_optionB"}], Name{"True"});
         EXPECT_EQ(material.m_shaderCollection[1].m_shaderOptionValues[Name{"o_optionC"}], Name{"1"});
         EXPECT_EQ(material.m_shaderCollection[1].m_shaderOptionValues[Name{"o_optionD"}], Name{"2"});
-        EXPECT_EQ(material.m_shaderCollection[0].m_shaderTag, Name{"ForwardPass"});
+        EXPECT_EQ(material.m_shaderCollection[0].m_shaderTag, Name{"ShadowPass"});
 
         EXPECT_EQ(material.m_materialFunctorSourceData.size(), 1);
         Ptr<MaterialFunctorSourceData> functorC = material.m_materialFunctorSourceData[0]->GetActualSourceData();
         EXPECT_TRUE(azrtti_cast<const SetShaderOptionFunctorSourceData*>(functorC.get()));
         EXPECT_EQ(azrtti_cast<const SetShaderOptionFunctorSourceData*>(functorC.get())->m_enablePropertyName, "groupA.foo");
-        
+
+        EXPECT_EQ(material.m_pipelineData.size(), 2);
+        EXPECT_EQ(material.m_pipelineData[Name("DeferredPipeline")].m_pipelinePropertyLayout.size(), 1);
+        EXPECT_EQ(material.m_pipelineData[Name("DeferredPipeline")].m_pipelinePropertyLayout[0].GetName(), "doubleSided");
+        EXPECT_EQ(material.m_pipelineData[Name("DeferredPipeline")].m_pipelinePropertyLayout[0].m_dataType, MaterialPropertyDataType::Bool);
+        EXPECT_EQ(material.m_pipelineData[Name("DeferredPipeline")].m_shaderCollection.size(), 1);
+        EXPECT_EQ(material.m_pipelineData[Name("DeferredPipeline")].m_shaderCollection[0].m_shaderFilePath, "testmaterial_deferredpipeline_deferredmaterialpass.shader");
+        EXPECT_EQ(material.m_pipelineData[Name("DeferredPipeline")].m_shaderCollection[0].m_shaderTag, Name("deferred"));
+        EXPECT_EQ(material.m_pipelineData[Name("DeferredPipeline")].m_materialFunctorSourceData.size(), 0);
+        EXPECT_EQ(material.m_pipelineData[Name("ForwardPipeline")].m_pipelinePropertyLayout.size(), 2);
+        EXPECT_EQ(material.m_pipelineData[Name("ForwardPipeline")].m_pipelinePropertyLayout[0].GetName(), "isTransparent");
+        EXPECT_EQ(material.m_pipelineData[Name("ForwardPipeline")].m_pipelinePropertyLayout[0].m_dataType, MaterialPropertyDataType::Bool);
+        EXPECT_EQ(material.m_pipelineData[Name("ForwardPipeline")].m_pipelinePropertyLayout[1].GetName(), "doubleSided");
+        EXPECT_EQ(material.m_pipelineData[Name("ForwardPipeline")].m_pipelinePropertyLayout[1].m_dataType, MaterialPropertyDataType::Bool);
+        EXPECT_EQ(material.m_pipelineData[Name("ForwardPipeline")].m_shaderCollection.size(), 2);
+        EXPECT_EQ(material.m_pipelineData[Name("ForwardPipeline")].m_shaderCollection[0].m_shaderFilePath, "testmaterial_forwardpipeline_forwardpass.shader");
+        EXPECT_EQ(material.m_pipelineData[Name("ForwardPipeline")].m_shaderCollection[0].m_shaderTag, Name("forward"));
+        EXPECT_EQ(material.m_pipelineData[Name("ForwardPipeline")].m_shaderCollection[1].m_shaderFilePath, "testmaterial_forwardpipeline_transparentpass.shader");
+        EXPECT_EQ(material.m_pipelineData[Name("ForwardPipeline")].m_shaderCollection[1].m_shaderTag, Name("transparent"));
+        EXPECT_EQ(material.m_pipelineData[Name("ForwardPipeline")].m_materialFunctorSourceData.size(), 1);
+        functorA = material.m_pipelineData[Name("ForwardPipeline")].m_materialFunctorSourceData[0]->GetActualSourceData();
+        EXPECT_TRUE(azrtti_cast<const EnableShaderFunctorSourceData*>(functorA.get()));
+        EXPECT_EQ(azrtti_cast<const EnableShaderFunctorSourceData*>(functorA.get())->m_enablePassPropertyId, "isTransparent");
+        EXPECT_EQ(azrtti_cast<const EnableShaderFunctorSourceData*>(functorA.get())->m_shaderIndex, 1);
+
         AZStd::string outputJson;
         JsonTestResult storeResult = StoreTestDataToJson(material, outputJson);
         ExpectSimilarJson(inputJson, outputJson);
@@ -1880,7 +1954,7 @@ namespace UnitTest
 
     TEST_F(MaterialTypeSourceDataTests, LoadAllFieldsUsingOldFormat)
     {
-        // The content of this test was copied from LoadAndStoreJson_AllFields to prove backward compatibility.
+        // The content of this test was copied from LoadAndStoreJson_CommonFields_Direct to prove backward compatibility.
         // (The "store" part of the test was not included because the saved data will be the new format).
         // Notable differences include:
         // 1) the key "id" is used instead of "name"
@@ -2040,7 +2114,59 @@ namespace UnitTest
         EXPECT_EQ(azrtti_cast<const Splat3FunctorSourceData*>(material.m_materialFunctorSourceData[1]->GetActualSourceData().get())->m_floatPropertyInputId, "groupB.foo");
         EXPECT_EQ(azrtti_cast<const Splat3FunctorSourceData*>(material.m_materialFunctorSourceData[1]->GetActualSourceData().get())->m_float3ShaderSettingOutputId, "m_someFloat3");
     }
-    
+
+    TEST_F(MaterialTypeSourceDataTests, LoadAndStoreJson_CommonFields_Abstract)
+    {
+        // This is similar to LoadAndStoreJson_CommonFields_Direct, except it uses the Abstract format instead of Direct,
+        // meaning it has "materialShaderCode" and "lightingModel" fields instead of "shaders" and "materialPipelines".
+        // We mostly ignore the other fields that are already tested in LoadAndStoreJson_CommonFields_Direct.
+        const AZStd::string inputJson = R"(
+            {
+                "propertyLayout": {
+                    "propertyGroups": [
+                        {
+                            "name": "settings",
+                            "properties": [
+                                {
+                                    "name": "baseColor",
+                                    "type": "Color",
+                                    "connection": {
+                                        "type": "ShaderInput",
+                                        "name": "m_baseColor"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "lightingModel": "standard",
+                "materialShaderCode": "TestMaterial.azsli"
+            }
+        )";
+
+        MaterialTypeSourceData material;
+        JsonTestResult loadResult = LoadTestDataFromJson(material, inputJson);
+
+        EXPECT_EQ(material.GetFormat(), MaterialTypeSourceData::Format::Abstract);
+
+        EXPECT_EQ(material.GetPropertyLayout().m_propertyGroups.size(), 1);
+        EXPECT_TRUE(material.FindPropertyGroup("settings") != nullptr);
+        EXPECT_NE(material.FindProperty("settings.baseColor"), nullptr);
+        EXPECT_EQ(material.FindProperty("settings.baseColor")->GetName(), "baseColor");
+        EXPECT_EQ(material.FindProperty("settings.baseColor")->m_dataType, MaterialPropertyDataType::Color);
+
+        EXPECT_EQ(material.m_lightingModel, "standard");
+        EXPECT_EQ(material.m_materialShaderCode, "TestMaterial.azsli");
+
+        EXPECT_EQ(material.m_shaderCollection.size(), 0);
+        EXPECT_EQ(material.m_materialFunctorSourceData.size(), 0);
+        EXPECT_EQ(material.m_pipelineData.size(), 0);
+
+        AZStd::string outputJson;
+        JsonTestResult storeResult = StoreTestDataToJson(material, outputJson);
+        ExpectSimilarJson(inputJson, outputJson);
+    }
+
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_PropertyImagePath)
     {
         char inputJson[2048];
@@ -2400,4 +2526,143 @@ namespace UnitTest
         EXPECT_EQ("m_groupA_m_groupB_m_texture", textureMapShaderInput.GetStringView());
     }
 
+    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_InternalMaterialPipelineProperties)
+    {
+        const AZStd::string inputJson = R"(
+            {
+                "description": "",
+                "propertyLayout": {
+                    "propertyGroups": [
+                        {
+                            "name": "general",
+                            "displayName": "General",
+                            "description": "",
+                            "properties": [
+                                {
+                                    "name": "castShadows",
+                                    "type": "Bool",
+                                    "defaultValue": "true",
+                                    "connection": {
+                                        "type": "InternalProperty",
+                                        "name": "enableShadowCasting"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "materialPipelines": {
+                    "TestPipeline": {
+                        "properties": [
+                            {
+                                "name": "isTransparent",
+                                "type": "Bool"
+                            },
+                            {
+                                "name": "enableShadowCasting",
+                                "type": "Bool"
+                            }
+                        ],
+                        "shaders": [
+                            {
+                                "file": "test.shader",
+                                "tag": "test"
+                            }
+                        ]
+                    }
+                }
+            }
+        )";
+
+        MaterialTypeSourceData material;
+        LoadTestDataFromJson(material, inputJson);
+
+        Outcome<Data::Asset<MaterialTypeAsset>> materialTypeOutcome = material.CreateMaterialTypeAsset(Uuid::CreateRandom());
+        EXPECT_TRUE(materialTypeOutcome.IsSuccess());
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeOutcome.GetValue();
+
+        MaterialPropertyIndex index = materialTypeAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"general.castShadows"});
+        EXPECT_TRUE(index.IsValid());
+
+        MaterialPropertyDescriptor::OutputList connections = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetOutputConnections();
+        EXPECT_EQ(connections.size(), 1);
+        EXPECT_EQ(connections[0].m_type, MaterialPropertyOutputType::InternalProperty);
+        EXPECT_EQ(connections[0].m_materialPipelineName, Name("TestPipeline"));
+        EXPECT_EQ(connections[0].m_itemIndex.GetIndex(), 1);
+
+        EXPECT_EQ(materialTypeAsset->GetMaterialPipelinePayloads().size(), 1);
+        auto pipelineIter = materialTypeAsset->GetMaterialPipelinePayloads().find(Name("TestPipeline"));
+        EXPECT_TRUE(pipelineIter != materialTypeAsset->GetMaterialPipelinePayloads().end());
+        EXPECT_EQ(pipelineIter->second.m_materialPropertiesLayout->GetPropertyCount(), 2);
+        EXPECT_EQ(pipelineIter->second.m_materialPropertiesLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetName(), Name("isTransparent"));
+        EXPECT_EQ(pipelineIter->second.m_materialPropertiesLayout->GetPropertyDescriptor(MaterialPropertyIndex{1})->GetName(), Name("enableShadowCasting"));
+        EXPECT_EQ(pipelineIter->second.m_shaderCollection.size(), 1);
+        EXPECT_EQ(pipelineIter->second.m_shaderCollection[0].GetShaderTag(), Name("test"));
+        EXPECT_EQ(pipelineIter->second.m_shaderCollection[0].GetShaderAssetId(), m_testShaderAsset.GetId());
+    }
+
+    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_Error_InternalPropertyToShaderInput)
+    {
+        const AZStd::string inputJson = R"(
+            {
+                "description": "",
+                "propertyLayout": {
+                    "propertyGroups": [
+                        {
+                            "name": "general",
+                            "displayName": "General",
+                            "description": "",
+                            "properties": [
+                                {
+                                    "name": "castShadows",
+                                    "type": "Bool",
+                                    "defaultValue": "true",
+                                    "connection": {
+                                        "type": "InternalProperty",
+                                        "name": "enableShadowCasting"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "materialPipelines": {
+                    "TestPipeline": {
+                        "properties": [
+                            {
+                                "name": "opacity",
+                                "type": "Float",
+                                "connection": {
+                                    "type": "ShaderInput",
+                                    "name": "m_opacityValue"
+                                }
+                            },
+                            {
+                                "name": "enableShadowCasting",
+                                "type": "Bool"
+                            }
+                        ],
+                        "shaders": [
+                            {
+                                "file": "test.shader",
+                                "tag": "test"
+                            }
+                        ]
+                    }
+                }
+            }
+        )";
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Material pipeline 'TestPipeline' property 'opacity' uses unsupported connection type 'ShaderInput'");
+
+        MaterialTypeSourceData material;
+        LoadTestDataFromJson(material, inputJson);
+
+        Outcome<Data::Asset<MaterialTypeAsset>> materialTypeOutcome = material.CreateMaterialTypeAsset(Uuid::CreateRandom());
+        EXPECT_FALSE(materialTypeOutcome.IsSuccess());
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+    }
 }

@@ -188,16 +188,6 @@ namespace UnitTest
     };
 #endif
 
-    class DLLTestVirtualClass
-    {
-    public:
-        DLLTestVirtualClass()
-            : m_data(1) {}
-        virtual ~DLLTestVirtualClass() {}
-
-        int m_data;
-    };
-
     template <AZ::u32 size, AZ::u8 instance, size_t alignment = 16>
     struct CreationCounter
     {
