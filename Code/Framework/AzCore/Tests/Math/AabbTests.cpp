@@ -484,6 +484,81 @@ namespace UnitTest
         EXPECT_THAT(transformedAabb.GetMax(), IsClose(aabbContainingTransformedObb.GetMax()));
     }
 
+    TEST(MATH_AabbTransform, GetTransformedAabbMatrix3x4EqualsGetTransformedAabbTransform)
+    {
+        Vector3 min(2.0f, 3.0f, 5.0f);
+        Vector3 max(6.0f, 5.0f, 11.0f);
+        Aabb aabb = Aabb::CreateFromMinMax(min, max);
+
+        Quaternion rotation(0.34f, 0.46f, 0.58f, 0.58f);
+        Vector3 translation(-3.0f, -4.0f, -5.0f);
+
+        Transform transform = Transform::CreateFromQuaternionAndTranslation(rotation, translation);
+        transform.MultiplyByUniformScale(1.5f);
+        Aabb aabbFromTransform = aabb.GetTransformedAabb(transform);
+
+        Matrix3x4 matrix3x4 = Matrix3x4::CreateFromQuaternionAndTranslation(rotation, translation);
+        matrix3x4.MultiplyByScale(Vector3(1.5f));
+        Aabb aabbFromMatrix = aabb.GetTransformedAabb(matrix3x4);
+
+        EXPECT_THAT(aabbFromTransform.GetMin(), IsClose(aabbFromMatrix.GetMin()));
+        EXPECT_THAT(aabbFromTransform.GetMax(), IsClose(aabbFromMatrix.GetMax()));
+    }
+
+    TEST(MATH_AabbTransform, GetTransformedAabbMatrix3x4WorksWithLargeBounds)
+    {
+        // Create an AABB with really large bounds on the Y axis.
+        const Aabb aabb = Aabb::CreateFromMinMax(Vector3(0.0f, AZStd::numeric_limits<float>::lowest(), -10.0f),
+                                                 Vector3(100.0f, 100.0f, 10.0f));
+
+        // Set up a 45 degree rotation around Z so that the X and Y bounds are rotated.
+        const Quaternion rotation = Quaternion::CreateFromEulerDegreesXYZ(AZ::Vector3(0.0f, 0.0f, 45.0f));
+        // Set up a translation with detectable numbers in X and Y.
+        const Vector3 translation(1000.0f, 2000.0f, 0.0f);
+
+        // Transform the AABB using the given rotation and translation
+        const Matrix3x4 matrix3x4 = Matrix3x4::CreateFromQuaternionAndTranslation(rotation, translation);
+        const Aabb aabbFromMatrix = aabb.GetTransformedAabb(matrix3x4);
+
+        // The expected results on the X axis should go from < 1000 to a really large number,
+        // on the Y axis should go from a negative really large number to > 2000,
+        // and on the Z axis should remain -10 to 10.
+        // If this isn't working, the min on the X axis will be 0, and the max on the Y axis will be 0, because the really large
+        // numbers will destroy the precision needed to pick up the translation and the small X bounds.
+        const Vector3 expectedMin(929.289307f, -2.40615924e+38f, -10.0f);
+        const Vector3 expectedMax(2.40615965e+38f, 2141.42139f, 10.0f);
+
+        EXPECT_THAT(aabbFromMatrix.GetMin(), IsClose(expectedMin));
+        EXPECT_THAT(aabbFromMatrix.GetMax(), IsClose(expectedMax));
+    }
+
+    TEST(MATH_AabbTransform, GetTransformedAabbTransformWorksWithLargeBounds)
+    {
+        // Create an AABB with really large bounds on the Y axis.
+        const Aabb aabb =
+            Aabb::CreateFromMinMax(Vector3(0.0f, AZStd::numeric_limits<float>::lowest(), -10.0f), Vector3(100.0f, 100.0f, 10.0f));
+
+        // Set up a 45 degree rotation around Z so that the X and Y bounds are rotated.
+        const Quaternion rotation = Quaternion::CreateFromEulerDegreesXYZ(AZ::Vector3(0.0f, 0.0f, 45.0f));
+        // Set up a translation with detectable numbers in X and Y.
+        const Vector3 translation(1000.0f, 2000.0f, 0.0f);
+
+        // Transform the AABB using the given rotation and translation
+        const Transform transform = Transform::CreateFromQuaternionAndTranslation(rotation, translation);
+        const Aabb aabbFromTransform = aabb.GetTransformedAabb(transform);
+
+        // The expected results on the X axis should go from < 1000 to a really large number,
+        // on the Y axis should go from a negative really large number to > 2000,
+        // and on the Z axis should remain -10 to 10.
+        // If this isn't working, the min on the X axis will be 0, and the max on the Y axis will be 0, because the really large
+        // numbers will destroy the precision needed to pick up the translation and the small X bounds.
+        const Vector3 expectedMin(929.289307f, -2.40615924e+38f, -10.0f);
+        const Vector3 expectedMax(2.40615965e+38f, 2141.42139f, 10.0f);
+
+        EXPECT_THAT(aabbFromTransform.GetMin(), IsClose(expectedMin));
+        EXPECT_THAT(aabbFromTransform.GetMax(), IsClose(expectedMax));
+    }
+
     TEST(MATH_AabbTransform, MultiplyByScale)
     {
         Vector3 min(2.0f, 6.0f, 8.0f);

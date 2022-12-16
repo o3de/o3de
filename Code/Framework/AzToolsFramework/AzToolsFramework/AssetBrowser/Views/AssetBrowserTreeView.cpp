@@ -10,6 +10,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/ranges/split_view.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -324,6 +325,40 @@ namespace AzToolsFramework
                     curIndex = indexBelow(curIndex);
                 }
             }
+        }
+
+        const AssetBrowserEntry* AssetBrowserTreeView::GetEntryByPath(QStringView path)
+        {
+            QModelIndex current;
+            for (auto token : AZStd::ranges::split_view(path, '/'))
+            {
+                QStringView pathPart{ token.begin(), token.end() };
+                const int rows = model()->rowCount(current);
+                bool rowFound = false;
+                for (int row=0; row < rows; ++row)
+                {
+                    QModelIndex rowIdx = model()->index(row, 0, current);
+                    auto rowEntry = GetEntryFromIndex<AssetBrowserEntry>(rowIdx);
+                    if (rowEntry)
+                    {
+                        if (rowEntry->GetDisplayName() == pathPart)
+                        {
+                            current = rowIdx;
+                            rowFound = true;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        return nullptr;
+                    }
+                }
+                if (!rowFound)
+                {
+                    return nullptr;
+                }
+            }
+            return GetEntryFromIndex<AssetBrowserEntry>(current);
         }
 
         bool AssetBrowserTreeView::IsIndexExpandedByDefault(const QModelIndex& index) const

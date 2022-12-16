@@ -52,25 +52,13 @@ namespace AZ::Render
     bool EditorStateMeshDrawPacket::SetShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value)
     {
         // check if the material owns this option in any of its shaders, if so it can't be set externally
-        for (auto shaderCollectionIter : m_material->GetShaderCollections())
+        if (m_material->MaterialOwnsShaderOption(shaderOptionName))
         {
-            for (auto& shaderItem : shaderCollectionIter.second)
-            {
-                const RPI::ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
-                RPI::ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
-                if (index.IsValid())
-                {
-                    if (shaderItem.MaterialOwnsShaderOption(index))
-                    {
-                        return false;
-                    }
-                }
-            }
+            return false;
         }
 
-        for (auto shaderCollectionIter : m_material->GetShaderCollections())
-        {
-            for (auto& shaderItem : shaderCollectionIter.second)
+        m_material->ForAllShaderItems(
+            [&](const Name&, const RPI::ShaderCollection::Item& shaderItem)
             {
                 const RPI::ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
                 RPI::ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
@@ -92,8 +80,8 @@ namespace AZ::Render
                         itEntry->second = value;
                     }
                 }
-            }
-        }
+                return true;
+            });
 
         return true;
     }
@@ -271,7 +259,7 @@ namespace AZ::Render
                 m_perDrawSrgs.push_back(drawSrg);
             }
 
-            if (materialPipelineName != RPI::MaterialPipelineNameCommon)
+            if (materialPipelineName != RPI::MaterialPipelineNone)
             {
                 RHI::DrawFilterTag pipelineTag = parentScene.GetDrawFilterTagRegistry()->AcquireTag(materialPipelineName);
                 AZ_Assert(pipelineTag.IsValid(), "Could not acquire pipeline filter tag '%s'.", materialPipelineName.GetCStr());
@@ -299,22 +287,22 @@ namespace AZ::Render
         }
 
         // TODO(MaterialPipeline): We might want to detect duplicate ShaderItem objects here, and merge them to avoid redundant RHI DrawItems.
-        for (auto& [materialPipelineName, shaderCollection] : m_material->GetShaderCollections())
-        {
-            for (auto& shaderItem : shaderCollection)
+        m_material->ForAllShaderItems(
+            [&](const Name& materialPipelineName, const RPI::ShaderCollection::Item& shaderItem)
             {
                 if (shaderItem.IsEnabled())
                 {
                     if (shaderList.size() == RHI::DrawPacketBuilder::DrawItemCountMax)
                     {
-                        AZ_Error("EditorStateMeshDrawPacket", false, "Material has more than the limit of %d active shader items.", RHI::DrawPacketBuilder::DrawItemCountMax);
+                        AZ_Error("MeshDrawPacket", false, "Material has more than the limit of %d active shader items.", RHI::DrawPacketBuilder::DrawItemCountMax);
                         return false;
                     }
 
                     appendShader(shaderItem, materialPipelineName);
                 }
-            }
-        }
+
+                return true;
+            });
 
         m_drawPacket = drawPacketBuilder.End();
 
