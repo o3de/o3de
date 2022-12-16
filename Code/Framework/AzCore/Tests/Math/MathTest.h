@@ -17,3 +17,21 @@
     #define AZ_MATH_TEST_START_TRACE_SUPPRESSION
     #define AZ_MATH_TEST_STOP_TRACE_SUPPRESSION(x)
 #endif
+
+namespace UnitTest::Constants
+{
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+    // Larger tolerance is needed when using NEON.
+    static const float Tolerance = 0.005f;
+    // Low precision from NEON causes some estimate functions,
+    // like SetLengthEstimate(), to need larger tolerance.
+    static const float ToleranceEstimateFuncs = 0.05f;
+    // Low precision from NEON InvSqrt() leads to AngleDeg tests to need
+    // large tolerance since converting to degrees exacerbates the low precision.
+    static const float ToleranceAngleDeg = 0.2f;
+#else
+    static const float Tolerance = AZ::Constants::Tolerance;
+    static const float ToleranceEstimateFuncs = AZ::Constants::Tolerance;
+    static const float ToleranceAngleDeg = AZ::Constants::Tolerance;
+#endif
+}

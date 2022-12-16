@@ -43,7 +43,8 @@ namespace AZ
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::FromVec3(Vec3::FloatArgType value)
         {
-            return value;
+            // Comming from a Vec3 the last element could be garbage.
+            return NeonQuad::ReplaceFourth(value, 0.0f); // {value.x, value.y, value.z, 0.0f}
         }
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::LoadAligned(const float* __restrict addr)
@@ -116,6 +117,26 @@ namespace AZ
             return NeonQuad::SelectFourth(value);
         }
 
+        AZ_MATH_INLINE int32_t Vec4::SelectFirst(Int32ArgType value)
+        {
+            return NeonQuad::SelectFirst(value);
+        }
+
+        AZ_MATH_INLINE int32_t Vec4::SelectSecond(Int32ArgType value)
+        {
+            return NeonQuad::SelectSecond(value);
+        }
+
+        AZ_MATH_INLINE int32_t Vec4::SelectThird(Int32ArgType value)
+        {
+            return NeonQuad::SelectThird(value);
+        }
+
+        AZ_MATH_INLINE int32_t Vec4::SelectFourth(Int32ArgType value)
+        {
+            return NeonQuad::SelectFourth(value);
+        }
+
         AZ_MATH_INLINE Vec4::FloatType Vec4::Splat(float value)
         {
             return NeonQuad::Splat(value);
@@ -142,6 +163,26 @@ namespace AZ
         }
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::SplatFourth(FloatArgType value)
+        {
+            return NeonQuad::SplatFourth(value);
+        }
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::SplatFirst(Int32ArgType value)
+        {
+            return NeonQuad::SplatFirst(value);
+        }
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::SplatSecond(Int32ArgType value)
+        {
+            return NeonQuad::SplatSecond(value);
+        }
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::SplatThird(Int32ArgType value)
+        {
+            return NeonQuad::SplatThird(value);
+        }
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::SplatFourth(Int32ArgType value)
         {
             return NeonQuad::SplatFourth(value);
         }
@@ -182,6 +223,46 @@ namespace AZ
         }
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceFourth(FloatArgType a, FloatArgType b)
+        {
+            return NeonQuad::ReplaceFourth(a, b);
+        }
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceFirst(Int32ArgType a, int32_t b)
+        {
+            return NeonQuad::ReplaceFirst(a, b);
+        }
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceFirst(Int32ArgType a, Int32ArgType b)
+        {
+            return NeonQuad::ReplaceFirst(a, b);
+        }
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceSecond(Int32ArgType a, int32_t b)
+        {
+            return NeonQuad::ReplaceSecond(a, b);
+        }
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceSecond(Int32ArgType a, Int32ArgType b)
+        {
+            return NeonQuad::ReplaceSecond(a, b);
+        }
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceThird(Int32ArgType a, int32_t b)
+        {
+            return NeonQuad::ReplaceThird(a, b);
+        }
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceThird(Int32ArgType a, Int32ArgType b)
+        {
+            return NeonQuad::ReplaceThird(a, b);
+        }
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceFourth(Int32ArgType a, int32_t b)
+        {
+            return NeonQuad::ReplaceFourth(a, b);
+        }
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceFourth(Int32ArgType a, Int32ArgType b)
         {
             return NeonQuad::ReplaceFourth(a, b);
         }

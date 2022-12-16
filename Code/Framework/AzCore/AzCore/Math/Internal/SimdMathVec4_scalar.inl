@@ -146,6 +146,30 @@ namespace AZ
         }
 
 
+        AZ_MATH_INLINE int32_t Vec4::SelectFirst(Int32ArgType value)
+        {
+            return value.v[0];
+        }
+
+
+        AZ_MATH_INLINE int32_t Vec4::SelectSecond(Int32ArgType value)
+        {
+            return value.v[1];
+        }
+
+
+        AZ_MATH_INLINE int32_t Vec4::SelectThird(Int32ArgType value)
+        {
+            return value.v[2];
+        }
+
+
+        AZ_MATH_INLINE int32_t Vec4::SelectFourth(Int32ArgType value)
+        {
+            return value.v[3];
+        }
+
+
         AZ_MATH_INLINE Vec4::FloatType Vec4::Splat(float value)
         {
             return LoadImmediate(value, value, value, value);
@@ -177,6 +201,30 @@ namespace AZ
 
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::SplatFourth(FloatArgType value)
+        {
+            return Splat(value.v[3]);
+        }
+
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::SplatFirst(Int32ArgType value)
+        {
+            return Splat(value.v[0]);
+        }
+
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::SplatSecond(Int32ArgType value)
+        {
+            return Splat(value.v[1]);
+        }
+
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::SplatThird(Int32ArgType value)
+        {
+            return Splat(value.v[2]);
+        }
+
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::SplatFourth(Int32ArgType value)
         {
             return Splat(value.v[3]);
         }
@@ -225,6 +273,54 @@ namespace AZ
 
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceFourth(FloatArgType a, FloatArgType b)
+        {
+            return {{ a.v[0], a.v[1], a.v[2], b.v[3] }};
+        }
+
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceFirst(Int32ArgType a, int32_t b)
+        {
+            return {{ b, a.v[1], a.v[2], a.v[3] }};
+        }
+
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceFirst(Int32ArgType a, Int32ArgType b)
+        {
+            return {{ b.v[0], a.v[1], a.v[2], a.v[3] }};
+        }
+
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceSecond(Int32ArgType a, int32_t b)
+        {
+            return {{ a.v[0], b, a.v[2], a.v[3] }};
+        }
+
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceSecond(Int32ArgType a, Int32ArgType b)
+        {
+            return {{ a.v[0], b.v[1], a.v[2], a.v[3] }};
+        }
+
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceThird(Int32ArgType a, int32_t b)
+        {
+            return {{ a.v[0], a.v[1], b, a.v[3] }};
+        }
+
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceThird(Int32ArgType a, Int32ArgType b)
+        {
+            return {{ a.v[0], a.v[1], b.v[2], a.v[3] }};
+        }
+
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceFourth(Int32ArgType a, int32_t b)
+        {
+            return {{ a.v[0], a.v[1], a.v[2], b }};
+        }
+
+
+        AZ_MATH_INLINE Vec4::Int32Type Vec4::ReplaceFourth(Int32ArgType a, Int32ArgType b)
         {
             return {{ a.v[0], a.v[1], a.v[2], b.v[3] }};
         }

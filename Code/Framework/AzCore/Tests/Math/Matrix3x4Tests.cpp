@@ -729,11 +729,7 @@ namespace UnitTest
 
     INSTANTIATE_TEST_CASE_P(MATH_Matrix3x4, Matrix3x4InvertFullFixture, ::testing::ValuesIn(MathTestData::NonOrthogonalMatrix3x4s));
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_Matrix3x4, DISABLED_GetInverseFullSingularMatrix)
-#else
     TEST(MATH_Matrix3x4, GetInverseFullSingularMatrix)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         const AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateFromValue(1.4f);
         const AZ::Matrix3x4 inverse = matrix.GetInverseFull();
@@ -999,25 +995,33 @@ namespace UnitTest
         EXPECT_NEAR(matrix2.GetTranspose3x3().GetDeterminant3x3(), expected2, 1e-3f);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_Matrix3x4, DISABLED_IsFinite)
-#else
     TEST(MATH_Matrix3x4, IsFinite)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateFromQuaternionAndTranslation(
             AZ::Quaternion(-0.42f, -0.46f, 0.66f, 0.42f),
             AZ::Vector3(0.8f, -2.3f, 2.2f)
         );
         EXPECT_TRUE(matrix.IsFinite());
+
+        const float f32NaN = NAN;
+        EXPECT_TRUE(AZStd::isnan(f32NaN));
+        EXPECT_FALSE(AZ::IsFiniteFloat(f32NaN));
+
+        const float f32Inf = INFINITY;
+        EXPECT_TRUE(AZStd::isinf(f32Inf));
+        EXPECT_FALSE(AZ::IsFiniteFloat(f32Inf));
+
         for (int row = 0; row < 3; row++)
         {
             for (int col = 0; col < 3; col++)
             {
-                float value = matrix.GetElement(row, col);
-                matrix.SetElement(row, col, acosf(2.0f));
+                const float value = matrix.GetElement(row, col);
+                matrix.SetElement(row, col, f32NaN);
+                EXPECT_FALSE(matrix.IsFinite());
+                matrix.SetElement(row, col, f32Inf);
                 EXPECT_FALSE(matrix.IsFinite());
                 matrix.SetElement(row, col, value);
+                EXPECT_TRUE(matrix.IsFinite());
             }
         }
     }

@@ -342,11 +342,11 @@ namespace UnitTest
         case 4:
             EXPECT_NEAR(testStoreValues[3], 4.0f, 0.01f);
         case 3:
-            EXPECT_TRUE(std::isnan(testStoreValues[2]));
+            EXPECT_TRUE(AZStd::isnan(testStoreValues[2]));
         case 2:
             EXPECT_NEAR(testStoreValues[1], -4.0f, 0.01f);
         case 1:
-            EXPECT_TRUE(std::isnan(testStoreValues[0]));
+            EXPECT_TRUE(AZStd::isnan(testStoreValues[0]));
             break;
         }
     }
@@ -1095,7 +1095,7 @@ namespace UnitTest
             case 2:
                 EXPECT_NEAR(testStoreValues[1], 4.0f, 0.002f);
             case 1:
-                EXPECT_TRUE(std::isnan(testStoreValues[0]));
+                EXPECT_TRUE(AZStd::isnan(testStoreValues[0]));
                 break;
             }
         }
@@ -1108,13 +1108,13 @@ namespace UnitTest
             switch (VectorType::ElementCount)
             {
             case 4:
-                EXPECT_TRUE(std::isnan(testStoreValues[3]) || std::isinf(testStoreValues[3]));
+                EXPECT_TRUE(AZStd::isnan(testStoreValues[3]) || AZStd::isinf(testStoreValues[3]));
             case 3:
                 EXPECT_NEAR(testStoreValues[2], 1.0f, 0.002f);
             case 2:
                 EXPECT_NEAR(testStoreValues[1], 0.25f, 0.002f);
             case 1:
-                EXPECT_TRUE(std::isnan(testStoreValues[0]));
+                EXPECT_TRUE(AZStd::isnan(testStoreValues[0]));
                 break;
             }
         }
@@ -1250,9 +1250,9 @@ namespace UnitTest
             switch (VectorType::ElementCount)
             {
             case 4:
-                EXPECT_TRUE(std::isnan(testStoreValues2[3]));
+                EXPECT_TRUE(AZStd::isnan(testStoreValues2[3]));
             case 3:
-                EXPECT_TRUE(std::isnan(testStoreValues2[2]));
+                EXPECT_TRUE(AZStd::isnan(testStoreValues2[2]));
             case 2:
                 EXPECT_NEAR(testStoreValues2[1], 0.0f, precision);
             case 1:
@@ -1520,7 +1520,7 @@ namespace UnitTest
         typename VectorType::FloatType testVector1 = VectorType::CastToFloat(sourceVector);
         VectorType::StoreUnaligned(testStoreFloatValues, testVector1);
 
-        EXPECT_TRUE(std::isnan(testStoreFloatValues[0]));
+        EXPECT_TRUE(AZStd::isnan(testStoreFloatValues[0]));
         if constexpr (VectorType::ElementCount > 1)
         {
             EXPECT_NEAR(testStoreFloatValues[1], 0.0f, 0.002f);
@@ -1821,38 +1821,22 @@ namespace UnitTest
         TestAddSubMulInt<Simd::Vec4>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestNotFloatVec1)
-#else
     TEST(MATH_SimdMath, TestNotFloatVec1)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestNotFloat<Simd::Vec1>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestNotFloatVec2)
-#else
     TEST(MATH_SimdMath, TestNotFloatVec2)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestNotFloat<Simd::Vec2>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestNotFloatVec3)
-#else
     TEST(MATH_SimdMath, TestNotFloatVec3)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestNotFloat<Simd::Vec3>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestNotFloatVec4)
-#else
     TEST(MATH_SimdMath, TestNotFloatVec4)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestNotFloat<Simd::Vec4>();
     }
@@ -2217,38 +2201,22 @@ namespace UnitTest
         TestReciprocalFloat<Simd::Vec4>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestSqrtInvSqrtFloatVec1)
-#else
     TEST(MATH_SimdMath, TestSqrtInvSqrtFloatVec1)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestSqrtInvSqrtFloat<Simd::Vec1>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestSqrtInvSqrtFloatVec2)
-#else
     TEST(MATH_SimdMath, TestSqrtInvSqrtFloatVec2)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestSqrtInvSqrtFloat<Simd::Vec2>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestSqrtInvSqrtFloatVec3)
-#else
     TEST(MATH_SimdMath, TestSqrtInvSqrtFloatVec3)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestSqrtInvSqrtFloat<Simd::Vec3>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestSqrtInvSqrtFloatVec4)
-#else
     TEST(MATH_SimdMath, TestSqrtInvSqrtFloatVec4)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestSqrtInvSqrtFloat<Simd::Vec4>();
     }
@@ -2303,20 +2271,12 @@ namespace UnitTest
         TestAcos<Simd::Vec2>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestAcosVec3)
-#else
     TEST(MATH_SimdMath, TestAcosVec3)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestAcos<Simd::Vec3>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestAcosVec4)
-#else
     TEST(MATH_SimdMath, TestAcosVec4)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestAcos<Simd::Vec4>();
     }
@@ -2415,7 +2375,7 @@ namespace UnitTest
             EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
             EXPECT_NEAR(testStoreValues[1], 0.0f, 0.002f);
             EXPECT_NEAR(testStoreValues[2], 1.0f, 0.002f);
-            EXPECT_NEAR(testStoreValues[3], 0.0f, 0.002f);
+            // The 4th element value cannot be guaranteed, it generally sets garbage.
         }
 
         {
@@ -2425,7 +2385,7 @@ namespace UnitTest
             EXPECT_NEAR(testStoreValues[0], 1.0f, 0.002f);
             EXPECT_NEAR(testStoreValues[1], 0.0f, 0.002f);
             EXPECT_NEAR(testStoreValues[2], 0.0f, 0.002f);
-            EXPECT_NEAR(testStoreValues[3], 0.0f, 0.002f);
+            // The 4th element value cannot be guaranteed, it generally sets garbage.
         }
 
         {
@@ -2435,7 +2395,7 @@ namespace UnitTest
             EXPECT_NEAR(testStoreValues[0], 0.0f, 0.002f);
             EXPECT_NEAR(testStoreValues[1], 1.0f, 0.002f);
             EXPECT_NEAR(testStoreValues[2], 0.0f, 0.002f);
-            EXPECT_NEAR(testStoreValues[3], 0.0f, 0.002f);
+            // The 4th element value cannot be guaranteed, it generally sets garbage.
         }
     }
 
@@ -2799,38 +2759,22 @@ namespace UnitTest
         TestConvertToFloat<Simd::Vec4>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestCastVec1)
-#else
     TEST(MATH_SimdMath, TestCastVec1)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestCast<Simd::Vec1>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestCastVec2)
-#else
     TEST(MATH_SimdMath, TestCastVec2)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestCast<Simd::Vec2>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestCastVec3)
-#else
     TEST(MATH_SimdMath, TestCastVec3)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestCast<Simd::Vec3>();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_SimdMath, DISABLED_TestCastVec4)
-#else
     TEST(MATH_SimdMath, TestCastVec4)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         TestCast<Simd::Vec4>();
     }
