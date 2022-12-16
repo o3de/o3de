@@ -196,6 +196,7 @@ namespace AtomToolsFramework
 
     ModularViewportCameraControllerInstance::~ModularViewportCameraControllerInstance()
     {
+        m_cameraViewMatrixChangeHandler.Disconnect();
         AzToolsFramework::ViewportInteraction::ViewportInteractionNotificationBus::Handler::BusDisconnect();
         ModularViewportCameraControllerRequestBus::Handler::BusDisconnect();
     }
@@ -389,8 +390,7 @@ namespace AtomToolsFramework
         m_targetCamera.m_pivot = worldFromLocal.GetTranslation();
         m_targetRoll = angles.GetY();
 
-        m_cameraViewMatrixChangeHandler.Disconnect();
-        m_modularCameraViewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
+        ReconnectViewMatrixChangeHandler();
     }
 
     void ModularViewportCameraControllerInstance::StopTrackingTransform()
@@ -403,8 +403,7 @@ namespace AtomToolsFramework
 
         m_storedCamera.reset();
 
-        m_cameraViewMatrixChangeHandler.Disconnect();
-        m_modularCameraViewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
+        ReconnectViewMatrixChangeHandler();
     }
 
     bool ModularViewportCameraControllerInstance::IsTrackingTransform() const
@@ -415,6 +414,12 @@ namespace AtomToolsFramework
     void ModularViewportCameraControllerInstance::OnViewportFocusOut()
     {
         ResetCameras();
+    }
+
+    void ModularViewportCameraControllerInstance::ReconnectViewMatrixChangeHandler()
+    {
+        m_cameraViewMatrixChangeHandler.Disconnect();
+        m_modularCameraViewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
     }
 
     AZ::Transform PlaceholderModularCameraViewportContextImpl::GetCameraTransform() const

@@ -139,6 +139,9 @@ namespace AtomToolsFramework
         //! transform (this is usually zero).
         AZ::Transform CombinedCameraTransform() const;
 
+        //!
+        void ReconnectViewMatrixChangeHandler();
+
         //! The current mode the camera controller is in.
         enum class CameraMode
         {
