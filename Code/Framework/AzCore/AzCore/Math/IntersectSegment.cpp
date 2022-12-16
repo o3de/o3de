@@ -724,7 +724,7 @@ namespace AZ
 
         float n = rayDir.Dot(AQ);
 
-        const float EPSILON = 0.00001f;
+        const float EPSILON = 0.0001f;
 
         // point RP on the ray: RP(t) = rayOrigin + t * rayDir
         // point CP on the cone surface: similar triangle property
