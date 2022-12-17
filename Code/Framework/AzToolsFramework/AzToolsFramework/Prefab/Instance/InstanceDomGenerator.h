@@ -64,9 +64,9 @@ namespace AzToolsFramework
             void GenerateContainerEntityDomFromHighestAncestorOrSelf(PrefabDom& containerEntityDom, const Instance& instance) const;
 
             //! Given a climb-up path and a provided DOM, populates the DOM with the container entity DOM as seen
-            //! from the highest ancestor template DOM that contains the data.
-            //! @param[out] containerEntityDom The DOM of the container entity as seen from the highest ancestor.
-            //! @param climbUpResult The given climb-up object that contains a path from an instance to the root.
+            //! from the template DOM of the highest ancestor that contains the data, or from the instance if it's the root.
+            //! @param[out] containerEntityDom The DOM of the container entity as seen from the highest ancestor or root.
+            //! @param climbUpResult The given climb-up object that contains the root and a path from an instance to the root.
             void GenerateContainerEntityDomFromClimbUpResult(PrefabDom& containerEntityDom, const InstanceClimbUpResult& climbUpResult) const;
 
             static AzFramework::EntityContextId s_editorEntityContextId;

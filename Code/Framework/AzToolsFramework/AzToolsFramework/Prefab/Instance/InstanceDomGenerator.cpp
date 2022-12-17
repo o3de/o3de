@@ -248,7 +248,7 @@ namespace AzToolsFramework
                 "Prefab - InstanceDomGenerator::GenerateContainerEntityDomFromClimbUpResult - "
                 "Called with no intance.");
 
-            // Get the instance's container entity DOM from the top-most ancestor that has it or from the instance itself.
+            // Try and retrieve the instance's container entity DOM from the top-most ancestor that has it.
             // An ancestor DOM may not have the data if it has deleted the instance as an override
             if (!climbUpResult.m_climbedInstances.empty())
             {
@@ -280,9 +280,12 @@ namespace AzToolsFramework
                 }
             }
 
+            // Check if the container entity DOM has been found in an ancestor.
+            // Otherwise, retrieve the container entity DOM from the instance itself.
+            // The container entity DOM may not be found if the instance has no ancestors,
+            // or if all ancestors have deleted the instance as an override
             if (!containerEntityDom.IsObject())
             {
-                // Retrieve the container entity DOM from the instance itself
                 const AZStd::string containerEntityName = AZStd::string::format("/%s", PrefabDomUtils::ContainerEntityName);
                 PrefabDomPath containerEntityPath(containerEntityName.c_str());
                 {
