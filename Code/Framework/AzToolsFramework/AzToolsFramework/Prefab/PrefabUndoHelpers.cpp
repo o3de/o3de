@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntityAsOverride.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoDelete.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoDeleteAsOverride.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoEntityOverrides.h>
 
 namespace AzToolsFramework
 {
@@ -101,6 +102,18 @@ namespace AzToolsFramework
                 PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate("Undo Updating Entity");
                 state->SetParent(undoBatch);
                 state->Capture(entityDomBeforeUpdatingEntity, entityDomAfterUpdatingEntity, entityId);
+                state->Redo();
+            }
+
+            void UpdateEntityListAsOverride(
+                const AZStd::vector<const AZ::Entity*>& entityList,
+                Instance& owningInstance,
+                const Instance& focusedInstance,
+                UndoSystem::URSequencePoint* undoBatch)
+            {
+                PrefabUndoEntityOverrides* state = aznew PrefabUndoEntityOverrides("Undo Updating Entity List As Override");
+                state->SetParent(undoBatch);
+                state->Capture(entityList, owningInstance, focusedInstance);
                 state->Redo();
             }
 

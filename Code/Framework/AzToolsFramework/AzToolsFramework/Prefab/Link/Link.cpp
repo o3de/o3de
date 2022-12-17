@@ -37,6 +37,7 @@ namespace AzToolsFramework
             , m_instanceName(AZStd::move(other.m_instanceName))
             , m_prefabSystemComponentInterface(AZStd::move(other.m_prefabSystemComponentInterface))
             , m_linkPatchesTree(AZStd::move(other.m_linkPatchesTree))
+            , m_patchIndexCounter(AZStd::move(other.m_patchIndexCounter))
         {
             other.m_prefabSystemComponentInterface = nullptr;
         }
@@ -56,6 +57,7 @@ namespace AzToolsFramework
                     "It is a requirement for the Link class. Check that it is being correctly initialized.");
                 other.m_prefabSystemComponentInterface = nullptr;
                 m_linkPatchesTree = AZStd::move(other.m_linkPatchesTree);
+                m_patchIndexCounter = AZStd::move(other.m_patchIndexCounter);
             }
             return *this;
         }
@@ -283,6 +285,35 @@ namespace AzToolsFramework
             }
         }
 
+        PrefabOverridePrefixTree Link::GenerateOverrideSubTreeForEntity(
+            const PrefabDomValue& subpathPatches, const AZStd::string& pathToEntity)
+        {
+            PrefabOverridePrefixTree prefixTree;
+            if (subpathPatches.IsArray())
+            {
+                rapidjson::GenericArray patchesArray = subpathPatches.GetArray();
+                for (rapidjson::SizeType i = 0; i < patchesArray.Size(); i++)
+                {
+                    PrefabDom patchEntry;
+                    patchEntry.CopyFrom(patchesArray[i], patchEntry.GetAllocator());
+
+                    auto pathIter = patchEntry.FindMember("path");
+                    if (pathIter != patchEntry.MemberEnd())
+                    {
+                        AZStd::string subPath = pathIter->value.GetString(); // eg: '/Components/Component_[123]/Child Sort Order/0'
+                        AZStd::string fullPath = pathToEntity + subPath;
+                        pathIter->value.SetString(fullPath.c_str(), static_cast<rapidjson::SizeType>(fullPath.length()),
+                            patchEntry.GetAllocator());
+
+                        PrefabOverrideMetadata overrideMetadata(AZStd::move(patchEntry), m_patchIndexCounter++);
+                        // Subpath is used to build the subtree within an entity scope.
+                        prefixTree.SetValue(AZ::Dom::Path(subPath), AZStd::move(overrideMetadata));
+                    }
+                }
+            }
+            return prefixTree;
+        }
+
         void Link::RebuildLinkPatchesTree(const PrefabDomValue& patches)
         {
             m_linkPatchesTree.Clear();
@@ -298,7 +329,7 @@ namespace AzToolsFramework
                     if (path != patchEntry.MemberEnd())
                     {
                         AZ::Dom::Path domPath(path->value.GetString());
-                        PrefabOverrideMetadata overrideMetadata(AZStd::move(patchEntry), i);
+                        PrefabOverrideMetadata overrideMetadata(AZStd::move(patchEntry), m_patchIndexCounter++);
                         m_linkPatchesTree.SetValue(domPath, AZStd::move(overrideMetadata));
                     }
                 }
