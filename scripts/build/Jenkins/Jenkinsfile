@@ -29,6 +29,8 @@ COMMIT_DOMAIN_NAME = ''
 COMMIT_ORGANIZATION_NAME = ''
 COMMIT_REPOSITORY_NAME = ''
 
+PROCESSED_REPOS = []
+
 @NonCPS
 def doit()
 {
@@ -362,6 +364,8 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
 def ExecuteControlFile(controlFile, repoName) {
     echo "${repoName}: ExecuteControlFile(${controlFile})"
 
+    PROCESSED_REPOS.add(repoName)
+
     def ext = ''
     if(env.IS_UNIX) {
         ext = '.sh'
@@ -412,6 +416,12 @@ def ExecuteControlFile(controlFile, repoName) {
     if(controlFile.REPOS) {
         echo 'REPOS'
         controlFile.REPOS.each { repo ->
+            //stop cyclical repos
+            if(PROCESSED_REPOS.contains(repo.NAME)) {
+                echo "Already processed ${repo.NAME}"
+                return
+            }
+
             def repoControlFile = {}
             def foundRepoControlFile = false
             dir(repo.NAME) {
@@ -614,7 +624,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             ExecuteControlFile(engineAutomatedTestingControlFile, ENGINE_REPOSITORY_NAME)
         }
 
-        //if we are not committing to the engine repo then pull that repo in here
+        //lastly, if we are not committing to the engine repo then pull that repo in here
         if(COMMIT_REPOSITORY_NAME != ENGINE_REPOSITORY_NAME) {
             echo "Commit repo: ${scm.userRemoteConfigs.url[0]}"
             def automatedTestingControlFile = {}
