@@ -8,6 +8,8 @@
 
 #include <EditorViewportSettings.h>
 
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -64,6 +66,8 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraNearPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/NearPlaneDistance";
     constexpr AZStd::string_view CameraFarPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/FarPlaneDistance";
     constexpr AZStd::string_view CameraFovDegreesSetting = "/Amazon/Preferences/Editor/Camera/FovDegrees";
+    constexpr AZStd::string_view CameraGoToPositionInstantlySetting = "/Amazon/Preferences/Editor/Camera/GoToPositionInstantly";
+    constexpr AZStd::string_view CameraGoToPositionDurationSetting = "/Amazon/Preferences/Editor/Camera/GoToPositionDuration";
 
     struct EditorViewportSettingsCallbacksImpl : public EditorViewportSettingsCallbacks
     {
@@ -80,7 +84,18 @@ namespace SandboxEditor
                         {
                             m_angleSnappingChanged.Signal(AngleSnappingEnabled());
                         }
-                    });
+                    }
+                );
+
+                m_cameraSpeedScaleNotifyEventHandler = registry->RegisterNotifier(
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+                    {
+                        if (IsPathAncestorDescendantOrEqual(CameraSpeedScaleSetting, notifyEventArgs.m_jsonKeyPath))
+                        {
+                            m_cameraSpeedScaleChanged.Signal(CameraSpeedScale());
+                        }
+                    }
+                );
 
                 m_gridSnappingNotifyEventHandler = registry->RegisterNotifier(
                     [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
@@ -89,7 +104,8 @@ namespace SandboxEditor
                         {
                             m_gridSnappingChanged.Signal(GridSnappingEnabled());
                         }
-                    });
+                    }
+                );
 
                 m_farPlaneDistanceNotifyEventHandler = registry->RegisterNotifier(
                     [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
@@ -98,7 +114,8 @@ namespace SandboxEditor
                         {
                             m_farPlaneChanged.Signal(CameraDefaultFarPlaneDistance());
                         }
-                    });
+                    }
+                );
 
                 m_nearPlaneDistanceNotifyEventHandler = registry->RegisterNotifier(
                     [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
@@ -107,7 +124,8 @@ namespace SandboxEditor
                         {
                             m_nearPlaneChanged.Signal(CameraDefaultNearPlaneDistance());
                         }
-                    });
+                    }
+                );
 
                 m_perspectiveNotifyEventHandler = registry->RegisterNotifier(
                     [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
@@ -116,13 +134,24 @@ namespace SandboxEditor
                         {
                             m_perspectiveChanged.Signal(CameraDefaultFovRadians());
                         }
-                    });
+                    }
+                );
             }
         }
 
         void SetAngleSnappingChangedEvent(AngleSnappingChangedEvent::Handler& handler) override
         {
             handler.Connect(m_angleSnappingChanged);
+        }
+
+        void SetCameraSpeedScaleChangedEvent(CameraSpeedScaleChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_cameraSpeedScaleChanged);
+        }
+
+        void SetGridShowingChangedEvent(GridShowingChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_gridShowingChanged);
         }
 
         void SetGridSnappingChangedEvent(GridSnappingChangedEvent::Handler& handler) override
@@ -146,12 +175,16 @@ namespace SandboxEditor
         }
 
         AngleSnappingChangedEvent m_angleSnappingChanged;
+        CameraSpeedScaleChangedEvent m_cameraSpeedScaleChanged;
+        GridSnappingChangedEvent m_gridShowingChanged;
         GridSnappingChangedEvent m_gridSnappingChanged;
         PerspectiveChangedEvent m_perspectiveChanged;
         NearFarPlaneChangedEvent m_farPlaneChanged;
         NearFarPlaneChangedEvent m_nearPlaneChanged;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_angleSnappingNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_cameraSpeedScaleNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_farPlaneDistanceNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_gridShowingNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_gridSnappingNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_nearPlaneDistanceNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_perspectiveNotifyEventHandler;
@@ -460,6 +493,26 @@ namespace SandboxEditor
         AzToolsFramework::SetRegistry(CameraDefaultOrbitDistanceSetting, distance);
     }
 
+    bool CameraGoToPositionInstantlyEnabled()
+    {
+        return AzToolsFramework::GetRegistry(CameraGoToPositionInstantlySetting, false);
+    }
+
+    void SetCameraGoToPositionInstantlyEnabled(const bool instant)
+    {
+        AzToolsFramework::SetRegistry(CameraGoToPositionInstantlySetting, instant);
+    }
+
+    float CameraGoToPositionDuration()
+    {
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraGoToPositionDurationSetting, 1.0));
+    }
+
+    void SetCameraGoToPositionDuration(const float duration)
+    {
+        AzToolsFramework::SetRegistry(CameraGoToPositionDurationSetting, duration);
+    }
+
     AzFramework::InputChannelId CameraTranslateForwardChannelId()
     {
         return AzFramework::InputChannelId(
@@ -619,7 +672,7 @@ namespace SandboxEditor
         return aznumeric_caster(AzToolsFramework::GetRegistry(CameraNearPlaneDistanceSetting, 0.1));
     }
 
-    void SetCameraDefaultNearPlaneDistance(float distance)
+    void SetCameraDefaultNearPlaneDistance(const float distance)
     {
         AzToolsFramework::SetRegistry(CameraNearPlaneDistanceSetting, aznumeric_cast<double>(distance));
     }
@@ -629,7 +682,7 @@ namespace SandboxEditor
         return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFarPlaneDistanceSetting, 100.0));
     }
 
-    void SetCameraDefaultFarPlaneDistance(float distance)
+    void SetCameraDefaultFarPlaneDistance(const float distance)
     {
         AzToolsFramework::SetRegistry(CameraFarPlaneDistanceSetting, aznumeric_cast<double>(distance));
     }
@@ -639,7 +692,7 @@ namespace SandboxEditor
         return AZ::DegToRad(CameraDefaultFovDegrees());
     }
 
-    void SetCameraDefaultFovRadians(float fovRadians)
+    void SetCameraDefaultFovRadians(const float fovRadians)
     {
         SetCameraDefaultFovDegrees(AZ::RadToDeg(fovRadians));
     }
@@ -649,7 +702,7 @@ namespace SandboxEditor
         return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovDegreesSetting, aznumeric_cast<double>(60.0)));
     }
 
-    void SetCameraDefaultFovDegrees(float fovDegrees)
+    void SetCameraDefaultFovDegrees(const float fovDegrees)
     {
         AzToolsFramework::SetRegistry(CameraFovDegreesSetting, aznumeric_cast<double>(fovDegrees));
     }
@@ -745,6 +798,16 @@ namespace SandboxEditor
     {
         AzToolsFramework::ClearRegistry(CameraDefaultStartingPitch);
         AzToolsFramework::ClearRegistry(CameraDefaultStartingYaw);
+    }
+
+    void ResetCameraGoToPositionInstantlyEnabled()
+    {
+        AzToolsFramework::ClearRegistry(CameraGoToPositionInstantlySetting);
+    }
+
+    void ResetCameraGoToPositionDuration()
+    {
+        AzToolsFramework::ClearRegistry(CameraGoToPositionDurationSetting);
     }
 
     void ResetCameraTranslateForwardChannelId()

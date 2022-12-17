@@ -80,6 +80,8 @@ namespace AZ::Render
                 ->Event("SetFilteringSampleCount", &AreaLightRequestBus::Events::SetFilteringSampleCount)
                 ->Event("GetEsmExponent", &AreaLightRequestBus::Events::GetEsmExponent)
                 ->Event("SetEsmExponent", &AreaLightRequestBus::Events::SetEsmExponent)
+                ->Event("GetShadowCachingMode", &AreaLightRequestBus::Events::GetShadowCachingMode)
+                ->Event("SetShadowCachingMode", &AreaLightRequestBus::Events::SetShadowCachingMode)
 
                 ->Event("GetAffectsGI", &AreaLightRequestBus::Events::GetAffectsGI)
                 ->Event("SetAffectsGI", &AreaLightRequestBus::Events::SetAffectsGI)
@@ -103,6 +105,7 @@ namespace AZ::Render
                 ->VirtualProperty("ShadowFilterMethod", "GetShadowFilterMethod", "SetShadowFilterMethod")
                 ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
                 ->VirtualProperty("EsmExponent", "GetEsmExponent", "SetEsmExponent")
+                ->VirtualProperty("ShadowCachingMode", "GetShadowCachingMode", "SetShadowCachingMode")
 
                 ->VirtualProperty("AffectsGI", "GetAffectsGI", "SetAffectsGI")
                 ->VirtualProperty("AffectsGIFactor", "GetAffectsGIFactor", "SetAffectsGIFactor");
@@ -159,12 +162,14 @@ namespace AZ::Render
     void AreaLightComponentController::SetConfiguration(const AreaLightComponentConfig& config)
     {
         m_configuration = config;
+
         VerifyLightTypeAndShapeComponent();
         ConfigurationChanged();
     }
 
     const AreaLightComponentConfig& AreaLightComponentController::GetConfiguration() const
     {
+        m_configuration.m_cacheShadows = m_configuration.m_shadowCachingMode == AreaLightComponentConfig::ShadowCachingMode::UpdateOnChange;
         return m_configuration;
     }
 
@@ -246,6 +251,10 @@ namespace AZ::Render
 
     void AreaLightComponentController::ConfigurationChanged()
     {
+        m_configuration.m_shadowCachingMode = m_configuration.m_cacheShadows
+            ? AreaLightComponentConfig::ShadowCachingMode::UpdateOnChange
+            : AreaLightComponentConfig::ShadowCachingMode::NoCaching;
+
         ChromaChanged();
         IntensityChanged();
         AttenuationRadiusChanged();
@@ -324,6 +333,7 @@ namespace AZ::Render
                 m_lightShapeDelegate->SetShadowFilterMethod(m_configuration.m_shadowFilterMethod);
                 m_lightShapeDelegate->SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
                 m_lightShapeDelegate->SetEsmExponent(m_configuration.m_esmExponent);
+                m_lightShapeDelegate->SetShadowCachingMode(m_configuration.m_shadowCachingMode);
             }
         }
     }
@@ -560,9 +570,15 @@ namespace AZ::Render
     {
         Transform transform = Transform::CreateIdentity();
         TransformBus::EventResult(transform, m_entityId, &TransformBus::Events::GetWorldTM);
+
+        AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            translationOffset, m_entityId, &LmbrCentral::ShapeComponentRequests::GetTranslationOffset);
+
         if (m_lightShapeDelegate)
         {
-            m_lightShapeDelegate->DrawDebugDisplay(transform, m_configuration.m_color, debugDisplay, isSelected);
+            m_lightShapeDelegate->DrawDebugDisplay(
+                transform * AZ::Transform::CreateTranslation(translationOffset), m_configuration.m_color, debugDisplay, isSelected);
         }
     }
 
@@ -577,6 +593,22 @@ namespace AZ::Render
         if (m_lightShapeDelegate)
         {
             m_lightShapeDelegate->SetEsmExponent(esmExponent);
+        }
+    }
+
+    AreaLightComponentConfig::ShadowCachingMode AreaLightComponentController::GetShadowCachingMode() const
+    {
+        return m_configuration.m_shadowCachingMode;
+    }
+
+    void AreaLightComponentController::SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode)
+    {
+        m_configuration.m_shadowCachingMode = cachingMode;
+        m_configuration.m_cacheShadows = m_configuration.m_shadowCachingMode == AreaLightComponentConfig::ShadowCachingMode::UpdateOnChange;
+
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetShadowCachingMode(cachingMode);
         }
     }
 

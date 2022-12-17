@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Floor",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the greatest integer which is less than or equal to the input value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

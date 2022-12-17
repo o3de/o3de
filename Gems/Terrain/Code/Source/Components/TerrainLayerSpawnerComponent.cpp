@@ -49,7 +49,7 @@ namespace Terrain
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainLayerSpawnerConfig::m_priority, "Sub Priority", "Defines order terrain spawners are applied within a layer.  Larger numbers = higher priority")
                     ->Attribute(AZ::Edit::Attributes::Min, AreaConstants::s_priorityMin)
                     ->Attribute(AZ::Edit::Attributes::Max, AreaConstants::s_priorityMax)
-                    ->Attribute(AZ::Edit::Attributes::SoftMin, AreaConstants::s_priorityMin)
+                    ->Attribute(AZ::Edit::Attributes::SoftMin, AreaConstants::s_prioritySoftMin)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, AreaConstants::s_prioritySoftMax)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainLayerSpawnerConfig::m_useGroundPlane, "Use Ground Plane", "Determines whether or not to provide a default ground plane")
                     ;

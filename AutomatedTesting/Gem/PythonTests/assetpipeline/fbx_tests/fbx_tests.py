@@ -669,6 +669,55 @@ blackbox_fbx_tests = [
             ]
         ),
     ),
+
+    pytest.param(
+        BlackboxAssetTest(
+            test_name="StingRayPBRAsset_PBRMaterialConvertion_AutoAssignOnProcessing",
+            asset_folder="PBRMaterialConvertion",
+            scene_debug_file="nagamaki1.dbgsg",
+            assets=[
+                asset_db_utils.DBSourceAsset(
+                    source_file_name="nagamaki1.fbx",
+                    uuid=b'9dbee85b454d53cf894b90a9ceb1430a',
+                    jobs=[
+                        asset_db_utils.DBJob(
+                            job_key='Scene compilation',
+                            builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
+                            status=4,
+                            error_count=0,
+                            products=[
+                                asset_db_utils.DBProduct(
+                                    product_name='pbrmaterialconvertion/nagamaki1.assetinfo.dbg',
+                                    sub_id=1385733146,
+                                    asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='pbrmaterialconvertion/nagamaki1.dbgsg',
+                                    sub_id=-1821062081,
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='pbrmaterialconvertion/nagamaki1.dbgsg.json',
+                                    sub_id=-248173188,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='pbrmaterialconvertion/nagamaki1.dbgsg.xml',
+                                    sub_id=869201259,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'),
+                                asset_db_utils.DBProduct(
+                                    product_name='pbrmaterialconvertion/nagamaki1_fbx.procprefab',
+                                    sub_id=-1637699071,
+                                    asset_type=b'9b7c8459471e4eada3637990cc4065a9'),
+                                asset_db_utils.DBProduct(
+                                    product_name='pbrmaterialconvertion/nagamaki1_fbx.procprefab.json',
+                                    sub_id=-602240166,
+                                    asset_type=b'00000000000000000000000000000000'
+                                )
+                            ]
+                        )
+                    ]
+                )
+            ]
+        )
+    )
 ]
 
 blackbox_fbx_special_tests = [

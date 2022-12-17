@@ -295,7 +295,7 @@ def init_o3de_pyside2(dccsi_sys_path=_DCCSI_SYS_PATH):
     if not PATH_O3DE_BIN.exists():
         raise Exception(f'_PATH_O3DE_BIN does NOT exist: {PATH_O3DE_BIN}')
     else:
-        pass
+        os.add_dll_directory(f'{PATH_O3DE_BIN}')
 
     # # allows to retrieve from settings.QTFORPYTHON_PATH
     # from DccScriptingInterface.azpy.constants import STR_QTFORPYTHON_PATH  # a path string constructor

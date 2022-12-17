@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Fwidth",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns abs(ddx) + abs(ddy(x))",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],
