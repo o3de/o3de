@@ -14,8 +14,8 @@
     "REPOS": [
         {
             "NAME": "o3de-extras",
-            "URL": "https://github.com/o3de/o3de-extras.git",
-            "BRANCH": "development"
+            "URL": "https://github.com/aws-lumberyard-dev/o3de-extras.git",
+            "BRANCH": "external-repos"
         }
     ]
 }
