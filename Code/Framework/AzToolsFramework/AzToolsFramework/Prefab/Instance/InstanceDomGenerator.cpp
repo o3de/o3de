@@ -268,10 +268,10 @@ namespace AzToolsFramework
                     // DOM reference can't be relied upon if the original DOM gets modified after reference creation.
                     // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
                     {
-                        const auto* containerEntityDomInTopInstanceDom = domPathToContainerEntity.Get(topInstanceTemplateDom);
-                        if (containerEntityDomInTopInstanceDom)
+                        const PrefabDomValue* containerEntityDomFromTop = domPathToContainerEntity.Get(topInstanceTemplateDom);
+                        if (containerEntityDomFromTop)
                         {
-                            containerEntityDom.CopyFrom(*containerEntityDomInTopInstanceDom, containerEntityDom.GetAllocator());
+                            containerEntityDom.CopyFrom(*containerEntityDomFromTop, containerEntityDom.GetAllocator());
                             break;
                         }
                     }
