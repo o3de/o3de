@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{E641D9D2-66B6-4E54-BA11-AAAA53E6AC8D}",
         "category": "Math Functions",
-        "title": "Split4",
+        "title": "Split Float4",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Extract all input values from a float4",
         "slotDataTypeGroups": [
             "inValue",
             "outX|outY|outZ|outW"

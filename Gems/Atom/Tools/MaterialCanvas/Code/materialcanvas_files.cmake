@@ -15,8 +15,6 @@ set(FILES
 
     Source/Document/MaterialGraphCompiler.cpp
     Source/Document/MaterialGraphCompiler.h
-    Source/Document/MaterialGraphCompilerNotificationBus.h
-    Source/Document/MaterialGraphCompilerRequestBus.h
 
     Source/Window/MaterialCanvas.qrc
     Source/Window/MaterialCanvasMainWindow.cpp

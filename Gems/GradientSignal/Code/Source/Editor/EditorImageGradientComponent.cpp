@@ -7,6 +7,7 @@
  */
 
 #include <Editor/EditorImageGradientComponent.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
@@ -749,7 +750,16 @@ namespace GradientSignal
         }
 
         // Invalid image asset or failed path creation, try creating a new name.
-        return AZStd::string::format(AZ_STRING_FORMAT "_gsi.tif", AZ_STRING_ARG(GetEntity()->GetName()));
+        AZ::IO::Path defaultPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(defaultPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+        }
+
+        defaultPath /= AZ::IO::FixedMaxPathString::format(
+            AZ_STRING_FORMAT "_gsi.tif", AZ_STRING_ARG(AZ::RPI::AssetUtils::SanitizeFileName(GetEntity()->GetName())));
+
+        return defaultPath.Native();
     }
 
     bool EditorImageGradientComponent::SaveImage()

@@ -39,7 +39,7 @@ namespace AzQtComponents
         };
         Q_DECLARE_FLAGS(Options, Option)
 
-        explicit WindowDecorationWrapper(Options options = OptionAutoTitleBarButtons, QWidget* parent = nullptr);
+        explicit WindowDecorationWrapper(Options options = Option::OptionAutoTitleBarButtons, QWidget* parent = nullptr);
 
         /**
          * Destroys the wrapper and the guest if it's still alive.

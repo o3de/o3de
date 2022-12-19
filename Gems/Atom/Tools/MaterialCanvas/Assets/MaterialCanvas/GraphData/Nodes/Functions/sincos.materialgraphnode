@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{229D9C2B-6AD4-45DC-83F0-AB5BE771298C}",
         "category": "Math Functions",
-        "title": "Sincos",
+        "title": "Sine Cosine",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the sine and cosine of the input value (per component)",
         "slotDataTypeGroups": [
             "inValue|outSin|outCos"
         ],

@@ -101,6 +101,27 @@ namespace EMotionFX
         bool GetIsMirrorMotion() const { return m_isMirrorMotion; }
         void SetIsMirrorMotion(bool newValue) { m_isMirrorMotion = newValue; }
 
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+        MCORE_INLINE AZStd::chrono::nanoseconds GetTotalUpdateTime() const
+        {
+            return mTotalUpdateTime;
+        }
+
+        MCORE_INLINE AZStd::chrono::nanoseconds GetInputNodesUpdateTime() const
+        {
+            return mInputNodesUpdateTime;
+        }
+
+        MCORE_INLINE void ClearUpdateTimes()
+        {
+            mTotalUpdateTime = AZStd::chrono::nanoseconds::zero();
+            mInputNodesUpdateTime = AZStd::chrono::nanoseconds::zero();
+        }
+
+        AZStd::chrono::nanoseconds mTotalUpdateTime;
+        AZStd::chrono::nanoseconds mInputNodesUpdateTime;
+#endif
+
     protected:
         float       m_duration;
         float       m_currentTime;

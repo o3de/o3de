@@ -7,10 +7,11 @@
         "category": "Constants",
         "title": "Int Constant",
         "titlePaletteName": "ConstantNodeTitlePalette",
+        "description": "Create a shader constant with the type and value defined by this node.",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],
-        "inputSlots": [
+        "propertySlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
