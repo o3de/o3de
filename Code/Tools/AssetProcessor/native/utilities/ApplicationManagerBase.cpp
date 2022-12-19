@@ -562,18 +562,10 @@ void ApplicationManagerBase::InitConnectionManager()
 
     m_connectionManager = new ConnectionManager();
 
-    // AssetProcessor Manager related stuff
-    auto forwardMessageFunction = [](AzFramework::AssetSystem::AssetNotificationMessage message)
-        {
-            EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, QString::fromUtf8(message.m_platform.c_str()));
-        };
-
-    [[maybe_unused]] bool result;
-
     //Application manager related stuff
 
     // The AssetCatalog has to be rebuilt on connection, so we force the incoming connection messages to be serialized as they connect to the ApplicationManagerBase
-    result = QObject::connect(m_applicationServer, &ApplicationServer::newIncomingConnection, m_connectionManager, &ConnectionManager::NewConnection, Qt::QueuedConnection);
+    [[maybe_unused]] bool result = QObject::connect(m_applicationServer, &ApplicationServer::newIncomingConnection, m_connectionManager, &ConnectionManager::NewConnection, Qt::QueuedConnection);
 
     AZ_Assert(result, "Failed to connect to ApplicationServer signal");
 
