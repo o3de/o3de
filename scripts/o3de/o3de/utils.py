@@ -442,14 +442,14 @@ def get_object_name_and_version_specifier(input:str) -> (str, str) or None:
     Valid input examples:
         o3de>=1.2.3
         o3de-sdk==1.2.3,~=2.3.4
-    :param input the string in the form <name><version specifier(s)>
+    :param input a string in the form <name><PEP 440 version specifier(s)> where the version specifier includes the relational operator such as ==, >=, ~=
 
     return an engine name and a version specifier or raises an exception if input is invalid
     """
 
     regex_str = r"(?P<object_name>(.*?))(?P<version_specifier>((~=|==|!=|<=|>=|<|>|===)(\s*\S+)+))"
-    regex = re.compile(r"^\s*" + regex_str + r"\s*$", re.VERBOSE | re.IGNORECASE)
-    match = regex.search(input)
+    regex = re.compile(regex_str, re.IGNORECASE)
+    match = regex.fullmatch(input.strip())
 
     if not match:
         raise InvalidVersionSpecifierException(f"Invalid name and/or version specifier {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
