@@ -316,7 +316,7 @@ namespace AzToolsFramework
             ClearEntities();
 
             m_nestedInstances.clear();
-            m_cachedInstanceDom.SetNull();
+            m_cachedInstanceDom = PrefabDom();
             m_containerEntity.reset(aznew AZ::Entity());
             RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
 
@@ -947,6 +947,7 @@ namespace AzToolsFramework
 
         void Instance::SetCachedInstanceDom(PrefabDomValueConstReference instanceDom)
         {
+            m_cachedInstanceDom = PrefabDom(); // force a flush of memory by clearing first.
             m_cachedInstanceDom.CopyFrom(instanceDom->get(), m_cachedInstanceDom.GetAllocator());
         }
     }
