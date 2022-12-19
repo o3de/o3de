@@ -358,7 +358,7 @@ namespace AZ
 
         AZ_MATH_INLINE Vec1::FloatType Vec1::ReciprocalEstimate(FloatArgType value)
         {
-            // In Vec1 all the elements except the first one can be garbage or 0
+            // In Vec1 the second element can be garbage or 0.
             // Using (value.x, 1) to avoid divisions by 0.
             return NeonDouble::ReciprocalEstimate(
                 NeonDouble::ReplaceSecond(value, 1.0f));
