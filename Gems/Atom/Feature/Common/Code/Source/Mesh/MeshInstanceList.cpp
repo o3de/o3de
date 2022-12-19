@@ -82,7 +82,6 @@ namespace AZ
             if (it == m_dataMap.end())
             {
                 AZ_Assert(false, "Unable to find key in the DataMap");
-                it = m_dataMap.find(key);
                 return;
             }
 

@@ -11,7 +11,7 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <RayTracing/RayTracingIndexList.h>
 

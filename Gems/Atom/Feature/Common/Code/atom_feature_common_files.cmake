@@ -156,6 +156,8 @@ set(FILES
     Source/Math/MathFilter.h
     Source/Math/MathFilter.cpp
     Source/Math/MathFilterDescriptor.h
+    Source/Mesh/MeshInstanceKey.h
+    Source/Mesh/MeshInstanceKey.cpp
     Source/Mesh/MeshInstanceList.cpp
     Source/Mesh/MeshInstanceList.h
     Source/Mesh/MeshInstanceManager.cpp
