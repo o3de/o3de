@@ -139,7 +139,8 @@ namespace AtomToolsFramework
         //! transform (this is usually zero).
         AZ::Transform CombinedCameraTransform() const;
 
-        //!
+        //! Reconnect the current view matrix change handler after the viewport context view group has changed.
+        //! @note: This happens after switching to track a different camera/viewport transform.
         void ReconnectViewMatrixChangeHandler();
 
         //! The current mode the camera controller is in.
