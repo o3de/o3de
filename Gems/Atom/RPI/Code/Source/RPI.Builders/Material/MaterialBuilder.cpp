@@ -36,7 +36,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 135; // Separate material type builder
+            materialBuilderDescriptor.m_version = 137; // material type indirect references
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -100,7 +100,6 @@ namespace AZ
 
             const char* const materialTypeField = "materialType";
             const char* const parentMaterialField = "parentMaterial";
-            const char* parentJobKey = JobKey;
 
             if (materialJson.IsObject() && materialJson.HasMember(materialTypeField) && materialJson[materialTypeField].IsString())
             {
@@ -112,21 +111,40 @@ namespace AZ
                 parentMaterialPath = materialJson[parentMaterialField].GetString();
             }
 
-            if (parentMaterialPath.empty())
+            if (!parentMaterialPath.empty())
             {
-                parentMaterialPath = materialTypePath;
-                parentJobKey = MaterialTypeBuilder::FinalStageJobKey;
+                // Register dependency on the parent material source file so we can load it and use it's data to build this variant material.
+                // Note, we don't need a direct dependency on the material type because the parent material will depend on it.
+                MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
+                    parentMaterialPath,
+                    JobKey,
+                    outputJobDescriptor.m_jobDependencyList,
+                    response.m_sourceFileDependencyList,
+                    false,
+                    0);
             }
+            else if (!materialTypePath.empty())
+            {
+                MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
+                    materialTypePath,
+                    MaterialTypeBuilder::FinalStageJobKey,
+                    outputJobDescriptor.m_jobDependencyList,
+                    response.m_sourceFileDependencyList,
+                    false,
+                    0);
 
-            // Register dependency on the parent material source file so we can load it and use it's data to build this variant material.
-            // Note, we don't need a direct dependency on the material type because the parent material will depend on it.
-            MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
-                parentMaterialPath,
-                parentJobKey,
-                outputJobDescriptor.m_jobDependencyList,
-                response.m_sourceFileDependencyList,
-                false,
-                0);
+                AZStd::string intermediateMaterialTypePath = MaterialUtils::PredictIntermediateMaterialTypeSourcePath(request.m_sourceFile, materialTypePath);
+                if (!intermediateMaterialTypePath.empty())
+                {
+                    MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
+                        intermediateMaterialTypePath,
+                        MaterialTypeBuilder::FinalStageJobKey,
+                        outputJobDescriptor.m_jobDependencyList,
+                        response.m_sourceFileDependencyList,
+                        false,
+                        0);
+                }
+            }
 
             // Even though above we were able to get away without deserializing the material json, we do need to deserialize here in order
             // to easily read the property values. Note that with the latest .material file format, it actually wouldn't be too hard to
