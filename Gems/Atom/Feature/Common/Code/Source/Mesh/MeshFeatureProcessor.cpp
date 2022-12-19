@@ -543,7 +543,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->SetSortKey(m_meshInstanceManager, sortKey);
+                meshHandle->SetSortKey(m_meshInstanceManager, m_rayTracingFeatureProcessor, sortKey);
             }
         }
 
@@ -1589,7 +1589,8 @@ namespace AZ
             }
         }
 
-        void ModelDataInstance::SetSortKey(MeshInstanceManager& meshInstanceManager, RHI::DrawItemSortKey sortKey)
+        void ModelDataInstance::SetSortKey(
+            MeshInstanceManager& meshInstanceManager, RayTracingFeatureProcessor* rayTracingFeatureProcessor, RHI::DrawItemSortKey sortKey)
         {
             RHI::DrawItemSortKey previousSortKey = m_sortKey;
             m_sortKey = sortKey;
@@ -1616,7 +1617,7 @@ namespace AZ
 
                         // DeInit/ReInit is overkill (destroys and re-creates ray-tracing data)
                         // but it works for now since SetSortKey is infrequent
-                        DeInit(meshInstanceManager);
+                        DeInit(meshInstanceManager, rayTracingFeatureProcessor);
                         QueueInit(model);
                     }
                 }

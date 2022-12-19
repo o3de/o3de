@@ -92,7 +92,10 @@ namespace AZ
             void RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
             void SetIrradianceData(RayTracingFeatureProcessor::SubMesh& subMesh,
                     const Data::Instance<RPI::Material> material, const Data::Instance<RPI::Image> baseColorImage);
-            void SetSortKey(MeshInstanceManager& meshInstanceManager, RHI::DrawItemSortKey sortKey);
+            void SetSortKey(
+                MeshInstanceManager& meshInstanceManager,
+                RayTracingFeatureProcessor* rayTracingFeatureProcessor,
+                RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
