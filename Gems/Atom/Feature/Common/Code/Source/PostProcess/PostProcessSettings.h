@@ -19,6 +19,9 @@
 #include <PostProcess/LookModification/LookModificationSettings.h>
 #include <PostProcess/ColorGrading/HDRColorGradingSettings.h>
 #include <PostProcess/ChromaticAberration/ChromaticAberrationSettings.h>
+#include <PostProcess/PaniniProjection/PaniniProjectionSettings.h>
+#include <PostProcess/FilmGrain/FilmGrainSettings.h>
+#include <PostProcess/Vignette/VignetteSettings.h>
 #include <ScreenSpace/DeferredFogSettings.h>
 
 namespace AZ

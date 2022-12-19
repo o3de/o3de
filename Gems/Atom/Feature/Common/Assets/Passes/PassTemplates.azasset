@@ -539,6 +539,18 @@
             {
                 "Name": "ChromaticAberrationTemplate",
                 "Path": "Passes/ChromaticAberration.pass"
+            },
+            {
+                "Name": "PaniniProjectionTemplate",
+                "Path": "Passes/PaniniProjection.pass"
+            }, 
+            {
+                "Name": "FilmGrainTemplate",
+                "Path": "Passes/FilmGrain.pass"
+            },
+            {
+                "Name": "VignetteTemplate",
+                "Path": "Passes/Vignette.pass"
             }
         ]
     }

@@ -11,6 +11,9 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <Atom/Feature/PostProcess/Bloom/BloomSettingsInterface.h>
 #include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationSettingsInterface.h>
+#include <Atom/Feature/PostProcess/PaniniProjection/PaniniProjectionSettingsInterface.h>
+#include <Atom/Feature/PostProcess/FilmGrain/FilmGrainSettingsInterface.h>
+#include <Atom/Feature/PostProcess/Vignette/VignetteSettingsInterface.h>
 #include <Atom/Feature/PostProcess/DepthOfField/DepthOfFieldSettingsInterface.h>
 #include <Atom/Feature/PostProcess/ExposureControl/ExposureControlSettingsInterface.h>
 #include <Atom/Feature/PostProcess/Ssao/SsaoSettingsInterface.h>

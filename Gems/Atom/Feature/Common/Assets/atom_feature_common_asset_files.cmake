@@ -52,6 +52,9 @@ set(FILES
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
     Passes/ChromaticAberration.pass
+    Passes/PaniniProjection.pass
+    Passes/FilmGrain.pass
+    Passes/Vignette.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
@@ -179,6 +182,7 @@ set(FILES
     Passes/TransparentParent.pass
     Passes/UI.pass
     Passes/UIParent.pass
+    Passes/Vignette.pass
     Scripts/material_find_overrides_demo.lua
     Scripts/material_property_overrides_demo.lua
     ShaderLib/3rdParty/Features/PostProcessing/KelvinToRgb.azsli
@@ -442,9 +446,15 @@ set(FILES
     Shaders/PostProcessing/BloomCompositeCS.azsl
     Shaders/PostProcessing/BloomCompositeCS.shader
     Shaders/PostProcessing/BloomDownsampleCS.azsl
-    Shaders/PostProcessing/BloomDownsampleCS.shader
+    Shaders/PostProcessing/BloomDownsampleCS.shader    
     Shaders/PostProcessing/ChromaticAberration.azsl
     Shaders/PostProcessing/ChromaticAberration.shader
+    Shaders/PostProcessing/PaniniProjection.azsl
+    Shaders/PostProcessing/PaniniProjection.shader    
+    Shaders/PostProcessing/FilmGrain.azsl
+    Shaders/PostProcessing/FilmGrain.shader
+    Shaders/PostProcessing/Vignette.azsl
+    Shaders/PostProcessing/Vignette.shader
     Shaders/PostProcessing/ContrastAdaptiveSharpening.azsl
     Shaders/PostProcessing/ContrastAdaptiveSharpening.shader
     Shaders/PostProcessing/ConvertToAcescg.azsl

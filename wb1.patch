@@ -1,0 +1,1519 @@
+From 55ca07c2f77ce10ca4e6f5da61e9a1993e66e888 Mon Sep 17 00:00:00 2001
+From: aCadahia <alberto.cadahia@huawei.com>
+Date: Tue, 16 Aug 2022 12:55:58 +0200
+Subject: [PATCH] WhiteBalance effect's UI complete. The effect is, so far, a
+ copy of the chromatic aberration. All the architechture is up and running.
+ WhiteBalance is executed after the chromatic aberration. Changed the output
+ of the postProcessParent.pass in order to make it run the last. All it
+ remains is the effect itself
+
+---
+ .../Assets/Passes/PassTemplates.azasset       |   4 +
+ .../Assets/Passes/PostProcessParent.pass      |  24 +-
+ .../Common/Assets/Passes/WhiteBalance.pass    |  70 ++++
+ .../Shaders/PostProcessing/WhiteBalance.azsl  |  51 +++
+ .../PostProcessing/WhiteBalance.shader        |  14 +
+ .../atom_feature_common_asset_files.cmake     |   3 +
+ .../PostProcess/PostProcessSettings.inl       |   2 +
+ .../PostProcessSettingsInterface.h            |   3 +-
+ .../WhiteBalance/WhiteBalanceConstants.h      |  21 +
+ .../WhiteBalance/WhiteBalanceParams.inl       |  21 +
+ .../WhiteBalanceSettingsInterface.h           |  33 ++
+ .../Code/Source/CommonSystemComponent.cpp     |   4 +
+ .../Source/PostProcess/PostProcessSettings.h  |   3 +-
+ .../WhiteBalance/WhiteBalanceSettings.cpp     |  58 +++
+ .../WhiteBalance/WhiteBalanceSettings.h       |  71 ++++
+ .../PostProcessing/WhiteBalancePass.cpp       | 103 +++++
+ .../Source/PostProcessing/WhiteBalancePass.h  |  39 ++
+ .../Code/atom_feature_common_files.cmake      |   4 +
+ .../atom_feature_common_public_files.cmake    |   3 +
+ .../WhiteBalance/WhiteBalanceBus.h            |  37 ++
+ .../WhiteBalanceComponentConfig.h             |  44 ++
+ .../CommonFeatures/Code/Source/Module.cpp     |   4 +
+ .../EditorWhiteBalanceComponent.cpp           | 101 +++++
+ .../EditorWhiteBalanceComponent.h             |  42 ++
+ .../WhiteBalance/WhiteBalanceComponent.cpp    |  41 ++
+ .../WhiteBalance/WhiteBalanceComponent.h      |  39 ++
+ .../WhiteBalanceComponentConfig.cpp           |  62 +++
+ .../WhiteBalanceComponentController.cpp       | 162 ++++++++
+ .../WhiteBalanceComponentController.h         |  62 +++
+ ...egration_commonfeatures_editor_files.cmake |   2 +
+ ...omlyintegration_commonfeatures_files.cmake |   5 +
+ ...egration_commonfeatures_public_files.cmake |   2 +
+ 33 files changed, 1336 insertions(+), 175 deletions(-)
+ create mode 100644 Gems/Atom/Feature/Common/Assets/Passes/WhiteBalance.pass
+ create mode 100644 Gems/Atom/Feature/Common/Assets/Shaders/PostProcessing/WhiteBalance.azsl
+ create mode 100644 Gems/Atom/Feature/Common/Assets/Shaders/PostProcessing/WhiteBalance.shader
+ create mode 100644 Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h
+ create mode 100644 Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl
+ create mode 100644 Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h
+ create mode 100644 Gems/Atom/Feature/Common/Code/Source/PostProcess/WhiteBalance/WhiteBalanceSettings.cpp
+ create mode 100644 Gems/Atom/Feature/Common/Code/Source/PostProcess/WhiteBalance/WhiteBalanceSettings.h
+ create mode 100644 Gems/Atom/Feature/Common/Code/Source/PostProcessing/WhiteBalancePass.cpp
+ create mode 100644 Gems/Atom/Feature/Common/Code/Source/PostProcessing/WhiteBalancePass.h
+ create mode 100644 Gems/AtomLyIntegration/CommonFeatures/Code/Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceBus.h
+ create mode 100644 Gems/AtomLyIntegration/CommonFeatures/Code/Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.h
+ create mode 100644 Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.cpp
+ create mode 100644 Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.h
+ create mode 100644 Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponent.cpp
+ create mode 100644 Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponent.h
+ create mode 100644 Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.cpp
+ create mode 100644 Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.cpp
+ create mode 100644 Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.h
+
+diff --git a/Gems/Atom/Feature/Common/Assets/Passes/PassTemplates.azasset b/Gems/Atom/Feature/Common/Assets/Passes/PassTemplates.azasset
+index a214fd0444..ebc3177ab0 100644
+--- a/Gems/Atom/Feature/Common/Assets/Passes/PassTemplates.azasset
++++ b/Gems/Atom/Feature/Common/Assets/Passes/PassTemplates.azasset
+@@ -551,6 +551,10 @@
+             {
+                 "Name": "ChromaticAberrationTemplate",
+                 "Path": "Passes/ChromaticAberration.pass"
++            },
++            {
++                "Name": "WhiteBalanceTemplate",
++                "Path": "Passes/WhiteBalance.pass"
+             }
+         ]
+     }
+diff --git a/Gems/Atom/Feature/Common/Assets/Passes/PostProcessParent.pass b/Gems/Atom/Feature/Common/Assets/Passes/PostProcessParent.pass
+index eef8c7565e..eb4f4d3dfe 100644
+--- a/Gems/Atom/Feature/Common/Assets/Passes/PostProcessParent.pass
++++ b/Gems/Atom/Feature/Common/Assets/Passes/PostProcessParent.pass
+@@ -41,10 +41,17 @@
+                 }
+             ],
+             "Connections": [
+-                {
++                //{
++                //    "LocalSlot": "Output",
++                 //   "AttachmentRef": {
++                //        "Pass": "ChromaticAberrationPass",
++                //        "Attachment": "Output"
++                //    }
++                //},
++				{
+                     "LocalSlot": "Output",
+                     "AttachmentRef": {
+-                        "Pass": "ChromaticAberrationPass",
++                        "Pass": "WhiteBalancePass",
+                         "Attachment": "Output"
+                     }
+                 },
+@@ -215,6 +222,19 @@
+ 			                }
+ 			            }
+ 		            ]
++		        },
++                {
++                    "Name": "WhiteBalancePass",
++                    "TemplateName": "WhiteBalanceTemplate",
++                    "Connections": [
++                        {
++                            "LocalSlot": "Input",
++			                "AttachmentRef": {
++                                "Pass": "ChromaticAberrationPass",
++                                "Attachment": "Output"
++			                }
++			            }
++		            ]
+ 		        }
+             ]
+         }
+diff --git a/Gems/Atom/Feature/Common/Assets/Passes/WhiteBalance.pass b/Gems/Atom/Feature/Common/Assets/Passes/WhiteBalance.pass
+new file mode 100644
+index 0000000000..bfba505ec2
+--- /dev/null
++++ b/Gems/Atom/Feature/Common/Assets/Passes/WhiteBalance.pass
+@@ -0,0 +1,70 @@
++{
++    "Type": "JsonSerialization",
++    "Version": 1,
++    "ClassName": "PassAsset",
++    "ClassData": {
++        "PassTemplate": {
++            "Name": "WhiteBalanceTemplate",
++            "PassClass": "WhiteBalancePass",
++            "Slots": [
++                {
++                    "Name": "Input",
++                    "SlotType": "Input",
++                    "ScopeAttachmentUsage": "Shader"
++                },
++                {
++                    "Name": "Output",
++                    "SlotType": "Output",
++                    "ScopeAttachmentUsage": "Shader",
++                    "LoadStoreAction": {
++                        "LoadAction": "Clear"
++                    }
++                }
++            ],
++            "ImageAttachments": [
++                {
++                    "Name": "WhiteBalance",
++                    "SizeSource": {
++                        "Source": {
++                            "Pass": "This",
++                            "Attachment": "Input"
++                        }
++                    },
++                    "FormatSource": {
++                        "Pass": "This",
++                        "Attachment": "Input"
++                    },
++                    "ImageDescriptor": {
++                        "SharedQueueMask": "Graphics",
++                        "BindFlags": [
++                            "Color",
++                            "ShaderReadWrite"
++                        ]
++                    }
++                }
++            ],
++            "Connections": [
++                {
++                    "LocalSlot": "Output",
++                    "AttachmentRef": {
++                        "Pass": "This",
++                        "Attachment": "WhiteBalance"
++                    }
++                }
++            ],
++            "FallbackConnections": [
++                {
++                    "Input": "Input",
++                    "Output": "Output"
++                }
++            ],
++            "PassData": {
++                "$type": "ComputePassData",
++                "ShaderAsset": {
++                    "FilePath": "Shaders/PostProcessing/WhiteBalance.shader"
++                },
++                "Make Fullscreen Pass": true
++            }
++        }
++    }
++}
+diff --git a/Gems/Atom/Feature/Common/Assets/Shaders/PostProcessing/WhiteBalance.azsl b/Gems/Atom/Feature/Common/Assets/Shaders/PostProcessing/WhiteBalance.azsl
+new file mode 100644
+index 0000000000..7efec00d40
+--- /dev/null
++++ b/Gems/Atom/Feature/Common/Assets/Shaders/PostProcessing/WhiteBalance.azsl
+@@ -0,0 +1,51 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#include <scenesrg.srgi>
++
++ShaderResourceGroup PassSrg : SRG_PerPass
++{
++    Texture2D<float4> m_inputColor;
++    RWTexture2D<float4> m_outputColor;
++
++    // Must match the struct in WhiteBalancePass.cpp
++    struct Constants
++    {
++        uint2 m_outputSize; // texture size of output
++        float2 m_outputCenter; // center of image in pixel coords
++        float m_temperature; // strength of effect (0 to 1), i.e. displacement of channels
++        float m_tint; // blend factor between original and aberration
++    };
++    Constants m_constants;
++}
++
++[numthreads(8, 8, 1)]
++void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
++{
++    if (dispatchThreadID.x >= PassSrg::m_constants.m_outputSize.x || dispatchThreadID.y >= PassSrg::m_constants.m_outputSize.y)
++    {
++        return;
++    }
++
++    // determine offset using m_temperature parameter and distance from screen center (as float2)
++    // offset is *0.5f since we will be using *2 later for the blue and want to remain within bounds (consider strength>=0.5)
++    float2 disp = dispatchThreadID.xy - PassSrg::m_constants.m_outputCenter;
++    float2 offset = disp * PassSrg::m_constants.m_temperature * 0.5f;
++
++    // crop and scale the image correctly by using offset pixel as base (needed to remove border artifacts due to out of bounds r values)
++    float4 base = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset)];
++
++    // retrieve the desired values for each channel, mindful of the cropping (note the absence of g channel)
++    float2 ca = float2(PassSrg::m_inputColor[dispatchThreadID.xy].r, PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset * 2)].b);
++    
++    // weight it according to m_blend and add it to the base (note the absence of g channel)
++    ca *= PassSrg::m_constants.m_tint;
++    ca += base.rb * (1 - PassSrg::m_constants.m_tint);
++
++    PassSrg::m_outputColor[dispatchThreadID.xy] = float4(ca.x, base.g, ca.y, base.a);
++}
+diff --git a/Gems/Atom/Feature/Common/Assets/Shaders/PostProcessing/WhiteBalance.shader b/Gems/Atom/Feature/Common/Assets/Shaders/PostProcessing/WhiteBalance.shader
+new file mode 100644
+index 0000000000..4adfe3ffba
+--- /dev/null
++++ b/Gems/Atom/Feature/Common/Assets/Shaders/PostProcessing/WhiteBalance.shader
+@@ -0,0 +1,14 @@
++{
++    "Source": "WhiteBalance.azsl",
++
++    "ProgramSettings":
++    {
++        "EntryPoints":
++        [
++            {
++                "name": "MainCS",
++                "type": "Compute"
++            }
++        ]
++    }
++}
+diff --git a/Gems/Atom/Feature/Common/Assets/atom_feature_common_asset_files.cmake b/Gems/Atom/Feature/Common/Assets/atom_feature_common_asset_files.cmake
+index 18e3bb7d6e..b30f1c069f 100644
+--- a/Gems/Atom/Feature/Common/Assets/atom_feature_common_asset_files.cmake
++++ b/Gems/Atom/Feature/Common/Assets/atom_feature_common_asset_files.cmake
+@@ -250,6 +250,7 @@ set(FILES
+     Passes/TransparentParent.pass
+     Passes/UI.pass
+     Passes/UIParent.pass
++	Passes/WhiteBalance.pass
+     Scripts/material_find_overrides_demo.lua
+     Scripts/material_property_overrides_demo.lua
+     ShaderLib/3rdParty/Features/PostProcessing/KelvinToRgb.azsli
+@@ -520,6 +521,8 @@ set(FILES
+     Shaders/PostProcessing/Taa.shader
+     Shaders/PostProcessing/UniformColor.azsl
+     Shaders/PostProcessing/UniformColor.shader
++	Shaders/PostProcessing/WhiteBalance.azsl
++    Shaders/PostProcessing/WhiteBalance.shader
+     Shaders/Reflections/ReflectionCommon.azsli
+     Shaders/Reflections/ReflectionComposite.azsl
+     Shaders/Reflections/ReflectionComposite.shader
+diff --git a/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/PostProcessSettings.inl b/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/PostProcessSettings.inl
+index 4f05023d19..5163da59b3 100644
+--- a/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/PostProcessSettings.inl
++++ b/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/PostProcessSettings.inl
+@@ -27,3 +27,5 @@ POST_PROCESS_MEMBER(LookModificationSettings, m_lookModificationSettings)
+ POST_PROCESS_MEMBER(DeferredFogSettings, m_deferredFogSettings)
+ POST_PROCESS_MEMBER(HDRColorGradingSettings, m_hdrColorGradingSettings)
+ POST_PROCESS_MEMBER(ChromaticAberrationSettings, m_chromaticAberrationSettings)
++POST_PROCESS_MEMBER(WhiteBalanceSettings, m_whiteBalanceSettings)
++
+diff --git a/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/PostProcessSettingsInterface.h b/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/PostProcessSettingsInterface.h
+index 15dcb986f6..782ac779fd 100644
+--- a/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/PostProcessSettingsInterface.h
++++ b/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/PostProcessSettingsInterface.h
+@@ -11,6 +11,7 @@
+ #include <AzCore/RTTI/RTTI.h>
+ #include <Atom/Feature/PostProcess/Bloom/BloomSettingsInterface.h>
+ #include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationSettingsInterface.h>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h>
+ #include <Atom/Feature/PostProcess/DepthOfField/DepthOfFieldSettingsInterface.h>
+ #include <Atom/Feature/PostProcess/ExposureControl/ExposureControlSettingsInterface.h>
+ #include <Atom/Feature/PostProcess/Ssao/SsaoSettingsInterface.h>
+@@ -27,7 +28,7 @@ namespace AZ
+         class PostProcessSettingsInterface
+         {
+         public:
+-            AZ_RTTI(AZ::Render::PostProcessSettingsInterface, "{DEB9EB6F-D158-402F-B7DD-03BDAC54B8BB}");
++            AZ_RTTI(AZ::Render::PostProcessSettingsInterface, "{22949C39-B56B-4920-94FA-6FDFA8273A2C}");
+ 
+             using ViewBlendWeightMap = AZStd::unordered_map<AZ::RPI::View*, float>;
+ 
+diff --git a/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h b/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h
+new file mode 100644
+index 0000000000..29ab52d334
+--- /dev/null
++++ b/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h
+@@ -0,0 +1,21 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#pragma once
++
++namespace AZ
++{
++    namespace Render
++    {
++        namespace WhiteBalance
++        {
++            static constexpr float DefaultTemperature = 0.01f;
++            static constexpr float DefaultTint = 0.5f;
++        } // namespace WhiteBalance
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl b/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl
+new file mode 100644
+index 0000000000..422a9e09f4
+--- /dev/null
++++ b/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl
+@@ -0,0 +1,21 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++// Macros below are of the form:
++// PARAM(NAME, MEMBER_NAME, DEFAULT_VALUE, ...)
++
++AZ_GFX_BOOL_PARAM(Enabled, m_enabled, false)
++AZ_GFX_ANY_PARAM_BOOL_OVERRIDE(bool, Enabled, m_enabled)
++
++// Strength of effect
++AZ_GFX_FLOAT_PARAM(Temperature, m_temperature, WhiteBalance::DefaultTemperature)
++AZ_GFX_FLOAT_PARAM_FLOAT_OVERRIDE(float, Temperature, m_temperature)
++
++// Blending
++AZ_GFX_FLOAT_PARAM(Tint, m_tint, WhiteBalance::DefaultTint)
++AZ_GFX_FLOAT_PARAM_FLOAT_OVERRIDE(float, Tint, m_tint)
+diff --git a/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h b/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h
+new file mode 100644
+index 0000000000..fb9ca15e3e
+--- /dev/null
++++ b/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h
+@@ -0,0 +1,33 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#pragma once
++
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h>
++#include <AzCore/Component/EntityId.h>
++#include <AzCore/RTTI/RTTI.h>
++
++namespace AZ
++{
++    namespace Render
++    {
++        class WhiteBalanceSettingsInterface
++        {
++        public:
++            AZ_RTTI(AZ::Render::WhiteBalanceSettingsInterface, "{D63E0B9A-13BA-42BC-AAE8-C9D2C08AE42D}");
++
++            // Auto-gen virtual getter and setter functions...
++#include <Atom/Feature/ParamMacros/StartParamFunctionsVirtual.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++
++            virtual void OnConfigChanged() = 0;
++        };
++
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/Atom/Feature/Common/Code/Source/CommonSystemComponent.cpp b/Gems/Atom/Feature/Common/Code/Source/CommonSystemComponent.cpp
+index 7f6dcf70ce..b06c12a94d 100644
+--- a/Gems/Atom/Feature/Common/Code/Source/CommonSystemComponent.cpp
++++ b/Gems/Atom/Feature/Common/Code/Source/CommonSystemComponent.cpp
+@@ -70,6 +70,7 @@
+ #include <PostProcessing/BloomBlurPass.h>
+ #include <PostProcessing/BloomCompositePass.h>
+ #include <PostProcessing/ChromaticAberrationPass.h>
++#include <PostProcessing/WhiteBalancePass.h>
+ #include <ScreenSpace/DeferredFogPass.h>
+ #include <Shadows/ProjectedShadowFeatureProcessor.h>
+ #include <SkyBox/SkyBoxFogSettings.h>
+@@ -286,6 +287,9 @@ namespace AZ
+             // Add Chromatic Aberration
+             passSystem->AddPassCreator(Name("ChromaticAberrationPass"), &ChromaticAberrationPass::Create);
+ 
++            // Add White Balance pass
++            passSystem->AddPassCreator(Name("WhiteBalancePass"), &WhiteBalancePass::Create);
++
+             // Add Diffuse Global Illumination passes
+             passSystem->AddPassCreator(Name("RayTracingAccelerationStructurePass"), &Render::RayTracingAccelerationStructurePass::Create);
+             passSystem->AddPassCreator(Name("DiffuseProbeGridPreparePass"), &Render::DiffuseProbeGridPreparePass::Create);
+diff --git a/Gems/Atom/Feature/Common/Code/Source/PostProcess/PostProcessSettings.h b/Gems/Atom/Feature/Common/Code/Source/PostProcess/PostProcessSettings.h
+index 35e9db6533..af25583c12 100644
+--- a/Gems/Atom/Feature/Common/Code/Source/PostProcess/PostProcessSettings.h
++++ b/Gems/Atom/Feature/Common/Code/Source/PostProcess/PostProcessSettings.h
+@@ -19,6 +19,7 @@
+ #include <PostProcess/LookModification/LookModificationSettings.h>
+ #include <PostProcess/ColorGrading/HDRColorGradingSettings.h>
+ #include <PostProcess/ChromaticAberration/ChromaticAberrationSettings.h>
++#include <PostProcess/WhiteBalance/WhiteBalanceSettings.h>
+ #include <ScreenSpace/DeferredFogSettings.h>
+ 
+ namespace AZ
+@@ -35,7 +36,7 @@ namespace AZ
+             friend class PostProcessFeatureProcessor;
+ 
+         public:
+-            AZ_RTTI(AZ::Render::PostProcessSettings, "{B4DE4B9F-83D2-4FD8-AD58-C0D1D4AEA23F}",
++            AZ_RTTI(AZ::Render::PostProcessSettings, "{E4BD5945-F4C6-4B68-B1D3-28700BD2BF88}",
+                 AZ::Render::PostProcessSettingsInterface, AZ::Render::PostProcessBase);
+             AZ_CLASS_ALLOCATOR(PostProcessSettings, SystemAllocator, 0);
+ 
+diff --git a/Gems/Atom/Feature/Common/Code/Source/PostProcess/WhiteBalance/WhiteBalanceSettings.cpp b/Gems/Atom/Feature/Common/Code/Source/PostProcess/WhiteBalance/WhiteBalanceSettings.cpp
+new file mode 100644
+index 0000000000..40a408cd03
+--- /dev/null
++++ b/Gems/Atom/Feature/Common/Code/Source/PostProcess/WhiteBalance/WhiteBalanceSettings.cpp
+@@ -0,0 +1,58 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#include <PostProcess/WhiteBalance/WhiteBalanceSettings.h>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h>
++
++#include <PostProcess/PostProcessFeatureProcessor.h>
++
++#include <AzCore/Serialization/SerializeContext.h>
++
++#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
++#include <Atom/RPI.Public/Pass/ParentPass.h>
++#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
++#include <Atom/RPI.Public/RPIUtils.h>
++#include <Atom/RPI.Public/Scene.h>
++#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
++#include <Atom/RPI.Public/View.h>
++
++namespace AZ
++{
++    namespace Render
++    {
++        WhiteBalanceSettings::WhiteBalanceSettings(PostProcessFeatureProcessor* featureProcessor)
++            : PostProcessBase(featureProcessor)
++        {
++        }
++
++        void WhiteBalanceSettings::OnConfigChanged()
++        {
++            m_parentSettings->OnConfigChanged();
++        }
++
++        void WhiteBalanceSettings::ApplySettingsTo(WhiteBalanceSettings* target, float alpha) const
++        {
++            AZ_Assert(target != nullptr, "WhiteBalanceSettings::ApplySettingsTo called with nullptr as argument.");
++
++            // Auto-gen code to blend individual params based on their override value onto target settings
++#define OVERRIDE_TARGET target
++#define OVERRIDE_ALPHA alpha
++#include <Atom/Feature/ParamMacros/StartOverrideBlend.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++#undef OVERRIDE_TARGET
++#undef OVERRIDE_ALPHA
++        }
++
++        void WhiteBalanceSettings::Simulate(float deltaTime)
++        {
++            m_deltaTime = deltaTime;
++        }
++
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/Atom/Feature/Common/Code/Source/PostProcess/WhiteBalance/WhiteBalanceSettings.h b/Gems/Atom/Feature/Common/Code/Source/PostProcess/WhiteBalance/WhiteBalanceSettings.h
+new file mode 100644
+index 0000000000..a9eaa5c373
+--- /dev/null
++++ b/Gems/Atom/Feature/Common/Code/Source/PostProcess/WhiteBalance/WhiteBalanceSettings.h
+@@ -0,0 +1,71 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#pragma once
++
++#include <AzCore/RTTI/ReflectContext.h>
++
++#include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
++
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h>
++#include <Atom/RPI.Public/Image/StreamingImage.h>
++#include <PostProcess/PostProcessBase.h>
++
++#include <Atom/RPI.Public/View.h>
++
++namespace AZ
++{
++    namespace Render
++    {
++        class PostProcessSettings;
++
++        class WhiteBalanceSettings final
++            : public WhiteBalanceSettingsInterface
++            , public PostProcessBase
++        {
++            friend class PostProcessSettings;
++            friend class PostProcessFeatureProcessor;
++
++        public:
++            AZ_RTTI(
++                AZ::Render::WhiteBalanceSettings,
++                "{840ED42F-3C00-466B-ACCE-461A6A84D607}",
++                AZ::Render::WhiteBalanceSettingsInterface,
++                AZ::Render::PostProcessBase);
++            AZ_CLASS_ALLOCATOR(WhiteBalanceSettings, SystemAllocator, 0);
++
++            WhiteBalanceSettings(PostProcessFeatureProcessor* featureProcessor);
++            ~WhiteBalanceSettings() = default;
++
++            // BloomSettingsInterface overrides...
++            void OnConfigChanged() override;
++
++            // Applies settings from this onto target using override settings and passed alpha value for blending
++            void ApplySettingsTo(WhiteBalanceSettings* target, float alpha) const;
++
++            // Generate getters and setters.
++#include <Atom/Feature/ParamMacros/StartParamFunctionsOverrideImpl.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++
++        private:
++            // Generate members...
++#include <Atom/Feature/ParamMacros/StartParamMembers.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++
++
++            void Simulate(float deltaTime);
++
++            PostProcessSettings* m_parentSettings = nullptr;
++
++            float m_deltaTime = 0.0f;
++        };
++
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/Atom/Feature/Common/Code/Source/PostProcessing/WhiteBalancePass.cpp b/Gems/Atom/Feature/Common/Code/Source/PostProcessing/WhiteBalancePass.cpp
+new file mode 100644
+index 0000000000..645b42daba
+--- /dev/null
++++ b/Gems/Atom/Feature/Common/Code/Source/PostProcessing/WhiteBalancePass.cpp
+@@ -0,0 +1,103 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#include <PostProcessing/WhiteBalancePass.h>
++#include <PostProcess/PostProcessFeatureProcessor.h>
++#include <Atom/RPI.Public/RenderPipeline.h>
++#include <Atom/RPI.Public/Scene.h>
++
++namespace AZ
++{
++    namespace Render
++    {
++        RPI::Ptr<WhiteBalancePass> WhiteBalancePass::Create(const RPI::PassDescriptor& descriptor)
++        {
++            RPI::Ptr<WhiteBalancePass> pass = aznew WhiteBalancePass(descriptor);
++            return AZStd::move(pass);
++        }
++
++        WhiteBalancePass::WhiteBalancePass(const RPI::PassDescriptor& descriptor)
++            : RPI::ComputePass(descriptor)
++        {
++        }
++
++        bool WhiteBalancePass::IsEnabled() const
++        {
++            if (!ComputePass::IsEnabled())
++            {
++                return false;
++            }
++            const RPI::Scene* scene = GetScene();
++            if (!scene)
++            {
++                return false;
++            }
++            PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
++            const RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
++            if (!fp)
++            {
++                return false;
++            }
++            PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
++            if (!postProcessSettings)
++            {
++                return false;
++            }
++            const WhiteBalanceSettings* whiteBalanceSettings = postProcessSettings->GetWhiteBalanceSettings();
++            if (!whiteBalanceSettings)
++            {
++                return false;
++            }
++            return whiteBalanceSettings->GetEnabled();
++        }
++
++        void WhiteBalancePass::FrameBeginInternal(FramePrepareParams params)
++        {
++            // Must match the struct in WhiteBalance.azsl
++            struct Constants
++            {
++                AZStd::array<u32, 2> m_outputSize;
++                AZStd::array<float, 2> m_outputCenter;
++                float m_temperature = WhiteBalance::DefaultTemperature;
++                float m_tint = WhiteBalance::DefaultTint;
++            } constants{};
++
++            RPI::Scene* scene = GetScene();
++            PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
++            if (fp)
++            {
++                RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
++                PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
++                if (postProcessSettings)
++                {
++                    WhiteBalanceSettings* whiteBalanceSettings = postProcessSettings->GetWhiteBalanceSettings();
++                    if (whiteBalanceSettings)
++                    {
++                        constants.m_temperature = whiteBalanceSettings->GetTemperature();
++                        constants.m_tint = whiteBalanceSettings->GetTint();
++                    }
++                }
++            }
++
++            AZ_Assert(GetOutputCount() > 0, "WhiteBalancePass: No output bindings!");
++            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
++
++            AZ_Assert(outputAttachment != nullptr, "WhiteBalancePass: Output binding has no attachment!");
++            RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;
++
++            constants.m_outputSize[0] = size.m_width;
++            constants.m_outputSize[1] = size.m_height;
++            constants.m_outputCenter[0] = (size.m_width - 1) * 0.5f;
++            constants.m_outputCenter[1] = (size.m_height -1) * 0.5f;
++
++            m_shaderResourceGroup->SetConstant(m_constantsIndex, constants);
++
++            RPI::ComputePass::FrameBeginInternal(params);
++        }
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/Atom/Feature/Common/Code/Source/PostProcessing/WhiteBalancePass.h b/Gems/Atom/Feature/Common/Code/Source/PostProcessing/WhiteBalancePass.h
+new file mode 100644
+index 0000000000..3e35155dff
+--- /dev/null
++++ b/Gems/Atom/Feature/Common/Code/Source/PostProcessing/WhiteBalancePass.h
+@@ -0,0 +1,39 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++#pragma once
++
++#include <Atom/RPI.Public/Pass/ComputePass.h>
++
++namespace AZ
++{
++    namespace Render
++    {
++        class WhiteBalancePass final : public RPI::ComputePass
++        {
++            AZ_RPI_PASS(WhiteBalancePass);
++
++        public:
++            AZ_RTTI(WhiteBalancePass, "{15AAF070-3258-4376-9911-CF4E9C7FAF4A}", AZ::RPI::ComputePass);
++            AZ_CLASS_ALLOCATOR(WhiteBalancePass, SystemAllocator, 0);
++
++            ~WhiteBalancePass() = default;
++            static RPI::Ptr<WhiteBalancePass> Create(const RPI::PassDescriptor& descriptor);
++
++            bool IsEnabled() const override;
++
++        protected:
++            // Behavior functions override...
++            void FrameBeginInternal(FramePrepareParams params) override;
++
++        private:
++            WhiteBalancePass(const RPI::PassDescriptor& descriptor);
++
++            AZ::RHI::ShaderInputNameIndex m_constantsIndex = "m_constants";
++        };
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/Atom/Feature/Common/Code/atom_feature_common_files.cmake b/Gems/Atom/Feature/Common/Code/atom_feature_common_files.cmake
+index eece1b4efe..4d109b59bf 100644
+--- a/Gems/Atom/Feature/Common/Code/atom_feature_common_files.cmake
++++ b/Gems/Atom/Feature/Common/Code/atom_feature_common_files.cmake
+@@ -225,6 +225,8 @@ set(FILES
+     Source/PostProcess/Ssao/SsaoSettings.h
+     Source/PostProcess/LookModification/LookModificationSettings.cpp
+     Source/PostProcess/LookModification/LookModificationSettings.h
++	Source/PostProcess/WhiteBalance/WhiteBalanceSettings.cpp
++    Source/PostProcess/WhiteBalance/WhiteBalanceSettings.h
+     Source/PostProcessing/BlendColorGradingLutsPass.h
+     Source/PostProcessing/BlendColorGradingLutsPass.cpp
+     Source/PostProcessing/DepthOfFieldPencilMap.h
+@@ -290,6 +292,8 @@ set(FILES
+     Source/PostProcessing/SubsurfaceScatteringPass.h
+     Source/PostProcessing/TaaPass.h
+     Source/PostProcessing/TaaPass.cpp
++	Source/PostProcessing/WhiteBalancePass.h
++    Source/PostProcessing/WhiteBalancePass.cpp
+     Source/RayTracing/RayTracingFeatureProcessor.h
+     Source/RayTracing/RayTracingFeatureProcessor.cpp
+     Source/RayTracing/RayTracingResourceList.h
+diff --git a/Gems/Atom/Feature/Common/Code/atom_feature_common_public_files.cmake b/Gems/Atom/Feature/Common/Code/atom_feature_common_public_files.cmake
+index 032c27d208..8d7cc720b0 100644
+--- a/Gems/Atom/Feature/Common/Code/atom_feature_common_public_files.cmake
++++ b/Gems/Atom/Feature/Common/Code/atom_feature_common_public_files.cmake
+@@ -72,6 +72,9 @@ set(FILES
+     Include/Atom/Feature/PostProcess/Ssao/SsaoSettingsInterface.h
+     Include/Atom/Feature/PostProcess/LookModification/LookModificationParams.inl
+     Include/Atom/Feature/PostProcess/LookModification/LookModificationSettingsInterface.h
++	Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h
++    Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl
++    Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h
+     Include/Atom/Feature/ScreenSpace/DeferredFogSettingsInterface.h
+     Include/Atom/Feature/ScreenSpace/DeferredFogParams.inl
+     Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceBus.h b/Gems/AtomLyIntegration/CommonFeatures/Code/Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceBus.h
+new file mode 100644
+index 0000000000..cf803f5510
+--- /dev/null
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceBus.h
+@@ -0,0 +1,37 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#pragma once
++
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h>
++#include <AzCore/Component/Component.h>
++
++namespace AZ
++{
++    namespace Render
++    {
++        class WhiteBalanceRequests : public ComponentBus
++        {
++        public:
++            AZ_RTTI(AZ::Render::WhiteBalanceRequests, "{B5F44660-F39C-476F-AB27-344FA76C3715}");
++
++            /// Overrides the default AZ::EBusTraits handler policy to allow one listener only.
++            static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Single;
++            virtual ~WhiteBalanceRequests()
++            {
++            }
++
++            // Auto-gen virtual getters/setters...
++#include <Atom/Feature/ParamMacros/StartParamFunctionsVirtual.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++        };
++
++        typedef AZ::EBus<WhiteBalanceRequests> WhiteBalanceRequestBus;
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.h b/Gems/AtomLyIntegration/CommonFeatures/Code/Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.h
+new file mode 100644
+index 0000000000..f8d03bf286
+--- /dev/null
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.h
+@@ -0,0 +1,44 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#pragma once
++
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h>
++#include <AzCore/Component/Component.h>
++
++namespace AZ
++{
++    namespace Render
++    {
++        class WhiteBalanceComponentConfig final : public ComponentConfig
++        {
++        public:
++            AZ_RTTI(AZ::Render::WhiteBalanceComponentConfig, "{FA4DD42D-2BEA-4719-9F11-87E1D4CC165E}", AZ::ComponentConfig);
++
++            static void Reflect(ReflectContext* context);
++
++            // Generate members...
++#include <Atom/Feature/ParamMacros/StartParamMembers.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++
++            // Generate Getters/Setters...
++#include <Atom/Feature/ParamMacros/StartParamFunctions.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++
++            void CopySettingsFrom(WhiteBalanceSettingsInterface* settings);
++            void CopySettingsTo(WhiteBalanceSettingsInterface* settings);
++
++            bool ArePropertiesReadOnly() const
++            {
++                return !m_enabled;
++            }
++        };
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/Source/Module.cpp b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/Module.cpp
+index a33a473f24..534c9d627f 100644
+--- a/Gems/AtomLyIntegration/CommonFeatures/Code/Source/Module.cpp
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/Module.cpp
+@@ -36,6 +36,7 @@
+ #include <PostProcess/ShapeWeightModifier/ShapeWeightModifierComponent.h>
+ #include <PostProcess/GradientWeightModifier/GradientWeightModifierComponent.h>
+ #include <PostProcess/ChromaticAberration/ChromaticAberrationComponent.h>
++#include <PostProcess/WhiteBalance/WhiteBalanceComponent.h>
+ #include <ScreenSpace/DeferredFogComponent.h>
+ #include <SkyBox/HDRiSkyboxComponent.h>
+ #include <SkyBox/PhysicalSkyComponent.h>
+@@ -73,6 +74,7 @@
+ #include <PostProcess/ShapeWeightModifier/EditorShapeWeightModifierComponent.h>
+ #include <PostProcess/GradientWeightModifier/EditorGradientWeightModifierComponent.h>
+ #include <PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.h>
++#include <PostProcess/WhiteBalance/EditorWhiteBalanceComponent.h>
+ #include <ScreenSpace/EditorDeferredFogComponent.h>
+ #include <SkyBox/EditorHDRiSkyboxComponent.h>
+ #include <SkyBox/EditorPhysicalSkyComponent.h>
+@@ -127,6 +129,7 @@ namespace AZ
+                         AttachmentComponent::CreateDescriptor(),
+                         OcclusionCullingPlaneComponent::CreateDescriptor(),
+                         ChromaticAberrationComponent::CreateDescriptor(),
++						WhiteBalanceComponent::CreateDescriptor(),
+                         CubeMapCaptureComponent::CreateDescriptor(),
+ 
+ #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
+@@ -164,6 +167,7 @@ namespace AZ
+                         EditorAttachmentComponent::CreateDescriptor(),
+                         EditorOcclusionCullingPlaneComponent::CreateDescriptor(),
+                         EditorChromaticAberrationComponent::CreateDescriptor(),
++						EditorWhiteBalanceComponent::CreateDescriptor(),
+                         EditorCubeMapCaptureComponent::CreateDescriptor(),
+ #endif
+                     });
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.cpp b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.cpp
+new file mode 100644
+index 0000000000..79cd22b41f
+--- /dev/null
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.cpp
+@@ -0,0 +1,101 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#include <PostProcess/WhiteBalance/EditorWhiteBalanceComponent.h>
++#include <AzCore/RTTI/BehaviorContext.h>
++
++namespace AZ
++{
++    namespace Render
++    {
++        void EditorWhiteBalanceComponent::Reflect(AZ::ReflectContext* context)
++        {
++            BaseClass::Reflect(context);
++
++            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
++            {
++                serializeContext->Class<EditorWhiteBalanceComponent, BaseClass>()->Version(0);
++
++                if (AZ::EditContext* editContext = serializeContext->GetEditContext())
++                {
++                    editContext->Class<EditorWhiteBalanceComponent>("White Balance", "Controls the White Balance")
++                        ->ClassElement(Edit::ClassElements::EditorData, "")
++                        ->Attribute(Edit::Attributes::Category, "Atom")
++                        ->Attribute(
++                            AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
++                        ->Attribute(
++                            AZ::Edit::Attributes::ViewportIcon,
++                            "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
++                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
++                        ->Attribute(Edit::Attributes::AutoExpand, true)
++                        ->Attribute(
++                            Edit::Attributes::HelpPageURL,
++                            "https://o3de.org/docs/user-guide/components/reference/atom/WhiteBalance/") // [TODO ATOM-2672][PostFX] need create page for PostProcessing.
++                        ;
++
++                    editContext->Class<WhiteBalanceComponentController>("WhiteBalanceComponentController", "")
++                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
++                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
++                        ->DataElement(AZ::Edit::UIHandlers::Default, &WhiteBalanceComponentController::m_configuration, "Configuration", "")
++                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
++
++                    editContext->Class<WhiteBalanceComponentConfig>("WhiteBalanceComponentConfig", "")
++                        ->DataElement(
++                            Edit::UIHandlers::CheckBox, &WhiteBalanceComponentConfig::m_enabled, "Enable White Balance", "Enable White Balance.")
++                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
++
++                        ->DataElement(AZ::Edit::UIHandlers::Slider, &WhiteBalanceComponentConfig::m_temperature, "Temperature", "Color temperature. Higher values result in a warmer color temperature and lower values result in a colder color temperature.")
++                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
++                        ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
++                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
++                        ->Attribute(Edit::Attributes::ReadOnly, &WhiteBalanceComponentConfig::ArePropertiesReadOnly)
++
++                        ->DataElement(
++                            AZ::Edit::UIHandlers::Slider, &WhiteBalanceComponentConfig::m_tint, "Tint", "Factor for compensate for a green or magenta tint")
++                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
++                        ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
++                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
++                        ->Attribute(Edit::Attributes::ReadOnly, &WhiteBalanceComponentConfig::ArePropertiesReadOnly)
++
++                        // Overrides
++                        ->ClassElement(AZ::Edit::ClassElements::Group, "Overrides")
++                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
++
++                    // Auto-gen editor context settings for overrides
++#define EDITOR_CLASS WhiteBalanceComponentConfig
++#include <Atom/Feature/ParamMacros/StartOverrideEditorContext.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++#undef EDITOR_CLASS
++                        ;
++                }
++            }
++
++            if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
++            {
++                behaviorContext->Class<EditorWhiteBalanceComponent>()->RequestBus("WhiteBalanceRequestBus");
++
++                behaviorContext
++                    ->ConstantProperty("EditorWhiteBalanceComponentTypeId", BehaviorConstant(Uuid(WhiteBalance::EditorWhiteBalanceComponentTypeId)))
++                    ->Attribute(AZ::Script::Attributes::Module, "render")
++                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
++            }
++        }
++
++        EditorWhiteBalanceComponent::EditorWhiteBalanceComponent(const WhiteBalanceComponentConfig& config)
++            : BaseClass(config)
++        {
++        }
++
++        u32 EditorWhiteBalanceComponent::OnConfigurationChanged()
++        {
++            m_controller.OnConfigChanged();
++            return Edit::PropertyRefreshLevels::AttributesAndValues;
++        }
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.h b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.h
+new file mode 100644
+index 0000000000..867c5e352d
+--- /dev/null
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.h
+@@ -0,0 +1,42 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#pragma once
++
++#include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
++#include <PostProcess/WhiteBalance/WhiteBalanceComponent.h>
++
++namespace AZ
++{
++    namespace Render
++    {
++        namespace WhiteBalance
++        {
++            static constexpr const char* const EditorWhiteBalanceComponentTypeId = "{32C7C44E-AABD-4575-A485-C820BF1F0873}";
++        }
++
++        class EditorWhiteBalanceComponent final
++            : public AzToolsFramework::Components::
++                  EditorComponentAdapter<WhiteBalanceComponentController, WhiteBalanceComponent, WhiteBalanceComponentConfig>
++        {
++        public:
++            using BaseClass = AzToolsFramework::Components::
++                EditorComponentAdapter<WhiteBalanceComponentController, WhiteBalanceComponent, WhiteBalanceComponentConfig>;
++            AZ_EDITOR_COMPONENT(AZ::Render::EditorWhiteBalanceComponent, WhiteBalance::EditorWhiteBalanceComponentTypeId, BaseClass);
++
++            static void Reflect(AZ::ReflectContext* context);
++
++            EditorWhiteBalanceComponent() = default;
++            EditorWhiteBalanceComponent(const WhiteBalanceComponentConfig& config);
++
++            //! EditorRenderComponentAdapter overrides...
++            AZ::u32 OnConfigurationChanged() override;
++        };
++
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponent.cpp b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponent.cpp
+new file mode 100644
+index 0000000000..ace21cc8f8
+--- /dev/null
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponent.cpp
+@@ -0,0 +1,41 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#include <AzCore/RTTI/BehaviorContext.h>
++#include <PostProcess/WhiteBalance/WhiteBalanceComponent.h>
++
++namespace AZ
++{
++    namespace Render
++    {
++        WhiteBalanceComponent::WhiteBalanceComponent(const WhiteBalanceComponentConfig& config)
++            : BaseClass(config)
++        {
++        }
++
++        void WhiteBalanceComponent::Reflect(AZ::ReflectContext* context)
++        {
++            BaseClass::Reflect(context);
++
++            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
++            {
++                serializeContext->Class<WhiteBalanceComponent, BaseClass>();
++            }
++
++            if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
++            {
++                behaviorContext->Class<WhiteBalanceComponent>()->RequestBus("WhiteBalanceRequestBus");
++
++                behaviorContext->ConstantProperty("WhiteBalanceComponentTypeId", BehaviorConstant(Uuid(WhiteBalance::WhiteBalanceComponentTypeId)))
++                    ->Attribute(AZ::Script::Attributes::Module, "render")
++                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
++            }
++        }
++
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponent.h b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponent.h
+new file mode 100644
+index 0000000000..9273f29185
+--- /dev/null
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponent.h
+@@ -0,0 +1,39 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#pragma once
++
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h>
++#include <PostProcess/WhiteBalance/WhiteBalanceComponentController.h>
++#include <AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.h>
++#include <AzCore/Component/Component.h>
++#include <AzFramework/Components/ComponentAdapter.h>
++
++namespace AZ
++{
++    namespace Render
++    {
++        namespace WhiteBalance
++        {
++            static constexpr const char* const WhiteBalanceComponentTypeId = "{DC96CC56-1850-4B8A-8E05-C0690EBEB396}";
++        }
++
++        class WhiteBalanceComponent final
++            : public AzFramework::Components::ComponentAdapter<WhiteBalanceComponentController, WhiteBalanceComponentConfig>
++        {
++        public:
++            using BaseClass = AzFramework::Components::ComponentAdapter<WhiteBalanceComponentController, WhiteBalanceComponentConfig>;
++            AZ_COMPONENT(AZ::Render::WhiteBalanceComponent, WhiteBalance::WhiteBalanceComponentTypeId, BaseClass);
++
++            WhiteBalanceComponent() = default;
++            WhiteBalanceComponent(const WhiteBalanceComponentConfig& config);
++
++            static void Reflect(AZ::ReflectContext* context);
++        };
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.cpp b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.cpp
+new file mode 100644
+index 0000000000..83916725db
+--- /dev/null
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.cpp
+@@ -0,0 +1,62 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#include <AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.h>
++#include <AzCore/Serialization/EditContext.h>
++#include <AzCore/Serialization/SerializeContext.h>
++
++namespace AZ
++{
++    namespace Render
++    {
++        void WhiteBalanceComponentConfig::Reflect(ReflectContext* context)
++        {
++            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
++            {
++                serializeContext->Class<WhiteBalanceComponentConfig, ComponentConfig>()->Version(0)
++
++                // Auto-gen serialize context code...
++#define SERIALIZE_CLASS WhiteBalanceComponentConfig
++#include <Atom/Feature/ParamMacros/StartParamSerializeContext.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++#undef SERIALIZE_CLASS
++                    ;
++            }
++        }
++
++        void WhiteBalanceComponentConfig::CopySettingsFrom(WhiteBalanceSettingsInterface* settings)
++        {
++            if (!settings)
++            {
++                return;
++            }
++
++#define COPY_SOURCE settings
++#include <Atom/Feature/ParamMacros/StartParamCopySettingsFrom.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++#undef COPY_SOURCE
++        }
++
++        void WhiteBalanceComponentConfig::CopySettingsTo(WhiteBalanceSettingsInterface* settings)
++        {
++            if (!settings)
++            {
++                return;
++            }
++
++#define COPY_TARGET settings
++#include <Atom/Feature/ParamMacros/StartParamCopySettingsTo.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++#undef COPY_TARGET
++        }
++
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.cpp b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.cpp
+new file mode 100644
+index 0000000000..565a85eb10
+--- /dev/null
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.cpp
+@@ -0,0 +1,162 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#include <PostProcess/WhiteBalance/WhiteBalanceComponentController.h>
++
++#include <AzCore/RTTI/BehaviorContext.h>
++
++#include <Atom/RPI.Public/Scene.h>
++
++namespace AZ
++{
++    namespace Render
++    {
++        void WhiteBalanceComponentController::Reflect(ReflectContext* context)
++        {
++            WhiteBalanceComponentConfig::Reflect(context);
++
++            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
++            {
++                serializeContext->Class<WhiteBalanceComponentController>()
++                ->Version(0)
++                ->Field("Configuration", &WhiteBalanceComponentController::m_configuration);
++            }
++
++            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
++            {
++                behaviorContext->EBus<WhiteBalanceRequestBus>("WhiteBalanceRequestBus")
++                    ->Attribute(AZ::Script::Attributes::Module, "render")
++                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
++                // Auto-gen behavior context...
++#define PARAM_EVENT_BUS WhiteBalanceRequestBus::Events
++#include <Atom/Feature/ParamMacros/StartParamBehaviorContext.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++#undef PARAM_EVENT_BUS
++
++                    ;
++            }
++        }
++
++        void WhiteBalanceComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
++        {
++            provided.push_back(AZ_CRC_CE("WhiteBalanceService"));
++        }
++
++        void WhiteBalanceComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
++        {
++            incompatible.push_back(AZ_CRC_CE("WhiteBalanceService"));
++        }
++
++        void WhiteBalanceComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
++        {
++            required.push_back(AZ_CRC_CE("PostFXLayerService"));
++        }
++
++        WhiteBalanceComponentController::WhiteBalanceComponentController(const WhiteBalanceComponentConfig& config)
++            : m_configuration(config)
++        {
++        }
++
++        void WhiteBalanceComponentController::Activate(EntityId entityId)
++        {
++            m_entityId = entityId;
++
++            PostProcessFeatureProcessorInterface* fp =
++                RPI::Scene::GetFeatureProcessorForEntity<PostProcessFeatureProcessorInterface>(m_entityId);
++            if (fp)
++            {
++                m_postProcessInterface = fp->GetOrCreateSettingsInterface(m_entityId);
++                if (m_postProcessInterface)
++                {
++                    m_settingsInterface = m_postProcessInterface->GetOrCreateWhiteBalanceSettingsInterface();
++                    OnConfigChanged();
++                }
++            }
++            WhiteBalanceRequestBus::Handler::BusConnect(m_entityId);
++        }
++
++        void WhiteBalanceComponentController::Deactivate()
++        {
++            WhiteBalanceRequestBus::Handler::BusDisconnect(m_entityId);
++
++            if (m_postProcessInterface)
++            {
++                m_postProcessInterface->RemoveWhiteBalanceSettingsInterface();
++            }
++
++            m_postProcessInterface = nullptr;
++            m_settingsInterface = nullptr;
++            m_entityId.SetInvalid();
++        }
++
++        // Getters & Setters...
++
++        void WhiteBalanceComponentController::SetConfiguration(const WhiteBalanceComponentConfig& config)
++        {
++            m_configuration = config;
++            OnConfigChanged();
++        }
++
++        const WhiteBalanceComponentConfig& WhiteBalanceComponentController::GetConfiguration() const
++        {
++            return m_configuration;
++        }
++
++        void WhiteBalanceComponentController::OnConfigChanged()
++        {
++            if (m_settingsInterface)
++            {
++                m_configuration.CopySettingsTo(m_settingsInterface);
++                m_settingsInterface->OnConfigChanged();
++            }
++        }
++
++        // Auto-gen getter/setter function definitions...
++        // The setter functions will set the values on the Atom settings class, then get the value back
++        // from the settings class to set the local configuration. This is in case the settings class
++        // applies some custom logic that results in the set value being different from the input
++#define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                                                                     \
++    ValueType WhiteBalanceComponentController::Get##Name() const                                                                              \
++    {                                                                                                                                      \
++        return m_configuration.MemberName;                                                                                                 \
++    }                                                                                                                                      \
++    void WhiteBalanceComponentController::Set##Name(ValueType val)                                                                            \
++    {                                                                                                                                      \
++        if (m_settingsInterface)                                                                                                           \
++        {                                                                                                                                  \
++            m_settingsInterface->Set##Name(val);                                                                                           \
++            m_settingsInterface->OnConfigChanged();                                                                                        \
++            m_configuration.MemberName = m_settingsInterface->Get##Name();                                                                 \
++        }                                                                                                                                  \
++        else                                                                                                                               \
++        {                                                                                                                                  \
++            m_configuration.MemberName = val;                                                                                              \
++        }                                                                                                                                  \
++    }
++
++#define AZ_GFX_COMMON_OVERRIDE(ValueType, Name, MemberName, OverrideValueType)                                                             \
++    OverrideValueType WhiteBalanceComponentController::Get##Name##Override() const                                                            \
++    {                                                                                                                                      \
++        return m_configuration.MemberName##Override;                                                                                       \
++    }                                                                                                                                      \
++    void WhiteBalanceComponentController::Set##Name##Override(OverrideValueType val)                                                          \
++    {                                                                                                                                      \
++        m_configuration.MemberName##Override = val;                                                                                        \
++        if (m_settingsInterface)                                                                                                           \
++        {                                                                                                                                  \
++            m_settingsInterface->Set##Name##Override(val);                                                                                 \
++            m_settingsInterface->OnConfigChanged();                                                                                        \
++        }                                                                                                                                  \
++    }
++
++#include <Atom/Feature/ParamMacros/MapAllCommon.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.h b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.h
+new file mode 100644
+index 0000000000..07bf194152
+--- /dev/null
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.h
+@@ -0,0 +1,62 @@
++/*
++ * Copyright (c) Contributors to the Open 3D Engine Project.
++ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
++ *
++ * SPDX-License-Identifier: Apache-2.0 OR MIT
++ *
++ */
++
++#pragma once
++
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h>
++#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
++#include <Atom/Feature/PostProcess/PostProcessSettingsInterface.h>
++
++#include <AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceBus.h>
++#include <AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.h>
++
++#include <AzCore/Component/Component.h>
++#include <AzCore/Component/TransformBus.h>
++
++
++namespace AZ
++{
++    namespace Render
++    {
++        class WhiteBalanceComponentController final : public WhiteBalanceRequestBus::Handler
++        {
++        public:
++            friend class EditorWhiteBalanceComponent;
++
++            AZ_TYPE_INFO(AZ::Render::WhiteBalanceComponentController, "{2C27FA4A-49B0-4EF8-A2FF-1820B4B633C9}");
++            static void Reflect(AZ::ReflectContext* context);
++            static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
++            static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
++            static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
++
++            WhiteBalanceComponentController() = default;
++            WhiteBalanceComponentController(const WhiteBalanceComponentConfig& config);
++
++            void Activate(EntityId entityId);
++            void Deactivate();
++            void SetConfiguration(const WhiteBalanceComponentConfig& config);
++            const WhiteBalanceComponentConfig& GetConfiguration() const;
++
++            // Auto-gen function override declarations (functions definitions in .cpp)...
++#include <Atom/Feature/ParamMacros/StartParamFunctionsOverride.inl>
++#include <Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl>
++#include <Atom/Feature/ParamMacros/EndParams.inl>
++
++        private:
++            AZ_DISABLE_COPY(WhiteBalanceComponentController);
++
++            void OnConfigChanged();
++
++            PostProcessSettingsInterface* m_postProcessInterface = nullptr;
++            WhiteBalanceSettingsInterface* m_settingsInterface = nullptr;
++            WhiteBalanceComponentConfig m_configuration;
++            EntityId m_entityId;
++        };
++    } // namespace Render
++} // namespace AZ
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_editor_files.cmake b/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_editor_files.cmake
+index ab6c951d82..c6fe6807e7 100644
+--- a/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_editor_files.cmake
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_editor_files.cmake
+@@ -68,6 +68,8 @@ set(FILES
+     Source/PostProcess/Bloom/EditorBloomComponent.h
+     Source/PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.cpp
+     Source/PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.h
++	Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.cpp
++    Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.h
+     Source/PostProcess/ColorGrading/EditorHDRColorGradingComponent.cpp
+     Source/PostProcess/ColorGrading/EditorHDRColorGradingComponent.h
+     Source/PostProcess/DepthOfField/EditorDepthOfFieldComponent.cpp
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_files.cmake b/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_files.cmake
+index 09f62c5aa9..a3adc90a6e 100644
+--- a/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_files.cmake
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_files.cmake
+@@ -97,6 +97,11 @@ set(FILES
+     Source/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.cpp
+     Source/PostProcess/ChromaticAberration/ChromaticAberrationComponentController.cpp
+     Source/PostProcess/ChromaticAberration/ChromaticAberrationComponentController.h
++	Source/PostProcess/WhiteBalance/WhiteBalanceComponent.cpp
++    Source/PostProcess/WhiteBalance/WhiteBalanceComponent.h
++    Source/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.cpp
++    Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.cpp
++    Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.h
+     Source/PostProcess/ColorGrading/HDRColorGradingComponent.cpp
+     Source/PostProcess/ColorGrading/HDRColorGradingComponent.h
+     Source/PostProcess/ColorGrading/HDRColorGradingComponentConfig.cpp
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_public_files.cmake b/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_public_files.cmake
+index 90ac2cdea2..34c1adc178 100644
+--- a/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_public_files.cmake
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_public_files.cmake
+@@ -36,6 +36,8 @@ set(FILES
+     Include/AtomLyIntegration/CommonFeatures/PostProcess/Bloom/BloomComponentConfig.h
+     Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationBus.h
+     Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.h
++	Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceBus.h
++    Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.h
+     Include/AtomLyIntegration/CommonFeatures/PostProcess/DepthOfField/DepthOfFieldBus.h
+     Include/AtomLyIntegration/CommonFeatures/PostProcess/DepthOfField/DepthOfFieldComponentConfig.h
+     Include/AtomLyIntegration/CommonFeatures/PostProcess/DisplayMapper/DisplayMapperComponentBus.h
+-- 
+2.35.1.windows.2
+

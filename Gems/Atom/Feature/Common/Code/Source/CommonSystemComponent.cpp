@@ -69,6 +69,9 @@
 #include <PostProcessing/BloomBlurPass.h>
 #include <PostProcessing/BloomCompositePass.h>
 #include <PostProcessing/ChromaticAberrationPass.h>
+#include <PostProcessing/PaniniProjectionPass.h>
+#include <PostProcessing/FilmGrainPass.h>
+#include <PostProcessing/VignettePass.h>
 #include <ScreenSpace/DeferredFogPass.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 #include <SkyAtmosphere/SkyAtmosphereFeatureProcessor.h>
@@ -267,8 +270,17 @@ namespace AZ
             passSystem->AddPassCreator(Name("BloomBlurPass"), &BloomBlurPass::Create);
             passSystem->AddPassCreator(Name("BloomCompositePass"), &BloomCompositePass::Create);
 
-            // Add Chromatic Aberration
+            // Add ChromaticAberration
             passSystem->AddPassCreator(Name("ChromaticAberrationPass"), &ChromaticAberrationPass::Create);
+
+            // Add PaniniProjection
+            passSystem->AddPassCreator(Name("PaniniProjectionPass"), &PaniniProjectionPass::Create);
+
+            // Add FilmGrain
+            passSystem->AddPassCreator(Name("FilmGrainPass"), &FilmGrainPass::Create);
+
+            // Add Vignette
+            passSystem->AddPassCreator(Name("VignettePass"), &VignettePass::Create);
 
             // Add Luminance Histogram pass
             passSystem->AddPassCreator(Name("LuminanceHistogramGeneratorPass"), &LuminanceHistogramGeneratorPass::Create);

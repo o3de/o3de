@@ -1,0 +1,134 @@
+From 8525be2ad35a925e94465aa036d9a2547daa74c2 Mon Sep 17 00:00:00 2001
+From: aCadahia <alberto.cadahia@huawei.com>
+Date: Mon, 22 Aug 2022 13:54:26 +0200
+Subject: [PATCH] WhiteBalance postFX completed. Maybe still need to clean it
+ up a bit and updload to different repo. Maybe change the temperature and tint
+ range from -1,1 to -100,100
+
+---
+ .../Shaders/PostProcessing/WhiteBalance.azsl  | 59 ++++++++++++++-----
+ .../WhiteBalance/WhiteBalanceConstants.h      |  4 +-
+ .../EditorWhiteBalanceComponent.cpp           |  4 +-
+ 4 files changed, 71 insertions(+), 38 deletions(-)
+
+diff --git a/Gems/Atom/Feature/Common/Assets/Shaders/PostProcessing/WhiteBalance.azsl b/Gems/Atom/Feature/Common/Assets/Shaders/PostProcessing/WhiteBalance.azsl
+index 7efec00d40..066a127b5e 100644
+--- a/Gems/Atom/Feature/Common/Assets/Shaders/PostProcessing/WhiteBalance.azsl
++++ b/Gems/Atom/Feature/Common/Assets/Shaders/PostProcessing/WhiteBalance.azsl
+@@ -18,12 +18,14 @@ ShaderResourceGroup PassSrg : SRG_PerPass
+     {
+         uint2 m_outputSize; // texture size of output
+         float2 m_outputCenter; // center of image in pixel coords
+-        float m_temperature; // strength of effect (0 to 1), i.e. displacement of channels
+-        float m_tint; // blend factor between original and aberration
++        float m_temperature; // Color temperature. Higher values result in a warmer color temperature and lower values result in a colder color temperature.
++        float m_tint; // Factor for compensate for a green or magenta tint
+     };
+     Constants m_constants;
+ }
+ 
++
++
+ [numthreads(8, 8, 1)]
+ void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
+ {
+@@ -32,20 +34,47 @@ void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
+         return;
+     }
+ 
+-    // determine offset using m_temperature parameter and distance from screen center (as float2)
+-    // offset is *0.5f since we will be using *2 later for the blue and want to remain within bounds (consider strength>=0.5)
+-    float2 disp = dispatchThreadID.xy - PassSrg::m_constants.m_outputCenter;
+-    float2 offset = disp * PassSrg::m_constants.m_temperature * 0.5f;
++    // Range ~[-1.67;1.67] works best
++    float t1 = PassSrg::m_constants.m_temperature;//* 10 / 6
++    float t2 = PassSrg::m_constants.m_tint;
++
++    // Get the CIE xy chromaticity of the reference white point.
++    // Note: 0.31271 = x value on the D65 white point
++    float x = 0.31271 - t1 * (t1 < 0 ? 0.1 : 0.05);
++    float standardIlluminantY = 2.87 * x - 3 * x * x - 0.27509507;
++    float y = standardIlluminantY + t2 * 0.05;
++
++    // Calculate the coefficients in the LMS space.
++    float3 w1 = float3(0.949237, 1.03542, 1.08728); // D65 white point
++
++    // CIExyToLMS
++    float Y = 1;
++    float X = Y * x / y;
++    float Z = Y * (1 - x - y) / y;
++    float L = 0.7328 * X + 0.4296 * Y - 0.1624 * Z;
++    float M = -0.7036 * X + 1.6975 * Y + 0.0061 * Z;
++    float S = 0.0030 * X + 0.0136 * Y + 0.9834 * Z;
++    float3 w2 = float3(L, M, S);
+ 
+-    // crop and scale the image correctly by using offset pixel as base (needed to remove border artifacts due to out of bounds r values)
+-    float4 base = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset)];
++    float3 balance = float3(w1.x / w2.x, w1.y / w2.y, w1.z / w2.z);
++
++    static const float3x3 LIN_2_LMS_MAT = {
++    3.90405e-1, 5.49941e-1, 8.92632e-3,
++    7.08416e-2, 9.63172e-1, 1.35775e-3,
++    2.31082e-2, 1.28021e-1, 9.36245e-1
++    };
++
++    static const float3x3 LMS_2_LIN_MAT = {
++    2.85847e+0, -1.62879e+0, -2.48910e-2,
++    -2.10182e-1,  1.15820e+0,  3.24281e-4,
++    -4.18120e-2, -1.18169e-1,  1.06867e+0
++    };
+ 
+-    // retrieve the desired values for each channel, mindful of the cropping (note the absence of g channel)
+-    float2 ca = float2(PassSrg::m_inputColor[dispatchThreadID.xy].r, PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset * 2)].b);
+-    
+-    // weight it according to m_blend and add it to the base (note the absence of g channel)
+-    ca *= PassSrg::m_constants.m_tint;
+-    ca += base.rb * (1 - PassSrg::m_constants.m_tint);
++    //float3 input = float3(PassSrg::m_inputColor[dispatchThreadID.xy].r, PassSrg::m_inputColor[dispatchThreadID.xy].g, PassSrg::m_inputColor[dispatchThreadID.xy].b); 
++    float3 input = PassSrg::m_inputColor[dispatchThreadID.xy].rgb;
++    float3 lms = mul(LIN_2_LMS_MAT, input);
++    lms *= balance;
++    float3 finalOut = mul(LMS_2_LIN_MAT, lms);
+ 
+-    PassSrg::m_outputColor[dispatchThreadID.xy] = float4(ca.x, base.g, ca.y, base.a);
++    PassSrg::m_outputColor[dispatchThreadID.xy] = float4(finalOut.x, finalOut.y, finalOut.z, 1.0);
+ }
+diff --git a/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h b/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h
+index 29ab52d334..3e9d31b8dd 100644
+--- a/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h
++++ b/Gems/Atom/Feature/Common/Code/Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h
+@@ -14,8 +14,8 @@ namespace AZ
+     {
+         namespace WhiteBalance
+         {
+-            static constexpr float DefaultTemperature = 0.01f;
+-            static constexpr float DefaultTint = 0.5f;
++            static constexpr float DefaultTemperature = 0.0f;
++            static constexpr float DefaultTint = 0.0f;
+         } // namespace WhiteBalance
+     } // namespace Render
+ } // namespace AZ
+diff --git a/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.cpp b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.cpp
+index 79cd22b41f..0cabfaa8e0 100644
+--- a/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.cpp
++++ b/Gems/AtomLyIntegration/CommonFeatures/Code/Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.cpp
+@@ -50,14 +50,14 @@ namespace AZ
+                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+ 
+                         ->DataElement(AZ::Edit::UIHandlers::Slider, &WhiteBalanceComponentConfig::m_temperature, "Temperature", "Color temperature. Higher values result in a warmer color temperature and lower values result in a colder color temperature.")
+-                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
++                        ->Attribute(AZ::Edit::Attributes::Min, -1.0f)
+                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                         ->Attribute(Edit::Attributes::ReadOnly, &WhiteBalanceComponentConfig::ArePropertiesReadOnly)
+ 
+                         ->DataElement(
+                             AZ::Edit::UIHandlers::Slider, &WhiteBalanceComponentConfig::m_tint, "Tint", "Factor for compensate for a green or magenta tint")
+-                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
++                        ->Attribute(AZ::Edit::Attributes::Min, -1.0f)
+                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                         ->Attribute(Edit::Attributes::ReadOnly, &WhiteBalanceComponentConfig::ArePropertiesReadOnly)
+-- 
+2.35.1.windows.2
+
