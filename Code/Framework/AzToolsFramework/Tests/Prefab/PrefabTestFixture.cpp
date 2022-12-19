@@ -225,12 +225,12 @@ namespace UnitTest
         AzToolsFramework::Prefab::PrefabDom prefabDomB;
         ASSERT_TRUE(AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(instanceB, prefabDomB));
 
-        // Validate that both instances match when serialized.
-        PrefabTestDomUtils::ComparePrefabDoms(prefabDomA, prefabDomB, shouldCompareLinkIds, shouldCompareContainerEntities);
+        // Validate that both instances match when serialized
+        PrefabTestDomUtils::ComparePrefabDoms(prefabDomA, prefabDomB, true, shouldCompareContainerEntities);
 
         // Validate that the serialized instances match the shared template when serialized
-        // Note: We do not compare the link ids. The template DOM is not supposed to have this member.
-        PrefabTestDomUtils::ComparePrefabDoms(templateA->get().GetPrefabDom(), prefabDomB, false, shouldCompareContainerEntities);
+        PrefabTestDomUtils::ComparePrefabDoms(templateA->get().GetPrefabDom(), prefabDomB, shouldCompareLinkIds,
+            shouldCompareContainerEntities);
     }
 
     void PrefabTestFixture::DeleteInstances(const InstanceList& instancesToDelete)
