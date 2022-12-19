@@ -182,7 +182,6 @@ set(FILES
     Passes/TransparentParent.pass
     Passes/UI.pass
     Passes/UIParent.pass
-    Passes/Vignette.pass
     Passes/WhiteBalance.pass
     Scripts/material_find_overrides_demo.lua
     Scripts/material_property_overrides_demo.lua

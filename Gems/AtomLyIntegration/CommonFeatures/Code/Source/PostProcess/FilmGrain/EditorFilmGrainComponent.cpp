@@ -25,7 +25,7 @@ namespace AZ
                 {
                     editContext->Class<EditorFilmGrainComponent>("Film Grain", "Controls the Film Grain")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->Attribute(Edit::Attributes::Category, "Atom")
+                        ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(
                             AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
                         ->Attribute(
