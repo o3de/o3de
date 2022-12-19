@@ -85,7 +85,7 @@ fi
 
 CORRETTO_REPO_COUNT=$(cat /etc/apt/sources.list | grep ^dev | grep https://apt.corretto.aws | wc -l)
 
-if [ $CORRETTO -eq 0 ]
+if [ $CORRETTO_REPO_COUNT -eq 0 ]
 then
     echo Adding Corretto Repository for JDK
     
