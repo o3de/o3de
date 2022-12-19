@@ -1,5 +1,7 @@
 {
     "shaderTemplates": [
+        // Unlike Standard and Enhanced, BaseLighting doesn't have "_CustomZ" just because BasePBR.materialtype doesn't use alpha cutout or POM PDO, so we don't need it right now.
+        // But that could be added if some other material type wants to use BaseLighting with one of these features, as they don't really relate to the lighting model.
         {
             "shader": "./ForwardPass_BaseLighting.shader.template",
             "azsli": "./ForwardPass_BaseLighting.azsli",
@@ -9,6 +11,11 @@
             "shader": "./ForwardPass_StandardLighting.shader.template",
             "azsli": "./ForwardPass_StandardLighting.azsli",
             "tag": "forward"
+        },
+        {
+            "shader": "./ForwardPass_StandardLighting_CustomZ.shader.template",
+            "azsli": "./ForwardPass_StandardLighting_CustomZ.azsli",
+            "tag": "forward_customZ"
         },
         {
             "shader": "./Transparent_StandardLighting.shader.template",
@@ -41,7 +48,13 @@
                 "name": "doubleSided",
                 "type": "Bool",
                 "defaultValue": false
+            },
+            {
+                "name": "hasPerPixelClip",
+                "type": "Bool",
+                "defaultValue": false
             }
+            // Note we don't include "hasPerPixelDepth" because the VR pipeline will be highly optimized, and unlikely to ever support PDO or similar features.
         ],
         "functors": 
         [
