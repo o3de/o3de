@@ -202,9 +202,9 @@ class TestEnableGemCommand:
         pytest.param('1.2.3', [], {}, False, False, ['o3de-test>=1.0.0, <2.3.4'], [], 'o3de-test', '2.0.1', {}, 0),
         pytest.param('1.2.3', [], {}, False, False, ['o3de-test'], [], 'o3de-test', '', {}, 0),
         pytest.param('1.2.3', [], {}, False, False, ['o3de-test'], [], 'o3de-test', '1.2.3', {}, 0),
-        pytest.param('1.2.3', [], {}, False, False, ['o3de-test==1.2.3'], [], 'o3de-test', '', {}, 1),
-        pytest.param('1.2.3', [], {}, False, False, ['o3de-test==1.2.3'], [], 'o3de-test', None, {}, 1),
         # fails when no compatible engine version is found
+        pytest.param('1.2.3', [], {}, False, False, ['o3de-test==1.2.3'], [], 'o3de-test', None, {}, 1),
+        pytest.param('1.2.3', [], {}, False, False, ['o3de-test==1.2.3'], [], 'o3de-test', '', {}, 1),
         pytest.param('1.2.3', [], {}, False, False, ['o3de-test<1.0.0'], [], 'o3de-test', '1.0.0', {}, 1),
         # passes when forced even if no compatible engine version is found
         pytest.param('1.2.3', [], {}, False, True, ['o3de-test<1.0.0'], [], 'o3de-test', '1.0.0', {}, 0),
