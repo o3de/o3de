@@ -123,8 +123,19 @@ namespace AZ
                     false,
                     0);
             }
-            else if (!materialTypePath.empty())
+
+            // Note that parentMaterialPath may have registered a dependency above, and the parent material reports dependency on the material type as well,
+            // so there is a chain that propagates automatically, at least in some cases. However, that isn't sufficient for all cases and a direct dependency
+            // on the material type is needed, because ProcessJob loads the parent material and the material type independent of each other. Otherwise, edge
+            // cases are possible, where the material type changes in some way that does not impact the parent material asset's final data, yet it does impact
+            // the child material. See https://github.com/o3de/o3de/issues/13766
+            if (!materialTypePath.empty())
             {
+                // If the material uses the "Direct" format, then there will need to be a dependency on that file.
+                // If it uses the "Abstract" format, then there will be an intermediate .materialtype and there needs to be a dependency on that file instead.
+                // At this point the builder does not know which is the case, without loading the .materialtype file and inspecting its data. The builder
+                // avoids that because it could slow things down, and instead just registers both dependencies.
+
                 MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
                     materialTypePath,
                     MaterialTypeBuilder::FinalStageJobKey,
