@@ -265,7 +265,7 @@ namespace AZ::DocumentPropertyEditor
         {
             Dom::Value result(Dom::Type::Object);
             result[EntryDescriptionKey] = Dom::Value(attribute.m_description, true);
-            result[EntryValueKey] = Dom::Value(static_cast<EnumType>(attribute.m_value));
+            result[EntryValueKey] = Dom::Value(attribute.m_value);
             return result;
         }
 
