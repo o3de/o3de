@@ -178,15 +178,33 @@ namespace AZ
             //The AABB is not overlapping if it is fully behind any of the planes, otherwise it is overlapping.
             const Vector3 center = aabb.GetCenter();
 
-            //If the AABB contains FLT_MAX at either (or both) extremes, it would be easy to overflow here by using "0.5f * GetExtents()"
-            //or "0.5f * (GetMax() - GetMin())".  By separating into two separate multiplies before the subtraction, we can ensure
-            //that we don't overflow.
-            const Vector3 extents = (0.5f * aabb.GetMax()) - (0.5f * aabb.GetMin());
+            // If the AABB's min and max points distance is larger that FLT_MAX it would be easy to overflow floats by doing "0.5f * GetExtents()"
+            // or "0.5f * (GetMax() - GetMin())". Separating into two multiplies before the subtraction "0.5f * GetMax() - 0.5f * GetMin()"
+            // can lead to overflows as well and result with infs values.
+            auto safeExtend = [](float min, float max)
+            {
+                const float minPlusFloatMax = min + AZ::Constants::FloatMax;
+                constexpr float halfFloatMax = 0.5f * AZ::Constants::FloatMax;
+                return (min > 0.0f || minPlusFloatMax > max)
+                    ? 0.5f * (max - min) // Max-min distance is lower than FloatMax, so result range is [0, half-FloatMax]
+                    : halfFloatMax + 0.5f * (max - minPlusFloatMax); // Result range is [half-FloatMax, FloatMax]
+            };
+
+            const Vector3& aabbMin = aabb.GetMin();
+            const Vector3& aabbMax = aabb.GetMax();
+
+            const Vector3 extents = {
+                safeExtend(aabbMin.GetX(), aabbMax.GetX()),
+                safeExtend(aabbMin.GetY(), aabbMax.GetY()),
+                safeExtend(aabbMin.GetZ(), aabbMax.GetZ())
+            };
 
             for (Frustum::PlaneId planeId = Frustum::PlaneId::Near; planeId < Frustum::PlaneId::MAX; ++planeId)
             {
                 const Plane plane = frustum.GetPlane(planeId);
-                if (plane.GetPointDist(center) + extents.Dot(plane.GetNormal().GetAbs()) <= 0.0f)
+                // Since extends could contain values close to FLT_MAX, do not add or subtract
+                // in this check to avoid overflows.
+                if (plane.GetPointDist(center) <= -extents.Dot(plane.GetNormal().GetAbs()))
                 {
                     return false;
                 }
