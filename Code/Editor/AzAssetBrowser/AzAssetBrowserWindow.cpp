@@ -121,7 +121,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_createButton->setAutoRaise(true);
         m_ui->m_createButton->setPopupMode(QToolButton::InstantPopup);
 
-        connect(m_createMenu, &QMenu::aboutToShow, this, [this] { AddCreateMenu(); });
+        connect(m_createMenu, &QMenu::aboutToShow, this, &AzAssetBrowserWindow::AddCreateMenu);
 
         connect(m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged,
             this, &AzAssetBrowserWindow::UpdateWidgetAfterFilter);
@@ -231,7 +231,6 @@ void AzAssetBrowserWindow::AddCreateMenu()
     {
         return;
     }
-    AZStd::string fullFilePath;
 
     if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
     {
@@ -241,7 +240,7 @@ void AzAssetBrowserWindow::AddCreateMenu()
             return;
         }
     }
-    fullFilePath = entry->GetFullPath();
+    AZStd::string fullFilePath = entry->GetFullPath();
 
     AZStd::string folderPath;
 

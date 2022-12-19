@@ -111,8 +111,8 @@
             <string>...</string>
            </property>
            <property name="icon">
-            <iconset>
-             <normaloff>:/stylesheet/img/UI20/plus.svg</normaloff>:/stylesheet/img/UI20/plus.svg</iconset>
+            <iconset resource="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+             <normaloff>:/Gallery/Add.svg</normaloff>:/Gallery/Add.svg</iconset>
            </property>
           </widget>
          </item>
