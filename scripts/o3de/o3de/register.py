@@ -415,9 +415,8 @@ def register_gem_path(json_data: dict,
             incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path)
             if incompatible_objects: 
                 logger.error(f'{gem_json_data["gem_name"]} is not known compatible with the '
-                    'following objects/APIs and requires the --force parameter to register:')
-                for element in incompatible_objects:
-                    logger.error(f'  {element}')
+                    'following objects/APIs and requires the --force parameter to register:'+
+                    "\n  ".join(incompatible_objects))
                 return 1
         elif engine_path:
             engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
@@ -427,9 +426,8 @@ def register_gem_path(json_data: dict,
             incompatible_objects = compatibility.get_gem_engine_incompatible_objects(gem_json_data, engine_json_data)
             if incompatible_objects: 
                 logger.error(f'{gem_json_data["gem_name"]} is not known compatible with the '
-                    'following objects/APIs and requires the --force parameter to register:')
-                for element in incompatible_objects:
-                    logger.error(f'  {element}')
+                    'following objects/APIs and requires the --force parameter to register:'+
+                    "\n  ".join(incompatible_objects))
                 return 1
 
     return register_o3de_object_path(json_data, gem_path, 'external_subdirectories', 'gem.json',
