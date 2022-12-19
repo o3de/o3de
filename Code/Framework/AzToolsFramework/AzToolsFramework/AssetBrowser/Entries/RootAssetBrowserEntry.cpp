@@ -396,34 +396,15 @@ namespace AzToolsFramework
             // If the project is not inside the root engine folder
             if (!m_projectPath.IsRelativeTo(m_enginePath))
             {
-                // Update the parent to be the project directory
-                AZ::IO::FixedMaxPath directory;
-                if (absolutePathView.IsRelativeTo(m_projectPath) && !inProjectDirectory)
+                // Update the parent to be the project directory if it isn't already
+                if (absolutePathView.IsRelativeTo(m_projectPath) && !parent->m_fullPath.IsRelativeTo(m_projectPath))
                 {
-                    for (auto pathIter = m_projectPath.begin(); pathIter != m_projectPath.end(); ++pathIter)
-                    {
-                        if (std::next(pathIter) == m_projectPath.end())
-                        {
-                            break;
-                        }
-                        directory = directory / *pathIter;
-                    }
-                    parent->m_fullPath = directory;
-                    inProjectDirectory = true;
+                    parent->m_fullPath = m_projectPath.ParentPath();
                 }
-                // Update the parent to be the o3de directory
-                else if (absolutePathView.IsRelativeTo(m_enginePath) && inProjectDirectory)
+                // Update the parent to be the o3de directory if it isn't already
+                else if (absolutePathView.IsRelativeTo(m_enginePath) && !parent->m_fullPath.IsRelativeTo(m_enginePath))
                 {
-                    for (auto pathIter = m_enginePath.begin(); pathIter != m_enginePath.end(); ++pathIter)
-                    {
-                        if (std::next(pathIter) == m_enginePath.end())
-                        {
-                            break;
-                        }
-                        directory = directory / *pathIter;
-                    }
-                    parent->m_fullPath = directory;
-                    inProjectDirectory = false;
+                    parent->m_fullPath = m_enginePath.ParentPath();
                 }
             }
 

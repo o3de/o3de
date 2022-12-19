@@ -90,7 +90,6 @@ namespace AzToolsFramework
                 AZStd::unordered_set<AssetBrowserEntry*>& visitedSet);
 
             bool m_isInitialUpdate = false;
-            bool inProjectDirectory = false;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
