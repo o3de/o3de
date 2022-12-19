@@ -89,6 +89,29 @@ namespace DPEDebugView
             return values;
         }
 
+        struct GenericValueTestType
+        {
+            AZ_TYPE_INFO(GenericValueTestType, "{9EBA5A84-02A3-46EB-8C10-22246FD0EFDF}");
+
+            AZStd::string id;
+        };
+
+        using GenericValueListType = AZStd::vector<AZStd::pair<GenericValueTestType, AZStd::string>>;
+
+        GenericValueListType GetGenericValueList()
+        {
+            static GenericValueListType validReturnTypes;
+
+            if (validReturnTypes.empty())
+            {
+                validReturnTypes.push_back(AZStd::make_pair(GenericValueTestType{ "id1" }, "FirstId"));
+                validReturnTypes.push_back(AZStd::make_pair(GenericValueTestType{ "id2" }, "SecondId"));
+                validReturnTypes.push_back(AZStd::make_pair(GenericValueTestType{ "id3" }, "ThirdId"));
+            }
+
+            return validReturnTypes;
+        }
+
         int m_simpleInt = 5;
         int m_readOnlyInt = 33;
         double m_doubleSlider = 3.25;
@@ -105,6 +128,7 @@ namespace DPEDebugView
         AZStd::unordered_map<AZ::EntityId, int> m_entityIdMap;
         EnumType m_enumValue = EnumType::Value1;
         EnumValueType m_enumValueType = EnumValueType::BValue;
+        GenericValueListType m_genericValueList;
         AZ::EntityId m_entityId;
 
         // For testing invocable ReadOnly attributes
@@ -132,6 +156,7 @@ namespace DPEDebugView
                     ->Field("entityIdMap", &TestContainer::m_entityIdMap)
                     ->Field("enumValue", &TestContainer::m_enumValue)
                     ->Field("enumValueType", &TestContainer::m_enumValueType)
+                    ->Field("genericValueList", &TestContainer::m_genericValueList)
                     ->Field("entityId", &TestContainer::m_entityId)
                     ->Field("readonlyInt", &TestContainer::m_readOnlyInt)
                     ->Field("map", &TestContainer::m_readOnlyMap);
@@ -162,7 +187,9 @@ namespace DPEDebugView
                             AZ::Edit::UIHandlers::Default, &TestContainer::m_unorderedMap, "unordered_map<pair<int, double>, int>", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleEnumMap, "unordered_map<enum, int>", "")
                         ->DataElement(
-                            AZ::Edit::UIHandlers::Default, &TestContainer::m_immutableEnumMap, "unordered_map<enum, double> (fixed contents)",
+                            AZ::Edit::UIHandlers::Default,
+                            &TestContainer::m_immutableEnumMap,
+                            "unordered_map<enum, double> (fixed contents)",
                             "")
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_set, "set<int>", "")
@@ -180,6 +207,8 @@ namespace DPEDebugView
                         ->EnumAttribute(EnumValueType::AValue, "AValueDescription")
                         ->EnumAttribute(EnumValueType::BValue, "BValueDescription")
                         ->EnumAttribute(EnumValueType::CValue, "CValueDescription")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TestContainer::m_genericValueList, "GenericValueList ComboBox", "")
+                        ->Attribute(AZ::Edit::Attributes::GenericValueList, &TestContainer::GetGenericValueList)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityId, "entityId", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button2)
