@@ -194,11 +194,6 @@ namespace AssetProcessor
                  (status == AssetProcessor::AssetScanningStatus::Stopped))
         {
             AssetProcessor::StatsCapture::EndCaptureStat("AssetScanning");
-            // place a message in the queue that will cause us to transition
-            // into a "no longer scanning" state and then continue with the next phase
-            // we place this at the end of the queue rather than calling it immediately, becuase
-            // other messages may still be in the queue such as the incoming file list.
-            QMetaObject::invokeMethod(this, "FinishAssetScan", Qt::QueuedConnection);
         }
     }
 
@@ -3206,6 +3201,15 @@ namespace AssetProcessor
         }
     }
 
+    void AssetProcessorManager::CheckReadyToAssessScanFiles()
+    {
+        if (m_catalogReady && m_buildersReady && m_scannerFiles.size() > 0)
+        {
+            AssessFilesFromScanner(m_scannerFiles);
+            m_scannerFiles = {};
+        }
+    }
+
     // The file cache is used before actually hitting physical media to determine the
     // existence of files and to retrieve the file's hash.
     // It assumes that the presence of a file in the cache means the file exists.
@@ -3329,6 +3333,19 @@ namespace AssetProcessor
         }
 
         AssetProcessor::StatsCapture::EndCaptureStat("InitialFileAssessment");
+
+        // place a message in the queue that will cause us to transition
+        // into a "no longer scanning" state and then continue with the next phase
+        // we place this at the end of the queue rather than calling it immediately, becuase
+        // other messages may still be in the queue such as the incoming file list.
+        QMetaObject::invokeMethod(this, "FinishAssetScan", Qt::QueuedConnection);
+    }
+
+    void AssetProcessorManager::RecordFilesFromScanner(QSet<AssetFileInfo> filePaths)
+    {
+        m_scannerFiles = filePaths;
+
+        CheckReadyToAssessScanFiles();
     }
 
     void AssetProcessorManager::RecordFoldersFromScanner(QSet<AssetFileInfo> folderPaths)
@@ -3892,7 +3909,7 @@ namespace AssetProcessor
 
             AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms = scanFolder->GetPlatforms();
 
-            const AssetBuilderSDK::CreateJobsRequest createJobsRequest(builderInfo.m_busId, sourceAsset.RelativePath().Native(), scanFolder->ScanPath().toUtf8().constData(), platforms, sourceUUID);
+            const AssetBuilderSDK::CreateJobsRequest createJobsRequest(builderInfo.m_busId, sourceAsset.RelativePath().c_str(), scanFolder->ScanPath().toUtf8().constData(), platforms, sourceUUID);
 
             AssetBuilderSDK::CreateJobsResponse createJobsResponse;
 
@@ -4785,6 +4802,17 @@ namespace AssetProcessor
     void AssetProcessorManager::OnBuildersRegistered()
     {
         ComputeBuilderDirty();
+
+        m_buildersReady = true;
+
+        CheckReadyToAssessScanFiles();
+    }
+
+    void AssetProcessorManager::OnCatalogReady()
+    {
+        m_catalogReady = true;
+
+        CheckReadyToAssessScanFiles();
     }
 
     void AssetProcessorManager::ComputeBuilderDirty()
@@ -5565,7 +5593,4 @@ namespace AssetProcessor
         }
         return filesFound;
     }
-
-
 } // namespace AssetProcessor
-

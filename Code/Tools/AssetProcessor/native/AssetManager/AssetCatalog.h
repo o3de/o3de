@@ -63,6 +63,7 @@ namespace AssetProcessor
         // outgoing message to the network
         void SendAssetMessage(AzFramework::AssetSystem::AssetNotificationMessage message);
         void AsyncAssetCatalogStatusResponse(AssetCatalogStatus status);
+        void CatalogLoaded();
 
     public Q_SLOTS:
         // incoming message from the AP

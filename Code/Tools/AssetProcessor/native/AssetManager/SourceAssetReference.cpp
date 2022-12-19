@@ -150,17 +150,17 @@ namespace AssetProcessor
         return !m_absolutePath.empty();
     }
 
-    AZ::IO::Path SourceAssetReference::AbsolutePath() const
+    AZ::IO::FixedMaxPath SourceAssetReference::AbsolutePath() const
     {
         return m_absolutePath;
     }
 
-    AZ::IO::Path SourceAssetReference::RelativePath() const
+    AZ::IO::FixedMaxPath SourceAssetReference::RelativePath() const
     {
         return m_relativePath;
     }
 
-    AZ::IO::Path SourceAssetReference::ScanFolderPath() const
+    AZ::IO::FixedMaxPath SourceAssetReference::ScanFolderPath() const
     {
         return m_scanFolderPath;
     }
