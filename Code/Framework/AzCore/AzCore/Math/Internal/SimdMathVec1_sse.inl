@@ -421,7 +421,7 @@ namespace AZ
         {
             // In Vec1 all the elements except the first one can be garbage or 0
             // Using (value.x, 1, 1, 1) to avoid divisions by 0.
-            FloatType ones = Sse::Splat(1.0f);
+            const FloatType ones = Sse::Splat(1.0f);
             return Sse::Reciprocal(
                 Sse::ReplaceFirst(ones, value));
         }
@@ -431,7 +431,7 @@ namespace AZ
         {
             // In Vec1 all the elements except the first one can be garbage or 0
             // Using (value.x, 1, 1, 1) to avoid divisions by 0.
-            FloatType ones = Sse::Splat(1.0f);
+            const FloatType ones = Sse::Splat(1.0f);
             return Sse::ReciprocalEstimate(
                 Sse::ReplaceFirst(ones, value));
         }
