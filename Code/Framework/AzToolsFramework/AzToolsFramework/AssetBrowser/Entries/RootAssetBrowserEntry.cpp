@@ -12,6 +12,7 @@
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
@@ -43,6 +44,7 @@ namespace AzToolsFramework
             EntryCache::GetInstance()->Clear();
 
             m_enginePath = AZ::IO::Path(enginePath).LexicallyNormal();
+            m_projectPath = AZ::IO::Path(AZ::Utils::GetProjectPath()).LexicallyNormal();
             m_fullPath = m_enginePath;
         }
 
@@ -389,6 +391,40 @@ namespace AzToolsFramework
             if (absolutePathView == AZ::IO::PathView(parent->GetFullPath()))
             {
                 return parent;
+            }
+
+            // If the project is not inside the root engine folder
+            if (!m_projectPath.IsRelativeTo(m_enginePath))
+            {
+                // Update the parent to be the project directory
+                AZ::IO::FixedMaxPath directory;
+                if (absolutePathView.IsRelativeTo(m_projectPath) && !inProjectDirectory)
+                {
+                    for (auto pathIter = m_projectPath.begin(); pathIter != m_projectPath.end(); ++pathIter)
+                    {
+                        if (std::next(pathIter) == m_projectPath.end())
+                        {
+                            break;
+                        }
+                        directory = directory / *pathIter;
+                    }
+                    parent->m_fullPath = directory;
+                    inProjectDirectory = true;
+                }
+                // Update the parent to be the o3de directory
+                else if (absolutePathView.IsRelativeTo(m_enginePath) && inProjectDirectory)
+                {
+                    for (auto pathIter = m_enginePath.begin(); pathIter != m_enginePath.end(); ++pathIter)
+                    {
+                        if (std::next(pathIter) == m_enginePath.end())
+                        {
+                            break;
+                        }
+                        directory = directory / *pathIter;
+                    }
+                    parent->m_fullPath = directory;
+                    inProjectDirectory = false;
+                }
             }
 
             // create all missing folders
