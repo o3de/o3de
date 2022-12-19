@@ -283,7 +283,7 @@ namespace UnitTest
 
     TEST(MATH_Quaternion, ToEulerDegrees)
     {
-        float halfAngle = 0.5f *  AZ::Constants::QuarterPi;
+        float halfAngle = 0.5f * AZ::Constants::QuarterPi;
         float sin = sinf(halfAngle);
         float cos = cosf(halfAngle);
         AZ::Quaternion testQuat = AZ::Quaternion::CreateFromVector3AndValue(sin * AZ::Vector3::CreateAxisX(), cos);
@@ -297,16 +297,16 @@ namespace UnitTest
     TEST(MATH_Quaternion, ToEulerRadians)
     {
         constexpr float getEulerRadiansEpsilon = 0.001f;
-        float halfAngle = 0.5f *  AZ::Constants::HalfPi;
+        float halfAngle = 0.5f * AZ::Constants::HalfPi;
         float sin = sinf(halfAngle);
         float cos = cosf(halfAngle);
 
         AZ::Quaternion testQuat = AZ::Quaternion::CreateFromVector3AndValue(sin * AZ::Vector3::CreateAxisY(), cos);
         AZ::Vector3 resultVector = testQuat.GetEulerRadians();
-        EXPECT_NEAR(AZ::Constants::HalfPi, static_cast<float>(resultVector.GetY()), getEulerRadiansEpsilon);
+        EXPECT_NEAR(AZ::Constants::HalfPi, resultVector.GetY(), getEulerRadiansEpsilon);
 
         resultVector = ConvertQuaternionToEulerRadians(testQuat);
-        EXPECT_NEAR(AZ::Constants::HalfPi, static_cast<float>(resultVector.GetY()), getEulerRadiansEpsilon);
+        EXPECT_NEAR(AZ::Constants::HalfPi, resultVector.GetY(), getEulerRadiansEpsilon);
     }
 
     using QuaternionEulerFixture = ::testing::TestWithParam<AZ::Quaternion>;
@@ -367,7 +367,7 @@ namespace UnitTest
         const AZ::Vector3 testDegrees(45.0f, 45.0f, 45.0f);
         AZ::Quaternion testQuat;
         testQuat.SetFromEulerDegrees(testDegrees);
-        EXPECT_THAT(testQuat, IsCloseTolerance(AZ::Quaternion(0.46193981170654296875f, 0.1913417130708694458f, 0.46193981170654296875f, 0.73253774642944335938f), 0.000001f));
+        EXPECT_THAT(testQuat, IsCloseTolerance(AZ::Quaternion(0.46193981170654296875f, 0.1913417130708694458f, 0.46193981170654296875f, 0.73253774642944335938f), 1e-6f));
     }
 
     TEST(MATH_Quaternion, FromEulerRadians)
@@ -375,7 +375,7 @@ namespace UnitTest
         const AZ::Vector3 testRadians(AZ::Constants::QuarterPi, AZ::Constants::QuarterPi, AZ::Constants::QuarterPi);
         AZ::Quaternion testQuat;
         testQuat.SetFromEulerRadians(testRadians);
-        EXPECT_THAT(testQuat, IsCloseTolerance(AZ::Quaternion(0.46193981170654296875f, 0.1913417130708694458f, 0.46193981170654296875f, 0.73253774642944335938f), 0.000001f));
+        EXPECT_THAT(testQuat, IsCloseTolerance(AZ::Quaternion(0.46193981170654296875f, 0.1913417130708694458f, 0.46193981170654296875f, 0.73253774642944335938f), 1e-6f));
     }
 
 

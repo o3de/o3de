@@ -134,7 +134,7 @@ namespace AZ
         AZ_MATH_INLINE Vec1::FloatType Vec1::Div(FloatArgType arg1, FloatArgType arg2)
         {
             // In Vec1 the last 3 elements can be zero, avoid doing division by zero
-            FloatType ones = Sse::Splat(1.0f);
+            const FloatType ones = Sse::Splat(1.0f);
             arg2 = Sse::ReplaceFirst(ones, arg2);
             return Sse::Div(arg1, arg2);
         }

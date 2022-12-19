@@ -43,7 +43,7 @@ namespace AZ
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::FromVec3(Vec3::FloatArgType value)
         {
-            // Comming from a Vec3 the last element could be garbage.
+            // Coming from a Vec3 the last element could be garbage.
             return NeonQuad::ReplaceFourth(value, 0.0f); // {value.x, value.y, value.z, 0.0f}
         }
 

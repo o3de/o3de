@@ -14,7 +14,7 @@ namespace AZ
     {
         namespace Neon
         {
-            static const uint32x4_t LastLane{ 0, 0, 0, 1 };
+            constexpr uint32x4_t LastLane{ 0, 0, 0, 1 };
 
             AZ_MATH_INLINE bool AreAllLanesTrue(uint32x2_t value)
             {

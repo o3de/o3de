@@ -179,14 +179,14 @@ namespace UnitTest
 
     TEST(MATH_Vector4, TestGetNormalized)
     {
-        EXPECT_THAT(AZ::Vector4(3.0f, 0.0f, 4.0f, 0.0f).GetNormalized(), IsCloseTolerance(AZ::Vector4(3.0f / 5.0f, 0.0f, 4.0f / 5.0f, 0.0f), Constants::Tolerance));
-        EXPECT_THAT(AZ::Vector4(3.0f, 0.0f, 4.0f, 0.0f).GetNormalizedEstimate(), IsCloseTolerance(AZ::Vector4(3.0f / 5.0f, 0.0f, 4.0f / 5.0f, 0.0f), Constants::Tolerance));
+        EXPECT_THAT(AZ::Vector4(3.0f, 0.0f, 4.0f, 0.0f).GetNormalized(), IsCloseTolerance(AZ::Vector4(3.0f / 5.0f, 0.0f, 4.0f / 5.0f, 0.0f), Constants::SimdTolerance));
+        EXPECT_THAT(AZ::Vector4(3.0f, 0.0f, 4.0f, 0.0f).GetNormalizedEstimate(), IsCloseTolerance(AZ::Vector4(3.0f / 5.0f, 0.0f, 4.0f / 5.0f, 0.0f), Constants::SimdTolerance));
     }
 
     TEST(MATH_Vector4, TestGetNormalizedSafe)
     {
-        EXPECT_THAT(AZ::Vector4(3.0f, 0.0f, 4.0f, 0.0f).GetNormalizedSafe(), IsCloseTolerance(AZ::Vector4(3.0f / 5.0f, 0.0f, 4.0f / 5.0f, 0.0f), Constants::Tolerance));
-        EXPECT_THAT(AZ::Vector4(3.0f, 0.0f, 4.0f, 0.0f).GetNormalizedSafeEstimate(), IsCloseTolerance(AZ::Vector4(3.0f / 5.0f, 0.0f, 4.0f / 5.0f, 0.0f), Constants::Tolerance));
+        EXPECT_THAT(AZ::Vector4(3.0f, 0.0f, 4.0f, 0.0f).GetNormalizedSafe(), IsCloseTolerance(AZ::Vector4(3.0f / 5.0f, 0.0f, 4.0f / 5.0f, 0.0f), Constants::SimdTolerance));
+        EXPECT_THAT(AZ::Vector4(3.0f, 0.0f, 4.0f, 0.0f).GetNormalizedSafeEstimate(), IsCloseTolerance(AZ::Vector4(3.0f / 5.0f, 0.0f, 4.0f / 5.0f, 0.0f), Constants::SimdTolerance));
         EXPECT_THAT(AZ::Vector4(0.0f).GetNormalizedSafe(), IsClose(AZ::Vector4(0.0f, 0.0f, 0.0f, 0.0f)));
         EXPECT_THAT(AZ::Vector4(0.0f).GetNormalizedSafeEstimate(), IsClose(AZ::Vector4(0.0f, 0.0f, 0.0f, 0.0f)));
     }
@@ -195,10 +195,10 @@ namespace UnitTest
     {
         AZ::Vector4 v1(4.0f, 3.0f, 0.0f, 0.0f);
         v1.Normalize();
-        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(4.0f / 5.0f, 3.0f / 5.0f, 0.0f, 0.0f), Constants::Tolerance));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(4.0f / 5.0f, 3.0f / 5.0f, 0.0f, 0.0f), Constants::SimdTolerance));
         v1.Set(4.0f, 3.0f, 0.0f, 0.0f);
         v1.NormalizeEstimate();
-        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(4.0f / 5.0f, 3.0f / 5.0f, 0.0f, 0.0f), Constants::Tolerance));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(4.0f / 5.0f, 3.0f / 5.0f, 0.0f, 0.0f), Constants::SimdTolerance));
     }
 
     TEST(MATH_Vector4, TestNormalizeWithLength)
@@ -206,24 +206,24 @@ namespace UnitTest
         AZ::Vector4 v1(4.0f, 3.0f, 0.0f, 0.0f);
         float length = v1.NormalizeWithLength();
         ASSERT_FLOAT_EQ(length, 5.0f);
-        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(4.0f / 5.0f, 3.0f / 5.0f, 0.0f, 0.0f), Constants::Tolerance));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(4.0f / 5.0f, 3.0f / 5.0f, 0.0f, 0.0f), Constants::SimdTolerance));
         v1.Set(4.0f, 3.0f, 0.0f, 0.0f);
         length = v1.NormalizeWithLengthEstimate();
         ASSERT_FLOAT_EQ(length, 5.0f);
-        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(4.0f / 5.0f, 3.0f / 5.0f, 0.0f, 0.0f), Constants::Tolerance));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(4.0f / 5.0f, 3.0f / 5.0f, 0.0f, 0.0f), Constants::SimdTolerance));
     }
 
     TEST(MATH_Vector4, TestNormalizeSafe)
     {
         AZ::Vector4 v1(0.0f, 3.0f, 4.0f, 0.0f);
         v1.NormalizeSafe();
-        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(0.0f, 3.0f / 5.0f, 4.0f / 5.0f, 0.0f), Constants::Tolerance));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(0.0f, 3.0f / 5.0f, 4.0f / 5.0f, 0.0f), Constants::SimdTolerance));
         v1.Set(0.0f);
         v1.NormalizeSafe();
         EXPECT_THAT(v1, IsClose(AZ::Vector4(0.0f, 0.0f, 0.0f, 0.0f)));
         v1.Set(0.0f, 3.0f, 4.0f, 0.0f);
         v1.NormalizeSafeEstimate();
-        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(0.0f, 3.0f / 5.0f, 4.0f / 5.0f, 0.0f), Constants::Tolerance));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(0.0f, 3.0f / 5.0f, 4.0f / 5.0f, 0.0f), Constants::SimdTolerance));
         v1.Set(0.0f);
         v1.NormalizeSafeEstimate();
         EXPECT_THAT(v1, IsClose(AZ::Vector4(0.0f, 0.0f, 0.0f, 0.0f)));
@@ -234,7 +234,7 @@ namespace UnitTest
         AZ::Vector4 v1(0.0f, 3.0f, 4.0f, 0.0f);
         float length = v1.NormalizeSafeWithLength();
         EXPECT_FLOAT_EQ(length, 5.0f);
-        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(0.0f, 3.0f / 5.0f, 4.0f / 5.0f, 0.0f), Constants::Tolerance));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(0.0f, 3.0f / 5.0f, 4.0f / 5.0f, 0.0f), Constants::SimdTolerance));
         v1.Set(0.0f);
         length = v1.NormalizeSafeWithLength();
         EXPECT_FLOAT_EQ(length, 0.0f);
@@ -242,7 +242,7 @@ namespace UnitTest
         v1.Set(0.0f, 3.0f, 4.0f, 0.0f);
         length = v1.NormalizeSafeWithLengthEstimate();
         EXPECT_FLOAT_EQ(length, 5.0f);
-        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(0.0f, 3.0f / 5.0f, 4.0f / 5.0f, 0.0f), Constants::Tolerance));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(0.0f, 3.0f / 5.0f, 4.0f / 5.0f, 0.0f), Constants::SimdTolerance));
         v1.Set(0.0f);
         length = v1.NormalizeSafeWithLengthEstimate();
         EXPECT_FLOAT_EQ(length, 0.0f);
@@ -263,7 +263,7 @@ namespace UnitTest
         EXPECT_THAT(v1, IsClose(AZ::Vector4(6.0f, 8.0f, 0.0f, 0.0f)));
         v1.Set(3.0f, 4.0f, 0.0f, 0.0f);
         v1.SetLengthEstimate(10.0f);
-        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(6.0f, 8.0f, 0.0f, 0.0f), Constants::ToleranceEstimateFuncs));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector4(6.0f, 8.0f, 0.0f, 0.0f), Constants::SimdToleranceEstimateFuncs));
     }
 
     TEST(MATH_Vector4, TestDistance)
@@ -428,13 +428,13 @@ namespace UnitTest
     TEST_P(Vector4AngleTestFixture, TestAngle)
     {
         auto& param = GetParam();
-        EXPECT_NEAR(param.current.Angle(param.target), param.angle, Constants::Tolerance);
+        EXPECT_NEAR(param.current.Angle(param.target), param.angle, Constants::SimdTolerance);
     }
 
     TEST_P(Vector4AngleTestFixture, TestAngleSafe)
     {
         auto& param = GetParam();
-        EXPECT_NEAR(param.current.AngleSafe(param.target), param.angle, Constants::Tolerance);
+        EXPECT_NEAR(param.current.AngleSafe(param.target), param.angle, Constants::SimdTolerance);
     }
 
     INSTANTIATE_TEST_CASE_P(
@@ -453,13 +453,13 @@ namespace UnitTest
     TEST_P(Vector4AngleDegTestFixture, TestAngleDeg)
     {
         auto& param = GetParam();
-        EXPECT_NEAR(param.current.AngleDeg(param.target), param.angle, Constants::ToleranceAngleDeg);
+        EXPECT_NEAR(param.current.AngleDeg(param.target), param.angle, Constants::SimdToleranceAngleDeg);
     }
 
     TEST_P(Vector4AngleDegTestFixture, TestAngleDegSafe)
     {
         auto& param = GetParam();
-        EXPECT_NEAR(param.current.AngleSafeDeg(param.target), param.angle, Constants::ToleranceAngleDeg);
+        EXPECT_NEAR(param.current.AngleSafeDeg(param.target), param.angle, Constants::SimdToleranceAngleDeg);
     }
     INSTANTIATE_TEST_CASE_P(
         MATH_Vector4,

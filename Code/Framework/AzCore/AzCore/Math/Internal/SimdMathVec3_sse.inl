@@ -29,14 +29,14 @@ namespace AZ
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::FromVec1(Vec1::FloatArgType value)
         {
-            // Comming from a Vec1 the last 3 elements could be garbage.
-            return Sse::SplatFirst(value); // {value.x, value.x, value.x, unused}
+            // Coming from a Vec1 the last 3 elements could be garbage.
+            return Sse::SplatFirst(value); // {value.x, value.x, value.x, value.x}
         }
 
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::FromVec2(Vec2::FloatArgType value)
         {
-            // Comming from a Vec2 the last 2 elements could be garbage.
+            // Coming from a Vec2 the last 2 elements could be garbage.
             return Sse::ReplaceThird(value, 0.0f); // {value.x, value.y, 0.0f, unused}
         }
 

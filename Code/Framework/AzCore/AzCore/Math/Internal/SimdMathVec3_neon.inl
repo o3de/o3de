@@ -33,7 +33,7 @@ namespace AZ
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::FromVec2(Vec2::FloatArgType value)
         {
-            return NeonQuad::FromVec2(value); // {value.x, value.x, 0.0f, unused}
+            return NeonQuad::FromVec2(value); // {value.x, value.y, 0.0f, unused}
         }
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::LoadAligned(const float* __restrict addr)

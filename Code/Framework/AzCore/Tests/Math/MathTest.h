@@ -22,16 +22,16 @@ namespace UnitTest::Constants
 {
 #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     // Larger tolerance is needed when using NEON.
-    static const float Tolerance = 0.005f;
+    static const float SimdTolerance = 0.005f;
     // Low precision from NEON causes some estimate functions,
     // like SetLengthEstimate(), to need larger tolerance.
-    static const float ToleranceEstimateFuncs = 0.05f;
+    static const float SimdToleranceEstimateFuncs = 0.05f;
     // Low precision from NEON InvSqrt() leads to AngleDeg tests to need
     // large tolerance since converting to degrees exacerbates the low precision.
-    static const float ToleranceAngleDeg = 0.2f;
+    static const float SimdToleranceAngleDeg = 0.2f;
 #else
-    static const float Tolerance = AZ::Constants::Tolerance;
-    static const float ToleranceEstimateFuncs = AZ::Constants::Tolerance;
-    static const float ToleranceAngleDeg = AZ::Constants::Tolerance;
+    static const float SimdTolerance = AZ::Constants::Tolerance;
+    static const float SimdToleranceEstimateFuncs = AZ::Constants::Tolerance;
+    static const float SimdToleranceAngleDeg = AZ::Constants::Tolerance;
 #endif
 }

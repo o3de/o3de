@@ -23,8 +23,8 @@ namespace AZ
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::FromVec1(Vec1::FloatArgType value)
         {
-            // Comming from a Vec1 the last 3 elements could be garbage.
-            return Sse::SplatFirst(value);  // {value.x, value.x, unused, unused}
+            // Coming from a Vec1 the last 3 elements could be garbage.
+            return Sse::SplatFirst(value);  // {value.x, value.x, value.x, value.x}
         }
 
 
