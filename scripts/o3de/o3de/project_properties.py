@@ -30,18 +30,18 @@ def _edit_gem_names(proj_json: dict,
                     new_gem_names: str or list = None,
                     delete_gem_names: str or list = None,
                     replace_gem_names: str or list = None,
-                    is_optional: bool = False):
+                    is_optional_gem: bool = False):
     """
     Edits and modifies the 'gem_names' list in the proj_json parameter.
     :param proj_json: The project json data
     :param new_gem_names: Any gem names to be added to the list
     :param delete_gem_names: Any gem names to be removed from the list
     :param replace_gem_names: A list of gem names that will completely replace the current list
-    :param is_optional: Only applies to new_gem_names, when true will add an 'optional' property to the gem(s)
+    :param is_optional_gem: Only applies to new_gem_names, when true will add an 'optional' property to the gem(s)
     """
     if new_gem_names:
         add_list = new_gem_names.split() if isinstance(new_gem_names, str) else new_gem_names
-        if is_optional:
+        if is_optional_gem:
             add_list = [dict(name=gem_name, optional=True) for gem_name in add_list]
         proj_json.setdefault('gem_names', []).extend(add_list)
 
@@ -83,11 +83,37 @@ def edit_project_props(proj_path: pathlib.Path = None,
                        delete_compatible_engines: str or list = None,
                        replace_compatible_engines: str or list = None,
                        new_version: str = None,
-                       is_optional: bool = False,
+                       is_optional_gem: bool = False,
                        new_engine_api_dependencies: list or str = None,
                        delete_engine_api_dependencies: list or str = None,
                        replace_engine_api_dependencies: list or str = None
                        ) -> int:
+    """
+    Edits and modifies the project properties for the project located at 'proj_path' or with the name 'proj_name'.
+    :param proj_path: The path to the project folder
+    :param proj_name: The name of the project 
+    :param new_name: The new name for the project
+    :param new_id: The new ID for the project
+    :param new_origin: The new origin for the project
+    :param new_display: The new display name for the project
+    :param new_summary: The new gem summary text
+    :param new_icon: The new path to the gem's icon file 
+    :param new_tags: New tags to add to 'user_tags'
+    :param delete_tags: Tags to remove from 'user_tags'
+    :param replace_tags: Tags to replace 'user_tags' with
+    :param new_gem_names: Any gem names to be added to the list
+    :param delete_gem_names: Any gem names to be removed from the list
+    :param replace_gem_names: A list of gem names that will completely replace the current list
+    :param new_engine_name: The new engine name this project is registered with
+    :param new_compatible_engines: Compatible engine version specifiers to add e.g. o3de==1.2.3
+    :param delete_compatible_engines: Engine version specifiers to remove from 'compatible_engines'
+    :param replace_compatible_engines: Engine version specifiers to replace everything in'compatible_engines' 
+    :param new_version: The new project version e.g. 1.2.3
+    :param is_optional_gem: Only applies to new_gem_names, when true will add an 'optional' property to the gem(s)
+    :param new_engine_api_dependencies: Engine API version specifiers to add e.g. launcher==1.2.3
+    :param remove_engine_api_dependencies: Version specifiers to remove from 'engine_api_dependencies'
+    :param replace_engine_api_dependencies: Version specifiers to replace 'engine_api_dependencies' with
+    """
     proj_json = get_project_props(proj_name, proj_path)
 
     if not proj_json:
@@ -117,7 +143,7 @@ def edit_project_props(proj_path: pathlib.Path = None,
                                                         delete_tags, replace_tags)
 
     if new_gem_names or delete_gem_names or replace_gem_names != None:
-        _edit_gem_names(proj_json, new_gem_names, delete_gem_names, replace_gem_names, is_optional)
+        _edit_gem_names(proj_json, new_gem_names, delete_gem_names, replace_gem_names, is_optional_gem)
 
     if new_compatible_engines or delete_compatible_engines or replace_compatible_engines != None:
         if (new_compatible_engines and not utils.validate_version_specifier_list(new_compatible_engines)) or \
@@ -160,7 +186,7 @@ def _edit_project_props(args: argparse) -> int:
                               args.delete_compatible_engines,
                               args.replace_compatible_engines,
                               args.project_version,
-                              False, # is_optional
+                              False, # is_optional_gem
                               args.add_engine_api_dependencies,
                               args.delete_engine_api_dependencies,
                               args.replace_engine_api_dependencies

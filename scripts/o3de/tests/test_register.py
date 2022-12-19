@@ -280,9 +280,9 @@ class TestRegisterProject:
             # passes when compatible_engines has match
             pytest.param('o3de6', '0.0.0', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de6'], None, None, None, False, 0),
             pytest.param('o3de7', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de7>=1.2.3','o3de-sdk==2.3.4'], None, None, None, False, 0),
-            # fails when uses gem that is not known compatible with version 1.2.3 
+            # fails when gem is used that is not known compatible with version 1.2.3 
             pytest.param('o3de8', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de8'], None, ['o3de==2.3.4'], None, False, 1),
-            # passes when uses gem that is known compatible with version 1.2.3 
+            # passes when gem is used that is known compatible with version 1.2.3 
             pytest.param('o3de9', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de9'], None, ['o3de9==1.2.3'], None, False, 0),
             # passes when compatible engine not found but compatible api found
             pytest.param('o3de10', '1.2.3', {'api':'1.2.3'}, { 'gem1':'' }, "", "", ['gem1'], ['o3de10==2.3.4'], ['api==1.2.3'], None, None, False, 0),
@@ -290,9 +290,9 @@ class TestRegisterProject:
             pytest.param('o3de11', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, "", "", ['gem1'], ['o3de11==1.2.3'], ['api==1.2.3'], None, None, False, 0),
             # fails when no compatible engine or api found
             pytest.param('o3de12', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], ['o3de12==3.4.5'], ['api==4.5.6'], None, None, False, 1),
-            # passes when uses gem with compatible engine and api found
+            # passes when gem is used with compatible engine and api found
             pytest.param('o3de13', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], None, None, ['o3de13>=1.0.0'], ['api~=1.2.3'] , False, 0),
-            # fails when uses gem with no compatible engine or api found
+            # fails when gem is used with no compatible engine or api found
             pytest.param('o3de14', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], None, None, ['o3de14==2.3.4'], ['api==1.2.3'] , False, 1),
         ]
     )

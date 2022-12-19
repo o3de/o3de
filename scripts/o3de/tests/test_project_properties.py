@@ -63,6 +63,7 @@ class TestEditProjectProperties:
                               expected_compatible_engines, \
                               add_engine_api_dependencies, remove_engine_api_dependencies, replace_engine_api_dependencies,\
                               expected_engine_api_dependencies,\
+                              is_optional_gem,\
                               expected_result",  [
         pytest.param(pathlib.PurePath('E:/TestProject'),
                     'ProjNameA1', 'ProjNameB', 'ProjID', 'Origin', 
@@ -72,6 +73,7 @@ class TestEditProjectProperties:
                     'NewEngineName',
                     'o3de>=1.0', 'o3de-sdk==2205.01', None, ['o3de>=1.0'],
                     ['editor==2.3.4'], None, None, ['framework==1.2.3','editor==2.3.4'],
+                    False,
                     0),
         pytest.param(pathlib.PurePath('D:/TestProject'),
                     'ProjNameA2', 'ProjNameB', 'ProjID', 'Origin', 
@@ -81,6 +83,7 @@ class TestEditProjectProperties:
                     'o3de-sdk',
                     'c==4.3.2.1', None, 'a>=0.1 b==1.0,==2.0', ['a>=0.1', 'b==1.0,==2.0'],
                     ['launcher==3.4.5'], ['framework==1.2.3'], None, ['launcher==3.4.5'],
+                    False,
                     0),
         pytest.param(pathlib.PurePath('D:/TestProject'),
                     'ProjNameA3', 'ProjNameB', 'ProjID', 'Origin', 
@@ -90,6 +93,7 @@ class TestEditProjectProperties:
                     'o3de-install',
                     None, 'o3de-sdk==2205.01', None, [],
                     None, None, ['framework==9.8.7'], ['framework==9.8.7'],
+                    False,
                     0),
         pytest.param(pathlib.PurePath('D:/TestProject'),
                     'ProjNameA4', 'ProjNameB', 'ProjID', 'Origin', 
@@ -99,6 +103,7 @@ class TestEditProjectProperties:
                     'o3de-install',
                     None, None, [], [],
                     None, None, [], [],
+                    False,
                     0),
         pytest.param(pathlib.PurePath('F:/TestProject'),
                     'ProjNameA5', 'ProjNameB', 'ProjID', 'Origin', 
@@ -108,6 +113,7 @@ class TestEditProjectProperties:
                     None,
                     None, None, 'invalid', ['b==1.0,==2.0'], # invalid version
                     None, None, None, ['framework==1.2.3'],
+                    False,
                     1),
         pytest.param('', # invalid path
                     'ProjNameA6', 'ProjNameB', 'IDB', 'OriginB', 
@@ -117,7 +123,19 @@ class TestEditProjectProperties:
                     None,
                     None, None, 'o3de-sdk==2205.1', ['o3de-sdk==2205.1'],
                     None, None, None, ['framework==1.2.3'],
-                    1)
+                    False,
+                    1),
+        # test with an optional gem
+        pytest.param(pathlib.PurePath('D:/TestProject'),
+                    'ProjNameA4', 'ProjNameB', 'ProjID', 'Origin', 
+                    'Display', 'Summary', 'Icon', '1.0.0.0', 
+                    'A', None, None, ['A', 'TestProject'],
+                    ['GemA'], None, '', [{'name':'GemA','optional':True}],
+                    'o3de-install',
+                    None, None, [], [],
+                    None, None, [], [],
+                    True,
+                    0),
         ]
     )
     def test_edit_project_properties(self, project_path, project_name, project_new_name, project_id, project_origin,
@@ -129,6 +147,7 @@ class TestEditProjectProperties:
                                      expected_compatible_engines,
                                      add_engine_api_dependencies, remove_engine_api_dependencies, 
                                      replace_engine_api_dependencies, expected_engine_api_dependencies,
+                                     is_optional_gem,
                                      expected_result):
 
         def get_project_json_data(project_name: str, project_path) -> dict:
@@ -149,7 +168,7 @@ class TestEditProjectProperties:
                                                            add_gem_names, delete_gem_names, replace_gem_names,
                                                            engine_name,
                                                            add_compatible_engines, delete_compatible_engines, replace_compatible_engines,
-                                                           project_version, False,
+                                                           project_version, is_optional_gem,
                                                            add_engine_api_dependencies, remove_engine_api_dependencies, replace_engine_api_dependencies)
             assert result == expected_result
             if result == 0:
@@ -166,7 +185,10 @@ class TestEditProjectProperties:
                     assert self.project_json.data.get('engine', '') == engine_name
 
                 assert set(self.project_json.data.get('user_tags', [])) == set(expected_tags)
-                assert set(self.project_json.data.get('gem_names', [])) == set(expected_gem_names)
+
+                for gem in self.project_json.data.get('gem_names', []):
+                    assert(gem in expected_gem_names)
+
                 assert set(self.project_json.data.get('compatible_engines', [])) == set(expected_compatible_engines)
                 assert set(self.project_json.data.get('engine_api_dependencies', [])) == set(expected_engine_api_dependencies)
             elif not project_path:

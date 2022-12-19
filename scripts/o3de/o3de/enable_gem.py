@@ -123,7 +123,7 @@ def enable_gem_in_project(gem_name: str = None,
     # If the gem is not part of buildable set, it's gem_name should be registered to the "gem_names" field
     if gem_path not in buildable_gems:
         ret_val = project_properties.edit_project_props(project_path, new_gem_names=gem_json_data['gem_name'],
-                                                        is_optional=optional)
+                                                        is_optional_gem=optional)
 
     # add the gem if it is registered in either the project.json or engine.json
     ret_val = ret_val or cmake.add_gem_dependency(project_enabled_gem_file, gem_json_data['gem_name'])

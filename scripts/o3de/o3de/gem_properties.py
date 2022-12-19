@@ -44,6 +44,35 @@ def edit_gem_props(gem_path: pathlib.Path = None,
                    remove_engine_api_dependencies: list or str = None,
                    replace_engine_api_dependencies: list or str = None
                    ) -> int:
+    """
+    Edits and modifies the gem properties for the gem located at 'gem_path' or with the name 'gem_name'.
+    :param gem_path: The path to the gem folder
+    :param gem_name: The name of the gem
+    :param new_name: The new name for the gem
+    :param new_display: The new display name for the gem
+    :param new_origin: The new origin for the gem
+    :param new_type: The new gem type
+    :param new_summary: The new gem summary text
+    :param new_icon: The new path to the gem's icon file 
+    :param new_requirements: The new gem requirements text
+    :param new_documentation_url: The new URL to the gem documentation
+    :param new_license: The new gem license type
+    :param new_license_url: The new URL to the gem license
+    :param new_version: The new gem version e.g. 1.2.3
+    :param new_compatible_engines: Compatible engine version specifiers to add e.g. o3de==1.2.3
+    :param remove_compatible_engines: Engine version specifiers to remove from 'compatible_engines'
+    :param replace_compatible_engines: Engine version specifiers to replace everything in'compatible_engines' 
+    :param new_repo_uri: The new URI to the remote object repository
+    :param new_tags: New tags to add to 'user_tags'
+    :param remove_tags: Tags to remove from 'user_tags'
+    :param replace_tags: Tags to replace 'user_tags' with
+    :param new_platforms: New platforms to add to 'platforms'
+    :param remove_platforms: Platforms to remove from 'platforms'
+    :param replace_platforms: Platforms to replace 'platforms' with
+    :param new_engine_api_dependencies: Engine API version specifiers to add e.g. launcher==1.2.3
+    :param remove_engine_api_dependencies: Version specifiers to remove from 'engine_api_dependencies'
+    :param replace_engine_api_dependencies: Version specifiers to replace 'engine_api_dependencies' with
+    """
 
     if not gem_path and not gem_name:
         logger.error(f'Either a gem path or a gem name must be supplied to lookup gem.json')
