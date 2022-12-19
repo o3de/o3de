@@ -53,15 +53,30 @@ class Test_Messages:
         "Found Update materials root object.",
         "Failed to find Update materials root object."
     )
+    
+    scene_settings_found_advanced_settings_row = (
+        "Found 'use advanced settings' root object.",
+        "Failed to find 'use advanced settings' root object."
+    )
 
-    scene_settings_found_update_materials_checkbox = (
+    scene_settings_found_expected_interface_checkbox = (
         "Found the expected interface element in the scene settings UI.",
         "Unable to find the expected interface element in the scene settings UI."
     )
+            
+    scene_settings_found_only_one_checkbox = (
+        "Found single checkbox object.",
+        "Checkbox count is incorrect."
+    )
     
-    scene_settings_found_only_one_update_materials_checkbox = (
-        "Found single Update materials checkbox object.",
-        "Update materials checkbox count is incorrect."
+    scene_settings_read_only_checked = (
+        "Verified checkbox was checked.",
+        "Checkbox was not checked."
+    )
+    
+    scene_settings_read_only_disabled = (
+        "Verified checkbox was not enabled.",
+        "Checkbox was enabled when it was expected to be read-only."
     )
 
     # Make sure the UI became responsive after the save finished.
