@@ -217,4 +217,21 @@ namespace UnitTests
 
         return m_expectingFailure;
     }
+
+    void MockFileStateCache::RegisterForDeleteEvent(AZ::Event<AssetProcessor::FileStateInfo>::Handler& handler)
+    {
+        handler.Connect(m_deleteEvent);
+    }
+
+    bool MockFileStateCache::GetHash(const QString& absolutePath, FileHash* foundHash)
+    {
+        if (!Exists(absolutePath))
+        {
+            return false;
+        }
+
+        *foundHash = AssetUtilities::GetFileHash(absolutePath.toUtf8().constData(), true);
+
+        return true;
+    }
 } // namespace UnitTests

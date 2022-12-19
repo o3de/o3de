@@ -61,6 +61,7 @@ namespace UnitTests
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
 
+        MockFileStateCache m_fileStateCache;
         AzToolsFramework::MetadataManager m_metadataManager;
         AssetProcessor::UuidManager m_uuidManager;
         MockPathConversion m_pathConversion;

@@ -14,6 +14,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <gmock/gmock.h>
 #include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
+#include <AssetManager/FileStateCache.h>
 
 namespace UnitTests
 {
@@ -314,5 +315,33 @@ namespace UnitTests
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZStd::unordered_map<AZ::IO::HandleType, AZStd::string> m_mockFiles;
         AZStd::unique_ptr<testing::NiceMock<AZ::IO::MockFileIOBase>> m_fileIOMock;
+    };
+
+    struct MockFileStateCache : AssetProcessor::FileStateBase
+    {
+        bool GetFileInfo(const QString& absolutePath, AssetProcessor::FileStateInfo* foundFileInfo) const override
+        {
+            if (Exists(absolutePath))
+            {
+                auto* io = AZ::IO::FileIOBase::GetInstance();
+                AZ::u64 size;
+                io->Size(absolutePath.toUtf8().constData(), size);
+                *foundFileInfo = AssetProcessor::FileStateInfo(absolutePath, QDateTime::fromMSecsSinceEpoch(io->ModificationTime(absolutePath.toUtf8().constData())), size, io->IsDirectory(absolutePath.toUtf8().constData()));
+
+                return true;
+            }
+
+            return false;
+        }
+
+        bool Exists(const QString& absolutePath) const override
+        {
+            return AZ::IO::FileIOBase::GetInstance()->Exists(absolutePath.toUtf8().constData());
+        }
+
+        bool GetHash(const QString& absolutePath, FileHash* foundHash) override;
+        void RegisterForDeleteEvent(AZ::Event<AssetProcessor::FileStateInfo>::Handler& handler) override;
+
+        AZ::Event<AssetProcessor::FileStateInfo> m_deleteEvent;
     };
 }
