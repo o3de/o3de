@@ -243,13 +243,26 @@
                     ]
                 },
                 {
+                    "Name": "WhiteBalancePass",
+                    "TemplateName": "WhiteBalanceTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+			                "AttachmentRef": {
+                                "Pass": "FilmGrainPass",
+                                "Attachment": "Output"
+			                }
+			            }
+		            ]
+                },
+                {
                     "Name": "VignettePass",
                     "TemplateName": "VignetteTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "FilmGrainPass",
+                                "Pass": "WhiteBalancePass",
                                 "Attachment": "Output"
                             }
                         }

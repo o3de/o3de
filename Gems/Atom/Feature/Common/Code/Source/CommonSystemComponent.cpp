@@ -71,6 +71,7 @@
 #include <PostProcessing/ChromaticAberrationPass.h>
 #include <PostProcessing/PaniniProjectionPass.h>
 #include <PostProcessing/FilmGrainPass.h>
+#include <PostProcessing/WhiteBalancePass.h>
 #include <PostProcessing/VignettePass.h>
 #include <ScreenSpace/DeferredFogPass.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
@@ -278,6 +279,9 @@ namespace AZ
 
             // Add FilmGrain
             passSystem->AddPassCreator(Name("FilmGrainPass"), &FilmGrainPass::Create);
+
+            // Add White Balance pass
+            passSystem->AddPassCreator(Name("WhiteBalancePass"), &WhiteBalancePass::Create);
 
             // Add Vignette
             passSystem->AddPassCreator(Name("VignettePass"), &VignettePass::Create);

@@ -183,6 +183,7 @@ set(FILES
     Passes/UI.pass
     Passes/UIParent.pass
     Passes/Vignette.pass
+    Passes/WhiteBalance.pass
     Scripts/material_find_overrides_demo.lua
     Scripts/material_property_overrides_demo.lua
     ShaderLib/3rdParty/Features/PostProcessing/KelvinToRgb.azsli
@@ -546,6 +547,8 @@ set(FILES
     Shaders/PostProcessing/Taa.shader
     Shaders/PostProcessing/UniformColor.azsl
     Shaders/PostProcessing/UniformColor.shader
+	Shaders/PostProcessing/WhiteBalance.azsl
+    Shaders/PostProcessing/WhiteBalance.shader
     Shaders/Reflections/ReflectionCommon.azsli
     Shaders/Reflections/ReflectionComposite.azsl
     Shaders/Reflections/ReflectionComposite.shader

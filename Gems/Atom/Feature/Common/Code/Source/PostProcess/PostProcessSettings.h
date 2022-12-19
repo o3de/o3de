@@ -21,6 +21,7 @@
 #include <PostProcess/ChromaticAberration/ChromaticAberrationSettings.h>
 #include <PostProcess/PaniniProjection/PaniniProjectionSettings.h>
 #include <PostProcess/FilmGrain/FilmGrainSettings.h>
+#include <PostProcess/WhiteBalance/WhiteBalanceSettings.h>
 #include <PostProcess/Vignette/VignetteSettings.h>
 #include <ScreenSpace/DeferredFogSettings.h>
 
@@ -38,7 +39,7 @@ namespace AZ
             friend class PostProcessFeatureProcessor;
 
         public:
-            AZ_RTTI(AZ::Render::PostProcessSettings, "{B4DE4B9F-83D2-4FD8-AD58-C0D1D4AEA23F}",
+            AZ_RTTI(AZ::Render::PostProcessSettings, "{E4BD5945-F4C6-4B68-B1D3-28700BD2BF88}",
                 AZ::Render::PostProcessSettingsInterface, AZ::Render::PostProcessBase);
             AZ_CLASS_ALLOCATOR(PostProcessSettings, SystemAllocator, 0);
 

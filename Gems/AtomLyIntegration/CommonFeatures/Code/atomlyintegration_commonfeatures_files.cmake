@@ -97,6 +97,11 @@ set(FILES
     Source/PostProcess/FilmGrain/FilmGrainComponentConfig.cpp
     Source/PostProcess/FilmGrain/FilmGrainComponentController.cpp
     Source/PostProcess/FilmGrain/FilmGrainComponentController.h
+	Source/PostProcess/WhiteBalance/WhiteBalanceComponent.cpp
+    Source/PostProcess/WhiteBalance/WhiteBalanceComponent.h
+    Source/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.cpp
+    Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.cpp
+    Source/PostProcess/WhiteBalance/WhiteBalanceComponentController.h
     Source/PostProcess/Vignette/VignetteComponent.cpp
     Source/PostProcess/Vignette/VignetteComponent.h
     Source/PostProcess/Vignette/VignetteComponentConfig.cpp

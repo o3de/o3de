@@ -36,6 +36,7 @@
 #include <PostProcess/ChromaticAberration/ChromaticAberrationComponent.h>
 #include <PostProcess/PaniniProjection/PaniniProjectionComponent.h>
 #include <PostProcess/FilmGrain/FilmGrainComponent.h>
+#include <PostProcess/WhiteBalance/WhiteBalanceComponent.h>
 #include <PostProcess/Vignette/VignetteComponent.h>
 #include <ScreenSpace/DeferredFogComponent.h>
 #include <SkyAtmosphere/SkyAtmosphereComponent.h>
@@ -75,6 +76,7 @@
 #include <PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.h>
 #include <PostProcess/PaniniProjection/EditorPaniniProjectionComponent.h>
 #include <PostProcess/FilmGrain/EditorFilmGrainComponent.h>
+#include <PostProcess/WhiteBalance/EditorWhiteBalanceComponent.h>
 #include <PostProcess/Vignette/EditorVignetteComponent.h>
 #include <ScreenSpace/EditorDeferredFogComponent.h>
 #include <SkyAtmosphere/EditorSkyAtmosphereComponent.h>
@@ -132,6 +134,7 @@ namespace AZ
                         ChromaticAberrationComponent::CreateDescriptor(),
                         PaniniProjectionComponent::CreateDescriptor(),
                         FilmGrainComponent::CreateDescriptor(),
+                        WhiteBalanceComponent::CreateDescriptor(),
                         VignetteComponent::CreateDescriptor(),
                         CubeMapCaptureComponent::CreateDescriptor(),
 
@@ -171,6 +174,7 @@ namespace AZ
                         EditorChromaticAberrationComponent::CreateDescriptor(),
                         EditorPaniniProjectionComponent::CreateDescriptor(),
                         EditorFilmGrainComponent::CreateDescriptor(),
+                        EditorWhiteBalanceComponent::CreateDescriptor(),
                         EditorVignetteComponent::CreateDescriptor(),
                         EditorCubeMapCaptureComponent::CreateDescriptor(),
 #endif
