@@ -18,18 +18,12 @@ namespace AZ
         namespace DataTypes
         {
             // Disables UI interaction for the node and children of the node with this rule.
-            class ReadOnlyRule : public IRule
+            class IReadOnlyRule : public IRule
             {
             public:
-                AZ_RTTI(ReadOnlyRule, "{071A7F4A-70A5-4D32-AC9C-1D49AFCB1480}", IRule);
+                AZ_RTTI(IReadOnlyRule, "{071A7F4A-70A5-4D32-AC9C-1D49AFCB1480}", IRule);
 
-                virtual ~ReadOnlyRule() override = default;
-
-                bool ModifyTooltip(AZStd::string& tooltip) override
-                {
-                    tooltip = AZStd::string::format("This group is read only. %.*s", AZ_STRING_ARG(tooltip));
-                    return true;
-                }
+                virtual ~IReadOnlyRule() override = default;
             };
         } // namespace DataTypes
     } // namespace SceneAPI

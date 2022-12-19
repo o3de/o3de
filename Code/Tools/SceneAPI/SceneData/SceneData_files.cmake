@@ -59,6 +59,8 @@ set(FILES
     Rules/StaticMeshAdvancedRule.cpp
     Rules/MaterialRule.h
     Rules/MaterialRule.cpp
+    Rules/ReadOnlyRule.h
+    Rules/ReadOnlyRule.cpp
     Rules/ScriptProcessorRule.h
     Rules/ScriptProcessorRule.cpp
     Rules/SkeletonProxyRule.h
