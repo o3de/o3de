@@ -390,6 +390,9 @@ namespace AtomToolsFramework
         m_targetCamera.m_pivot = worldFromLocal.GetTranslation();
         m_targetRoll = angles.GetY();
 
+        m_camera = m_targetCamera;
+        m_roll = m_targetRoll;
+
         ReconnectViewMatrixChangeHandler();
     }
 
@@ -399,6 +402,9 @@ namespace AtomToolsFramework
         {
             m_targetCamera = m_storedCamera.value();
             m_targetRoll = 0.0f;
+
+            m_camera = m_targetCamera;
+            m_roll = m_targetRoll;
         }
 
         m_storedCamera.reset();

@@ -230,8 +230,6 @@ namespace Camera
             }
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        /// AzToolsFramework::EditorEntityContextRequestBus::Handler
         // make sure we can only use this window while in Edit mode
         void ViewportCameraSelectorWindow::OnStartPlayInEditor()
         {
