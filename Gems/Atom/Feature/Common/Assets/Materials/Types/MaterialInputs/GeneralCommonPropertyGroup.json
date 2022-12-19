@@ -7,7 +7,11 @@
             "name": "doubleSided",
             "displayName": "Double-sided",
             "description": "Whether to render back-faces or just front-faces.",
-            "type": "Bool"
+            "type": "Bool",
+            "connection": {
+                "type": "InternalProperty",
+                "name": "doubleSided"
+            }
         },
         {
             "name": "applySpecularAA",
@@ -38,7 +42,11 @@
             "displayName": "Cast Shadows",
             "description": "Whether to cast shadows onto other objects.",
             "type": "Bool",
-            "defaultValue": true
+            "defaultValue": true,
+            "connection": {
+                "type": "InternalProperty",
+                "name": "castShadows"
+            }
         },
         {
             "name": "enableDirectionalLights",
@@ -93,14 +101,6 @@
             "connection": {
                 "type": "ShaderOption",
                 "name": "o_materialUseForwardPassIBLSpecular"
-            }
-        }
-    ],
-    "functors": [
-        {
-            "type": "Lua",
-            "args": {
-                "file": "Materials/Types/StandardPBR_HandleOpacityDoubleSided.lua"
             }
         }
     ]
