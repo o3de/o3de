@@ -92,56 +92,46 @@ def edit_project_props(proj_path: pathlib.Path = None,
 
     if not proj_json:
         return 1
-    if new_name:
+    if isinstance(new_name, str):
         if not utils.validate_identifier(new_name):
             logger.error(f'Project name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {new_name}')
             return 1
         proj_json['project_name'] = new_name
-    if new_id:
+    if isinstance(new_id, str):
         proj_json['project_id'] = new_id
-    if new_engine_name:
+    if isinstance(new_engine_name, str):
         proj_json['engine'] = new_engine_name
-    if new_origin:
+    if isinstance(new_origin, str):
         proj_json['origin'] = new_origin
-    if new_display:
+    if isinstance(new_display, str):
         proj_json['display_name'] = new_display
-    if new_summary:
+    if isinstance(new_summary, str):
         proj_json['summary'] = new_summary
-    if new_icon:
+    if isinstance(new_icon, str):
         proj_json['icon_path'] = new_icon
-    if new_version:
+    if isinstance(new_version, str):
         proj_json['version'] = new_version
 
     if new_tags or delete_tags or replace_tags != None:
         proj_json['user_tags'] = utils.update_values_in_key_list(proj_json.get('user_tags', []), new_tags,
                                                         delete_tags, replace_tags)
 
-
     if new_gem_names or delete_gem_names or replace_gem_names != None:
         _edit_gem_names(proj_json, new_gem_names, delete_gem_names, replace_gem_names, is_optional)
 
-
-    def valid_specifier(version_specifier_list):
-        if version_specifier_list and not utils.validate_version_specifier_list(version_specifier_list):
-            logger.error(f'Version specifiers must be in the format <name><version specifiers>. e.g. name==1.2.3 \n {version_specifier_list}')
-            return False
-        return True
-
     if new_compatible_engines or delete_compatible_engines or replace_compatible_engines != None:
-        # you can replace entries with an empty string/list or it must be valid
-        if not valid_specifier(new_compatible_engines) or \
-            not valid_specifier(delete_compatible_engines) or \
-            (replace_compatible_engines and not valid_specifier(replace_compatible_engines)) :
+        if (new_compatible_engines and not utils.validate_version_specifier_list(new_compatible_engines)) or \
+           (delete_compatible_engines and not utils.validate_version_specifier_list(delete_compatible_engines)) or \
+           (replace_compatible_engines and not utils.validate_version_specifier_list(replace_compatible_engines)):
             return 1
 
         proj_json['compatible_engines'] = utils.update_values_in_key_list(proj_json.get('compatible_engines', []), 
                                             new_compatible_engines, delete_compatible_engines, replace_compatible_engines)
 
     if new_engine_api_dependencies or delete_engine_api_dependencies or replace_engine_api_dependencies != None:
-        # you can replace entries with an empty string/list or it must be valid
-        if not valid_specifier(new_engine_api_dependencies) or \
-            not valid_specifier(delete_engine_api_dependencies) or \
-            (replace_engine_api_dependencies and not valid_specifier(replace_engine_api_dependencies)):
+        if (new_engine_api_dependencies and not utils.validate_version_specifier_list(new_engine_api_dependencies)) or \
+           (delete_engine_api_dependencies and not utils.validate_version_specifier_list(delete_engine_api_dependencies)) or \
+           (replace_engine_api_dependencies and not utils.validate_version_specifier_list(replace_engine_api_dependencies)):
             return 1
 
         proj_json['engine_api_dependencies'] = utils.update_values_in_key_list(proj_json.get('engine_api_dependencies', []), 
