@@ -43,7 +43,7 @@ namespace AZ
 
             m_queue = &device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Copy);
 
-            result = BuilidFramePackets();
+            result = BuildFramePackets();
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             m_asyncWaitQueue.Init();
@@ -450,7 +450,7 @@ namespace AZ
             m_queue->QueueCommand(AZStd::move(command));
         }
 
-        RHI::ResultCode AsyncUploadQueue::BuilidFramePackets()
+        RHI::ResultCode AsyncUploadQueue::BuildFramePackets()
         {
             auto& device = static_cast<Device&>(GetDevice());
             m_framePackets.resize(m_descriptor.m_frameCount);

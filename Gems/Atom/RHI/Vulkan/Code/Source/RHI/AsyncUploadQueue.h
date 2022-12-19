@@ -83,7 +83,7 @@ namespace AZ
                 uint32_t m_dataOffset = 0;
             };
 
-            RHI::ResultCode BuilidFramePackets();
+            RHI::ResultCode BuildFramePackets();
 
             FramePacket* BeginFramePacket(Queue* queue);
             void EndFramePacket(Queue* queue, Semaphore* semaphoreToSignal = nullptr);
