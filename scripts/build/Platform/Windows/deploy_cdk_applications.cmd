@@ -38,9 +38,8 @@ FOR /f "tokens=1,2,3" %%a IN ('CALL aws sts assume-role --query Credentials.[Sec
 FOR /F "tokens=4 delims=:" %%a IN ("%ASSUME_ROLE_ARN%") DO SET O3DE_AWS_DEPLOY_ACCOUNT=%%a
 
 IF "%O3DE_AWS_PROJECT_NAME%"=="" (
-    SET PIPELINE_SHORT=%PIPELINE_NAME:~0,25%
-    ECHO Truncated pipeline name is: %PIPELINE_SHORT%
-    SET O3DE_AWS_PROJECT_NAME=%BRANCH_NAME%-%PIPELINE_SHORT%-Win
+    ECHO Truncated pipeline name is: %PIPELINE_NAME:~0,25%
+    SET O3DE_AWS_PROJECT_NAME=%BRANCH_NAME%-%PIPELINE_NAME:~0,25%-Windows
     SET slashreplace=
     call SET O3DE_AWS_PROJECT_NAME=%%O3DE_AWS_PROJECT_NAME:/=%slashreplace%%%
 )
