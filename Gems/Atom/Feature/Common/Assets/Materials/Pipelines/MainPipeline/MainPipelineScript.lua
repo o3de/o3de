@@ -34,6 +34,8 @@ function MaterialTypeSetup(context)
         context:IncludeShader("TintedTransparent_StandardLighting")
         context:IncludeShader("DepthPass_CustomZ")
         context:IncludeShader("ShadowmapPass_CustomZ")
+        context:IncludeShader("DepthPassTransparentMin")
+        context:IncludeShader("DepthPassTransparentMax")
         return true
     end
     
@@ -44,6 +46,8 @@ function MaterialTypeSetup(context)
         context:IncludeShader("TintedTransparent_EnhancedLighting")
         context:IncludeShader("DepthPass_CustomZ")
         context:IncludeShader("ShadowmapPass_CustomZ")
+        context:IncludeShader("DepthPassTransparentMin")
+        context:IncludeShader("DepthPassTransparentMax")
         return true
     end
 

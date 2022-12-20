@@ -34,6 +34,9 @@ function MaterialTypeSetup(context)
         context:IncludeShader("ForwardPass_StandardLighting_CustomZ")
         context:IncludeShader("Transparent_StandardLighting")
         context:IncludeShader("TintedTransparent_StandardLighting")
+        context:IncludeShader("DepthPassTransparentMin")
+        context:IncludeShader("DepthPassTransparentMax")
+
         return true
     end
     
