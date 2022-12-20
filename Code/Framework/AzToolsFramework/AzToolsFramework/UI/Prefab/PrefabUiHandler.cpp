@@ -158,57 +158,56 @@ namespace AzToolsFramework
             backgroundColor = m_prefabCapsuleDisabledColor;
         }
 
-        QPainterPath backgroundPath;
-        backgroundPath.setFillRule(Qt::WindingFill);
-
-        QRect tempRect = option.rect;
-        tempRect.setTop(tempRect.top() + 1);
+        QRect columnRect = option.rect;
+        columnRect.setTop(columnRect.top() + 1);
 
         if (!hasVisibleChildren)
         {
-            tempRect.setBottom(tempRect.bottom() - 1);
+            columnRect.setBottom(columnRect.bottom() - 1);
         }
 
-        if (isFirstColumn)
-        {
-            tempRect.setLeft(tempRect.left() - 1);
-            tempRect.setWidth(tempRect.width() + 1); // remove the gray line between columns
-        }
-
-        if (isLastColumn)
-        {
-            tempRect.setLeft(tempRect.left() - 1); // remove the gray line between columns
-            tempRect.setWidth(tempRect.width() - 1);
-        }
+        QPainterPath backgroundPath;
+        backgroundPath.setFillRule(Qt::WindingFill);
 
         if (isFirstColumn || isLastColumn)
         {
+            if (isFirstColumn)
+            {
+                columnRect.setLeft(columnRect.left() - 1);
+                columnRect.setWidth(columnRect.width() + 1); // remove the gray line between columns
+            }
+            else if (isLastColumn)
+            {
+                columnRect.setLeft(columnRect.left() - 1); // remove the gray line between columns
+                columnRect.setWidth(columnRect.width() - 1);
+            }
+
             // Rounded rect to have rounded borders on top
-            backgroundPath.addRoundedRect(tempRect, PrefabUIConstants::prefabCapsuleRadius, PrefabUIConstants::prefabCapsuleRadius);
+            backgroundPath.addRoundedRect(columnRect, PrefabUIConstants::prefabCapsuleRadius, PrefabUIConstants::prefabCapsuleRadius);
 
             if (hasVisibleChildren)
             {
                 // Regular rect, half height, to square the bottom borders
-                QRect bottomRect = tempRect;
+                QRect bottomRect = columnRect;
                 bottomRect.setTop(bottomRect.top() + (bottomRect.height() / 2));
                 backgroundPath.addRect(bottomRect);
             }
 
             // Regular rect, half height, to square the opposite border
-            QRect squareRect = tempRect;
+            QRect squareRect = columnRect;
             if (isFirstColumn)
             {
-                squareRect.setLeft(tempRect.left() + (tempRect.width() / 2));
+                squareRect.setLeft(columnRect.left() + (columnRect.width() / 2));
             }
             else if (isLastColumn)
             {
-                squareRect.setWidth(tempRect.width() / 2);
+                squareRect.setWidth(columnRect.width() / 2);
             }
             backgroundPath.addRect(squareRect);
         }
         else
         {
-            backgroundPath.addRect(tempRect);
+            backgroundPath.addRect(columnRect);
         }
 
         painter->save();

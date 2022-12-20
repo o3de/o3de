@@ -112,42 +112,41 @@ namespace AzToolsFramework
             QPainterPath backgroundPath;
             backgroundPath.setFillRule(Qt::WindingFill);
 
-            QRect tempRect = option.rect;
-            tempRect.setTop(tempRect.top() + 2);
-            tempRect.setHeight(tempRect.height() - 4); // tweaking capsule height
-
-            if (isFirstColumn)
-            {
-                tempRect.setLeft(tempRect.left() + 1);
-                tempRect.setWidth(tempRect.width() + 1); // remove the gray line between columns
-            }
-
-            if (isLastColumn)
-            {
-                tempRect.setLeft(tempRect.left() - 2); // remove the gray line between columns
-                tempRect.setWidth(tempRect.width() - 1);
-            }
+            QRect columnRect = option.rect;
+            columnRect.setTop(columnRect.top() + 2);
+            columnRect.setHeight(columnRect.height() - 4); // tweaking capsule height
 
             if (isFirstColumn || isLastColumn)
             {
-                // Rounded rect to have rounded borders on top.
-                backgroundPath.addRoundedRect(tempRect, PrefabUIConstants::prefabCapsuleRadius, PrefabUIConstants::prefabCapsuleRadius);
-
-                // Regular rect, half height, to square the opposite border
-                QRect squareRect = tempRect;
                 if (isFirstColumn)
                 {
-                    squareRect.setLeft(tempRect.left() + (tempRect.width() / 2));
+                    columnRect.setLeft(columnRect.left() + 1);
+                    columnRect.setWidth(columnRect.width() + 1); // remove the gray line between columns
                 }
                 else if (isLastColumn)
                 {
-                    squareRect.setWidth(tempRect.width() / 2);
+                    columnRect.setLeft(columnRect.left() - 2); // remove the gray line between columns
+                    columnRect.setWidth(columnRect.width() - 1);
+                }
+
+                // Rounded rect to have rounded borders on top.
+                backgroundPath.addRoundedRect(columnRect, PrefabUIConstants::prefabCapsuleRadius, PrefabUIConstants::prefabCapsuleRadius);
+
+                // Regular rect, half height, to square the opposite border
+                QRect squareRect = columnRect;
+                if (isFirstColumn)
+                {
+                    squareRect.setLeft(columnRect.left() + (columnRect.width() / 2));
+                }
+                else if (isLastColumn)
+                {
+                    squareRect.setWidth(columnRect.width() / 2);
                 }
                 backgroundPath.addRect(squareRect);
             }
             else
             {
-                backgroundPath.addRect(tempRect);
+                backgroundPath.addRect(columnRect);
             }
 
             painter->save();
