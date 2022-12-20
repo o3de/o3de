@@ -29,8 +29,6 @@ COMMIT_DOMAIN_NAME = ''
 COMMIT_ORGANIZATION_NAME = ''
 COMMIT_REPOSITORY_NAME = ''
 
-PROCESSED_REPOS = []
-
 @NonCPS
 def doit()
 {
@@ -361,10 +359,10 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
 }
 
 //this should assume it will always be executed from the workspace root
-def NoControlFile(repoName) {
+def NoControlFile(repoName, processed_repos) {
     echo "${repoName}: NoControlFile()"
 
-    PROCESSED_REPOS.add(repoName)
+    processed_repos.add(repoName)
 
     def ext = ''
     if(env.IS_UNIX) {
@@ -432,53 +430,53 @@ def NoControlFile(repoName) {
         //register all the objects in this repo
         //if it is a composite repo then use the --all-<type>-path to register all of them
         if(enginesExist) {
-            PlatformSh("scripts/o3de${ext} register --all-engines-path ${workspace}/${repo.NAME}/Engines || ver>nul", "Registering all engines in ${workspace}/${repo.NAME}/Engines")
+            PlatformSh("scripts/o3de${ext} register --all-engines-path ${workspace}/${repoName}/Engines || ver>nul", "Registering all engines in ${workspace}/${repoName}/Engines")
         }
         if(projectsExist) {
-            PlatformSh("scripts/o3de${ext} register --all-projects-path ${workspace}/${repo.NAME}/Projects || ver>nul", "Registering all projects in ${workspace}/${repo.NAME}/Projects")
+            PlatformSh("scripts/o3de${ext} register --all-projects-path ${workspace}/${repoName}/Projects || ver>nul", "Registering all projects in ${workspace}/${repoName}/Projects")
         }
         if(gemsExist) {
-            PlatformSh("scripts/o3de${ext} register --all-gems-path ${workspace}/${repo.NAME}/Gems || ver>nul", "Registering all gems in ${workspace}/${repo.NAME}/Gems")
+            PlatformSh("scripts/o3de${ext} register --all-gems-path ${workspace}/${repoName}/Gems || ver>nul", "Registering all gems in ${workspace}/${repoName}/Gems")
         }
         if(templatesExist) {
-            PlatformSh("scripts/o3de${ext} register --all-templates-path ${workspace}/${repo.NAME}/Templates || ver>nul", "Registering all templates in ${workspace}/${repo.NAME}/Templates")
+            PlatformSh("scripts/o3de${ext} register --all-templates-path ${workspace}/${repoName}/Templates || ver>nul", "Registering all templates in ${workspace}/${repoName}/Templates")
         }
         if(restrictedExist) {
-            PlatformSh("scripts/o3de${ext} register --all-restricted-path ${workspace}/${repo.NAME}/Restricted || ver>nul", "Registering all restricted in ${workspace}/${repo.NAME}/Restricted")
+            PlatformSh("scripts/o3de${ext} register --all-restricted-path ${workspace}/${repoName}/Restricted || ver>nul", "Registering all restricted in ${workspace}/${repoName}/Restricted")
         }
         //enable all gems in this repo
         if(gemsExist) {
-            PlatformSh("scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repo.NAME}/Gems --project-name AutomatedTesting || ver>nul", "Enabling all gems in AutomatedTesting")
+            PlatformSh("scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name AutomatedTesting || ver>nul", "Enabling all gems in AutomatedTesting")
         }
 
         //if its a singular repo register it using the --<type>-path
         if(engineRepo) {
-            PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.NAME} || ver>nul", "Registering engine in ${workspace}/${repo.NAME}")
+            PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repoName} || ver>nul", "Registering engine in ${workspace}/${repoName}")
         }
         if(projectRepo) {
-            PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.NAME} || ver>nul", "Registering project in ${workspace}/${repo.NAME}")
+            PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repoName} || ver>nul", "Registering project in ${workspace}/${repoName}")
         }
         if(gemRepo) {
-            PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.NAME} || ver>nul", "Registering gem in ${workspace}/${repo.NAME}")
+            PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repoName} || ver>nul", "Registering gem in ${workspace}/${repoName}")
         }
         if(templateRepo) {
-            PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.NAME} || ver>nul", "Registering template in ${workspace}/${repo.NAME}")
+            PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repoName} || ver>nul", "Registering template in ${workspace}/${repoName}")
         }
         if(restrictedRepo) {
-            PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.NAME} || ver>nul", "Registering restricted in ${workspace}/${repo.NAME}")
+            PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repoName} || ver>nul", "Registering restricted in ${workspace}/${repoName}")
         }
         //if this singular repo is a gem enable it
         if(gemRepo) {
-            PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repo.NAME} --project-name AutomatedTesting || ver>nul", "Enabling ${gemName} in AutomatedTesting")
+            PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name AutomatedTesting || ver>nul", "Enabling ${gemName} in AutomatedTesting")
         }
     }
 }
 
 //this should assume it will always be executed from the workspace root
-def ExecuteControlFile(controlFile, repoName) {
+def ExecuteControlFile(controlFile, repoName, processed_repos) {
     echo "${repoName}: ExecuteControlFile(${controlFile})"
 
-    PROCESSED_REPOS.add(repoName)
+    processed_repos.add(repoName)
 
     def ext = ''
     if(env.IS_UNIX) {
@@ -531,7 +529,7 @@ def ExecuteControlFile(controlFile, repoName) {
         echo 'REPOS'
         controlFile.REPOS.each { repo ->
             //stop cyclical repos
-            if(PROCESSED_REPOS.contains(repo.NAME)) {
+            if(processed_repos.contains(repo.NAME)) {
                 echo "Already processed ${repo.NAME}"
                 return
             }
@@ -585,6 +583,8 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         dir('3rdParty') {
         }
 
+        def processed_repos = []
+
         //we always get the engine repo first and get python, setEnvCommit only if the repo is the engine repo
         def engineAutomatedTestingControlFile = {}
         def engineAutomatedTestingControlFileFound = false
@@ -635,7 +635,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             }
         }
         if(engineAutomatedTestingControlFileFound) {
-            ExecuteControlFile(engineAutomatedTestingControlFile, ENGINE_REPOSITORY_NAME)
+            ExecuteControlFile(engineAutomatedTestingControlFile, ENGINE_REPOSITORY_NAME, processed_repos)
         }
 
         //lastly, if we are not committing to the engine repo then pull that repo in here
@@ -655,11 +655,11 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 }
             }
             if(automatedTestingControlFileFound){
-                ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME)
+                ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME, processed_repos)
             }
             else
             {
-                NoControlFile(COMMIT_REPOSITORY_NAME)
+                NoControlFile(COMMIT_REPOSITORY_NAME, processed_repos)
             }
         }
     }
