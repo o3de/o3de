@@ -360,7 +360,7 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
 
 //this should assume it will always be executed from the workspace root
 def NoControlFile(repoName, processed_repos) {
-    echo "${repoName}: NoControlFile()"
+    echo "NoControlFile(reponame:${repoName}, processed_repos:${processed_repos})"
 
     processed_repos.add(repoName)
 
@@ -474,7 +474,7 @@ def NoControlFile(repoName, processed_repos) {
 
 //this should assume it will always be executed from the workspace root
 def ExecuteControlFile(controlFile, repoName, processed_repos) {
-    echo "${repoName}: ExecuteControlFile(${controlFile})"
+    echo "ExecuteControlFile(controlFile:${controlFile}, reponame:${repoName}, processed_repos:${processed_repos})"
 
     processed_repos.add(repoName)
 
@@ -548,9 +548,9 @@ def ExecuteControlFile(controlFile, repoName, processed_repos) {
 
             if(foundRepoControlFile) {
                 //There is a control file, execute it
-                ExecuteControlFile(repoControlFile, repo.NAME)
+                ExecuteControlFile(repoControlFile, repo.NAME, processed_repos)
             } else {
-                NoControlFile(repo.NAME)
+                NoControlFile(repo.NAME, processed_repos)
             }
         }
     }
