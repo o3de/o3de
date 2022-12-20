@@ -54,12 +54,6 @@ namespace AZ
     //=========================================================================
     bool SystemAllocator::Create()
     {
-        AZ_Assert(IsReady() == false, "System allocator was already created!");
-        if (IsReady())
-        {
-            return false;
-        }
-
         m_subAllocator = new (&g_systemSchema) HphaSchema();
         return true;
     }
@@ -115,7 +109,7 @@ namespace AZ
         }
 
         AZ_Assert(
-            address != nullptr, "SystemAllocator: Failed to allocate %d bytes aligned on %d!", byteSize,
+            address != nullptr, "SystemAllocator: Failed to allocate %zu bytes aligned on %zu!", byteSize,
             alignment);
 
         AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);

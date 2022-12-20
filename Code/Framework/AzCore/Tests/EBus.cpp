@@ -370,7 +370,7 @@ namespace UnitTest
 
     template <typename Bus>
     class EBusTestAll
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         using BusHandler = Handler<Bus>;
@@ -385,7 +385,7 @@ namespace UnitTest
         void TearDown() override
         {
             DestroyHandlers();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -1538,7 +1538,7 @@ namespace UnitTest
     }
 
     class EBus
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {};
 
     TEST_F(EBus, DISABLED_CopyConstructorOfEBusHandlerDoesNotAssertInInternalDestructorOfHandler)
@@ -1823,7 +1823,7 @@ namespace UnitTest
     }
 
     class QueueEbusTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
 
     };
@@ -4121,7 +4121,7 @@ namespace UnitTest
 
     template <typename ParamType>
     class EBusParamFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public ::testing::WithParamInterface<ParamType>
     {};
 
@@ -4764,7 +4764,7 @@ namespace Benchmark
         using Bus = TestBus<AZ::EBusAddressPolicy::Single, AZ::EBusHandlerPolicy::Multiple, false>;
 
         AZStd::unique_ptr<BM_EBusEnvironment<Bus>> ebusBenchmarkEnv;
-        if (state.thread_index == 0)
+        if (state.thread_index() == 0)
         {
             ebusBenchmarkEnv = AZStd::make_unique<BM_EBusEnvironment<Bus>>();
             ebusBenchmarkEnv->SetUpBenchmark();
@@ -4776,7 +4776,7 @@ namespace Benchmark
             Bus::Broadcast(&Bus::Events::OnWait);
         };
 
-        if (state.thread_index == 0)
+        if (state.thread_index() == 0)
         {
             ebusBenchmarkEnv->Disconnect(state);
             ebusBenchmarkEnv->TearDownBenchmark();
@@ -4789,7 +4789,7 @@ namespace Benchmark
         using Bus = TestBus<AZ::EBusAddressPolicy::Single, AZ::EBusHandlerPolicy::Multiple, true>;
 
         AZStd::unique_ptr<BM_EBusEnvironment<Bus>> ebusBenchmarkEnv;
-        if (state.thread_index == 0)
+        if (state.thread_index() == 0)
         {
             ebusBenchmarkEnv = AZStd::make_unique<BM_EBusEnvironment<Bus>>();
             ebusBenchmarkEnv->SetUpBenchmark();
@@ -4801,7 +4801,7 @@ namespace Benchmark
             Bus::Broadcast(&Bus::Events::OnWait);
         };
 
-        if (state.thread_index == 0)
+        if (state.thread_index() == 0)
         {
             ebusBenchmarkEnv->Disconnect(state);
             ebusBenchmarkEnv->TearDownBenchmark();

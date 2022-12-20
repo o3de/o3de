@@ -39,7 +39,7 @@ namespace GraphCanvas
         QObject::connect(m_ui->groupNodes, &QToolButton::clicked, this, &AssetEditorToolbar::GroupSelection);
         QObject::connect(m_ui->ungroupNodes, &QToolButton::clicked, this, &AssetEditorToolbar::UngroupSelection);
 
-        m_commentPresetsMenu = aznew EditorContextMenu(editorId);
+        m_commentPresetsMenu = aznew EditorContextMenu(editorId, this);
         m_commentPresetsMenu->SetIsToolBarMenu(true);
 
         QObject::connect(m_commentPresetsMenu, &QMenu::aboutToShow, this, &AssetEditorToolbar::OnCommentMenuAboutToShow);
@@ -49,7 +49,7 @@ namespace GraphCanvas
         m_ui->addComment->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
         QObject::connect(m_ui->addComment, &QWidget::customContextMenuRequested, this, &AssetEditorToolbar::OnCommentPresetsContextMenu);
 
-        m_nodeGroupPresetsMenu = aznew EditorContextMenu(editorId);
+        m_nodeGroupPresetsMenu = aznew EditorContextMenu(editorId, this);
         m_nodeGroupPresetsMenu->SetIsToolBarMenu(true);
 
         QObject::connect(m_nodeGroupPresetsMenu, &QMenu::aboutToShow, this, &AssetEditorToolbar::OnNodeGroupMenuAboutToShow);

@@ -467,7 +467,8 @@ namespace AssetUtilities
         fileName.toWCharArray(usableFileName.data());
 
         // third parameter dwShareMode (0) prevents share access
-        HANDLE fileHandle = CreateFileW(usableFileName.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, 0, 0);
+        const DWORD dwShareMode = 0;
+        HANDLE fileHandle = CreateFileW(usableFileName.c_str(), GENERIC_READ, dwShareMode, nullptr, OPEN_EXISTING, 0, 0);
 
         if (fileHandle != INVALID_HANDLE_VALUE)
         {
@@ -1465,7 +1466,7 @@ namespace AssetUtilities
 
                 // Note: This call is intentionally re-using the products array.  The new results will be appended to the end (via push_back).
                 // The array will not be cleared.  We're essentially using products as a queue
-                db->GetProductsBySourceName(productPath.GetRelativePath().c_str(), products);
+                db->GetProductsBySourceNameScanFolderID(sources.back().RelativePath().c_str(), sources.back().ScanFolderId(), products);
                 size = products.size(); // Update the loop size since the array grew
             }
         }

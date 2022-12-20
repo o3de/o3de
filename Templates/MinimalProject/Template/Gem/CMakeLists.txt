@@ -87,5 +87,16 @@ ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name}
 # Gem dependencies
 ################################################################################
 
+# Query the project name from the nearest project.json file in a directory at or above
+# the current one.
+# This gem is the project gem and therefore should be part of the project that is using it
+o3de_find_ancestor_project_root(project_path project_name "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# If the project name could not be queried from a project.json file, then fallback
+# to using the name of the project provided when the project template was instantiated
+if (NOT project_name)
+    set(project_name ${Name})
+endif()
+
 # Enable the specified list of gems from GEM_FILE or GEMS list for this specific project:
-ly_enable_gems(PROJECT_NAME ${Name} GEM_FILE enabled_gems.cmake)
+ly_enable_gems(PROJECT_NAME ${project_name} GEM_FILE enabled_gems.cmake)

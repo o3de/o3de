@@ -22,7 +22,7 @@
 namespace UnitTest
 {
     class AxisAlignedBoxShapeTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public RegistryTestHelper
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -33,7 +33,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             RegistryTestHelper::SetUp(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
@@ -55,7 +55,7 @@ namespace UnitTest
             m_axisAlignedBoxShapeDebugDisplayComponentDescriptor.reset();
             m_serializeContext.reset();
             RegistryTestHelper::TearDown();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
@@ -344,5 +344,17 @@ namespace UnitTest
             shapeAabb, entity.GetId(), &LmbrCentral::ShapeComponentRequests::GetEncompassingAabb);
         EXPECT_THAT(debugDrawAabb.GetMin(), IsClose(AZ::Vector3(-2.0f, -9.0f, -10.0f)));
         EXPECT_THAT(debugDrawAabb.GetMax(), IsClose(AZ::Vector3(8.0f, -1.0f, -6.0f)));
+    }
+
+    TEST_F(AxisAlignedBoxShapeTest, IsTypeAxisAlignedReturnsTrue)
+    {
+        AZ::Entity entity;
+        CreateDefaultAxisAlignedBox(AZ::Transform::CreateIdentity(), entity);
+
+        bool isTypeAxisAligned = false;
+        LmbrCentral::BoxShapeComponentRequestsBus::EventResult(
+            isTypeAxisAligned, entity.GetId(), &LmbrCentral::BoxShapeComponentRequests::IsTypeAxisAligned);
+
+        EXPECT_TRUE(isTypeAxisAligned);
     }
 } // namespace UnitTest

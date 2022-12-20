@@ -19,29 +19,18 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <LyShine/Bus/UiAnimateEntityBus.h>
-#include <CryCommon/StaticInstance.h>
-
-#define s_nodeParamsInitialized s_nodeParamsInitializedEnt
-#define s_nodeParams s_nodeParamsEnt
-#define AddSupportedParam AddSupportedParamEnt
 
 //////////////////////////////////////////////////////////////////////////
 namespace
 {
     const char* kScriptTablePrefix = "ScriptTable:";
 
-    bool s_nodeParamsInitialized = false;
-    StaticInstance<std::vector<CUiAnimNode::SParamInfo>> s_nodeParams;
-
-    void AddSupportedParam(std::vector<CUiAnimNode::SParamInfo>& nodeParams, const char* sName, int paramId, EUiAnimValue valueType, int flags = 0)
-    {
-        CUiAnimNode::SParamInfo param;
-        param.name = sName;
-        param.paramType = paramId;
-        param.valueType = valueType;
-        param.flags = (IUiAnimNode::ESupportedParamFlags)flags;
-        nodeParams.push_back(param);
-    }
+    AZStd::array<CUiAnimNode::SParamInfo, 1> s_nodeParams{ { {
+        /*.name =*/"Component Field float",
+        /*.paramType =*/eUiAnimParamType_AzComponentField,
+        /*.valueType =*/eUiAnimValue_Float,
+        /*.flags =*/(IUiAnimNode::ESupportedParamFlags)0,
+    } } };
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -66,25 +55,12 @@ CUiAnimAzEntityNode::CUiAnimAzEntityNode(const int id)
     #endif
 
     UiAnimNodeBus::Handler::BusConnect(this);
-
-    CUiAnimAzEntityNode::Initialize();
 }
 
 //////////////////////////////////////////////////////////////////////////
 CUiAnimAzEntityNode::CUiAnimAzEntityNode()
     : CUiAnimAzEntityNode(0)
 {
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimAzEntityNode::Initialize()
-{
-    if (!s_nodeParamsInitialized)
-    {
-        s_nodeParamsInitialized = true;
-        s_nodeParams.reserve(1);
-        AddSupportedParam(s_nodeParams, "Component Field float", eUiAnimParamType_AzComponentField, eUiAnimValue_Float);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

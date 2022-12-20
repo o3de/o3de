@@ -154,12 +154,12 @@ void CMemoryBlock::Compress(CMemoryBlock& toBlock) const
     assert(this != &toBlock);
     unsigned long destSize = m_size * 2 + 128;
     CMemoryBlock temp;
-    temp.Allocate(destSize);
+    temp.Allocate(static_cast<int>(destSize));
 
     compress((unsigned char*)temp.GetBuffer(), &destSize, (unsigned char*)GetBuffer(), m_size);
 
-    toBlock.Allocate(destSize);
-    toBlock.Copy(temp.GetBuffer(), destSize);
+    toBlock.Allocate(static_cast<int>(destSize));
+    toBlock.Copy(temp.GetBuffer(), static_cast<int>(destSize));
     toBlock.m_uncompressedSize = GetSize();
 }
 

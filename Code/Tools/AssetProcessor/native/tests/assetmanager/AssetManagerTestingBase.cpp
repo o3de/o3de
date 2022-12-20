@@ -37,7 +37,7 @@ namespace UnitTests
 
     void AssetManagerTestingBase::SetUp()
     {
-        ScopedAllocatorSetupFixture::SetUp();
+        LeakDetectionFixture::SetUp();
 
         // File IO is needed to hash the files
         if (AZ::IO::FileIOBase::GetInstance() == nullptr)
@@ -65,6 +65,7 @@ namespace UnitTests
         qRegisterMetaType<AZStd::string>("AZStd::string");
         qRegisterMetaType<AssetProcessor::AssetScanningStatus>("AssetProcessor::AssetScanningStatus");
         qRegisterMetaType<QSet<AssetProcessor::AssetFileInfo>>("QSet<AssetFileInfo>");
+        qRegisterMetaType<AssetProcessor::SourceAssetReference>("SourceAssetReference");
 
         // Platform config with an enabled platform and scanfolder required by APM to function and find the files
         m_platformConfig = AZStd::make_unique<AssetProcessor::PlatformConfiguration>();
@@ -176,7 +177,7 @@ namespace UnitTests
         m_stateData.reset();
         m_assetProcessorManager.reset();
 
-        ScopedAllocatorSetupFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
     void AssetManagerTestingBase::RunFile(int expectedJobCount, int expectedFileCount, int dependencyFileCount)

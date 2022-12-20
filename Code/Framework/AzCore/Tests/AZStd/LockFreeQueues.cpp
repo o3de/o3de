@@ -21,11 +21,8 @@ namespace UnitTest
     using namespace UnitTestInternal;
 
     class LockFreeQueue
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    public:
-        LockFreeQueue() : AllocatorsFixture() {}
-
     protected:
 #ifdef _DEBUG
         static const int NUM_ITERATIONS = 5000;

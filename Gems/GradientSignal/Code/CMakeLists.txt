@@ -75,6 +75,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 3rdParty::OpenImageIO
                 Gem::LmbrCentral.Editor
+                Gem::Atom_RPI.Edit
             PUBLIC
                 3rdParty::Qt::Widgets
                 AZ::AzCore

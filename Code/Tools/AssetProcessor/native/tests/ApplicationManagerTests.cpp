@@ -12,6 +12,7 @@
 #include <tests/assetmanager/MockAssetProcessorManager.h>
 #include <tests/assetmanager/MockFileProcessor.h>
 #include <AzToolsFramework/Archive/ArchiveComponent.h>
+#include <native/FileWatcher/FileWatcher.h>
 #include <native/utilities/AssetServerHandler.h>
 #include <native/resourcecompiler/rcjob.h>
 #include <AzCore/Utils/Utils.h>
@@ -22,7 +23,7 @@ namespace UnitTests
 {
     void ApplicationManagerTest::SetUp()
     {
-        ScopedAllocatorSetupFixture::SetUp();
+        LeakDetectionFixture::SetUp();
 
         AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 
@@ -56,6 +57,8 @@ namespace UnitTests
         m_applicationManager->m_fileProcessor = AZStd::move(fileProcessor); // The manager is taking ownership
         m_fileProcessorThread->start();
 
+        m_applicationManager->InitUuidManager();
+
         auto fileWatcher = AZStd::make_unique<FileWatcher>();
         m_fileWatcher = fileWatcher.get();
 
@@ -69,10 +72,10 @@ namespace UnitTests
         m_fileProcessorThread->exit();
         m_mockAPM = nullptr;
 
-        ScopedAllocatorSetupFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
-    using BatchApplicationManagerTest = UnitTest::ScopedAllocatorSetupFixture;
+    using BatchApplicationManagerTest = UnitTest::LeakDetectionFixture;
 
     TEST_F(BatchApplicationManagerTest, FileCreatedOnDisk_ShowsUpInFileCache)
     {
@@ -120,8 +123,6 @@ namespace UnitTests
 
     TEST(AssetProcessorAssetServerHandler, AssetServerHandler_FutureCalls_FailsNoExceptions)
     {
-        UnitTest::ScopedAllocatorFixture fixture;
-
         char executablePath[AZ_MAX_PATH_LEN];
         AZ::Utils::GetExecutablePath(executablePath, AZ_MAX_PATH_LEN);
 

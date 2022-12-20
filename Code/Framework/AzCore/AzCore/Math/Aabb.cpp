@@ -207,28 +207,38 @@ namespace AZ
 
     void Aabb::ApplyTransform(const Transform& transform)
     {
-        Vector3 a, b, axisCoeffs;
-
-        Vector3 newMin, newMax;
-        newMin = newMax = transform.GetTranslation();
+        Vector3 newMin = transform.GetTranslation();
+        Vector3 newMax = newMin;
 
         // Find extreme points for each axis.
-        for (int j = 0; j < 3; j++)
+        for (int axisIndex = 0; axisIndex < 3; axisIndex++)
         {
             Vector3 axis = Vector3::CreateZero();
-            axis.SetElement(j, 1.0f);
+            axis.SetElement(axisIndex, 1.0f);
             // The extreme values in each direction must be attained by transforming one of the 8 vertices of the original box.
             // Each co-ordinate of a transformed vertex is made up of three parts, corresponding to the components of the original
             // x, y and z co-ordinates which are mapped onto the new axis. Those three parts are independent, so we can take
             // the min and max of each part and sum them to get the min and max co-ordinate of the transformed box. For a given new axis,
             // the coefficients for what proportion of each original axis is rotated onto that new axis are the same as the components we
             // would get by performing the inverse rotation on the new axis, so we need to take the conjugate to get the inverse rotation.
-            axisCoeffs = transform.GetUniformScale() * (transform.GetRotation().GetConjugate().TransformVector(axis));
-            a = axisCoeffs * m_min;
-            b = axisCoeffs * m_max;
+            const Vector3 axisCoeffs = transform.GetUniformScale() * (transform.GetRotation().GetConjugate().TransformVector(axis));
 
-            newMin.SetElement(j, newMin(j) + a.GetMin(b).Dot(Vector3::CreateOne()));
-            newMax.SetElement(j, newMax(j) + a.GetMax(b).Dot(Vector3::CreateOne()));
+            // These contain the existing min and max corners of the AABB that are rotated and scaled (but not translated)
+            // and projected onto the current axis. The minimum and maximum contributions from both projected corners get
+            // added into the new minimum and maximums independently for each axis.
+            // Note that because of the rotation, a minimum contribution can come from the existing max corner, and a maximum
+            // contribution can come from the existing min corner.
+            const Vector3 projectedContributionsFromMin = axisCoeffs * m_min;
+            const Vector3 projectedContributionsFromMax = axisCoeffs * m_max;
+
+            newMin.SetElement(
+                axisIndex,
+                newMin.GetElement(axisIndex) +
+                    projectedContributionsFromMin.GetMin(projectedContributionsFromMax).Dot(Vector3::CreateOne()));
+            newMax.SetElement(
+                axisIndex,
+                newMax.GetElement(axisIndex) +
+                    projectedContributionsFromMin.GetMax(projectedContributionsFromMax).Dot(Vector3::CreateOne()));
         }
 
         m_min = newMin;
@@ -238,13 +248,29 @@ namespace AZ
 
     void Aabb::ApplyMatrix3x4(const Matrix3x4& matrix3x4)
     {
-        const AZ::Vector3 extents = GetExtents();
-        const AZ::Vector3 center = matrix3x4 * GetCenter();
-        AZ::Vector3 newHalfExtents(
-            0.5f * matrix3x4.GetRowAsVector3(0).GetAbs().Dot(extents),
-            0.5f * matrix3x4.GetRowAsVector3(1).GetAbs().Dot(extents),
-            0.5f * matrix3x4.GetRowAsVector3(2).GetAbs().Dot(extents));
-        m_min = center - newHalfExtents;
-        m_max = center + newHalfExtents;
+        // See ApplyTransform for more details on how this works.
+
+        Vector3 newMin = matrix3x4.GetTranslation();
+        Vector3 newMax = newMin;
+
+        // Find extreme points for each axis.
+        for (int axisIndex = 0; axisIndex < 3; axisIndex++)
+        {
+            const Vector3 axisCoeffs = matrix3x4.GetRowAsVector3(axisIndex);
+            const Vector3 projectedContributionsFromMin = axisCoeffs * m_min;
+            const Vector3 projectedContributionsFromMax = axisCoeffs * m_max;
+
+            newMin.SetElement(
+                axisIndex,
+                newMin.GetElement(axisIndex) +
+                    projectedContributionsFromMin.GetMin(projectedContributionsFromMax).Dot(Vector3::CreateOne()));
+            newMax.SetElement(
+                axisIndex,
+                newMax.GetElement(axisIndex) +
+                    projectedContributionsFromMin.GetMax(projectedContributionsFromMax).Dot(Vector3::CreateOne()));
+        }
+
+        m_min = newMin;
+        m_max = newMax;
     }
 }

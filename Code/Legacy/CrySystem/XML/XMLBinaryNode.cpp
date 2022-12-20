@@ -99,7 +99,7 @@ bool CBinaryXmlNode::getAttr(const char* key, unsigned int& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        value = strtoul(svalue, nullptr, 10);
+        value = static_cast<unsigned int>(strtoul(svalue, nullptr, 10));
         return true;
     }
     return false;

@@ -41,7 +41,7 @@ namespace AZ
             for (size_t i = 0; i < RHI::Limits::Device::FrameCountMax; ++i)
             {
                 auto argBuffer = ArgumentBuffer::Create();
-                argBuffer->Init(m_device, m_srgLayout, group, this);
+                argBuffer->Init(m_device, m_srgLayout, this);
                 group.m_compiledArgBuffers[i] = argBuffer;
             }
 

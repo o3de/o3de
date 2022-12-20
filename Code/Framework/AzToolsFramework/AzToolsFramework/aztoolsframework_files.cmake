@@ -216,6 +216,7 @@ set(FILES
     Manipulators/BoxManipulatorRequestBus.h
     Manipulators/EditorVertexSelection.h
     Manipulators/EditorVertexSelection.cpp
+    Manipulators/EditorVertexSelectionBus.h
     Manipulators/HoverSelection.h
     Manipulators/LineHoverSelection.h
     Manipulators/LineHoverSelection.cpp
@@ -257,20 +258,17 @@ set(FILES
     Metadata/MetadataManager.h
     Metadata/MetadataManager.cpp
     Maths/TransformUtils.h
-    PaintBrush/PaintBrush.cpp
-    PaintBrush/PaintBrush.h
-    PaintBrush/PaintBrushNotificationBus.h
     PaintBrush/PaintBrushSubModeCluster.cpp
     PaintBrush/PaintBrushSubModeCluster.h
-    PaintBrushSettings/PaintBrushSettings.cpp
-    PaintBrushSettings/PaintBrushSettings.h
-    PaintBrushSettings/PaintBrushSettingsNotificationBus.h
-    PaintBrushSettings/PaintBrushSettingsRequestBus.h
-    PaintBrushSettings/PaintBrushSettingsSystemComponent.cpp
-    PaintBrushSettings/PaintBrushSettingsSystemComponent.h
-    PaintBrushSettings/PaintBrushSettingsWindow.cpp
-    PaintBrushSettings/PaintBrushSettingsWindow.h
-    PaintBrushSettings/PaintBrushSettingsWindow_Internals.h
+    PaintBrush/GlobalPaintBrushSettings.cpp
+    PaintBrush/GlobalPaintBrushSettings.h
+    PaintBrush/GlobalPaintBrushSettingsNotificationBus.h
+    PaintBrush/GlobalPaintBrushSettingsRequestBus.h
+    PaintBrush/GlobalPaintBrushSettingsSystemComponent.cpp
+    PaintBrush/GlobalPaintBrushSettingsSystemComponent.h
+    PaintBrush/GlobalPaintBrushSettingsWindow.cpp
+    PaintBrush/GlobalPaintBrushSettingsWindow.h
+    PaintBrush/GlobalPaintBrushSettingsWindow_Internals.h
     Picking/BoundInterface.h
     Picking/ContextBoundAPI.h
     Picking/Manipulators/ManipulatorBoundManager.cpp
@@ -807,6 +805,7 @@ set(FILES
     Prefab/Overrides/PrefabOverridePublicInterface.h
     Prefab/Overrides/PrefabOverridePublicHandler.h
     Prefab/Overrides/PrefabOverridePublicHandler.cpp
+    Prefab/Overrides/PrefabOverrideTypes.h
     Prefab/Procedural/ProceduralPrefabAsset.h
     Prefab/Procedural/ProceduralPrefabAsset.cpp
     Prefab/PrefabPublicHandler.h
