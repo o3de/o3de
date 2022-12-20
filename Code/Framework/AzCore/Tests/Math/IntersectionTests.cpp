@@ -13,6 +13,7 @@
 #include <AzCore/Math/Random.h>
 #include <AzCore/Math/Geometry3DUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 #include <random>
 #include <Tests/Math/IntersectionTestHelpers.h>
 
@@ -36,9 +37,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 5.0f);
-            EXPECT_TRUE(line1Proportion == 1.0f);
-            EXPECT_TRUE(line2Proportion == 0.0f);
+            EXPECT_NEAR(pointDifference, 5.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 1.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.0f, AZ::Constants::Tolerance);
         }
 
         // line2 halfway over the top of the line1 (overlap, parallel)
@@ -55,9 +56,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 3.0f);
-            EXPECT_TRUE(line1Proportion == 0.5f);
-            EXPECT_TRUE(line2Proportion == 0.0f);
+            EXPECT_NEAR(pointDifference, 3.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.5f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.0f, AZ::Constants::Tolerance);
         }
 
         // line2 over the top of the line1 (inside, parallel)
@@ -74,9 +75,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 3.0f);
-            EXPECT_TRUE(line1Proportion == 0.25f);
-            EXPECT_TRUE(line2Proportion == 0.0f);
+            EXPECT_NEAR(pointDifference, 3.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.25f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.0f, AZ::Constants::Tolerance);
         }
 
         // line2 over the top of the line1 (overlap, skew (cross))
@@ -93,9 +94,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 4.0f);
-            EXPECT_TRUE(line1Proportion == 0.5f);
-            EXPECT_TRUE(line2Proportion == 0.5f);
+            EXPECT_NEAR(pointDifference, 4.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.5f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.5f, AZ::Constants::Tolerance);
         }
 
         // line2 flat diagonal to line1 (no overlap, skew)
@@ -112,9 +113,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 2.0f);
-            EXPECT_TRUE(line1Proportion == 1.0f);
-            EXPECT_TRUE(line2Proportion == 1.0f);
+            EXPECT_NEAR(pointDifference, 2.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 1.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 1.0f, AZ::Constants::Tolerance);
         }
 
         // line2 perpendicular to line1 (skew, no overlap)
@@ -131,9 +132,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 1.0f);
-            EXPECT_TRUE(line1Proportion == 0.5f);
-            EXPECT_TRUE(line2Proportion == 0.0f);
+            EXPECT_NEAR(pointDifference, 1.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.5f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.0f, AZ::Constants::Tolerance);
         }
 
         // line 1 degenerates to point
@@ -150,9 +151,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 2.0f);
-            EXPECT_TRUE(line1Proportion == 0.0f);
-            EXPECT_TRUE(line2Proportion == 0.5f);
+            EXPECT_NEAR(pointDifference, 2.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.5f, AZ::Constants::Tolerance);
         }
 
         // line 2 degenerates to point
@@ -169,9 +170,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 1.0f);
-            EXPECT_TRUE(line1Proportion == 0.5f);
-            EXPECT_TRUE(line2Proportion == 0.0f);
+            EXPECT_NEAR(pointDifference, 1.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.5f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.0f, AZ::Constants::Tolerance);
         }
 
         // both lines degenerate to points
@@ -190,9 +191,9 @@ namespace UnitTest
 
             // (10, 10, 10) - (5, 5, 5) == (5, 5, 5)
             // |(5,5,5)| == sqrt(5*5+5*5+5*5) == sqrt(75)
-            EXPECT_TRUE(pointDifference == sqrtf(75.0f));
-            EXPECT_TRUE(line1Proportion == 0.0f);
-            EXPECT_TRUE(line2Proportion == 0.0f);
+            EXPECT_NEAR(pointDifference, sqrtf(75.0f), AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.0f, AZ::Constants::Tolerance);
         }
     }
 
@@ -210,8 +211,8 @@ namespace UnitTest
 
             float pointDifference = (lineClosestPoint - point).GetLength();
 
-            EXPECT_TRUE(pointDifference == 2.0f);
-            EXPECT_TRUE(lineProportion == 0.5f);
+            EXPECT_NEAR(pointDifference, 2.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(lineProportion, 0.5f, AZ::Constants::Tolerance);
         }
 
         // point same height behind line
@@ -226,8 +227,8 @@ namespace UnitTest
 
             float pointDifference = (lineClosestPoint - point).GetLength();
 
-            EXPECT_TRUE(pointDifference == 2.0f);
-            EXPECT_TRUE(lineProportion == 0.0f);
+            EXPECT_NEAR(pointDifference, 2.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(lineProportion, 0.0f, AZ::Constants::Tolerance);
         }
 
         // point passed end of line
@@ -242,8 +243,8 @@ namespace UnitTest
 
             float pointDifference = (lineClosestPoint - point).GetLength();
 
-            EXPECT_TRUE(pointDifference == 5.0f);
-            EXPECT_TRUE(lineProportion == 1.0f);
+            EXPECT_NEAR(pointDifference, 5.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(lineProportion, 1.0f, AZ::Constants::Tolerance);
         }
 
         // point above part way along line
@@ -258,12 +259,12 @@ namespace UnitTest
 
             float pointDifference = (lineClosestPoint - point).GetLength();
 
-            EXPECT_TRUE(pointDifference == 1.0f);
-            EXPECT_TRUE(lineProportion == 0.75f);
+            EXPECT_NEAR(pointDifference, 1.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(lineProportion, 0.75f, AZ::Constants::Tolerance);
         }
     }
 
-    class MATH_IntersectSegmentTriangleTest : public AllocatorsFixture
+    class MATH_IntersectSegmentTriangleTest : public LeakDetectionFixture
     {
         public:
 
@@ -471,8 +472,8 @@ namespace UnitTest
                     else if (!outNormal[0].IsClose(outNormal[1]) || !outNormal[0].IsClose(outNormal[2]))
                     {
                         numDifferentHits++;
-                        EXPECT_TRUE(outNormal[0].IsClose(outNormal[1]));
-                        EXPECT_TRUE(outNormal[0].IsClose(outNormal[2]));
+                        EXPECT_THAT(outNormal[0], IsClose(outNormal[1]));
+                        EXPECT_THAT(outNormal[0], IsClose(outNormal[2]));
                     }
                 }
             }
@@ -495,7 +496,11 @@ namespace UnitTest
         EXPECT_GT(numMisses, 0);
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
+    TEST_F(MATH_IntersectSegmentTriangleTest, DISABLED_RegressionTestForSpecificSegmentsAndTriangles)
+#else
     TEST_F(MATH_IntersectSegmentTriangleTest, RegressionTestForSpecificSegmentsAndTriangles)
+#endif
     {
         // This unit test is set up to validate regressions of erroneous segment/triangle intersection test results.
         // All the failures that have been found so far have been false negatives or false positives that occur on triangle
@@ -590,12 +595,12 @@ namespace UnitTest
 
             EXPECT_EQ(test.m_shouldHit, result);
             EXPECT_NEAR(test.m_hitDistance, outDistance, 0.0001f);
-            EXPECT_TRUE(test.m_hitNormal.IsClose(outNormal));
+            EXPECT_THAT(test.m_hitNormal, IsClose(outNormal));
         }
     }
 
     class MATH_IntersectRayCappedCylinderTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
 
@@ -779,7 +784,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayConeTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
 
@@ -891,11 +896,7 @@ namespace UnitTest
         EXPECT_EQ(hits, 2);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST_F(MATH_IntersectRayConeTest, DISABLED_RayOriginOutsideBase_RayDirThroughApex)
-#else
     TEST_F(MATH_IntersectRayConeTest, RayOriginOutsideBase_RayDirThroughApex)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         Vector3 rayOrigin = m_coneApex + 1.3f * m_coneHeight * m_coneDir + 0.3f * m_coneRadius * m_radiusDir;
         Vector3 rayDir = (m_coneApex - rayOrigin).GetNormalized();
@@ -961,7 +962,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayQuadTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
 
@@ -1106,7 +1107,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayBoxTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
 
@@ -1184,7 +1185,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayPolyhedronTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
@@ -1297,4 +1298,96 @@ namespace UnitTest
 
         EXPECT_EQ(intersections, 0);
     }
-}
+
+    class MATH_ClipRayWithAabbTest : public LeakDetectionFixture
+    {
+    };
+
+    TEST_F(MATH_ClipRayWithAabbTest, RayDoesNotGetClippedWhenMissingAabb)
+    {
+        // Test a ray that points straight down and completely misses a box.
+
+        const Aabb aabb = Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 10.0f);
+
+        Vector3 rayStart(50.0f, 50.0f, 20.0f);
+        Vector3 rayEnd(50.0f, 50.0f, -20.0f);
+
+        float tClipStart = AZStd::numeric_limits<float>::max();
+        float tClipEnd = AZStd::numeric_limits<float>::max();
+
+        bool clipped = Intersect::ClipRayWithAabb(aabb, rayStart, rayEnd, tClipStart, tClipEnd);
+
+        // We expect the ray not to get clipped. There are no guarantees on the validity of any of the output values
+        // (rayStart, rayEnd, tClipStart, tClipEnd), so we won't validate them here.
+        EXPECT_FALSE(clipped);
+    }
+
+    TEST_F(MATH_ClipRayWithAabbTest, RayIsClippedWithAabb)
+    {
+        // Test a ray that starts 10 above a box, points straight down, and continues to 10 below the box.
+        // The z values should get clipped to the box.
+
+        const Aabb aabb = Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 10.0f);
+
+        Vector3 rayStart(5.0f, 5.0f, 20.0f);
+        Vector3 rayEnd(5.0f, 5.0f, -20.0f);
+
+        float tClipStart = AZStd::numeric_limits<float>::max();
+        float tClipEnd = AZStd::numeric_limits<float>::max();
+
+        bool clipped = Intersect::ClipRayWithAabb(aabb, rayStart, rayEnd, tClipStart, tClipEnd);
+
+        // We expect the ray to get clipped.
+        EXPECT_TRUE(clipped);
+        EXPECT_THAT(rayStart, IsClose(AZ::Vector3(5.0f, 5.0f, 10.0f)));
+        EXPECT_THAT(rayEnd, IsClose(AZ::Vector3(5.0f, 5.0f, -10.0f)));
+        EXPECT_NEAR(tClipStart, 0.25f, 0.001f);
+        EXPECT_NEAR(tClipEnd, 0.75f, 0.001f);
+    }
+
+    TEST_F(MATH_ClipRayWithAabbTest, RayStartingInsideAabbGetsClipped)
+    {
+        // Test a ray that starts inside a box, points straight down, and continues to 10 below the box.
+        // The z values should get clipped to the box.
+
+        const Aabb aabb = Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 10.0f);
+
+        Vector3 rayStart(5.0f, 5.0f, 0.0f);
+        Vector3 rayEnd(5.0f, 5.0f, -20.0f);
+
+        float tClipStart = AZStd::numeric_limits<float>::max();
+        float tClipEnd = AZStd::numeric_limits<float>::max();
+
+        bool clipped = Intersect::ClipRayWithAabb(aabb, rayStart, rayEnd, tClipStart, tClipEnd);
+
+        // We expect the ray to get clipped.
+        EXPECT_TRUE(clipped);
+        EXPECT_THAT(rayStart, IsClose(AZ::Vector3(5.0f, 5.0f, 0.0f)));
+        EXPECT_THAT(rayEnd, IsClose(AZ::Vector3(5.0f, 5.0f, -10.0f)));
+        EXPECT_NEAR(tClipStart, 0.0f, 0.001f);
+        EXPECT_NEAR(tClipEnd, 0.5f, 0.001f);
+    }
+
+    TEST_F(MATH_ClipRayWithAabbTest, RayEndingInsideAabbGetsClipped)
+    {
+        // Test a ray that starts 10 above a box, points straight down, and ends inside the box.
+        // The z values should get clipped to the box.
+
+        const Aabb aabb = Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 10.0f);
+
+        Vector3 rayStart(5.0f, 5.0f, 20.0f);
+        Vector3 rayEnd(5.0f, 5.0f, 0.0f);
+
+        float tClipStart = AZStd::numeric_limits<float>::max();
+        float tClipEnd = AZStd::numeric_limits<float>::max();
+
+        bool clipped = Intersect::ClipRayWithAabb(aabb, rayStart, rayEnd, tClipStart, tClipEnd);
+
+        // We expect the ray to get clipped.
+        EXPECT_TRUE(clipped);
+        EXPECT_THAT(rayStart, IsClose(AZ::Vector3(5.0f, 5.0f, 10.0f)));
+        EXPECT_THAT(rayEnd, IsClose(AZ::Vector3(5.0f, 5.0f, 0.0f)));
+        EXPECT_NEAR(tClipStart, 0.5f, 0.001f);
+        EXPECT_NEAR(tClipEnd, 1.0f, 0.001f);
+    }
+} // namespace UnitTest

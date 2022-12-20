@@ -253,8 +253,8 @@ def split_batched_editor_log_file(workspace: ly_test_tools._internal.managers.wo
     :return: None
     """
     if not os.path.exists(destination_file):
-        logger.warning(f'No destination_file path found, got {destination_file} instead.')
-        raise FileNotFoundError
+        raise FileNotFoundError(f'Error occurred when splitting batched editor log file. '
+                                f'Path not found at {destination_file}')
     # text that designates the start of logging for a new test
     test_case_split = ".py (testcase )"
     dir_name = os.path.dirname(starting_path)

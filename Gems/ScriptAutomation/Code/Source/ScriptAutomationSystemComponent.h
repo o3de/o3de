@@ -16,7 +16,7 @@
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
-
+#include <Atom/Feature/Utils/FrameCaptureTestBus.h>
 
 namespace AZ
 {
@@ -60,6 +60,9 @@ namespace ScriptAutomation
         void SetIdleSeconds(float numSeconds) override;
         void SetFrameCaptureId(AZ::Render::FrameCaptureId frameCaptureId) override;
         void StartProfilingCapture() override;
+
+        void ActivateScript(const char* scriptPath) override;
+        void DeactivateScripts() override;
 
     protected:
         // AZ::Component implementation

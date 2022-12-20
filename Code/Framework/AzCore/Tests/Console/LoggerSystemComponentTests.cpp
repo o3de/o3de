@@ -12,7 +12,7 @@
 namespace UnitTest
 {
     class LoggerSystemComponentTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         LoggerSystemComponentTests()
@@ -29,7 +29,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             m_loggerComponent = aznew AZ::LoggerSystemComponent;
             AZ::Interface<AZ::ILogger>::Get()->BindLogHandler(m_logHandler);
             AZ::Interface<AZ::ILogger>::Get()->SetLogLevel(AZ::LogLevel::Trace); // Set to trace by default
@@ -39,7 +39,7 @@ namespace UnitTest
         {
             m_logHandler.Disconnect();
             delete m_loggerComponent;
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void LogEventHandler(AZ::LogLevel logLevel, const char* message, const char*, const char*, int32_t)

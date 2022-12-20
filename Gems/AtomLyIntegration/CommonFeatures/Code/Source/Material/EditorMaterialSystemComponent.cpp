@@ -135,11 +135,10 @@ namespace AZ
             m_materialPreviewModelAsset.Release();
             m_materialPreviewLightingPresetAsset.Release();
 
-            if (m_openMaterialEditorAction)
-            {
-                delete m_openMaterialEditorAction;
-                m_openMaterialEditorAction = nullptr;
-            }
+            delete m_openMaterialEditorAction;
+            m_openMaterialEditorAction = nullptr;
+            delete m_openMaterialCanvasAction;
+            m_openMaterialCanvasAction = nullptr;
         }
 
         void EditorMaterialSystemComponent::OpenMaterialEditor(const AZStd::string& sourcePath)
@@ -182,7 +181,7 @@ namespace AZ
                 arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
             }
 
-            AZ_TracePrintf("MaterialComponent", "Launching Material Canvas (Experimental)");
+            AZ_TracePrintf("MaterialComponent", "Launching Material Canvas (Preview)");
             AtomToolsFramework::LaunchTool("MaterialCanvas", arguments);
         }
 
@@ -191,7 +190,7 @@ namespace AZ
             const AzToolsFramework::EntityIdSet& entityIdsToEdit,
             const AZ::Render::MaterialAssignmentId& materialAssignmentId)
         {
-            auto dockWidget = AzToolsFramework::InstanceViewPane("Material Property Inspector");
+            auto dockWidget = AzToolsFramework::InstanceViewPane("Material Instance Editor");
             if (dockWidget)
             {
                 auto inspector = static_cast<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector*>(dockWidget->widget());
@@ -358,7 +357,7 @@ namespace AZ
             }
             if (!m_openMaterialCanvasAction)
             {
-                m_openMaterialCanvasAction = new QAction("Material Canvas (Experimental)");
+                m_openMaterialCanvasAction = new QAction("Material Canvas (Preview)");
                 m_openMaterialCanvasAction->setShortcut(QKeySequence("Ctrl+Shift+M"));
                 m_openMaterialCanvasAction->setCheckable(false);
                 m_openMaterialCanvasAction->setChecked(false);
@@ -377,16 +376,10 @@ namespace AZ
 
         void EditorMaterialSystemComponent::OnResetToolMenuItems()
         {
-            if (m_openMaterialEditorAction)
-            {
-                delete m_openMaterialEditorAction;
-                m_openMaterialEditorAction = nullptr;
-            }
-            if (m_openMaterialCanvasAction)
-            {
-                delete m_openMaterialCanvasAction;
-                m_openMaterialCanvasAction = nullptr;
-            }
+            delete m_openMaterialEditorAction;
+            m_openMaterialEditorAction = nullptr;
+            delete m_openMaterialCanvasAction;
+            m_openMaterialCanvasAction = nullptr;
         }
 
         void EditorMaterialSystemComponent::NotifyRegisterViews()
@@ -398,7 +391,7 @@ namespace AZ
             inspectorOptions.showInMenu = false;
             inspectorOptions.showOnToolsToolbar = false;
             AzToolsFramework::RegisterViewPane<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector>(
-                "Material Property Inspector", LyViewPane::CategoryTools, inspectorOptions);
+                "Material Instance Editor", LyViewPane::CategoryTools, inspectorOptions);
         }
         
         void EditorMaterialSystemComponent::AfterEntitySelectionChanged(const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList&)
@@ -416,13 +409,21 @@ namespace AZ
         AzToolsFramework::AssetBrowser::SourceFileDetails EditorMaterialSystemComponent::GetSourceFileDetails(
             const char* fullSourceFileName)
         {
-            if (AzFramework::StringFunc::EndsWith(fullSourceFileName, AZ::RPI::MaterialSourceData::Extension))
+            const AZStd::string_view path(fullSourceFileName);
+            if (path.ends_with(AZ::RPI::MaterialSourceData::Extension))
             {
                 return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/material.svg");
             }
-            if (AzFramework::StringFunc::EndsWith(fullSourceFileName, AZ::RPI::MaterialTypeSourceData::Extension))
+            if (path.ends_with(AZ::RPI::MaterialTypeSourceData::Extension))
             {
                 return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/materialtype.svg");
+            }
+
+            if (path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphExtensionWithDot) ||
+                path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphNodeExtensionWithDot) ||
+                path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphTemplateExtensionWithDot))
+            {
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Menu/material_canvas.svg");
             }
             return AzToolsFramework::AssetBrowser::SourceFileDetails();
         }

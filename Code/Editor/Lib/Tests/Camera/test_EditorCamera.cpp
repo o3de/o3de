@@ -14,14 +14,16 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <EditorModularViewportCameraComposer.h>
+#include <EditorViewportCamera.h>
 #include <EditorViewportSettings.h>
+#include <Mocks/MockViewportRequests.h>
 #include <Tests/Utils/Printers.h>
 
 #include <GotoPositionDlg.h>
 
 namespace UnitTest
 {
-    class EditorCameraFixture : public ::testing::Test
+    class EditorCameraFixture : public UnitTest::LeakDetectionFixture
     {
     public:
         AZ::ComponentApplication* m_application = nullptr;
@@ -31,10 +33,11 @@ namespace UnitTest
         AZ::Entity* m_entity = nullptr;
         AZ::ComponentDescriptor* m_transformComponent = nullptr;
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
+        ::testing::NiceMock<MockViewportRequests> m_mockViewportRequests;
 
         static inline constexpr AzFramework::ViewportId TestViewportId = 2345;
-        static inline constexpr float HalfInterpolateToTransformDuration =
-            AtomToolsFramework::ModularViewportCameraControllerRequests::InterpolateToTransformDuration * 0.5f;
+        static inline constexpr float InterpolateToTransformDuration = 1.0f;
+        static inline constexpr float HalfInterpolateToTransformDuration = InterpolateToTransformDuration * 0.5f;
 
         void SetUp() override
         {
@@ -66,10 +69,27 @@ namespace UnitTest
 
             m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
             AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+
+            ON_CALL(m_mockViewportRequests, GetCameraTransform)
+                .WillByDefault(
+                    [this]
+                    {
+                        return m_cameraViewportContextView->GetCameraTransform();
+                    });
+            ON_CALL(m_mockViewportRequests, SetCameraTransform)
+                .WillByDefault(
+                    [this](const AZ::Transform& transform)
+                    {
+                        m_cameraViewportContextView->SetCameraTransform(transform);
+                    });
+
+            m_mockViewportRequests.Connect(TestViewportId);
         }
 
         void TearDown() override
         {
+            m_mockViewportRequests.Disconnect();
+
             AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
             m_settingsRegistry.reset();
 
@@ -157,7 +177,8 @@ namespace UnitTest
         AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
             TestViewportId,
             &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
-            transformToInterpolateTo);
+            transformToInterpolateTo,
+            InterpolateToTransformDuration);
 
         // simulate interpolation
         m_controllerList->UpdateViewport(
@@ -186,7 +207,8 @@ namespace UnitTest
         AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
             TestViewportId,
             &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
-            transformToInterpolateTo);
+            transformToInterpolateTo,
+            InterpolateToTransformDuration);
 
         // simulate interpolation
         m_controllerList->UpdateViewport(
@@ -208,21 +230,25 @@ namespace UnitTest
             interpolationBegan,
             TestViewportId,
             &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
-            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)),
+            InterpolateToTransformDuration);
 
         // Then
         EXPECT_THAT(interpolationBegan, ::testing::IsTrue());
     }
 
-    TEST_F(EditorCameraFixture, CameraInterpolationDoesNotBeginDuringAnExistingInterpolation)
+    TEST_F(EditorCameraFixture, CameraInterpolationIsNotInterruptedIfGoingToTheSameTransform)
     {
+        const auto& transformToInterpolateTo = AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f));
+
         // Given/When
         bool initialInterpolationBegan = false;
         AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
             initialInterpolationBegan,
             TestViewportId,
             &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
-            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+            transformToInterpolateTo,
+            InterpolateToTransformDuration);
 
         m_controllerList->UpdateViewport(
             { TestViewportId, AzFramework::FloatSeconds(HalfInterpolateToTransformDuration), AZ::ScriptTimePoint() });
@@ -232,7 +258,8 @@ namespace UnitTest
             nextInterpolationBegan,
             TestViewportId,
             &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
-            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+            transformToInterpolateTo,
+            InterpolateToTransformDuration);
 
         bool interpolating = false;
         AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
@@ -244,6 +271,47 @@ namespace UnitTest
         EXPECT_THAT(interpolating, ::testing::IsTrue());
     }
 
+    TEST_F(EditorCameraFixture, CameraInterpolationCanBeInterruptedIfGoingToDifferentTransform)
+    {
+        const auto& firstTransformToInterpolateTo = AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f));
+        const auto& secondTransformToInterpolateTo = AZ::Transform::CreateTranslation(AZ::Vector3(50.0f, 20.0f, 100.0f));
+
+        // Given/When
+        bool initialInterpolationBegan = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            initialInterpolationBegan,
+            TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            firstTransformToInterpolateTo,
+            InterpolateToTransformDuration);
+
+        m_controllerList->UpdateViewport(
+            { TestViewportId, AzFramework::FloatSeconds(HalfInterpolateToTransformDuration), AZ::ScriptTimePoint() });
+
+        bool nextInterpolationBegan = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            nextInterpolationBegan,
+            TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            secondTransformToInterpolateTo,
+            InterpolateToTransformDuration);
+
+        bool interpolating = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            interpolating, TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::IsInterpolating);
+
+        m_controllerList->UpdateViewport(
+            { TestViewportId, AzFramework::FloatSeconds(InterpolateToTransformDuration), AZ::ScriptTimePoint() });
+
+        const auto actualTransformAfterUpdate = SandboxEditor::GetViewportCameraTransform(TestViewportId);
+
+        // Then
+        EXPECT_THAT(actualTransformAfterUpdate, IsClose(secondTransformToInterpolateTo));
+        EXPECT_THAT(initialInterpolationBegan, ::testing::IsTrue());
+        EXPECT_THAT(nextInterpolationBegan, ::testing::IsTrue());
+        EXPECT_THAT(interpolating, ::testing::IsTrue());
+    }
+
     TEST_F(EditorCameraFixture, CameraInterpolationCanBeginAfterAnInterpolationCompletes)
     {
         // Given/When
@@ -252,12 +320,11 @@ namespace UnitTest
             initialInterpolationBegan,
             TestViewportId,
             &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
-            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)),
+            InterpolateToTransformDuration);
 
         m_controllerList->UpdateViewport(
-            { TestViewportId,
-              AzFramework::FloatSeconds(AtomToolsFramework::ModularViewportCameraControllerRequests::InterpolateToTransformDuration + 0.5f),
-              AZ::ScriptTimePoint() });
+            { TestViewportId, AzFramework::FloatSeconds(InterpolateToTransformDuration + 0.5f), AZ::ScriptTimePoint() });
 
         bool interpolating = true;
         AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
@@ -268,7 +335,8 @@ namespace UnitTest
             nextInterpolationBegan,
             TestViewportId,
             &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
-            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+            AZ::Transform::CreateTranslation(AZ::Vector3(20.0f, 20.0f, 20.0f)),
+            InterpolateToTransformDuration);
 
         // Then
         EXPECT_THAT(initialInterpolationBegan, ::testing::IsTrue());
@@ -276,13 +344,171 @@ namespace UnitTest
         EXPECT_THAT(nextInterpolationBegan, ::testing::IsTrue());
     }
 
-    TEST(GotoPositionPitchConstraints, GoToPositionPitchIsSetToPlusOrMinusNinetyDegrees)
+    TEST_F(EditorCameraFixture, CameraCannotInterpolateToSamePositionWithoutMovingFromIt)
+    {
+        const auto& transformToInterpolateTo = AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f));
+
+        // Given/When
+        bool initialInterpolationBegan = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            initialInterpolationBegan,
+            TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            transformToInterpolateTo,
+            InterpolateToTransformDuration);
+
+        m_controllerList->UpdateViewport(
+            { TestViewportId, AzFramework::FloatSeconds(InterpolateToTransformDuration), AZ::ScriptTimePoint() });
+
+        bool interpolating = true;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            interpolating, TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::IsInterpolating);
+
+        bool nextInterpolationBegan = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            nextInterpolationBegan,
+            TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            transformToInterpolateTo,
+            InterpolateToTransformDuration);
+
+        // Then
+        EXPECT_THAT(initialInterpolationBegan, ::testing::IsTrue());
+        EXPECT_THAT(interpolating, ::testing::IsFalse());
+        EXPECT_THAT(nextInterpolationBegan, ::testing::IsFalse());
+    }
+
+    TEST_F(EditorCameraFixture, CameraInterpolatesToTransformWhenGoToPositionInstantlyIsOff)
+    {
+        // Given
+        SandboxEditor::SetCameraGoToPositionInstantlyEnabled(false);
+        SandboxEditor::SetCameraGoToPositionDuration(InterpolateToTransformDuration);
+
+        // set initial camera transform
+        SandboxEditor::SetViewportCameraTransform(TestViewportId, AZ::Transform::CreateIdentity());
+
+        const auto startingPosition = AZ::Vector3(10.0f, 20.0f, 30.0f);
+        const auto pitchRadians = AZ::DegToRad(-45.0f);
+        const auto yawRadians = AZ::DegToRad(90.0f);
+        const auto expectedTransform = SandboxEditor::TransformFromPositionPitchYaw(startingPosition, pitchRadians, yawRadians);
+
+        // When
+        // camera transition (interpolation or instant based on setting)
+        SandboxEditor::HandleViewportCameraTransitionFromSetting(TestViewportId, startingPosition, pitchRadians, yawRadians);
+
+        // Then
+        // ensure camera transform did not change instantly
+        const auto actualTransformBeforeUpdate = SandboxEditor::GetViewportCameraTransform(TestViewportId);
+        EXPECT_THAT(actualTransformBeforeUpdate, ::testing::Not(IsClose(expectedTransform)));
+        EXPECT_THAT(actualTransformBeforeUpdate, IsClose(AZ::Transform::CreateIdentity()));
+
+        // simulate viewport update
+        m_controllerList->UpdateViewport(
+            { TestViewportId, AzFramework::FloatSeconds(InterpolateToTransformDuration), AZ::ScriptTimePoint() });
+
+        // ensure camera transform is at interpolated position/orientation
+        const auto actualTransformAfterUpdate = SandboxEditor::GetViewportCameraTransform(TestViewportId);
+        EXPECT_THAT(actualTransformAfterUpdate, IsClose(expectedTransform));
+    }
+
+    TEST_F(EditorCameraFixture, CameraChangesImmediatelyWhenGoToPositionInstantlyIsOn)
+    {
+        // Given
+        SandboxEditor::SetCameraGoToPositionInstantlyEnabled(true);
+        SandboxEditor::SetCameraGoToPositionDuration(InterpolateToTransformDuration);
+
+        // set initial camera transform
+        SandboxEditor::SetViewportCameraTransform(TestViewportId, AZ::Transform::CreateIdentity());
+
+        const auto startingPosition = AZ::Vector3(50.0f, 60.0f, 70.0f);
+        const auto pitchRadians = AZ::DegToRad(45.0f);
+        const auto yawRadians = AZ::DegToRad(180.0f);
+        const auto expectedTransform = SandboxEditor::TransformFromPositionPitchYaw(startingPosition, pitchRadians, yawRadians);
+
+        // When
+        // camera transition (interpolation or instant based on setting)
+        SandboxEditor::HandleViewportCameraTransitionFromSetting(TestViewportId, expectedTransform);
+
+        // Then
+        // ensure camera transform updated immediately
+        const auto actualTransformAfterUpdate = SandboxEditor::GetViewportCameraTransform(TestViewportId);
+        EXPECT_THAT(actualTransformAfterUpdate, IsClose(expectedTransform));
+    }
+
+    TEST_F(EditorCameraFixture, CameraInterpolatesToTransform)
+    {
+        // Given
+        SandboxEditor::SetViewportCameraTransform(TestViewportId, AZ::Transform::CreateIdentity());
+
+        const auto startingPosition = AZ::Vector3(1.0f, 2.0f, 3.0f);
+        const auto pitchRadians = AZ::DegToRad(30.0f);
+        const auto yawRadians = AZ::DegToRad(20.0f);
+        const auto expectedTransform = SandboxEditor::TransformFromPositionPitchYaw(startingPosition, pitchRadians, yawRadians);
+
+        // When
+        // interpolate camera to transform
+        SandboxEditor::InterpolateViewportCameraToTransform(
+            TestViewportId, startingPosition, pitchRadians, yawRadians, InterpolateToTransformDuration);
+
+        // simulate viewport update
+        m_controllerList->UpdateViewport(
+            { TestViewportId, AzFramework::FloatSeconds(InterpolateToTransformDuration), AZ::ScriptTimePoint() });
+
+        // Then
+        const auto actualTransform = SandboxEditor::GetViewportCameraTransform(TestViewportId);
+        EXPECT_THAT(actualTransform, IsClose(expectedTransform));
+    }
+
+    TEST_F(EditorCameraFixture, CameraInterpolatesToTransformWithZeroDurationAfterUpdate)
+    {
+        // Given
+        SandboxEditor::SetViewportCameraTransform(TestViewportId, AZ::Transform::CreateIdentity());
+
+        const auto startingPosition = AZ::Vector3(1.0f, 2.0f, 3.0f);
+        const auto pitchRadians = AZ::DegToRad(30.0f);
+        const auto yawRadians = AZ::DegToRad(20.0f);
+        const auto expectedTransform = SandboxEditor::TransformFromPositionPitchYaw(startingPosition, pitchRadians, yawRadians);
+
+        // When
+        // interpolate camera to transform (zero duration)
+        SandboxEditor::InterpolateViewportCameraToTransform(TestViewportId, startingPosition, pitchRadians, yawRadians, 0.0f);
+
+        // simulate viewport update
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.0166f), AZ::ScriptTimePoint() });
+
+        // Then
+        const auto actualTransform = SandboxEditor::GetViewportCameraTransform(TestViewportId);
+        EXPECT_THAT(actualTransform, IsClose(expectedTransform));
+    }
+
+    TEST_F(EditorCameraFixture, CameraDoesNotInterpolateToTransformWithZeroDurationAndNoUpdate)
+    {
+        // Given
+        SandboxEditor::SetViewportCameraTransform(TestViewportId, AZ::Transform::CreateIdentity());
+
+        const auto startingPosition = AZ::Vector3(1.0f, 2.0f, 3.0f);
+        const auto pitchRadians = AZ::DegToRad(30.0f);
+        const auto yawRadians = AZ::DegToRad(20.0f);
+
+        // When
+        // interpolate camera to transform (zero duration)
+        SandboxEditor::InterpolateViewportCameraToTransform(TestViewportId, startingPosition, pitchRadians, yawRadians, 0.0f);
+
+        // no update
+
+        // Then
+        const auto actualTransform = SandboxEditor::GetViewportCameraTransform(TestViewportId);
+        EXPECT_THAT(actualTransform, IsClose(AZ::Transform::CreateIdentity()));
+    }
+
+    using GotoPositionPitchConstraintsTest = UnitTest::LeakDetectionFixture;
+    TEST_F(GotoPositionPitchConstraintsTest, GoToPositionPitchIsSetToPlusOrMinusNinetyDegrees)
     {
         float minPitch = 0.0f;
         float maxPitch = 0.0f;
 
-        GotoPositionPitchConstraints m_gotoPositionContraints;
-        m_gotoPositionContraints.DeterminePitchRange(
+        GoToPositionPitchConstraints m_goToPositionContraints;
+        m_goToPositionContraints.DeterminePitchRange(
             [&minPitch, &maxPitch](const float minPitchDegrees, const float maxPitchDegrees)
             {
                 minPitch = minPitchDegrees;
@@ -294,13 +520,13 @@ namespace UnitTest
         EXPECT_THAT(maxPitch, FloatNear(90.0f, AZ::Constants::FloatEpsilon));
     }
 
-    TEST(GotoPositionPitchConstraints, GoToPositionPitchClampsFinalPitchValueWithTolerance)
+    TEST_F(GotoPositionPitchConstraintsTest, GoToPositionPitchClampsFinalPitchValueWithTolerance)
     {
         const auto [expectedMinPitchRadians, expectedMaxPitchRadians] = AzFramework::CameraPitchMinMaxRadiansWithTolerance();
 
-        GotoPositionPitchConstraints m_gotoPositionContraints;
-        const float minClampedPitchRadians = m_gotoPositionContraints.PitchClampedRadians(-90.0f);
-        const float maxClampedPitchRadians = m_gotoPositionContraints.PitchClampedRadians(90.0f);
+        GoToPositionPitchConstraints m_goToPositionContraints;
+        const float minClampedPitchRadians = m_goToPositionContraints.PitchClampedRadians(-90.0f);
+        const float maxClampedPitchRadians = m_goToPositionContraints.PitchClampedRadians(90.0f);
 
         using ::testing::FloatNear;
         EXPECT_THAT(minClampedPitchRadians, FloatNear(expectedMinPitchRadians, AZ::Constants::FloatEpsilon));
@@ -473,6 +699,22 @@ namespace UnitTest
             const bool actualCameraCaptureCursorForLook = SandboxEditor::CameraCaptureCursorForLook();
             EXPECT_THAT(expectedCameraCaptureCursorForLook, Eq(actualCameraCaptureCursorForLook));
         }
+
+        {
+            const bool existingCameraGoToPositionInstantly = SandboxEditor::CameraGoToPositionInstantlyEnabled();
+            const bool expectedCameraGoToPositionInstantly = !existingCameraGoToPositionInstantly;
+            SandboxEditor::SetCameraGoToPositionInstantlyEnabled(expectedCameraGoToPositionInstantly);
+            const bool actualCameraGoToPositionInstantly = SandboxEditor::CameraGoToPositionInstantlyEnabled();
+            EXPECT_THAT(expectedCameraGoToPositionInstantly, Eq(actualCameraGoToPositionInstantly));
+        }
+
+        {
+            const float existingCameraGoToPositionDuration = SandboxEditor::CameraGoToPositionDuration();
+            const float expectedCameraGoToPositionDuration = existingCameraGoToPositionDuration + 1.0f;
+            SandboxEditor::SetCameraGoToPositionDuration(expectedCameraGoToPositionDuration);
+            const float actualCameraGoToPositionDuration = SandboxEditor::CameraGoToPositionDuration();
+            EXPECT_THAT(expectedCameraGoToPositionDuration, Eq(actualCameraGoToPositionDuration));
+        }
     }
 
     TEST_F(EditorCameraFixture, CameraSettingsRegistryValuesCanBeReset)
@@ -501,6 +743,8 @@ namespace UnitTest
         SandboxEditor::ResetCameraDefaultEditorPosition();
         SandboxEditor::ResetCameraDefaultOrbitDistance();
         SandboxEditor::ResetCameraDefaultEditorOrientation();
+        SandboxEditor::ResetCameraGoToPositionInstantlyEnabled();
+        SandboxEditor::ResetCameraGoToPositionDuration();
 
         // store defaults
         const auto initialCameraSpeedScale = SandboxEditor::CameraSpeedScale();
@@ -521,6 +765,8 @@ namespace UnitTest
         const auto initialCameraDefaultEditorPosition = SandboxEditor::CameraDefaultEditorPosition();
         const auto initialCameraDefaultOrbitDistance = SandboxEditor::CameraDefaultOrbitDistance();
         const auto initialCameraDefaultEditorOrientation = SandboxEditor::CameraDefaultEditorOrientation();
+        const auto initialCameraGoToPositionInstantly = SandboxEditor::CameraGoToPositionInstantlyEnabled();
+        const auto initialCameraGoToPositionDuration = SandboxEditor::CameraGoToPositionDuration();
 
         // modify all values to be different to default value
         SandboxEditor::SetCameraSpeedScale(SandboxEditor::CameraSpeedScale() + 10.0f);
@@ -541,6 +787,8 @@ namespace UnitTest
         SandboxEditor::SetCameraDefaultEditorPosition(SandboxEditor::CameraDefaultEditorPosition() + AZ::Vector3(10.0f));
         SandboxEditor::SetCameraDefaultOrbitDistance(SandboxEditor::CameraDefaultOrbitDistance() + 10.0f);
         SandboxEditor::SetCameraDefaultEditorOrientation(SandboxEditor::CameraDefaultEditorOrientation() + AZ::Vector2(10.0f));
+        SandboxEditor::SetCameraGoToPositionInstantlyEnabled(!SandboxEditor::CameraGoToPositionInstantlyEnabled());
+        SandboxEditor::SetCameraGoToPositionDuration(SandboxEditor::CameraGoToPositionDuration() + 10.0f);
 
         // ensure all values have changed vs defaults
         EXPECT_THAT(SandboxEditor::CameraSpeedScale(), Not(FloatNear(initialCameraSpeedScale, AZ::Constants::FloatEpsilon)));
@@ -563,6 +811,8 @@ namespace UnitTest
         EXPECT_THAT(
             SandboxEditor::CameraDefaultOrbitDistance(), Not(FloatNear(initialCameraDefaultOrbitDistance, AZ::Constants::FloatEpsilon)));
         EXPECT_THAT(SandboxEditor::CameraDefaultEditorOrientation(), Not(IsClose(initialCameraDefaultEditorOrientation)));
+        EXPECT_THAT(SandboxEditor::CameraGoToPositionInstantlyEnabled(), Not(Eq(initialCameraGoToPositionInstantly)));
+        EXPECT_THAT(SandboxEditor::CameraGoToPositionDuration(), Not(Eq(initialCameraGoToPositionDuration)));
 
         // reset all relevant settings to defaults again
         SandboxEditor::ResetCameraSpeedScale();
@@ -583,6 +833,8 @@ namespace UnitTest
         SandboxEditor::ResetCameraDefaultEditorPosition();
         SandboxEditor::ResetCameraDefaultOrbitDistance();
         SandboxEditor::ResetCameraDefaultEditorOrientation();
+        SandboxEditor::ResetCameraGoToPositionInstantlyEnabled();
+        SandboxEditor::ResetCameraGoToPositionDuration();
 
         // ensure values have been reset to defaults
         EXPECT_THAT(SandboxEditor::CameraSpeedScale(), FloatNear(initialCameraSpeedScale, AZ::Constants::FloatEpsilon));
@@ -603,6 +855,8 @@ namespace UnitTest
         EXPECT_THAT(SandboxEditor::CameraDefaultEditorPosition(), IsClose(initialCameraDefaultEditorPosition));
         EXPECT_THAT(SandboxEditor::CameraDefaultOrbitDistance(), FloatNear(initialCameraDefaultOrbitDistance, AZ::Constants::FloatEpsilon));
         EXPECT_THAT(SandboxEditor::CameraDefaultEditorOrientation(), IsClose(initialCameraDefaultEditorOrientation));
+        EXPECT_THAT(SandboxEditor::CameraGoToPositionInstantlyEnabled(), Eq(initialCameraGoToPositionInstantly));
+        EXPECT_THAT(SandboxEditor::CameraGoToPositionDuration(), FloatNear(initialCameraGoToPositionDuration, AZ::Constants::FloatEpsilon));
     }
 
     TEST_F(EditorCameraFixture, CameraSettingsRegistryInputValuesCanBeReset)

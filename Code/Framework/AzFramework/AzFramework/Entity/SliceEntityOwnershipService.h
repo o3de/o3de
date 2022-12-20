@@ -81,6 +81,8 @@ namespace AzFramework
         void SetEntitiesAddedCallback(OnEntitiesAddedCallback onEntitiesAddedCallback) override;
         void SetEntitiesRemovedCallback(OnEntitiesRemovedCallback onEntityRemovedCallback) override;
         void SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback) override;
+
+        void HandleEntityBeingDestroyed(const AZ::EntityId& entityId) override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////

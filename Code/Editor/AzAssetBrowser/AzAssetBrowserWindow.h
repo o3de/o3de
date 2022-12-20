@@ -24,6 +24,7 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        class AssetBrowserEntry;
         class AssetBrowserFilterModel;
         class AssetBrowserTableModel;
         class AssetBrowserModel;
@@ -61,31 +62,42 @@ protected:
     void resizeEvent(QResizeEvent* resizeEvent) override;
 
 private:
-    void OnInitViewToggleButton();
     void UpdateDisplayInfo();
+    void SetNarrowMode(bool narrow);
 
 protected slots:
-    void CreateSwitchViewMenu();
+    void CreateToolsMenu();
     void SetTreeViewMode();
     void SetListViewMode();
     void UpdateWidgetAfterFilter();
+    void SetTwoColumnMode(QWidget* viewToShow);
+    void SetOneColumnMode();
 
 private:
     QScopedPointer<Ui::AzAssetBrowserWindowClass> m_ui;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
-    QMenu* m_viewSwitchMenu = nullptr;
+    QMenu* m_toolsMenu = nullptr;
     QAction* m_treeViewMode = nullptr;
     QAction* m_listViewMode = nullptr;
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
         AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::ListViewMode;
 
-    void UpdatePreview() const;
+    //! Updates the asset preview panel with data about the passed entry.
+    //! Clears the panel if nullptr is passed
+    void UpdatePreview(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const;
+
+    //! Updates breadcrumbs with the selectedEntry relative path if it's a folder or with the
+    //! relative path of the first folder parent of the passed entry.
+    //! Clears breadcrumbs if nullptr is passed or there's no folder parent.
+    void UpdateBreadcrumbs(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const;
+    bool m_inNarrowMode = false;
 
 private Q_SLOTS:
-    void SelectionChangedSlot(const QItemSelection& selected, const QItemSelection& deselected) const;
+    void CurrentIndexChangedSlot(const QModelIndex& idx) const;
     void DoubleClickedItem(const QModelIndex& element);
+    void BreadcrumbsPathChangedSlot(const QString& path) const;
 };
 
 extern const char* AZ_ASSET_BROWSER_PREVIEW_NAME;

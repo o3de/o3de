@@ -14,7 +14,9 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include "AssetProcessorTest.h"
 #include "AzToolsFramework/API/AssetDatabaseBus.h"
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
@@ -44,7 +46,7 @@ namespace UnitTests
 
 
     class SourceFileRelocatorTest
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
         , public ::UnitTest::SourceControlTest
     {
     public:
@@ -860,7 +862,7 @@ namespace UnitTests
     {
         QDir tempPath(m_tempDir.path());
 
-        auto result = m_data->m_reporter->Move("subfolder1/otherfile.tif", "someOtherPlace/otherfile.tif", false, false, true, true);
+        auto result = m_data->m_reporter->Move("subfolder1/otherfile.tif", "someOtherPlace/otherfile.tif", RelocationParameters_RemoveEmptyFoldersFlag | RelocationParameters_UpdateReferencesFlag);
 
         ASSERT_TRUE(result.IsSuccess());
 

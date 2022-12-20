@@ -12,13 +12,13 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/Outcome/Outcome.h>
 
+#include <ScriptCanvas/Asset/RuntimeInputs.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 
 #include "GraphToX.h"
 #include "TranslationContext.h"
-#include "TranslationResult.h"
 #include "TranslationUtilities.h"
 
 namespace ScriptCanvas

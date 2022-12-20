@@ -51,6 +51,7 @@ namespace AZ
             Data::Asset<RPI::ModelAsset> m_modelAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
             RHI::DrawItemSortKey m_sortKey = 0;
             bool m_excludeFromReflectionCubeMaps = false;
+            bool m_isAlwaysDynamic = false;
             bool m_useForwardPassIblSpecular = false;
             bool m_isRayTracingEnabled = true;
             RPI::Cullable::LodType m_lodType = RPI::Cullable::LodType::Default;
@@ -110,6 +111,9 @@ namespace AZ
 
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
+
+            void SetIsAlwaysDynamic(bool isAlwaysDynamic) override;
+            bool GetIsAlwaysDynamic() const override;
 
             void SetLodType(RPI::Cullable::LodType lodType) override;
             RPI::Cullable::LodType GetLodType() const override;

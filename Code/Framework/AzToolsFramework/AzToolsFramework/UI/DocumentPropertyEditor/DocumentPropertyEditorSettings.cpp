@@ -24,6 +24,7 @@ namespace AzToolsFramework
             .ReplaceExtension(SettingsRegistrar::SettingsRegistryFileExt);
 
         m_wereSettingsLoaded = LoadExpanderStates();
+        m_shouldSettingsPersist = true;
     }
 
     DocumentPropertyEditorSettings::~DocumentPropertyEditorSettings()
@@ -85,7 +86,7 @@ namespace AzToolsFramework
             }
         }
 
-        if (!m_expandedElementStates.empty())
+        if (m_shouldSettingsPersist && !m_expandedElementStates.empty())
         {
             SaveExpanderStates();
         }

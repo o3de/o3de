@@ -885,7 +885,9 @@ namespace AzFramework
                             });
                     }
                 }
-                else
+                // This can happen when running with VFS, where the AP connection is done first
+                // and it's too early to send messages since catalog is not initialized yet.
+                else if (!isCatalogInitialize || m_initialized)
                 {
                     AZ::SystemTickBus::QueueFunction(
                         [assetId]()
@@ -904,16 +906,21 @@ namespace AzFramework
                     }
                 }
 
-                AzFramework::LegacyAssetEventBus::QueueEvent(
-                    AZ::Crc32(extension.c_str()), &AzFramework::LegacyAssetEventBus::Events::OnFileChanged, relativePath);
-
-                if (AZ::Data::AssetManager::IsReady())
+                // This can happen when running with VFS, where the AP connection is done first
+                // and it's too early to send asset changed messages since catalog is not initialized yet.
+                if (!isCatalogInitialize || m_initialized)
                 {
-                    AZ::SystemTickBus::QueueFunction(
-                        [assetId]()
-                        {
-                            AZ::Data::AssetManager::Instance().ReloadAsset(assetId, AZ::Data::AssetLoadBehavior::Default, true);
-                        });
+                    AzFramework::LegacyAssetEventBus::QueueEvent(
+                        AZ::Crc32(extension.c_str()), &AzFramework::LegacyAssetEventBus::Events::OnFileChanged, relativePath);
+
+                    if (AZ::Data::AssetManager::IsReady())
+                    {
+                        AZ::SystemTickBus::QueueFunction(
+                            [assetId]()
+                            {
+                                AZ::Data::AssetManager::Instance().ReloadAsset(assetId, AZ::Data::AssetLoadBehavior::Default, true);
+                            });
+                    }
                 }
             }
             else

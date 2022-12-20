@@ -13,9 +13,10 @@
 #include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 #include <GradientSignal/Editor/GradientPreviewer.h>
 
+#include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
+
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 
 #include <Editor/EditorImageGradientRequestBus.h>
 
@@ -82,7 +83,7 @@ namespace GradientSignal
         };
 
         // EditorImageGradientRequestBus overrides ...
-        void StartImageModification() override;
+        AZ::EntityComponentIdPair StartImageModification() override;
         void EndImageModification() override;
         bool SaveImage() override;
 

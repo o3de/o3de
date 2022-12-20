@@ -310,6 +310,7 @@ namespace Multiplayer
         void AddSessionShutdownHandler([[maybe_unused]] SessionShutdownEvent::Handler& handler) override {}
         void AddLevelLoadBlockedHandler([[maybe_unused]] LevelLoadBlockedEvent::Handler& handler) override {}
         void AddNoServerLevelLoadedHandler([[maybe_unused]] NoServerLevelLoadedEvent::Handler& handler) override {}
+        void AddVersionMismatchHandler([[maybe_unused]] VersionMismatchEvent::Handler& handler) override {}
         void SendReadyForEntityUpdates([[maybe_unused]] bool readyForEntityUpdates) override {}
         AZ::TimeMs GetCurrentHostTimeMs() const override { return {}; }
         float GetCurrentBlendFactor() const override { return {}; }
@@ -332,7 +333,7 @@ namespace Multiplayer
 
     class HierarchyBenchmarkBase
         : public benchmark::Fixture
-        , public AllocatorsBase
+        , public LeakDetectionBase
     {
     public:
         void SetUp(const benchmark::State&) override
@@ -355,7 +356,6 @@ namespace Multiplayer
 
         virtual void internalSetUp()
         {
-            SetupAllocator();
             AZ::NameDictionary::Create();
 
             m_ComponentApplicationRequests = AZStd::make_unique<BenchmarkComponentApplicationRequests>();
@@ -436,7 +436,6 @@ namespace Multiplayer
             m_ComponentApplicationRequests.reset();
 
             AZ::NameDictionary::Destroy();
-            TeardownAllocator();
         }
 
         AZStd::unique_ptr<AZ::IConsole> m_console;

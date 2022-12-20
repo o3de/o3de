@@ -275,6 +275,10 @@ namespace AssetProcessor
 
         void AddedToCatalog(JobEntry jobEntry);
 
+        //! Fired when FinishAnalysis is run for a file to notify that a source file has completely finished processing.
+        //! count is the number of files remaining waiting for FinishAnalysis to be called
+        void FinishedAnalysis(int count);
+
     public Q_SLOTS:
         void AssetProcessed(JobEntry jobEntry, AssetBuilderSDK::ProcessJobResponse response);
         void AssetProcessed_Impl();
@@ -327,15 +331,15 @@ namespace AssetProcessor
         bool Recv(unsigned int connId, QByteArray payload, R& request);
         void AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner = false);
         void CheckSource(const FileEntry& source);
-        void CheckMissingJobs(QString relativeSourceFile, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime);
+        void CheckMissingJobs(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime);
         void CheckDeletedProductFile(QString normalizedPath);
         void CheckDeletedSourceFile(
             const SourceAssetReference& sourceAsset,
             AZStd::chrono::steady_clock::time_point initialProcessTime);
-        void CheckModifiedSourceFile(QString normalizedPath, QString databaseSourceFile, const ScanFolderInfo* scanFolderInfo);
+        void CheckModifiedSourceFile(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolderInfo);
         bool AnalyzeJob(JobDetails& details);
         void CheckDeletedCacheFolder(QString normalizedPath);
-        void CheckDeletedSourceFolder(QString normalizedPath, QString relativePath, const ScanFolderInfo* scanFolderInfo);
+        void CheckDeletedSourceFolder(const SourceAssetReference& sourceAsset);
         void CheckCreatedSourceFolder(QString normalizedPath);
         void FailTopLevelSourceForIntermediate(const SourceAssetReference& intermediateAsset, AZStd::string_view errorMessage);
         void CheckMetaDataRealFiles(QString relativePath);
@@ -346,7 +350,6 @@ namespace AssetProcessor
         void AutoFailJob(
             AZStd::string_view consoleMsg,
             AZStd::string_view autoFailReason,
-            const AZ::IO::Path& absoluteFilePath,
             JobEntry jobEntry,
             AZStd::string_view jobLog = "");
         void AutoFailJob(AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter);
@@ -363,7 +366,7 @@ namespace AssetProcessor
         void AddKnownFoldersRecursivelyForFile(QString file, QString root);
         void CleanEmptyFolder(QString folder, QString root);
 
-        void ProcessBuilders(QString normalizedPath, QString relativePathToFile, const ScanFolderInfo* scanFolder, const AssetProcessor::BuilderInfoList& builderInfoList);
+        void ProcessBuilders(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder, const AssetProcessor::BuilderInfoList& builderInfoList);
         AZStd::vector<AZStd::string> GetExcludedFolders();
 
         struct SourceInfoWithFingerprints
@@ -391,7 +394,7 @@ namespace AssetProcessor
         bool SearchSourceInfoBySourceUUID(const AZ::Uuid& sourceUuid, SourceAssetReference& result);
 
         //!  Adds the source to the database and returns the corresponding sourceDatabase Entry
-        void AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const ScanFolderInfo* scanFolder, const SourceAssetReference& sourceAsset);
+        void AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const SourceAssetReference& sourceAsset);
 
         // ! Get the engine, project and active gem root directories which could potentially be separate repositories.
         AZStd::vector<AZStd::string> GetPotentialRepositoryRoots();
@@ -442,6 +445,7 @@ namespace AssetProcessor
         bool IsInCacheFolder(AZ::IO::PathView path) const;
 
         // Returns true if the path is inside the Intermediate Assets folder
+        bool IsInIntermediateAssetsFolder(const SourceAssetReference& sourceAsset) const;
         bool IsInIntermediateAssetsFolder(AZ::IO::PathView path) const;
         bool IsInIntermediateAssetsFolder(QString path) const;
 
@@ -537,7 +541,7 @@ namespace AssetProcessor
         };
 
         void ComputeBuilderDirty();
-        AZStd::string ComputeRecursiveDependenciesFingerprint(const AZStd::string& fileAbsolutePath, const AZStd::string& fileDatabaseName);
+        AZStd::string ComputeRecursiveDependenciesFingerprint(const SourceAssetReference& sourceAsset);
         AZStd::unordered_map<AZ::Uuid, BuilderData>  m_builderDataCache;
         bool m_buildersAddedOrRemoved = true; //< true if any new builders exist.  If this happens we actually need to re-analyze everything.
         bool m_anyBuilderChange = true;
@@ -583,7 +587,7 @@ namespace AssetProcessor
         };
 
         // ideally you would already have the absolute path to the file, and call this function with it:
-        void UpdateAnalysisTrackerForFile(const char* fullPathToFile, AnalysisTrackerUpdateType updateType);
+        void UpdateAnalysisTrackerForFile(const SourceAssetReference& sourceAsset, AnalysisTrackerUpdateType updateType);
 
         // convenience overload of the above function when you have a jobEntry but no absolute path to the file.
         void UpdateAnalysisTrackerForFile(const JobEntry &entry, AnalysisTrackerUpdateType updateType);
@@ -611,7 +615,7 @@ namespace AssetProcessor
         AZStd::unique_ptr<ExcludedFolderCache> m_excludedFolderCache{};
 
 protected Q_SLOTS:
-        void FinishAnalysis(AZStd::string fileToCheck);
+        void FinishAnalysis(SourceAssetReference sourceAsset);
         //////////////////////////////////////////////////////////
     };
 } // namespace AssetProcessor

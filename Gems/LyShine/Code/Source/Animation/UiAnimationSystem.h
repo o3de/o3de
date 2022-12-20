@@ -45,8 +45,6 @@ public:
 
     UiAnimationSystem();
 
-    ~UiAnimationSystem();
-
     void Release() override { delete this; };
 
     bool Load(const char* pszFile, const char* pszMission) override;
@@ -153,7 +151,6 @@ private:
     bool FindSequence(IUiAnimSequence* sequence, PlayingSequences::const_iterator& sequenceIteratorOut) const;
     bool FindSequence(IUiAnimSequence* sequence, PlayingSequences::iterator& sequenceIteratorOut);
 
-    static void DoNodeStaticInitialisation();
     void UpdateInternal(const float dt, const bool bPreUpdate);
 
 #ifdef UI_ANIMATION_SYSTEM_SUPPORT_EDITING

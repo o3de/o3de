@@ -358,7 +358,7 @@ namespace AZ
                 return;
             }
 
-            pipeline->SetDrawFilterTag(m_drawFilterTagRegistry->AcquireTag(pipelineId));
+            pipeline->SetDrawFilterTags(m_drawFilterTagRegistry.get());
 
             m_pipelines.push_back(pipeline);
 
@@ -369,6 +369,7 @@ namespace AZ
             }
 
             pipeline->OnAddedToScene(this);
+            pipeline->ProcessQueuedPassChanges();
 
             TryApplyRenderPipelineChanges(pipeline.get());
 
@@ -396,7 +397,7 @@ namespace AZ
                         m_defaultPipeline = nullptr;
                     }
 
-                    m_drawFilterTagRegistry->ReleaseTag(pipelineToRemove->GetDrawFilterTag());
+                    pipelineToRemove->ReleaseDrawFilterTags(m_drawFilterTagRegistry.get());
 
                     pipelineToRemove->OnRemovedFromScene(this);
                     m_pipelines.erase(it);
@@ -854,7 +855,27 @@ namespace AZ
             {
                 fp->OnRenderEnd();
             }
+
+            for (auto& pipeline : m_pipelines)
+            {
+                for (auto& pipelineView : pipeline->GetPipelineViews())
+                {
+                    for (auto& view : pipelineView.second.m_views)
+                    {
+                        view->ClearAllFlags();
+                    }
+                }
+            }
         }
+
+        RHI::TagBitRegistry<uint32_t>& Scene::GetViewTagBitRegistry()
+        {
+            if (m_viewTagBitRegistry == nullptr)
+            {
+                m_viewTagBitRegistry = RHI::TagBitRegistry<uint32_t>::Create();
+            }
+            return *m_viewTagBitRegistry;
+        };
 
         void Scene::UpdateSrgs()
         {

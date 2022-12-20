@@ -47,5 +47,26 @@ namespace AZ
 
         /// EBus for registering an RHI factory.
         using FactoryManagerBus = AZ::EBus<FactoryManagerRequest>;
-    }
+
+        /**
+         * Notification regarding the state of the RHI factory
+         */
+        class FactoryManagerNotification : public AZ::EBusTraits
+        {
+        public:
+            virtual ~FactoryManagerNotification() = default;
+
+            /// Called after a factory has been selected and registered.
+            virtual void FactoryRegistered(){};
+
+            /// Called after a factory has been selected and unregistered.
+            virtual void FactoryUnregistered(){};
+
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        };
+
+        /// EBus for sending notifications frpm the RHI factory.
+        using FactoryManagerNotificationBus = AZ::EBus<FactoryManagerNotification>;
+    } // namespace RHI
 }

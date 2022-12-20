@@ -387,7 +387,7 @@ bool CXmlNode::getAttr(const char* key, unsigned int& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        value = strtoul(svalue, NULL, 10);
+        value = static_cast<unsigned int>(strtoul(svalue, NULL, 10));
         return true;
     }
     return false;
@@ -1271,7 +1271,7 @@ void    XmlParserImp::onStartElement(const char* tagName, const char** atts)
         node->AddRef(); // Childs need to be add refed.
     }
 
-    node->setLine(XML_GetCurrentLineNumber((XML_Parser)m_parser));
+    node->setLine(static_cast<int>(XML_GetCurrentLineNumber((XML_Parser)m_parser)));
 
     // Call start element callback.
     int i = 0;
@@ -1370,15 +1370,15 @@ namespace
 {
     void* custom_xml_malloc(size_t nSize)
     {
-        return CryModuleMalloc(nSize);
+        return azmalloc(nSize);
     }
     void* custom_xml_realloc(void* p, size_t nSize)
     {
-        return CryModuleRealloc(p, nSize);
+        return azrealloc(p, nSize);
     }
     void custom_xml_free(void* p)
     {
-        CryModuleFree(p);
+        azfree(p);
     }
 }
 

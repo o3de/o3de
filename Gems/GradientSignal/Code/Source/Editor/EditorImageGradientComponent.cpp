@@ -7,6 +7,7 @@
  */
 
 #include <Editor/EditorImageGradientComponent.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
@@ -243,7 +244,8 @@ namespace GradientSignal
         // Make sure our image asset settings are synced in the runtime component's configuration.
         RefreshImageAssetStatus();
 
-        EnableComponentMode();
+        // Register the component mode only if we're in an editable state.
+        RefreshComponentModeStatus();
     }
 
     void EditorImageGradientComponent::Deactivate()
@@ -372,7 +374,7 @@ namespace GradientSignal
 
     void EditorImageGradientComponent::EnableComponentMode()
     {
-        if (m_componentModeDelegate.AddedToComponentMode())
+        if (m_componentModeDelegate.IsConnected())
         {
             return;
         }
@@ -384,7 +386,7 @@ namespace GradientSignal
 
     void EditorImageGradientComponent::DisableComponentMode()
     {
-        if (!m_componentModeDelegate.AddedToComponentMode())
+        if (!m_componentModeDelegate.IsConnected())
         {
             return;
         }
@@ -411,6 +413,8 @@ namespace GradientSignal
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
         }
+
+        RefreshComponentModeStatus();
     }
 
     AZ::u32 EditorImageGradientComponent::ConfigurationChanged()
@@ -446,6 +450,9 @@ namespace GradientSignal
 
     AZ::u32 EditorImageGradientComponent::RefreshCreationSelectionChoice()
     {
+        // Refresh the component mode status, since changing this dropdown affects the component mode visibility.
+        RefreshComponentModeStatus();
+
         // We need to refresh the entire tree because this selection changes the visibility of other properties.
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
@@ -655,17 +662,25 @@ namespace GradientSignal
         return true;
     }
 
-    void EditorImageGradientComponent::StartImageModification()
+    AZ::EntityComponentIdPair EditorImageGradientComponent::StartImageModification()
     {
         // While we're editing, we need to set all the configuration properties to read-only and refresh them.
         // Otherwise, the property changes could conflict with the current painted modifications.
         m_configuration.m_imageModificationActive = true;
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+
+        ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::StartImageModification);
+
+        // Return the runtime entity/component ID pair. This is used to hook the component mode's paintbrush to the runtime component
+        // instead of the editor component so that it can modify the image successfully.
+        return { m_component.GetEntityId(), m_component.GetId() };
     }
 
     void EditorImageGradientComponent::EndImageModification()
     {
+        ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::EndImageModification);
+
         // We're done editing, so set all the configuration properties back to writeable and refresh them.
         m_configuration.m_imageModificationActive = false;
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
@@ -735,7 +750,16 @@ namespace GradientSignal
         }
 
         // Invalid image asset or failed path creation, try creating a new name.
-        return AZStd::string::format(AZ_STRING_FORMAT "_gsi.tif", AZ_STRING_ARG(GetEntity()->GetName()));
+        AZ::IO::Path defaultPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(defaultPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+        }
+
+        defaultPath /= AZ::IO::FixedMaxPathString::format(
+            AZ_STRING_FORMAT "_gsi.tif", AZ_STRING_ARG(AZ::RPI::AssetUtils::SanitizeFileName(GetEntity()->GetName())));
+
+        return defaultPath.Native();
     }
 
     bool EditorImageGradientComponent::SaveImage()

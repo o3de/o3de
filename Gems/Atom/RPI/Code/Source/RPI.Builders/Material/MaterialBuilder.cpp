@@ -227,6 +227,11 @@ namespace AZ
 
             AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), fileName.c_str(), materialProductPath, true);
 
+            // TODO(MaterialPipeline): Try to improve MaterialBuilder to avoid transient failures when the intermediate .materialtype has not
+            // been generated yet, and avoid the annoying failure notifications. We could end ProcessJob with success instead of failure when
+            // an intermediate .materialtype is missing, maybe just output a warning instead, and report a source dependency on that file.
+            // Then when it appears later, reprocess the job, and then the material asset should show up without every reporting a failure (I think).
+
             // Load the material file and create the MaterialAsset object
             AZ::Data::Asset<MaterialAsset> materialAsset;
             materialAsset = CreateMaterialAsset(request.m_sourceFile, document);

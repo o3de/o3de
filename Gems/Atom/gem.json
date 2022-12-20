@@ -27,6 +27,7 @@
         "Tools/AtomToolsFramework",
         "Tools/MaterialCanvas",
         "Tools/MaterialEditor",
+        "Tools/PassCanvas",
         "Tools/ShaderManagementConsole"
     ],
     "dependencies": [
@@ -39,6 +40,7 @@
         "AtomToolsFramework",
         "MaterialCanvas",
         "MaterialEditor",
+        "PassCanvas",
         "ShaderManagementConsole",
         "Atom_AtomBridge"
     ]

@@ -97,24 +97,22 @@ namespace AzToolsFramework
                 sourceDom.RemoveMember(PrefabDomUtils::LinkIdName);
             }
 
-            //Diff the instance against the source template.
-            PrefabDom linkPatch;
-            m_instanceToTemplateInterface->GeneratePatch(linkPatch, sourceDom, instanceDom);
+            m_redoPatch = PrefabDom(); // deallocates all memory previously allocated, just in case.
+            // the above line needs to be done before the GeneratePatch call so that the memory stays alive to be 'moved'
 
-            // Create a copy of linkPatch by providing the allocator of m_redoPatch so that the patch doesn't become invalid when
-            // the patch goes out of scope in this function. 
-            // Copy from m_undoPatch to m_redoPatch since we need 'Source' information copied.
-            PrefabDom linkPatchCopy;
-            linkPatchCopy.CopyFrom(linkPatch, m_redoPatch.GetAllocator());
+            //Diff the instance against the source template.
+            PrefabDom linkPatch(&m_redoPatch.GetAllocator()); // allocations from GeneratePatch will be stored in the m_redoPatch allocator.
+            m_instanceToTemplateInterface->GeneratePatch(linkPatch, sourceDom, instanceDom);
+            
             m_redoPatch.CopyFrom(m_undoPatch, m_redoPatch.GetAllocator());
             if (auto patchesIter = m_redoPatch.FindMember(PrefabDomUtils::PatchesName); patchesIter == m_redoPatch.MemberEnd())
             {
                 m_redoPatch.AddMember(
-                    rapidjson::GenericStringRef(PrefabDomUtils::PatchesName), AZStd::move(linkPatchCopy), m_redoPatch.GetAllocator());
+                    rapidjson::GenericStringRef(PrefabDomUtils::PatchesName), AZStd::move(linkPatch), m_redoPatch.GetAllocator());
             }
             else
             {
-                patchesIter->value = AZStd::move(linkPatchCopy.GetArray());
+                patchesIter->value = AZStd::move(linkPatch.GetArray());
             }
         }
 

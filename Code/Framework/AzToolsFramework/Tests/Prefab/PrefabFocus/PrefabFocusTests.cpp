@@ -36,6 +36,11 @@ namespace UnitTest
             m_entityMap[Passenger2EntityName] = CreateEntity(Passenger2EntityName);
             m_entityMap[CityEntityName] = CreateEntity(CityEntityName);
 
+            AddRequiredEditorComponents({
+                m_entityMap[Passenger1EntityName]->GetId(),
+                m_entityMap[Passenger2EntityName]->GetId(),
+                m_entityMap[CityEntityName]->GetId() });
+
             // Call HandleEntitiesAdded to the loose entities to register them with the Prefab EOS
             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                 &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded,

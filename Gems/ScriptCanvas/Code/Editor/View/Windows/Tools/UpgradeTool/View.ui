@@ -96,9 +96,6 @@
          <property name="showGrid">
           <bool>true</bool>
          </property>
-         <property name="rowCount">
-          <number>1</number>
-         </property>
          <property name="columnCount">
           <number>4</number>
          </property>
@@ -126,7 +123,6 @@
          <attribute name="verticalHeaderStretchLastSection">
           <bool>false</bool>
          </attribute>
-         <row/>
          <column>
           <property name="text">
            <string>Asset</string>

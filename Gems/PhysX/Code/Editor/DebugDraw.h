@@ -89,17 +89,16 @@ namespace PhysX
                 const Physics::SphereShapeConfiguration& sphereShapeConfig,
                 const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne()) const;
 
-            void DrawBox(AzFramework::DebugDisplayRequests& debugDisplay,
+            void DrawBox(
+                AzFramework::DebugDisplayRequests& debugDisplay,
                 const Physics::ColliderConfiguration& colliderConfig,
                 const Physics::BoxShapeConfiguration& boxShapeConfig,
-                const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne(),
-                const bool forceUniformScaling = false) const;
+                const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne()) const;
 
             void DrawCapsule(AzFramework::DebugDisplayRequests& debugDisplay,
                 const Physics::ColliderConfiguration& colliderConfig,
                 const Physics::CapsuleShapeConfiguration& capsuleShapeConfig,
-                const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne(),
-                const bool forceUniformScaling = false) const;
+                const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne()) const;
 
             void DrawMesh(AzFramework::DebugDisplayRequests& debugDisplay,
                 const Physics::ColliderConfiguration& colliderConfig,

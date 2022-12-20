@@ -1197,9 +1197,7 @@ class TestMultiTestCollector(unittest.TestCase):
         mock_run.obj.marks = {"run_type": 'run_shared'}
         mock_run_2 = mock.MagicMock()
         mock_run_2.obj.marks = {"run_type": 'result'}
-        mock_instance = mock.MagicMock()
-        mock_instance.collect.return_value = [mock_run, mock_run_2]
-        mock_collect.return_value = [mock_instance]
+        mock_collect.return_value = [mock_run_2]
 
         collection = self.mock_test_class.collect()
         assert collection == [mock_run_2]
@@ -1222,11 +1220,95 @@ class TestMultiTestCollector(unittest.TestCase):
         mock_run_2 = mock.MagicMock()
         mock_run_2.obj.marks = {"run_type": 'result'}
         mock_run_2.function.marks = {"runner": mock_runner_2}
-        mock_instance = mock.MagicMock()
-        mock_instance.collect.return_value = [mock_run, mock_run_2]
-        mock_collect.return_value = [mock_instance]
+        mock_collect.return_value = [mock_run_2]
 
         self.mock_test_class.collect()
 
-        assert mock_runner.run_pytestfunc == mock_run
         assert mock_run_2 in mock_runner_2.result_pytestfuncs
+
+    @mock.patch('ly_test_tools.o3de.multi_test_framework.isinstance', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.multi_test_framework.issubclass', mock.MagicMock())
+    def test_MakeSingleRun_SingleRun_SetupTeardown(self, mock_collect):
+        mock_inner_test_spec = mock.MagicMock()
+        mock_self = mock.MagicMock()
+
+        mock_single_run_func = multi_test_framework.MultiTestSuite.MultiTestCollector._make_single_run(
+            mock_inner_test_spec)
+        mock_single_run_func(mock_self, mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+        mock_inner_test_spec.setup.assert_called_once()
+        mock_inner_test_spec.teardown.assert_called_once()
+        mock_self._run_single_test.assert_called_once()
+
+    @mock.patch('ly_test_tools.o3de.multi_test_framework.isinstance', mock.MagicMock(return_value=False))
+    @mock.patch('ly_test_tools.o3de.multi_test_framework.issubclass', mock.MagicMock(return_value=False))
+    def test_MakeSingleRun_NoSingleRun_NoSetupTeardown(self, mock_collect):
+        mock_inner_test_spec = mock.MagicMock()
+        mock_self = mock.MagicMock()
+
+        mock_single_run_func = multi_test_framework.MultiTestSuite.MultiTestCollector._make_single_run(
+            mock_inner_test_spec)
+        mock_single_run_func(mock_self, mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+        assert not mock_inner_test_spec.setup.called
+        assert not mock_inner_test_spec.teardown.called
+        mock_self._run_single_test.assert_called_once()
+
+    def test_CreateRunner_HappyPath_SetsRunnersProperly(self, mock_collect):
+        mock_runner_name = 'mock_runner_name'
+        mock_function = mock.MagicMock()
+        mock_shared_test_spec_1 = mock.MagicMock()
+        mock_shared_test_spec_1.__name__ = 'mock_shared_test_spec_1'
+        mock_shared_test_spec_2 = mock.MagicMock()
+        mock_shared_test_spec_2.__name__ = 'mock_shared_test_spec_2'
+        mock_tests = [mock_shared_test_spec_1, mock_shared_test_spec_2]
+        mock_obj = mock.MagicMock()
+
+        multi_test_framework.MultiTestSuite.MultiTestCollector._create_runner(mock_runner_name, mock_function,
+                                                                              mock_tests, mock_obj)
+
+        assert hasattr(mock_obj, mock_runner_name)
+        assert hasattr(mock_obj, mock_shared_test_spec_1.__name__)
+        assert hasattr(mock_obj, mock_shared_test_spec_2.__name__)
+
+    def test_CreateRunner_MakeSharedRun_CallsAttributeFunc(self, mock_collect):
+        mock_runner_name = 'mock_runner_name'
+        mock_obj = mock.MagicMock()
+        mock_function = mock.MagicMock()
+        mock_function.__name__ = 'mock_func_name'
+        mock_tests = []
+        mock_request = mock.MagicMock()
+        mock_workspace = mock.MagicMock()
+        mock_collected_test_data = mock.MagicMock()
+
+        multi_test_framework.MultiTestSuite.MultiTestCollector._create_runner(mock_runner_name, mock_function,
+                                                                              mock_tests, mock_obj)
+        getattr(mock_obj, mock_runner_name)(mock_obj, mock_request, mock_workspace, mock_collected_test_data,
+                                            mock.MagicMock())
+
+        mock_obj.mock_func_name.assert_called_once_with(mock_request, mock_workspace, mock_collected_test_data,
+                                                        mock_tests)
+
+    def test_CreateRunner_MakeResultsRun_CallsAttributeFunc(self, mock_collect):
+        mock_runner_name = 'mock_runner_name'
+        mock_obj = mock.MagicMock()
+        mock_function = mock.MagicMock()
+        mock_shared_test_spec_1 = mock.MagicMock()
+        mock_shared_test_spec_1.__name__ = 'mock_shared_test_spec_name_1'
+        mock_shared_test_spec_2 = mock.MagicMock()
+        mock_shared_test_spec_2.__name__ = 'mock_shared_test_spec_name_2'
+        mock_tests = [mock_shared_test_spec_1, mock_shared_test_spec_2]
+        mock_collected_test_data = mock.MagicMock()
+        mock_result_1 = mock.MagicMock()
+        mock_result_2 = mock.MagicMock()
+        mock_collected_test_data.results = {mock_shared_test_spec_1.__name__: mock_result_1,
+                                            mock_shared_test_spec_2.__name__: mock_result_2}
+
+        multi_test_framework.MultiTestSuite.MultiTestCollector._create_runner(mock_runner_name, mock_function,
+                                                                              mock_tests, mock_obj)
+        getattr(mock_obj, mock_shared_test_spec_1.__name__)(mock_obj, mock.MagicMock(), mock.MagicMock(),
+                                                            mock_collected_test_data, mock.MagicMock())
+        mock_obj._report_result.assert_called_with(mock_shared_test_spec_1.__name__, mock_result_1)
+        getattr(mock_obj, mock_shared_test_spec_2.__name__)(mock_obj, mock.MagicMock(), mock.MagicMock(),
+                                                            mock_collected_test_data, mock.MagicMock())
+        mock_obj._report_result.assert_called_with(mock_shared_test_spec_2.__name__, mock_result_2)

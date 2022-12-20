@@ -56,7 +56,7 @@ namespace UnitTest
     }
 
     class AssetCatalogDependencyTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
         AzFramework::AssetCatalog* m_assetCatalog;
 
@@ -257,7 +257,7 @@ namespace UnitTest
     }
 
     class AssetCatalogDeltaTest :
-        public ScopedAllocatorSetupFixture
+        public LeakDetectionFixture
     {
     public:
         const char* path1 = "Asset1Path";
@@ -419,6 +419,7 @@ namespace UnitTest
             deltaCatalog3.reset();
             m_app->Stop();
             m_app.reset();
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GarbageCollect();
         }
 
         void CheckDirectDependencies(AZ::Data::AssetId assetId, AZStd::initializer_list<AZ::Data::AssetId> expectedDependencies)
@@ -831,7 +832,7 @@ namespace UnitTest
     }
 
     class AssetCatalogAPITest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
@@ -1078,7 +1079,7 @@ namespace UnitTest
     };
 
     class AssetCatalogDisplayNameTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
         virtual AZ::IO::IStreamer* CreateStreamer() { return aznew AZ::IO::Streamer(AZStd::thread_desc{}, AZ::StreamerComponent::CreateStreamerStack()); }
         virtual void DestroyStreamer(AZ::IO::IStreamer* streamer) { delete streamer; }

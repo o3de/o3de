@@ -8,13 +8,15 @@
 
 #include <native/utilities/BuilderConfigurationManager.h>
 #include <native/unittests/UnitTestUtils.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 
 #include <QTemporaryDir>
 
 
 class BuilderConfigurationTests
-    : public ::UnitTest::ScopedAllocatorSetupFixture
+    : public ::UnitTest::LeakDetectionFixture
 {
 public:
     BuilderConfigurationTests()
