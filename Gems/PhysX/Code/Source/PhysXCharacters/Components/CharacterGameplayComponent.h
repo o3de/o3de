@@ -51,7 +51,7 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         CharacterGameplayComponent() = default;
-        CharacterGameplayComponent(AZStd::unique_ptr<CharacterGameplayConfiguration> config);
+        CharacterGameplayComponent(const CharacterGameplayConfiguration& config);
         ~CharacterGameplayComponent() = default;
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);

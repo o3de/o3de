@@ -66,9 +66,9 @@ namespace PhysX
     {
     }
 
-    CharacterGameplayComponent::CharacterGameplayComponent(AZStd::unique_ptr<CharacterGameplayConfiguration> config)
-        : m_gravityMultiplier(config->m_gravityMultiplier)
-        , m_groundDetectionBoxHeight(config->m_groundDetectionBoxHeight)
+    CharacterGameplayComponent::CharacterGameplayComponent(const CharacterGameplayConfiguration& config)
+        : m_gravityMultiplier(config.m_gravityMultiplier)
+        , m_groundDetectionBoxHeight(config.m_groundDetectionBoxHeight)
     {
     }
 

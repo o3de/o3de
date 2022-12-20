@@ -172,18 +172,19 @@ namespace PhysX
         {
             auto characterConfiguration = AZStd::make_unique<Physics::CharacterConfiguration>();
             auto characterShapeConfiguration = AZStd::make_unique<Physics::CapsuleShapeConfiguration>();
-            auto characterGameplayConfiguration = AZStd::make_unique<PhysX::CharacterGameplayConfiguration>();
 
             characterShapeConfiguration->m_height = 1.5f;
             characterShapeConfiguration->m_radius = 0.5f;
 
-            characterGameplayConfiguration->m_gravityMultiplier = expectedGravity;
-            characterGameplayConfiguration->m_groundDetectionBoxHeight = 0.05f;
+            PhysX::CharacterGameplayConfiguration characterGameplayConfiguration;
+
+            characterGameplayConfiguration.m_gravityMultiplier = expectedGravity;
+            characterGameplayConfiguration.m_groundDetectionBoxHeight = 0.05f;
 
             transform = gameplayEntity->CreateComponent<AzFramework::TransformComponent>();
             characterComponent = gameplayEntity->CreateComponent<CharacterControllerComponent>(
                 AZStd::move(characterConfiguration), AZStd::move(characterShapeConfiguration));
-            gameplayComponent = gameplayEntity->CreateComponent<CharacterGameplayComponent>(AZStd::move(characterGameplayConfiguration));
+            gameplayComponent = gameplayEntity->CreateComponent<CharacterGameplayComponent>(characterGameplayConfiguration);
 
             transform->SetWorldTM(AZ::Transform::Identity());
         }
@@ -225,18 +226,19 @@ namespace PhysX
         {
             auto characterConfiguration = AZStd::make_unique<Physics::CharacterConfiguration>();
             auto characterShapeConfiguration = AZStd::make_unique<Physics::CapsuleShapeConfiguration>();
-            auto characterGameplayConfiguration = AZStd::make_unique<PhysX::CharacterGameplayConfiguration>();
 
             characterShapeConfiguration->m_height = 1.5f;
             characterShapeConfiguration->m_radius = 0.5f;
 
-            characterGameplayConfiguration->m_gravityMultiplier = 1.5f;
-            characterGameplayConfiguration->m_groundDetectionBoxHeight = 0.05f;
+            PhysX::CharacterGameplayConfiguration characterGameplayConfiguration;
+
+            characterGameplayConfiguration.m_gravityMultiplier = expectedGravity;
+            characterGameplayConfiguration.m_groundDetectionBoxHeight = 0.05f;
 
             transform = gameplayEntity->CreateComponent<AzFramework::TransformComponent>();
             characterComponent = gameplayEntity->CreateComponent<CharacterControllerComponent>(
                 AZStd::move(characterConfiguration), AZStd::move(characterShapeConfiguration));
-            gameplayComponent = gameplayEntity->CreateComponent<CharacterGameplayComponent>(AZStd::move(characterGameplayConfiguration));
+            gameplayComponent = gameplayEntity->CreateComponent<CharacterGameplayComponent>(characterGameplayConfiguration);
 
             transform->SetWorldTM(AZ::Transform::Identity());
         }
