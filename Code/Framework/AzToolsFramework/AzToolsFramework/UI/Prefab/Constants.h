@@ -12,11 +12,11 @@ namespace AzToolsFramework
 {
     namespace PrefabUIConstants
     {
-        static const int prefabCapsuleRadius = 6;
-        static const int prefabBorderThickness = 2;
-        static const int prefabFileNameFontSize = 10;
-        static const int prefabEditIconSize = 16;
+        const int prefabCapsuleRadius = 6;
+        const int prefabBorderThickness = 2;
+        const int prefabFileNameFontSize = 10;
+        const int prefabEditIconSize = 16;
 
-        static const int levelDividerThickness = 1;
+        const int levelDividerThickness = 1;
     }
 }
