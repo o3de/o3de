@@ -133,6 +133,9 @@ namespace AZ
 
         AZ_MATH_INLINE Vec1::FloatType Vec1::Div(FloatArgType arg1, FloatArgType arg2)
         {
+            // In Vec1 the last 3 elements can be zero, avoid doing division by zero
+            const FloatType ones = Sse::Splat(1.0f);
+            arg2 = Sse::ReplaceFirst(ones, arg2);
             return Sse::Div(arg1, arg2);
         }
 
@@ -416,13 +419,21 @@ namespace AZ
 
         AZ_MATH_INLINE Vec1::FloatType Vec1::Reciprocal(FloatArgType value)
         {
-            return Sse::Reciprocal(value);
+            // In Vec1 all the elements except the first one can be garbage or 0
+            // Using (value.x, 1, 1, 1) to avoid divisions by 0.
+            const FloatType ones = Sse::Splat(1.0f);
+            return Sse::Reciprocal(
+                Sse::ReplaceFirst(ones, value));
         }
 
 
         AZ_MATH_INLINE Vec1::FloatType Vec1::ReciprocalEstimate(FloatArgType value)
         {
-            return Sse::ReciprocalEstimate(value);
+            // In Vec1 all the elements except the first one can be garbage or 0
+            // Using (value.x, 1, 1, 1) to avoid divisions by 0.
+            const FloatType ones = Sse::Splat(1.0f);
+            return Sse::ReciprocalEstimate(
+                Sse::ReplaceFirst(ones, value));
         }
 
 
