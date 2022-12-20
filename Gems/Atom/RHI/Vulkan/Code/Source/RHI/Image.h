@@ -191,7 +191,7 @@ namespace AZ
 
             // Trim image to specified mip level. Release unused bound memory if updateMemoryBind is true
             RHI::ResultCode TrimImage(StreamingImagePool& imagePool, uint16_t targetMipLevel, bool updateMemoryBind);
-			
+
             VkImageCreateFlags CalculateImageCreateFlags() const;
             VkImageUsageFlags CalculateImageUsageFlags() const;
 
