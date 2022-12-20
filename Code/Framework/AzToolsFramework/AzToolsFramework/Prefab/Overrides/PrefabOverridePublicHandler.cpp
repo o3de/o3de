@@ -34,8 +34,22 @@ namespace AzToolsFramework
 
         PrefabOverridePublicHandler::~PrefabOverridePublicHandler()
         {
+            PrefabOverridePublicRequestBus::Handler::BusDisconnect();
             AZ::Interface<PrefabOverridePublicInterface>::Unregister(this);
             PrefabOverridePublicRequestBus::Handler::BusDisconnect();
+        }
+
+        void PrefabOverridePublicHandler::Reflect(AZ::ReflectContext* context)
+        {
+            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context); behaviorContext)
+            {
+                behaviorContext->EBus<PrefabOverridePublicRequestBus>("PrefabOverridePublicRequestBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "Prefab")
+                    ->Attribute(AZ::Script::Attributes::Module, "prefab")
+                    ->Event("AreOverridesPresent", &PrefabOverridePublicInterface::AreOverridesPresent)
+                    ->Event("RevertOverrides", &PrefabOverridePublicInterface::RevertOverrides);
+            }
         }
 
         void PrefabOverridePublicHandler::Reflect(AZ::ReflectContext* context)
