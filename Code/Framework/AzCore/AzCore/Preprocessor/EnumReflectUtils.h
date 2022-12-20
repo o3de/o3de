@@ -17,7 +17,7 @@
 //! @param EnumTypeName an enum that was defined using one of the AZ_ENUM macros.
 #define AZ_ENUM_DEFINE_REFLECT_UTILITIES(EnumTypeName)                                                                                             \
                                                                                                                                                    \
-    static void AZ_JOIN(EnumTypeName, Reflect)(AZ::SerializeContext& context)                                                                      \
+    inline void AZ_JOIN(EnumTypeName, Reflect)(AZ::SerializeContext& context)                                                                      \
     {                                                                                                                                              \
         auto enumMaker = context.Enum<EnumTypeName>();                                                                                             \
         for (auto&& member : AZ::AzEnumTraits<EnumTypeName>::Members)                                                                              \
@@ -47,7 +47,7 @@
         (AZ_JOIN(EnumTypeName, ReflectValue)<Indices>(context, enumTypeBuilder, typeName), ...);                                                   \
     }                                                                                                                                              \
                                                                                                                                                    \
-    void AZ_JOIN(EnumTypeName, Reflect)(AZ::BehaviorContext& context, AZStd::string_view typeName = {})                                            \
+    inline void AZ_JOIN(EnumTypeName, Reflect)(AZ::BehaviorContext& context, AZStd::string_view typeName = {})                                            \
     {                                                                                                                                              \
         if (typeName.empty())                                                                                                                      \
         {                                                                                                                                          \

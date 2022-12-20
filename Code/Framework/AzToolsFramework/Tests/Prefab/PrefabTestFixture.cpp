@@ -225,12 +225,12 @@ namespace UnitTest
         AzToolsFramework::Prefab::PrefabDom prefabDomB;
         ASSERT_TRUE(AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(instanceB, prefabDomB));
 
-        // Validate that both instances match when serialized
-        PrefabTestDomUtils::ComparePrefabDoms(prefabDomA, prefabDomB, true, shouldCompareContainerEntities);
+        // Validate that both instances match when serialized.
+        PrefabTestDomUtils::ComparePrefabDoms(prefabDomA, prefabDomB, shouldCompareLinkIds, shouldCompareContainerEntities);
 
         // Validate that the serialized instances match the shared template when serialized
-        PrefabTestDomUtils::ComparePrefabDoms(templateA->get().GetPrefabDom(), prefabDomB, shouldCompareLinkIds,
-            shouldCompareContainerEntities);
+        // Note: We do not compare the link ids. The template DOM is not supposed to have this member.
+        PrefabTestDomUtils::ComparePrefabDoms(templateA->get().GetPrefabDom(), prefabDomB, false, shouldCompareContainerEntities);
     }
 
     void PrefabTestFixture::DeleteInstances(const InstanceList& instancesToDelete)
@@ -287,6 +287,17 @@ namespace UnitTest
             });
 
         return foundInstanceAlias;
+    }
+
+    void PrefabTestFixture::RenameEntity(AZ::EntityId entityId, const AZStd::string& newName)
+    {
+        ASSERT_FALSE(newName.empty()) << "Cannot rename an entity to empty string.";
+        AZ::Entity* entityToRename = AzToolsFramework::GetEntityById(entityId);
+        ASSERT_TRUE(entityToRename != nullptr) << "Cannot rename a null entity.";
+
+        entityToRename->SetName(newName);
+        m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_undoStack->GetTop());
+        PropagateAllTemplateChanges();
     }
 
     void PrefabTestFixture::ValidateEntityUnderInstance(

@@ -15,6 +15,8 @@
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPipelineSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyValueSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertySourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataHolder.h>
 #include <Atom/RPI.Edit/Material/LuaMaterialFunctorSourceData.h>
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
@@ -54,6 +56,7 @@ namespace AZ
                 ;
             }
 
+            MaterialPropertySourceData::Reflect(context);
             MaterialTypeSourceData::Reflect(context);
             MaterialSourceData::Reflect(context);
             MaterialPipelineSourceData::Reflect(context);

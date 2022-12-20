@@ -19,6 +19,7 @@
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 #include <Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h>
+#include <TerrainProfiler.h>
 
 using namespace Terrain;
 
@@ -303,7 +304,7 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>&
     AZStd::vector<AZ::Vector3>& outPositions, float queryResolution,
     Sampler sampler) const
 {
-    AZ_PROFILE_FUNCTION(Terrain);
+    TERRAIN_PROFILE_FUNCTION_VERBOSE
 
     const float minHeight = m_currentSettings.m_heightRange.m_min;
     for (auto& position : inPositions)
@@ -384,7 +385,7 @@ void TerrainSystem::MakeBulkQueries(
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
     BulkQueriesCallback queryCallback) const
 {
-    AZ_PROFILE_FUNCTION(Terrain);
+    TERRAIN_PROFILE_FUNCTION_VERBOSE
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
@@ -432,7 +433,7 @@ void TerrainSystem::MakeBulkQueries(
 void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<float> heights, AZStd::span<bool> terrainExists) const
 {
-    AZ_PROFILE_FUNCTION(Terrain);
+    TERRAIN_PROFILE_FUNCTION_VERBOSE
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
@@ -466,7 +467,10 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
                             const auto& area = m_registeredAreas.find(areaId);
                             if ((area != m_registeredAreas.end()) && area->second.m_useGroundPlane)
                             {
-                                const float areaMin = area->second.m_areaBounds.GetMin().GetZ();
+                                const float areaMin = AZStd::clamp(
+                                    area->second.m_areaBounds.GetMin().GetZ(),
+                                    m_currentSettings.m_heightRange.m_min,
+                                    m_currentSettings.m_heightRange.m_max);
 
                                 for (size_t index = 0; index < outPositions.size(); index++)
                                 {
@@ -653,6 +657,7 @@ bool TerrainSystem::GetIsHoleFromFloats(float x, float y, Sampler sampler) const
 void TerrainSystem::GetNormalsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<AZ::Vector3> normals, AZStd::span<bool> terrainExists) const
 {
+    TERRAIN_PROFILE_FUNCTION_VERBOSE
     // We use different algorithms for calculating the normals depending on the input sampler type,
     // with no real shared logic, so they've been split out into separate methods.
     switch (sampler)
@@ -1266,7 +1271,7 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList,
     AZStd::span<bool> terrainExists) const
 {
-    AZ_PROFILE_FUNCTION(Terrain);
+    TERRAIN_PROFILE_FUNCTION_VERBOSE
 
     if (terrainExists.size() == outSurfaceWeightsList.size())
     {
@@ -1409,7 +1414,7 @@ void TerrainSystem::QueryList(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
-    AZ_PROFILE_FUNCTION(Terrain);
+    TERRAIN_PROFILE_FUNCTION_VERBOSE
 
     if (!perPositionCallback)
     {
@@ -1427,10 +1432,7 @@ void TerrainSystem::QueryList(
     if (requestedData & TerrainDataMask::Normals)
     {
         normals.resize(inPositions.size());
-        {
-            AZ_PROFILE_SCOPE(Terrain, "GetNormalsSynchronous");
-            GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
-        }
+        GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
     }
     if (requestedData & TerrainDataMask::Heights)
     {
@@ -1449,7 +1451,7 @@ void TerrainSystem::QueryList(
     }
 
     {
-        AZ_PROFILE_SCOPE(Terrain, "QueryList-PerPositionCallbacks");
+        TERRAIN_PROFILE_SCOPE_VERBOSE("QueryList-PerPositionCallbacks");
 
         AzFramework::SurfaceData::SurfacePoint surfacePoint;
         for (size_t i = 0; i < inPositions.size(); i++)

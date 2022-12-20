@@ -1,5 +1,5 @@
 {
-    "Source" : "INSERT_AZSL_PATH_HERE",
+    "Source" : "TEMPLATE_AZSL_PATH",
 
     "DepthStencilState" :
     {
@@ -14,6 +14,13 @@
             "ReadMask" : "0x00",
             "WriteMask" : "0xFF",
             "FrontFace" :
+            {
+                "Func" : "Always",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Replace"
+            },
+            "BackFace" :
             {
                 "Func" : "Always",
                 "DepthFailOp" : "Keep",

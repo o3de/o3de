@@ -11,8 +11,18 @@ import time
 import azlmbr.atom
 import azlmbr.atomtools
 import azlmbr.bus as bus
+import azlmbr.paths
 
+MATERIAL_TYPES_PATH = os.path.join(
+    azlmbr.paths.engroot, "Gems", "Atom", "Feature", "Common", "Assets", "Materials", "Types")
+MATERIALCANVAS_GRAPH_PATH = os.path.join(
+    azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialCanvas", "Assets", "MaterialCanvas", "TestData")
 SCREENSHOTS_FOLDER = os.path.join(azlmbr.paths.products, "Screenshots")
+TEST_DATA_MATERIALS_PATH = os.path.join(azlmbr.paths.engroot, "Gems", "Atom", "TestData", "TestData", "Materials")
+VIEWPORT_LIGHTING_PRESETS_PATH = os.path.join(
+    azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor", "LightingPresets")
+VIEWPORT_MODELS_PRESETS_PATH = os.path.join(
+    azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor", "ViewportModels")
 
 
 def is_close(
@@ -41,6 +51,29 @@ def compare_colors(color1: azlmbr.math.Color, color2: azlmbr.math.Color, buffer:
             and is_close(color1.g, color2.g, buffer)
             and is_close(color1.b, color2.b, buffer)
     )
+
+
+def verify_one_material_document_opened(
+        material_document_ids_list: [azlmbr.math.Uuid], opened_document_index: int) -> bool:
+    """
+    Validation helper to verify if the document at opened_document_index value in the material_document_ids list
+    is the only opened document.
+    Returns True on success, False on failure.
+
+    :param material_document_ids_list: List of material document IDs used for making the document opened check.
+    :param opened_document_index: Index number of the one material document that should be open
+    :return: bool
+    """
+    if not is_document_open(material_document_ids_list[opened_document_index]):
+        return False
+
+    material_document_ids_verification_list = material_document_ids_list.copy()
+    material_document_ids_verification_list.pop(opened_document_index)
+    for closed_material_document_id in material_document_ids_verification_list:
+        if is_document_open(closed_material_document_id):
+            return False
+
+    return True
 
 
 def open_document(file_path: str) -> azlmbr.math.Uuid:
@@ -127,7 +160,8 @@ def get_last_lighting_preset_path() -> str:
     "C:/git/o3de/Gems/Atom/Feature/Common/Assets/LightingPresets/LowContrast/artist_workshop.lightingpreset.azasset"
     "C:/git/o3de/Gems/Atom/TestData/TestData/LightingPresets/beach_parking.lightingpreset.azasset"
     """
-    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastLightingPresetPathWithoutAlias")
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, "GetLastLightingPresetPathWithoutAlias")
 
 
 def get_last_model_preset_path() -> str:
@@ -138,7 +172,8 @@ def get_last_model_preset_path() -> str:
     "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/ViewportModels/Cone.modelpreset.azasset"
     "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/ViewportModels/BeveledCone.modelpreset.azasset"
     """
-    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastModelPresetPathWithoutAlias")
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, "GetLastModelPresetPathWithoutAlias")
 
 
 def get_last_model_preset_asset_id() -> azlmbr.math.Uuid:

@@ -141,5 +141,6 @@ namespace PhysX
 
         AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneStartSimHandler;
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.
+        AzPhysics::SystemEvents::OnDefaultSceneConfigurationChangedEvent::Handler m_sceneConfigChangedHandler; //!< Responds to changes in Scene Config.
     };
 } // namespace PhysX
