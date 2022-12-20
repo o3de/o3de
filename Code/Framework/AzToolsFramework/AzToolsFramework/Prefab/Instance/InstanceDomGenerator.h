@@ -39,14 +39,14 @@ namespace AzToolsFramework
             //! In addition, container entity is updated depending on the above relationship with the focused instance.
             //! Note: Link id would be valid in the generated DOM only if the given instance is a proper descendant
             //! of the focused or root instance.
-            //! @param[out] instanceDom The output instance DOM that will be modified.
+            //! @param[out] instanceDom The output instance DOM that will be modified. It must be empty so that it can be filled.
             //! @param instance The given instance object.
             void GenerateInstanceDom(PrefabDom& instanceDom, const Instance& instance) const override;
 
             //! Generates an entity DOM for a given entity object based on the currently focused instance.
             //! If the owning instance of the given entity is descendant of the focused instance, entity DOM stored in focused
             //! template DOM is used; otherwise, the entity DOM stored in the root template DOM is used.
-            //! @param[out] entityDom The output entity DOM that will be modified.
+            //! @param[out] entityDom The output entity DOM that will be modified. It must be empty so that it can be filled.
             //! @param entity The given entity object.
             void GenerateEntityDom(PrefabDom& entityDom, const AZ::Entity& entity) const override;
 

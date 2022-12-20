@@ -13,6 +13,7 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <Tests/DLLTestVirtualClass.h>
 
 using namespace AZ;
 

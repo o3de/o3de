@@ -38,7 +38,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <rapidjson/pointer.h>
+#include <AzCore/JSON/pointer.h>
 #include <SceneBuilder/SceneBuilderWorker.h>
 #include <SceneBuilder/TraceMessageHook.h>
 

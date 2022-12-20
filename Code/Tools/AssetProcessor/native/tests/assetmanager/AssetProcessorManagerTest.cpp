@@ -3170,6 +3170,55 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_BasicTes
     EXPECT_NE(deps.find(m_dependsOnFile2_Job.toUtf8().constData()), deps.end());
 }
 
+TEST_F(SourceFileDependenciesTest, DependenciesSavedWithPathAndUuid_FromAssetIdIsSetCorrectly)
+{
+    AssetProcessor::AssetProcessorManager::JobToProcessEntry job;
+    SetupData(
+        { MakeSourceDependency("a.txt"), MakeSourceDependency(m_uuidOfB) },
+        { MakeJobDependency("c.txt"), MakeJobDependency(m_uuidOfD) },
+        true,
+        true,
+        true,
+        job);
+
+    AZStd::vector<AzToolsFramework::AssetDatabase::SourceFileDependencyEntry> dependencyEntry;
+    m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByDependsOnSource(
+        m_uuidOfA,
+        "a.txt",
+        "a.txt",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any,
+        dependencyEntry);
+
+    m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByDependsOnSource(
+        m_uuidOfB,
+        "b.txt",
+        "b.txt",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any,
+        dependencyEntry);
+
+    m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByDependsOnSource(
+        m_uuidOfC,
+        "c.txt",
+        "c.txt",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any,
+        dependencyEntry);
+
+    m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByDependsOnSource(
+        m_uuidOfD,
+        "d.txt",
+        "d.txt",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any,
+        dependencyEntry);
+
+    ASSERT_EQ(dependencyEntry.size(), 4);
+
+    // These should be in the order queried above.  A and C are path based, so FromAssetId should be false, B and D are UUID based so FromAssetId should be true
+    EXPECT_FALSE(dependencyEntry[0].m_fromAssetId);
+    EXPECT_TRUE(dependencyEntry[1].m_fromAssetId);
+    EXPECT_FALSE(dependencyEntry[2].m_fromAssetId);
+    EXPECT_TRUE(dependencyEntry[3].m_fromAssetId);
+}
+
 TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_UpdateTest)
 {
     // make sure that if we remove dependencies that are published, they disappear.
