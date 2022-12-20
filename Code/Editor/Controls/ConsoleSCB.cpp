@@ -1082,6 +1082,7 @@ void ConsoleVariableModel::ClearModifiedRows()
 template<typename T, int expectedCvarType>
 static bool SetCVarFromConsoleCommand(ICVar* cvar, AZ::ConsoleFunctorBase* consoleCommand)
 {
+    bool succeeded = false;
     if (T value; consoleCommand->GetValue(value) == AZ::GetValueResult::Success)
     {
         if (cvar->GetType() == expectedCvarType)
@@ -1089,16 +1090,19 @@ static bool SetCVarFromConsoleCommand(ICVar* cvar, AZ::ConsoleFunctorBase* conso
             if constexpr (expectedCvarType == CVAR_INT)
             {
                 cvar->Set(static_cast<int>(value));
+                succeeded = true;
             }
             else if constexpr (expectedCvarType == CVAR_FLOAT)
             {
                 cvar->Set(static_cast<float>(value));
+                succeeded = true;
             }
             else if constexpr (expectedCvarType == CVAR_STRING)
             {
                 if (!value.empty())
                 {
                     cvar->Set(value.data());
+                    succeeded = true;
                 }
             }
         }
@@ -1113,9 +1117,8 @@ static bool SetCVarFromConsoleCommand(ICVar* cvar, AZ::ConsoleFunctorBase* conso
                 }
             }
         }
-        return true;
     }
-    return false;
+    return succeeded;
 }
 
 AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedHandler(
@@ -1140,7 +1143,9 @@ AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedH
             if (azConsoleCommand)
             {
                 const bool handled =
-                    (SetCVarFromConsoleCommand<AZ::s8, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                    (SetCVarFromConsoleCommand<AZStd::string, CVAR_STRING>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::CVarFixedString, CVAR_STRING>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::s8, CVAR_INT>(changedCVar, azConsoleCommand) ||
                      SetCVarFromConsoleCommand<AZ::s16, CVAR_INT>(changedCVar, azConsoleCommand) ||
                      SetCVarFromConsoleCommand<AZ::s32, CVAR_INT>(changedCVar, azConsoleCommand) ||
                      SetCVarFromConsoleCommand<AZ::s64, CVAR_INT>(changedCVar, azConsoleCommand) ||
@@ -1151,9 +1156,8 @@ AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedH
                      SetCVarFromConsoleCommand<long, CVAR_INT>(changedCVar, azConsoleCommand) ||
                      SetCVarFromConsoleCommand<unsigned long, CVAR_INT>(changedCVar, azConsoleCommand) ||
                      SetCVarFromConsoleCommand<float, CVAR_FLOAT>(changedCVar, azConsoleCommand) ||
-                     SetCVarFromConsoleCommand<double, CVAR_FLOAT>(changedCVar, azConsoleCommand) ||
-                     SetCVarFromConsoleCommand<AZStd::string, CVAR_STRING>(changedCVar, azConsoleCommand) ||
-                     SetCVarFromConsoleCommand<AZ::CVarFixedString, CVAR_STRING>(changedCVar, azConsoleCommand));
+                     SetCVarFromConsoleCommand<double, CVAR_FLOAT>(changedCVar, azConsoleCommand)
+                     );
 
                 AZ_Warning("ConsoleSCB", !handled, "an unknown type could not be read into the console!");
             }

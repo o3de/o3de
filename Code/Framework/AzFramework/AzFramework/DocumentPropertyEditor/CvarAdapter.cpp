@@ -38,21 +38,25 @@ namespace AZ::DocumentPropertyEditor
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
                     {
-                        T buffer;
-                        if constexpr (AZStd::is_integral_v<T> && AZStd::is_signed_v<T>)
+                        if (m_adapter->GetContents()[path] != value)
                         {
-                            buffer = aznumeric_cast<T>(value.GetInt64());
+                            T buffer;
+                            if constexpr (AZStd::is_integral_v<T> && AZStd::is_signed_v<T>)
+                            {
+                                buffer = aznumeric_cast<T>(value.GetInt64());
+                            }
+                            else if constexpr (AZStd::is_integral_v<T> && AZStd::is_unsigned_v<T>)
+                            {
+                                buffer = aznumeric_cast<T>(value.GetUint64());
+                            }
+                            else
+                            {
+                                buffer = aznumeric_cast<T>(value.GetDouble());
+                            }
+                            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(
+                                functor->GetName(), { ConsoleTypeHelpers::ToString(buffer) });
+                            m_adapter->OnContentsChanged(path, value);
                         }
-                        else if constexpr (AZStd::is_integral_v<T> && AZStd::is_unsigned_v<T>)
-                        {
-                            buffer = aznumeric_cast<T>(value.GetUint64());
-                        }
-                        else
-                        {
-                            buffer = aznumeric_cast<T>(value.GetDouble());
-                        }
-                        AZ::Interface<AZ::IConsole>::Get()->PerformCommand(functor->GetName(), { ConsoleTypeHelpers::ToString(buffer) });
-                        m_adapter->OnContentsChanged(path, value);
                     });
 
                 using ValueType = typename Nodes::NumericEditor<T>::StorageType;
@@ -85,8 +89,11 @@ namespace AZ::DocumentPropertyEditor
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
                     {
-                        AZ::Interface<AZ::IConsole>::Get()->PerformCommand(functor->GetName(), { value.GetString() });
-                        m_adapter->OnContentsChanged(path, value);
+                        if (m_adapter->GetContents()[path] != value)
+                        {
+                            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(functor->GetName(), { value.GetString() });
+                            m_adapter->OnContentsChanged(path, value);
+                        }
                     });
                 builder.EndPropertyEditor();
                 return true;
@@ -106,17 +113,22 @@ namespace AZ::DocumentPropertyEditor
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
                     {
+                        VectorType oldContainer =
+                            Dom::Utils::ValueToType<VectorType>(m_adapter->GetContents()[path]).value_or(VectorType());
                         VectorType newContainer = Dom::Utils::ValueToType<VectorType>(value).value_or(VectorType());
-                        // ConsoleCommandContainer holds string_views, so ensure we allocate our parameters here
-                        AZStd::fixed_vector<CVarFixedString, ElementCount + 1> newValue;
-                        for (int i = 0; i < ElementCount; ++i)
+                        if (newContainer != oldContainer)
                         {
-                            newValue.push_back(ConsoleTypeHelpers::ToString(newContainer.GetElement(i)));
-                        }
-                        AZ::Interface<AZ::IConsole>::Get()->PerformCommand(functor->GetName(),
-                                                                               ConsoleCommandContainer(AZStd::from_range, newValue));
+                            // ConsoleCommandContainer holds string_views, so ensure we allocate our parameters here
+                            AZStd::fixed_vector<CVarFixedString, ElementCount + 1> newValue;
+                            for (int i = 0; i < ElementCount; ++i)
+                            {
+                                newValue.push_back(ConsoleTypeHelpers::ToString(newContainer.GetElement(i)));
+                            }
+                            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(
+                                functor->GetName(), ConsoleCommandContainer(AZStd::from_range, newValue));
 
-                        m_adapter->OnContentsChanged(path, value);
+                            m_adapter->OnContentsChanged(path, value);
+                        }
                     });
                 builder.EndPropertyEditor();
                 return true;
@@ -134,10 +146,12 @@ namespace AZ::DocumentPropertyEditor
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
                     {
-
-                        AZ::Interface<AZ::IConsole>::Get()->PerformCommand(
-                            functor->GetName(), { ConsoleTypeHelpers::ToString(value.GetBool()) });
-                        m_adapter->OnContentsChanged(path, value);
+                        if (m_adapter->GetContents()[path] != value)
+                        {
+                            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(
+                                functor->GetName(), { ConsoleTypeHelpers::ToString(value.GetBool()) });
+                            m_adapter->OnContentsChanged(path, value);
+                        }
                     });
                 builder.EndPropertyEditor();
                 return true;
