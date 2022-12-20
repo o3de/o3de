@@ -77,7 +77,11 @@ namespace PhysX
                 }
                 else
                 {
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
                     sceneDesc.flags.raise(physx::PxSceneFlag::eDISABLE_CCD_RESWEEP);
+#else
+                    sceneDesc.flags.set(physx::PxSceneFlag::eDISABLE_CCD_RESWEEP);
+#endif
                 }
             }
             else

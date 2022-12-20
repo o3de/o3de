@@ -121,6 +121,7 @@ namespace PhysX
             : physx::PxQueryHitType::Enum::eBLOCK;
     }
 
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
     physx::PxQueryHitType::Enum CharacterControllerCallbackManager::postFilter(
         const physx::PxFilterData& filterData, const physx::PxQueryHit& hit,
         [[maybe_unused]] const physx::PxShape* shape,
@@ -128,6 +129,7 @@ namespace PhysX
     {
         return postFilter(filterData, hit);
     }
+#endif
 
     physx::PxQueryHitType::Enum CharacterControllerCallbackManager::postFilter(
         const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)

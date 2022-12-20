@@ -354,8 +354,14 @@ namespace PhysX
         const physx::PxHitFlags hitFlags = SceneQueryHelpers::GetPxHitFlags(worldSpaceRequest.m_hitFlags);
 
         physx::PxRaycastHit hitInfo;
+
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
         const bool hit = physx::PxGeometryQuery::raycast(start, unitDir, m_pxShape->getGeometry(), pose,
                                                          worldSpaceRequest.m_distance, hitFlags, maxHits, &hitInfo);
+#else
+        const bool hit = physx::PxGeometryQuery::raycast(
+            start, unitDir, m_pxShape->getGeometry().any(), pose, worldSpaceRequest.m_distance, hitFlags, maxHits, &hitInfo);
+#endif
 
         if (hit)
         {
@@ -394,7 +400,12 @@ namespace PhysX
             PHYSX_SCENE_READ_LOCK(GetScene());
             localPose = m_pxShape->getLocalPose();
         }
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
         return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry(), PxMathConvert(worldTransform) * localPose, 1.0f));
+#else
+        return PxMathConvert(
+            physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry().any(), PxMathConvert(worldTransform) * localPose, 1.0f));
+#endif
     }
 
     AZ::Aabb Shape::GetAabbLocal() const
@@ -404,7 +415,11 @@ namespace PhysX
             PHYSX_SCENE_READ_LOCK(GetScene());
             localPose = m_pxShape->getLocalPose();
         }
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
         return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry(), localPose, 1.0f));
+#else
+        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry().any(), localPose, 1.0f));
+#endif
     }
 
     physx::PxScene* Shape::GetScene() const

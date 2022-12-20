@@ -11,6 +11,7 @@
 #include<AzFramework/Physics/Common/PhysicsSceneQueries.h>
 
 //physx sdk includes
+#include <PxPhysicsVersion.h>
 #include <PxQueryFiltering.h>
 #include <PxQueryReport.h>
 #include <PxRigidActor.h>
@@ -71,14 +72,16 @@ namespace PhysX
                 const physx::PxFilterData& queryFilterData, const physx::PxShape* pxShape,
                 const physx::PxRigidActor* actor, physx::PxHitFlags& queryTypes) override;
 
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
             // Unused, we're only pre-filtering at this time
             physx::PxQueryHitType::Enum postFilter(
                 const physx::PxFilterData& filterData,
                 const physx::PxQueryHit& hit,
                 const physx::PxShape* shape,
                 const physx::PxRigidActor* actor) override;
+#endif
 
-            // @deprecated Unused, we're only pre-filtering at this time
+            // Unused, we're only pre-filtering at this time
             physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit) override;
 
         private:
