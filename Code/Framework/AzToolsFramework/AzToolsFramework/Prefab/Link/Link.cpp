@@ -154,7 +154,7 @@ namespace AzToolsFramework
 
         bool Link::AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree)
         {
-            return m_linkPatchesTree.AttachSubTree(path, AZStd::move(subTree));
+            return m_linkPatchesTree.OverwritePath(path, AZStd::move(subTree));
         }
 
         PrefabDomPath Link::GetInstancePath() const
@@ -173,29 +173,28 @@ namespace AzToolsFramework
             PrefabDom& targetTemplatePrefabDom = m_prefabSystemComponentInterface->FindTemplateDom(m_targetTemplateId);
             PrefabDom& sourceTemplatePrefabDom = m_prefabSystemComponentInterface->FindTemplateDom(m_sourceTemplateId);
 
-            // Copy the source template dom so that the actual template DOM does not change and only the linked instance DOM does.
-            PrefabDom sourceTemplateDomCopy;
-            sourceTemplateDomCopy.CopyFrom(sourceTemplatePrefabDom, sourceTemplatePrefabDom.GetAllocator());
-
-            
             PrefabDom patchesDom;
             ConstructLinkDomFromPatches(patchesDom, patchesDom.GetAllocator());
             PrefabDomValueReference patchesReference = PrefabDomUtils::FindPrefabDomValue(patchesDom, PrefabDomUtils::PatchesName);
             if (!patchesReference.has_value())
             {
-                if (AZ::JsonSerialization::Compare(linkedInstanceDom, sourceTemplateDomCopy) != AZ::JsonSerializerCompareResult::Equal)
+                // if there are no patches, it means that the instance being copied should just be identical to the one
+                // in the source.
+                if (AZ::JsonSerialization::Compare(linkedInstanceDom, sourceTemplatePrefabDom) != AZ::JsonSerializerCompareResult::Equal)
                 {
-                    linkedInstanceDom.CopyFrom(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator());
+                    linkedInstanceDom.CopyFrom(sourceTemplatePrefabDom, targetTemplatePrefabDom.GetAllocator());
                 }
             }
             else
             {
+                // Copy the source template dom so that the actual template DOM does not change and only the linked instance DOM does.
+                linkedInstanceDom.CopyFrom(sourceTemplatePrefabDom, targetTemplatePrefabDom.GetAllocator());
+
                 AZ::JsonSerializationResult::ResultCode applyPatchResult =
-                    PrefabDomUtils::ApplyPatches(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator(), patchesReference->get());
-                linkedInstanceDom.CopyFrom(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator());
+                    PrefabDomUtils::ApplyPatches(linkedInstanceDom, targetTemplatePrefabDom.GetAllocator(), patchesReference->get());
 
                 [[maybe_unused]] PrefabDomValueReference sourceTemplateName =
-                    PrefabDomUtils::FindPrefabDomValue(sourceTemplateDomCopy, PrefabDomUtils::SourceName);
+                    PrefabDomUtils::FindPrefabDomValue(sourceTemplatePrefabDom, PrefabDomUtils::SourceName);
                 AZ_Assert(sourceTemplateName && sourceTemplateName->get().IsString(), "A valid source template name couldn't be found");
                 [[maybe_unused]] PrefabDomValueReference targetTemplateName =
                     PrefabDomUtils::FindPrefabDomValue(targetTemplatePrefabDom, PrefabDomUtils::SourceName);
