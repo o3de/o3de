@@ -6,7 +6,7 @@
 #
 #
 """
-This file contains version utilities
+This file contains compatibility functions
 """
 from packaging.version import Version, InvalidVersion
 from packaging.specifiers import SpecifierSet
@@ -118,6 +118,7 @@ def get_gem_engine_incompatible_objects(gem_json_data:dict, engine_json_data:dic
 
     return incompatible_objects.union(get_incompatible_gem_dependencies(gem_json_data, gem_paths=gem_paths))
 
+
 def get_incompatible_objects_for_engine(object_json_data:dict, engine_json_data:dict) -> set:
     """
     Returns any incompatible objects for this object and engine.
@@ -168,6 +169,7 @@ def get_incompatible_objects_for_engine(object_json_data:dict, engine_json_data:
 
     return incompatible_objects
 
+
 def get_incompatible_gem_version_specifiers(project_path:pathlib.Path, gem_version_specifier_list:list, gem_paths:list) -> set:
     """
     Returns a set of gem version specifiers that are not compatible with the gem's provided
@@ -208,6 +210,7 @@ def get_incompatible_gem_version_specifiers(project_path:pathlib.Path, gem_versi
 
     return incompatible_gem_version_specifiers
 
+
 def has_compatible_name(name_and_version_specifier_list:list, object_name:str) -> bool:
     """
     Returns True if the object_name matches an entry in the name_and_version_specifier_list
@@ -220,6 +223,7 @@ def has_compatible_name(name_and_version_specifier_list:list, object_name:str) -
             return True
 
     return False 
+
 
 def has_compatible_version(name_and_version_specifier_list:list, object_name:str, object_version:str) -> bool:
     """

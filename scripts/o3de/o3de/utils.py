@@ -358,6 +358,7 @@ def get_gem_names_set(gems: list) -> set:
     """
     return set([gem['name'] if isinstance(gem, dict) else gem for gem in gems])
 
+
 def remove_gem_duplicates(gems: list) -> list:
     """
     For working with the 'gem_names' lists in project.json
@@ -409,6 +410,7 @@ def update_keys_and_values_in_dict(existing_values: dict, new_values: list or st
     
     return existing_values
 
+
 def update_values_in_key_list(existing_values: list, new_values: list or str, remove_values: list or str,
                       replace_values: list or str):
     """
@@ -435,11 +437,14 @@ def update_values_in_key_list(existing_values: list, new_values: list or str, re
     # replace duplicate values
     return list(dict.fromkeys(existing_values))
 
+
 class InvalidVersionSpecifierException(Exception):
     pass
 
+
 class InvalidObjectNameException(Exception):
     pass
+
 
 def get_object_name_and_version_specifier(input:str) -> (str, str) or None:
     """

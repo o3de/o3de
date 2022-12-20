@@ -259,13 +259,15 @@ class TestRegisterGem:
             if dry_run:
                 assert gem_path not in external_subdirectories
             else:
-                assert gem_path in  external_subdirectories
+                assert gem_path in external_subdirectories
+
 
 @pytest.fixture(scope='function')
 def init_register_project_data(request):
     request.cls.o3de_manifest_data = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
     request.cls.project_data = json.loads(TEST_PROJECT_JSON_PAYLOAD)
     request.cls.engine_data = json.loads(TEST_ENGINE_JSON_PAYLOAD)
+
 
 @pytest.mark.usefixtures('init_register_project_data')
 class TestRegisterProject:
