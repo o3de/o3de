@@ -6,6 +6,7 @@
  *
  */
 #include <Tests/PhysXTestCommon.h>
+#include <math.h>
 
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/SystemBus.h>
@@ -62,6 +63,16 @@ namespace PhysX
                 physicsSystem->Initialize(&config); // init to a fresh state.
             }
         }
+
+        float CalculateZFromFalling(float gravityMultipler, float totalTimeSteps, float startingZPosition)
+        {
+            // Calculate distance fallen (d = 0.5 * g * t^2)
+            float gravity = startingZPosition * gravityMultipler;
+            float time = totalTimeSteps * AzPhysics::SystemConfiguration::DefaultFixedTimestep;
+
+            return 0.5f * (gravity) * powf(time, 2);
+        }
+
 
         void UpdateScene(AzPhysics::Scene* scene, float timeStep, AZ::u32 numSteps)
         {
