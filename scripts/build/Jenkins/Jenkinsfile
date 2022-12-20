@@ -362,7 +362,7 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
 
 //this should assume it will always be executed from the workspace root
 def NoControlFile(repoName) {
-    echo "${repoName}: NoControlFile(${controlFile})"
+    echo "${repoName}: NoControlFile()"
 
     PROCESSED_REPOS.add(repoName)
 
