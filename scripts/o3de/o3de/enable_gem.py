@@ -109,7 +109,7 @@ def enable_gem_in_project(gem_name: str = None,
     if force:
         logger.warning(f'Bypassing version compatibility check for {gem_json_data["gem_name"]}.')
     else:
-        incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path, check=dry_run, gem_paths=buildable_gems)
+        incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path, gem_paths=buildable_gems)
         if incompatible_objects:
             logger.error(f'{gem_json_data["gem_name"]} is not known compatible with the '
                 'following objects/APIs and requires the --force parameter to register:'

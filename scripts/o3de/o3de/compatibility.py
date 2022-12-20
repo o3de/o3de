@@ -52,13 +52,12 @@ def get_project_engine_incompatible_objects(project_path:pathlib.Path, project_j
     return incompatible_objects
 
 
-def get_incompatible_gem_dependencies(gem_json_data:dict, project_path:pathlib.Path = None, gem_paths:list = [], check:bool = False) -> set:
+def get_incompatible_gem_dependencies(gem_json_data:dict, project_path:pathlib.Path = None, gem_paths:list = []) -> set:
     """
     Returns incompatible gem dependencies
     :param gem_json_data: gem json data dictionary
     :param project_path: path to the project (optional)
     :param gem_paths: paths to all gems to use for dependency checks (optional)
-    :param check: if True always return True and ouput log info about the result
     """
     # try to avoid gem compatibility checks which incur the cost of 
     # opening many gem.json files to get version information
@@ -76,13 +75,12 @@ def get_incompatible_gem_dependencies(gem_json_data:dict, project_path:pathlib.P
     return get_incompatible_gem_version_specifiers(project_path, gem_dependencies, gem_paths)
 
 
-def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathlib.Path, gem_paths:list = [], check:bool = False) -> set:
+def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathlib.Path, gem_paths:list = []) -> set:
     """
     Returns any incompatible objects for this gem and project.
     :param gem_json_data: gem json data dictionary
     :param project_path: path to the project
     :param gem_paths: paths to all gems to use for dependency checks (optional)
-    :param check: if True always return True and ouput log info about the result
     """
     project_json_data = manifest.get_project_json_data(project_path=project_path)
     if not project_json_data:
@@ -94,7 +92,7 @@ def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathli
         # the project is not registered with an engine
         # in the future we should check if the gem and project depend on conflicting
         # engines and/or apis
-        return get_incompatible_gem_dependencies(gem_json_data, gem_paths=gem_paths, check=check)
+        return get_incompatible_gem_dependencies(gem_json_data, gem_paths=gem_paths)
 
     engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
     if not engine_json_data:
@@ -106,20 +104,19 @@ def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathli
     return get_gem_engine_incompatible_objects(gem_json_data, engine_json_data, gem_paths=gem_paths)
 
 
-def get_gem_engine_incompatible_objects(gem_json_data:dict, engine_json_data:dict, gem_paths:list = None, check:bool = False) -> set:
+def get_gem_engine_incompatible_objects(gem_json_data:dict, engine_json_data:dict, gem_paths:list = None) -> set:
     """
     Returns any incompatible objects for this gem and engine.
     :param gem_json_data: gem json data dictionary
     :param engine_json_data: engine json data dictionary
     :param gem_paths: paths to all gems to use for dependency checks (optional)
-    :param check: if True always return True and ouput log info about the result
     """
     incompatible_objects = get_incompatible_objects_for_engine(gem_json_data, engine_json_data)
 
     if not gem_paths:
         gem_paths = manifest.get_engine_gems()
 
-    return incompatible_objects.union(get_incompatible_gem_dependencies(gem_json_data, gem_paths=gem_paths, check=check))
+    return incompatible_objects.union(get_incompatible_gem_dependencies(gem_json_data, gem_paths=gem_paths))
 
 def get_incompatible_objects_for_engine(object_json_data:dict, engine_json_data:dict) -> set:
     """
