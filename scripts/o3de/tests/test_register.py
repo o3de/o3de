@@ -171,7 +171,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "engines_path": {}
 }
 '''
-@pytest.fixture(scope='class')
+@pytest.fixture(scope='function')
 def init_register_gem_data(request):
     request.cls.o3de_manifest_data = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
     request.cls.project_data = json.loads(TEST_PROJECT_JSON_PAYLOAD)
@@ -187,12 +187,15 @@ class TestRegisterGem:
     def get_gem_json_data(gem_path: pathlib.Path = None, project_path: pathlib.Path = None):
         return json.loads(TEST_GEM_JSON_PAYLOAD)
 
-    @pytest.mark.parametrize("gem_path, expected_manifest_file, expected_result", [
-                                 pytest.param(pathlib.PurePath('TestGem'), pathlib.PurePath('o3de_manifest.json'), 0),
-                                 pytest.param(project_path / 'TestGem', pathlib.PurePath('project.json'), 0),
-                                 pytest.param(engine_path / 'TestGem', pathlib.PurePath('engine.json'), 0),
+    @pytest.mark.parametrize("gem_path, expected_manifest_file, dry_run, expected_result", [
+                                 pytest.param(pathlib.PurePath('TestGem'), pathlib.PurePath('o3de_manifest.json'), False, 0),
+                                 pytest.param(project_path / 'TestGem', pathlib.PurePath('project.json'), False, 0),
+                                 pytest.param(engine_path / 'TestGem', pathlib.PurePath('engine.json'), False, 0),
+                                 pytest.param(pathlib.PurePath('TestGem'), pathlib.PurePath('o3de_manifest.json'), True, 0),
+                                 pytest.param(project_path / 'TestGem', pathlib.PurePath('project.json'), True, 0),
+                                 pytest.param(engine_path / 'TestGem', pathlib.PurePath('engine.json'), True, 0),
                              ])
-    def test_register_gem_auto_detects_manifest_update(self, gem_path, expected_manifest_file,expected_result):
+    def test_register_gem_auto_detects_manifest_update(self, gem_path, expected_manifest_file, dry_run, expected_result):
 
         def save_o3de_manifest(manifest_data: dict, manifest_path: pathlib.Path = None) -> bool:
             if manifest_path == pathlib.Path(TestRegisterGem.project_path).resolve() / 'project.json':
@@ -239,18 +242,24 @@ class TestRegisterGem:
                 patch('o3de.utils.find_ancestor_dir_containing_file', side_effect=find_ancestor_dir) as _6,\
                 patch('pathlib.Path.is_dir', return_value=True) as _7,\
                 patch('o3de.validation.valid_o3de_gem_json', return_value=True) as _8:
-            result = register.register(gem_path=gem_path)
+            result = register.register(gem_path=gem_path, dry_run=dry_run)
             assert result == expected_result
 
             if expected_manifest_file == pathlib.PurePath('o3de_manifest.json'):
-                assert pathlib.Path(gem_path).resolve() in map(lambda subdir: pathlib.PurePath(subdir),
-                                       self.o3de_manifest_data.get('external_subdirectories', []))
+                external_subdirectories = map(lambda subdir: pathlib.PurePath(subdir),
+                                        self.o3de_manifest_data.get('external_subdirectories', []))
             elif expected_manifest_file == pathlib.PurePath('project.json'):
-                assert gem_path in map(lambda subdir: TestRegisterGem.project_path / subdir,
+                external_subdirectories = map(lambda subdir: TestRegisterGem.project_path / subdir,
                                        self.project_data.get('external_subdirectories', []))
             elif expected_manifest_file == pathlib.PurePath('engine.json'):
-                assert gem_path in map(lambda subdir: TestRegisterGem.engine_path / subdir,
+                external_subdirectories = map(lambda subdir: TestRegisterGem.engine_path / subdir,
                                        self.engine_data.get('external_subdirectories', []))
+            
+            gem_path = pathlib.Path(gem_path).resolve() if expected_manifest_file == pathlib.PurePath('o3de_manifest.json') else gem_path
+            if dry_run:
+                assert gem_path not in external_subdirectories
+            else:
+                assert gem_path in  external_subdirectories
 
 @pytest.fixture(scope='class')
 def init_register_project_data(request):
@@ -268,39 +277,41 @@ class TestRegisterProject:
         'registered_gem_versions, project_engine_name, project_engine_version, '
         'project_gems, project_compatible_engines, project_engine_api_dependencies,'
         'gem_compatible_engines, gem_engine_api_dependencies,'
-        'force, expected_result', [
+        'force, dry_run, expected_result', [
             # passes when registering without version information
-            pytest.param('o3de1', None, None, { 'gem1':'' }, None, None, ['gem1'], None, None, None, None, False, 0),
-            pytest.param('o3de2', '', None, { 'gem1':'' }, None, None, ['gem1'], None, None, None, None, False, 0),
+            pytest.param('o3de1', None, None, { 'gem1':'' }, None, None, ['gem1'], None, None, None, None, False, False, 0),
+            pytest.param('o3de2', '', None, { 'gem1':'' }, None, None, ['gem1'], None, None, None, None, False, False, 0),
             # fails when compatible_engines has no match
-            pytest.param('o3de3', '2.3.4', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de3==1.2.3'], None, None, None,  False, 1),
-            pytest.param('o3de4', '1.2.3', None, { 'gem1':'' }, "", "", ['gem1'], ['o3de1'], None, None, None, False, 1),
+            pytest.param('o3de3', '2.3.4', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de3==1.2.3'], None, None, None,  False, False, 1),
+            pytest.param('o3de4', '1.2.3', None, { 'gem1':'' }, "", "", ['gem1'], ['o3de1'], None, None, None, False, False, 1),
             # passes when forced
-            pytest.param('o3de5', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de1'], None, None, None, True, 0),
+            pytest.param('o3de5', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de1'], None, None, None, True, False, 0),
             # passes when compatible_engines has match
-            pytest.param('o3de6', '0.0.0', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de6'], None, None, None, False, 0),
-            pytest.param('o3de7', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de7>=1.2.3','o3de-sdk==2.3.4'], None, None, None, False, 0),
+            pytest.param('o3de6', '0.0.0', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de6'], None, None, None, False, False, 0),
+            pytest.param('o3de7', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de7>=1.2.3','o3de-sdk==2.3.4'], None, None, None, False, False, 0),
             # fails when gem is used that is not known compatible with version 1.2.3 
-            pytest.param('o3de8', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de8'], None, ['o3de==2.3.4'], None, False, 1),
+            pytest.param('o3de8', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de8'], None, ['o3de==2.3.4'], None, False, False, 1),
             # passes when gem is used that is known compatible with version 1.2.3 
-            pytest.param('o3de9', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de9'], None, ['o3de9==1.2.3'], None, False, 0),
+            pytest.param('o3de9', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de9'], None, ['o3de9==1.2.3'], None, False, False, 0),
             # passes when compatible engine not found but compatible api found
-            pytest.param('o3de10', '1.2.3', {'api':'1.2.3'}, { 'gem1':'' }, "", "", ['gem1'], ['o3de10==2.3.4'], ['api==1.2.3'], None, None, False, 0),
+            pytest.param('o3de10', '1.2.3', {'api':'1.2.3'}, { 'gem1':'' }, "", "", ['gem1'], ['o3de10==2.3.4'], ['api==1.2.3'], None, None, False, False, 0),
             # passes when compatible engine found and no compatible api found
-            pytest.param('o3de11', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, "", "", ['gem1'], ['o3de11==1.2.3'], ['api==1.2.3'], None, None, False, 0),
+            pytest.param('o3de11', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, "", "", ['gem1'], ['o3de11==1.2.3'], ['api==1.2.3'], None, None, False, False, 0),
             # fails when no compatible engine or api found
-            pytest.param('o3de12', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], ['o3de12==3.4.5'], ['api==4.5.6'], None, None, False, 1),
+            pytest.param('o3de12', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], ['o3de12==3.4.5'], ['api==4.5.6'], None, None, False, False, 1),
             # passes when gem is used with compatible engine and api found
-            pytest.param('o3de13', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], None, None, ['o3de13>=1.0.0'], ['api~=1.2.3'] , False, 0),
+            pytest.param('o3de13', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], None, None, ['o3de13>=1.0.0'], ['api~=1.2.3'] , False, False, 0),
             # fails when gem is used with no compatible engine or api found
-            pytest.param('o3de14', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], None, None, ['o3de14==2.3.4'], ['api==1.2.3'] , False, 1),
+            pytest.param('o3de14', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], None, None, ['o3de14==2.3.4'], ['api==1.2.3'] , False, False, 1),
+            # fails as usual with same test when dry-run specified
+            pytest.param('o3de15', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], None, None, ['o3de14==2.3.4'], ['api==1.2.3'] , False, True, 1),
         ]
     )
     def test_register_project(self, test_engine_name, engine_version, engine_api_versions,
                                 registered_gem_versions, project_engine_name, project_engine_version, 
                                 project_gems, project_compatible_engines, project_engine_api_dependencies,
                                 gem_compatible_engines, gem_engine_api_dependencies,
-                                force, expected_result):
+                                force, dry_run, expected_result):
         def save_o3de_manifest(manifest_data: dict, manifest_path: pathlib.Path = None) -> bool:
             if manifest_path == pathlib.Path(TestRegisterProject.project_path).resolve() / 'project.json':
                 self.project_data = manifest_data
@@ -404,5 +415,10 @@ class TestRegisterProject:
             patch('o3de.cmake.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) as _11, \
             patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as _12:
 
-            result = register.register(project_path=TestRegisterProject.project_path, force = force)
+            result = register.register(project_path=TestRegisterProject.project_path, force=force, dry_run=dry_run)
+
+            if dry_run:
+                assert TestRegisterProject.project_path not in map(lambda subdir: pathlib.PurePath(subdir),
+                                        self.o3de_manifest_data.get('external_subdirectories', []))
+                 
             assert result == expected_result

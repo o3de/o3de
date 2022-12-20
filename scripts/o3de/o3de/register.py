@@ -271,7 +271,8 @@ def register_o3de_object_path(json_data: dict,
                               remove: bool = False,
                               engine_path: pathlib.Path = None,
                               project_path: pathlib.Path = None,
-                              gem_path: pathlib.Path = None) -> int:
+                              gem_path: pathlib.Path = None,
+                              dry_run: bool = False) -> int:
     # save_path variable is used to save the changes to the store the path to the file to save
     # if the registration is for the project or engine
     save_path = None
@@ -319,11 +320,12 @@ def register_o3de_object_path(json_data: dict,
             paths_to_remove.append(o3de_object_path.relative_to(save_path.parent))
         except ValueError:
             pass  # It is not an error if a relative path cannot be formed
-    manifest_data[o3de_object_key] = list(filter(lambda p: pathlib.Path(p) not in paths_to_remove,
-                                                 manifest_data.setdefault(o3de_object_key, [])))
+    if not dry_run:
+        manifest_data[o3de_object_key] = list(filter(lambda p: pathlib.Path(p) not in paths_to_remove,
+                                                    manifest_data.setdefault(o3de_object_key, [])))
 
     if remove:
-        if save_path:
+        if save_path and not dry_run:
             manifest.save_o3de_manifest(manifest_data, save_path)
         return 0
 
@@ -342,9 +344,11 @@ def register_o3de_object_path(json_data: dict,
             o3de_object_path = o3de_object_path.relative_to(save_path.parent)
         except ValueError:
             pass # It is OK relative path cannot be formed
-    manifest_data[o3de_object_key].insert(0, o3de_object_path.as_posix())
-    if save_path:
-        manifest.save_o3de_manifest(manifest_data, save_path)
+    if not dry_run:
+        manifest_data[o3de_object_key].insert(0, o3de_object_path.as_posix())
+
+        if save_path:
+            manifest.save_o3de_manifest(manifest_data, save_path)
 
     return 0
 
@@ -398,7 +402,8 @@ def register_gem_path(json_data: dict,
                       remove: bool = False,
                       engine_path: pathlib.Path = None,
                       project_path:  pathlib.Path = None,
-                      force: bool = False) -> int:
+                      force: bool = False,
+                      dry_run:bool = False) -> int:
     # If a project path or engine path has not been supplied auto detect which manifest to register the input path with
     if not project_path and not engine_path:
         project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), gem_path)
@@ -430,17 +435,24 @@ def register_gem_path(json_data: dict,
                     "\n  ".join(incompatible_objects))
                 return 1
 
-    return register_o3de_object_path(json_data, gem_path, 'external_subdirectories', 'gem.json',
+    result = register_o3de_object_path(json_data, gem_path, 'external_subdirectories', 'gem.json',
                                      validation.valid_o3de_gem_json, remove,
                                      pathlib.Path(engine_path).resolve() if engine_path else None,
-                                     pathlib.Path(project_path).resolve() if project_path else None)
+                                     pathlib.Path(project_path).resolve() if project_path else None,
+                                     dry_run=dry_run)
+
+    if result == 0 and dry_run:
+        logger.info('Gem path was not registered because --dry-run option was specified')
+
+    return result
 
 
 def register_project_path(json_data: dict,
                           project_path: pathlib.Path,
                           remove: bool = False,
                           engine_path: pathlib.Path = None,
-                          force: bool = False) -> int:
+                          force: bool = False,
+                          dry_run: bool = False) -> int:
     # If an engine path has not been supplied auto detect if the project should be register with the engine.json
     # or the ~/.o3de/o3de_manifest.json
     if not engine_path:
@@ -467,7 +479,8 @@ def register_project_path(json_data: dict,
 
     result = register_o3de_object_path(json_data, project_path, 'projects', 'project.json',
                                        validation.valid_o3de_project_json, remove,
-                                       pathlib.Path(engine_path).resolve() if engine_path else None)
+                                       pathlib.Path(engine_path).resolve() if engine_path else None,
+                                       dry_run=dry_run)
 
     if result != 0:
         return result
@@ -481,13 +494,16 @@ def register_project_path(json_data: dict,
         except KeyError as e:
             update_project_json = True
 
-        if update_project_json:
+        if update_project_json and not dry_run:
             project_json_path = project_path / 'project.json'
             project_json_data['engine'] = engine_json_data['engine_name']
             project_json_data['engine_version'] = engine_json_data.get('version','')
             utils.backup_file(project_json_path)
             if not manifest.save_o3de_manifest(project_json_data, project_json_path):
                 return 1
+
+    if dry_run:
+        logger.info('Project path was not registered because --dry-run option was specified')
 
     return 0
 
@@ -740,7 +756,8 @@ def register(engine_path: pathlib.Path = None,
              external_subdir_project_path: pathlib.Path = None,
              external_subdir_gem_path: pathlib.Path = None,
              remove: bool = False,
-             force: bool = False
+             force: bool = False,
+             dry_run: bool = False
              ) -> int:
     """
     Adds/Updates entries to the ~/.o3de/o3de_manifest.json
@@ -790,7 +807,7 @@ def register(engine_path: pathlib.Path = None,
         if not project_path:
             logger.error(f'Project path cannot be empty.')
             return 1
-        result = result or register_project_path(json_data, project_path, remove, engine_path, force)
+        result = result or register_project_path(json_data, project_path, remove, engine_path, force, dry_run)
 
     if isinstance(gem_path, pathlib.PurePath):
         if not gem_path:
@@ -798,7 +815,7 @@ def register(engine_path: pathlib.Path = None,
             return 1
         result = result or register_gem_path(json_data, gem_path, remove,
                                              external_subdir_engine_path, external_subdir_project_path,
-                                             force)
+                                             force, dry_run)
 
     if isinstance(external_subdir_path, pathlib.PurePath):
         if not external_subdir_path:
@@ -853,7 +870,7 @@ def register(engine_path: pathlib.Path = None,
             return 1
         result = result or register_engine_path(json_data, engine_path, remove, force)
 
-    if not result:
+    if not result and not dry_run:
         manifest.save_o3de_manifest(json_data)
 
     return result
@@ -896,7 +913,8 @@ def _run_register(args: argparse) -> int:
                         external_subdir_project_path=args.external_subdirectory_project_path,
                         external_subdir_gem_path=args.external_subdirectory_gem_path,
                         remove=args.remove,
-                        force=args.force)
+                        force=args.force,
+                        dry_run=args.dry_run)
 
 
 def add_parser_args(parser):
@@ -959,8 +977,11 @@ def add_parser_args(parser):
     parser.add_argument('-r', '--remove', action='store_true', required=False,
                         default=False,
                         help='Remove entry.')
-    parser.add_argument('-f', '--force', action='store_true', default=False,
+    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-f', '--force', action='store_true', default=False,
                         help='For the update of the registration field being modified.')
+    group.add_argument('-dry', '--dry-run', action='store_true', default=False,
+                       help='Performs a dry run, reporting the result, but does not actually change anything.')
 
     external_subdir_group = parser.add_argument_group(title='external-subdirectory',
                                                       description='path arguments to use with the --external-subdirectory option')

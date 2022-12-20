@@ -194,7 +194,7 @@ class TestEnableGemCommand:
             else:
                 assert gem not in project_json.get('gem_names', [])
 
-    @pytest.mark.parametrize("gem_version, gem_dependencies, gem_names_and_versions, check, force, "
+    @pytest.mark.parametrize("gem_version, gem_dependencies, gem_names_and_versions, dry_run, force, "
                              "compatible_engines, engine_api_dependencies, test_engine_name, test_engine_version, "
                              "test_engine_api_versions, is_optional_gem, expected_result", [
         # passes when no version information is provided
@@ -248,7 +248,7 @@ class TestEnableGemCommand:
         ],
     )
     def test_enable_gem_checks_engine_compatibility(self, gem_version, gem_dependencies, 
-                                                    gem_names_and_versions, check, force, compatible_engines, 
+                                                    gem_names_and_versions, dry_run, force, compatible_engines, 
                                                     engine_api_dependencies, test_engine_name, test_engine_version, 
                                                     test_engine_api_versions, is_optional_gem, expected_result):
         gem_registered_with_project = True
@@ -335,7 +335,7 @@ class TestEnableGemCommand:
                 patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:
 
             self.enable_gem.project_data.pop('gem_names', None)
-            result = enable_gem.enable_gem_in_project(gem_path=gem_path, project_path=project_path, force=force, check=check, optional=is_optional_gem)
+            result = enable_gem.enable_gem_in_project(gem_path=gem_path, project_path=project_path, force=force, dry_run=dry_run, optional=is_optional_gem)
             assert result == expected_result
 
             gem_json = get_gem_json_data(gem_path, project_path)

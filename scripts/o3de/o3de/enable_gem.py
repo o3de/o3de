@@ -27,7 +27,7 @@ def enable_gem_in_project(gem_name: str = None,
                           project_path: pathlib.Path = None,
                           enabled_gem_file: pathlib.Path = None,
                           force: bool = False,
-                          check: bool = False,
+                          dry_run: bool = False,
                           optional: bool = False) -> int:
     """
     enable a gem in a projects enabled_gems.cmake file
@@ -37,7 +37,7 @@ def enable_gem_in_project(gem_name: str = None,
     :param project_path: path to the project to add the gem to
     :param enabled_gem_file: if this dependency goes/is in a specific file
     :param force: bypass version compatibility checks 
-    :param check: check version compatibility without modifying anything
+    :param dry_run: check version compatibility without modifying anything
     :param optional: mark the gem as optional
     :return: 0 for success or non 0 failure code
     """
@@ -109,13 +109,13 @@ def enable_gem_in_project(gem_name: str = None,
     if force:
         logger.warning(f'Bypassing version compatibility check for {gem_json_data["gem_name"]}.')
     else:
-        incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path, check=check, gem_paths=buildable_gems)
+        incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path, check=dry_run, gem_paths=buildable_gems)
         if incompatible_objects:
             logger.error(f'{gem_json_data["gem_name"]} is not known compatible with the '
                 'following objects/APIs and requires the --force parameter to register:'
                 "\n  ".join(incompatible_objects))
             return 1
-        elif check:
+        elif dry_run:
             logger.info(f'{gem_json_data["gem_name"]} is compatible with this project')
             return 0
 
@@ -190,7 +190,7 @@ def _run_enable_gem_in_project(args: argparse) -> int:
                                      args.project_path,
                                      args.enabled_gem_file,
                                      args.force,
-                                     args.check,
+                                     args.dry_run,
                                      args.optional
                                      )
 
@@ -224,8 +224,8 @@ def add_parser_args(parser):
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-f', '--force', required=False, action='store_true', default=False,
                        help='Bypass version compatibility checks')
-    group.add_argument('-c', '--check', required=False, action='store_true', default=False,
-                       help='Checks if this gem can be enabled for the specified project, but does not actually enable.')
+    group.add_argument('-dry', '--dry-run', required=False, action='store_true', default=False,
+                       help='Performs a dry run, reporting the result without changing anything.')
     parser.add_argument('-o', '--optional', action='store_true', required=False, default=False,
                         help='Marks the gem as optional so a project can still be configured if not found.')
 
