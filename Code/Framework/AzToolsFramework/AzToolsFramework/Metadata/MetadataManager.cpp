@@ -92,7 +92,7 @@ namespace AzToolsFramework
         }
 
         outValue = rapidjson::Document(); // Make sure to release any existing memory if the document happens to be non-empty
-        outValue.CopyFrom(*value, document.GetAllocator());
+        outValue.CopyFrom(*value, outValue.GetAllocator());
         return true;
     }
 

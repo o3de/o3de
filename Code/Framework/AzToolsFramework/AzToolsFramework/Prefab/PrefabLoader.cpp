@@ -595,7 +595,8 @@ namespace AzToolsFramework
             // Prefabs are stored to disk with default values stripped. However, while in memory, we need those default values to be
             // present to make patches work consistently. To accomplish this, we'll instantiate the Dom, then serialize the instance
             // back into a Dom with all of the default values preserved.
-            // Note that this is the default behavior in Prefab serialization, so we don't need to specify StoreInstanceFlags.
+            // Note that this is the default behavior in Prefab serialization, so we don't need to specify any StoreInstanceFlags
+            // except StripLinkIds that is needed to remove link ids from template DOM.
 
             if (!loadedTemplateDom)
             {
@@ -619,8 +620,9 @@ namespace AzToolsFramework
 
             // Now that the Instance has been created, convert it back into a Prefab DOM.  Because we
             // don't specify to skip default fields in the call to StoreInstanceInPrefabDom,
-            // this new DOM will have all fields from all classes.
-            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, loadedTemplateDomRef))
+            // this new DOM will have all fields from all classes except link ids.
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(
+                    loadedPrefabInstance, loadedTemplateDomRef, PrefabDomUtils::StoreFlags::StripLinkIds))
             {
                 return false;
             }
