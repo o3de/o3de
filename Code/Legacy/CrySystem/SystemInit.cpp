@@ -1223,11 +1223,14 @@ void CSystem::CreateSystemVars()
             "Default: Localization\n",
             CSystem::OnLocalizationFolderCVarChanged);
 
+/* todo: sys_float_exceptions used to be enabled at level "2" for debug builds, but this code has been broken for years.
+*        this variable once again functions as it should, so we need to enable this intentionally again and track down
+*        the many floating point errors that our engine has accumulated in the meantime
 #if (defined(WIN32) || defined(WIN64)) && defined(_DEBUG)
     REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 2, 0, "Use or not use floating point exceptions.");
-#else // Float exceptions by default disabled for console builds.
+#else // Float exceptions by default disabled for console builds.*/
     REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 0, 0, "Use or not use floating point exceptions.");
-#endif
+// #endif
 
     REGISTER_CVAR2("sys_update_profile_time", &g_cvars.sys_update_profile_time, 1.0f, 0, "Time to keep updates timings history for.");
     REGISTER_CVAR2("sys_no_crash_dialog", &g_cvars.sys_no_crash_dialog, m_bNoCrashDialog, VF_NULL, "Whether to disable the crash dialog window");
