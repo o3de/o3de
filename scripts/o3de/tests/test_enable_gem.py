@@ -194,65 +194,65 @@ class TestEnableGemCommand:
             else:
                 assert gem not in project_json.get('gem_names', [])
 
-    @pytest.mark.parametrize("gem_version, gem_dependencies, gem_names_and_versions, dry_run, force, "
+    @pytest.mark.parametrize("gem_registered_with_project, gem_registered_with_engine, "
+                             "gem_version, gem_dependencies, gem_names_and_versions, dry_run, force, "
                              "compatible_engines, engine_api_dependencies, test_engine_name, test_engine_version, "
                              "test_engine_api_versions, is_optional_gem, expected_result", [
         # passes when no version information is provided
-        pytest.param(None, [], {}, False, False, [], None, 'o3de-test', '', None, False, 0),
-        pytest.param('', [], {}, False, False, [], None, 'o3de-test', '', None, False, 0),
+        pytest.param(False, False, None, [], {}, False, False, [], None, 'o3de-test', '', None, False, 0),
+        pytest.param(False, True, '', [], {}, False, False, [], None, 'o3de-test', '', None, False, 0),
         # passes when a compatible engine version is provided
-        pytest.param('1.2.3', [], {}, False, False, ['o3de-test>=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
-        pytest.param('1.2.3', [], {}, False, False, ['o3de-test>=1.0.0, <2.3.4'], [], 'o3de-test', '2.0.1', {}, False, 0),
-        pytest.param('1.2.3', [], {}, False, False, ['o3de-test'], [], 'o3de-test', '', {}, False, 0),
-        pytest.param('1.2.3', [], {}, False, False, ['o3de-test'], [], 'o3de-test', '1.2.3', {}, False, 0),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, ['o3de-test>=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, ['o3de-test>=1.0.0, <2.3.4'], [], 'o3de-test', '2.0.1', {}, False, 0),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, ['o3de-test'], [], 'o3de-test', '', {}, False, 0),
+        pytest.param(True, False, '1.2.3', [], {}, False, False, ['o3de-test'], [], 'o3de-test', '1.2.3', {}, False, 0),
         # fails when no compatible engine version is found
-        pytest.param('1.2.3', [], {}, False, False, ['o3de-test==1.2.3'], [], 'o3de-test', None, {}, False, 1),
-        pytest.param('1.2.3', [], {}, False, False, ['o3de-test==1.2.3'], [], 'o3de-test', '', {}, False, 1),
-        pytest.param('1.2.3', [], {}, False, False, ['o3de-test<1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 1),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, ['o3de-test==1.2.3'], [], 'o3de-test', None, {}, False, 1),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, ['o3de-test==1.2.3'], [], 'o3de-test', '', {}, False, 1),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, ['o3de-test<1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 1),
         # passes when forced even if no compatible engine version is found
-        pytest.param('1.2.3', [], {}, False, True, ['o3de-test<1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
+        pytest.param(False, False, '1.2.3', [], {}, False, True, ['o3de-test<1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
         # fails when no compatible engine is found
-        pytest.param('1.2.3', [], {}, False, False, ['o3de-test<1.0.0'], [], 'other-engine', '0.0.0', {}, False, 1),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, ['o3de-test<1.0.0'], [], 'other-engine', '0.0.0', {}, False, 1),
         # passes when dependent gems and engines are found
-        pytest.param('1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.2.3', 'testgem2':'2.0.0'}, 
+        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.2.3', 'testgem2':'2.0.0'}, 
                     False, False, ['o3de-test<=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
         # passes when dependent gems without version specifiers are used
-        pytest.param('1.2.3', ['testgem1','testgem2'], { 'testgem1':'1.2.3', 'testgem2':'2.0.0'}, 
+        pytest.param(False, False, '1.2.3', ['testgem1','testgem2'], { 'testgem1':'1.2.3', 'testgem2':'2.0.0'}, 
                     False, False, ['o3de-test<=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
         # passes when dependent gems with and without version specifiers are used
-        pytest.param('1.2.3', ['testgem1','testgem2~=2.0.0'], { 'testgem1':'1.2.3', 'testgem2':'2.0.1'}, 
+        pytest.param(False, False, '1.2.3', ['testgem1','testgem2~=2.0.0'], { 'testgem1':'1.2.3', 'testgem2':'2.0.1'}, 
                     False, False, ['o3de-test<=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
         # fails when dependent gem is not found
-        pytest.param('1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.2.3'}, 
+        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.2.3'}, 
                     False, False, ['o3de-test<=1.0.0'], [], 'o3de-test', '0.0.0', {}, False, 1),
         # fails when dependent gem with wrong version found
-        pytest.param('1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.0.0', 'testgem2':'1.0.0'}, 
+        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.0.0', 'testgem2':'1.0.0'}, 
                     False, False, ['o3de-test~=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 1),
         # does not modify project when check only 
-        pytest.param('1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.2.3', 'testgem2':'2.0.0'}, 
+        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.2.3', 'testgem2':'2.0.0'}, 
                     True, False, ['o3de-test<=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
         # passes when a engine api versions found
-        pytest.param('1.2.3', [], {}, False, False, [], ['api==1.2.3'], 'o3de-test', '1.0.0', {'api':'1.2.3'}, False, 0),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, [], ['api==1.2.3'], 'o3de-test', '1.0.0', {'api':'1.2.3'}, False, 0),
         # passes when a engine api without a version specifier is used and api exists 
-        pytest.param('1.2.3', [], {}, False, False, [], ['api'], 'o3de-test', '1.0.0', {'api':'1.2.3'}, False, 0),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, [], ['api'], 'o3de-test', '1.0.0', {'api':'1.2.3'}, False, 0),
         # fails when engine api not found 
-        pytest.param('1.2.3', [], {}, False, False, [], ['api==2.3.4'], 'o3de-test', '1.0.0', {'otherapi':'1.2.3'}, False, 1),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, [], ['api==2.3.4'], 'o3de-test', '1.0.0', {'otherapi':'1.2.3'}, False, 1),
         # fails when engine api version incorrect
-        pytest.param('1.2.3', [], {}, False, False, [], ['api==2.3.4'], 'o3de-test', '1.0.0', {'api':'1.2.3'}, False, 1),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, [], ['api==2.3.4'], 'o3de-test', '1.0.0', {'api':'1.2.3'}, False, 1),
         # passes when engine matches compatible_engines but engine api version doesn't match 
-        pytest.param('1.2.3', [], {}, False, False, ['o3de-test>=1.0.0'], ['api==1.2.3'], 'o3de-test', '2.0.0', {'api':'2.3.4'}, False, 0),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, ['o3de-test>=1.0.0'], ['api==1.2.3'], 'o3de-test', '2.0.0', {'api':'2.3.4'}, False, 0),
         # passes when engine version doesn't match but api version matches
-        pytest.param('1.2.3', [], {}, False, False, ['o3de-test==1.0.0'], ['api~=1.0'], 'o3de-test', '2.0.0', {'api':'1.9.2'}, False, 0),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, ['o3de-test==1.0.0'], ['api~=1.0'], 'o3de-test', '2.0.0', {'api':'1.9.2'}, False, 0),
         # passes when a engine api versions found and optional
-        pytest.param('1.2.3', [], {}, False, False, [], ['api==1.2.3'], 'o3de-test', '1.0.0', {'api':'1.2.3'}, True, 0),
+        pytest.param(False, False, '1.2.3', [], {}, False, False, [], ['api==1.2.3'], 'o3de-test', '1.0.0', {'api':'1.2.3'}, True, 0),
         ],
     )
-    def test_enable_gem_checks_engine_compatibility(self, gem_version, gem_dependencies, 
+    def test_enable_gem_checks_engine_compatibility(self, gem_registered_with_project, gem_registered_with_engine, 
+                                                    gem_version, gem_dependencies, 
                                                     gem_names_and_versions, dry_run, force, compatible_engines, 
                                                     engine_api_dependencies, test_engine_name, test_engine_version, 
                                                     test_engine_api_versions, is_optional_gem, expected_result):
-        gem_registered_with_project = True
-        gem_registered_with_engine = False
         project_path = pathlib.PurePath('TestProject')
         gem_path = pathlib.PurePath('TestProject/TestGem')
         engine_path = pathlib.PurePath('o3de')
@@ -338,9 +338,12 @@ class TestEnableGemCommand:
             result = enable_gem.enable_gem_in_project(gem_path=gem_path, project_path=project_path, force=force, dry_run=dry_run, optional=is_optional_gem)
             assert result == expected_result
 
-            gem_json = get_gem_json_data(gem_path, project_path)
-            project_json = get_project_json_data(project_path=project_path)
-            if not gem_registered_with_engine and not gem_registered_with_project and not check:
-                assert gem_json.get('gem_name', '') in project_json.get('gem_names', [])
-            else:
-                assert gem_json.get('gem_name', '') not in project_json.get('gem_names', [])
+            if not result:
+                gem_json = get_gem_json_data(gem_path, project_path)
+                project_json = get_project_json_data(project_path=project_path)
+                gem_name = gem_json.get('gem_name', '')
+                gem = gem_name if not is_optional_gem else {'name':gem_name, 'optional':is_optional_gem}
+                if not gem_registered_with_engine and not gem_registered_with_project and not dry_run:
+                    assert gem in project_json.get('gem_names', [])
+                else:
+                    assert gem not in project_json.get('gem_names', [])

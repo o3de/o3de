@@ -99,7 +99,7 @@ def enable_gem_in_project(gem_name: str = None,
         if not project_enabled_gem_file.is_file():
             project_enabled_gem_file.touch()
 
-    # Before adding the gem_dependency check if the project is registered in either the project or engine manifest
+    # Before adding the gem_dependency check if the gem is registered in either the project or engine manifest
     buildable_gems = manifest.get_engine_gems()
     buildable_gems.extend(manifest.get_project_gems(project_path))
     # Convert each path to pathlib.Path object and filter out duplicates using dict.fromkeys
@@ -112,7 +112,7 @@ def enable_gem_in_project(gem_name: str = None,
         incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path, gem_paths=buildable_gems)
         if incompatible_objects:
             logger.error(f'{gem_json_data["gem_name"]} is not known compatible with the '
-                'following objects/APIs and requires the --force parameter to register:'
+                'following objects/APIs and requires the --force parameter to activate:'
                 "\n  ".join(incompatible_objects))
             return 1
         elif dry_run:
