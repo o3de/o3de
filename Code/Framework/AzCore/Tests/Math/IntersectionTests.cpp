@@ -496,7 +496,11 @@ namespace UnitTest
         EXPECT_GT(numMisses, 0);
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
+    TEST_F(MATH_IntersectSegmentTriangleTest, DISABLED_RegressionTestForSpecificSegmentsAndTriangles)
+#else
     TEST_F(MATH_IntersectSegmentTriangleTest, RegressionTestForSpecificSegmentsAndTriangles)
+#endif
     {
         // This unit test is set up to validate regressions of erroneous segment/triangle intersection test results.
         // All the failures that have been found so far have been false negatives or false positives that occur on triangle
@@ -892,11 +896,7 @@ namespace UnitTest
         EXPECT_EQ(hits, 2);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST_F(MATH_IntersectRayConeTest, DISABLED_RayOriginOutsideBase_RayDirThroughApex)
-#else
     TEST_F(MATH_IntersectRayConeTest, RayOriginOutsideBase_RayDirThroughApex)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         Vector3 rayOrigin = m_coneApex + 1.3f * m_coneHeight * m_coneDir + 0.3f * m_coneRadius * m_radiusDir;
         Vector3 rayDir = (m_coneApex - rayOrigin).GetNormalized();
