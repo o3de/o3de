@@ -528,8 +528,12 @@ namespace UnitTest
         const Vector3 expectedMin(929.289307f, -2.40615924e+38f, -10.0f);
         const Vector3 expectedMax(2.40615965e+38f, 2141.42139f, 10.0f);
 
-        EXPECT_THAT(aabbFromMatrix.GetMin(), IsClose(expectedMin));
-        EXPECT_THAT(aabbFromMatrix.GetMax(), IsClose(expectedMax));
+        EXPECT_NEAR(aabbFromMatrix.GetMin().GetX(), expectedMin.GetX(), AZ::Constants::Tolerance);
+        EXPECT_TRUE(IsCloseMag(aabbFromMatrix.GetMin().GetY(), expectedMin.GetY(), AZ::Constants::Tolerance));
+        EXPECT_NEAR(aabbFromMatrix.GetMin().GetZ(), expectedMin.GetZ(), AZ::Constants::Tolerance);
+        EXPECT_TRUE(IsCloseMag(aabbFromMatrix.GetMax().GetX(), expectedMax.GetX(), AZ::Constants::Tolerance));
+        EXPECT_NEAR(aabbFromMatrix.GetMax().GetY(), expectedMax.GetY(), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabbFromMatrix.GetMax().GetZ(), expectedMax.GetZ(), AZ::Constants::Tolerance);
     }
 
     TEST(MATH_AabbTransform, GetTransformedAabbTransformWorksWithLargeBounds)
@@ -555,8 +559,12 @@ namespace UnitTest
         const Vector3 expectedMin(929.289307f, -2.40615924e+38f, -10.0f);
         const Vector3 expectedMax(2.40615965e+38f, 2141.42139f, 10.0f);
 
-        EXPECT_THAT(aabbFromTransform.GetMin(), IsClose(expectedMin));
-        EXPECT_THAT(aabbFromTransform.GetMax(), IsClose(expectedMax));
+        EXPECT_NEAR(aabbFromTransform.GetMin().GetX(), expectedMin.GetX(), AZ::Constants::Tolerance);
+        EXPECT_TRUE(IsCloseMag(aabbFromTransform.GetMin().GetY(), expectedMin.GetY(), AZ::Constants::Tolerance));
+        EXPECT_NEAR(aabbFromTransform.GetMin().GetZ(), expectedMin.GetZ(), AZ::Constants::Tolerance);
+        EXPECT_TRUE(IsCloseMag(aabbFromTransform.GetMax().GetX(), expectedMax.GetX(), AZ::Constants::Tolerance));
+        EXPECT_NEAR(aabbFromTransform.GetMax().GetY(), expectedMax.GetY(), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabbFromTransform.GetMax().GetZ(), expectedMax.GetZ(), AZ::Constants::Tolerance);
     }
 
     TEST(MATH_AabbTransform, MultiplyByScale)
