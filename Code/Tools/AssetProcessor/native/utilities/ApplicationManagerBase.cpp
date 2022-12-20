@@ -385,6 +385,14 @@ void ApplicationManagerBase::InitAssetScanner()
             if (status == AssetProcessor::AssetScanningStatus::Completed)
             {
                 InitAssetCatalog();
+
+                auto router = AZ::Interface<IRequestRouter>::Get();
+
+                if (router)
+                {
+                    router->RegisterQueuedCallbackHandler(GetAssetCatalog(), &AssetCatalog::HandleSaveAssetCatalogRequest);
+                    router->RegisterQueuedCallbackHandler(GetAssetCatalog(), &AssetCatalog::HandleGetUnresolvedDependencyCountsRequest);
+                }
             }
         });
     QObject::connect(m_assetScanner, &AssetScanner::AssetScanningStatusChanged, m_assetProcessorManager, &AssetProcessorManager::OnAssetScannerStatusChange);
@@ -760,8 +768,6 @@ void ApplicationManagerBase::InitAssetRequestHandler(AssetProcessor::AssetReques
         router->RegisterQueuedCallbackHandler(GetAssetProcessorManager(), &AssetProcessorManager::ProcessGetAssetJobsInfoRequest);
         router->RegisterQueuedCallbackHandler(GetAssetProcessorManager(), &AssetProcessorManager::ProcessGetAssetJobLogRequest);
         router->RegisterQueuedCallbackHandler(GetAssetProcessorManager(), &AssetProcessorManager::ProcessGetAbsoluteAssetDatabaseLocationRequest);
-        router->RegisterQueuedCallbackHandler(GetAssetCatalog(), &AssetCatalog::HandleSaveAssetCatalogRequest);
-        router->RegisterQueuedCallbackHandler(GetAssetCatalog(), &AssetCatalog::HandleGetUnresolvedDependencyCountsRequest);
     }
 
     // connect the "Does asset exist?" loop to each other:

@@ -488,8 +488,7 @@ namespace AssetProcessor
                         return false;
                     }
 
-                    FileStateInfo fileInfo;
-                    const bool fileExists = fileStateInterface->GetFileInfo(sourceAsset.AbsolutePath().c_str(), &fileInfo);
+                    const bool fileExists = fileStateInterface->Exists(sourceAsset.AbsolutePath().c_str());
 
                     // Only try to update for files which actually exist
                     if (fileExists)
@@ -517,11 +516,14 @@ namespace AssetProcessor
                     AZStd::string_view relativeProductPath = AssetUtilities::StripAssetPlatformNoCopy(combined.m_productName);
                     QString fullProductPath = m_cacheRoot.absoluteFilePath(combined.m_productName.c_str());
 
+                    AZ::u64 productFileSize = 0;
+                    AZ::IO::FileIOBase::GetInstance()->Size(fullProductPath.toUtf8().constData(), productFileSize);
+
                     AZ::Data::AssetInfo info;
                     info.m_assetType = combined.m_assetType;
                     info.m_relativePath = relativeProductPath;
                     info.m_assetId = assetId;
-                    info.m_sizeBytes = fileInfo.m_fileSize;
+                    info.m_sizeBytes = productFileSize;
 
                     // also register it at the legacy id(s) if its different:
                     AZ::Data::AssetId legacyAssetId(combined.m_legacyGuid, 0);

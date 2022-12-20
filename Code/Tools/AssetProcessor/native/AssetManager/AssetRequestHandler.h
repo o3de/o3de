@@ -83,6 +83,8 @@ namespace AssetProcessor
         template<typename TRequest, typename TResponse, typename TClass>
         void RegisterQueuedCallbackHandler(TClass* obj, TResponse(TClass::* handler)(AssetProcessor::MessageData<TRequest>))
         {
+            AZ_Assert(obj, "Programmer Error - Handler object is null");
+
             // Return type is set to void here since the response needs to be delayed along with the handler call
             // HandleResponse gets called twice in this whole chain but the first time won't attempt to send a response because of this void
             RegisterMessageHandler<TRequest, void>([=](MessageData<TRequest> messageData)
@@ -191,7 +193,7 @@ namespace AssetProcessor
     protected:
 
         //! This function creates a fence file.
-        //! It will return the fencefile path if it succeeds, otherwise it returns an empty string  
+        //! It will return the fencefile path if it succeeds, otherwise it returns an empty string
         virtual QString CreateFenceFile(unsigned int fenceId);
         //! This function delete a fence file.
         //! it will return true if it succeeds, otherwise it returns false.
@@ -229,7 +231,7 @@ Q_SIGNALS:
 
         void OnFenceFileDetected(unsigned int fenceId);
 
-        //!  This will get called for every asset related messages or messages that require fencing 
+        //!  This will get called for every asset related messages or messages that require fencing
         virtual void OnNewIncomingRequest(unsigned int connId, unsigned int serial, QByteArray payload, QString platform);
 
     public:
