@@ -21,6 +21,7 @@ namespace AzToolsFramework
         class InstanceEntityMapperInterface;
         class InstanceToTemplateInterface;
         class PrefabSystemComponentInterface;
+        struct InstanceClimbUpResult;
 
         class InstanceDomGenerator
             : public InstanceDomGeneratorInterface
@@ -51,16 +52,22 @@ namespace AzToolsFramework
 
         private:
             //! Given an instance and its DOM, updates the container entity in the DOM with the one seen
-            //! from the root template DOM.
+            //! from the highest ancestor template DOM that contains the data.
             //! @param[out] instanceDom The DOM of the instance that will be modified.
             //! @param instance The given instance object.
-            void UpdateContainerEntityInDomFromRoot(PrefabDom& instanceDom, const Instance& instance) const;
+            void UpdateContainerEntityInDomFromHighestAncestor(PrefabDom& instanceDom, const Instance& instance) const;
 
-            //! Given an instance, it walks up to the root instance in the hierarchy and populates the container entity dom as seen
-            //! from the root template DOM.
-            //! @param[out] containerEntityDom The DOM of the container entity as seen from the root.
+            //! Given an instance and a provided DOM, populates the DOM with the container entity DOM as seen
+            //! from the template DOM of the highest ancestor that contains the data, or from the instance if it's the root.
+            //! @param[out] containerEntityDom The DOM of the container entity as seen from the highest ancestor or root.
             //! @param instance The given instance object.
-            void GenerateContainerEntityDomFromRootInstance(PrefabDom& containerEntityDom, const Instance& instance) const;
+            void GenerateContainerEntityDomFromHighestAncestorOrSelf(PrefabDom& containerEntityDom, const Instance& instance) const;
+
+            //! Given a climb-up path and a provided DOM, populates the DOM with the container entity DOM as seen
+            //! from the template DOM of the highest ancestor that contains the data, or from the instance if it's the root.
+            //! @param[out] containerEntityDom The DOM of the container entity as seen from the highest ancestor or root.
+            //! @param climbUpResult The given climb-up object that contains the root and a path from an instance to the root.
+            void GenerateContainerEntityDomFromClimbUpResult(PrefabDom& containerEntityDom, const InstanceClimbUpResult& climbUpResult) const;
 
             static AzFramework::EntityContextId s_editorEntityContextId;
 
