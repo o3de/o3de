@@ -20,4 +20,9 @@ libxcb-xfixes0-dev                      # For mouse input
 libxcb-xinput-dev                       # For mouse input
 zlib1g-dev
 mesa-common-dev
-ros-dev-tools                           # ROS2 development tools
+ros-humble-ackermann-msgs 
+ros-humble-control-toolbox 
+ros-humble-gazebo-msgs 
+ros-humble-tf2-ros
+ros-humble-urdfdom
+ros-humble-vision-msgs
