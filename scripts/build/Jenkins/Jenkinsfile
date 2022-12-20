@@ -470,6 +470,8 @@ def NoControlFile(repoName, processed_repos) {
             PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name AutomatedTesting || ver>nul", "Enabling ${gemName} in AutomatedTesting")
         }
     }
+
+    return processed_repos
 }
 
 //this should assume it will always be executed from the workspace root
@@ -531,29 +533,31 @@ def ExecuteControlFile(controlFile, repoName, processed_repos) {
             //stop cyclical repos
             if(processed_repos.contains(repo.NAME)) {
                 echo "Already processed ${repo.NAME}"
-                return
             }
+            else {
+                def repoControlFile = {}
+                def foundRepoControlFile = false
+                dir(repo.NAME) {
+                    CheckoutRepo(repo.BRANCH, [GetRemoteConfig(repo.NAME, repo.URL)])
 
-            def repoControlFile = {}
-            def foundRepoControlFile = false
-            dir(repo.NAME) {
-                CheckoutRepo(repo.BRANCH, [GetRemoteConfig(repo.NAME, repo.URL)])
-
-                if(fileExists('.automatedtesting.json')) {
-                    echo "Loading ${repo.URL} .automatedtesting.json"
-                    repoControlFile = readJSON file: '.automatedtesting.json'
-                    foundRepoControlFile = true
+                    if(fileExists('.automatedtesting.json')) {
+                        echo "Loading ${repo.URL} .automatedtesting.json"
+                        repoControlFile = readJSON file: '.automatedtesting.json'
+                        foundRepoControlFile = true
+                    }
                 }
-            }
 
-            if(foundRepoControlFile) {
-                //There is a control file, execute it
-                ExecuteControlFile(repoControlFile, repo.NAME, processed_repos)
-            } else {
-                NoControlFile(repo.NAME, processed_repos)
+                if(foundRepoControlFile) {
+                    //There is a control file, execute it
+                    processed_repos = ExecuteControlFile(repoControlFile, repo.NAME, processed_repos)
+                } else {
+                    processed_repos = NoControlFile(repo.NAME, processed_repos)
+                }
             }
         }
     }
+
+    return processed_repos
 }
 
 def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false) {
@@ -635,7 +639,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             }
         }
         if(engineAutomatedTestingControlFileFound) {
-            ExecuteControlFile(engineAutomatedTestingControlFile, ENGINE_REPOSITORY_NAME, processed_repos)
+            processed_repos = ExecuteControlFile(engineAutomatedTestingControlFile, ENGINE_REPOSITORY_NAME, processed_repos)
         }
 
         //lastly, if we are not committing to the engine repo then pull that repo in here
@@ -655,11 +659,11 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 }
             }
             if(automatedTestingControlFileFound){
-                ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME, processed_repos)
+                processed_repos = ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME, processed_repos)
             }
             else
             {
-                NoControlFile(COMMIT_REPOSITORY_NAME, processed_repos)
+                processed_repos = NoControlFile(COMMIT_REPOSITORY_NAME, processed_repos)
             }
         }
     }
