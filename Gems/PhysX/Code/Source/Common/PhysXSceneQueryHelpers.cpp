@@ -149,23 +149,28 @@ namespace PhysX
 
         physx::PxHitFlags GetPxHitFlags(AzPhysics::SceneQuery::HitFlags hitFlags)
         {
-            #define SET_PXHIT_FLAG(azFlags, azFlagCheck, pxFlags, pxFlagSet) if (azFlagCheck == (azFlags & azFlagCheck)) pxFlags |= pxFlagSet
-
             physx::PxHitFlags pxHitFlags; // PxFlags is initialized to 0 by default
+            const auto ConvertToPxFlags = [&pxHitFlags, hitFlags](AzPhysics::SceneQuery::HitFlags azHitFlagCheck, physx::PxHitFlag::Enum pxHitFlagSet)
+            {
+                if (azHitFlagCheck == (hitFlags & azHitFlagCheck))
+                {
+                    pxHitFlags.raise(pxHitFlagSet);
+                }
+            };
 
-            SET_PXHIT_FLAG(hitFlags, AzPhysics::SceneQuery::HitFlags::Position, pxHitFlags, physx::PxHitFlag::ePOSITION);
-            SET_PXHIT_FLAG(hitFlags, AzPhysics::SceneQuery::HitFlags::Normal, pxHitFlags, physx::PxHitFlag::eNORMAL);
-            SET_PXHIT_FLAG(hitFlags, AzPhysics::SceneQuery::HitFlags::UV, pxHitFlags, physx::PxHitFlag::eUV);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::Position, physx::PxHitFlag::ePOSITION);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::Normal, physx::PxHitFlag::eNORMAL);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::UV, physx::PxHitFlag::eUV);
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
-            SET_PXHIT_FLAG(hitFlags, AzPhysics::SceneQuery::HitFlags::AnyHit, pxHitFlags, physx::PxHitFlag::eANY_HIT);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::AnyHit, physx::PxHitFlag::eANY_HIT);
 #endif
-            SET_PXHIT_FLAG(hitFlags, AzPhysics::SceneQuery::HitFlags::AssumeNoInitialOverlap, pxHitFlags, physx::PxHitFlag::eASSUME_NO_INITIAL_OVERLAP);
-            SET_PXHIT_FLAG(hitFlags, AzPhysics::SceneQuery::HitFlags::MeshMultiple, pxHitFlags, physx::PxHitFlag::eMESH_MULTIPLE);
-            SET_PXHIT_FLAG(hitFlags, AzPhysics::SceneQuery::HitFlags::MeshAny, pxHitFlags, physx::PxHitFlag::eMESH_ANY);
-            SET_PXHIT_FLAG(hitFlags, AzPhysics::SceneQuery::HitFlags::MeshBothSides, pxHitFlags, physx::PxHitFlag::eMESH_BOTH_SIDES);
-            SET_PXHIT_FLAG(hitFlags, AzPhysics::SceneQuery::HitFlags::PreciseSweep, pxHitFlags, physx::PxHitFlag::ePRECISE_SWEEP);
-            SET_PXHIT_FLAG(hitFlags, AzPhysics::SceneQuery::HitFlags::MTD, pxHitFlags, physx::PxHitFlag::eMTD);
-            SET_PXHIT_FLAG(hitFlags, AzPhysics::SceneQuery::HitFlags::FaceIndex, pxHitFlags, physx::PxHitFlag::eFACE_INDEX);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::AssumeNoInitialOverlap, physx::PxHitFlag::eASSUME_NO_INITIAL_OVERLAP);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::MeshMultiple, physx::PxHitFlag::eMESH_MULTIPLE);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::MeshAny, physx::PxHitFlag::eMESH_ANY);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::MeshBothSides, physx::PxHitFlag::eMESH_BOTH_SIDES);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::PreciseSweep, physx::PxHitFlag::ePRECISE_SWEEP);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::MTD, physx::PxHitFlag::eMTD);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::FaceIndex, physx::PxHitFlag::eFACE_INDEX);
 
             return pxHitFlags;
         }
