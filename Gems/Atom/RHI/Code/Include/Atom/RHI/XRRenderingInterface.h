@@ -15,6 +15,10 @@
 
 namespace AZ::RHI
 {
+    class Image;
+    //! Key for the desired foveated rendering level
+    inline constexpr const char* XRFoveatedLevelKey = "/O3DE/Atom/RHI/XRFoveatedLevel";
+
     //! Base instance descriptor class used to communicate with base XR module.
     class XRInstanceDescriptor : public AZStd::intrusive_base
     {
@@ -69,7 +73,18 @@ namespace AZ::RHI
         XRSwapChainDescriptor() = default;
         virtual ~XRSwapChainDescriptor() = default;
     };
-       
+
+
+    //! Supported levels of foveated rendering (variable rate shading)
+    //! Higher levels will reduce more the shading resolution in certain areas of the framebuffer.
+    enum class XRFoveatedLevel
+    {
+        None = 0,
+        Low,
+        Medium,
+        High
+    };
+
     //! The class defines the XR specific RHI rendering interface. 
     class XRRenderingInterface
     {
@@ -123,5 +138,10 @@ namespace AZ::RHI
 
         //! Returns whether to render or not on host platforms at the same time rendering on XR device.
         virtual bool IsDefaultRenderPipelineEnabledOnHost() const = 0;
+
+        //! Fills the contents of an image that will be use as a variable shading rate attachment depending
+        //! on the requested level of foveted rendering. The image must have the proper format and size for using
+        //! as a shading rate attachment.
+        virtual AZ::RHI::ResultCode InitVariableRateShadingImageContent(AZ::RHI::Image* image, XRFoveatedLevel level) = 0;
     };
 }

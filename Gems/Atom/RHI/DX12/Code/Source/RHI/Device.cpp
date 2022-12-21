@@ -684,7 +684,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate)
+        RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate) const
         {            
             return RHI::ShadingRateImageValue{ static_cast<uint8_t>(ConvertShadingRateEnum(rate)), 0 };
         }

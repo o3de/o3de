@@ -319,6 +319,12 @@ namespace AZ
                     RHI::ImageBindFlags::Color | RHI::ImageBindFlags::DepthStencil |
                     RHI::ImageBindFlags::CopyRead | RHI::ImageBindFlags::CopyWrite;
 
+                RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
+                if (RHI::CheckBitsAll(device->GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerRegion))
+                {
+                    imagePoolDescriptor->m_bindFlags |= RHI::ImageBindFlags::ShadingRate;
+                }
+
                 Data::Asset<ResourcePoolAsset> poolAsset;
 
                 ResourcePoolAssetCreator poolAssetCreator;

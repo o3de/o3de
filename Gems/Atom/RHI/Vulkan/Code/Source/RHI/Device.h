@@ -155,7 +155,7 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor& descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
-            RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) override;
+            RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) const override;
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeaturesAndLimits(const PhysicalDevice& physicalDevice);
