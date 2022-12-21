@@ -94,7 +94,7 @@ namespace TrackView
         m_captureFinishedCallback = AZStd::move(captureFinishedCallback);
 
         // note: "Output" (slot name) maps to MainPipeline.pass CopyToSwapChain
-        AZ::Outcome<AZ::Render::FrameCaptureId, AZ::Render::FrameCaptureId> captureOutcome;
+        AZ::Outcome<AZ::Render::FrameCaptureId, AZ::Render::FrameCaptureError> captureOutcome;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
             captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
             AZStd::string("Output"), attachmentReadbackCallback, AZ::RPI::PassAttachmentReadbackOption::Output);
@@ -104,6 +104,8 @@ namespace TrackView
             return true;
         }
 
+        AZ_Error("AtomOutputFrameCapture", captureOutcome.IsSuccess(),
+            "Frame capture initialization failed. %s", captureOutcome.GetError().m_errorMessage.c_str());
         return false;
     }
 

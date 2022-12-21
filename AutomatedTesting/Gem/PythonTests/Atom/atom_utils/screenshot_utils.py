@@ -67,7 +67,7 @@ class ScreenshotHelper(object):
             self.wait_until_screenshot()
             general.log("Screenshot taken.")
         else:
-            general.log("Screenshot failed")
+            general.log(f"Screenshot failed. {outcome.GetError().ErrorMessage}")
         return self.capturedScreenshot
 
     def on_screenshot_captured(self, parameters):
@@ -124,9 +124,7 @@ def compare_screenshots(imageA, imageB, min_diff_filter=0.01):
     outcome = azlmbr.atom.FrameCaptureTestRequestBus(
         azlmbr.bus.Broadcast, "CompareScreenshots", imageA, imageB, min_diff_filter)
 
-    if not outcome.IsSuccess():
-        error = screenshot_compare_result_code_to_string(outcome.GetError())
-        assert False, f"Failed to comparison because of {error} for {imageA} and {imageB}"
+    assert outcome.IsSuccess(), f"Image comparison failed. {outcome.GetError().ErrorMessage}"
 
     return outcome.GetValue()
 

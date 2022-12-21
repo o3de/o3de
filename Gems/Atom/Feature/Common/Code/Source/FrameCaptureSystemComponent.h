@@ -41,12 +41,12 @@ namespace AZ
 
             // FrameCaptureRequestBus overrides ...
             bool CanCapture() const override;
-            AZ::Outcome<FrameCaptureId, FrameCaptureId> CaptureScreenshot(const AZStd::string& filePath) override;
-            AZ::Outcome<FrameCaptureId, FrameCaptureId> CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle) override;
-            AZ::Outcome<FrameCaptureId, FrameCaptureId> CaptureScreenshotWithPreview(const AZStd::string& outputFilePath) override;
-            AZ::Outcome<FrameCaptureId, FrameCaptureId> CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName, const AZStd::string& outputFilePath,
+            AZ::Outcome<FrameCaptureId, FrameCaptureError> CaptureScreenshot(const AZStd::string& filePath) override;
+            AZ::Outcome<FrameCaptureId, FrameCaptureError> CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle) override;
+            AZ::Outcome<FrameCaptureId, FrameCaptureError> CaptureScreenshotWithPreview(const AZStd::string& outputFilePath) override;
+            AZ::Outcome<FrameCaptureId, FrameCaptureError> CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName, const AZStd::string& outputFilePath,
                 RPI::PassAttachmentReadbackOption option) override;
-            AZ::Outcome<FrameCaptureId, FrameCaptureId> CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
+            AZ::Outcome<FrameCaptureId, FrameCaptureError> CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
                 , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option) override;
 
             // FrameCaptureTestRequestBus overrides ...
@@ -54,10 +54,12 @@ namespace AZ
             void SetTestEnvPath(const AZStd::string& envPath) override;
             void SetOfficialBaselineImageFolder(const AZStd::string& baselineFolder) override;
             void SetLocalBaselineImageFolder(const AZStd::string& baselineFolder) override;
-            AZ::Outcome<AZStd::string> BuildScreenshotFilePath(const AZStd::string& imageName, bool useEnvPath) override;
-            AZ::Outcome<AZStd::string> BuildOfficialBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) override;
-            AZ::Outcome<AZStd::string> BuildLocalBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) override;
-            AZ::Outcome<Utils::ImageDiffResult, Utils::ImageDiffResultCode> CompareScreenshots(
+            AZ::Outcome<AZStd::string, FrameCaptureTestError> BuildScreenshotFilePath(const AZStd::string& imageName, bool useEnvPath) override;
+            AZ::Outcome<AZStd::string, FrameCaptureTestError> BuildOfficialBaselineFilePath(
+                const AZStd::string& imageName, bool useEnvPath) override;
+            AZ::Outcome<AZStd::string, FrameCaptureTestError> BuildLocalBaselineFilePath(
+                const AZStd::string& imageName, bool useEnvPath) override;
+            AZ::Outcome<Utils::ImageDiffResult, FrameCaptureTestError> CompareScreenshots(
                 const AZStd::string& filePathA,
                 const AZStd::string& filePathB,
                 float minDiffFilter) override;
