@@ -127,17 +127,3 @@ def compare_screenshots(imageA, imageB, min_diff_filter=0.01):
     assert outcome.IsSuccess(), f"Image comparison failed. {outcome.GetError().ErrorMessage}"
 
     return outcome.GetValue()
-
-def screenshot_compare_result_code_to_string(result_code):
-    """
-    Convert the ImageDiffResult.result_code from value to string for debugging purpose.
-    :param result_code: the value form of the result code.
-    :return: the string form of the result code.
-    """
-    value_to_string = {
-        azlmbr.utils.ImageDiffResultCode_FormatMismatch : "FormatMismatch",
-        azlmbr.utils.ImageDiffResultCode_UnsupportedFormat : "UnsupportedFormat",
-        azlmbr.utils.ImageDiffResultCode_Success : "Success",
-        azlmbr.utils.ImageDiffResultCode_SizeMismatch : "SizeMismatch"}
-
-    return value_to_string[result_code];
