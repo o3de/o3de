@@ -35,6 +35,7 @@ namespace AZ::DocumentPropertyEditor
                 T buffer;
                 functor->GetValue(buffer);
                 builder.BeginPropertyEditor<Nodes::SpinBox<T>>(Dom::Value(buffer));
+                builder.Attribute(Nodes::PropertyEditor::Description, functor->GetDesc());
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
                     {
@@ -85,6 +86,7 @@ namespace AZ::DocumentPropertyEditor
                 CVarFixedString buffer;
                 functor->GetValue(buffer);
                 builder.BeginPropertyEditor<Nodes::LineEdit>(Dom::Value(buffer, true));
+                builder.Attribute(Nodes::PropertyEditor::Description, functor->GetDesc());
                 builder.Attribute(Nodes::PropertyEditor::ValueType, AZ::Dom::Utils::TypeIdToDomValue(azrtti_typeid<AZStd::string>()));
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
@@ -110,6 +112,7 @@ namespace AZ::DocumentPropertyEditor
                 functor->GetValue(container);
                 Dom::Value contents = Dom::Utils::ValueFromType(container);
                 builder.BeginPropertyEditor<NodeType>(AZStd::move(contents));
+                builder.Attribute(Nodes::PropertyEditor::Description, functor->GetDesc());
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
                     {
@@ -143,6 +146,7 @@ namespace AZ::DocumentPropertyEditor
                 bool value;
                 functor->GetValue(value);
                 builder.BeginPropertyEditor<Nodes::CheckBox>(Dom::Value(value));
+                builder.Attribute(Nodes::PropertyEditor::Description, functor->GetDesc());
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
                     {
