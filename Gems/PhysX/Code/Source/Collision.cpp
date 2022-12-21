@@ -46,6 +46,12 @@ namespace PhysX
                 physx::PxPairFlag::eNOTIFY_TOUCH_LOST |
                 physx::PxPairFlag::eNOTIFY_CONTACT_POINTS;
 
+            // resolving contacts between two kinematic objects is invalid
+            if (physx::PxFilterObjectIsKinematic(attributes0) && physx::PxFilterObjectIsKinematic(attributes1))
+            {
+                pairFlags &= ~physx::PxPairFlag::eSOLVE_CONTACT;
+            }
+
             // generate callbacks for collisions between kinematic and dynamic objects
             if (physx::PxFilterObjectIsKinematic(attributes0) != physx::PxFilterObjectIsKinematic(attributes1))
             {
