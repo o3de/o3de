@@ -162,6 +162,7 @@ namespace AssetProcessorMessagesTests
             // Note this must be constructed after InitConnectionManager is called since it will interact with the connection manager
             m_assetRequestHandler = new MockAssetRequestHandler();
             m_batchApplicationManager->InitAssetRequestHandler(m_assetRequestHandler);
+            m_batchApplicationManager->ConnectAssetCatalog();
 
             QObject::connect(m_batchApplicationManager->m_connectionManager, &ConnectionManager::ConnectionError, [](unsigned /*connId*/, QString error)
                 {

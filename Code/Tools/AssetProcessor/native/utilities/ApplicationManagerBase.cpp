@@ -343,8 +343,23 @@ void ApplicationManagerBase::InitAssetCatalog()
                 return catalog;
             });
 
+    ConnectAssetCatalog();
+
     // schedule the asset catalog to build its registry in its own thread:
     QMetaObject::invokeMethod(m_assetCatalog, "BuildRegistry", Qt::QueuedConnection);
+}
+
+void ApplicationManagerBase::ConnectAssetCatalog()
+{
+    using namespace AssetProcessor;
+
+    auto router = AZ::Interface<IRequestRouter>::Get();
+
+    if (router)
+    {
+        router->RegisterQueuedCallbackHandler(GetAssetCatalog(), &AssetCatalog::HandleSaveAssetCatalogRequest);
+        router->RegisterQueuedCallbackHandler(GetAssetCatalog(), &AssetCatalog::HandleGetUnresolvedDependencyCountsRequest);
+    }
 }
 
 void ApplicationManagerBase::InitRCController()
@@ -385,14 +400,6 @@ void ApplicationManagerBase::InitAssetScanner()
             if (status == AssetProcessor::AssetScanningStatus::Completed)
             {
                 InitAssetCatalog();
-
-                auto router = AZ::Interface<IRequestRouter>::Get();
-
-                if (router)
-                {
-                    router->RegisterQueuedCallbackHandler(GetAssetCatalog(), &AssetCatalog::HandleSaveAssetCatalogRequest);
-                    router->RegisterQueuedCallbackHandler(GetAssetCatalog(), &AssetCatalog::HandleGetUnresolvedDependencyCountsRequest);
-                }
             }
         });
     QObject::connect(m_assetScanner, &AssetScanner::AssetScanningStatusChanged, m_assetProcessorManager, &AssetProcessorManager::OnAssetScannerStatusChange);
