@@ -11,8 +11,9 @@
             "methods": [
                 {
                     "base": "GetsplineAddress",
+                    "context": "Getter",
                     "details": {
-                        "name": "Getspline Address"
+                        "name": "Get Spline Address"
                     },
                     "params": [
                         {
@@ -33,8 +34,9 @@
                 },
                 {
                     "base": "GetdistanceSq",
+                    "context": "Getter",
                     "details": {
-                        "name": "Getdistance Sq"
+                        "name": "Get Distance Squared"
                     },
                     "params": [
                         {
@@ -55,8 +57,9 @@
                 },
                 {
                     "base": "GetrayDistance",
+                    "context": "Getter",
                     "details": {
-                        "name": "Getray Distance"
+                        "name": "Get Ray Distance"
                     },
                     "params": [
                         {

@@ -117,7 +117,53 @@
                             }
                         }
                     ]
+                },
+                {
+                    "base": "GetGroundDetectionBoxHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Ground Detection Box Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Ground Detection Box Height is invoked"
+                    },
+                    "details": {
+                        "name": "Get Ground Detection Box Height"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetGroundDetectionBoxHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Ground Detection Box Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Ground Detection Box Height is invoked"
+                    },
+                    "details": {
+                        "name": "Set Ground Detection Box Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height"
+                            }
+                        }
+                    ]
                 }
+
+
             ]
         }
     ]

@@ -120,6 +120,50 @@
                     ]
                 },
                 {
+                    "base": "AddVelocityForPhysicsTimestep",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Velocity For Physics Timestep"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Velocity For Physics Timestep is invoked"
+                    },
+                    "details": {
+                        "name": "Add Velocity For Physics Timestep"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Velocity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddVelocityForTick",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Velocity For Tick"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Velocity For Tick is invoked"
+                    },
+                    "details": {
+                        "name": "Add Velocity For Tick"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Velocity"
+                            }
+                        }
+                    ]
+                },
+                {
                     "base": "SetBasePosition",
                     "entry": {
                         "name": "In",
