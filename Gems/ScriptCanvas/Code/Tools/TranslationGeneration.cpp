@@ -1125,7 +1125,7 @@ namespace ScriptCanvasEditorTools
                     if (!methodSource.m_context.empty())
                     {
                         value.SetString(methodSource.m_context.c_str(), document.GetAllocator());
-                        if (value == "Getter" or value == "Setter")
+                        if (value == "Getter" || value == "Setter")
                         {
                             theMethod.AddMember(GraphCanvas::Schema::Field::context, value, document.GetAllocator());
                         }
