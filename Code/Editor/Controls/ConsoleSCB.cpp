@@ -1127,7 +1127,7 @@ AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedH
        AZ::ConsoleFunctorFlags,
        AZ::ConsoleInvokedFrom)
     {
-        if (command == AzToolsFramework::DocumentPropertyEditor::GetEnableDPECVarName())
+        if (command == AzToolsFramework::DocumentPropertyEditor::GetEnableCVarEditorName())
         {
             // the cvar editor pref changed, unregister the old and register the new
             AzToolsFramework::UnregisterViewPane(LyViewPane::ConsoleVariables);
