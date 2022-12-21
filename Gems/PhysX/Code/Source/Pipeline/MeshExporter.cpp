@@ -136,7 +136,8 @@ namespace PhysX
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
-                serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()->Version(5);
+                serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()
+                    ->Version(5 + (1<<PX_PHYSICS_VERSION_MAJOR)); // Use PhysX version to trigger assets recompilation
             }
         }
 
