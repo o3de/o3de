@@ -30,9 +30,8 @@ namespace AzQtComponents
     class TabBar;
     class TabWidgetActionToolBar;
     class TabWidgetActionToolBarContainer;
-    class ToolButton;
 
-    //! A container for other widgets that provides a tab bar to switch between them.
+     //! A container for other widgets that provides a tab bar to switch between them.
     class AZ_QT_COMPONENTS_API TabWidget
         : public QTabWidget
     {
@@ -45,8 +44,8 @@ namespace AzQtComponents
         //! Style configuration for tab widgets.
         struct Config
         {
-            QPixmap tearIcon; //!< The icon shown on the left side of a tab to show it can be dragged. Must be an svg image.
-            int tearIconLeftPadding; //!< Padding between the tear icon and the left side of the tab, in pixels.
+            QPixmap tearIcon;               //!< The icon shown on the left side of a tab to show it can be dragged. Must be an svg image.
+            int tearIconLeftPadding;        //!< Padding between the tear icon and the left side of the tab, in pixels.
             int tabHeight;                  //!< Height of a tab, in pixels.
             int minimumTabWidth;            //!< Minimum size of tabs when shrunk, in pixels.
             int closeButtonSize;            //!< Size of the close button, both width and height, in pixels.
@@ -56,7 +55,6 @@ namespace AzQtComponents
             int toolTipTabWidthThreshold;   //!< Width threshold below which a tooltip is displayed, in pixels.
             bool showOverflowMenu;          //!< Whether an overflow dropdown menu listing the tabs should be displayed on resize.
             int overflowSpacing;            //!< Spacing between the overflow button and the other buttons when the tabs are shrunk, in pixels.
-            int secondaryOverflowSpacing;   //!< Spacing when using secondary style.
         };
 
         //! Applies the "Secondary" style class to a TabWidget.
@@ -84,11 +82,6 @@ namespace AzQtComponents
         //! Returns the action toolbar, or nullptr if not set.
         TabWidgetActionToolBar* actionToolBar() const;
 
-        // Returns the add item button owned by m_actionToolBarContainer.
-        ToolButton* getAddItemButton();
-        // Returns the overflow button owned by m_actionToolBarContainer.
-        ToolButton* getOverflowButton();
-
         //! Sets the visibility of the action toolbar.
         //! If none is set, it creates and displays a default one.
         void setActionToolBarVisible(bool visible = true);
@@ -101,7 +94,6 @@ namespace AzQtComponents
         //! Overrides the QTabWidget resizeEvent function to account for tab sizing.
         void resizeEvent(QResizeEvent* resizeEvent) override;
 
-        void setOverflowMenuVisible(bool visible);
     protected:
         void tabInserted(int index) override;
         void tabRemoved(int index) override;
@@ -115,6 +107,7 @@ namespace AzQtComponents
         bool m_shouldShowOverflowMenu = false;
         bool m_spaceOverflowButton = false;
 
+        void setOverflowMenuVisible(bool visible);
         void resetOverflowMenu();
         void populateMenu();
         void showOverflowMenu();
@@ -134,7 +127,7 @@ namespace AzQtComponents
         explicit TabWidgetActionToolBarContainer(QWidget* parent = nullptr);
 
         //! Returns the overflow button.
-        ToolButton* overflowButton() const { return m_overflowButton; }
+        QToolButton* overflowButton() const { return m_overflowButton; }
         //! Returns the overflow spacer.
         QSpacerItem* overflowSpacer() const { return m_overflowSpacer; }
         //! Returns the action toolbar.
@@ -147,12 +140,8 @@ namespace AzQtComponents
         //! Returns true if the action toolbar is visible.
         bool isActionToolBarVisible() const;
 
-        ToolButton* getAddItemButton();
-        ToolButton* getOverflowButton();
-
     private:
-        ToolButton* m_overflowButton = nullptr;
-        ToolButton* m_addItemButton = nullptr;
+        QToolButton* m_overflowButton = nullptr;
         QSpacerItem* m_overflowSpacer = nullptr;
         TabWidgetActionToolBar* m_actionToolBar = nullptr;
 
@@ -176,7 +165,10 @@ namespace AzQtComponents
         //! Handler to be called after a new tab is removed at position index.
         void tabRemoved(int index) override;
 
-        void SetUseMaxWidth(bool use) { m_useMaxWidth = use; }
+    Q_SIGNALS:
+        //! Triggered when the handle overflow settings are changed.
+        void overflowingChanged(bool overflowing);
+
     protected:
         explicit TabBar(QWidget* parent = nullptr);
 
@@ -187,6 +179,8 @@ namespace AzQtComponents
         void mouseReleaseEvent(QMouseEvent* mouseEvent) override;
         void paintEvent(QPaintEvent* paintEvent) override;
         QSize minimumSizeHint() const override;
+        void SetUseMaxWidth(bool use) { m_useMaxWidth = use; }
+
 
     private:
         friend class Style;
@@ -209,6 +203,7 @@ namespace AzQtComponents
         QCursor m_hoverCursor;
 
         void resetOverflow();
+        void overflowIfNeeded();
         void showCloseButtonAt(int index);
         void setToolTipIfNeeded(int index);
 

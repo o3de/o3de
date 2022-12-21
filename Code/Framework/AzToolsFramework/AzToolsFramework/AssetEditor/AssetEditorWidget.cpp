@@ -42,7 +42,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
-#include <AzQtComponents/Components/Widgets/ToolButton.h>
 
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
@@ -60,7 +59,6 @@ AZ_POP_DISABLE_WARNING
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QVBoxLayout>
-#include <QToolButton>
 
 namespace AzToolsFramework
 {
@@ -171,20 +169,6 @@ namespace AzToolsFramework
                             CreateAsset(assetType);
                         });
                 }
-            }
-
-            AzQtComponents::ToolButton* addItemButton = m_tabs->getAddItemButton();
-            if (addItemButton)
-            {
-                addItemButton->setVisible(true);
-                QObject::connect(
-                    addItemButton,
-                    &QToolButton::clicked,
-                    this,
-                    [this, addItemButton]
-                    {
-                        ShowAddAssetMenu(addItemButton);
-                    });
             }
 
             QAction* openAssetAction = fileMenu->addAction("&Open");

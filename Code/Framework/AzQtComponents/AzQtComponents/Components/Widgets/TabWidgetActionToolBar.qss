@@ -3,12 +3,12 @@ AzQtComponents--TabWidget > AzQtComponents--TabWidgetActionToolBarContainer
     background: #111111;
     min-height: 28px;
     margin: 0;
-    border: 0;
+    margin-bottom: 9px;
 }
 
 AzQtComponents--TabWidget.Secondary > AzQtComponents--TabWidgetActionToolBarContainer
 {
-    background: #111111;
+    background: transparent;
 }
 
 AzQtComponents--TabWidgetActionToolBar
@@ -28,4 +28,5 @@ AzQtComponents--DockTabWidget > AzQtComponents--TabWidgetActionToolBarContainer
     background: #111111;
     min-height: 28px;
     margin: 0;
+    margin-bottom: 9px;
 }
