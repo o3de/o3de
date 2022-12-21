@@ -222,6 +222,12 @@ namespace AzToolsFramework
             return "ed_enableDPE";
         }
         static bool ShouldReplaceRPE();
+        static bool ShouldReplaceCVarEditor();
+
+        static constexpr const char* GetEnableCVarEditorName()
+        {
+            return "ed_enableCVarDPE";
+        }
 
         AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
         bool IsRecursiveExpansionOngoing() const;

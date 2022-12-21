@@ -1248,7 +1248,7 @@ void ConsoleVariableEditor::RegisterViewClass()
     }
     m_commandInvokedHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
 
-    if (AzToolsFramework::DocumentPropertyEditor::ShouldReplaceRPE())
+    if (AzToolsFramework::DocumentPropertyEditor::ShouldReplaceCVarEditor())
     {
         AzToolsFramework::CvarDPE::RegisterViewClass();
     }

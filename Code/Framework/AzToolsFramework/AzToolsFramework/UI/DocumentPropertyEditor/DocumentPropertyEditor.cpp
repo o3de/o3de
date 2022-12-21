@@ -33,6 +33,14 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, enables experimental Document Property Editor support, replacing the Reflected Property Editor where possible");
 
+AZ_CVAR(
+    bool,
+    ed_enableCVarDPE,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+    "If set, enables experimental DPE-based CVar Editor");
+
 template<class T>
 void DetachAndHide(T* widget)
 {
@@ -1389,6 +1397,16 @@ namespace AzToolsFramework
             console->GetCvarValue(GetEnableDPECVarName(), dpeEnabled);
         }
         return dpeEnabled;
+    }
+
+    bool DocumentPropertyEditor::ShouldReplaceCVarEditor()
+    {
+        bool dpeCVarEditorEnabled = false;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue(GetEnableCVarEditorName(), dpeCVarEditorEnabled);
+        }
+        return dpeCVarEditorEnabled;
     }
 
     QVBoxLayout* DocumentPropertyEditor::GetVerticalLayout()
