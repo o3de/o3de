@@ -39,7 +39,7 @@ FOR /F "tokens=4 delims=:" %%a IN ("%ASSUME_ROLE_ARN%") DO SET O3DE_AWS_DEPLOY_A
 
 IF "%O3DE_AWS_PROJECT_NAME%"=="" (
     REM To avoid resource name length issues, potentially verbose pipeline names are capped at 25 chars.
-    REM TODO: consolidate project name formulation for tests and deploy scripts to same place.
+    REM TODO: consolidate project name formulation for tests and deploy/destroy scripts to same place.
     ECHO Truncated pipeline name is: %PIPELINE_NAME:~0,25%
     SET O3DE_AWS_PROJECT_NAME=%BRANCH_NAME%-%PIPELINE_NAME:~0,25%-Windows
     SET slashreplace=
