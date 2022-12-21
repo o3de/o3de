@@ -17,7 +17,7 @@
 #include <SceneWidgets/ui_ManifestWidgetPage.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/IGroup.h>
 #include <SceneAPI/SceneCore/DataTypes/IManifestObject.h>
-#include <SceneAPI/SceneCore/DataTypes/Rules/IReadOnlyRule.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/IUnmodifiableRule.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
@@ -433,7 +433,8 @@ namespace AZ
                 {
                     AZ::SceneAPI::DataTypes::IGroup* group = m_context->Cast<AZ::SceneAPI::DataTypes::IGroup*>(
                         parentNode->FirstInstance(), parentNode->GetClassMetadata()->m_typeId);
-                    if (group && group->GetRuleContainerConst().FindFirstByType<AZ::SceneAPI::DataTypes::IReadOnlyRule>())
+                    // If this group is unmodifiable, that means it's read only.
+                    if (group && group->GetRuleContainerConst().FindFirstByType<AZ::SceneAPI::DataTypes::IUnmodifiableRule>())
                     {
                         return true;
                     }

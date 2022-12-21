@@ -17,6 +17,7 @@
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/IUnmodifiableRule.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
 #include <SceneAPI/SceneUI/RowWidgets/HeaderWidget.h>
@@ -170,6 +171,19 @@ namespace AZ
             void HeaderWidget::UpdateDeletable()
             {
                 ui->m_deleteButton->hide();
+
+                // If this widget has the unmodifiable rule, then this can't be deleted.
+                // Even though the delete button would be disabled, it's even more clear it can't be deleted if it's not visible.
+                if (m_target->RTTI_IsTypeOf(DataTypes::IGroup::TYPEINFO_Uuid()))
+                {
+                    const DataTypes::IGroup* sceneNodeGroup = azrtti_cast<const DataTypes::IGroup*>(m_target);
+                    const Containers::RuleContainer& rules = sceneNodeGroup->GetRuleContainerConst();
+                    if (rules.FindFirstByType<AZ::SceneAPI::DataTypes::IUnmodifiableRule>())
+                    {
+                        // This header is unmodifiable, so leave the delete button hidden.
+                        return;
+                    }
+                }
 
                 if (m_sceneManifest)
                 {

@@ -46,7 +46,7 @@ set(FILES
     DataTypes/Rules/ISkeletonProxyRule.h
     DataTypes/Rules/ICoordinateSystemRule.h
     DataTypes/Rules/IClothRule.h
-    DataTypes/Rules/IReadOnlyRule.h
+    DataTypes/Rules/IUnmodifiableRule.h
     DataTypes/Rules/ISkinRule.h
     Components/BehaviorComponent.h
     Components/BehaviorComponent.cpp
