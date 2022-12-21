@@ -108,13 +108,13 @@ namespace PhysX
         SetupSubModes(entityComponentIdPair);
 
         EditorJointRequestBus::Event(
-            entityComponentIdPair, &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParamaterNames::ComponentMode, true);
+            entityComponentIdPair, &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParameterNames::ComponentMode, true);
     }
 
     JointsComponentMode::~JointsComponentMode()
     {
         EditorJointRequestBus::Event(
-            GetEntityComponentIdPair(), &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParamaterNames::ComponentMode,
+            GetEntityComponentIdPair(), &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParameterNames::ComponentMode,
             false);
 
         TeardownSubModes();
@@ -130,7 +130,7 @@ namespace PhysX
     {
         const AZ::EntityComponentIdPair entityComponentIdPair = GetEntityComponentIdPair();
 
-        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> subModesState;
+        AZStd::vector<JointsComponentModeCommon::SubModeParameterState> subModesState;
         EditorJointRequestBus::EventResult(subModesState, entityComponentIdPair, &EditorJointRequests::GetSubComponentModesState);
 
         auto makeActionOverride = [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Crc32& actionUri,
@@ -373,7 +373,7 @@ namespace PhysX
     void JointsComponentMode::SetupSubModes(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         //retrieve the enabled sub components from the entity
-        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> subModesState;
+        AZStd::vector<JointsComponentModeCommon::SubModeParameterState> subModesState;
         EditorJointRequestBus::EventResult(subModesState, entityComponentIdPair, &EditorJointRequests::GetSubComponentModesState);
 
         //group 1 is always available so create it
