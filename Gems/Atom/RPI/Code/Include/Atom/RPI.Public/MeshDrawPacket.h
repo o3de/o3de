@@ -114,7 +114,7 @@ namespace AZ
         };
         
         using MeshDrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
-        using MeshDrawPacketLods = AZStd::fixed_vector<MeshDrawPacketList, RPI::ModelLodAsset::LodCountMax>;
+        using MeshDrawPacketLods = AZStd::vector<MeshDrawPacketList>;
 
     } // namespace RPI
 } // namespace AZ
