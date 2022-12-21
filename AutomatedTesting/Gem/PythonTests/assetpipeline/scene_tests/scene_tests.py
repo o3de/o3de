@@ -19,8 +19,8 @@ from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
 from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor
 from assetpipeline.ap_fixtures.ap_setup_fixture import ap_setup_fixture
 
-import assetpipeline.ap_fixtures.debug_parse_and_compare as parse_and_compare
-import assetpipeline.ap_fixtures.scene_test_builder as test_builder
+import assetpipeline.scene_tests_fixtures.scene_test_debug_compare as parse_and_compare
+import assetpipeline.scene_tests_fixtures.scene_test_builder as test_builder
 from automatedtesting_shared import asset_database_utils as asset_db_utils
 
 logger = logging.getLogger(__name__)
