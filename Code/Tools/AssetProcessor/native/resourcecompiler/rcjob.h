@@ -76,6 +76,7 @@ namespace AssetProcessor
         AZ::IO::Path m_cacheOutputDir;
         AZ::IO::Path m_intermediateOutputDir;
         AZ::IO::Path m_relativePath;
+        AZ::Uuid m_topLevelSourceUuid;
 
         Params(const Params&) = default;
 

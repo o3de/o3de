@@ -9,6 +9,7 @@
 #include "rcjob.h"
 
 #include <AzToolsFramework/UI/Logging/LogLine.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 
 #include <native/utilities/BuilderManager.h>
 #include <native/utilities/ThreadHelper.h>
@@ -290,6 +291,7 @@ namespace AssetProcessor
         builderParams.m_intermediateOutputDir = GetIntermediateOutputPath();
         builderParams.m_relativePath = GetRelativePath();
         builderParams.m_assetBuilderDesc = m_jobDetails.m_assetBuilderDesc;
+        builderParams.m_topLevelSourceUuid = m_jobDetails.m_topLevelSourceUuid;
 
         // when the job finishes, record the results and emit Finished()
         connect(this, &RCJob::JobFinished, this, [this](AssetBuilderSDK::ProcessJobResponse result)
@@ -736,6 +738,7 @@ namespace AssetProcessor
         // and  the second is the product destination we intend to copy it to.
         QList< QPair<QString, QString> > outputsToCopy;
         outputsToCopy.reserve(static_cast<int>(response.m_outputProducts.size()));
+        QList<QPair<QString, AZ::Uuid>> intermediateOutputPaths;
         qint64 fileSizeRequired = 0;
 
         bool needCacheDirectory = false;
@@ -828,9 +831,19 @@ namespace AssetProcessor
                     relativeFilePath = product.m_outputPathOverride;
                 }
 
-                if (!VerifyOutputProduct(
-                    QDir(intermediateDirectory.c_str()), outputFilename, absolutePathOfSource,
-                    fileSizeRequired, outputsToCopy))
+                if (VerifyOutputProduct(
+                        QDir(intermediateDirectory.c_str()), outputFilename, absolutePathOfSource, fileSizeRequired, outputsToCopy))
+                {
+                    // Generate a UUID for the intermediate as:
+                    // SourceUuid:BuilderUuid:SubId
+                    auto uuid = AZ::Uuid::CreateName(
+                        AZStd::string::format(
+                            "%s:%s:%d", params.m_topLevelSourceUuid.ToFixedString().c_str(), params.m_assetBuilderDesc.m_busId.ToFixedString().c_str(), product.m_productSubID));
+
+                    // Add the product absolute path to the list of intermediates
+                    intermediateOutputPaths.append(QPair(outputsToCopy.back().second, uuid));
+                }
+                else
                 {
                     return false;
                 }
@@ -874,6 +887,20 @@ namespace AssetProcessor
         {
             AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Failed to create intermediate directory: %s\n", intermediateDirectory.c_str());
             return false;
+        }
+
+        auto* uuidInterface = AZ::Interface<AzToolsFramework::IUuidUtil>::Get();
+
+        if (!uuidInterface)
+        {
+            AZ_Assert(false, "Programmer Error - IUuidUtil interface is not available");
+            return false;
+        }
+
+        // Go through all the intermediate products and output the assigned UUID
+        for (auto [intermediateProduct, uuid] : intermediateOutputPaths)
+        {
+            uuidInterface->CreateSourceUuid(intermediateProduct.toUtf8().constData(), uuid);
         }
 
         bool anyFileFailed = false;

@@ -33,7 +33,8 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
-#include <Metadata/MetadataManager.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 
 namespace AssetProcessor
 {
@@ -158,6 +159,7 @@ AZ::ComponentTypeList AssetProcessorAZApplication::GetRequiredSystemComponents()
     components.push_back(azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>());
     components.push_back(azrtti_typeid<AzToolsFramework::ArchiveComponent>()); // AP manages compressed files using ArchiveComponent
     components.push_back(azrtti_typeid<AzToolsFramework::MetadataManager>());
+    components.push_back(azrtti_typeid<AzToolsFramework::UuidUtilComponent>());
 
     return components;
 }

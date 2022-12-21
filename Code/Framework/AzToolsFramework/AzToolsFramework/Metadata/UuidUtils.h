@@ -14,10 +14,10 @@
 
 namespace AzToolsFramework
 {
-    struct IUuid
+    struct IUuidUtil
     {
-        AZ_RTTI(IUuid, "{C3281F96-430A-49C2-95EF-66505C34CD2E}");
-        virtual ~IUuid() = default;
+        AZ_RTTI(IUuidUtil, "{C3281F96-430A-49C2-95EF-66505C34CD2E}");
+        virtual ~IUuidUtil() = default;
 
         //! Gets the UUID for a source asset
         //! @param absoluteFilePath Absolute path to the source asset
@@ -36,7 +36,7 @@ namespace AzToolsFramework
 
     class UuidUtilComponent
         : public AZ::Component
-        , AZ::Interface<IUuid>::Registrar
+        , AZ::Interface<IUuidUtil>::Registrar
     {
     public:
         AZ_COMPONENT(UuidUtilComponent, "{357CAA8E-CDDB-4094-8C2A-669D3D33E308}");

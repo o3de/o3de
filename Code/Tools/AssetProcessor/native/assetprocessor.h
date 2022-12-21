@@ -203,6 +203,10 @@ namespace AssetProcessor
         AZ::IO::Path m_cachePath; // The base/root path of the cache folder, including the platform
         AZ::IO::Path m_relativePath; // Relative path portion of the output file.  This can be overridden by the builder
 
+        // UUID of the original source asset.
+        // If this job is for an intermediate asset, the UUID is for the source at the top of the processing chain.
+        AZ::Uuid m_topLevelSourceUuid;
+
         AZStd::vector<JobDependencyInternal> m_jobDependencyList;
 
         // which files to include in the fingerprinting. (Not including job dependencies)

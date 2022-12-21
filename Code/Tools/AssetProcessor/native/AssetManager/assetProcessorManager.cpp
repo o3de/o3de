@@ -4089,6 +4089,17 @@ namespace AssetProcessor
                         newJob.m_scanFolder = scanFolder;
                         newJob.m_checkServer = jobDescriptor.m_checkServer;
 
+                        auto topLevelSource = AssetUtilities::GetTopLevelSourceForIntermediateAsset(sourceAsset, m_stateData);
+
+                        if (!topLevelSource)
+                        {
+                            newJob.m_topLevelSourceUuid = sourceUUID;
+                        }
+                        else
+                        {
+                            newJob.m_topLevelSourceUuid = topLevelSource.value().m_sourceGuid;
+                        }
+
                         if (m_builderDebugFlag)
                         {
                             newJob.m_jobParam[AZ_CRC_CE("DebugFlag")] = "true";
