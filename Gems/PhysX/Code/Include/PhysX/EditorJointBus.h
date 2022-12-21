@@ -46,7 +46,7 @@ namespace PhysX
         virtual AZ::Transform GetTransformValue(const AZStd::string& parameterName) = 0;
 
         //! Get the Sub Component modes to enable.
-        virtual AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> GetSubComponentModesState() = 0;
+        virtual AZStd::vector<JointsComponentModeCommon::SubModeParameterState> GetSubComponentModesState() = 0;
 
         //! Set bool parameter value identified by name.
         virtual void SetBoolValue(const AZStd::string& parameterName, bool value) = 0;
