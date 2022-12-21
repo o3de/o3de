@@ -342,3 +342,18 @@ def validate_spawned_entity_transform(entity, expected_position, expected_rotati
         f"expected {expected_scale}"
 
     return position_success and rotation_success and scale_success
+
+
+def validate_expected_override_status(entity: EditorEntity, expected_override_status: bool) -> None:
+    """
+    Validates the expected override status of the given entity
+    :param entity: The EditorEntity to validate the status of overrides on
+    :param expected_override_status: True if overrides are expected, False otherwise
+    :return: None
+    """
+    if expected_override_status:
+        assert entity.has_overrides(), \
+            f"Found no overrides on expected entity: {entity.id}"
+    else:
+        assert not entity.has_overrides(), \
+            f"Found overrides present on unexpected entity: {entity.id}"
