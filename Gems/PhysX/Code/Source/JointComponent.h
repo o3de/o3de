@@ -64,7 +64,6 @@ namespace PhysX
             const JointLimitProperties& limitProperties,
             const JointMotorProperties& motorProperties);
 
-
     protected:
         /// Struct to provide subclasses with native pointers during joint initialization.
         /// See use of GetLeadFollowerInfo().
@@ -79,8 +78,8 @@ namespace PhysX
         };
 
         // AZ::Component
-        virtual void Activate() override;
-        virtual void Deactivate() override;
+        void Activate() override;
+        void Deactivate() override;
 
         // AZ::EntityBus
         void OnEntityActivated(const AZ::EntityId&) override;

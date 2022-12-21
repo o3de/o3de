@@ -211,7 +211,6 @@ namespace PhysX::Utils
 
     void InitializePrismaticLimitD6Properties(const JointLimitProperties& properties, physx::PxD6Joint* nativeJoint)
     {
-
         if (!nativeJoint)
         {
             return;
@@ -229,7 +228,6 @@ namespace PhysX::Utils
             return;
         }
 
-
         const float limitLower = AZ::GetMin(properties.m_limitFirst, properties.m_limitSecond);
         const float limitUpper = AZ::GetMax(properties.m_limitFirst, properties.m_limitSecond);
 
@@ -241,7 +239,7 @@ namespace PhysX::Utils
             limitPair.damping = properties.m_damping;
         }
 
-        nativeJoint->setLinearLimit(physx::PxD6Axis::eX,limitPair);
+        nativeJoint->setLinearLimit(physx::PxD6Axis::eX, limitPair);
         nativeJoint->setMotion(physx::PxD6Axis::eX, physx::PxD6Motion::eLIMITED);
     }
 

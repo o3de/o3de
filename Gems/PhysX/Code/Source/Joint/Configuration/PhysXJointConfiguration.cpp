@@ -35,12 +35,11 @@ namespace PhysX
 
     }
 
-    JointMotorProperties::JointMotorProperties(bool enabled, float gear_ratio, float force_limit)
-            : m_enabled(enabled)
-            , m_gearRatio(gear_ratio)
-            , m_forceLimit(force_limit)
+    JointMotorProperties::JointMotorProperties(bool enabled, float gearRatio, float forceLimit)
+        : m_enabled(enabled)
+        , m_gearRatio(gearRatio)
+        , m_forceLimit(forceLimit)
     {
-
     }
 
     bool JointGenericProperties::IsFlagSet(GenericJointFlag flag) const
@@ -263,7 +262,7 @@ namespace PhysX
             serializeContext->Class<JointMotorProperties>()
                     ->Version(1)
                     ->Field("Enabled", &JointMotorProperties::m_enabled)
-                    ->Field("Gear ration", &JointMotorProperties::m_gearRatio)
+                    ->Field("Gear ratio", &JointMotorProperties::m_gearRatio)
                     ->Field("Force limit", &JointMotorProperties::m_forceLimit)
                     ;
         }

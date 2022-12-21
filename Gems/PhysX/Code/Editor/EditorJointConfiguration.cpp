@@ -520,31 +520,26 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorJointMotorConfig>()
-                    ->Version(1)
-                    ->Field("Use Motor", &EditorJointMotorConfig::m_useMotor)
-                    ->Field("Force Limit", &EditorJointMotorConfig::m_driveForceLimit)
-                    ->Field("Gear Ratio", &EditorJointMotorConfig::m_gearRatio)
-                    ;
+                ->Version(1)
+                ->Field("UseMotor", &EditorJointMotorConfig::m_useMotor)
+                ->Field("ForceLimit", &EditorJointMotorConfig::m_driveForceLimit)
+                ->Field("GearRatio", &EditorJointMotorConfig::m_gearRatio);
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<PhysX::EditorJointMotorConfig>(
-                                "PhysX Joint Motor Configuration", "")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(0, &PhysX::EditorJointMotorConfig::m_useMotor, "Use Motor"
-                                , "Enable motor in the joint")
-                        ->DataElement(0, &PhysX::EditorJointMotorConfig::m_gearRatio, "Gear Ratio"
-                                , "Sets gear ratio")
-                        ->DataElement(0, &PhysX::EditorJointMotorConfig::m_driveForceLimit, "Force Limit Value"
-                                , "Sets force limit value")
-                        ;
+                editContext->Class<PhysX::EditorJointMotorConfig>("PhysX Joint Motor Configuration", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(0, &PhysX::EditorJointMotorConfig::m_useMotor, "Use Motor", "Enable motor in the joint")
+                    ->DataElement(0, &PhysX::EditorJointMotorConfig::m_gearRatio, "Gear Ratio", "Sets gear ratio")
+                    ->DataElement(0, &PhysX::EditorJointMotorConfig::m_driveForceLimit, "Force Limit Value", "Sets force limit value");
             }
         }
     }
 
-    JointMotorProperties EditorJointMotorConfig::ToGameTimeConfig() const{
+    JointMotorProperties EditorJointMotorConfig::ToGameTimeConfig() const
+    {
         return JointMotorProperties(m_useMotor, m_gearRatio, m_driveForceLimit);
     }
 } // namespace PhysX

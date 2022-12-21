@@ -71,7 +71,7 @@ namespace PhysX
         float m_limitNegative = -45.0f;
     };
 
-    /// Pair (angles) limits for joints.
+
     class EditorJointMotorConfig
     {
     public:
@@ -83,10 +83,9 @@ namespace PhysX
 
         JointMotorProperties ToGameTimeConfig() const;
 
-        bool m_useMotor{false}; ///< True if joint uses motor.
-        float m_gearRatio{1}; ///< Gear ratio.
-        float m_driveForceLimit{MaxMotorForce}; ///< Max force limit.
-
+        bool m_useMotor{ false }; ///< True if joint uses motor.
+        float m_gearRatio{ 1.f }; ///< Gear ratio.
+        float m_driveForceLimit{ MaxMotorForce }; ///< Max force limit.
     };
 
     /// Pair (linear) limits for joints.

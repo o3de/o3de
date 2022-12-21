@@ -77,14 +77,14 @@ namespace PhysX
     }
 
     JointComponent::JointComponent(
-            const JointComponentConfiguration& configuration,
-            const JointGenericProperties& genericProperties,
-            const JointLimitProperties& limitProperties,
-            const JointMotorProperties& motorProperties)
-            : m_configuration(configuration)
-            , m_genericProperties(genericProperties)
-            , m_limits(limitProperties)
-            , m_motor(motorProperties)
+        const JointComponentConfiguration& configuration,
+        const JointGenericProperties& genericProperties,
+        const JointLimitProperties& limitProperties,
+        const JointMotorProperties& motorProperties)
+        : m_configuration(configuration)
+        , m_genericProperties(genericProperties)
+        , m_limits(limitProperties)
+        , m_motor(motorProperties)
     {
     }
 

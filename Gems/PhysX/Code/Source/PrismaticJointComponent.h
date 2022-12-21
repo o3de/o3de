@@ -8,9 +8,10 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <Source/JointComponent.h>
-#include <PhysX/Joint/PhysXJointBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <PhysX/Joint/JointRequestsBus.h>
+#include <Source/JointComponent.h>
+
 namespace PhysX
 {
     //! Provides runtime support for prismatic joints.
@@ -33,22 +34,30 @@ namespace PhysX
             const JointMotorProperties& motorProperties);
         ~PrismaticJointComponent() = default;
 
-        // JointInterfaceRequestBus::Handler
-        float GetPosition() override;
-        float GetVelocity() override;
-        AZ::Transform GetTransform() override;
-
-        // JointMotorRequestBus ::Handler
+        ///////////////////////////////////////////////////////////////////////////////////
+        // JointInterfaceRequestBus::Handler overrides
+        float GetPosition() const override;
+        float GetVelocity() const override;
+        AZ::Transform GetTransform() const override;
         void SetVelocity(float velocity) override;
         void SetMaximumForce(float force) override;
+        AZStd::pair<float, float> GetLimits() const override;
+        ///////////////////////////////////////////////////////////////////////////////////
 
-        AZStd::pair<float, float> GetLimits();
-        // AZ::Component
+        ///////////////////////////////////////////////////////////////////////////////////
+        // AZ::Component overrides
         void Activate() override;
         void Deactivate() override;
+        ///////////////////////////////////////////////////////////////////////////////////
 
     protected:
         // JointComponent
         void InitNativeJoint() override;
+
+        // get Physx native type
+        physx::PxD6Joint* GetPhysXD6Joint() const;
+
+    private:
+        mutable physx::PxD6Joint* m_native{ nullptr };
     };
 } // namespace PhysX
