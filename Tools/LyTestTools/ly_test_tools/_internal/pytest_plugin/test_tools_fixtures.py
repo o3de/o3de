@@ -55,7 +55,7 @@ def pytest_configure(config):
     ly_test_tools._internal.pytest_plugin.build_directory = _get_build_directory(config)
     ly_test_tools._internal.pytest_plugin.output_path = _get_output_path(config)
 
-    # patch to work around TODO GHI
+    # patch to work around https://github.com/pytest-dev/pytest/issues/10604
     monkeypatch_pytest()
 
 
