@@ -21,7 +21,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 # platform-specific:
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-windows                              TARGETS expat                       PACKAGE_HASH 748d08f21f5339757059a7887e72b52d15e954c549245c638b0b05bd5961e307)
 ly_associate_package(PACKAGE_NAME assimp-5.1.6-rev1-windows                             TARGETS assimplib                   PACKAGE_HASH 299d8a3c70657d74af8841650538e9d083fda9356f6782416edbec0ef5a0493e)
-ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev4-windows                            TARGETS OpenEXR Imath               PACKAGE_HASH c850268e849171751cdaefdab1952333ac38afbb771b999e99d67f9761706d98)
+ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev5-windows                            TARGETS OpenEXR Imath               PACKAGE_HASH bff6dc78412bb1b04ded243753bee36e9229fdaf9a9e1fa85b1059238fba4c9b)
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.2-rev1-windows               TARGETS AWSGameLiftServerSDK        PACKAGE_HASH 9d30eb265adc8b46a7f6a9ad122c2d3c8820ca16961533a3cc994734e264969a)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2112-o3de-rev1-windows   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH fdcdc081e67abcfdc8172866258a9c36f1fd0d7b963ba5378ca01cb4fcdbf9c7)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-windows                    TARGETS SPIRVCross                  PACKAGE_HASH 7d601ea9d625b1d509d38bd132a1f433d7e895b16adab76bac6103567a7a6817)
@@ -32,7 +32,7 @@ ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-windows                        
 ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-windows                          TARGETS mcpp                        PACKAGE_HASH 794789aba639bfe2f4e8fcb4424d679933dd6290e523084aa0a4e287ac44acb2)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-windows                             TARGETS mikkelsen                   PACKAGE_HASH 872c4d245a1c86139aa929f2b465b63ea4ea55b04ced50309135dd4597457a4e)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-windows                         TARGETS googletest                  PACKAGE_HASH 7e8f03ae8a01563124e3daa06386f25a2b311c10bb95bff05cae6c41eff83837)
-ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-windows                    TARGETS GoogleBenchmark             PACKAGE_HASH 0c94ca69ae8e7e4aab8e90032b5c82c5964410429f3dd9dbb1f9bf4fe032b1d4)
+ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev1-windows                    TARGETS GoogleBenchmark             PACKAGE_HASH a19e41670b46ec1676b51f9d6ad862443c56415d61b505383c19909fb02feb9e)
 ly_associate_package(PACKAGE_NAME d3dx12-headers-rev1-windows                           TARGETS d3dx12                      PACKAGE_HASH 088c637159fba4a3e4c0cf08fb4921906fd4cca498939bd239db7c54b5b2f804)
 ly_associate_package(PACKAGE_NAME pyside2-5.15.2.1-py3.10-rev5-windows                  TARGETS pyside2                     PACKAGE_HASH b831d5aead962d6611169d1002512d8688efa9204ada02af6884c6d1ba1bc72b)
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev2-windows           TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH 5c208a92a23474ce9a33cf4ee4fcba4ddbc712983fefb1dcaebb65a139da4f2b)

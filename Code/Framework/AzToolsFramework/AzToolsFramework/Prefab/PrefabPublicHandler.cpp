@@ -2083,7 +2083,7 @@ namespace AzToolsFramework
 
                 // Create the new Entity DOM from parsing the JSON string
                 PrefabDom entityDomAfter(&domToAddDuplicatedEntitiesUnder.GetAllocator());
-                entityDomAfter.Parse(newEntityDomString.toUtf8().constData());
+                entityDomAfter.Parse<rapidjson::kParseFullPrecisionFlag>(newEntityDomString.toUtf8().constData());
 
                 EntityAlias parentEntityAlias;
                 if (auto componentsIter = entityDomAfter.FindMember(PrefabDomUtils::ComponentsName);
@@ -2222,7 +2222,7 @@ namespace AzToolsFramework
 
                 // Create the new Instance DOM from parsing the JSON string
                 PrefabDom nestedInstanceDomAfter(&domToAddDuplicatedInstancesUnder.GetAllocator());
-                nestedInstanceDomAfter.Parse(newInstanceDomString.toUtf8().constData());
+                nestedInstanceDomAfter.Parse<rapidjson::kParseFullPrecisionFlag>(newInstanceDomString.toUtf8().constData());
 
                 // Add the new Instance DOM to the Instances member of the instance
                 rapidjson::Value aliasName(newInstanceAlias.c_str(), static_cast<rapidjson::SizeType>(newInstanceAlias.length()), domToAddDuplicatedInstancesUnder.GetAllocator());

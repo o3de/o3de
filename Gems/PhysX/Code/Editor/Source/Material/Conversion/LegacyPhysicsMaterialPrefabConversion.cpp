@@ -170,7 +170,7 @@ namespace PhysX
         // Fix terrain mappings, which is an array of legacy material ids, which will be converted to new material assets.
         if (auto* mappingMember = Physics::Utils::FindMemberChainInPrefabComponent({ "Configuration", "Mappings" }, component); mappingMember != nullptr)
         {
-            for (rapidjson_ly::SizeType i = 0; i < mappingMember->Size(); ++i)
+            for (rapidjson::SizeType i = 0; i < mappingMember->Size(); ++i)
             {
                 if (FixPhysicsMaterialId(prefabInfo, (*mappingMember)[i], legacyMaterialIdToNewAssetIdMap,
                     { "Material" }, { "MaterialAsset" }))
