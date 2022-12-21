@@ -8,7 +8,6 @@
 
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
 
-#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
@@ -91,69 +90,66 @@ namespace AzToolsFramework
         painter->setPen(borderLinePen);
         painter->drawLine(rect.bottomLeft(), rect.bottomRight());
 
-        if (Prefab::IsPrefabOverridesUxEnabled())
+        // Draw capsule
+        const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
+        const bool isLastColumn = index.column() == EntityOutlinerListModel::ColumnLockToggle;
+
+        QColor backgroundColor = m_prefabCapsuleColor;
+        AZ::EntityId levelContainerEntityId = m_prefabPublicInterface->GetLevelInstanceContainerEntityId();
+
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(levelContainerEntityId))
         {
-            // Draw capsule
-            const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
-            const bool isLastColumn = index.column() == EntityOutlinerListModel::ColumnLockToggle;
-
-            QColor backgroundColor = m_prefabCapsuleColor;
-            AZ::EntityId levelContainerEntityId = m_prefabPublicInterface->GetLevelInstanceContainerEntityId();
-
-            if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(levelContainerEntityId))
-            {
-                backgroundColor = m_prefabCapsuleEditColor;
-            }
-            else if (!(option.state & QStyle::State_Enabled))
-            {
-                backgroundColor = m_prefabCapsuleDisabledColor;
-            }
-
-            QPainterPath backgroundPath;
-            backgroundPath.setFillRule(Qt::WindingFill);
-
-            QRect columnRect = option.rect;
-            columnRect.setTop(columnRect.top() + 2);
-            columnRect.setHeight(columnRect.height() - 4); // tweaking capsule height
-
-            if (isFirstColumn || isLastColumn)
-            {
-                if (isFirstColumn)
-                {
-                    columnRect.setLeft(columnRect.left() + 1);
-                    columnRect.setWidth(columnRect.width() + 1); // remove the gray line between columns
-                }
-                else if (isLastColumn)
-                {
-                    columnRect.setLeft(columnRect.left() - 2); // remove the gray line between columns
-                    columnRect.setWidth(columnRect.width() - 1);
-                }
-
-                // Rounded rect to have rounded borders on top.
-                backgroundPath.addRoundedRect(columnRect, PrefabUIConstants::prefabCapsuleRadius, PrefabUIConstants::prefabCapsuleRadius);
-
-                // Regular rect, half height, to square the opposite border
-                QRect squareRect = columnRect;
-                if (isFirstColumn)
-                {
-                    squareRect.setLeft(columnRect.left() + (columnRect.width() / 2));
-                }
-                else if (isLastColumn)
-                {
-                    squareRect.setWidth(columnRect.width() / 2);
-                }
-                backgroundPath.addRect(squareRect);
-            }
-            else
-            {
-                backgroundPath.addRect(columnRect);
-            }
-
-            painter->save();
-            painter->setRenderHint(QPainter::Antialiasing, true);
-            painter->fillPath(backgroundPath.simplified(), backgroundColor);
+            backgroundColor = m_prefabCapsuleEditColor;
         }
-        
+        else if (!(option.state & QStyle::State_Enabled))
+        {
+            backgroundColor = m_prefabCapsuleDisabledColor;
+        }
+
+        QPainterPath backgroundPath;
+        backgroundPath.setFillRule(Qt::WindingFill);
+
+        QRect columnRect = option.rect;
+        columnRect.setTop(columnRect.top() + 2);
+        columnRect.setHeight(columnRect.height() - 4); // tweaking capsule height
+
+        if (isFirstColumn || isLastColumn)
+        {
+            if (isFirstColumn)
+            {
+                columnRect.setLeft(columnRect.left() + 1);
+                columnRect.setWidth(columnRect.width() + 1); // remove the gray line between columns
+            }
+            else if (isLastColumn)
+            {
+                columnRect.setLeft(columnRect.left() - 2); // remove the gray line between columns
+                columnRect.setWidth(columnRect.width() - 1);
+            }
+
+            // Rounded rect to have rounded borders on top.
+            backgroundPath.addRoundedRect(columnRect, PrefabUIConstants::prefabCapsuleRadius, PrefabUIConstants::prefabCapsuleRadius);
+
+            // Regular rect, half height, to square the opposite border
+            QRect squareRect = columnRect;
+            if (isFirstColumn)
+            {
+                squareRect.setLeft(columnRect.left() + (columnRect.width() / 2));
+            }
+            else if (isLastColumn)
+            {
+                squareRect.setWidth(columnRect.width() / 2);
+            }
+            backgroundPath.addRect(squareRect);
+        }
+        else
+        {
+            backgroundPath.addRect(columnRect);
+        }
+
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->fillPath(backgroundPath.simplified(), backgroundColor);
+
         painter->restore();
     }
 
