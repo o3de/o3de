@@ -353,15 +353,13 @@ namespace PhysX
         const physx::PxU32 maxHits = 1;
         const physx::PxHitFlags hitFlags = SceneQueryHelpers::GetPxHitFlags(worldSpaceRequest.m_hitFlags);
 
-        const physx::PxGeometry& pxShapeGeom = [this]() -> const physx::PxGeometry&
+        physx::PxRaycastHit hitInfo;
+        bool hit;
         {
             PHYSX_SCENE_READ_LOCK(GetScene());
-            return m_pxShape->getGeometry().any();
-        }();
-
-        physx::PxRaycastHit hitInfo;
-        const bool hit = physx::PxGeometryQuery::raycast(start, unitDir, pxShapeGeom, pose,
-                                                         worldSpaceRequest.m_distance, hitFlags, maxHits, &hitInfo);
+            hit = physx::PxGeometryQuery::raycast(
+                start, unitDir, m_pxShape->getGeometry().any(), pose, worldSpaceRequest.m_distance, hitFlags, maxHits, &hitInfo);
+        }
 
         if (hit)
         {
