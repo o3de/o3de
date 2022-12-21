@@ -115,7 +115,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_tableModel->setDynamicSortFilter(true);
         m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
 
-        m_createMenu = new QMenu("Create Menu", this);
+        m_createMenu = new QMenu("Create New Asset Menu", this);
         m_ui->m_createButton->setMenu(m_createMenu);
         m_ui->m_createButton->setEnabled(true);
         m_ui->m_createButton->setAutoRaise(true);
