@@ -13,9 +13,9 @@ botocore==1.23.44 \
     --hash=sha256:11483a493de4a76ef218d8cd3980c63550d006a0d082c10d53c0954184ca542a \
     --hash=sha256:8e5317f84fc1118bff58fa6fa79a9b62083e75a2a9c62feb3ea73694c550b99d \
     # via -r .\requirements.txt, boto3, s3transfer
-certifi==2019.11.28 \
-    --hash=sha256:017c25db2a153ce562900032d5bc68e9f191e44e9a0f762f373977de9df1fbb3 \
-    --hash=sha256:25b64c7da4cd7479594d035c08c2d809eb4aab3a26e5a990ea98cc450c320f1f \
+certifi==2022.12.7 \
+    --hash=sha256:35824b4c3a97115964b408844d64aa14db1cc518f6562e8d7261699d1350a9e3 \
+    --hash=sha256:4ad3232f5e926d6718ec31cfc1fcadfde020920e278684144551c91769c7bc18 \
     # via -r .\requirements.txt, requests
 chardet==3.0.4 \
     --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
