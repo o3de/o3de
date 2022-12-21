@@ -8,52 +8,39 @@
 
 #pragma once
 
-#include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <Mesh/MeshInstanceKey.h>
 #include <Mesh/MeshInstanceList.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
+    using MeshInstanceIndex = uint32_t;
+
+    //! The MeshInstanceManager tracks the mesh/material combinations that can be instanced
+    class MeshInstanceManager
     {
-        struct MeshInstanceData
+    public:
+
+        InsertResult AddInstance(MeshInstanceKey meshInstanceData);
+        void RemoveInstance(MeshInstanceKey meshInstanceData);
+        void RemoveInstance(MeshInstanceIndex index);
+        uint32_t GetItemCount() const
         {
-            RPI::MeshDrawPacket m_drawPacket;
+            return m_instanceData.GetItemCount();
+        }
 
-            // We store a key to make it faster to remove the instance from the map
-            // via the index
-            MeshInstanceKey m_key;
-        };
-
-        using MeshInstanceIndex = uint32_t;
-
-        //! The MeshInstanceManager tracks the mesh/material combinations that can be instanced
-        class MeshInstanceManager
+        MeshInstanceData& operator[](uint32_t index)
         {
-        public:
+            return m_instanceData[index];
+        }
 
-            InsertResult AddInstance(MeshInstanceKey meshInstanceData);
-            void RemoveInstance(MeshInstanceKey meshInstanceData);
-            void RemoveInstance(MeshInstanceIndex index);
-            uint32_t GetItemCount() const
-            {
-                return m_instanceData.GetItemCount();
-            }
+    private:
 
-            MeshInstanceData& operator[](uint32_t index)
-            {
-                return m_instanceData[index];
-            }
+        MeshInstanceList m_instanceData;
 
-        private:
+        // Adding and removing entries in a MeshInstanceList is not threadsafe, and should be guarded with a mutex
+        AZStd::mutex m_instanceDataMutex;
 
-            SlotMap<MeshInstanceKey, MeshInstanceData> m_instanceData;
-
-            // Adding and removing entries in a SlotMap is not threadsafe, and should be guarded with a mutex
-            AZStd::mutex m_instanceDataMutex;
-
-            AZStd::vector<uint32_t> m_createDrawPacketQueue;
-        };
-    }
-} // namespace AZ
+        AZStd::vector<uint32_t> m_createDrawPacketQueue;
+    };
+} // namespace AZ::Render

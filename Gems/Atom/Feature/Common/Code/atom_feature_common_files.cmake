@@ -47,6 +47,8 @@ set(FILES
     Include/Atom/Feature/Utils/IndexedDataVector.inl
     Include/Atom/Feature/Utils/MultiIndexedDataVector.h
     Include/Atom/Feature/Utils/MultiSparseVector.h
+    Include/Atom/Feature/Utils/PagedDataVector.h
+    Include/Atom/Feature/Utils/PagedDataVector.inl
     Include/Atom/Feature/Utils/ProfilingCaptureBus.h
     Include/Atom/Feature/Utils/SparseVector.h
     Source/CommonModule.cpp
