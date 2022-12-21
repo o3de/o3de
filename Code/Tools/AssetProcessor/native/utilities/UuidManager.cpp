@@ -108,11 +108,11 @@ namespace AssetProcessor
         }
 
         const bool fileExists = fileStateInterface->Exists(AzToolsFramework::MetadataManager::ToMetadataPath(sourceAsset.AbsolutePath().c_str()).c_str());
+        const bool isEnabledType = m_enabledTypes.contains(sourceAsset.AbsolutePath().Extension().Native());
 
         // Metadata manager can't use the file state cache since it is in AzToolsFramework, so it's faster to do an Exists check up-front.
         if (fileExists)
         {
-            const bool isEnabledType = m_enabledTypes.contains(sourceAsset.AbsolutePath().Extension().Native());
             AzToolsFramework::UuidEntry uuidInfo;
 
             // Check if there's a metadata file that already contains a saved UUID
