@@ -51,7 +51,7 @@
                 },
                 {
                     "Name": "SkyVolumeLUTPass",
-                    "TemplateName": "SkyVolumeLUTPass",
+                    "TemplateName": "SkyVolumeLUTTemplate",
                     "Enabled": true,
                     "Connections": [
                         {

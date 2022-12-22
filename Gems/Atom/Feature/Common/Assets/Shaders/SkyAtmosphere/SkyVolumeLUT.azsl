@@ -9,56 +9,91 @@
  // Based on https://github.com/sebh/UnrealEngineSkyAtmosphere by Sébastien Hillaire
 
 #define ENABLE_ATMOSPHERE_SHADOWS 0
-
-#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <viewsrg.srgi>
+#include <Atom/Features/SrgSemantics.azsli>
 #include <SkyAtmosphereCommon.azsli>
 
-struct SkyTransmittanceLUTPSOutput
+float4 GetSkyVolumeAtPosition(uint3 position)
 {
-    float4 m_skyTransmittanceLut : SV_Target0;
-};
+    AtmosphereParameters Atmosphere = GetAtmosphereParameters();
 
-void UvToLutTransmittanceParams(AtmosphereParameters atmosphere, out float viewHeight, out float viewZenithCosAngle, in float2 uv)
-{
-    float x_mu = uv.x;
-    float x_r = uv.y;
+    const float worldScale = 0.001f;
+    const float lutSize = float(SKY_VOLUME_SLICE_COUNT);
+    float2 uv = float2(position.x, position.y) / lutSize;
+    float2 ndcPos = float2(uv.x , 1.0f - uv.y) * 2.0f - 1.0f;
+    float4 projectedPos = float4(ndcPos, 0.f, 1.0f);
+    float4 positionWS = mul(ViewSrg::m_viewProjectionInverseMatrix, projectedPos);
+    positionWS /= positionWS.w;
 
-    float H = sqrt(atmosphere.TopRadius * atmosphere.TopRadius - atmosphere.BottomRadius * atmosphere.BottomRadius);
-    float rho = H * x_r;
-    viewHeight = sqrt(rho * rho + atmosphere.BottomRadius * atmosphere.BottomRadius);
+    float3 viewToPosition =  positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition;
+    float3 worldDir = normalize(viewToPosition);
 
-    float d_min = atmosphere.TopRadius - viewHeight;
-    float d_max = rho + H;
-    float d = d_min + x_mu * (d_max - d_min);
-    viewZenithCosAngle = d == 0.0 ? 1.0f : (H * H - rho * rho - d * d) / (2.0 * viewHeight * d);
-    viewZenithCosAngle = clamp(viewZenithCosAngle, -1.0, 1.0);
+    // Atmosphere.PlanetOrigin is in KM already
+    // cameraPlanetPosKm is relative to the planet origin
+    float3 cameraPlanetPosKm = ViewSrg::m_worldPosition * worldScale - Atmosphere.PlanetOrigin;
+
+    float slice = (float(position.z) + 0.5f) / SKY_VOLUME_SLICE_COUNT;
+	slice *= slice;	// squared distribution
+	slice *= SKY_VOLUME_SLICE_COUNT;
+
+    float tMax = AerialPerspectiveSliceToDepth(slice);
+
+    // get position relative to planet surface
+    float3 froxelPosition = cameraPlanetPosKm + tMax * worldDir;
+
+	// if the froxel is under the ground, make sure to offset it out on the ground.
+	float viewHeight = length(froxelPosition);
+	if (viewHeight <= (Atmosphere.BottomRadius + PLANET_RADIUS_OFFSET_KM))
+	{
+		// Apply a position offset to make sure no artefact are visible close to the earth boundaries for large voxel.
+		froxelPosition = normalize(froxelPosition) * (Atmosphere.BottomRadius + PLANET_RADIUS_OFFSET_KM + 0.001f);
+		worldDir = normalize(froxelPosition - cameraPlanetPosKm);
+		tMax = length(froxelPosition - cameraPlanetPosKm);
+	}
+	float maxTraceDepth = tMax;
+
+	const float depth = -1.0;
+
+	// move ray marching start up to top atmosphere.
+	viewHeight = length(froxelPosition);
+	if (viewHeight >= Atmosphere.TopRadius)
+	{
+        float distanceToTop = 0.f;
+
+        if (!MoveToTopAtmosphere(cameraPlanetPosKm, distanceToTop, worldDir, Atmosphere.TopRadius, depth))
+		{
+			// ray is not intersecting the atmosphere
+			return float4(0.0, 0.0, 0.0, 1.0);
+		}
+
+		if (maxTraceDepth < distanceToTop)
+		{
+			// maxTraceDepth for this voxel is not within earth atmosphere
+			return float4(0.0, 0.0, 0.0, 1.0);
+		}
+
+		// world position has been moved to the atmosphere boundary: we need to reduce maxTraceDepth accordingly. 
+		maxTraceDepth = max(0.0, maxTraceDepth - distanceToTop);
+	}
+
+	const bool ground = false;
+	const float sampleCountIni = max(1.0, float(position.z + 1.0) * 2.0f);
+	const bool variableSampleCount = false;
+	const bool mieRayPhase = true;
+    const float2 screenCoords = float2(0,0); // unused
+    SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, uv, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, depth, variableSampleCount, mieRayPhase, maxTraceDepth);
+
+	const float transmittance = dot(ss.Transmittance, float3(1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f));
+	return float4(ss.L, 1.0 - transmittance);
 }
 
-SkyTransmittanceLUTPSOutput SkyTransmittanceLUTPS(VSOutput Input)
+// total thread count is based on the "Target Thread Count X/Y/Z" in the SkyVolumeLUT.pass file
+// and the number of threads per group specified in numthreads() below.
+// given a volume texture size is 32x32x32, with 1 thread per froxel
+// the following values are based on intention to improve locality when accessing 
+// the transmission LUT
+[numthreads(1, 8, 32)]
+void SkyVolumeLUTCS(uint3 dispatchID : SV_DispatchThreadID)
 {
-    SkyTransmittanceLUTPSOutput OUT = (SkyTransmittanceLUTPSOutput)0;
-
-    float2 pixPos = Input.m_position.xy;
-    AtmosphereParameters atmosphere = GetAtmosphereParameters();
-
-    // Compute camera position from LUT coords
-    float2 uv = Input.m_texCoord;
-    float viewHeight;
-    float viewZenithCosAngle;
-    UvToLutTransmittanceParams(atmosphere, viewHeight, viewZenithCosAngle, uv);
-
-    float3 worldPos = float3(0.0f, 0.0f, viewHeight);
-    float3 worldDir = float3(0.0f, sqrt(1.0 - viewZenithCosAngle * viewZenithCosAngle), viewZenithCosAngle);
-
-    const bool ground = false;
-    const float sampleCount = 40.0f;
-    const float depth = -1.0;
-    const bool variableSampleCount = false;
-    const bool mieRayPhase = false;
-    const float3 sunDir = float3(0,0,1); // not actually used to calculate optical depth
-    float3 transmittance = exp(-IntegrateScatteredLuminance(pixPos, uv, worldPos, worldDir, sunDir, atmosphere, ground, sampleCount, depth, variableSampleCount, mieRayPhase).OpticalDepth);
-
-    OUT.m_skyTransmittanceLut = float4(transmittance, 1.0f);
-
-    return OUT;
+    PassSrg::m_skyVolumeLUTOutput[dispatchID] = GetSkyVolumeAtPosition(dispatchID); 
 }

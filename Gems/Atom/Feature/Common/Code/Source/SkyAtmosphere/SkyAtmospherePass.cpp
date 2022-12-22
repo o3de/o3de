@@ -142,8 +142,8 @@ namespace AZ::Render
                 CreateImage(Name("SkyVolumeLUTImageAttachment"), imageDesc, m_skyVolumeLUTImage);
             }
 
-            bindImageToSlot(m_skyViewLUTImage, Name("SkyVolumeLUTOutput"), Name("SkyVolumeLUTPass"));
-            bindImageToSlot(m_skyViewLUTImage, Name("SkyVolumeLUTInput"), Name("SkyRayMarchingPass"));
+            bindImageToSlot(m_skyVolumeLUTImage, Name("SkyVolumeLUTOutput"), Name("SkyVolumeLUTPass"));
+            bindImageToSlot(m_skyVolumeLUTImage, Name("SkyVolumeLUTInput"), Name("SkyRayMarchingPass"));
         }
     }
 

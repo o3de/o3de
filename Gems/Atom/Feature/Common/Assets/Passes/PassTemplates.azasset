@@ -93,6 +93,10 @@
                 "Path": "Passes/SkyViewLUT.pass"
             },
             {
+                "Name": "SkyVolumeLUTTemplate",
+                "Path": "Passes/SkyVolumeLUT.pass"
+            },
+            {
                 "Name": "SkyRayMarchingTemplate",
                 "Path": "Passes/SkyRayMarching.pass"
             },
