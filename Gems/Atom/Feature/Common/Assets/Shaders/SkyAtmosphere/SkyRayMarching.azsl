@@ -125,6 +125,11 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
             }
         }
     }
+    else if(!o_enableAerialPerspective)
+    {
+        return output;
+    }
+
 
     // when outside the atmosphere, this moves worldPosKM to the 
     // start of the atmosphere, unless the entire ray never intersects

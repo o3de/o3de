@@ -21,6 +21,7 @@ option bool o_enableShadows = false;
 option bool o_enableSun = true;
 option bool o_enableFastSky = true;
 option bool o_enableFastAerialPerspective = true;
+option bool o_enableAerialPerspective = true;
 
 #include <Atom/Features/SrgSemantics.azsli>
 

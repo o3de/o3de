@@ -42,6 +42,8 @@ namespace AZ::Render
         bool m_shadowsEnabled;
         bool m_sunEnabled;
         bool m_fastSkyEnabled;
+        bool m_fastAerialPerspectiveEnabled;
+        bool m_aerialPerspectiveEnabled;
     };
 
     class SkyAtmosphereFeatureProcessorInterface

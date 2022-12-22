@@ -121,6 +121,8 @@ namespace AZ::Render
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SkyAtmosphereComponentConfig::m_fastSkyEnabled, "Fast sky", "Enable to use a less accurate but faster performing sky algorithm")
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SkyAtmosphereComponentConfig::m_fastAerialPerspectiveEnabled, "Fast aerial perspective", "Enable to use a volume look-up-texture for faster performance but more memory")
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SkyAtmosphereComponentConfig::m_aerialPerspectiveEnabled, "Aerial perspective", "Enable to draw the effect of atmosphere scattering on objects in the scene.")
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SkyAtmosphereComponentConfig::m_shadowsEnabled, "Enable shadows", "Enable sampling of shadows in atmosphere")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_nearClip, "Near Clip", "Distance at which to start drawing atmosphere")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)

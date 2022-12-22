@@ -212,6 +212,8 @@ namespace AZ::Render
             passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableShadows"), AZ::RPI::ShaderOptionValue{ m_enableShadows });
             passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableFastSky"), AZ::RPI::ShaderOptionValue{ m_enableFastSky });
             passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableSun"), AZ::RPI::ShaderOptionValue{ m_enableSun });
+            passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableFastAerialPerspective"), AZ::RPI::ShaderOptionValue{ m_fastAerialPerspectiveEnabled });
+            passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableAerialPerspective"), AZ::RPI::ShaderOptionValue{ m_aerialPerspectiveEnabled });
 
             auto key = passData.m_shaderOptionGroup.GetShaderVariantKeyFallbackValue();
             passData.m_srg->SetShaderVariantKeyFallbackValue(key);
@@ -360,6 +362,8 @@ namespace AZ::Render
         m_atmosphereParams = params;
         m_enableShadows = params.m_shadowsEnabled;
         m_enableFastSky = params.m_fastSkyEnabled;
+        m_fastAerialPerspectiveEnabled = params.m_fastAerialPerspectiveEnabled;
+        m_aerialPerspectiveEnabled = params.m_aerialPerspectiveEnabled;
         m_enableSun = params.m_sunEnabled;
 
 

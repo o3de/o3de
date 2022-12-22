@@ -131,6 +131,8 @@ namespace AZ::Render
 
         bool m_enableLUTPass = false;
         bool m_enableFastSky = true;
+        bool m_fastAerialPerspectiveEnabled = true;
+        bool m_aerialPerspectiveEnabled = true;
         bool m_enableShadows = false;
         bool m_enableSun = true;
     };

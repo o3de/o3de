@@ -61,6 +61,8 @@ namespace AZ::Render
         params.m_absorption = m_configuration.m_absorption * m_configuration.m_absorptionScale;
         params.m_atmosphereRadius = m_configuration.m_groundRadius + m_configuration.m_atmosphereHeight;
         params.m_fastSkyEnabled = m_configuration.m_fastSkyEnabled;
+        params.m_fastAerialPerspectiveEnabled = m_configuration.m_fastAerialPerspectiveEnabled;
+        params.m_aerialPerspectiveEnabled = m_configuration.m_aerialPerspectiveEnabled;
         params.m_groundAlbedo = m_configuration.m_groundAlbedo;
         params.m_luminanceFactor = m_configuration.m_luminanceFactor;
         params.m_mieAbsorption = m_configuration.m_mieAbsorption * m_configuration.m_mieAbsorptionScale;
