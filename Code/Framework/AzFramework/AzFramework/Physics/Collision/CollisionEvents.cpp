@@ -76,10 +76,10 @@ namespace AzPhysics
         if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<Contact>("Contact")
-                ->Property("Position", BehaviorValueProperty(&Contact::m_position))
-                ->Property("Normal", BehaviorValueProperty(&Contact::m_normal))
-                ->Property("Impulse", BehaviorValueProperty(&Contact::m_impulse))
-                ->Property("Separation", BehaviorValueProperty(&Contact::m_separation))
+                ->Property("Position", BehaviorValueGetter(&Contact::m_position), nullptr)                
+                ->Property("Normal", BehaviorValueGetter(&Contact::m_normal), nullptr)
+                ->Property("Impulse", BehaviorValueGetter(&Contact::m_impulse), nullptr)
+                ->Property("Separation", BehaviorValueGetter(&Contact::m_separation), nullptr)
                 ;
         }
     }
