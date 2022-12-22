@@ -125,6 +125,9 @@ namespace AZ
                     if (index != Containers::SceneManifest::s_invalidIndex)
                     {
                         ManifestWidget* root = ManifestWidget::FindRoot(this);
+
+                        AZStd::vector<const AZ::SceneAPI::DataTypes::IManifestObject*> otherObjectsToRemove;
+                        m_target->GetManifestObjectsToRemoveOnRemoved(otherObjectsToRemove, *m_sceneManifest);
                         // The manifest object could be a root element at the manifest page level so it needs to be
                         //      removed from there as well in that case.
                         if (root->RemoveObject(m_sceneManifest->GetValue(index)) && m_sceneManifest->RemoveEntry(m_target))
@@ -133,6 +136,13 @@ namespace AZ
                             // Hide and disable the button so when users spam the delete button only a single click is recorded.
                             ui->m_deleteButton->hide();
                             ui->m_deleteButton->setEnabled(false);
+
+                            for (auto* toRemove : otherObjectsToRemove)
+                            {
+                                index = m_sceneManifest->FindIndex(toRemove);
+                                root->RemoveObject(m_sceneManifest->GetValue(index));
+                                m_sceneManifest->RemoveEntry(toRemove);
+                            }
                             return;
                         }
                         else

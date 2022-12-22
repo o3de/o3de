@@ -16,6 +16,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/FileFunc/FileFunc.h>
+#include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 
 namespace AZ::SceneAPI::SceneData
 {
@@ -65,6 +66,27 @@ namespace AZ::SceneAPI::SceneData
     const DataTypes::ISceneNodeSelectionList& PrefabGroup::GetSceneNodeSelectionList() const
     {
         return m_nodeSelectionList;
+    }
+
+    void PrefabGroup::GetManifestObjectsToRemoveOnRemoved(
+        AZStd::vector<const IManifestObject*>& toRemove, const AZ::SceneAPI::Containers::SceneManifest& manifest) const
+    {
+        for (size_t manifestIndex = 0; manifestIndex < manifest.GetEntryCount(); ++manifestIndex)
+        {
+            const AZStd::shared_ptr<const DataTypes::IManifestObject> manifestObjectAtIndex = manifest.GetValue(manifestIndex);
+            if (manifestObjectAtIndex->RTTI_IsTypeOf(DataTypes::IGroup::TYPEINFO_Uuid()))
+            {
+                // Removing shared ownership is useful because this is about to be deleted.
+                const DataTypes::IGroup* sceneNodeGroup = azrtti_cast<const DataTypes::IGroup*>(manifestObjectAtIndex.get());
+                const Containers::RuleContainer& rules = sceneNodeGroup->GetRuleContainerConst();
+                // Anything with the procedural mesh group rule was added automatically for this prefab group, so mark it for removal.
+                if (rules.FindFirstByType<AZ::SceneAPI::SceneData::ProceduralMeshGroupRule>())
+                {
+                    // Add it to the list to remove.
+                    toRemove.push_back(sceneNodeGroup);
+                }
+            }
+        }
     }
 
     void PrefabGroup::SetPrefabDom(AzToolsFramework::Prefab::PrefabDom prefabDom)
