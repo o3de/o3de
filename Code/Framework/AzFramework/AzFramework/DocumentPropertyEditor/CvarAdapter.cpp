@@ -19,9 +19,13 @@ namespace AZ::DocumentPropertyEditor
         Impl(CvarAdapter* adapter)
             : m_adapter(adapter)
             , m_commandInvokedHandler(
-                  [adapter](AZStd::string_view, const AZ::ConsoleCommandContainer&, AZ::ConsoleFunctorFlags, AZ::ConsoleInvokedFrom)
+                  [adapter, this](AZStd::string_view command, const AZ::ConsoleCommandContainer&, AZ::ConsoleFunctorFlags, AZ::ConsoleInvokedFrom)
                   {
-                      adapter->NotifyResetDocument();
+                      (void)command;
+                      if (!m_performingCommand)
+                      {
+                          adapter->NotifyResetDocument();
+                      }
                   })
         {
             m_commandInvokedHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
@@ -54,8 +58,7 @@ namespace AZ::DocumentPropertyEditor
                             {
                                 buffer = aznumeric_cast<T>(value.GetDouble());
                             }
-                            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(
-                                functor->GetName(), { ConsoleTypeHelpers::ToString(buffer) });
+                           PerformCommand(functor->GetName(), { ConsoleTypeHelpers::ToString(buffer) });
                             m_adapter->OnContentsChanged(path, value);
                         }
                     });
@@ -93,7 +96,7 @@ namespace AZ::DocumentPropertyEditor
                     {
                         if (m_adapter->GetContents()[path] != value)
                         {
-                            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(functor->GetName(), { value.GetString() });
+                            PerformCommand(functor->GetName(), { value.GetString() });
                             m_adapter->OnContentsChanged(path, value);
                         }
                     });
@@ -127,8 +130,7 @@ namespace AZ::DocumentPropertyEditor
                             {
                                 newValue.push_back(ConsoleTypeHelpers::ToString(newContainer.GetElement(i)));
                             }
-                            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(
-                                functor->GetName(), ConsoleCommandContainer(AZStd::from_range, newValue));
+                            PerformCommand(functor->GetName(), ConsoleCommandContainer(AZStd::from_range, newValue));
 
                             m_adapter->OnContentsChanged(path, value);
                         }
@@ -152,8 +154,7 @@ namespace AZ::DocumentPropertyEditor
                     {
                         if (m_adapter->GetContents()[path] != value)
                         {
-                            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(
-                                functor->GetName(), { ConsoleTypeHelpers::ToString(value.GetBool()) });
+                            PerformCommand(functor->GetName(), { ConsoleTypeHelpers::ToString(value.GetBool()) });
                             m_adapter->OnContentsChanged(path, value);
                         }
                     });
@@ -175,8 +176,16 @@ namespace AZ::DocumentPropertyEditor
                 TryBuildMathVectorEditor<AZ::Color, 4, Nodes::Color>(builder, functor) || TryBuildCheckBoxEditor(builder, functor);
         }
 
+        void PerformCommand(AZStd::string_view command, const AZ::ConsoleCommandContainer& commandContainer)
+        {
+            m_performingCommand = true;
+            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(command, commandContainer);
+            m_performingCommand = false;
+        }
+
         CvarAdapter* m_adapter;
         AZ::ConsoleCommandInvokedEvent::Handler m_commandInvokedHandler;
+        bool m_performingCommand = false;
     };
 
     CvarAdapter::CvarAdapter()
