@@ -22,6 +22,7 @@
 #include <QCoreApplication>
 #include <AzToolsFramework/Metadata/MetadataManager.h>
 #include <utilities/UuidManager.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 
 namespace AZ::IO
 {
@@ -113,6 +114,8 @@ namespace UnitTests
         int m_argc = 0;
         char** m_argv{};
 
+        TraceBusErrorChecker m_errorChecker;
+
         AssetProcessor::FileStatePassthrough m_fileStateCache;
 
         AZStd::unique_ptr<QCoreApplication> m_qApp;
@@ -125,10 +128,13 @@ namespace UnitTests
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry m_scanfolder;
         MockMultiBuilderInfoHandler m_builderInfoHandler;
         AZ::IO::LocalFileIO* m_localFileIo;
+        AzToolsFramework::UuidUtilComponent m_uuidUtil;
         AzToolsFramework::MetadataManager m_metadataManager;
         AssetProcessor::UuidManager m_uuidManager;
 
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
+        AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
+        AZStd::unique_ptr<testing::NiceMock<MockComponentApplication>> m_componentApplication;
         AZ::Entity* m_jobManagerEntity{};
         AZ::ComponentDescriptor* m_descriptor{};
 

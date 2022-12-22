@@ -17,47 +17,11 @@ namespace UnitTests
     void IntermediateAssetTests::SetUp()
     {
         AssetManagerTestingBase::SetUp();
-
-        AZ::Debug::TraceMessageBus::Handler::BusConnect();
     }
 
     void IntermediateAssetTests::TearDown()
     {
-        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-
         AssetManagerTestingBase::TearDown();
-    }
-
-    // Since AP will redirect any failures to a job log file, we won't see them output by default
-    // This will cause any error/assert to be printed out and mark the test as failed
-    bool IntermediateAssetTests::OnPreAssert(const char* fileName, int line, const char* /*func*/, const char* message)
-    {
-        if (m_expectedErrors > 0)
-        {
-            --m_expectedErrors;
-            return false;
-        }
-
-        UnitTest::ColoredPrintf(UnitTest::COLOR_RED, "Assert: %s\n", message);
-
-        ADD_FAILURE_AT(fileName, line);
-
-        return false;
-    }
-
-    bool IntermediateAssetTests::OnPreError(const char* /*window*/, const char* fileName, int line, const char* /*func*/, const char* message)
-    {
-        if (m_expectedErrors > 0)
-        {
-            --m_expectedErrors;
-            return false;
-        }
-
-        UnitTest::ColoredPrintf(UnitTest::COLOR_RED, "Error: %s\n", message);
-
-        ADD_FAILURE_AT(fileName, line);
-
-        return false;
     }
 
     void IntermediateAssetTests::IncorrectBuilderConfigurationTest(bool commonPlatform, AssetBuilderSDK::ProductOutputFlags flags)
@@ -66,14 +30,14 @@ namespace UnitTests
 
         CreateBuilder("stage1", "*.stage1", "stage2", commonPlatform, flags);
 
-        m_expectedErrors = 1;
-
         QMetaObject::invokeMethod(
             m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, m_testFilePath.c_str()));
         QCoreApplication::processEvents();
 
         RunFile(1);
+        m_errorChecker.Begin();
         ProcessJob(*m_rc, m_jobDetailsList[0]);
+        m_errorChecker.End(1);
 
         ASSERT_TRUE(m_fileFailed);
     }

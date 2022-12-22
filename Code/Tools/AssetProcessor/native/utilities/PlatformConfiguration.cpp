@@ -20,6 +20,7 @@
 #include <AzToolsFramework/Asset/AssetUtils.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
 
 
 namespace AssetProcessor
@@ -1306,7 +1307,7 @@ namespace AssetProcessor
             visitor.m_metaDataTypes.push_back({ AZStd::string::format("%s.assetinfo", entry.c_str()), entry });
         }
 
-        AddMetaDataType("meta", "");
+        AddMetaDataType(AzToolsFramework::MetadataManager::MetadataFileExtensionNoDot, "");
 
         for (const auto& metaDataType : visitor.m_metaDataTypes)
         {
