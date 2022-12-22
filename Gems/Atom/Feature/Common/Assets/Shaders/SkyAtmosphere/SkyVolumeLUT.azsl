@@ -78,7 +78,7 @@ float4 GetSkyVolumeAtPosition(uint3 position)
 
     const bool ground = false;
     const float sampleCountIni = max(1.0, float(position.z + 1.0) * 2.0f);
-    const bool variableSampleCount = false;
+    const bool variableSampleCount = true;
     const bool mieRayPhase = true;
     const float2 screenCoords = float2(0,0); // unused
     SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, uv, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, depth, variableSampleCount, mieRayPhase, maxTraceDepth);
