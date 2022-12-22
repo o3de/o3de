@@ -154,7 +154,7 @@ namespace PhysX
             {
                 if (azHitFlagCheck == (hitFlags & azHitFlagCheck))
                 {
-                    pxHitFlags.raise(pxHitFlagSet);
+                    pxHitFlags |= pxHitFlagSet;
                 }
             };
 
