@@ -16,6 +16,8 @@
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
+#include <AzToolsFramework/UI/Prefab/Constants.h>
+
 #include <QAbstractItemModel>
 #include <QApplication>
 #include <QFont>
@@ -90,8 +92,8 @@ namespace AzToolsFramework
             infoString = QObject::tr("<table style=\"font-size: %4px;\"><tr><td>%1%2</td><td width=\"%3\"></td></tr></table>")
                              .arg(path.Filename().Native().data())
                              .arg(saveFlag)
-                             .arg(m_prefabEditIconSize)
-                             .arg(m_prefabFileNameFontSize);
+                             .arg(PrefabUIConstants::prefabEditIconSize)
+                             .arg(PrefabUIConstants::prefabFileNameFontSize);
         }
 
         return infoString;
@@ -156,55 +158,54 @@ namespace AzToolsFramework
             backgroundColor = m_prefabCapsuleDisabledColor;
         }
 
-        QPainterPath backgroundPath;
-        backgroundPath.setFillRule(Qt::WindingFill);
-
-        QRect tempRect = option.rect;
-        tempRect.setTop(tempRect.top() + 1);
+        QRect columnRect = option.rect;
+        columnRect.setTop(columnRect.top() + 1);
 
         if (!hasVisibleChildren)
         {
-            tempRect.setBottom(tempRect.bottom() - 1);
+            columnRect.setBottom(columnRect.bottom() - 1);
         }
 
-        if (isFirstColumn)
-        {
-            tempRect.setLeft(tempRect.left() - 1);
-        }
-
-        if (isLastColumn)
-        {
-            tempRect.setWidth(tempRect.width() - 1);
-        }
+        QPainterPath backgroundPath;
+        backgroundPath.setFillRule(Qt::WindingFill);
 
         if (isFirstColumn || isLastColumn)
         {
+            if (isFirstColumn)
+            {
+                columnRect.setLeft(columnRect.left() - 1);
+            }
+            else if (isLastColumn)
+            {
+                columnRect.setWidth(columnRect.width() - 1);
+            }
+
             // Rounded rect to have rounded borders on top
-            backgroundPath.addRoundedRect(tempRect, m_prefabCapsuleRadius, m_prefabCapsuleRadius);
+            backgroundPath.addRoundedRect(columnRect, PrefabUIConstants::prefabCapsuleRadius, PrefabUIConstants::prefabCapsuleRadius);
 
             if (hasVisibleChildren)
             {
                 // Regular rect, half height, to square the bottom borders
-                QRect bottomRect = tempRect;
+                QRect bottomRect = columnRect;
                 bottomRect.setTop(bottomRect.top() + (bottomRect.height() / 2));
                 backgroundPath.addRect(bottomRect);
             }
 
             // Regular rect, half height, to square the opposite border
-            QRect squareRect = tempRect;
+            QRect squareRect = columnRect;
             if (isFirstColumn)
             {
-                squareRect.setLeft(tempRect.left() + (tempRect.width() / 2));
+                squareRect.setLeft(columnRect.left() + (columnRect.width() / 2));
             }
             else if (isLastColumn)
             {
-                squareRect.setWidth(tempRect.width() / 2);
+                squareRect.setWidth(columnRect.width() / 2);
             }
             backgroundPath.addRect(squareRect);
         }
         else
         {
-            backgroundPath.addRect(tempRect);
+            backgroundPath.addRect(columnRect);
         }
 
         painter->save();
@@ -334,12 +335,12 @@ namespace AzToolsFramework
         const QColor borderColor) const
     {
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
-        const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (m_prefabBorderThickness / 2) - 1;
-        const int curveRectSize = m_prefabCapsuleRadius * 2;
+        const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (PrefabUIConstants::prefabBorderThickness / 2) - 1;
+        const int curveRectSize = PrefabUIConstants::prefabCapsuleRadius * 2;
         const bool isFirstColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnName;
         const bool isLastColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnLockToggle;
 
-        QPen borderLinePen(borderColor, m_prefabBorderThickness);
+        QPen borderLinePen(borderColor, PrefabUIConstants::prefabBorderThickness);
 
         // Find the rect that extends fully to the left
         QRect fullRect = option.rect;
@@ -351,7 +352,7 @@ namespace AzToolsFramework
 
         // Adjust option.rect to account for the border thickness
         QRect rect = option.rect;
-        rect.setLeft(rect.left() + (m_prefabBorderThickness / 2));
+        rect.setLeft(rect.left() + (PrefabUIConstants::prefabBorderThickness / 2));
 
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing, true);
@@ -367,9 +368,9 @@ namespace AzToolsFramework
 
                 // Define curve start, end and size
                 QPoint curveStart = fullRect.bottomLeft();
-                curveStart.setY(curveStart.y() - m_prefabCapsuleRadius);
+                curveStart.setY(curveStart.y() - PrefabUIConstants::prefabCapsuleRadius);
                 QPoint curveEnd = fullRect.bottomLeft();
-                curveEnd.setX(curveEnd.x() + m_prefabCapsuleRadius);
+                curveEnd.setX(curveEnd.x() + PrefabUIConstants::prefabCapsuleRadius);
                 QRect curveRect = QRect(fullRect.left(), fullRect.bottom() - curveRectSize, curveRectSize, curveRectSize);
 
                 // Curved Corner
@@ -386,7 +387,7 @@ namespace AzToolsFramework
 
                 // Define curve start, end and size
                 QPoint curveStart = fullRect.bottomRight();
-                curveStart.setY(curveStart.y() - m_prefabCapsuleRadius);
+                curveStart.setY(curveStart.y() - PrefabUIConstants::prefabCapsuleRadius);
                 QRect curveRect = QRect(fullRect.right() - curveRectSize, fullRect.bottom() - curveRectSize, curveRectSize, curveRectSize);
 
                 // Curved Corner
@@ -463,7 +464,7 @@ namespace AzToolsFramework
 
                     // Paint the icon.
                     QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
-                    painter->drawPixmap(option.rect.topLeft() + EditIconOffset, closeIcon.pixmap(m_prefabEditIconSize));
+                    painter->drawPixmap(option.rect.topLeft() + EditIconOffset, closeIcon.pixmap(PrefabUIConstants::prefabEditIconSize));
                 }
             }
         }
@@ -473,7 +474,7 @@ namespace AzToolsFramework
             if (isFirstColumn && isHovered && !isContainerOpen)
             {
                 QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
-                painter->drawPixmap(option.rect.topRight() + EditIconOffset, openIcon.pixmap(m_prefabEditIconSize));
+                painter->drawPixmap(option.rect.topRight() + EditIconOffset, openIcon.pixmap(PrefabUIConstants::prefabEditIconSize));
             }
         }
 
