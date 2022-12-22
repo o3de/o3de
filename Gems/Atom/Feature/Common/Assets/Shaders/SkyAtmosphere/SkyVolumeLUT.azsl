@@ -18,7 +18,7 @@ float4 GetSkyVolumeAtPosition(uint3 position)
     AtmosphereParameters Atmosphere = GetAtmosphereParameters();
 
     const float worldScale = 0.001f;
-    const float lutSize = float(SKY_VOLUME_SLICE_COUNT);
+    const float lutSize = float(SKY_VOLUME_SLICE_COUNT - 1);
     float2 uv = float2(position.x, position.y) / lutSize;
     float2 ndcPos = float2(uv.x , 1.0f - uv.y) * 2.0f - 1.0f;
     float4 projectedPos = float4(ndcPos, 0.f, 1.0f);
@@ -84,7 +84,7 @@ float4 GetSkyVolumeAtPosition(uint3 position)
     const bool variableSampleCount = true;
     const bool mieRayPhase = true;
     const float2 screenCoords = float2(0,0); // unused
-    SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, uv, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, depth, variableSampleCount, mieRayPhase, maxTraceDepth);
+    SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, depth, variableSampleCount, mieRayPhase, maxTraceDepth);
 
     const float transmittance = dot(ss.Transmittance, float3(1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f));
     return float4(ss.L, 1.0 - transmittance);

@@ -410,7 +410,7 @@ struct SingleScatteringResult
 };
 
 SingleScatteringResult IntegrateScatteredLuminance(
-    in float2 pixPos, in float2 texCoord, in float3 worldPos, in float3 worldDir, in float3 sunDir, in AtmosphereParameters Atmosphere,
+    in float2 pixPos, in float3 worldPos, in float3 worldDir, in float3 sunDir, in AtmosphereParameters Atmosphere,
     in bool ground, in float sampleCountIni, in float depthBufferValue, in bool variablesampleCount,
     in bool mieRayPhase, in float tMaxMax = 9000000.0f)
 {

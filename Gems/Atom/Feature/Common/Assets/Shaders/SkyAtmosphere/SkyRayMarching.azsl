@@ -156,7 +156,7 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
             slice = 0.5;
         }
         float w = sqrt(slice / SKY_VOLUME_SLICE_COUNT);
-        float4 ss = weight * PassSrg::m_skyVolumeLUT.SampleLevel(PassSrg::LinearSampler, float3(screenCoords, w), 0);
+        float4 ss = weight * PassSrg::m_skyVolumeLUT.SampleLevel(PassSrg::LinearSampler, float3(Input.m_texCoord, w), 0);
         transmittance = ss.a;
         luminance = ss.rgb;
     }
@@ -174,7 +174,7 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
         const bool variableSampleCount = true;
         const bool mieRayPhase = true;
 
-        SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, Input.m_texCoord, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, depth, variableSampleCount, mieRayPhase, maxTraceDepth);
+        SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, depth, variableSampleCount, mieRayPhase, maxTraceDepth);
         luminance += ss.L;
         transmittance = 1.0 - dot(ss.Transmittance, float3(1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f));
     }

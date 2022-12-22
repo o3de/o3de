@@ -56,7 +56,7 @@ SkyTransmittanceLUTPSOutput SkyTransmittanceLUTPS(VSOutput Input)
     const bool variableSampleCount = false;
     const bool mieRayPhase = false;
     const float3 sunDir = float3(0,0,1); // not actually used to calculate optical depth
-    float3 transmittance = exp(-IntegrateScatteredLuminance(pixPos, uv, worldPos, worldDir, sunDir, atmosphere, ground, sampleCount, depth, variableSampleCount, mieRayPhase).OpticalDepth);
+    float3 transmittance = exp(-IntegrateScatteredLuminance(pixPos, worldPos, worldDir, sunDir, atmosphere, ground, sampleCount, depth, variableSampleCount, mieRayPhase).OpticalDepth);
 
     OUT.m_skyTransmittanceLut = float4(transmittance, 1.0f);
 

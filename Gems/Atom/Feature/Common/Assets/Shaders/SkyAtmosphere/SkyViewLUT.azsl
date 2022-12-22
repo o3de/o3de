@@ -74,8 +74,7 @@ SkyViewLutPSOutput SkyViewLutPS(VSOutput Input)
     const bool variablesampleCount = true;
     const bool mieRayPhase = true;
     const float2 pixPos = Input.m_position.xy;
-    const float2 uv = Input.m_texCoord;
-    SingleScatteringResult ss = IntegrateScatteredLuminance(pixPos, uv, worldPosKm, worldDir, sunDir, Atmosphere, ground, sampleCountIni, depthBufferValue, variablesampleCount, mieRayPhase);
+    SingleScatteringResult ss = IntegrateScatteredLuminance(pixPos, worldPosKm, worldDir, sunDir, Atmosphere, ground, sampleCountIni, depthBufferValue, variablesampleCount, mieRayPhase);
 
     OUT.m_skyViewLut = float4(ss.L, 1);
     return OUT;
