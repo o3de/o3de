@@ -468,4 +468,4 @@ def monkeypatch_pytest():
             logfile.write(ET.tostring(testsuites, encoding="unicode"))
 
     # override
-    _pytest.junitxml.LogXML.pytest_sessionfinish = types.MethodType(pytest_sessionfinish, _pytest.junitxml.LogXML)
+    _pytest.junitxml.LogXML.pytest_sessionfinish = pytest_sessionfinish
