@@ -175,6 +175,9 @@ namespace AZ::Render
         }
 
         m_transformInterface = nullptr;
+
+        // set the sun entity as invalid so we re-connect to the transform interface if we get re-activated 
+        m_sunEntityId.SetInvalid();
     }
 
     void SkyAtmosphereComponentController::SetConfiguration(const SkyAtmosphereComponentConfig& config)
