@@ -197,10 +197,12 @@ namespace AZ::Render
         BuildShaderData();
 
         m_skyTransmittanceLUTPass = FindChildPass(Name("SkyTransmittanceLUTPass"));
+        m_skyViewLUTPass = FindChildPass(Name("SkyViewLUTPass"));
+        m_skyVolumeLUTPass = FindChildPass(Name("SkyVolumeLUTPass"));
 
         BindLUTs();
 
-        m_enableLUTPass = true;
+        m_enableSkyTransmittanceLUTPass = true;
     }
 
     void SkyAtmospherePass::UpdatePassData()
@@ -262,14 +264,33 @@ namespace AZ::Render
 
         if (m_skyTransmittanceLUTPass)
         {
-            if (m_enableLUTPass)
+            if (m_enableSkyTransmittanceLUTPass)
             {
                 m_skyTransmittanceLUTPass->SetEnabled(true);
-                m_enableLUTPass = false;
+
+                // we automatically disable the pass after updating until LUT params change again
+                m_enableSkyTransmittanceLUTPass = false;
             }
             else if (m_skyTransmittanceLUTPass->IsEnabled())
             {
                 m_skyTransmittanceLUTPass->SetEnabled(false);
+            }
+        }
+
+        if (m_skyViewLUTPass) 
+        {
+            if (m_enableFastSky != m_skyViewLUTPass->IsEnabled())
+            {
+                m_skyViewLUTPass->SetEnabled(m_enableFastSky);
+            }
+        }
+
+        if (m_skyVolumeLUTPass) 
+        {
+            bool enableVolumePass = m_fastAerialPerspectiveEnabled && m_aerialPerspectiveEnabled;
+            if (enableVolumePass != m_skyVolumeLUTPass->IsEnabled())
+            {
+                m_skyVolumeLUTPass->SetEnabled(enableVolumePass);
             }
         }
 
@@ -357,7 +378,7 @@ namespace AZ::Render
             m_constants.m_absorptionDensity1LinearTerm = -1.f / 15.f;
             m_constants.m_absorptionDensity1ConstantTerm = 8.f / 3.f;
 
-            m_enableLUTPass = true;
+            m_enableSkyTransmittanceLUTPass = true;
         }
 
         m_atmosphereParams = params;

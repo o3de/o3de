@@ -122,6 +122,7 @@ namespace AZ::Render
         AZStd::vector<AtmospherePassData> m_atmospherePassData;
 
         RPI::Ptr<RPI::Pass> m_skyTransmittanceLUTPass = nullptr;
+        RPI::Ptr<RPI::Pass> m_skyViewLUTPass = nullptr;
         RPI::Ptr<RPI::Pass> m_skyVolumeLUTPass = nullptr;
 
         AtmosphereGPUParams m_constants;
@@ -129,7 +130,7 @@ namespace AZ::Render
         bool m_lutUpdateRequired = true;
         bool m_updateConstants = false;
 
-        bool m_enableLUTPass = false;
+        bool m_enableSkyTransmittanceLUTPass = false;
         bool m_enableFastSky = true;
         bool m_fastAerialPerspectiveEnabled = true;
         bool m_aerialPerspectiveEnabled = true;
