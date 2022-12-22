@@ -100,6 +100,7 @@ namespace UnitTests
 
         // Set up the Job Context, required for the PathDependencyManager to do its work
         // Set up serialize and json context
+        // Set up serialize and json context
         m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
         m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
         m_componentApplication = AZStd::make_unique<testing::NiceMock<MockComponentApplication>>();
@@ -172,6 +173,13 @@ namespace UnitTests
         m_builderInfoHandler.BusDisconnect();
 
         AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+
+        m_jsonRegistrationContext->EnableRemoveReflection();
+        AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
+        m_jsonRegistrationContext->DisableRemoveReflection();
+
+        m_jsonRegistrationContext.reset();
+        m_serializeContext.reset();
 
         m_jsonRegistrationContext->EnableRemoveReflection();
         AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
