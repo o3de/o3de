@@ -33,58 +33,58 @@ float4 GetSkyVolumeAtPosition(uint3 position)
     float3 cameraPlanetPosKm = ViewSrg::m_worldPosition * worldScale - Atmosphere.PlanetOrigin;
 
     float slice = (float(position.z) + 0.5f) / SKY_VOLUME_SLICE_COUNT;
-	slice *= slice;	// squared distribution
-	slice *= SKY_VOLUME_SLICE_COUNT;
+    slice *= slice;    // squared distribution
+    slice *= SKY_VOLUME_SLICE_COUNT;
 
     float tMax = AerialPerspectiveSliceToDepth(slice);
 
     // get position relative to planet surface
     float3 froxelPosition = cameraPlanetPosKm + tMax * worldDir;
 
-	// if the froxel is under the ground, make sure to offset it out on the ground.
-	float viewHeight = length(froxelPosition);
-	if (viewHeight <= (Atmosphere.BottomRadius + PLANET_RADIUS_OFFSET_KM))
-	{
-		// Apply a position offset to make sure no artefact are visible close to the earth boundaries for large voxel.
-		froxelPosition = normalize(froxelPosition) * (Atmosphere.BottomRadius + PLANET_RADIUS_OFFSET_KM + 0.001f);
-		worldDir = normalize(froxelPosition - cameraPlanetPosKm);
-		tMax = length(froxelPosition - cameraPlanetPosKm);
-	}
-	float maxTraceDepth = tMax;
+    // if the froxel is under the ground, make sure to offset it out on the ground.
+    float viewHeight = length(froxelPosition);
+    if (viewHeight <= (Atmosphere.BottomRadius + PLANET_RADIUS_OFFSET_KM))
+    {
+        // Apply a position offset to make sure no artefact are visible close to the earth boundaries for large voxel.
+        froxelPosition = normalize(froxelPosition) * (Atmosphere.BottomRadius + PLANET_RADIUS_OFFSET_KM + 0.001f);
+        worldDir = normalize(froxelPosition - cameraPlanetPosKm);
+        tMax = length(froxelPosition - cameraPlanetPosKm);
+    }
+    float maxTraceDepth = tMax;
 
-	const float depth = -1.0;
+    const float depth = -1.0;
 
-	// move ray marching start up to top atmosphere.
-	viewHeight = length(froxelPosition);
-	if (viewHeight >= Atmosphere.TopRadius)
-	{
+    // move ray marching start up to top atmosphere.
+    viewHeight = length(froxelPosition);
+    if (viewHeight >= Atmosphere.TopRadius)
+    {
         float distanceToTop = 0.f;
 
         if (!MoveToTopAtmosphere(cameraPlanetPosKm, distanceToTop, worldDir, Atmosphere.TopRadius, depth))
-		{
-			// ray is not intersecting the atmosphere
-			return float4(0.0, 0.0, 0.0, 1.0);
-		}
+        {
+            // ray is not intersecting the atmosphere
+            return float4(0.0, 0.0, 0.0, 1.0);
+        }
 
-		if (maxTraceDepth < distanceToTop)
-		{
-			// maxTraceDepth for this voxel is not within earth atmosphere
-			return float4(0.0, 0.0, 0.0, 1.0);
-		}
+        if (maxTraceDepth < distanceToTop)
+        {
+            // maxTraceDepth for this voxel is not within earth atmosphere
+            return float4(0.0, 0.0, 0.0, 1.0);
+        }
 
-		// world position has been moved to the atmosphere boundary: we need to reduce maxTraceDepth accordingly. 
-		maxTraceDepth = max(0.0, maxTraceDepth - distanceToTop);
-	}
+        // world position has been moved to the atmosphere boundary: we need to reduce maxTraceDepth accordingly. 
+        maxTraceDepth = max(0.0, maxTraceDepth - distanceToTop);
+    }
 
-	const bool ground = false;
-	const float sampleCountIni = max(1.0, float(position.z + 1.0) * 2.0f);
-	const bool variableSampleCount = false;
-	const bool mieRayPhase = true;
+    const bool ground = false;
+    const float sampleCountIni = max(1.0, float(position.z + 1.0) * 2.0f);
+    const bool variableSampleCount = false;
+    const bool mieRayPhase = true;
     const float2 screenCoords = float2(0,0); // unused
     SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, uv, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, depth, variableSampleCount, mieRayPhase, maxTraceDepth);
 
-	const float transmittance = dot(ss.Transmittance, float3(1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f));
-	return float4(ss.L, 1.0 - transmittance);
+    const float transmittance = dot(ss.Transmittance, float3(1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f));
+    return float4(ss.L, 1.0 - transmittance);
 }
 
 // total thread count is based on the "Target Thread Count X/Y/Z" in the SkyVolumeLUT.pass file
