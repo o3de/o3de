@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "ToString",
-                    "context": "EntityEntity_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToString"
@@ -43,7 +42,6 @@
                 },
                 {
                     "base": "IsValid",
-                    "context": "EntityEntity_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsValid"
@@ -76,7 +74,6 @@
                 },
                 {
                     "base": "GetEntityForward",
-                    "context": "EntityEntity_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEntityForward"
@@ -115,7 +112,6 @@
                 },
                 {
                     "base": "IsActive",
-                    "context": "EntityEntity_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsActive"
@@ -148,7 +144,6 @@
                 },
                 {
                     "base": "GetEntityRight",
-                    "context": "EntityEntity_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEntityRight"
@@ -187,7 +182,6 @@
                 },
                 {
                     "base": "GetEntityUp",
-                    "context": "EntityEntity_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEntityUp"
