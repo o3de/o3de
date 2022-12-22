@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetNodeChild",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Node Child"
@@ -48,7 +47,6 @@
                 },
                 {
                     "base": "FindWithPath",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Find With Path"
@@ -85,7 +83,6 @@
                 },
                 {
                     "base": "HasNodeChild",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has Node Child"
@@ -122,7 +119,6 @@
                 },
                 {
                     "base": "HasNodeParent",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has Node Parent"
@@ -159,7 +155,6 @@
                 },
                 {
                     "base": "GetNodeSibling",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Node Sibling"
@@ -196,7 +191,6 @@
                 },
                 {
                     "base": "HasNodeSibling",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has Node Sibling"
@@ -233,7 +227,6 @@
                 },
                 {
                     "base": "IsNodeEndPoint",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Node End Point"
@@ -270,7 +263,6 @@
                 },
                 {
                     "base": "GetNodeCount",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Node Count"
@@ -301,7 +293,6 @@
                 },
                 {
                     "base": "HasNodeContent",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has Node Content"
@@ -338,7 +329,6 @@
                 },
                 {
                     "base": "GetNodeContent",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Node Content"
@@ -375,7 +365,6 @@
                 },
                 {
                     "base": "GetNodeName",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Node Name"
@@ -412,7 +401,6 @@
                 },
                 {
                     "base": "GetRoot",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Root"
@@ -443,7 +431,6 @@
                 },
                 {
                     "base": "GetNodeSeperationCharacter",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Node Separation Character"
@@ -466,7 +453,6 @@
                 },
                 {
                     "base": "GetNodeParent",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Node Parent"
@@ -503,7 +489,6 @@
                 },
                 {
                     "base": "FindWithRootAndPath",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Find With Root And Path"
@@ -546,7 +531,6 @@
                 },
                 {
                     "base": "IsValidName",
-                    "context": "AZ::SceneAPI::Containers::SceneGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Valid Name"

@@ -55,7 +55,6 @@
                 },
                 {
                     "base": "GetSceneHandle",
-                    "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Scene Handle"
@@ -92,7 +91,6 @@
                 },
                 {
                     "base": "GetScene",
-                    "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Scene"

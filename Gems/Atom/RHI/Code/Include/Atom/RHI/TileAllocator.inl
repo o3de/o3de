@@ -5,30 +5,31 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <RHI/Device.h>
-#include <RHI/TileAllocator.h>
+ 
+#pragma once
 
 namespace AZ
 {
-    namespace DX12
+    namespace RHI
     {
         namespace
         {
             const static bool TileAllocatorOutputDebugInfo = false;
         }
-
-        void TileAllocator::Init(const Descriptor& descriptor, HeapAllocator& heapAllocator)
+        
+        template<typename Traits> 
+        void TileAllocator<Traits>::Init(const Descriptor& descriptor, HeapAllocator& heapAllocator)
         {
-            AZ_Assert(descriptor.m_getHeapMemoryUsageFunction, "You must supply a valid function for getting heap memory usage.");
+            AZ_Assert(descriptor.m_heapMemoryUsage, "You must supply a valid pointer of HeapMemoryUsage.");
 
             m_descriptor = descriptor;
             m_heapAllocator = &heapAllocator;
 
-            m_tileCountPerPage = m_heapAllocator->GetPageSize()/descriptor.m_tileSizeInBytes;
+            m_tileCountPerPage = aznumeric_cast<uint32_t>(m_heapAllocator->GetFactory().GetDescriptor().m_pageSizeInBytes)/descriptor.m_tileSizeInBytes;
         }
-
-        void TileAllocator::AllocateFromFreeList(uint32_t tileCount, AZStd::vector<HeapTiles>& output)
+        
+        template<typename Traits> 
+        void TileAllocator<Traits>::AllocateFromFreeList(uint32_t tileCount, AZStd::vector<HeapTiles>& output)
         {
             uint32_t allocatedTileCount = 0;
 
@@ -71,27 +72,29 @@ namespace AZ
                 }
             }
             
-            AZ_Assert(allocatedTileCount == tileCount, "Implementation error: imcomplete allocation");
+            AZ_Assert(allocatedTileCount == tileCount, "Implementation error: incomplete allocation");
 
             m_allocatedTileCount += tileCount;
             AZ_Assert(m_allocatedTileCount <= m_totalTileCount, "Implementation error: tile count error.");
             
-            RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+            RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_heapMemoryUsage;
             heapMemoryUsage->m_usedResidentInBytes += tileCount * m_descriptor.m_tileSizeInBytes;
         }
-
-        size_t TileAllocator::EvaluateMemoryAllocation(uint32_t tileCount)
+        
+        template<typename Traits> 
+        size_t TileAllocator<Traits>::EvaluateMemoryAllocation(uint32_t tileCount)
         {
             uint32_t freeTileCount = m_totalTileCount - m_allocatedTileCount;
             if (freeTileCount < tileCount)
             {
                 uint32_t newPageCount = AZ::DivideAndRoundUp(tileCount - freeTileCount, m_tileCountPerPage);
-                return newPageCount * m_heapAllocator->GetPageSize();
+                return newPageCount * m_heapAllocator->GetFactory().GetDescriptor().m_pageSizeInBytes;
             }
             return 0;
         }
-
-        AZStd::vector<HeapTiles> TileAllocator::Allocate(uint32_t tileCount)
+        
+        template<typename Traits> 
+        AZStd::vector<typename TileAllocator<Traits>::HeapTiles> TileAllocator<Traits>::Allocate(uint32_t tileCount)
         {
             AZStd::vector<HeapTiles> tilesList;
             
@@ -128,10 +131,11 @@ namespace AZ
 
             return tilesList;
         }
-
-        void TileAllocator::DeAllocate(const AZStd::vector<HeapTiles>& tilesGroups)
+        
+        template<typename Traits> 
+        void TileAllocator<Traits>::DeAllocate(const AZStd::vector<HeapTiles>& tilesGroups)
         {
-            RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+            RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_heapMemoryUsage;
             for (const auto& heapTiles : tilesGroups)
             {
                 auto itr = m_pageContexts.find(heapTiles.m_heap);
@@ -153,8 +157,9 @@ namespace AZ
             
             DebugPrintInfo("DeAllocate");
         }
-
-        void TileAllocator::GarbageCollect()
+        
+        template<typename Traits> 
+        void TileAllocator<Traits>::GarbageCollect()
         {
             if (!m_heapAllocator)
             {
@@ -181,8 +186,9 @@ namespace AZ
 
             DebugPrintInfo("GarbageCollect");
         }
-
-        void TileAllocator::Shutdown()
+        
+        template<typename Traits> 
+        void TileAllocator<Traits>::Shutdown()
         {
             GarbageCollect();
 
@@ -190,26 +196,30 @@ namespace AZ
                 "Image resources which are using tiles are not released");
         }
         
-        uint32_t TileAllocator::GetAllocatedTileCount() const
+        template<typename Traits> 
+        uint32_t TileAllocator<Traits>::GetAllocatedTileCount() const
         {
             return m_allocatedTileCount;
         }
-
-        uint32_t TileAllocator::GetTotalTileCount() const
+        
+        template<typename Traits> 
+        uint32_t TileAllocator<Traits>::GetTotalTileCount() const
         {
             return m_totalTileCount;
         }
-
-        const TileAllocator::Descriptor& TileAllocator::GetDescriptor() const
+        
+        template<typename Traits> 
+        const typename TileAllocator<Traits>::Descriptor& TileAllocator<Traits>::GetDescriptor() const
         {
             return m_descriptor;
         }
-
-        void TileAllocator::DebugPrintInfo([[maybe_unused]] const char* opName) const
+        
+        template<typename Traits> 
+        void TileAllocator<Traits>::DebugPrintInfo([[maybe_unused]] const char* opName) const
         {
             if (TileAllocatorOutputDebugInfo)
             {
-                RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+                RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_heapMemoryUsage;
 
                 AZ_TracePrintf(
                     "TileAllocator",

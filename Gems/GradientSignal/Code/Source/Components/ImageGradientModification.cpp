@@ -148,11 +148,287 @@ namespace GradientSignal
         m_modifiedAnyPixels = true;
     }
 
+    ModifiedImageRegion::ModifiedImageRegion(const ImageGradientSizeData& imageData)
+        : m_minModifiedPixelIndex(AZStd::numeric_limits<int16_t>::max(), AZStd::numeric_limits<int16_t>::max())
+        , m_maxModifiedPixelIndex(aznumeric_cast<int16_t>(-1), aznumeric_cast<int16_t>(-1))
+        , m_isModified(false)
+        , m_imageData(imageData)
+    {
+    }
+
+    void ModifiedImageRegion::AddPoint(const PixelIndex& pixelIndex)
+    {
+        // Each time we modify a pixel, adjust our min and max pixel ranges to include it.
+        m_minModifiedPixelIndex = PixelIndex(
+            AZStd::min(m_minModifiedPixelIndex.first, pixelIndex.first), AZStd::min(m_minModifiedPixelIndex.second, pixelIndex.second));
+        m_maxModifiedPixelIndex = PixelIndex(
+            AZStd::max(m_maxModifiedPixelIndex.first, pixelIndex.first), AZStd::max(m_maxModifiedPixelIndex.second, pixelIndex.second));
+
+        // Keep track of whether or not we've modified a pixel that occurs on an edge. This is used when the wrapping type
+        // is 'ClampToEdge' to determine if our modified region needs to stretch out to infinity in that direction.
+        m_modifiedLeftEdge = m_modifiedLeftEdge || (pixelIndex.first == m_imageData.m_topLeftPixelIndex.first);
+        m_modifiedRightEdge = m_modifiedRightEdge || (pixelIndex.first == m_imageData.m_bottomRightPixelIndex.first);
+        m_modifiedTopEdge = m_modifiedTopEdge || (pixelIndex.second == m_imageData.m_topLeftPixelIndex.second);
+        m_modifiedBottomEdge = m_modifiedBottomEdge || (pixelIndex.second == m_imageData.m_bottomRightPixelIndex.second);
+
+        // Track that we've modified at least one pixel.
+        m_isModified = true;
+    }
+
+    void ModifiedImageRegion::AddLocalSpacePixelAabbFromTopLeft(
+        const ImageGradientSizeData& imageData, int16_t pixelX, int16_t pixelY, AZ::Aabb& region)
+    {
+        // This adds an AABB representing the size of one pixel in local space.
+        // This method calculates the pixel's location from the top left corner of the local bounds.
+
+        // Get the local bounds of the image gradient.
+        const AZ::Aabb localBounds = imageData.m_gradientTransform.GetBounds();
+
+        // ShiftedPixel* contains the number of pixels to offset from the first pixel in the top left corner.
+        // The double-mod is used to wrap around any negative results that can occur with certain combinations of tiling
+        // and frequency zoom settings.
+
+        int16_t shiftedPixelX = (pixelX - imageData.m_topLeftPixelIndex.first) % imageData.m_imageWidth;
+        shiftedPixelX = (shiftedPixelX + imageData.m_imageWidth) % imageData.m_imageWidth;
+
+        int16_t shiftedPixelY = (pixelY - imageData.m_topLeftPixelIndex.second) % imageData.m_imageHeight;
+        shiftedPixelY = (shiftedPixelY + imageData.m_imageHeight) % imageData.m_imageHeight;
+
+        // X pixels run left to right (min to max), but Y pixels run top to bottom (max to min), so we account for that
+        // in the math below.
+        region.AddPoint(AZ::Vector3(
+            localBounds.GetMin().GetX() + (imageData.m_localMetersPerPixelX * shiftedPixelX),
+            localBounds.GetMax().GetY() - (imageData.m_localMetersPerPixelY * shiftedPixelY),
+            0.0f));
+        region.AddPoint(AZ::Vector3(
+            localBounds.GetMin().GetX() + (imageData.m_localMetersPerPixelX * (shiftedPixelX + 1)),
+            localBounds.GetMax().GetY() - (imageData.m_localMetersPerPixelY * shiftedPixelY),
+            0.0f));
+        region.AddPoint(AZ::Vector3(
+            localBounds.GetMin().GetX() + (imageData.m_localMetersPerPixelX * shiftedPixelX),
+            localBounds.GetMax().GetY() - (imageData.m_localMetersPerPixelY * (shiftedPixelY + 1)),
+            0.0f));
+        region.AddPoint(AZ::Vector3(
+            localBounds.GetMin().GetX() + (imageData.m_localMetersPerPixelX * (shiftedPixelX + 1)),
+            localBounds.GetMax().GetY() - (imageData.m_localMetersPerPixelY * (shiftedPixelY + 1)),
+            0.0f));
+    };
+
+    void ModifiedImageRegion::AddLocalSpacePixelAabbFromBottomRight(
+        const ImageGradientSizeData& imageData, int16_t pixelX, int16_t pixelY, AZ::Aabb& region)
+    {
+        // This adds an AABB representing the size of one pixel in local space.
+        // This method calculates the pixel's location from the bottom right corner of the local bounds.
+
+        // Get the local bounds of the image gradient.
+        const AZ::Aabb localBounds = imageData.m_gradientTransform.GetBounds();
+
+        // ShiftedPixel* contains the number of pixels to offset from the first pixel in the top left corner.
+        // The double-mod is used to wrap around any negative results that can occur with certain combinations of tiling
+        // and frequency zoom settings.
+
+        int16_t shiftedPixelX = (imageData.m_bottomRightPixelIndex.first - pixelX) % imageData.m_imageWidth;
+        shiftedPixelX = (shiftedPixelX + imageData.m_imageWidth) % imageData.m_imageWidth;
+
+        int16_t shiftedPixelY = (imageData.m_bottomRightPixelIndex.second - pixelY) % imageData.m_imageHeight;
+        shiftedPixelY = (shiftedPixelY + imageData.m_imageHeight) % imageData.m_imageHeight;
+
+        // X pixels run left to right (min to max), but Y pixels run top to bottom (max to min), so we account for that
+        // in the math below.
+        region.AddPoint(AZ::Vector3(
+            localBounds.GetMax().GetX() - (imageData.m_localMetersPerPixelX * shiftedPixelX),
+            localBounds.GetMin().GetY() + (imageData.m_localMetersPerPixelY * shiftedPixelY),
+            0.0f));
+        region.AddPoint(AZ::Vector3(
+            localBounds.GetMax().GetX() - (imageData.m_localMetersPerPixelX * (shiftedPixelX + 1)),
+            localBounds.GetMin().GetY() + (imageData.m_localMetersPerPixelY * shiftedPixelY),
+            0.0f));
+        region.AddPoint(AZ::Vector3(
+            localBounds.GetMax().GetX() - (imageData.m_localMetersPerPixelX * shiftedPixelX),
+            localBounds.GetMin().GetY() + (imageData.m_localMetersPerPixelY * (shiftedPixelY + 1)),
+            0.0f));
+        region.AddPoint(AZ::Vector3(
+            localBounds.GetMax().GetX() - (imageData.m_localMetersPerPixelX * (shiftedPixelX + 1)),
+            localBounds.GetMin().GetY() + (imageData.m_localMetersPerPixelY * (shiftedPixelY + 1)),
+            0.0f));
+    };
+
+    AZ::Aabb ModifiedImageRegion::GetDirtyRegion()
+    {
+        // If the image hasn't been modified, return an invalid/unbounded dirty region.
+        if (!m_isModified)
+        {
+            return AZ::Aabb::CreateNull();
+        }
+
+        // If the wrapping type uses infinite image repeats, by definition we need to have an unbounded dirty region.
+        switch (m_imageData.m_gradientTransform.GetWrappingType())
+        {
+        case WrappingType::Mirror:
+        case WrappingType::None:
+        case WrappingType::Repeat:
+            return AZ::Aabb::CreateNull();
+        }
+
+        // Our input dirty region is finite, and our wrapping type clamps to the image gradient's shape boundary,
+        // which means that we can potentially have a finite output dirty region as well.
+        // We just need to handle indirect effects caused by the painting:
+        // - Image repeats within the shape boundary means that we need the dirty region to encompass all of the repeating changed data.
+        // - Changing an edge pixel for ClampToEdge affects an infinite range stretching out from that pixel.
+        // - The dirty region needs to expand to add a buffer for bilinear filtering.
+
+        const AZ::Matrix3x4 gradientTransformMatrix = m_imageData.m_gradientTransform.GetTransformMatrix();
+
+        // Create a local space AABB for our modified region based on the min/max pixels. We add the min/max pixels offset from
+        // both the top left and the bottom right corners to account for any tiling and frequency zoom settings that make the pixels
+        // appear multiple times in the image.
+        AZ::Aabb modifiedRegionLocal = AZ::Aabb::CreateNull();
+        AddLocalSpacePixelAabbFromTopLeft(
+            m_imageData, m_minModifiedPixelIndex.first, m_minModifiedPixelIndex.second, modifiedRegionLocal);
+        AddLocalSpacePixelAabbFromBottomRight(
+            m_imageData, m_minModifiedPixelIndex.first, m_minModifiedPixelIndex.second, modifiedRegionLocal);
+        AddLocalSpacePixelAabbFromTopLeft(
+            m_imageData, m_maxModifiedPixelIndex.first, m_maxModifiedPixelIndex.second, modifiedRegionLocal);
+        AddLocalSpacePixelAabbFromBottomRight(
+            m_imageData, m_maxModifiedPixelIndex.first, m_maxModifiedPixelIndex.second, modifiedRegionLocal);
+
+        AZ::Aabb expandedDirtyRegionLocal(modifiedRegionLocal);
+
+        // If our wrapping type is ClampToEdge, check for intersections between the modified region and the image gradient bounds.
+        // Any modifications that occur on the edge of the image gradient will affect all positions outward infinitely from that edge,
+        // so we need to make the dirtyRegion stretch infinitely in that direction.
+        if (m_imageData.m_gradientTransform.GetWrappingType() == WrappingType::ClampToEdge)
+        {
+            // If we modified the leftmost pixel, stretch left to -inf in X.
+            if (m_modifiedLeftEdge)
+            {
+                expandedDirtyRegionLocal.SetMin(AZ::Vector3(
+                    AZStd::numeric_limits<float>::lowest(),
+                    expandedDirtyRegionLocal.GetMin().GetY(),
+                    expandedDirtyRegionLocal.GetMin().GetZ()));
+            }
+
+            // If we modified the rightmost pixel, stretch right to +inf in X.
+            if (m_modifiedRightEdge)
+            {
+                expandedDirtyRegionLocal.SetMax(AZ::Vector3(
+                    AZStd::numeric_limits<float>::max(),
+                    expandedDirtyRegionLocal.GetMax().GetY(),
+                    expandedDirtyRegionLocal.GetMax().GetZ()));
+            }
+
+            // If we modified the bottommost pixel, stretch down to -inf in Y.
+            if (m_modifiedBottomEdge)
+            {
+                expandedDirtyRegionLocal.SetMin(AZ::Vector3(
+                    expandedDirtyRegionLocal.GetMin().GetX(),
+                    AZStd::numeric_limits<float>::lowest(),
+                    expandedDirtyRegionLocal.GetMin().GetZ()));
+            }
+
+            // If we modified the topmost pixel, stretch up to +inf in Y.
+            if (m_modifiedTopEdge)
+            {
+                expandedDirtyRegionLocal.SetMax(AZ::Vector3(
+                    expandedDirtyRegionLocal.GetMax().GetX(),
+                    AZStd::numeric_limits<float>::max(),
+                    expandedDirtyRegionLocal.GetMax().GetZ()));
+            }
+        }
+
+        // Because Image Gradients support bilinear filtering, we need to expand our dirty area by an extra pixel in each direction
+        // so that the effects of the painted values on adjacent pixels are taken into account when refreshing.
+        expandedDirtyRegionLocal.Expand(AZ::Vector3(m_imageData.m_localMetersPerPixelX, m_imageData.m_localMetersPerPixelY, 0.0f));
+
+        // Finally, transform the dirty region back into world space and
+        // set it to encompass the full Z range since image gradients are 2D.
+        AZ::Aabb expandedDirtyRegion = expandedDirtyRegionLocal.GetTransformedAabb(gradientTransformMatrix);
+        expandedDirtyRegion.Set(
+            AZ::Vector3(expandedDirtyRegion.GetMin().GetX(), expandedDirtyRegion.GetMin().GetY(), AZStd::numeric_limits<float>::lowest()),
+            AZ::Vector3(expandedDirtyRegion.GetMax().GetX(), expandedDirtyRegion.GetMax().GetY(), AZStd::numeric_limits<float>::max()));
+
+        return expandedDirtyRegion;
+    }
+
+
     ImageGradientModifier::ImageGradientModifier(
         const AZ::EntityComponentIdPair& entityComponentIdPair)
         : m_ownerEntityComponentId(entityComponentIdPair)
     {
         AzFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
+
+        auto entityId = entityComponentIdPair.GetEntityId();
+
+        // Get the gradient transform. We'll need this to update the dirty region appropriately.
+        GradientTransformRequestBus::EventResult(
+            m_imageData.m_gradientTransform, entityId, &GradientTransformRequests::GetGradientTransform);
+
+        // Get the spacing to map individual pixels to world space positions.
+        AZ::Vector2 imagePixelsPerMeter(0.0f);
+        ImageGradientRequestBus::EventResult(imagePixelsPerMeter, entityId, &ImageGradientRequestBus::Events::GetImagePixelsPerMeter);
+
+        // Meters Per Pixel is in world space, so it takes into account the bounds, tiling, frequency zoom, and scale parameters.
+        m_imageData.m_metersPerPixelX = (imagePixelsPerMeter.GetX() > 0.0f) ? (1.0f / imagePixelsPerMeter.GetX()) : 0.0f;
+        m_imageData.m_metersPerPixelY = (imagePixelsPerMeter.GetY() > 0.0f) ? (1.0f / imagePixelsPerMeter.GetY()) : 0.0f;
+
+        // Since scaling takes place outside of the image's local space, but tiling & frequency zoom take place inside the image's
+        // local space, we'll create a version of meters per pixel without scaling applied so that we can calculate pixel sizes
+        // when working in local space.
+        m_imageData.m_localMetersPerPixelX = m_imageData.m_metersPerPixelX / m_imageData.m_gradientTransform.GetScale().GetX();
+        m_imageData.m_localMetersPerPixelY = m_imageData.m_metersPerPixelY / m_imageData.m_gradientTransform.GetScale().GetY();
+
+        // Get the image width and height in pixels. We'll use these to calculate the pixel indices for the image borders and also
+        // to verify that the image is valid to modify.
+        uint32_t imageWidth = 0;
+        uint32_t imageHeight = 0;
+        ImageGradientRequestBus::EventResult(imageWidth, entityId, &ImageGradientRequestBus::Events::GetImageWidth);
+        ImageGradientRequestBus::EventResult(imageHeight, entityId, &ImageGradientRequestBus::Events::GetImageHeight);
+        m_imageData.m_imageWidth = aznumeric_cast<int16_t>(imageWidth);
+        m_imageData.m_imageHeight = aznumeric_cast<int16_t>(imageHeight);
+
+        // Get the image tiling values. These are used to calculate the pixel indices for the image borders.
+        float imageTilingX = 1.0f;
+        float imageTilingY = 1.0f;
+        ImageGradientRequestBus::EventResult(imageTilingX, entityId, &ImageGradientRequestBus::Events::GetTilingX);
+        ImageGradientRequestBus::EventResult(imageTilingY, entityId, &ImageGradientRequestBus::Events::GetTilingY);
+
+        // Get the normalized UVW values for the image gradient at the corners. Note that "min UVW" is the bottom left corner of the
+        // AABB and "max UVW" is the top right corner. Depending on tiling, we can get numbers outside the 0-1 range in both the positive
+        // and negative directions.
+        AZ::Vector3 bottomLeftUvw;
+        AZ::Vector3 topRightUvw;
+        m_imageData.m_gradientTransform.GetMinMaxUvwValuesNormalized(bottomLeftUvw, topRightUvw);
+
+        // Calculate min/max pixel values at the boundaries. Depending on tiling, these can be negative or positive, and they might
+        // fall outside the number of pixels in the image. They will need to be modded to get back into pixel index range.
+        const float leftImagePixelX = m_imageData.m_imageWidth * imageTilingX * bottomLeftUvw.GetX();
+        const float bottomImagePixelY = m_imageData.m_imageHeight * imageTilingY * bottomLeftUvw.GetY();
+        const float rightImagePixelX = m_imageData.m_imageWidth * imageTilingX * topRightUvw.GetX();
+        const float topImagePixelY = m_imageData.m_imageHeight * imageTilingY * topRightUvw.GetY();
+
+        // Calculate the pixel indices for each boundary pixel by double-modding. The second mod is to wrap negative values back into
+        // the positive value range.
+
+        m_imageData.m_topLeftPixelIndex.first = aznumeric_cast<int64_t>(leftImagePixelX) % m_imageData.m_imageWidth;
+        m_imageData.m_topLeftPixelIndex.first =
+            (m_imageData.m_topLeftPixelIndex.first + m_imageData.m_imageWidth) % m_imageData.m_imageWidth;
+
+        m_imageData.m_topLeftPixelIndex.second = aznumeric_cast<int64_t>(topImagePixelY) % m_imageData.m_imageHeight;
+        m_imageData.m_topLeftPixelIndex.second =
+            (m_imageData.m_topLeftPixelIndex.second + m_imageData.m_imageHeight) % m_imageData.m_imageHeight;
+
+        m_imageData.m_bottomRightPixelIndex.first = aznumeric_cast<int64_t>(rightImagePixelX) % m_imageData.m_imageWidth;
+        m_imageData.m_bottomRightPixelIndex.first =
+            (m_imageData.m_bottomRightPixelIndex.first + m_imageData.m_imageWidth) % m_imageData.m_imageWidth;
+
+        m_imageData.m_bottomRightPixelIndex.second = aznumeric_cast<int64_t>(bottomImagePixelY) % m_imageData.m_imageHeight;
+        m_imageData.m_bottomRightPixelIndex.second =
+            (m_imageData.m_bottomRightPixelIndex.second + m_imageData.m_imageHeight) % m_imageData.m_imageHeight;
+
+        // X pixels go from min to max (left to right), but Y pixels go from max to min (top to bottom), so flip the index
+        // values to account for this.
+        m_imageData.m_topLeftPixelIndex.second = m_imageData.m_imageHeight - m_imageData.m_topLeftPixelIndex.second - 1;
+        m_imageData.m_bottomRightPixelIndex.second = m_imageData.m_imageHeight - m_imageData.m_bottomRightPixelIndex.second - 1;
     }
 
     ImageGradientModifier::~ImageGradientModifier()
@@ -167,10 +443,8 @@ namespace GradientSignal
         ImageGradientModificationNotificationBus::Event(
             entityId, &ImageGradientModificationNotificationBus::Events::OnImageGradientBrushStrokeBegin);
 
-        // Get the spacing to map individual pixels to world space positions.
-        AZ::Vector2 imagePixelsPerMeter(0.0f);
-        ImageGradientRequestBus::EventResult(imagePixelsPerMeter, entityId, &ImageGradientRequestBus::Events::GetImagePixelsPerMeter);
-        if ((imagePixelsPerMeter.GetX() <= 0.0f) || (imagePixelsPerMeter.GetY() <= 0.0f))
+        // We can't create a stroke buffer if there isn't any pixel data.
+        if ((m_imageData.m_imageWidth == 0) || (m_imageData.m_imageHeight == 0))
         {
             return;
         }
@@ -178,48 +452,29 @@ namespace GradientSignal
         m_paintStrokeData.m_intensity = color.GetR();
         m_paintStrokeData.m_opacity = color.GetA();
 
-        m_paintStrokeData.m_metersPerPixelX = 1.0f / imagePixelsPerMeter.GetX();
-        m_paintStrokeData.m_metersPerPixelY = 1.0f / imagePixelsPerMeter.GetY();
-
-        uint32_t imageWidth = 0;
-        ImageGradientRequestBus::EventResult(imageWidth, entityId, &ImageGradientRequestBus::Events::GetImageWidth);
-
-        uint32_t imageHeight = 0;
-        ImageGradientRequestBus::EventResult(imageHeight, entityId, &ImageGradientRequestBus::Events::GetImageHeight);
-
         // Create the buffer for holding all the changes for a single continuous paint brush stroke.
         // This buffer will get used during the stroke to hold our accumulated stroke opacity layer,
         // and then after the stroke finishes we'll hand the buffer over to the undo system as an undo/redo buffer.
-        m_paintStrokeData.m_strokeBuffer = AZStd::make_shared<ImageTileBuffer>(imageWidth, imageHeight, entityId);
+        m_paintStrokeData.m_strokeBuffer =
+            AZStd::make_shared<ImageTileBuffer>(m_imageData.m_imageWidth, m_imageData.m_imageHeight, entityId);
+
+        m_modifiedStrokeRegion = ModifiedImageRegion(m_imageData);
     }
 
     void ImageGradientModifier::OnBrushStrokeEnd()
     {
-        AZ::EntityId entityId = m_ownerEntityComponentId.GetEntityId();
-
-        if (m_paintStrokeData.m_dirtyRegion.IsValid())
-        {
-            // Expand the dirty region for this brush stroke by one pixel in each direction
-            // to account for any data affected by bilinear filtering as well.
-            m_paintStrokeData.m_dirtyRegion.Expand(
-                AZ::Vector3(m_paintStrokeData.m_metersPerPixelX, m_paintStrokeData.m_metersPerPixelY, 0.0f));
-
-            // Expand the dirty region to encompass the full Z range since image gradients are 2D.
-            auto dirtyRegionMin = m_paintStrokeData.m_dirtyRegion.GetMin();
-            auto dirtyRegionMax = m_paintStrokeData.m_dirtyRegion.GetMax();
-            m_paintStrokeData.m_dirtyRegion.Set(
-                AZ::Vector3(dirtyRegionMin.GetX(), dirtyRegionMin.GetY(), AZStd::numeric_limits<float>::lowest()),
-                AZ::Vector3(dirtyRegionMax.GetX(), dirtyRegionMax.GetY(), AZStd::numeric_limits<float>::max()));
-        }
+        const AZ::EntityId entityId = m_ownerEntityComponentId.GetEntityId();
+        const AZ::Aabb dirtyRegion = m_modifiedStrokeRegion.GetDirtyRegion();
 
         ImageGradientModificationNotificationBus::Event(
             entityId,
             &ImageGradientModificationNotificationBus::Events::OnImageGradientBrushStrokeEnd,
             m_paintStrokeData.m_strokeBuffer,
-            m_paintStrokeData.m_dirtyRegion);
+            dirtyRegion);
 
-        // Make sure we've cleared out our paint stroke data until the next paint stroke begins.
+        // Make sure we've cleared out our paint stroke and dirty region data until the next paint stroke begins.
         m_paintStrokeData = {};
+        m_modifiedStrokeRegion = {};
     }
 
     AZ::Color ImageGradientModifier::OnGetColor(const AZ::Vector3& brushCenter)
@@ -243,17 +498,18 @@ namespace GradientSignal
         ValueLookupFn& valueLookupFn,
         AZStd::function<float(const AZ::Vector3& worldPosition, float gradientValue, float opacity)> combineFn)
     {
+        ModifiedImageRegion modifiedRegion(m_imageData);
+
         // We're either painting or smoothing new values into our image gradient.
         // To do this, we need to calculate the set of world space positions that map to individual pixels in the image,
         // then ask the paint brush for each position what value we should set that pixel to. Finally, we use those modified
         // values to change the image gradient.
 
-        const AZ::Vector3 minDistances = dirtyArea.GetMin();
-        const AZ::Vector3 maxDistances = dirtyArea.GetMax();
-        const float zMinDistance = minDistances.GetZ();
+        const AZ::Matrix3x4 gradientTransformMatrix = m_imageData.m_gradientTransform.GetTransformMatrix();
+        AZ::Aabb dirtyAreaLocal = dirtyArea.GetTransformedAabb(gradientTransformMatrix.GetInverseFull());
 
-        const int32_t xPoints = aznumeric_cast<int32_t>((maxDistances.GetX() - minDistances.GetX()) / m_paintStrokeData.m_metersPerPixelX);
-        const int32_t yPoints = aznumeric_cast<int32_t>((maxDistances.GetY() - minDistances.GetY()) / m_paintStrokeData.m_metersPerPixelY);
+        const int32_t xPoints = aznumeric_cast<int32_t>(dirtyAreaLocal.GetXExtent() / m_imageData.m_localMetersPerPixelX);
+        const int32_t yPoints = aznumeric_cast<int32_t>(dirtyAreaLocal.GetYExtent() / m_imageData.m_localMetersPerPixelY);
 
         // Early out if the dirty area is smaller than our point size.
         if ((xPoints <= 0) || (yPoints <= 0))
@@ -264,11 +520,17 @@ namespace GradientSignal
         // Calculate the minimum set of world space points that map to those pixels.
         AZStd::vector<AZ::Vector3> points;
         points.reserve(xPoints * yPoints);
-        for (float y = minDistances.GetY(); y <= maxDistances.GetY(); y += m_paintStrokeData.m_metersPerPixelY)
+        for (float y = dirtyAreaLocal.GetMin().GetY() + (m_imageData.m_localMetersPerPixelY / 2.0f);
+            y <= dirtyAreaLocal.GetMax().GetY();
+            y += m_imageData.m_localMetersPerPixelY)
         {
-            for (float x = minDistances.GetX(); x <= maxDistances.GetX(); x += m_paintStrokeData.m_metersPerPixelX)
+            for (float x = dirtyAreaLocal.GetMin().GetX() + (m_imageData.m_localMetersPerPixelX / 2.0f);
+                 x <= dirtyAreaLocal.GetMax().GetX();
+                 x += m_imageData.m_localMetersPerPixelX)
             {
-                points.emplace_back(x, y, zMinDistance);
+                AZ::Vector3 worldPoint(gradientTransformMatrix * AZ::Vector3(x, y, 0.0f));
+                worldPoint.SetZ(dirtyArea.GetMin().GetZ());
+                points.push_back(worldPoint);
             }
         }
 
@@ -320,29 +582,25 @@ namespace GradientSignal
             // Also store the blended value into a second buffer that we'll use to immediately modify the image gradient.
             paintedValues.emplace_back(blendedValue);
 
-            // Track the overall dirty region for everything we modify so that we don't have to recalculate it for undos/redos.
-            m_paintStrokeData.m_dirtyRegion.AddPoint(validPoints[index]);
+            // Track the data needed for calculating the dirty region for this specific operation as well as for the overall brush stroke.
+            modifiedRegion.AddPoint(pixelIndices[index]);
+            m_modifiedStrokeRegion.AddPoint(pixelIndices[index]);
         }
 
         // Modify the image gradient with all of the changed values
         ImageGradientModificationBus::Event(
             entityId, &ImageGradientModificationBus::Events::SetPixelValuesByPixelIndex, pixelIndices, paintedValues);
 
-        // Because Image Gradients support bilinear filtering, we need to expand our dirty area by an extra pixel in each direction
-        // so that the effects of the painted values on adjacent pixels are taken into account when refreshing.
-        AZ::Aabb expandedDirtyArea(dirtyArea);
-        expandedDirtyArea.Expand(AZ::Vector3(m_paintStrokeData.m_metersPerPixelX, m_paintStrokeData.m_metersPerPixelY, 0.0f));
+        // Get the dirty region that actually encompasses everything that we directly modified,
+        // along with everything it indirectly affected.
+        if (modifiedRegion.IsModified())
+        {
+            AZ::Aabb expandedDirtyArea = modifiedRegion.GetDirtyRegion();
 
-        // Expand the dirty region to encompass the full Z range since image gradients are 2D.
-        auto dirtyRegionMin = expandedDirtyArea.GetMin();
-        auto dirtyRegionMax = expandedDirtyArea.GetMax();
-        expandedDirtyArea.Set(
-            AZ::Vector3(dirtyRegionMin.GetX(), dirtyRegionMin.GetY(), AZStd::numeric_limits<float>::lowest()),
-            AZ::Vector3(dirtyRegionMax.GetX(), dirtyRegionMax.GetY(), AZStd::numeric_limits<float>::max()));
-
-        // Notify anything listening to the image gradient that the modified region has changed.
-        LmbrCentral::DependencyNotificationBus::Event(
-            entityId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
+            // Notify anything listening to the image gradient that the modified region has changed.
+            LmbrCentral::DependencyNotificationBus::Event(
+                entityId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
+        }
     }
 
     void ImageGradientModifier::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn)
@@ -369,7 +627,7 @@ namespace GradientSignal
         AZStd::vector<AZ::Vector3> kernelPoints;
         AZStd::vector<float> kernelValues;
 
-        const AZ::Vector3 valuePointOffsetScale(m_paintStrokeData.m_metersPerPixelX, m_paintStrokeData.m_metersPerPixelY, 0.0f);
+        const AZ::Vector3 valuePointOffsetScale(m_imageData.m_metersPerPixelX, m_imageData.m_metersPerPixelY, 0.0f);
 
         kernelPoints.reserve(valuePointOffsets.size());
         kernelValues.reserve(valuePointOffsets.size());

@@ -9,6 +9,36 @@
             },
             "methods": [
                 {
+                    "base": "GetOnGravityChangeEvent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get On Gravity Change Event"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get On Gravity Change Event is invoked"
+                    },
+                    "details": {
+                        "name": "Get On Gravity Change Event"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Scene Name"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4985DFB0-7CD9-5B28-980B-BA2C701BE3D6}",
+                            "details": {
+                                "name": "Gravity Change Event"
+                            }
+                        }
+                    ]
+                },
+                {
                     "base": "QueryScene",
                     "entry": {
                         "name": "In",

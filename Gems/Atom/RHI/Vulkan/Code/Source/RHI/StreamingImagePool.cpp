@@ -19,6 +19,8 @@
 #include <RHI/Fence.h>
 #include <RHI/Device.h>
 
+#define AZ_RHI_VULKAN_USE_TILED_RESOURCES
+
 namespace AZ
 {
     namespace Vulkan
@@ -27,10 +29,83 @@ namespace AZ
         {
             return aznew StreamingImagePool();
         }
+        
+        MemoryView StreamingImagePool::AllocateMemory(size_t size, size_t alignment)
+        {
+            return m_memoryAllocator.Allocate(size, alignment);
+        }
+
+        RHI::ResultCode StreamingImagePool::AllocateMemoryBlocks(AZStd::vector<HeapTiles>& outHeapTiles, uint32_t blockCount)
+        {
+            AZ_Assert(outHeapTiles.empty(), "outHeapTiles should be empty");
+            AZ_Assert(blockCount, "Try to allocate 0 block");
+
+             // Check if heap memory is enough for the tiles.
+            RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+            size_t pageAllocationInBytes = m_tileAllocator.EvaluateMemoryAllocation(blockCount);
+
+            // Try to release some memory if there isn't enough memory available in the pool
+            bool canAllocate = heapMemoryUsage.CanAllocate(pageAllocationInBytes);
+            if (!canAllocate && m_memoryReleaseCallback)
+            {
+                bool releaseSuccess = false;
+                while (!canAllocate)
+                {
+                    // Request to release some memory
+                    releaseSuccess = m_memoryReleaseCallback();
+
+                    // break out of the loop if memory release did not happen
+                    if (!releaseSuccess)
+                    {
+                        break;
+                    }
+
+                    // re-evaluation page memory allocation since there are tiles were released.
+                    pageAllocationInBytes = m_tileAllocator.EvaluateMemoryAllocation(blockCount);
+                    canAllocate = heapMemoryUsage.CanAllocate(pageAllocationInBytes);
+                }
+
+                if (!releaseSuccess)
+                {
+                    AZ_Warning("Vulkan::StreamingImagePool", false, "There isn't enough memory."
+                        "Try increase the StreamingImagePool memory budget");
+                }
+            }
+
+            outHeapTiles = m_tileAllocator.Allocate(blockCount);
+            if (outHeapTiles.size() == 0)
+            {
+                return RHI::ResultCode::OutOfMemory;
+            }
+            else
+            {
+                return RHI::ResultCode::Success;
+            }
+        }
+
+        void StreamingImagePool::DeAllocateMemory(MemoryView& memoryView)
+        {
+            m_memoryAllocator.DeAllocate(memoryView);
+        }
+
+        void StreamingImagePool::DeAllocateMemoryBlocks(AZStd::vector<HeapTiles>& heapTiles)
+        {
+            m_tileAllocator.DeAllocate(heapTiles);
+            heapTiles.clear();
+            m_tileAllocator.GarbageCollect();
+        }
 
         RHI::ResultCode StreamingImagePool::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor)
         {
             auto& device = static_cast<Device&>(deviceBase);
+
+            m_enableTileResource = device.GetFeatures().m_tiledResource;
+
+#ifndef AZ_RHI_VULKAN_USE_TILED_RESOURCES
+            // Disable tile resource for all 
+            m_enableTileResource = false;
+#endif
 
             uint32_t memoryTypeBits = 0;
             {
@@ -42,17 +117,25 @@ namespace AZ
             }
            
             RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-            m_memoryAllocatorUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+            RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
             MemoryAllocator::Descriptor memoryAllocDescriptor;
             memoryAllocDescriptor.m_device = &device;
             memoryAllocDescriptor.m_pageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_imagePoolPageSizeInBytes;
             memoryAllocDescriptor.m_heapMemoryLevel = heapMemoryLevel;
             memoryAllocDescriptor.m_memoryTypeBits = memoryTypeBits;
-            // We don't pass the ResourcePool MemoryUsage because we will manually control residency when expanding/trimming.
-            memoryAllocDescriptor.m_getHeapMemoryUsageFunction = [this]() { return &m_memoryAllocatorUsage; };
-            memoryAllocDescriptor.m_recycleOnCollect = true;
-            memoryAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
+            memoryAllocDescriptor.m_getHeapMemoryUsageFunction = [&]() { return &heapMemoryUsage; };
+            memoryAllocDescriptor.m_recycleOnCollect = false;
+            memoryAllocDescriptor.m_collectLatency = 0;
             m_memoryAllocator.Init(memoryAllocDescriptor);
+
+            // Initialize tile allocator
+            m_heapPageAllocator.Init(memoryAllocDescriptor);
+            const uint32_t TileSizeInBytes = SparseImageInfo::StandardBlockSize;
+            TileAllocator::Descriptor tileAllocatorDesc;
+            tileAllocatorDesc.m_tileSizeInBytes = TileSizeInBytes;
+            // Tile allocator updates used resident memory
+            tileAllocatorDesc.m_heapMemoryUsage = &m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+            m_tileAllocator.Init(tileAllocatorDesc, m_heapPageAllocator);
 
             return RHI::ResultCode::Success;
         }
@@ -65,45 +148,33 @@ namespace AZ
             RHI::ImageDescriptor imageDescriptor = request.m_descriptor;
             imageDescriptor.m_bindFlags |= RHI::ImageBindFlags::CopyWrite;
             imageDescriptor.m_sharedQueueMask |= RHI::HardwareQueueClassMask::Copy;
+            const uint16_t expectedResidentMipLevel = static_cast<uint16_t>(request.m_descriptor.m_mipLevels - request.m_tailMipSlices.size());
 
-            const uint32_t expectedResidentMipLevel = request.m_descriptor.m_mipLevels - static_cast<uint32_t>(request.m_tailMipSlices.size());
-            const VkMemoryRequirements memoryRequirements = GetMemoryRequirements(imageDescriptor, expectedResidentMipLevel);
-
-            // [GFX TODO][ATOM-973] Add support for sparse residency for streaming textures. Now we allocate the whole mipmap chain.
-            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(m_memoryAllocator.GetDescriptor().m_heapMemoryLevel);
-            if (!memoryUsage.TryReserveMemory(memoryRequirements.size))
+            // Initialize the image first so we can get accurate memory requirements
+            RHI::ResultCode result = image.Init(device, imageDescriptor, m_enableTileResource);
+            if (result != RHI::ResultCode::Success)
             {
-                return RHI::ResultCode::OutOfMemory;
+                AZ_Warning("Vulkan:StreamingImagePool", false, "Failed to create image");
+                return result;
             }
 
-            auto memoryView = m_memoryAllocator.Allocate(memoryRequirements.size, memoryRequirements.alignment);
-            if (!memoryView.IsValid())
+            result = image.AllocateAndBindMemory(*this, expectedResidentMipLevel);
+
+            if (result != RHI::ResultCode::Success)
             {
-                memoryUsage.m_reservedInBytes -= memoryRequirements.size;
-                return RHI::ResultCode::OutOfMemory;
+                AZ_Warning("Vulkan:StreamingImagePool", false, "Failed to allocate or bind memory for image");
+                return result;
             }
 
-            RHI::ResultCode result = image.Init(device, imageDescriptor);
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
-
-            result = image.BindMemoryView(
-                memoryView, 
-                m_memoryAllocator.GetDescriptor().m_heapMemoryLevel);
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
-
-            image.SetStreamedMipLevel(static_cast<uint16_t>(expectedResidentMipLevel));
-            image.SetResidentSizeInBytes(memoryRequirements.size);
-
-            // Queue upload tail mip slices.
+            // Queue upload tail mip slices and wait for it finished.
             RHI::StreamingImageExpandRequest uploadMipRequest;
             uploadMipRequest.m_image = &image;
             uploadMipRequest.m_mipSlices = request.m_tailMipSlices;
             uploadMipRequest.m_waitForUpload = true;
-
             device.GetAsyncUploadQueue().QueueUpload(uploadMipRequest, request.m_descriptor.m_mipLevels);
 
-            memoryUsage.m_residentInBytes += memoryRequirements.size;
-            memoryUsage.Validate();
+            // update resident mip level
+            image.SetStreamedMipLevel(expectedResidentMipLevel);
 
             return RHI::ResultCode::Success;
         }
@@ -117,27 +188,20 @@ namespace AZ
 
             const uint16_t residentMipLevelBefore = static_cast<uint16_t>(image.GetResidentMipLevel());
             const uint16_t residentMipLevelAfter = residentMipLevelBefore - static_cast<uint16_t>(request.m_mipSlices.size());
-            const VkMemoryRequirements memoryRequirements = GetMemoryRequirements(image.GetDescriptor(), residentMipLevelAfter);
+            
+            RHI::ResultCode result = image.AllocateAndBindMemory(*this, residentMipLevelAfter);
 
-            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            const size_t imageSizeBefore = image.GetResidentSizeInBytes();
-            const size_t imageSizeAfter = memoryRequirements.size;
-
-            // Try reserve memory for the increased size.
-            if (!memoryUsage.TryReserveMemory(imageSizeAfter - imageSizeBefore))
+            if (result != RHI::ResultCode::Success)
             {
-                return RHI::ResultCode::OutOfMemory;
+                AZ_Warning("Vulkan:StreamingImagePool", false, "Failed to allocate or bind memory for image");
+                return result;
             }
-
-            memoryUsage.m_residentInBytes += imageSizeAfter - imageSizeBefore;
-            memoryUsage.Validate();
 
             // Create new expand request and append callback from the StreamingImagePool.
             RHI::StreamingImageExpandRequest newRequest = request;
             newRequest.m_completeCallback = [=]()
             {
                 Image& imageCompleted = static_cast<Image&>(*request.m_image);
-                imageCompleted.SetResidentSizeInBytes(imageSizeAfter);
                 imageCompleted.FinalizeAsyncUpload(residentMipLevelAfter);
 
                 request.m_completeCallback();
@@ -153,24 +217,8 @@ namespace AZ
 
             WaitFinishUploading(image);
 
-            // Set streamed mip level to target mip level.
-            if (image.GetStreamedMipLevel() < targetMipLevel)
-            {
-                image.SetStreamedMipLevel(static_cast<uint16_t>(targetMipLevel));
-            }
-
-            const VkMemoryRequirements memoryRequirements = GetMemoryRequirements(image.GetDescriptor(), targetMipLevel);
-
-            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            const size_t imageSizeBefore = image.GetResidentSizeInBytes();
-            const size_t imageSizeAfter = memoryRequirements.size;
-
-            const size_t sizeDiffInBytes = imageSizeBefore - imageSizeAfter;
-            memoryUsage.m_residentInBytes -= sizeDiffInBytes;
-            memoryUsage.m_reservedInBytes -= sizeDiffInBytes;
-            image.SetResidentSizeInBytes(imageSizeAfter);
-
-            return RHI::ResultCode::Success;
+            RHI::ResultCode result = image.TrimImage(*this, aznumeric_caster(targetMipLevel), true);
+            return result;
         }
 
         void StreamingImagePool::ShutdownInternal()
@@ -184,13 +232,7 @@ namespace AZ
 
             WaitFinishUploading(image);
 
-            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            memoryUsage.m_residentInBytes -= image.GetResidentSizeInBytes();
-            memoryUsage.m_reservedInBytes -= image.GetResidentSizeInBytes();
-            memoryUsage.Validate();
-
-            m_memoryAllocator.DeAllocate(image.m_memoryView);
-            image.m_memoryView = MemoryView();
+            image.ReleaseAllMemory(*this);
             image.Invalidate();
         }
 
@@ -206,20 +248,6 @@ namespace AZ
             Base::OnFrameEnd();
         }
 
-        VkMemoryRequirements StreamingImagePool::GetMemoryRequirements(const RHI::ImageDescriptor& imageDescriptor, uint32_t residentMipLevel)
-        {
-            auto& device = static_cast<Device&>(GetDevice());
-            uint32_t alignment = GetFormatDimensionAlignment(imageDescriptor.m_format);
-
-            RHI::ImageDescriptor residentImageDescriptor = imageDescriptor;
-            residentImageDescriptor.m_size = imageDescriptor.m_size.GetReducedMip(residentMipLevel);
-            residentImageDescriptor.m_size.m_width = RHI::AlignUp(residentImageDescriptor.m_size.m_width, alignment);
-            residentImageDescriptor.m_size.m_height = RHI::AlignUp(residentImageDescriptor.m_size.m_height, alignment);
-            residentImageDescriptor.m_mipLevels = imageDescriptor.m_mipLevels - static_cast<uint16_t>(residentMipLevel);
-
-            return device.GetImageMemoryRequirements(imageDescriptor);
-        }
-
         void StreamingImagePool::WaitFinishUploading(const Image& image)
         {
             auto& device = static_cast<Device&>(GetDevice());
@@ -230,5 +258,62 @@ namespace AZ
         {
             m_memoryAllocator.SetName(AZ::Name{ name });
         }
+
+        RHI::ResultCode StreamingImagePool::SetMemoryBudgetInternal(size_t newBudget)
+        {
+            RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
+
+            if (newBudget == 0)
+            {
+                heapMemoryUsage.m_budgetInBytes = newBudget;
+                return RHI::ResultCode::Success;
+            }
+
+            // Can't set to new budget if the new budget is smaller than allocated and there is no memory release handling
+            if (newBudget < heapMemoryUsage.m_totalResidentInBytes && !m_memoryReleaseCallback)
+            {
+                AZ_Warning("StreamingImagePool", false, "Can't set pool memory budget to %u because the memory release callback wasn't set", newBudget);
+                return RHI::ResultCode::InvalidArgument;
+            }
+
+            bool releaseSuccess = true;
+            while (newBudget < heapMemoryUsage.m_totalResidentInBytes && releaseSuccess)
+            {
+                size_t previousTotalResidentInBytes = heapMemoryUsage.m_totalResidentInBytes;
+                size_t previousUsedResidentInBytes = heapMemoryUsage.m_usedResidentInBytes;
+
+                // Request to release some memory
+                releaseSuccess = m_memoryReleaseCallback();
+
+                // Ensure there were memory released in the m_memoryReleaseCallback() call
+                if (releaseSuccess)
+                {
+                    releaseSuccess = previousTotalResidentInBytes > heapMemoryUsage.m_totalResidentInBytes
+                        || previousUsedResidentInBytes > heapMemoryUsage.m_usedResidentInBytes;
+                    if (!releaseSuccess)
+                    {
+                        AZ_Warning("StreamingImagePool", false, "bad release function");
+                    }
+                }
+            }
+
+            // Failed to release memory to desired budget. Set current budget to current total resident.
+            if (!releaseSuccess)
+            {
+                heapMemoryUsage.m_budgetInBytes = heapMemoryUsage.m_totalResidentInBytes;
+                AZ_Warning("StreamingImagePool", false, "Failed to set pool memory budget to %u, set to %u instead", newBudget, heapMemoryUsage.m_budgetInBytes);
+            }
+            else
+            {
+                heapMemoryUsage.m_budgetInBytes = newBudget;
+            }
+            return RHI::ResultCode::Success;
+        }
+        
+        bool StreamingImagePool::SupportTiledImageInternal() const
+        {
+            return m_enableTileResource;
+        }
     }
 }
+

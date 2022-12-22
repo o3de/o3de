@@ -9,10 +9,7 @@
             },
             "methods": [
                 {
-                    "base": "GetOnCollisionBeginEvent",
-                    "details": {
-                        "name": "Get On Collision Begin Event"
-                    },
+                    "base": "GetOnCollisionEndEvent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Collision Begin Event"
@@ -30,6 +27,14 @@
                 },
                 {
                     "base": "GetOnCollisionPersistEvent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get On Collision Persist Event"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get On Collision Persist Event is invoked"
+                    },
                     "details": {
                         "name": "Get On Collision Persist Event"
                     },
@@ -40,9 +45,37 @@
                 },
                 {
                     "base": "GetOnTriggerEnterEvent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get On Trigger Enter Event"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get On Trigger Enter Event is invoked"
+                    },
                     "details": {
                         "name": "Get On Trigger Enter Event"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{C00D2478-E0F3-57A3-AB60-A04DFC515016}",
+                            "details": {
+                                "name": "Trigger Event"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOnCollisionBeginEvent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Trigger Enter Event"
@@ -50,9 +83,6 @@
                 },
                 {
                     "base": "GetOnTriggerExitEvent",
-                    "details": {
-                        "name": "Get On Trigger Exit Event"
-                    },
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Trigger Exit Event"
