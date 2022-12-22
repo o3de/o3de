@@ -508,15 +508,15 @@ SingleScatteringResult IntegrateScatteredLuminance(
             dt = NewT - t;
             t = NewT;
         }
-        float3 P = worldPos + t * worldDir;
+        float3 samplePos = worldPos + t * worldDir;
 
-        MediumSampleRGB medium = SampleMediumRGB(P, Atmosphere);
+        MediumSampleRGB medium = SampleMediumRGB(samplePos, Atmosphere);
         const float3 sampleOpticalDepth = medium.extinction * dt;
         const float3 sampleTransmittance = exp(-sampleOpticalDepth);
         opticalDepth += sampleOpticalDepth;
 
-        float pHeight = length(P);
-        const float3 upVector = P / pHeight;
+        float pHeight = length(samplePos);
+        const float3 upVector = samplePos / pHeight;
         float sunZenithCosAngle = dot(sunDir, upVector);
         float2 uv;
         LutTransmittanceParamsToUv(Atmosphere, pHeight, sunZenithCosAngle, uv);
@@ -533,14 +533,14 @@ SingleScatteringResult IntegrateScatteredLuminance(
         }
 
         // Earth shadow 
-        const float tEarth = RaySphereClosestHitWS(earthOrigin + PLANET_RADIUS_OFFSET_KM * upVector, Atmosphere.BottomRadius, P, sunDir);
+        const float tEarth = RaySphereClosestHitWS(earthOrigin + PLANET_RADIUS_OFFSET_KM * upVector, Atmosphere.BottomRadius, samplePos, sunDir);
         const float earthShadow = tEarth >= 0.0f ? 0.0f : 1.0f;
 
         // Dual scattering for multi scattering 
         float3 multiScatteredLuminance = 0.0f;
 #if USE_MULTI_SCATTERING_APPROX
         // TODO implement
-        multiScatteredLuminance = GetMultipleScattering(Atmosphere, medium.scattering, medium.extinction, P, sunZenithCosAngle);
+        multiScatteredLuminance = GetMultipleScattering(Atmosphere, medium.scattering, medium.extinction, samplePos, sunZenithCosAngle);
 #endif
 
         float shadow = 1.0f;
@@ -548,7 +548,7 @@ SingleScatteringResult IntegrateScatteredLuminance(
 #if ENABLE_ATMOSPHERE_SHADOWS
         if (o_enableShadows && earthShadow == 1.0f && tMax < PassSrg::m_constants.m_sunShadowFarClip)
         {
-            const float3 shadowWorldPosition = (P + Atmosphere.PlanetOrigin) * 1000.f;
+            const float3 shadowWorldPosition = (samplePos + Atmosphere.PlanetOrigin) * 1000.f;
             shadow = DirectionalLightShadow::GetVisibility(
                 ViewSrg::m_shadowIndexDirectionalLight,
                 shadowWorldPosition,
