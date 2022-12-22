@@ -60,6 +60,7 @@ namespace AZ::Render
         float m_sunLuminanceFactor = 0.05f;
         float m_sunRadiusFactor = 1.0f;
         float m_sunFalloffFactor = 1.0f;
+        float m_aerialDepthFactor = 1.0f;
 
         // advanced
         float m_nearClip = 0.f;

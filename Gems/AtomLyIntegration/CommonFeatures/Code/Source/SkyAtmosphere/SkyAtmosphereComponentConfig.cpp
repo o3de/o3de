@@ -47,6 +47,7 @@ namespace AZ::Render
                 ->Field("NearFadeDistance", &SkyAtmosphereComponentConfig::m_nearFadeDistance)
                 ->Field("FastAerialPerspectiveEnabled", &SkyAtmosphereComponentConfig::m_fastAerialPerspectiveEnabled)
                 ->Field("AerialPerspectiveEnabled", &SkyAtmosphereComponentConfig::m_aerialPerspectiveEnabled)
+                ->Field("AerialDepthFactor", &SkyAtmosphereComponentConfig::m_aerialDepthFactor)
                 ;
         }
     }

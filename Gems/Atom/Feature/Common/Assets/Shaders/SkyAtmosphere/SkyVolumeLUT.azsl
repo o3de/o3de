@@ -77,6 +77,9 @@ float4 GetSkyVolumeAtPosition(uint3 position)
     }
 
     const bool ground = false;
+
+    // setting variableSampleCount false may improve performance, but atmosphere will look thinner 
+    // so you may need to increase sampleCountIni
     const float sampleCountIni = max(1.0, float(position.z + 1.0) * 2.0f);
     const bool variableSampleCount = true;
     const bool mieRayPhase = true;

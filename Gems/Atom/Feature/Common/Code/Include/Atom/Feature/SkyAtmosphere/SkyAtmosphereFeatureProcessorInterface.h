@@ -39,6 +39,7 @@ namespace AZ::Render
         float m_sunShadowsFarClip;
         float m_nearClip;
         float m_nearFadeDistance;
+        float m_aerialDepthFactor;
         bool m_shadowsEnabled;
         bool m_sunEnabled;
         bool m_fastSkyEnabled;

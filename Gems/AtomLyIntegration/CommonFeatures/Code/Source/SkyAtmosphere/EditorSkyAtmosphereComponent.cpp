@@ -97,6 +97,9 @@ namespace AZ::Render
                             ->Attribute(AZ::Edit::Attributes::Min, 0.00f)
                             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_absorption, "Ozone Absorption", "Absorption coefficients from ozone molecules in a layer most dense at roughly the middle height of the atmosphere.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_aerialDepthFactor, "Aerial Depth Factor", "A factor applied to object's depth to increase or decrease aeriel perspective.")
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.00f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->EndGroup()
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Sun")

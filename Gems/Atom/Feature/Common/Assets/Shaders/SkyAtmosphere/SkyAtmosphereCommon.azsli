@@ -109,7 +109,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         float  m_sunShadowFarClip; 
 
         float3 m_luminanceFactor;
-        float  m_pad3; // not used
+        float  m_aerialDepthFactor;
 
         float3 m_planetOrigin;
         float  m_pad4; // not used

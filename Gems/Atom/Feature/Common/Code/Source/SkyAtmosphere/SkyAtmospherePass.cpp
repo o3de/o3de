@@ -304,6 +304,7 @@ namespace AZ::Render
         m_constants.m_sunShadowFarClip = params.m_sunShadowsFarClip * 0.001f; // scale to km 
         m_constants.m_nearClip = params.m_nearClip;
         m_constants.m_nearFadeDistance = params.m_nearFadeDistance;
+        m_constants.m_aerialDepthFactor = params.m_aerialDepthFactor;
 
         // avoid oversampling (too many loops) causing device removal
         constexpr uint32_t maxSamples{ 64 };  

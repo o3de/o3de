@@ -99,7 +99,7 @@ namespace AZ::Render
             float m_sunShadowFarClip = 0.f;
 
             float m_luminanceFactor[3] = {1.f, 1.f, 1.f};
-            float m_pad3 = 0.f; // not used
+            float m_aerialDepthFactor = 1.f;
 
             float m_planetOrigin[3] = {0.f, 0.f, 0.f};
             float m_pad4 = 0.f;

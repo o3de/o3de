@@ -84,7 +84,7 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
     {
         return output;
     }
-    const float worldDepthKm = worldDepth * worldScale;
+    float worldDepthKm = worldDepth * worldScale;
     float3 worldDir = normalize(viewToPosition);
 
     // Atmosphere.PlanetOrigin is in KM already
@@ -141,6 +141,9 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
         output.m_reflection = output.m_luminance;
         return output;
     }
+
+    // this factor allows users to make it appear objects are futher away or closer than they really are
+    worldDepthKm = clamp(worldDepthKm * PassSrg::m_constants.m_aerialDepthFactor, 0.0, Atmosphere.TopRadius - Atmosphere.BottomRadius);
 
     float transmittance = 0.0;
     if(o_enableFastAerialPerspective)
