@@ -108,6 +108,7 @@ namespace PhysX::Utils
 
     void InitializeGenericProperties(const JointGenericProperties& properties, physx::PxJoint* nativeJoint)
     {
+        AZ_Assert(nativeJoint, "Called with invalid native joint pointer");
         if (!nativeJoint)
         {
             return;
@@ -125,6 +126,7 @@ namespace PhysX::Utils
 
     void InitializeSphericalLimitProperties(const JointLimitProperties& properties, physx::PxSphericalJoint* nativeJoint)
     {
+        AZ_Assert(nativeJoint, "Called with invalid native joint pointer");
         if (!nativeJoint)
         {
             return;
@@ -155,6 +157,7 @@ namespace PhysX::Utils
 
     void InitializeRevoluteLimitProperties(const JointLimitProperties& properties, physx::PxRevoluteJoint* nativeJoint)
     {
+        AZ_Assert(nativeJoint, "Called with invalid native joint pointer");
         if (!nativeJoint)
         {
             return;
@@ -183,6 +186,7 @@ namespace PhysX::Utils
 
     void InitializePrismaticLimitProperties(const JointLimitProperties& properties, physx::PxPrismaticJoint* nativeJoint)
     {
+        AZ_Assert(nativeJoint, "Called with invalid native joint pointer");
         if (!nativeJoint)
         {
             return;
@@ -211,6 +215,7 @@ namespace PhysX::Utils
 
     void InitializePrismaticLimitD6Properties(const JointLimitProperties& properties, physx::PxD6Joint* nativeJoint)
     {
+        AZ_Assert(nativeJoint, "Called with invalid native joint pointer");
         if (!nativeJoint)
         {
             return;
@@ -413,12 +418,12 @@ namespace PhysX::Utils
                 configuration.m_genericProperties,
                 static_cast<physx::PxJoint*>(joint));
 
-            if (configuration.m_motorProperties.m_enabled)
+            if (configuration.m_motorProperties.m_useMotor)
             {
                 joint->setRevoluteJointFlag(physx::PxRevoluteJointFlag::eDRIVE_ENABLED, true);
                 joint->setDriveVelocity(0);
-                joint->setDriveGearRatio(configuration.m_motorProperties.m_gearRatio);
-                joint->setDriveForceLimit(configuration.m_motorProperties.m_forceLimit);
+                joint->setDriveGearRatio(1.f);
+                joint->setDriveForceLimit(configuration.m_motorProperties.m_driveForceLimit);
             }
             return Utils::PxJointUniquePtr(joint, ReleasePxJoint);
         }
@@ -444,7 +449,7 @@ namespace PhysX::Utils
             physx::PxJoint* joint = nullptr;
 
             // If drive is enabled, create D6 joint.
-            if (configuration.m_motorProperties.m_enabled)
+            if (configuration.m_motorProperties.m_useMotor)
             {
                 physx::PxD6Joint* joint_d6;
                 {
@@ -457,22 +462,27 @@ namespace PhysX::Utils
                         PxMathConvert(childLocalTM));
                 }
                 InitializePrismaticLimitD6Properties(configuration.m_limitProperties, joint_d6);
-                physx::PxD6JointDrive drive (0,PX_MAX_F32,configuration.m_motorProperties.m_forceLimit,true);
+                physx::PxD6JointDrive drive(0, PX_MAX_F32, configuration.m_motorProperties.m_driveForceLimit, true);
                 joint_d6->setDrive(physx::PxD6Drive::eX, drive);
-                joint_d6->setDriveVelocity({0,0,0}, {0,0,0}, true);
+                joint_d6->setDriveVelocity({ 0, 0, 0 }, { 0, 0, 0 }, true);
                 joint = static_cast<physx::PxJoint*>(joint_d6);
-            }else{
+            }
+            else
+            {
                 physx::PxPrismaticJoint* joint_prismatic;
                 {
                     PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
-                    joint_prismatic = physx::PxPrismaticJointCreate(PxGetPhysics(),
-                                                          actorData.parentActor, PxMathConvert(parentLocalTM),
-                                                          actorData.childActor, PxMathConvert(childLocalTM));
+                    joint_prismatic = physx::PxPrismaticJointCreate(
+                        PxGetPhysics(),
+                        actorData.parentActor,
+                        PxMathConvert(parentLocalTM),
+                        actorData.childActor,
+                        PxMathConvert(childLocalTM));
                 }
                 joint = static_cast<physx::PxJoint*>(joint_prismatic);
             }
 
-            InitializeGenericProperties(configuration.m_genericProperties,joint);
+            InitializeGenericProperties(configuration.m_genericProperties, joint);
             return Utils::PxJointUniquePtr(joint, ReleasePxJoint);
         }
     } // namespace PxJointFactories

@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <PhysX/Joint/JointRequestsBus.h>
+#include <PhysX/Joint/PhysXJointRequestsBus.h>
 #include <Source/JointComponent.h>
 
 namespace PhysX

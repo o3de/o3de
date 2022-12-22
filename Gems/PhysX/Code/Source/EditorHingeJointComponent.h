@@ -53,7 +53,7 @@ namespace PhysX
 
         bool m_angularLimitFlag = false;
         EditorJointLimitPairConfig m_angularLimit;
-        EditorJointMotorConfig m_motorConfiguration;
+        JointMotorProperties m_motorConfiguration;
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
         ComponentModeDelegate m_componentModeDelegate; ///< Responsible for detecting ComponentMode activation
                                                        ///< and creating a concrete ComponentMode(s).

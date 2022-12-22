@@ -9,7 +9,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <PhysX/Joint/JointRequestsBus.h>
+#include <PhysX/Joint/PhysXJointRequestsBus.h>
 #include <Source/JointComponent.h>
 
 namespace PhysX

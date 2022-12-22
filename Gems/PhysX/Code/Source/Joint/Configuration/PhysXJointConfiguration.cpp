@@ -35,13 +35,6 @@ namespace PhysX
 
     }
 
-    JointMotorProperties::JointMotorProperties(bool enabled, float gearRatio, float forceLimit)
-        : m_enabled(enabled)
-        , m_gearRatio(gearRatio)
-        , m_forceLimit(forceLimit)
-    {
-    }
-
     bool JointGenericProperties::IsFlagSet(GenericJointFlag flag) const
     {
         return static_cast<bool>(m_flags & flag);
@@ -260,11 +253,19 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<JointMotorProperties>()
-                    ->Version(1)
-                    ->Field("Enabled", &JointMotorProperties::m_enabled)
-                    ->Field("Gear ratio", &JointMotorProperties::m_gearRatio)
-                    ->Field("Force limit", &JointMotorProperties::m_forceLimit)
-                    ;
+                ->Version(1)
+                ->Field("UseMotor", &JointMotorProperties::m_useMotor)
+                ->Field("ForceLimit", &JointMotorProperties::m_driveForceLimit);
+
+            if (auto* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<PhysX::JointMotorProperties>("PhysX Joint Motor Configuration", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(0, &PhysX::JointMotorProperties::m_useMotor, "Use Motor", "Enable motor in the joint")
+                    ->DataElement(0, &PhysX::JointMotorProperties::m_driveForceLimit, "Force Limit Value", "Sets force limit value");
+            }
         }
     }
 } // namespace PhysX

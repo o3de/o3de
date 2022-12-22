@@ -86,10 +86,7 @@ namespace PhysX
     {
         m_config.m_followerEntity = GetEntityId(); // joint is always in the same entity as the follower body.
         gameEntity->CreateComponent<PrismaticJointComponent>(
-            m_config.ToGameTimeConfig(),
-            m_config.ToGenericProperties(),
-            m_linearLimit.ToGameTimeConfig(),
-            m_motorConfiguration.ToGameTimeConfig());
+            m_config.ToGameTimeConfig(), m_config.ToGenericProperties(), m_linearLimit.ToGameTimeConfig(), m_motorConfiguration);
     }
 
     float EditorPrismaticJointComponent::GetLinearValue(const AZStd::string& parameterName)

@@ -108,13 +108,13 @@ namespace PhysX
         }
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AZ_Assert(sceneInterface, "No sceneInterface");
-        const auto* joint =  sceneInterface->GetJointFromHandle(m_jointSceneOwner,m_jointHandle);
+        const auto* joint = sceneInterface->GetJointFromHandle(m_jointSceneOwner, m_jointHandle);
         physx::PxJoint* native = static_cast<physx::PxJoint*>(joint->GetNativePointer());
         if (native && native->is<physx::PxD6Joint>())
         {
-            physx::PxD6Joint* native_d6 = static_cast<physx::PxD6Joint*>(joint->GetNativePointer());
-            m_native = native_d6;
-            return native_d6;
+            physx::PxD6Joint* nativeD6 = static_cast<physx::PxD6Joint*>(joint->GetNativePointer());
+            m_native = nativeD6;
+            return nativeD6;
         }
         return nullptr;
     }

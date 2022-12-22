@@ -91,11 +91,9 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         JointMotorProperties() = default;
-        JointMotorProperties(bool enabled, float gearRatio, float forceLimit);
 
-        bool m_enabled = false; ///< Enables joint actuation.
-        float m_gearRatio = 1.0f; ///< Motor's gear ratio.
-        float m_forceLimit = 1.0f; ///< Force/ torque limit applied by motor.
+        bool m_useMotor = false; ///< Enables joint actuation.
+        float m_driveForceLimit = 1.0f; ///< Force/ torque limit applied by motor.
     };
 
     struct FixedJointConfiguration : public AzPhysics::JointConfiguration 

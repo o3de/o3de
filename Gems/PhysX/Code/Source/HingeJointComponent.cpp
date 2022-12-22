@@ -113,8 +113,8 @@ namespace PhysX
         const auto joint = sceneInterface->GetJointFromHandle(m_jointSceneOwner, m_jointHandle);
         const auto type = joint->GetNativeType();
         AZ_Assert(type == PhysX::NativeTypeIdentifiers::HingeJoint, "It is not PhysXHingeJoint");
-        physx::PxJoint* native_joint = static_cast<physx::PxJoint*>(joint->GetNativePointer());
-        physx::PxRevoluteJoint* native = native_joint->is<physx::PxRevoluteJoint>();
+        physx::PxJoint* nativeJoint = static_cast<physx::PxJoint*>(joint->GetNativePointer());
+        physx::PxRevoluteJoint* native = nativeJoint->is<physx::PxRevoluteJoint>();
         AZ_Assert(native, "It is not PxRevoluteJoint");
         m_nativeJoint = native;
         return native;
@@ -138,8 +138,11 @@ namespace PhysX
 
     AZ::Transform HingeJointComponent::GetTransform() const
     {
-        auto t = GetPhysXNativeRevoluteJoint()->getRelativeTransform();
-        return AZ::Transform(AZ::Vector3{ t.p.x, t.p.y, t.p.z }, AZ::Quaternion{ t.q.x, t.q.y, t.q.z, t.q.w }, 1.f);
+        const auto worldFromLocal = GetPhysXNativeRevoluteJoint()->getRelativeTransform();
+        return AZ::Transform(
+            AZ::Vector3{ worldFromLocal.p.x, worldFromLocal.p.y, worldFromLocal.p.z },
+            AZ::Quaternion{ worldFromLocal.q.x, worldFromLocal.q.y, worldFromLocal.q.z, worldFromLocal.q.w },
+            1.f);
     }
 
     void HingeJointComponent::SetVelocity(float velocity)

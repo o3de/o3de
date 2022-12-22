@@ -95,10 +95,7 @@ namespace PhysX
     {
         m_config.m_followerEntity = GetEntityId(); // joint is always in the same entity as the follower body.
         gameEntity->CreateComponent<HingeJointComponent>(
-            m_config.ToGameTimeConfig(), 
-            m_config.ToGenericProperties(),
-            m_angularLimit.ToGameTimeConfig(),
-            m_motorConfiguration.ToGameTimeConfig());
+            m_config.ToGameTimeConfig(), m_config.ToGenericProperties(), m_angularLimit.ToGameTimeConfig(), m_motorConfiguration);
     }
 
     float EditorHingeJointComponent::GetLinearValue(const AZStd::string& parameterName)

@@ -71,23 +71,6 @@ namespace PhysX
         float m_limitNegative = -45.0f;
     };
 
-
-    class EditorJointMotorConfig
-    {
-    public:
-        static const float MaxMotorForce;
-
-        AZ_CLASS_ALLOCATOR(EditorJointMotorConfig, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(EditorJointMotorConfig, "{8EADE1F7-40F5-44B1-8389-FDBB972E49C6}");
-        static void Reflect(AZ::ReflectContext* context);
-
-        JointMotorProperties ToGameTimeConfig() const;
-
-        bool m_useMotor{ false }; ///< True if joint uses motor.
-        float m_gearRatio{ 1.f }; ///< Gear ratio.
-        float m_driveForceLimit{ MaxMotorForce }; ///< Max force limit.
-    };
-
     /// Pair (linear) limits for joints.
     class EditorJointLimitLinearPairConfig : public EditorJointLimitBase
     {
