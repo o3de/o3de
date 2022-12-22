@@ -118,11 +118,11 @@ namespace AzToolsFramework
             if (isFirstColumn)
             {
                 columnRect.setLeft(columnRect.left() + 1);
-                columnRect.setWidth(columnRect.width() + 1); // remove the gray line between columns
+                columnRect.setWidth(columnRect.width() + 1);
             }
             else if (isLastColumn)
             {
-                columnRect.setLeft(columnRect.left() - 2); // remove the gray line between columns
+                columnRect.setLeft(columnRect.left() - 2);
                 columnRect.setWidth(columnRect.width() - 1);
             }
 
