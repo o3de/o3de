@@ -60,6 +60,19 @@ class TestAutomation(EditorTestSuite):
             cleanup_test_files(workspace, self.test_file_names)
 
         from .tests import scene_settings_readonly_rule_test as test_module
+        
+
+    class scene_settings_remove_prefab_removes_mesh_groups(EditorSingleTest):
+        @classmethod
+        def setup(self, instance, request, workspace):
+            self.test_file_names = ["auto_test_fbx.fbx"]
+            setup_test_files(workspace, self.test_file_names)
+
+        @classmethod
+        def teardown(self, instance, request, workspace, editor_test_results):
+            cleanup_test_files(workspace, self.test_file_names)
+
+        from .tests import scene_settings_remove_prefab_removes_mesh_groups as test_module
 
 
     class scene_settings_manifest_vector_widget_tests_in_editor(EditorSingleTest):

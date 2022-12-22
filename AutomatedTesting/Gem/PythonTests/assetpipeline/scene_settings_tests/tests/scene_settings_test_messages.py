@@ -111,4 +111,28 @@ class Test_Messages:
         "Found single Ignore Y-Axis Transition checkbox object.",
         "Ignore Y-Axis Transition checkbox count is incorrect."
     )
+
+    scene_settings_base_mesh_group_enabled = (
+        "The base mesh group is enabled.",
+        "The base mesh group is disabled, but should be enabled."
+    )
+
+    scene_settings_prefab_mesh_group_disabled = (
+        "The prefab generated mesh group is disabled.",
+        "The prefab generated mesh group is enabled, but should be disabled."
+    )
     
+    scene_settings_expected_mesh_groups_found = (
+        "The expected mesh groups were found.",
+        "The expected mesh groups were not found."
+    )
+    
+    scene_settings_expected_mesh_groups_removed = (
+        "The expected mesh groups were removed.",
+        "The expected mesh groups were not removed."
+    )
+
+    scene_settings_expected_mesh_group_found = (
+        "The expected mesh group was found.",
+        "The expected mesh group was not found."
+    )
