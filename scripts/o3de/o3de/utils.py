@@ -11,9 +11,11 @@ This file contains utility functions
 import argparse
 import sys
 import uuid
+import certifi
 import os
 import pathlib
 import shutil
+import ssl
 import urllib.request
 import logging
 import zipfile
@@ -202,7 +204,8 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
                 if file_exists:
                     resume_position = os.path.getsize(download_path)
                     current_request.add_header("If-Range", "bytes=%d-" % resume_position)
-            with urllib.request.urlopen(current_request) as s:
+            tls_context = ssl.create_default_context(cafile=certifi.where())
+            with urllib.request.urlopen(current_request, context = tls_context) as s:
                 download_file_size = 0
                 try:
                     download_file_size = s.headers['content-length']
