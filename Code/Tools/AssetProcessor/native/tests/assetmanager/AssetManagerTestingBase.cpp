@@ -18,6 +18,7 @@
 #include <native/utilities/AssetUtilEBusHelper.h>
 #include <unittests/UnitTestUtils.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/Serialization/Json/JsonSystemComponent.h>
 
 namespace UnitTests
 {
@@ -98,7 +99,19 @@ namespace UnitTests
         m_builderInfoHandler.BusConnect();
 
         // Set up the Job Context, required for the PathDependencyManager to do its work
+        // Set up serialize and json context
         m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+        m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
+        m_componentApplication = AZStd::make_unique<testing::NiceMock<MockComponentApplication>>();
+
+        using namespace testing;
+
+        ON_CALL(*m_componentApplication.get(), GetSerializeContext()).WillByDefault(Return(m_serializeContext.get()));
+        ON_CALL(*m_componentApplication.get(), GetJsonRegistrationContext()).WillByDefault(Return(m_jsonRegistrationContext.get()));
+        ON_CALL(*m_componentApplication.get(), AddEntity(_)).WillByDefault(Return(true));
+
+        AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
+
         m_descriptor = AZ::JobManagerComponent::CreateDescriptor();
         m_descriptor->Reflect(m_serializeContext.get());
 
@@ -106,6 +119,9 @@ namespace UnitTests
         m_jobManagerEntity->CreateComponent<AZ::JobManagerComponent>();
         m_jobManagerEntity->Init();
         m_jobManagerEntity->Activate();
+
+        AzToolsFramework::MetadataManager::Reflect(m_serializeContext.get());
+        AzToolsFramework::UuidUtilComponent::Reflect(m_serializeContext.get());
 
         // Set up a mock disk space responder, required for RCController to process a job
         m_diskSpaceResponder = AZStd::make_unique<::testing::NiceMock<MockDiskSpaceResponder>>();
@@ -156,6 +172,13 @@ namespace UnitTests
         m_builderInfoHandler.BusDisconnect();
 
         AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+
+        m_jsonRegistrationContext->EnableRemoveReflection();
+        AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
+        m_jsonRegistrationContext->DisableRemoveReflection();
+
+        m_jsonRegistrationContext.reset();
+        m_serializeContext.reset();
 
         if (m_localFileIo)
         {

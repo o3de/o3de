@@ -77,6 +77,7 @@ namespace AzToolsFramework
     public:
         AZ_COMPONENT(MetadataManager, "{CB738803-3B6C-4B62-9DC2-1980D340F288}", IMetadataRequests);
 
+        static constexpr const char* MetadataFileExtensionNoDot = "meta";
         static constexpr const char* MetadataFileExtension = ".meta";
         static constexpr const char* MetadataVersionKey = "/FileVersion";
         static constexpr const char* MetadataObjectVersionField = "__version";
