@@ -45,11 +45,16 @@ SkyViewLutPSOutput SkyViewLutPS(VSOutput Input)
 
     float3 upVector = worldPosKm / viewHeight;
     float sunZenithCosAngle = dot(upVector, PassSrg::m_constants.m_sunDirection);
-    float3 sunDir = normalize(float3(sqrt(1.0 - sunZenithCosAngle * sunZenithCosAngle), 0.0, sunZenithCosAngle));
+    float3 sunDir = float3(0.0, 0.0, sunZenithCosAngle);
+    const float epsilon = 0.0001;
+    if((sunZenithCosAngle < 1.0 - epsilon) && (sunZenithCosAngle > -1.0 + epsilon))
+    {
+        sunDir = normalize(float3(sqrt(1.0 - sunZenithCosAngle * sunZenithCosAngle), 0.0, sunZenithCosAngle));
+    }
 
     worldPosKm = float3(0.0f, 0.0f, viewHeight);
 
-    float viewZenithSinAngle = sqrt(1 - viewZenithCosAngle * viewZenithCosAngle);
+    float viewZenithSinAngle = sqrt(1.0 - viewZenithCosAngle * viewZenithCosAngle);
     worldDir = float3(
         viewZenithSinAngle * lightViewCosAngle,
         viewZenithSinAngle * sqrt(1.0 - lightViewCosAngle * lightViewCosAngle),
