@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetOnGravityChangeEvent",
-                    "context": "PhysicsScene",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Gravity Change Event"
@@ -41,7 +40,6 @@
                 },
                 {
                     "base": "QueryScene",
-                    "context": "PhysicsScene",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Query Scene"
