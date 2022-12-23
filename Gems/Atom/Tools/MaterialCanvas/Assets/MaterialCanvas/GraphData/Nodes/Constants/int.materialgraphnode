@@ -16,7 +16,7 @@
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "int",
                 "defaultDataType": "int",
                 "settings": {
                     "instructions": [
