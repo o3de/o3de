@@ -17,7 +17,7 @@
                 "name": "inValue1",
                 "displayName": "Value1",
                 "description": "Value1",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
@@ -29,7 +29,7 @@
                 "name": "inValue2",
                 "displayName": "Value2",
                 "description": "Value2",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
@@ -41,7 +41,7 @@
                 "name": "inValue3",
                 "displayName": "Value3",
                 "description": "Value3",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [

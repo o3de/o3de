@@ -16,7 +16,7 @@
                 "name": "inY",
                 "displayName": "Y",
                 "description": "Y",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
@@ -28,7 +28,7 @@
                 "name": "inX",
                 "displayName": "X",
                 "description": "X",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [

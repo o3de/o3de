@@ -16,7 +16,7 @@
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
@@ -28,7 +28,7 @@
                 "name": "inMin",
                 "displayName": "Min",
                 "description": "Min",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
@@ -40,7 +40,7 @@
                 "name": "inMax",
                 "displayName": "Max",
                 "description": "Max",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
