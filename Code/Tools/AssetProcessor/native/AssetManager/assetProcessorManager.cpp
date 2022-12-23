@@ -1351,33 +1351,8 @@ namespace AssetProcessor
             for (const auto& priorProduct : priorProducts)
             {
                 auto productPath = AssetUtilities::ProductPath::FromDatabasePath(priorProduct.m_productName);
-                auto productWrapper = ProductAssetWrapper(priorProduct, productPath);
-
-                AZ::Data::AssetId assetId(source.m_sourceGuid, priorProduct.m_subID);
-
-                // also compute the legacy ids that used to refer to this asset
-                AZ::Data::AssetId legacyAssetId(priorProduct.m_legacyGuid, 0);
-
-                AssetNotificationMessage message(productPath.GetRelativePath(), AssetNotificationMessage::AssetRemoved, priorProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
-                message.m_assetId = assetId;
-
-                if (legacyAssetId != assetId)
-                {
-                    message.m_legacyAssetIds.push_back(legacyAssetId);
-                }
-
-                for (const auto& legacyUuid :
-                     AssetUtilities::GetLegacySourceUuids(SourceAssetReference(source.m_scanFolderPK, source.m_sourceName.c_str())))
-                {
-                    AZ::Data::AssetId legacySourceAssetId(legacyUuid, priorProduct.m_subID);
-
-                    if (legacySourceAssetId != assetId)
-                    {
-                        message.m_legacyAssetIds.push_back(legacySourceAssetId);
-                    }
-                }
-
                 bool shouldDeleteFile = true;
+
                 for (const auto& pair : newProducts)
                 {
                     const auto& currentProduct = pair.first;
