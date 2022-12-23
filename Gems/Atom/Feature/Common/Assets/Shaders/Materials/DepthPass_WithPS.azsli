@@ -49,7 +49,7 @@ struct VSDepthOutput
 #endif
 };
 
-VSDepthOutput MainVS(VSInput IN)
+VSDepthOutput MainVS(VSInput IN, uint instanceId : SV_InstanceID)
 {
     VSDepthOutput OUT;
  

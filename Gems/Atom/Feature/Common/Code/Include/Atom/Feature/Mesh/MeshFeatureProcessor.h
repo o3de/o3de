@@ -27,6 +27,7 @@
 #include <Atom/Feature/Material/MaterialAssignmentBus.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
+#include <Atom/Feature/Utils/GpuBufferHandler.h>
 
 #include <Mesh/MeshInstanceManager.h>
 
@@ -176,6 +177,8 @@ namespace AZ
             void Deactivate() override;
             //! Updates GPU buffers with latest data from render proxies
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
+            //! Updates ViewSrgs with per-view instance data for visible instances
+            void Render(const RenderPacket& packet) override;
 
             // RPI::SceneNotificationBus overrides ...
             void OnBeginPrepareRender() override;
@@ -256,6 +259,8 @@ namespace AZ
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
             RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
             AZ::RHI::Handle<uint32_t> m_meshMovedFlag;
+            AZStd::vector<uint32_t> m_instanceData;
+            GpuBufferHandler m_instanceDataBufferHandler;
             bool m_forceRebuildDrawPackets = false;
             bool m_reportShaderOptionFlags = false;
             bool m_enablePerMeshShaderOptionFlags = false;

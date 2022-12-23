@@ -1,0 +1,14 @@
+{
+    "name": "supportsInstancing",
+    "displayName": "Supports Instancing",
+    "description": "Property to indicate a material/shader supports instancing.",
+    "properties": [
+        {
+            "name": "supportsInstancing",
+            "displayName": "Supports Instancing",
+            "description": "This material and its underlying shaders support instancing.",
+            "type": "Bool",
+            "defaultValue": true
+        }
+    ]
+}

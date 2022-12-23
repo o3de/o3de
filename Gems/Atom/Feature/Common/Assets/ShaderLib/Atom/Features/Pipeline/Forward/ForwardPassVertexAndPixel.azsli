@@ -13,9 +13,9 @@
 
 // --- Vertex Shader ---
 
-VsOutput VertexShader(VsInput IN)
+VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 {
-    VsOutput OUT = EvaluateVertexGeometry(IN);
+    VsOutput OUT = EvaluateVertexGeometry(IN, instanceId);
     return OUT;
 }
 

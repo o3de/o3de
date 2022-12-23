@@ -63,7 +63,15 @@ namespace AZ
 
             Data::Instance<Material> GetMaterial() const;
             const ModelLod::Mesh& GetMesh() const;
-            const ShaderList& GetActiveShaderList() const { return m_activeShaders; }
+            const ShaderList& GetActiveShaderList() const
+            {
+                return m_activeShaders;
+            }
+
+            AZStd::fixed_vector<Data::Instance<ShaderResourceGroup>, RHI::DrawPacketBuilder::DrawItemCountMax>& GetDrawSrgs()
+            {
+                return m_perDrawSrgs;
+            }
 
         private:
             bool DoUpdate(const Scene& parentScene);

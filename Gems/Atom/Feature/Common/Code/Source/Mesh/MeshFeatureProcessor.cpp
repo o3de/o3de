@@ -79,6 +79,10 @@ namespace AZ
             AZ::Name::FromStringLiteral("irradiance.factor", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_opacity_mode_Name = AZ::Name::FromStringLiteral("opacity.mode", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_opacity_factor_Name = AZ::Name::FromStringLiteral("opacity.factor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_m_instanceDataOffset_Name =
+            AZ::Name::FromStringLiteral("m_instanceDataOffset", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_m_instanceData_Name =
+            AZ::Name::FromStringLiteral("m_instanceData", AZ::Interface<AZ::NameDictionary>::Get());
 
         void MeshFeatureProcessor::Reflect(ReflectContext* context)
         {
@@ -126,10 +130,20 @@ namespace AZ
                     AZStd::string::format("r_enableHardwareInstancing %s", enableHardwareInstancingFlagsCvar ? "true" : "false")
                         .c_str());
             }
+
+            
+            GpuBufferHandler::Descriptor desc;
+            desc.m_bufferName = "MeshInstanceDataBuffer";
+            desc.m_bufferSrgName = "m_instanceData";
+            desc.m_elementSize = sizeof(uint32_t);
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
+
+            m_instanceDataBufferHandler = GpuBufferHandler(desc);
         }
 
         void MeshFeatureProcessor::Deactivate()
         {
+            m_instanceDataBufferHandler.Release();
             m_flagRegistry.reset();
 
             m_handleGlobalShaderOptionUpdate.Disconnect();
@@ -238,6 +252,74 @@ namespace AZ
                 }
             }
 
+            
+            if (r_enableHardwareInstancing)
+            {
+                // Create a transient buffer to store the instance data for this frames visible instances
+                // Eventually there will be a unique buffer for each view storing just the instance data for
+                // the instances that are visible in that view, so things that are culled on the CPU side can be skipped
+                // For now, we're assuming that there is only one instance for any given object, so we'll create just one
+                // buffer and share it between all of the views. For culling, that draw call will just be omitted entirely for now,
+                // but objects will eventually be culled by omitting their instance data from the view's instance data buffer
+                size_t instanceBufferCount = m_meshInstanceManager.GetItemCount();
+                if (instanceBufferCount > 0)
+                {
+                    AZStd::vector<uint32_t> visibleInstanceCounts;
+                    visibleInstanceCounts.reserve(instanceBufferCount);
+
+                    // Normally we'll do a pass to count all the visible instances for each view,
+                    // but for now, we know it's always 1
+                    for (size_t i = 0; i < instanceBufferCount; ++i)
+                    {
+                        // Always assume there is only one instance
+                        constexpr uint32_t instanceCount = 1;
+                        visibleInstanceCounts.push_back(instanceCount);
+                    }
+
+                    m_instanceData.reserve(instanceBufferCount);
+                    m_instanceData.clear();
+                    for (ModelDataInstance& modelData : m_modelData)
+                    {
+                        for (auto& instanceIndicesForLod : modelData.m_instanceIndicesByLod)
+                        {
+                            for (uint32_t instanceIndex : instanceIndicesForLod)
+                            {
+                                // The per-instance data is just the objectId, which is used to look up the object transform
+                                m_instanceData.push_back(modelData.m_objectId.GetIndex());
+
+                                // The offset into the per-instance data is part of the instanced draw call. This can change every frame,
+                                // and will eventually differ between views
+                                uint32_t instanceDataOffset = static_cast<uint32_t>(m_instanceData.size() - 1);
+
+                                MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
+
+                                // Update the drawSrg with the new offset
+                                auto& drawSrgs = instanceData.m_drawPacket.GetDrawSrgs();
+                                AZ_Assert(instanceData.m_drawSrgInstanceDataIndices.size() == drawSrgs.size(), "MeshFeatureProcessor: Mismatch between drawSrg count and ShaderInputConstantIndex count.");
+                                for (size_t i = 0; i < drawSrgs.size(); ++i)
+                                {
+                                    if (instanceData.m_drawSrgInstanceDataIndices[i].IsValid())
+                                    {
+                                        drawSrgs[i]->SetConstant(instanceData.m_drawSrgInstanceDataIndices[i], instanceDataOffset);
+
+                                        // Note: we'll get a warning here for compiling twice in the same frame if this draw packet was just
+                                        // initialized this frame That will go away when we create new, unique draw items for each view
+                                        // every frame instead of re-using the original one
+                                        drawSrgs[i]->Compile();
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Now that we have all of our instance data, we need to create the buffer and bind it to the view srgs
+                    // Eventually, this could be a transient buffer
+
+                    // create output buffer descriptors
+                    m_instanceDataBufferHandler.UpdateBuffer(m_instanceData);
+                }
+            }
+
             m_forceRebuildDrawPackets = false;
         }
 
@@ -329,6 +411,16 @@ namespace AZ
             {
                 model.m_cullable.m_prevShaderOptionFlags = model.m_cullable.m_shaderOptionFlags.exchange(0);
                 model.m_cullable.m_flags = model.m_isAlwaysDynamic ? m_meshMovedFlag.GetIndex() : 0;
+            }
+        }
+
+        void MeshFeatureProcessor::Render(const MeshFeatureProcessor::RenderPacket& packet)
+        {
+            AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Render");
+
+            for (const RPI::ViewPtr& view : packet.m_views)
+            {
+                m_instanceDataBufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
             }
         }
 
@@ -1133,6 +1225,14 @@ namespace AZ
                     {
                         MeshInstanceData& instanceData = meshInstanceManager[index.m_index];
                         instanceData.m_drawPacket = drawPacket;
+                        // We're going to need an index for m_instanceOffset every frame for each draw item, so cache those here
+                        for (auto& drawSrg : instanceData.m_drawPacket.GetDrawSrgs())
+                        {
+                            RHI::ShaderInputConstantIndex drawSrgIndexInstanceOffsetIndex =
+                                drawSrg->FindShaderInputConstantIndex(s_m_instanceDataOffset_Name);
+
+                            instanceData.m_drawSrgInstanceDataIndices.push_back(drawSrgIndexInstanceOffsetIndex);
+                        }
                     }
                 }
             }
@@ -1663,10 +1763,19 @@ namespace AZ
                 {
                     for (const auto& instanceIndex : instanceIndexList)
                     {
-                        RPI::MeshDrawPacket& drawPacket = meshInstanceManager[instanceIndex].m_drawPacket;
+                        MeshInstanceData& instanceData = meshInstanceManager[instanceIndex];
+                        RPI::MeshDrawPacket& drawPacket = instanceData.m_drawPacket;
                         if (drawPacket.Update(*m_scene, forceUpdate))
                         {
                             m_cullableNeedsRebuild = true;
+                            instanceData.m_drawSrgInstanceDataIndices.clear();
+                            // We're going to need an index for m_instanceOffset every frame for each draw item, so cache those here
+                            for (auto& drawSrg : drawPacket.GetDrawSrgs())
+                            {
+                                RHI::ShaderInputConstantIndex drawSrgIndexInstanceOffsetIndex = drawSrg->FindShaderInputConstantIndex(s_m_instanceDataOffset_Name);
+
+                                instanceData.m_drawSrgInstanceDataIndices.push_back(drawSrgIndexInstanceOffsetIndex);
+                            }
                         }
                     }
                 }
@@ -1932,7 +2041,10 @@ namespace AZ
         {
             if (m_visible && m_descriptor.m_isRayTracingEnabled)
             {
-                if (CheckForMaterialChanges())
+                // If we already know we need an update, don't bother checking for material changes
+                // This way we're not calling CheckForMaterialChanges multiple times
+                // in the same frame for the same object
+                if (m_needsSetRayTracingData || CheckForMaterialChanges())
                 {
                     m_needsSetRayTracingData = true;
 

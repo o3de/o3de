@@ -22,7 +22,11 @@ namespace AZ::Render
 {
     struct MeshInstanceData
     {
+        // The original draw packet, shared by every instance
         RPI::MeshDrawPacket m_drawPacket;
+
+        // We store the shaderIntputConstantIndex for m_instanceData here, so we don't have to look it up every frame
+        AZStd::vector<RHI::ShaderInputConstantIndex> m_drawSrgInstanceDataIndices;
 
         // We store a key to make it faster to remove the instance from the map
         // via the index

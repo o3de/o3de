@@ -11,6 +11,13 @@
 #include <Atom/Features/VertexUtility.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
+// This #define magic allows you to use the EvaluateVertexGeometry function in this file without making it the final
+// EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
+//
+#ifndef EvaluateVertexGeometry
+#define EvaluateVertexGeometry(IN, instanceId)      EvaluateVertexGeometry_MaterialPipelineTest_Empty(IN)
+#endif
+
 void CalcPositions(float3 inPosition, out float3 worldPos, out float4 clipPos)
 {        
     worldPos = LocalSpaceToWorldSpace(inPosition);
@@ -32,7 +39,7 @@ void CalcPositions(float3 inPosition, out float3 worldPos, out float4 clipPos)
         float3 worldPosition : UV0;
     };
 
-    VsOutput EvaluateVertexGeometry(VsInput IN)
+    VsOutput EvaluateVertexGeometry_MaterialPipelineTest_Empty(VsInput IN)
     {        
         VsOutput output;
 
@@ -93,7 +100,7 @@ void CalcPositions(float3 inPosition, out float3 worldPos, out float4 clipPos)
         precise linear centroid float4 position : SV_Position;
     };
 
-    VsOutput EvaluateVertexGeometry(VsInput IN)
+    VsOutput EvaluateVertexGeometry_MaterialPipelineTest_Empty(VsInput IN)
     {
         float3 worldPosUnused;
 
