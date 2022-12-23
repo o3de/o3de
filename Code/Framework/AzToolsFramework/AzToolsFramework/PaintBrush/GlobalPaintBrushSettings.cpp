@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsNotificationBus.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyColorCtrl.hxx>
 
 namespace AzToolsFramework
@@ -49,8 +50,12 @@ namespace AzToolsFramework
                     ->DataElement(AZ::Edit::UIHandlers::Default, &PaintBrushSettings::m_brushColor, "Color", "Color of the paint brush.")
                     ->Attribute(
                         "ColorEditorConfiguration",
-                        [](PaintBrushSettings* handler) -> AzToolsFramework::ColorEditorConfiguration
+                        []([[maybe_unused]] void* voidHandler) -> AzToolsFramework::ColorEditorConfiguration
                         {
+                            AzFramework::PaintBrushColorMode colorMode = AzFramework::PaintBrushColorMode::SRGB;
+                            GlobalPaintBrushSettingsRequestBus::BroadcastResult(
+                                colorMode, &GlobalPaintBrushSettingsRequests::GetBrushColorMode);
+
                             enum ColorSpace : uint32_t
                             {
                                 LinearSRGB,
@@ -62,8 +67,7 @@ namespace AzToolsFramework
 
                             // The property is in either SRGB or linear, depending on paintbrush settings, but we should display the colors
                             // using SRGB.
-                            configuration.m_propertyColorSpaceId =
-                                (handler->GetColorMode() == AzFramework::PaintBrushColorMode::SRGB)
+                            configuration.m_propertyColorSpaceId = (colorMode == AzFramework::PaintBrushColorMode::SRGB)
                                 ? ColorSpace::SRGB : ColorSpace::LinearSRGB;
                             configuration.m_colorPickerDialogColorSpaceId = ColorSpace::SRGB;
                             configuration.m_colorSwatchColorSpaceId = ColorSpace::SRGB;
@@ -95,7 +99,6 @@ namespace AzToolsFramework
 
                             return configuration;
                         })
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &PaintBrushSettings::GetColorReadOnly)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetColorVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnColorChanged)
                     ->DataElement(
@@ -108,7 +111,6 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " %")
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &PaintBrushSettings::GetIntensityReadOnly)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetIntensityVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnIntensityChanged)
                     ->DataElement(
@@ -121,7 +123,6 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " %")
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &PaintBrushSettings::GetOpacityReadOnly)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetOpacityVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnOpacityChanged)
                     ->DataElement(
