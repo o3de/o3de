@@ -341,7 +341,10 @@ namespace UnitTests
     void AssetManagerTestingBase::CheckIntermediate(const char* relativePath, bool exists)
     {
         auto expectedIntermediatePath = MakePath(relativePath, true);
+        auto expectedMetadataPath = AzToolsFramework::MetadataManager::ToMetadataPath(expectedIntermediatePath);
+
         EXPECT_EQ(AZ::IO::SystemFile::Exists(expectedIntermediatePath.c_str()), exists) << expectedIntermediatePath.c_str();
+        EXPECT_EQ(AZ::IO::SystemFile::Exists(expectedMetadataPath.c_str()), exists) << expectedMetadataPath.c_str();
     }
 
     void AssetManagerTestingBase::ProcessSingleStep(int expectedJobCount, int expectedFileCount, int jobToRun, bool expectSuccess)

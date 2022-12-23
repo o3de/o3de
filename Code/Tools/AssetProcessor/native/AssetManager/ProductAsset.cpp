@@ -9,6 +9,7 @@
 #include <native/AssetManager/ProductAsset.h>
 #include <QDir>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
 
 namespace AssetProcessor
 {
@@ -62,6 +63,9 @@ namespace AssetProcessor
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(DeleteRetryDelay));
             wasRemoved = AZ::IO::SystemFile::Delete(m_absolutePath.c_str());
         }
+
+        // Try to delete the metadata file too if one exists
+        AZ::IO::SystemFile::Delete(AzToolsFramework::MetadataManager::ToMetadataPath(m_absolutePath).AsPosix().c_str());
 
         if(sendNotification)
         {
