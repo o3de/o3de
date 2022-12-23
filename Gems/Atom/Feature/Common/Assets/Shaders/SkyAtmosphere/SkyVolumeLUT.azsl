@@ -58,22 +58,22 @@ float4 GetSkyVolumeAtPosition(uint3 position)
     viewHeight = length(froxelPosition);
     if (viewHeight >= Atmosphere.TopRadius)
     {
-        float distanceToTop = 0.f;
+        float distanceToAtmosphere = 0.f;
 
-        if (!MoveToTopAtmosphere(cameraPlanetPosKm, distanceToTop, worldDir, Atmosphere.TopRadius, depth))
+        if (!MoveToAtmosphere(Atmosphere, cameraPlanetPosKm, distanceToAtmosphere, worldDir, depth))
         {
             // ray is not intersecting the atmosphere
             return float4(0.0, 0.0, 0.0, 1.0);
         }
 
-        if (maxTraceDepth < distanceToTop)
+        if (maxTraceDepth < distanceToAtmosphere)
         {
             // maxTraceDepth for this voxel is not within earth atmosphere
             return float4(0.0, 0.0, 0.0, 1.0);
         }
 
         // world position has been moved to the atmosphere boundary: we need to reduce maxTraceDepth accordingly. 
-        maxTraceDepth = max(0.0, maxTraceDepth - distanceToTop);
+        maxTraceDepth = max(0.0, maxTraceDepth - distanceToAtmosphere);
     }
 
     const bool ground = false;

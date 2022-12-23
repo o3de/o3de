@@ -37,13 +37,22 @@ SkyViewLutPSOutput SkyViewLutPS(VSOutput Input)
     float3 worldDir = normalize(positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition);
     const float worldDepthKm = length(worldDir);
     float3 worldPosKm = ViewSrg::m_worldPosition * worldScale - Atmosphere.PlanetOrigin;
+
     float viewHeight = length(worldPosKm);
+    float3 upVector = worldPosKm / viewHeight;
+
+    // prevent the camera from going below the surface or getting too close - 
+    // we do not current support drawing from under the surface
+    if (viewHeight < Atmosphere.BottomRadius + SKY_MINIMUM_GROUND_OFFSET_KM)
+    {
+        viewHeight = Atmosphere.BottomRadius + SKY_MINIMUM_GROUND_OFFSET_KM;
+        worldPosKm = upVector * viewHeight;
+    }
 
     float viewZenithCosAngle;
     float lightViewCosAngle;
     UvToSkyViewLutParams(Atmosphere, viewZenithCosAngle, lightViewCosAngle, viewHeight, Input.m_texCoord.xy);
 
-    float3 upVector = worldPosKm / viewHeight;
     float sunZenithCosAngle = dot(upVector, PassSrg::m_constants.m_sunDirection);
     float3 sunDir = float3(0.0, 0.0, sunZenithCosAngle);
     const float epsilon = 0.0001;
@@ -60,8 +69,8 @@ SkyViewLutPSOutput SkyViewLutPS(VSOutput Input)
         viewZenithSinAngle * sqrt(1.0 - lightViewCosAngle * lightViewCosAngle),
         viewZenithCosAngle);
 
-    float distanceToTop = 0.f;
-    if (!MoveToTopAtmosphere(worldPosKm, distanceToTop, worldDir, Atmosphere.TopRadius, worldDepthKm))
+    float distanceToAtmosphere = 1.f;
+    if (!MoveToAtmosphere(Atmosphere, worldPosKm, distanceToAtmosphere, worldDir, worldDepthKm))
     {
         // ray does not intersect the atmosphere
         OUT.m_skyViewLut = float4(0, 0, 0, 1);

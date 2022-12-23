@@ -23,7 +23,7 @@ struct RayMarchPixelOutputStruct
     float4 m_reflection : SV_Target1;
 };
 
-float3 GetSunLuminance(float3 worldPos, float3 worldDir, float planetRadius)
+float3 GetSunLuminance(in float3 worldPos, in float3 worldDir, in float planetRadius)
 {
     if(o_enableSun)
     {
@@ -91,6 +91,17 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
     // cameraPlanetPosKm is relative to the planet origin
     float3 cameraPlanetPosKm = ViewSrg::m_worldPosition * worldScale - Atmosphere.PlanetOrigin;
 
+    float viewHeight = length(cameraPlanetPosKm);
+    float3 upVector = cameraPlanetPosKm / viewHeight;
+
+    // prevent the camera from going below the surface or getting too close - 
+    // we do not current support drawing from under the surface
+    if (viewHeight < Atmosphere.BottomRadius + SKY_MINIMUM_GROUND_OFFSET_KM)
+    {
+        viewHeight = Atmosphere.BottomRadius + SKY_MINIMUM_GROUND_OFFSET_KM;
+        cameraPlanetPosKm = upVector * viewHeight;
+    }
+
     if (depth == 0.0f)
     {
         // nothing is obstructing, add any luminance from the sun
@@ -99,12 +110,9 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
         if(o_enableFastSky)
         {
             // fast path that uses the SkyViewLUT when inside the atmosphere and the pixel only contains sky
-
-            float viewHeight = length(cameraPlanetPosKm);
             if(viewHeight < Atmosphere.TopRadius)
             {
                 float2 uv;
-                float3 upVector = normalize(cameraPlanetPosKm);
                 float viewZenithCosAngle = dot(worldDir, upVector);
 
                 float3 sideVector = normalize(cross(upVector, worldDir));        // assumes non parallel vectors
@@ -130,11 +138,10 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
         return output;
     }
 
-
     // when outside the atmosphere, this moves worldPosKM to the 
     // start of the atmosphere, unless the entire ray never intersects
-    float distanceToTop = 0.f;
-    if (!MoveToTopAtmosphere(cameraPlanetPosKm, distanceToTop, worldDir, Atmosphere.TopRadius, worldDepthKm))
+    float distanceToAtmosphere = 0.f;
+    if (!MoveToAtmosphere(Atmosphere, cameraPlanetPosKm, distanceToAtmosphere, worldDir, worldDepthKm))
     {
         // Ray is not intersecting the atmosphere
         output.m_luminance = float4(TransformColor(luminance * exposure, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg), 1.0);
@@ -166,7 +173,7 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
         float maxTraceDepth = 9000000.0f; 
         if (depth > 0.0f)
         {
-            maxTraceDepth = min(length(worldDepthKm) - distanceToTop, maxTraceDepth);
+            maxTraceDepth = min(length(worldDepthKm) - distanceToAtmosphere, maxTraceDepth);
         }
 
         const bool ground = true; 

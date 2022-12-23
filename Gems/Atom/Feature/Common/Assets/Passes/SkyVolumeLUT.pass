@@ -1,6 +1,6 @@
 {
     "Type": "JsonSerialization",
-    "Description": "This is the pass template that renders the sky view LUT",
+    "Description": "This is the pass template that renders the sky volume LUT",
     "Version": 1,
     "ClassName": "PassAsset",
     "ClassData": {
