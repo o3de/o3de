@@ -18,10 +18,6 @@
                 "description": "Value",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "bool",
-                "defaultValue": {
-                    "$type": "bool",
-                    "Value": false
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"

@@ -21,10 +21,10 @@
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
                     ]
                 },
                 "settings": {
@@ -42,10 +42,10 @@
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
                     ]
                 },
                 "settings": {

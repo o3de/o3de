@@ -23,15 +23,6 @@
                 "description": "Value",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float4",
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"

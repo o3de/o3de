@@ -19,10 +19,6 @@
                 "description": "Value1",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float",
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -35,10 +31,6 @@
                 "description": "Value2",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float",
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -51,10 +43,6 @@
                 "description": "Value3",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float",
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"

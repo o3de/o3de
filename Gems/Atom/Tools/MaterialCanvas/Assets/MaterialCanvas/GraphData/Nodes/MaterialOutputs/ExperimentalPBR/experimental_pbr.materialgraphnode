@@ -27,10 +27,6 @@
                 "description": "Provide a description or overview of what this material graph is doing",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                },
                 "visibleOnNode": false,
                 "editableOnNode": false
             }
@@ -42,14 +38,6 @@
                 "description": "Position Offset",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float3",
-                "defaultValue": {
-                    "$type": "Vector3",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
                 "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
@@ -84,10 +72,6 @@
                 "description": "Metallic",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float",
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
@@ -101,10 +85,6 @@
                 "description": "Specular F0 Factor",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float",
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
@@ -118,10 +98,6 @@
                 "description": "Roughness",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float",
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
@@ -135,14 +111,6 @@
                 "description": "Emissive",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float3",
-                "defaultValue": {
-                    "$type": "Vector3",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
                 "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
