@@ -196,10 +196,6 @@ namespace AzFramework
         AZ::u32 OnIntensityChanged();
         AZ::u32 OnOpacityChanged();
 
-        bool GetColorReadOnly() const;
-        bool GetIntensityReadOnly() const;
-        bool GetOpacityReadOnly() const;
-
         bool GetSizeVisibility() const;
         bool GetColorVisibility() const;
         bool GetIntensityVisibility() const;
