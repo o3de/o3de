@@ -79,6 +79,9 @@ namespace UnitTests
         void SetUp() override;
         void TearDown() override;
 
+        static constexpr int AssetSubId = 1;
+        static constexpr int ExtraAssetSubId = 2;
+
     protected:
         void RunFile(int expectedJobCount, int expectedFileCount = 1, int dependencyFileCount = 0);
         void ProcessJob(AssetProcessor::RCController& rcController, const AssetProcessor::JobDetails& jobDetails);

@@ -50,6 +50,26 @@ namespace UnitTests
         CreateBuilder("stage2", "*.stage2","stage3", false, ProductOutputFlags::ProductAsset);
 
         ProcessFileMultiStage(2, true);
+
+        // Verify the UUID is generated based on the Source:Builder:SubId and not some randomly generated one
+        AssetProcessor::BuilderInfoList builders;
+        AssetProcessor::AssetBuilderInfoBus::Broadcast(
+            &AssetProcessor::AssetBuilderInfoBus::Events::GetMatchingBuildersInfo, MakePath("test.stage1", true), builders);
+
+        ASSERT_EQ(builders.size(), 1);
+
+        auto builderUuid = builders[0].m_busId;
+        auto sourceUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(m_testFilePath.c_str()));
+        auto actualIntermediateUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(MakePath("test.stage2", true).c_str()));
+        auto uuidFormat = AZStd::string::format(
+            AZ_STRING_FORMAT ":" AZ_STRING_FORMAT ":%d",
+            AZ_STRING_ARG(sourceUuid.ToFixedString()),
+            AZ_STRING_ARG(builderUuid.ToFixedString()),
+            AssetSubId);
+
+        auto expectedIntermediateUuid = AZ::Uuid::CreateName(uuidFormat);
+
+        EXPECT_EQ(actualIntermediateUuid, expectedIntermediateUuid);
     }
 
     TEST_F(IntermediateAssetTests, IntermediateOutputWithWrongPlatform_CausesFailure)

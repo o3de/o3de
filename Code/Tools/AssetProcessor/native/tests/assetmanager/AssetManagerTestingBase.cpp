@@ -275,7 +275,7 @@ namespace UnitTests
             AZ::IO::LocalFileIO::GetInstance()->Copy(
                 request.m_fullPath.c_str(), (AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str());
 
-            auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName(outputExtension.c_str()), 1 };
+            auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName(outputExtension.c_str()), AssetSubId };
 
             product.m_outputFlags = flags;
             product.m_dependenciesHandled = true;
@@ -288,7 +288,7 @@ namespace UnitTests
 
                 AZ::Utils::WriteFile("unit test file", extraFilePath.Native());
 
-                auto extraProduct = JobProduct{ extraFilePath.c_str(), AZ::Data::AssetType::CreateName("extra"), 2 };
+                auto extraProduct = JobProduct{ extraFilePath.c_str(), AZ::Data::AssetType::CreateName("extra"), ExtraAssetSubId };
 
                 extraProduct.m_outputFlags = flags;
                 extraProduct.m_dependenciesHandled = true;
