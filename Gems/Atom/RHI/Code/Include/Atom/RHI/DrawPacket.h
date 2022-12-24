@@ -17,6 +17,8 @@ namespace AZ
 
     namespace RHI
     {
+        struct Interval;
+
         //!
         //! DrawPacket is a packed data structure (one contiguous allocation) containing a collection of
         //! DrawItems and their associated array data. Each draw item in the packet is associated
@@ -61,12 +63,19 @@ namespace AZ
             //! Overloaded operator delete for freeing a draw packet.
             void operator delete(void* p, size_t size);
 
+            //! Copy this DrawPacket, but with different DrawArguments (e.g. InstanceCount) and RootConstants
+            DrawPacket* Clone(/* const DrawArguments& drawArguments, const AZ::RHI::ConstantsData& rootConstants*/) const;
+
+            void SetRootConstant(size_t drawItemIndex, const Interval& interval, const AZStd::span<uint8_t>& data);
         private:
             /// Use DrawPacketBuilder to construct an instance.
             DrawPacket() = default;
 
             // The allocator used to release the memory when Release() is called.
             IAllocator* m_allocator = nullptr;
+
+            // The size of the allocation, which can be used to allocate a copy of the DrawPacket
+            size_t m_allocationSize = 0;
 
             // The bit-mask of all active filter tags.
             DrawListMask m_drawListMask = 0;
@@ -112,5 +121,6 @@ namespace AZ
             // Optional list of viewports to be used by all draw items.
             const Viewport* m_viewports = nullptr;
         };
+        constexpr size_t sizeOfDrawPacket = sizeof(DrawPacket);
     }
 }

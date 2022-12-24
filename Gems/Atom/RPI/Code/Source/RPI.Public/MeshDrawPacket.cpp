@@ -186,6 +186,7 @@ namespace AZ
             AZStd::fixed_vector<ModelLod::StreamBufferViewList, RHI::DrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
 
             m_perDrawSrgs.clear();
+            m_rootConstantsLayouts.clear();
 
             auto appendShader = [&](const ShaderCollection::Item& shaderItem, const Name& materialPipelineName)
             {
@@ -310,6 +311,8 @@ namespace AZ
                     return false;
                 }
 
+                m_rootConstantsLayouts.push_back(pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout());
+
                 RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 drawRequest.m_listTag = drawListTag;
                 drawRequest.m_pipelineState = pipelineState;
@@ -328,6 +331,7 @@ namespace AZ
                     AZ_Assert(pipelineTag.IsValid(), "Could not acquire pipeline filter tag '%s'.", materialPipelineName.GetCStr());
                     drawRequest.m_drawFilterMask = 1 << pipelineTag.GetIndex();
                 }
+
 
                 drawPacketBuilder.AddDrawItem(drawRequest);
                 
@@ -380,6 +384,11 @@ namespace AZ
         const RHI::DrawPacket* MeshDrawPacket::GetRHIDrawPacket() const
         {
             return m_drawPacket.get();
+        }
+
+        const MeshDrawPacket::RootConstantsLayoutList& MeshDrawPacket::GetRootConstantsLayouts() const
+        {
+            return m_rootConstantsLayouts;
         }
     } // namespace RPI
 } // namespace AZ

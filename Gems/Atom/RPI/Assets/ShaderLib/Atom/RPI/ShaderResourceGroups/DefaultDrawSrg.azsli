@@ -10,6 +10,8 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
+rootconstant uint m_instanceDataOffset;
+
 ShaderResourceGroup DrawSrg : SRG_PerDraw
 {
     // This SRG is unique per draw packet

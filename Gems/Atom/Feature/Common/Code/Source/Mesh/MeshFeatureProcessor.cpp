@@ -255,7 +255,10 @@ namespace AZ
             
             if (r_enableHardwareInstancing)
             {
-                // Create a transient buffer to store the instance data for this frames visible instances
+                // Update the buffer that stores the instance data for this frames visible instances
+                // This needs to happen after the mesh handles have been updated, but before culling, since we have to update the cullables
+                // to use the new draw packets
+                // 
                 // Eventually there will be a unique buffer for each view storing just the instance data for
                 // the instances that are visible in that view, so things that are culled on the CPU side can be skipped
                 // For now, we're assuming that there is only one instance for any given object, so we'll create just one
@@ -278,6 +281,7 @@ namespace AZ
 
                     m_instanceData.reserve(instanceBufferCount);
                     m_instanceData.clear();
+                    //RHI::DrawPacketBuilder drawPacketBuilder;
                     for (ModelDataInstance& modelData : m_modelData)
                     {
                         for (auto& instanceIndicesForLod : modelData.m_instanceIndicesByLod)
@@ -289,10 +293,40 @@ namespace AZ
 
                                 // The offset into the per-instance data is part of the instanced draw call. This can change every frame,
                                 // and will eventually differ between views
-                                uint32_t instanceDataOffset = static_cast<uint32_t>(m_instanceData.size() - 1);
+                                [[maybe_unused]]uint32_t instanceDataOffset = static_cast<uint32_t>(m_instanceData.size() - 1);
 
                                 MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
-
+                                /*
+                                *
+                                * TODO: The MeshDrawPacketBuilder currently does not handle root constants, so the approach of using root
+                                * constants won't work until that is fixed. Going to use DrawSrgs for now, even though they are currently slow
+                                * It's possible we can speed those up (ShaderResourceGroup::Compile) by making it so we don't have to copy
+                                * the ShaderResourceGroupData from the RPI to the RHI, and instead keep only one copy, since most of the
+                                * cost is in that copy
+                                * 
+                                //instanceData.m_clonedDrawPacket = drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket());
+                                instanceData.m_clonedDrawPacket = instanceData.m_drawPacket.GetRHIDrawPacket()->Clone();
+                                const RPI::MeshDrawPacket::RootConstantsLayoutList& rootConstantsLayouts =
+                                    instanceData.m_drawPacket.GetRootConstantsLayouts();
+                                AZ_Assert(rootConstantsLayouts.size() == instanceData.m_clonedDrawPacket->GetDrawItemCount(), "MeshFeatureProcessor: Mismatch in RootConstantsLayout count and DrawItem count.");
+                                for (size_t i = 0; i < instanceData.m_clonedDrawPacket->GetDrawItemCount(); ++i)
+                                {
+                                    // Get the root constant layout
+                                    RHI::ShaderInputConstantIndex shaderInputIndex =
+                                        rootConstantsLayouts[i]->FindShaderInputIndex(s_m_instanceDataOffset_Name);
+                                    if (shaderInputIndex.IsValid())
+                                    {
+                                        RHI::Interval interval = rootConstantsLayouts[i]->GetInterval(shaderInputIndex);
+                                        AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
+                                        instanceData.m_clonedDrawPacket->SetRootConstant(i, interval, data);
+                                    }
+                                    else
+                                    {
+                                        AZ_Error(
+                                            "MeshFeatureProcessor", false,
+                                            "Trying to instance something that is missing m_instanceDataOffset from its root constant layout.");
+                                    }
+                                }*/
                                 // Update the drawSrg with the new offset
                                 auto& drawSrgs = instanceData.m_drawPacket.GetDrawSrgs();
                                 AZ_Assert(instanceData.m_drawSrgInstanceDataIndices.size() == drawSrgs.size(), "MeshFeatureProcessor: Mismatch between drawSrg count and ShaderInputConstantIndex count.");

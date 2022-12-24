@@ -20,6 +20,11 @@
 
 namespace AZ
 {
+    namespace RHI
+    {
+        class ConstantsLayout;
+    }
+
     namespace RPI
     {
         class Scene;
@@ -39,6 +44,7 @@ namespace AZ
             };
 
             using ShaderList = AZStd::vector<ShaderData>;
+            using RootConstantsLayoutList = AZStd::vector<RHI::ConstPtr<RHI::ConstantsLayout>>;
 
             MeshDrawPacket() = default;
             MeshDrawPacket(
@@ -54,6 +60,7 @@ namespace AZ
             bool Update(const Scene& parentScene, bool forceUpdate = false);
 
             const RHI::DrawPacket* GetRHIDrawPacket() const;
+            const RootConstantsLayoutList& GetRootConstantsLayouts() const;
 
             void SetStencilRef(uint8_t stencilRef) { m_stencilRef = stencilRef; }
             void SetSortKey(RHI::DrawItemSortKey sortKey) { m_sortKey = sortKey; };
@@ -84,6 +91,8 @@ namespace AZ
 
             // Maintains references to the shader instances to keep their PSO caches resident (see Shader::Shutdown())
             ShaderList m_activeShaders;
+
+            RootConstantsLayoutList m_rootConstantsLayouts;
 
             // The model that contains the mesh being represented by the DrawPacket
             Data::Instance<ModelLod> m_modelLod;

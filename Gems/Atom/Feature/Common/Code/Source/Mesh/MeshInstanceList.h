@@ -25,8 +25,12 @@ namespace AZ::Render
         // The original draw packet, shared by every instance
         RPI::MeshDrawPacket m_drawPacket;
 
+        // We modify the original draw packet each frame with a new instance count and a new root constant
+        RHI::Ptr<RHI::DrawPacket> m_clonedDrawPacket;
+
         // We store the shaderIntputConstantIndex for m_instanceData here, so we don't have to look it up every frame
         AZStd::vector<RHI::ShaderInputConstantIndex> m_drawSrgInstanceDataIndices;
+
 
         // We store a key to make it faster to remove the instance from the map
         // via the index
