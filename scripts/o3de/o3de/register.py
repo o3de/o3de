@@ -419,7 +419,7 @@ def register_gem_path(json_data: dict,
         if project_path:
             incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path)
             if incompatible_objects: 
-                logger.error(f'{gem_json_data["gem_name"]} is not known compatible with the '
+                logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
                     'following objects/APIs and requires the --force parameter to register:'+
                     "\n  ".join(incompatible_objects))
                 return 1
@@ -430,7 +430,7 @@ def register_gem_path(json_data: dict,
                 return 1
             incompatible_objects = compatibility.get_gem_engine_incompatible_objects(gem_json_data, engine_json_data)
             if incompatible_objects: 
-                logger.error(f'{gem_json_data["gem_name"]} is not known compatible with the '
+                logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
                     'following objects/APIs and requires the --force parameter to register:'+
                     "\n  ".join(incompatible_objects))
                 return 1
@@ -471,7 +471,7 @@ def register_project_path(json_data: dict,
         if not force:
             incompatible_objects = compatibility.get_project_engine_incompatible_objects(project_path, project_json_data, engine_json_data)
             if incompatible_objects:
-                logger.error(f'{project_json_data["project_name"]} is not known compatible with the '
+                logger.error(f'{project_json_data["project_name"]} is not known to be compatible with the '
                     'following objects/APIs and requires the --force parameter to register:')
                 for element in incompatible_objects:
                     logger.error(f'  {element}')

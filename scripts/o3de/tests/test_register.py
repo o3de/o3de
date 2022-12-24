@@ -292,7 +292,7 @@ class TestRegisterProject:
             # passes when compatible_engines has match
             pytest.param('o3de7', '0.0.0', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de7'], None, None, None, False, False, 0),
             pytest.param('o3de8', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de8>=1.2.3','o3de-sdk==2.3.4'], None, None, None, False, False, 0),
-            # fails when gem is used that is not known compatible with version 1.2.3 
+            # fails when gem is used that is not known to be compatible with version 1.2.3 
             pytest.param('o3de9', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de9'], None, ['o3de==2.3.4'], None, False, False, 1),
             # passes when gem is used that is known compatible with version 1.2.3 
             pytest.param('o3de10', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de10'], None, ['o3de10==1.2.3'], None, False, False, 0),

@@ -111,7 +111,7 @@ def enable_gem_in_project(gem_name: str = None,
     else:
         incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path, gem_paths=buildable_gems)
         if incompatible_objects:
-            logger.error(f'{gem_json_data["gem_name"]} is not known compatible with the '
+            logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
                 'following objects/APIs and requires the --force parameter to activate:'
                 "\n  ".join(incompatible_objects))
             return 1

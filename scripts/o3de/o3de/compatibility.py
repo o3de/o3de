@@ -145,7 +145,7 @@ def get_incompatible_objects_for_engine(object_json_data:dict, engine_json_data:
             # assume an engine with no version is compatible
             return set()
 
-        # object is not known compatible with this engine
+        # object is not known to be compatible with this engine
         incompatible_objects.add(f"{engine_name} {engine_version} does not match any version specifiers in the list of compatible engines: {compatible_engines}")
 
     if engine_api_version_specifiers:
