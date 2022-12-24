@@ -48,16 +48,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         AddressW = Clamp;
     };
 
-    Sampler DepthSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
     Sampler PointSampler
     {
         MinFilter = Linear;
@@ -311,7 +301,7 @@ void UvToSkyViewLutParams(in AtmosphereParameters Atmosphere, out float viewZeni
     // Constrain uvs to valid sub texel range (avoid zenith derivative issue making LUT usage visible)
     uv = float2(fromSubUvsToUnit(uv.x, 192.0f), fromSubUvsToUnit(uv.y, 108.0f));
 
-    const float vHorizon = sqrt(max(0.f, viewHeight * viewHeight - Atmosphere.BottomRadius * Atmosphere.BottomRadius));
+    const float vHorizon = sqrt(viewHeight * viewHeight - Atmosphere.BottomRadius * Atmosphere.BottomRadius);
     const float cosBeta = vHorizon / viewHeight;
     const float beta = acos(cosBeta);
     const float zenithHorizonAngle = PI - beta;
@@ -340,10 +330,10 @@ void UvToSkyViewLutParams(in AtmosphereParameters Atmosphere, out float viewZeni
 
 void SkyViewLutParamsToUv(AtmosphereParameters Atmosphere, in bool intersectGround, in float viewZenithCosAngle, in float lightViewCosAngle, in float viewHeight, out float2 uv)
 {
-    float vhorizon = sqrt(viewHeight * viewHeight - Atmosphere.BottomRadius * Atmosphere.BottomRadius);
-    float cosBeta = vhorizon / viewHeight;
-    float beta = acos(cosBeta);
-    float ZenithHorizonAngle = PI - beta;
+    const float vhorizon = sqrt(viewHeight * viewHeight - Atmosphere.BottomRadius * Atmosphere.BottomRadius);
+    const float cosBeta = vhorizon / viewHeight;
+    const float beta = acos(cosBeta);
+    const float ZenithHorizonAngle = PI - beta;
 
     if (!intersectGround)
     {
