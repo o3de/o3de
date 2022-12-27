@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "DirectionTo",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DirectionTo"
@@ -54,7 +53,6 @@
                 },
                 {
                     "base": "Subtract",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Subtract"
@@ -92,7 +90,6 @@
                 },
                 {
                     "base": "Project",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Project"
@@ -130,7 +127,6 @@
                 },
                 {
                     "base": "Distance",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Distance"
@@ -168,7 +164,6 @@
                 },
                 {
                     "base": "FromValues",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromValues"
@@ -206,7 +201,6 @@
                 },
                 {
                     "base": "Dot",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Dot"
@@ -244,7 +238,6 @@
                 },
                 {
                     "base": "Angle",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Angle"
@@ -276,7 +269,6 @@
                 },
                 {
                     "base": "Negate",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Negate"
@@ -308,7 +300,6 @@
                 },
                 {
                     "base": "MultiplyByVector",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByVector"
@@ -346,7 +337,6 @@
                 },
                 {
                     "base": "Add",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add"
@@ -384,7 +374,6 @@
                 },
                 {
                     "base": "Clamp",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Clamp"
@@ -428,7 +417,6 @@
                 },
                 {
                     "base": "MultiplyByNumber",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByNumber"
@@ -466,7 +454,6 @@
                 },
                 {
                     "base": "Slerp",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Slerp"
@@ -510,7 +497,6 @@
                 },
                 {
                     "base": "IsZero",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsZero"
@@ -548,7 +534,6 @@
                 },
                 {
                     "base": "SetY",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetY"
@@ -586,7 +571,6 @@
                 },
                 {
                     "base": "IsClose",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsClose"
@@ -630,7 +614,6 @@
                 },
                 {
                     "base": "DivideByNumber",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DivideByNumber"
@@ -668,7 +651,6 @@
                 },
                 {
                     "base": "IsNormalized",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsNormalized"
@@ -706,7 +688,6 @@
                 },
                 {
                     "base": "LengthSquared",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke LengthSquared"
@@ -738,7 +719,6 @@
                 },
                 {
                     "base": "IsFinite",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsFinite"
@@ -770,7 +750,6 @@
                 },
                 {
                     "base": "ToPerpendicular",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToPerpendicular"
@@ -802,7 +781,6 @@
                 },
                 {
                     "base": "Normalize",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Normalize"
@@ -834,7 +812,6 @@
                 },
                 {
                     "base": "Max",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Max"
@@ -872,7 +849,6 @@
                 },
                 {
                     "base": "GetElement",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetElement"
@@ -910,7 +886,6 @@
                 },
                 {
                     "base": "Absolute",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Absolute"
@@ -942,7 +917,6 @@
                 },
                 {
                     "base": "SetX",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetX"
@@ -980,7 +954,6 @@
                 },
                 {
                     "base": "Min",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Min"
@@ -1018,7 +991,6 @@
                 },
                 {
                     "base": "DivideByVector",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DivideByVector"
@@ -1056,7 +1028,6 @@
                 },
                 {
                     "base": "DistanceSquared",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DistanceSquared"
@@ -1094,7 +1065,6 @@
                 },
                 {
                     "base": "Length",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Length"
@@ -1126,7 +1096,6 @@
                 },
                 {
                     "base": "Lerp",
-                    "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Lerp"
