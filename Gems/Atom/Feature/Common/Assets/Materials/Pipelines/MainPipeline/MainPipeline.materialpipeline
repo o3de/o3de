@@ -89,6 +89,11 @@
             "shader": "../Common/DepthPassTransparentMax.shader.template",
             "azsli": "../Common/DepthPass.azsli",
             "tag": "depthPassTransparentMax"
+        },
+        {
+            "shader": "../Common/MeshMotionVector.shader.template",
+            "azsli": "../Common/MeshMotionVector.azsli",
+            "tag": "meshMotionVector"
         }
     ],
     "runtime": {
