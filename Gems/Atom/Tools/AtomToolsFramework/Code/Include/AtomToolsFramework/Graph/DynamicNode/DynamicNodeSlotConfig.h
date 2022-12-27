@@ -83,6 +83,8 @@ namespace AtomToolsFramework
         AZStd::string m_supportedDataTypeRegex;
         //! Name of the default data type from the set of supported data types if no value is assigned
         AZStd::string m_defaultDataType;
+        //! A set of strings used as potential slot values
+        AZStd::vector<AZStd::string> m_enumValues;
         //! Container of generic or application specific settings for a slot
         DynamicNodeSettingsMap m_settings;
         //! Specifies whether or not the slot will appear on the node UI

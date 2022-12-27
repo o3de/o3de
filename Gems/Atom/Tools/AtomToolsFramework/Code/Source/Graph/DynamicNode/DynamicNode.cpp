@@ -116,6 +116,7 @@ namespace AtomToolsFramework
                 defaultValue,
                 slotConfig.m_description,
                 nullptr,
+                slotConfig.m_enumValues,
                 slotConfig.m_visibleOnNode,
                 slotConfig.m_editableOnNode));
         }
@@ -141,6 +142,7 @@ namespace AtomToolsFramework
                 dataType,
                 slotConfig.m_description,
                 nullptr,
+                slotConfig.m_enumValues,
                 slotConfig.m_visibleOnNode,
                 slotConfig.m_editableOnNode));
         }
@@ -180,6 +182,7 @@ namespace AtomToolsFramework
                 defaultValue,
                 slotConfig.m_description,
                 nullptr,
+                slotConfig.m_enumValues,
                 slotConfig.m_visibleOnNode,
                 slotConfig.m_editableOnNode));
         }
