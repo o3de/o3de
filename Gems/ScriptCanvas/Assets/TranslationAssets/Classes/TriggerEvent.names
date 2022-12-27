@@ -20,7 +20,7 @@
                     },
                     "details": {
                         "name": "Get Trigger Entity Id",
-                        "tooltip": "Get the id of the entity to which the trigger is attached",
+                        "tooltip": "Get the Id of the entity to which the trigger is attached",
                         "category": "Other"
                     },
                     "params": [
@@ -37,7 +37,7 @@
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
                                 "name": "Trigger Entity Id",
-                                "tooltip": "The id of the entity to which the trigger is attached"
+                                "tooltip": "The Id of the entity to which the trigger is attached"
                             }
                         }
                     ]
@@ -54,7 +54,7 @@
                     },
                     "details": {
                         "name": "Get Other Entity Id",
-                        "tooltip": "Get the id of the entity entering/exiting the trigger",
+                        "tooltip": "Get the Id of the entity entering/exiting the trigger",
                         "category": "Other"
                     },
                     "params": [
@@ -71,7 +71,7 @@
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
                                 "name": "Other Entity Id",
-                                "tooltip": "The id of the entity entering/exiting the trigger"
+                                "tooltip": "The Id of the entity entering/exiting the trigger"
                             }
                         }
                     ]
