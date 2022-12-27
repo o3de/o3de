@@ -1,7 +1,8 @@
 name: Bug report
-placeholder: Bug Report
+title: "Bug Report:"
 # Inspired by the [GoDot](https://github.com/godotengine/godot/blob/master/.github/ISSUE_TEMPLATE/bug_report.yml) bug report template.
 description: Report an issue to help us improve.
+labels: needs-triage, needs-sig, kind/bug
 body:
 
 - type: markdown
