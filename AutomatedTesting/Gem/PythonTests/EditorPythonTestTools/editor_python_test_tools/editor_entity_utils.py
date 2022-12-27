@@ -753,7 +753,8 @@ class EditorEntity:
 
     def has_overrides(self) -> bool:
         """
-        Validates if a given entity has overrides present.
+        Validates if a given entity has overrides present. NOTE: This should only be used on an entity within a prefab
+        as this will currently always return as True on a container entity.
         :return: True if overrides are present, False otherwise
         """
         return prefab.PrefabOverridePublicRequestBus(bus.Broadcast, "AreOverridesPresent", self.id)

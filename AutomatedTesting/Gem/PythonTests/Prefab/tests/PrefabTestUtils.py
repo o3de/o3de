@@ -346,7 +346,8 @@ def validate_spawned_entity_transform(entity, expected_position, expected_rotati
 
 def validate_expected_override_status(entity: EditorEntity, expected_override_status: bool) -> None:
     """
-    Validates the expected override status of the given entity
+    Validates the expected override status of the given entity. NOTE: This should only be used on an entity within a
+    prefab as this will currently always return as True on a container entity.
     :param entity: The EditorEntity to validate the status of overrides on
     :param expected_override_status: True if overrides are expected, False otherwise
     :return: None
