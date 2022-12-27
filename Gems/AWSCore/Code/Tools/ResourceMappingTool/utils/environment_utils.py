@@ -38,7 +38,8 @@ def setup_qt_environment(bin_path: str) -> None:
     # and directories added with add_dll_directory() are searched for load-time dependencies.
     # Specifically, PATH and the current working directory are no longer used, and modifications to these
     # will no longer have any effect on normal DLL resolution.
-    os.add_dll_directory(binaries_path)
+    if platform.system() == 'Windows':
+        os.add_dll_directory(binaries_path)
 
     os.environ["QT_PLUGIN_PATH"] = binaries_path
 

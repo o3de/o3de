@@ -35,10 +35,11 @@ class TestEnvironmentUtils(TestCase):
         environment_utils.setup_qt_environment("dummy")
         self._mock_os_environ.copy.assert_called_once()
         self._mock_os_pathsep.join.assert_called_once()
-        self._mock_os_dll_directory.assert_called_once()
         assert environment_utils.is_qt_linked() is True
         if platform.system() == 'Linux':
             mock_os_path_exists.assert_called()
+        elif platform.system() == 'Windows':
+            self._mock_os_dll_directory.assert_called_once()
 
     @patch('os.path.exists')
     @patch('ctypes.CDLL')
@@ -50,4 +51,5 @@ class TestEnvironmentUtils(TestCase):
         assert environment_utils.is_qt_linked() is False
         if platform.system() == 'Linux':
             mock_os_path_exists.assert_called()
-        self._mock_os_dll_directory.assert_called_once()
+        elif platform.system() == 'Windows':
+            self._mock_os_dll_directory.assert_called_once()
