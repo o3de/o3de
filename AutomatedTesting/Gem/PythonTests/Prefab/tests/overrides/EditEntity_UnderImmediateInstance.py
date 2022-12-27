@@ -98,7 +98,7 @@ def EditEntity_UnderImmediateInstance():
     car_instance_1.container_entity.focus_on_owning_prefab()
     car_entity_of_instance_1.add_component("Mesh")
 
-    # Focus on the level prefab, then add a different component as an override to the second instance entity
+    # Focus on the level prefab, then add a different component as an override to entity in the second instance
     level_entity = EditorEntity(car_instance_1.container_entity.get_parent_id())
     level_entity.focus_on_owning_prefab()
     car_entity_of_instance_2.add_component("Comment")
