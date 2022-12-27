@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/Serialization/EditContext.h>
