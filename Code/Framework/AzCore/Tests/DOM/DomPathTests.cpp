@@ -153,37 +153,46 @@ namespace AZ::Dom::Tests
 
     TEST_F(DomPathTests, OperatorOverloads_LessThanGreaterThan)
     {
+        // Path - index and key tests
         EXPECT_TRUE(Path("/0/99") < Path("/0/a"));
         EXPECT_FALSE(Path("/0/a") < Path("/0/99"));
-
+        // Path - key and key tests
         EXPECT_FALSE(Path("/0/b") < Path("/0/aa"));
         EXPECT_TRUE(Path("/0/a") < Path("/0/aa"));
-
+        // Path - index and index tests
         EXPECT_TRUE(Path("/0/1") < Path("/0/2"));
         EXPECT_FALSE(Path("/0/3/1") < Path("/0/3"));
-
-        size_t index = 2;
-        EXPECT_FALSE(Path("/3").GetEntries()[0] < index);
-        EXPECT_TRUE(Path("/1").GetEntries()[0] < index);
-
-        AZ::Name name = Name("ab");
-        EXPECT_TRUE(Path("/1").GetEntries()[0] < name);
-        EXPECT_TRUE(Path("/a").GetEntries()[0] < name);
-
-        AZStd::string_view nameStrView = "ab";
-        EXPECT_TRUE(Path("/1").GetEntries()[0] < nameStrView);
-        EXPECT_TRUE(Path("/a").GetEntries()[0] < nameStrView);
-
+        // Path - greather than tests
         EXPECT_TRUE(Path("/0/a") > Path("/0/1"));
         EXPECT_FALSE(Path("/0/1") > Path("/0/a"));
-
+        // Path - less than or equal tests
         EXPECT_TRUE(Path("/0/3/1") >= Path("/0/3"));
         EXPECT_TRUE(Path("/0/3") >= Path("/0/3"));
         EXPECT_FALSE(Path("/0/1") >= Path("/0/a"));
-
+        // Path - greater than or equal tests
         EXPECT_TRUE(Path("/0/3") <= Path("/0/3/1"));
         EXPECT_TRUE(Path("/0/3") <= Path("/0/3"));
         EXPECT_FALSE(Path("/0/a") <= Path("/0/1"));
+
+        // PathEntry - entry and size_t tests
+        size_t index = 2;
+        EXPECT_FALSE(Path("/3").GetEntries()[0] < index);
+        EXPECT_TRUE(Path("/1").GetEntries()[0] < index);
+        EXPECT_FALSE(Path("/a").GetEntries()[0] < index);
+        EXPECT_TRUE(Path("/0a").GetEntries()[0] < index);
+        EXPECT_TRUE(index < Path("/a").GetEntries()[0]);
+        EXPECT_FALSE(index < Path("/0").GetEntries()[0]);
+        // PathEntry - entry and Name tests
+        AZ::Name name = Name("ab");
+        EXPECT_TRUE(Path("/1").GetEntries()[0] < name);
+        EXPECT_TRUE(Path("/a").GetEntries()[0] < name);
+        EXPECT_FALSE(name < Path("/1").GetEntries()[0]);
+        EXPECT_FALSE(name < Path("/a").GetEntries()[0]);
+        EXPECT_FALSE(name < Path("/0a").GetEntries()[0]);
+        // PathEntry - entry and string_view tests
+        AZStd::string_view nameStrView = "ab";
+        EXPECT_TRUE(Path("/1").GetEntries()[0] < nameStrView);
+        EXPECT_TRUE(Path("/a").GetEntries()[0] < nameStrView);
     }
 
     TEST_F(DomPathTests, EndOfArray_FromString)

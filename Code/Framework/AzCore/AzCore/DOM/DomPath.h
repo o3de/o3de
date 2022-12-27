@@ -47,13 +47,7 @@ namespace AZ::Dom
         bool operator!=(const AZ::Name& key) const;
         bool operator!=(AZStd::string_view key) const;
 
-        //! The desired sort order of PathEntry first has index values sorted
-        //! by numerical value then key values sorted in lexicographic order.
-        //! For example:
-        //! 0
-        //! 10
-        //! 0hello (note that this is a key, not an index)
-        //! two
+        //! PathEnty objects are ordered lexicographically.
         friend bool operator<(const PathEntry& lhs, const PathEntry& rhs);
         friend bool operator<(const PathEntry& entry, size_t index);
         friend bool operator<(size_t index, const PathEntry& entry);
@@ -127,14 +121,11 @@ namespace AZ::Dom
             return !operator==(rhs);
         }
 
-        //! The ordering of Path objects is based on PathEntry sort order.
-        //! An example sort would be:
-        //! /0/1/3
-        //! /1
-        //! /1/4
-        //! /apple
-        //! /two
-        //! /two/0hello
+        //! Path objects are ordered lexicographically based on their full path. Note that
+        //! paths can contain a mix of interger or string value PathEntry components.
+        //! PathEntry objects with string values, as opposed to integer values, will not
+        //! necessarily sort as they appear in the DOM. Paths consisting only of
+        //! indexed PathEntry objects will be ordered as they are positioned in the DOM.
         bool operator<(const Path&) const;
         bool operator>(const Path&) const;
         bool operator<=(const Path&) const;

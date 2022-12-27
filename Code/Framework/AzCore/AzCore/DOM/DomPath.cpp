@@ -150,12 +150,12 @@ namespace AZ::Dom
 
     bool operator<(const AZ::Dom::PathEntry& entry, size_t index)
     {
-        return entry.IsIndex() && entry.GetIndex() < index;
+        return entry < AZStd::to_string(index);
     }
 
     bool operator<(size_t index, const AZ::Dom::PathEntry& entry)
     {
-        return !entry.IsIndex() || index < entry.GetIndex();
+        return AZStd::to_string(index) < entry;
     }
 
     bool operator<(const AZ::Dom::PathEntry& entry, const AZ::Name& key)
@@ -170,12 +170,26 @@ namespace AZ::Dom
 
     bool operator<(const AZ::Dom::PathEntry& entry, AZStd::string_view key)
     {
-        return entry.IsIndex() || entry.GetKey().GetStringView() < key;
+        if (entry.IsIndex())
+        {
+            return AZStd::to_string(entry.GetIndex()) < key;
+        }
+        else
+        {
+            return entry.GetKey().GetStringView() < key;
+        }
     }
 
     bool operator<(AZStd::string_view key, const AZ::Dom::PathEntry& entry)
     {
-        return entry.IsKey() && key < entry.GetKey().GetStringView();
+        if (entry.IsIndex())
+        {
+            return key < AZStd::to_string(entry.GetIndex());
+        }
+        else
+        {
+            return key < entry.GetKey().GetStringView();
+        }
     }
 } // namespace AZ::Dom
 
