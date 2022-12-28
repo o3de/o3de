@@ -104,143 +104,14 @@
             { 
                 "$import": "MaterialInputs/SubsurfaceAndTransmissionPropertyGroup.json"
             },
-            // TODO(MaterialPipeline): Replace this with "$import": "MaterialInputs/GeneralCommonPropertyGroup.json" after converting Eye.materialtype to use the material pipeline system
-            {
-                "name": "general",
-                "displayName": "General Settings",
-                "description": "General settings.",
-                "properties": [
-                    {
-                        "name": "doubleSided",
-                        "displayName": "Double-sided",
-                        "description": "Whether to render back-faces or just front-faces.",
-                        "type": "Bool"
-                    },
-                    {
-                        "name": "applySpecularAA",
-                        "displayName": "Apply Specular AA",
-                        "description": "Whether to apply specular anti-aliasing in the shader.",
-                        "type": "Bool",
-                        "defaultValue": true,
-                        "connection": {
-                            "type": "ShaderOption",
-                            "name": "o_applySpecularAA"
-                        }
-                    },
-                    {
-                        "name": "enableShadows",
-                        "displayName": "Receive Shadows",
-                        "description": "Whether to use the shadow maps during lighting.",
-                        "type": "Bool",
-                        "defaultValue": true,
-                        "connection": {
-                            "type": "ShaderOption",
-                            "name": "o_enableShadows"
-                        }
-                    },
-                    {
-                        // This will have to be connected manually by the .materialtype, because some material types
-                        // have an additional "Shadowmap_WithPS" shader in addition to "Shadowmap".
-                        "name": "castShadows",
-                        "displayName": "Cast Shadows",
-                        "description": "Whether to cast shadows onto other objects.",
-                        "type": "Bool",
-                        "defaultValue": true
-                    },
-                    {
-                        "name": "enableDirectionalLights",
-                        "displayName": "Enable Directional Lights",
-                        "description": "Whether to use directional lights.",
-                        "type": "Bool",
-                        "defaultValue": true,
-                        "connection": {
-                            "type": "ShaderOption",
-                            "name": "o_enableDirectionalLights"
-                        }
-                    },
-                    {
-                        "name": "enablePunctualLights",
-                        "displayName": "Enable Punctual Lights",
-                        "description": "Whether to use punctual lights.",
-                        "type": "Bool",
-                        "defaultValue": true,
-                        "connection": {
-                            "type": "ShaderOption",
-                            "name": "o_enablePunctualLights"
-                        }
-                    },
-                    {
-                        "name": "enableAreaLights",
-                        "displayName": "Enable Area Lights",
-                        "description": "Whether to use area lights.",
-                        "type": "Bool",
-                        "defaultValue": true,
-                        "connection": {
-                            "type": "ShaderOption",
-                            "name": "o_enableAreaLights"
-                        }
-                    },
-                    {
-                        "name": "enableIBL",
-                        "displayName": "Enable IBL",
-                        "description": "Whether to use Image Based Lighting (IBL).",
-                        "type": "Bool",
-                        "defaultValue": true,
-                        "connection": {
-                            "type": "ShaderOption",
-                            "name": "o_enableIBL"
-                        }
-                    },
-                    {
-                        "name": "forwardPassIBLSpecular",
-                        "displayName": "Forward Pass IBL Specular",
-                        "description": "Whether to apply IBL specular in the forward pass.",
-                        "type": "Bool",
-                        "defaultValue": false,
-                        "connection": {
-                            "type": "ShaderOption",
-                            "name": "o_materialUseForwardPassIBLSpecular"
-                        }
-                    }
-                ],
-                "functors": [
-                    {
-                        "type": "Lua",
-                        "args": {
-                            "file": "Materials/Types/StandardPBR_HandleOpacityDoubleSided.lua"
-                        }
-                    }
-                ]
+            { 
+                "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
             }
-
         ]
     },
-    "shaders": [
-        {
-            "file": "Shaders/Materials/Eye/Eye_ForwardPass.shader",
-            "tag": "ForwardPass_EDS"
-        },
-        {
-            "file": "Shaders/Shadow/Shadowmap.shader",
-            "tag": "Shadowmap"
-        },
-        {
-            "file": "Shaders/Depth/DepthPass.shader",
-            "tag": "DepthPass"
-        },
-        {
-            "file": "Shaders/MotionVector/MeshMotionVector.shader",
-            "tag": "MeshMotionVector"
-        }
-    ],
-    "functors": [
-        {
-            "type": "Lua",
-            "args": {
-                "file": "CastShadows.lua"
-            }
-        }
-    ],
+    // Skin lighting model works well because it supports subsurface scattering, and Eye doesn't need all the other stuff in the Enhanced lighting model.
+    "lightingModel": "Skin", 
+    "materialShaderCode": "Eye.azsli",
     "uvNameMap": {
         "UV0": "Tiled",
         "UV1": "Unwrapped"
