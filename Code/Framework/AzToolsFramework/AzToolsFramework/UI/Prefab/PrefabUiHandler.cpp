@@ -564,8 +564,14 @@ namespace AzToolsFramework
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
-            // Close this prefab and focus on the parent
-            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId);
+            // Close this prefab and focus on the parent.
+            // This is deferred to the end of the message queue to allow Qt code to continue
+            // working with unaltered tree indices after it has sent the "on collapsed" event.
+            // Changing focus can remove/add tree rows which would invalidate any tree indices
+            // used by Qt when returning from the handler
+            QTimer::singleShot(0, [this] {
+                m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(AzToolsFramework::PrefabUiHandler::s_editorEntityContextId);
+            });
         }
     }
 
