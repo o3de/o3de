@@ -51,7 +51,7 @@ namespace AZ
         bool MaterialFunctorAPI::ConfigureShaders::SetShaderOptionValueHelper(const Name& name, const ValueType& value)
         {
             bool didSetOne = false;
-            bool materialOwnsOption = false;
+            bool materialDoesntOwnOption = false;
 
             ForAllShaderItems([&](ShaderCollection::Item& shaderItem)
                 {
@@ -66,7 +66,7 @@ namespace AZ
 
                     if (!shaderItem.MaterialOwnsShaderOption(optionIndex))
                     {
-                        materialOwnsOption = true;
+                        materialDoesntOwnOption = true;
                         return false; // break;
                     }
 
@@ -78,7 +78,7 @@ namespace AZ
                     return true; // continue
                 });
 
-            if (materialOwnsOption)
+            if (materialDoesntOwnOption)
             {
                 AZ_Error("MaterialFunctor", false, "Shader option '%s' is not owned by this material.", name.GetCStr());
                 AZ_Assert(!didSetOne, "The material build pipeline should have ensured that MaterialOwnsShaderOption is consistent across all shaders.");

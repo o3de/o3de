@@ -44,6 +44,11 @@ COMMON_OPTIONS_DETAIL_MAPS()
 
 // ------- Shader Stitching -------
 
+bool NeedsTangentFrame()
+{
+    return o_normal_useTexture || o_detail_normal_useTexture;
+}
+
 #include "Skin_VertexData.azsli"
 #include "Skin_VertexEval.azsli"
 

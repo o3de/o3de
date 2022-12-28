@@ -2484,7 +2484,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
                     return false;
                 }
 
-                SandboxEditor::InterpolateDefaultViewportCameraToTransform(
+                SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(
                     bookmark->m_position, AZ::DegToRad(bookmark->m_rotation.GetX()), AZ::DegToRad(bookmark->m_rotation.GetZ()));
 
                 QString tagConsoleText = QObject::tr("View Bookmark %1 loaded position: x=%2, y=%3, z=%4")

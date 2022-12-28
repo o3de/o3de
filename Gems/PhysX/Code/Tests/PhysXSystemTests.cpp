@@ -18,7 +18,7 @@ namespace PhysX
 {
     namespace Internal
     {
-        static constexpr const char* DefaultSceneNameFormat = "scene-%d";
+        static constexpr const char* DefaultSceneNameFormat = "scene-%u";
     }
     //setup a test fixture with no default created scene
     class PhysXSystemFixture
@@ -185,7 +185,7 @@ namespace PhysX
         //generate the max number of scenes
         AzPhysics::SceneConfigurationList sceneConfigs;
         AzPhysics::SceneConfiguration config;
-        for (int i = 0; i < std::numeric_limits<AzPhysics::SceneIndex>::max(); i++)
+        for (AZ::u32 i = 0; i < AzPhysics::MaxNumberOfScenes; i++)
         {
             config.m_sceneName = AZStd::string::format(Internal::DefaultSceneNameFormat, i);
             sceneConfigs.push_back(config);
@@ -195,7 +195,7 @@ namespace PhysX
         //add all scene configs
         AzPhysics::SceneHandleList sceneHandles = physicsSystem->AddScenes(sceneConfigs);
         //Verify we've added the max number and all are valid
-        EXPECT_EQ(sceneHandles.size(), std::numeric_limits<AzPhysics::SceneIndex>::max());
+        EXPECT_EQ(sceneHandles.size(), AzPhysics::MaxNumberOfScenes);
         for (auto& handle : sceneHandles)
         {
             EXPECT_TRUE(handle != AzPhysics::InvalidSceneHandle);
