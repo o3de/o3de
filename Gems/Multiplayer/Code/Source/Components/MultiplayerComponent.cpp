@@ -12,6 +12,12 @@
 
 namespace Multiplayer
 {
+    MultiplayerComponent::MultiplayerComponent()
+        : m_networkActivatedHandler([this]() { OnNetworkActivated(); })
+    {
+        ;
+    }
+
     void MultiplayerComponent::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

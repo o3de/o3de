@@ -33,6 +33,7 @@ namespace MultiplayerTest
 
     void TestMultiplayerComponent::OnInit()
     {
+        m_netBindComponent->AddNetworkActivatedEventHandler(m_networkActivatedHandler);
     }
 
     void TestMultiplayerComponent::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -40,6 +41,10 @@ namespace MultiplayerTest
     }
 
     void TestMultiplayerComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+
+    void TestMultiplayerComponent::OnNetworkActivated()
     {
     }
 

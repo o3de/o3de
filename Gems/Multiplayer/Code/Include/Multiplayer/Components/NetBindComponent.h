@@ -183,6 +183,7 @@ namespace Multiplayer
         void NotifyServerMigration(const HostId& remoteHostId);
         void NotifyPreRender(float deltaTime);
         void NotifyCorrection();
+        void NetworkActivated();
 
         void AddEntityStopEventHandler(EntityStopEvent::Handler& eventHandler);
         void AddEntityDirtiedEventHandler(EntityDirtiedEvent::Handler& eventHandler);
@@ -190,6 +191,7 @@ namespace Multiplayer
         void AddEntityServerMigrationEventHandler(EntityServerMigrationEvent::Handler& eventHandler);
         void AddEntityPreRenderEventHandler(EntityPreRenderEvent::Handler& eventHandler);
         void AddEntityCorrectionEventHandler(EntityCorrectionEvent::Handler& handler);
+        void AddNetworkActivatedEventHandler(AZ::Event<>::Handler& handler);
 
         bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
@@ -244,6 +246,7 @@ namespace Multiplayer
         EntityPreRenderEvent  m_entityPreRenderEvent;
         EntityCorrectionEvent m_entityCorrectionEvent;
         AZ::Event<>           m_onRemove;
+        AZ::Event<>           m_onNetworkActivated;
         RpcSendEvent::Handler m_handleLocalServerRpcMessageEventHandle;
         RpcSendEvent::Handler m_handleLocalAutonomousToAuthorityRpcMessageEventHandle;
         RpcSendEvent::Handler m_handleLocalAuthorityToAutonomousRpcMessageEventHandle;

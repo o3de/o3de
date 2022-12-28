@@ -593,6 +593,11 @@ namespace Multiplayer
         eventHandler.Connect(m_entityCorrectionEvent);
     }
 
+    void NetBindComponent::AddNetworkActivatedEventHandler(AZ::Event<>::Handler& eventHandler)
+    {
+        eventHandler.Connect(m_onNetworkActivated);
+    }
+
     bool NetBindComponent::SerializeEntityCorrection(AzNetworking::ISerializer& serializer)
     {
         m_predictableRecord.ResetConsumedBits();
@@ -789,6 +794,11 @@ namespace Multiplayer
             component->NetworkAttach(this, m_currentRecord, m_predictableRecord);
         }
         m_totalRecord = m_currentRecord;
+    }
+
+    void NetBindComponent::NetworkActivated()
+    {
+        m_onNetworkActivated.Signal();
     }
 
     void NetBindComponent::HandleMarkedDirty()

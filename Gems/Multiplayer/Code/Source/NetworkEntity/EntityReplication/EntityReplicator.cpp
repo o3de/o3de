@@ -172,6 +172,7 @@ namespace Multiplayer
             m_onEntityStopHandler.Disconnect();
             netBindComponent->AddEntityStopEventHandler(m_onEntityStopHandler);
             AttachRPCHandlers();
+            netBindComponent->NetworkActivated();
         }
 
         AZ_Assert(m_remoteNetworkRole != NetEntityRole::InvalidRole, "Trying to add an entity replicator with the remote role as invalid");
