@@ -17,7 +17,7 @@ namespace AZ::RHI
 {
     class Image;
     //! Key for the desired foveated rendering level
-    inline constexpr const char* XRFoveatedLevelKey = "/O3DE/Atom/RHI/XRFoveatedLevel";
+    inline constexpr const char* XRFoveatedLevelKey = "/O3DE/Atom/OpenXR/FoveatedLevel";
 
     //! Base instance descriptor class used to communicate with base XR module.
     class XRInstanceDescriptor : public AZStd::intrusive_base
