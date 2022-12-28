@@ -15,6 +15,7 @@
 #define EvaluateVertexGeometry(IN)      EvaluateVertexGeometry_BasePBR(IN)
 #endif
 
+#include <viewsrg.srgi>
 #include <Atom/RPI/TangentSpace.azsli>
 
 VsOutput EvaluateVertexGeometry_BasePBR(

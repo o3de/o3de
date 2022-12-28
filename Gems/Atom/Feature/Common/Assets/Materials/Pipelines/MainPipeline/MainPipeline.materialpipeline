@@ -31,6 +31,11 @@
             "tag": "forward_customZ"
         },
         {
+            "shader": "./ForwardPass_SkinLighting.shader.template",
+            "azsli": "./ForwardPass_SkinLighting.azsli",
+            "tag": "forward"
+        },
+        {
             "shader": "./Transparent_StandardLighting.shader.template",
             "azsli": "./Transparent_StandardLighting.azsli",
             "tag": "transparent"

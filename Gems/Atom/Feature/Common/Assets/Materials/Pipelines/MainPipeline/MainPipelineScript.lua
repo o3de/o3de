@@ -51,7 +51,12 @@ function MaterialTypeSetup(context)
         context:IncludeShader("DepthPassTransparentMax")
         return true
     end
-
+    
+    if(lightingModel == "Skin") then
+        context:IncludeShader("ForwardPass_SkinLighting")
+        return true
+    end
+     
     Error('Unsupported lighting model "' .. lightingModel .. '".')
     return false
 end
