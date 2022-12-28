@@ -489,14 +489,6 @@
                 "Path": "Passes/LowEndPipeline.pass"
             },
             {
-                "Name": "LowEndPipelineXRLeftTemplate",
-                "Path": "Passes/LowEndPipelineXRLeft.pass"
-            },
-            {
-                "Name": "LowEndPipelineXRRightTemplate",
-                "Path": "Passes/LowEndPipelineXRRight.pass"
-            },
-            {
                 "Name": "MultiViewForwardPassTemplate",
                 "Path": "Passes/MultiViewForward.pass"
             },
