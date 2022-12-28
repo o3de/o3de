@@ -1217,19 +1217,42 @@ namespace AssetProcessor
 
             //create/update the source record for this job
             AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
-            auto scanFolder = m_platformConfig->GetScanFolderByPath(processedAsset.m_entry.m_sourceAssetReference.ScanFolderPath().c_str());
-            if (!scanFolder)
-            {
-                //can't find the scan folder this source came from!?
-                AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to find the scan folder for this source!!!");
-                continue;
-            }
+            const AZ::Uuid sourceUuid = AssetUtilities::GetSourceUuid(processedAsset.m_entry.m_sourceAssetReference);
 
-            if (!m_stateData->GetSourceBySourceNameScanFolderId(processedAsset.m_entry.m_sourceAssetReference.RelativePath().c_str(), scanFolder->ScanFolderID(), source))
+            if (!m_stateData->GetSourceBySourceNameScanFolderId(
+                    processedAsset.m_entry.m_sourceAssetReference.RelativePath().c_str(),
+                    processedAsset.m_entry.m_sourceAssetReference.ScanFolderId(),
+                    source))
             {
                 //if we didn't find a source, we make a new source
                 //add the new source
                 AddSourceToDatabase(source, processedAsset.m_entry.m_sourceAssetReference);
+            }
+            else if (sourceUuid != source.m_sourceGuid)
+            {
+                // UUID has changed, update catalog and database
+
+                const AZ::Uuid oldUuid = source.m_sourceGuid;
+
+                // Send a Removed message for each existing product, otherwise they'll just get stuck in the catalog
+                AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer oldProducts;
+                m_stateData->GetProductsBySourceID(source.m_sourceID, oldProducts);
+
+                for (const auto& product : oldProducts)
+                {
+                    AzToolsFramework::AssetDatabase::JobDatabaseEntry job;
+                    m_stateData->GetJobByJobID(product.m_jobPK, job);
+
+                    AssetNotificationMessage oldAssetRemovedMessage(product.m_productName, AzFramework::AssetSystem::AssetNotificationMessage::NotificationType::AssetRemoved, product.m_assetType, job.m_platform);
+                    oldAssetRemovedMessage.m_assetId = AZ::Data::AssetId(oldUuid, product.m_subID);
+
+                    Q_EMIT AssetMessage(oldAssetRemovedMessage);
+                }
+
+                // Update the database
+                source.m_sourceGuid = sourceUuid;
+
+                m_stateData->SetSource(source);
             }
 
             //create/update the job
@@ -3122,6 +3145,7 @@ namespace AssetProcessor
         }
 
         QString normalizedFullFile = AssetUtilities::NormalizeFilePath(fullFile);
+
         if (!fromScanner) // the scanner already does exclusion and doesn't need to deal with metafiles.
         {
             if (m_platformConfig->IsFileExcluded(normalizedFullFile))
@@ -3147,8 +3171,21 @@ namespace AssetProcessor
 
         if (!isDelete && IsInIntermediateAssetsFolder(normalizedFullFile) && !m_knownFolders.contains(normalizedFullFile))
         {
+            // Make a special case check for MetadataManager files
+            // An update to one of these types of files needs to cause a re-process of the intermediate file.
+            // Converting a metadata file to the real file normally happens later in the processing but needs to be done
+            // up front for intermediates to avoid bypassing this whole block - which stops processing intermediates before they're recorded in the db.
+            AzToolsFramework::MetadataManager::MetadataFileExtension;
+            AZ::IO::FixedMaxPath absolutePath(normalizedFullFile.toUtf8().constData());
+
+            if (absolutePath.Extension() == AzToolsFramework::MetadataManager::MetadataFileExtension)
+            {
+                // Use the real file for the check below
+                absolutePath = absolutePath.ReplaceExtension("");
+            }
+
             QString relativePath, scanfolderPath;
-            m_platformConfig->ConvertToRelativePath(normalizedFullFile, relativePath, scanfolderPath);
+            m_platformConfig->ConvertToRelativePath(absolutePath.c_str(), relativePath, scanfolderPath);
 
             auto productName = AssetUtilities::GetIntermediateAssetDatabaseName(relativePath.toUtf8().constData());
 
@@ -3958,6 +3995,7 @@ namespace AssetProcessor
             AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceInfoMapMutex);
             m_sourceUUIDToSourceInfoMap[sourceUUID] = sourceAsset; // Don't use insert, there may be an outdated entry from a previously overriden file
         }
+
 
         // insert the new entry into the analysis tracker:
         auto resultInsert = m_remainingJobsForEachSourceFile.insert_key(sourceAsset.AbsolutePath().c_str());
