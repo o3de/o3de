@@ -228,7 +228,7 @@ namespace AZ::Reflection
                     nullptr);
 
                 const StackEntry& nodeData = m_stack.back();
-                m_serializeContext->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
+                m_serializeContext->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nodeData.m_classData, nodeData.m_classElement);
             }
 
             bool BeginNode(

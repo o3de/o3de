@@ -6,7 +6,9 @@
  *
  */
 
+#pragma optimize("", off)
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
@@ -472,47 +474,90 @@ namespace AZ::DocumentPropertyEditor
                     m_builder.Label(labelAttribute.data());
                 }
 
-                AZ::Dom::Value instancePointerValue = AZ::Dom::Utils::MarshalTypedPointerToValue(access.Get(), access.GetType());
-                bool hashValue = false;
-                const AZ::Name PointerTypeFieldName = AZ::Dom::Utils::PointerTypeFieldName;
-                if (instancePointerValue.IsOpaqueValue() || instancePointerValue.FindMember(PointerTypeFieldName))
+                if (serializedPathAttribute.GetString().empty())
                 {
-                    hashValue = true;
+                    AZ::Dom::Value instancePointerValue = AZ::Dom::Utils::MarshalTypedPointerToValue(access.Get(), access.GetType());
+                    VisitValue(
+                        instancePointerValue,
+                        access.Get(),
+                        attributes,
+                        // this needs to write the value back into the reflected object via Json serialization
+                        [valuePointer = access.Get(), valueType = access.GetType(), this](const Dom::Value& newValue)
+                        {
+                            // marshal this new value into a pointer for use by the Json serializer
+                            auto marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType);
+
+                            rapidjson::Document buffer;
+                            JsonSerializerSettings serializeSettings;
+                            JsonDeserializerSettings deserializeSettings;
+                            serializeSettings.m_serializeContext = m_serializeContext;
+                            deserializeSettings.m_serializeContext = m_serializeContext;
+
+                            // serialize the new value to Json, using the original valuePointer as a reference object to generate a minimal diff
+                            JsonSerialization::Store(buffer, buffer.GetAllocator(), marshalledPointer, valuePointer, valueType, serializeSettings);
+
+                            // now deserialize that value into the original location
+                            JsonSerialization::Load(valuePointer, valueType, buffer, deserializeSettings);
+
+                            // NB: the returned value for serialized pointer values is instancePointerValue, but since this is passed by pointer,
+                            // it will not actually detect a changed dom value. Since we are already writing directly to the DOM before this step,
+                            // it won't affect the calling DPE, however, other DPEs pointed at the same adapter would be unaware of the change,
+                            // and wouldn't update their UI.
+                            // In future, to properly support multiple DPEs on one adapter, we will need to solve this. One way would be to store
+                            // the json serialized value (which is mostly human-readable text) as an attribute, so any change to the Json would
+                            // trigger an update. This would have the advantage of allowing opaque and pointer types to be searchable by the
+                            // string-based Filter adapter. Without this, things like Vector3 will not have searchable values by text. These
+                            // advantages would have to be measured against the size changes in the DOM and the time taken to populate and parse them. return newValue;
+                            return newValue;
+                        },
+                        false,
+                        false);
                 }
-                VisitValue(
-                    instancePointerValue,
-                    access.Get(),
-                    attributes,
-                    // this needs to write the value back into the reflected object via Json serialization
-                    [valuePointer = access.Get(), valueType = access.GetType(), this](const Dom::Value& newValue)
-                    {
-                        // marshal this new value into a pointer for use by the Json serializer
-                        auto marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType);
+                else
+                {
+                    const AZ::TypeId opaqueType = access.GetType();
+                    [[maybe_unused]] void* pointerFromAccess = access.Get();
+                    AZ::Dom::Value instancePointerValue1 = AZ::Dom::Utils::MarshalTypedPointerToValue(access.Get(), access.GetType());
+                    void* marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(instancePointerValue1, opaqueType);
+                    // TODO: The below 2 lines can be removed. serialize context somehow gets picked up even if you don't explicitly pass it
+                    // here.
+                    JsonSerializerSettings serializeSettings;
+                    serializeSettings.m_serializeContext = m_serializeContext;
 
-                        rapidjson::Document buffer;
-                        JsonSerializerSettings serializeSettings;
-                        JsonDeserializerSettings deserializeSettings;
-                        serializeSettings.m_serializeContext = m_serializeContext;
-                        deserializeSettings.m_serializeContext = m_serializeContext;
+                    rapidjson::Document serializedValue;
+                    auto result = JsonSerialization::Store(
+                        serializedValue, serializedValue.GetAllocator(), marshalledPointer, nullptr, opaqueType, serializeSettings);
 
-                        // serialize the new value to Json, using the original valuePointer as a reference object to generate a minimal diff
-                        JsonSerialization::Store(buffer, buffer.GetAllocator(), marshalledPointer, valuePointer, valueType, serializeSettings);
+                    AZ::Dom::Value instancePointerValue;
+                    auto outputWriter = instancePointerValue.GetWriteHandler();
+                    auto convertToAzDomResult =
+                        AZ::Dom::Json::VisitRapidJsonValue(serializedValue, *outputWriter, AZ::Dom::Lifetime::Temporary);
+                    VisitValue(
+                        instancePointerValue,
+                        access.Get(),
+                        attributes,
+                        [valuePointer = access.Get(), opaqueType, this](const Dom::Value& newValue)
+                        {
+                            void* marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, opaqueType);
+                            rapidjson::Document serializedValue;
+                            auto result = JsonSerialization::Store(
+                                serializedValue, serializedValue.GetAllocator(), marshalledPointer, nullptr, opaqueType);
 
-                        // now deserialize that value into the original location
-                        JsonSerialization::Load(valuePointer, valueType, buffer, deserializeSettings);
+                            JsonDeserializerSettings deserializeSettings;
+                            deserializeSettings.m_serializeContext = m_serializeContext;
+                            // now deserialize that value into the original location
+                            JsonSerialization::Load(valuePointer, opaqueType, serializedValue, deserializeSettings);
 
-                        // NB: the returned value for serialized pointer values is instancePointerValue, but since this is passed by pointer,
-                        // it will not actually detect a changed dom value. Since we are already writing directly to the DOM before this step,
-                        // it won't affect the calling DPE, however, other DPEs pointed at the same adapter would be unaware of the change,
-                        // and wouldn't update their UI.
-                        // In future, to properly support multiple DPEs on one adapter, we will need to solve this. One way would be to store
-                        // the json serialized value (which is mostly human-readable text) as an attribute, so any change to the Json would
-                        // trigger an update. This would have the advantage of allowing opaque and pointer types to be searchable by the
-                        // string-based Filter adapter. Without this, things like Vector3 will not have searchable values by text. These
-                        // advantages would have to be measured against the size changes in the DOM and the time taken to populate and parse them.
-                        return newValue;
-                    },
-                    false, hashValue);
+                            AZ::Dom::Value newInstancePointerValue;
+                            auto outputWriter = newInstancePointerValue.GetWriteHandler();
+                            auto convertToAzDomResult =
+                                AZ::Dom::Json::VisitRapidJsonValue(serializedValue, *outputWriter, AZ::Dom::Lifetime::Temporary);
+                            return newInstancePointerValue;
+                        },
+                        false,
+                        false);
+                }
+                
             }
         }
 
@@ -863,3 +908,4 @@ namespace AZ::DocumentPropertyEditor
             );
     }
 } // namespace AZ::DocumentPropertyEditor
+#pragma optimize("", on)
