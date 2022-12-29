@@ -47,22 +47,22 @@ namespace AzToolsFramework
         return m_settings;
     }
 
-    AzFramework::PaintBrushMode GlobalPaintBrushSettingsSystemComponent::GetBrushMode() const
+    PaintBrushMode GlobalPaintBrushSettingsSystemComponent::GetBrushMode() const
     {
         return m_settings.GetBrushMode();
     }
 
-    void GlobalPaintBrushSettingsSystemComponent::SetBrushMode(AzFramework::PaintBrushMode brushMode)
+    void GlobalPaintBrushSettingsSystemComponent::SetBrushMode(PaintBrushMode brushMode)
     {
         m_settings.SetBrushMode(brushMode);
     }
 
-    AzFramework::PaintBrushColorMode GlobalPaintBrushSettingsSystemComponent::GetBrushColorMode() const
+    PaintBrushColorMode GlobalPaintBrushSettingsSystemComponent::GetBrushColorMode() const
     {
         return m_settings.GetColorMode();
     }
 
-    void GlobalPaintBrushSettingsSystemComponent::SetBrushColorMode(AzFramework::PaintBrushColorMode colorMode)
+    void GlobalPaintBrushSettingsSystemComponent::SetBrushColorMode(PaintBrushColorMode colorMode)
     {
         m_settings.SetColorMode(colorMode);
     }
