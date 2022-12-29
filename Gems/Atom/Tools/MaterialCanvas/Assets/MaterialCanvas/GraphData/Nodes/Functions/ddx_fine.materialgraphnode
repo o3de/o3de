@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Ddx Fine",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Computes a high precision partial derivative with respect to the screen-space x-coordinate",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

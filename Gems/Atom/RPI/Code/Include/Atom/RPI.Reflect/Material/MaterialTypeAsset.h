@@ -42,6 +42,8 @@ namespace AZ
         };
         using MaterialUvNameMap = AZStd::vector<UvNamePair>;
 
+        static const Name MaterialPipelineNone = Name{};
+
         //! MaterialTypeAsset defines the property layout and general behavior for 
         //! a type of material. It serves as the foundation for MaterialAssets,
         //! which can be used to render meshes at runtime.
@@ -63,24 +65,36 @@ namespace AZ
             static const char* Group;
             static const char* Extension;
 
+            static constexpr AZ::u32 SubId = 0;
+
             static constexpr uint32_t InvalidShaderIndex = static_cast<uint32_t>(-1);
+
+            //! Provides data about how to render the material in a particular render pipeline.
+            struct MaterialPipelinePayload
+            {
+                AZ_TYPE_INFO(MaterialTypeAsset::MaterialPipelinePayload, "{7179B076-70B6-4B47-9F98-BEF164396873}");
+
+                Ptr<MaterialPropertiesLayout> m_materialPropertiesLayout;     //!< The layout of internal properties that the material type can use to configure this MaterialPipelinePayload
+                AZStd::vector<MaterialPropertyValue> m_defaultPropertyValues; //!< Default values for each of the internal properties.
+                ShaderCollection m_shaderCollection;                          //!< The collection of shaders that target the particular render pipeline.
+                MaterialFunctorList m_materialFunctors;                       //!< These material functors consume data from the internal properties and configure the shader collection.
+            };
+            using MaterialPipelineMap = AZStd::unordered_map<Name, MaterialPipelinePayload>;
 
             static void Reflect(ReflectContext* context);
 
             virtual ~MaterialTypeAsset();
 
-            //! Return the set of shaders to be run by this material.
-            const MaterialPipelineShaderCollections& GetShaderCollections() const;
-
-            //! Returns the collection of shaders that this material could run for a given pipeline.
-            //! @param forPipeline the name of the material pipeline to query for shaders. For MaterialPipelineNameCommon, 
-            //!        this returns a list of shaders that should be sent to all pipelines.
-            const ShaderCollection& GetShaderCollection(const Name& forPipeline) const;
+            //! Return the general purpose shader collection that applies to any render pipeline.
+            const ShaderCollection& GetGeneralShaderCollection() const;
 
             //! The material may contain any number of MaterialFunctors.
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more.
             //! See MaterialFunctor.h for details.
             const MaterialFunctorList& GetMaterialFunctors() const;
+
+            //! Return the collection of MaterialPipelinePayload data for all supported material pipelines.
+            const MaterialPipelineMap& GetMaterialPipelinePayloads() const;
 
             //! Returns the shader resource group layout that has per-material frequency, which indicates most of the topology
             //! for a material's shaders.
@@ -151,6 +165,8 @@ namespace AZ
             //! Replaces the appropriate asset members when a reload occurs
             void ReinitializeAsset(Data::Asset<Data::AssetData> asset);
 
+            void ForAllShaderItems(AZStd::function<bool(const Name& materialPipelineName, ShaderCollection::Item& shaderItem, uint32_t shaderIndex)> callback);
+
             //! Holds values for each material property, used to initialize Material instances.
             //! This is indexed by MaterialPropertyIndex and aligns with entries in m_materialPropertiesLayout.
             AZStd::vector<MaterialPropertyValue> m_propertyValues;
@@ -161,11 +177,15 @@ namespace AZ
             //! Defines the topology of user-facing inputs to the material
             Ptr<MaterialPropertiesLayout> m_materialPropertiesLayout;
 
-            MaterialPipelineShaderCollections m_shaderCollections;
+            //! List of shaders that will be run in any render pipeline
+            ShaderCollection m_generalShaderCollection;
 
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more.
             //! See MaterialFunctor.h for details.
             MaterialFunctorList m_materialFunctors;
+
+            //! Describes how to render the material in specific render pipelines
+            MaterialPipelineMap m_materialPipelinePayloads;
 
             //! These are shaders that hold an example of particular ShaderResourceGroups. Every shader in a material type
             //! must use the same MaterialSrg and ObjectSrg, so we only need to store one example of each. We keep a reference

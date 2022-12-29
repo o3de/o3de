@@ -57,19 +57,19 @@ namespace AZ
             return m_materialTypeAsset;
         }
 
-        const MaterialPipelineShaderCollections& MaterialAsset::GetShaderCollections() const
+        const ShaderCollection& MaterialAsset::GetGeneralShaderCollection() const
         {
-            return m_materialTypeAsset->GetShaderCollections();
-        }
-
-        const ShaderCollection& MaterialAsset::GetShaderCollection(const Name& forPipeline) const
-        {
-            return m_materialTypeAsset->GetShaderCollection(forPipeline);
+            return m_materialTypeAsset->GetGeneralShaderCollection();
         }
 
         const MaterialFunctorList& MaterialAsset::GetMaterialFunctors() const
         {
             return m_materialTypeAsset->GetMaterialFunctors();
+        }
+
+        const MaterialTypeAsset::MaterialPipelineMap& MaterialAsset::GetMaterialPipelinePayloads() const
+        {
+            return m_materialTypeAsset->GetMaterialPipelinePayloads();
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetMaterialSrgLayout(const SupervariantIndex& supervariantIndex) const
@@ -217,7 +217,7 @@ namespace AZ
         
             return m_propertyValues;
         }
-        
+
         const AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>>& MaterialAsset::GetRawPropertyValues() const
         {
             return m_rawPropertyValues;

@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{62CD1505-2735-4D3B-8E0B-E27FDFDA0B56}",
         "category": "Math Functions",
-        "title": "Max",
+        "title": "Maximum",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Selects the greater of x and y (per component)",
         "slotDataTypeGroups": [
             "inValue1|inValue2|outValue"
         ],

@@ -51,6 +51,14 @@ namespace AzToolsFramework
         AZ::ConsoleFunctorFlags::Null,
         "The color of the paintbrush manipulator.");
 
+    AZ_CVAR(
+        float,
+        ed_paintBrushRayCastMeters,
+        4096.0f,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "The number of meters to raycast to look for a valid surface to paint onto.");
+
     namespace
     {
         static constexpr AZ::Crc32 PaintbrushIncreaseSize = AZ_CRC_CE("org.o3de.action.paintbrush.increase_size");
@@ -239,7 +247,7 @@ namespace AzToolsFramework
     {
         // Ray cast into the screen to find the closest collision point for the current mouse location.
         auto worldSurfacePosition =
-            AzToolsFramework::FindClosestPickIntersection(viewportId, screenCoordinates, AzToolsFramework::EditorPickRayLength);
+            AzToolsFramework::FindClosestPickIntersection(viewportId, screenCoordinates, ed_paintBrushRayCastMeters);
 
         // If the mouse isn't colliding with anything, don't move the paintbrush, just leave it at its last location
         // and don't perform any brush actions. We'll reset the stroke movement tracking though so that we don't draw unintended lines

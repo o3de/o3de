@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetFloat",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Float"
@@ -48,7 +47,6 @@
                 },
                 {
                     "base": "SetFloat",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Float"
@@ -91,7 +89,6 @@
                 },
                 {
                     "base": "RemoveKey",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Remove Key"
@@ -128,7 +125,6 @@
                 },
                 {
                     "base": "SetInt",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Int"
@@ -171,7 +167,6 @@
                 },
                 {
                     "base": "SetUInt",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set UInt"
@@ -214,7 +209,6 @@
                 },
                 {
                     "base": "GetBool",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Bool"
@@ -251,7 +245,6 @@
                 },
                 {
                     "base": "GetInt",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Int"
@@ -288,7 +281,6 @@
                 },
                 {
                     "base": "GetUInt",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get UInt"
@@ -325,7 +317,6 @@
                 },
                 {
                     "base": "GetNotifyEvent",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Notify Event"
@@ -356,7 +347,6 @@
                 },
                 {
                     "base": "MergeSettings",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Merge Settings"
@@ -400,7 +390,6 @@
                 },
                 {
                     "base": "MergeSettingsFile",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Merge Settings File"
@@ -450,7 +439,6 @@
                 },
                 {
                     "base": "GetString",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get String"
@@ -487,7 +475,6 @@
                 },
                 {
                     "base": "IsValid",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Valid"
@@ -518,7 +505,6 @@
                 },
                 {
                     "base": "MergeSettingsFolder",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Merge Settings Folder"
@@ -567,7 +553,6 @@
                 },
                 {
                     "base": "SetBool",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Bool"
@@ -610,7 +595,6 @@
                 },
                 {
                     "base": "SetString",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set String"
@@ -653,7 +637,6 @@
                 },
                 {
                     "base": "DumpSettings",
-                    "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Dump Settings"

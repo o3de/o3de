@@ -33,6 +33,7 @@ namespace AZ
             ShaderInput,   //!< Maps to a ShaderResourceGroup input
             ShaderOption,  //!< Maps to a shader variant option
             ShaderEnabled, //!< Maps to the enabled flag for a shader
+            InternalProperty, //!< Maps to the internal properties of a MaterialPipelinePayload
             Invalid,
             Count = Invalid
         };

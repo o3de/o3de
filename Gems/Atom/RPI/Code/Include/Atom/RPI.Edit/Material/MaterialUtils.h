@@ -91,6 +91,28 @@ namespace AZ
             bool CheckIsValidPropertyName(AZStd::string_view name);
             bool CheckIsValidGroupName(AZStd::string_view name);
 
+            //! Returns the file path that would be used for an intermediate .materialtype, if there were one, for the given .materialtype path.
+            //! @param originalMaterialTypeSourcePath the path to the .materialtype
+            //! @param referencingFilePath The @originalMaterialTypeSourcePath can be relative to this path in addition to the asset root.
+            AZStd::string PredictIntermediateMaterialTypeSourcePath(const AZStd::string& originalMaterialTypeSourcePath);
+            AZStd::string PredictIntermediateMaterialTypeSourcePath(const AZStd::string& referencingFilePath, const AZStd::string& originalMaterialTypeSourcePath);
+
+            //! Checks to see if there is an intermediate .materialtype for the given .materialtype path, and returns its path.
+            AZStd::string GetIntermediateMaterialTypeSourcePath(const AZStd::string& forOriginalMaterialTypeSourcePath);
+
+            //! Returns the path of the final .materialtype path, which may be the same as the original path, or could be a different path if there is
+            //! an intermediate .materialtype file associated with this one.
+            //! @param originalMaterialTypeSourcePath the path to the .materialtype
+            //! @param referencingFilePath The @originalMaterialTypeSourcePath can be relative to this path in addition to the asset root.
+            AZStd::string GetFinalMaterialTypeSourcePath(const AZStd::string& referencingFilePath, const AZStd::string& originalMaterialTypeSourcePath);
+
+            //! Returns AssetId of the MaterialTypeAsset from the given .materialtype source file path. This will account for the possibility that there
+            //! is an intermediate .materialtype file associated with the given .materialtype.
+            //! @param originalMaterialTypeSourcePath the path to the .materialtype
+            //! @param referencingFilePath The @originalMaterialTypeSourcePath can be relative to this path in addition to the asset root.
+            Outcome<Data::AssetId> GetFinalMaterialTypeAssetId(const AZStd::string& referencingFilePath, const AZStd::string& originalMaterialTypeSourcePath);
+
+
         }
     }
 }

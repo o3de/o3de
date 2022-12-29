@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Ldexp",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns x * 2exp",
         "slotDataTypeGroups": [
             "inValue1|inValue2|outValue"
         ],

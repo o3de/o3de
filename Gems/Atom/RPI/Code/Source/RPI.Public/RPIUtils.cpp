@@ -224,6 +224,11 @@ namespace AZ
                         float color = actualMem[indices.first].GetBlockColor(indices.second).GetElement(componentIndex);
                         return s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color * AZStd::numeric_limits<AZ::u8>::max())];
                     }
+                case AZ::RHI::Format::BC4_UNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const BC4Block*>(mem);
+                        return actualMem[indices.first].GetBlockColor(indices.second).GetElement(componentIndex);
+                    }
                 default:
                     AZ_Assert(false, "Unsupported pixel format: %s", AZ::RHI::ToString(format));
                     return 0.0f;
@@ -427,6 +432,11 @@ namespace AZ
                             s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color.GetB() * AZStd::numeric_limits<AZ::u8>::max())],
                             s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color.GetA() * AZStd::numeric_limits<AZ::u8>::max())]);
                     }
+                case AZ::RHI::Format::BC4_UNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const BC4Block*>(mem);
+                        return actualMem[indices.first].GetBlockColor(indices.second);
+                    }
                 default:
                     AZ_Assert(false, "Unsupported pixel format: %s", AZ::RHI::ToString(format));
                     return AZ::Color::CreateZero();
@@ -518,6 +528,8 @@ namespace AZ
                 case AZ::RHI::Format::BC1_UNORM:
                 case AZ::RHI::Format::BC1_UNORM_SRGB:
                     return BC1Block::GetBlockIndices(width, x, y);
+                case AZ::RHI::Format::BC4_UNORM:
+                    return BC4Block::GetBlockIndices(width, x, y);
                 default:
                     return AZStd::pair<size_t, size_t>((y * width + x) * numComponents, 0);
                 }
@@ -827,6 +839,7 @@ namespace AZ
             // Compressed types
             case AZ::RHI::Format::BC1_UNORM:
             case AZ::RHI::Format::BC1_UNORM_SRGB:
+            case AZ::RHI::Format::BC4_UNORM:
                 return true;
             }
 
