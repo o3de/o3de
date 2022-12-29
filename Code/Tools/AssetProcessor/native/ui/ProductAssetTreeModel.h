@@ -18,7 +18,7 @@ namespace AssetProcessor
     {
     public:
         ProductAssetTreeModel(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> sharedDbConnection, QObject *parent = nullptr);
-        virtual ~ProductAssetTreeModel();
+        ~ProductAssetTreeModel() override;
 
         // AssetDatabaseNotificationBus::Handler
         void OnProductFileChanged(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry) override;

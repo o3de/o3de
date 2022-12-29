@@ -1464,10 +1464,10 @@
              </layout>
             </widget>
            </widget>
-          </item>
+          </item>dis
          </layout>
         </widget>
-        <widget class="QWidget" name="ToolsPage">
+        <widget class="QWidget" name="SettingsPage">
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
            <layout class="QVBoxLayout" name="fullScanLayout">
@@ -1771,7 +1771,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Disable Startup Scan&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Skip Startup Scan&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                </widget>
               </item>
@@ -1840,7 +1840,7 @@
               <item>
                <widget class="QLabel" name="skipinitialdatabaseDescription">
                 <property name="text">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This mode disables the startup scan (modified file changes while the asset processor wasn't running won't be detected).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This mode skips startup checks for assets modified while AssetProcessor was closed. (Use this mode to improve Editor launch times when assets are not changing. Skipping these startup checks may result in unexpected behavior if assets are modified while Asset Processor is not running).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="scaledContents">
                  <bool>false</bool>

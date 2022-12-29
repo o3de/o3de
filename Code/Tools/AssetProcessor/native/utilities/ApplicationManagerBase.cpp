@@ -804,7 +804,7 @@ void ApplicationManagerBase::InitAssetRequestHandler(AssetProcessor::AssetReques
         {
             if (!m_assetProcessorManagerIsReady)
             {
-                if (m_remainingAPMJobs == newNum)
+                if ((m_remainingAPMJobs == newNum) && m_remainingAPMJobs)
                 {
                     return;
                 }
