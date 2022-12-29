@@ -11,25 +11,23 @@ body:
       - Read our [CONTRIBUTING.md guide](https://github.com/o3de/community/blob/main/CONTRIBUTING.md) on reporting bugs.
       - Write a descriptive issue title above.
       - Search [open](https://github.com/o3de/o3de/issues) and [closed](https://github.com/o3de/o3de/issues?q=is%3Aissue+is%3Aclosed+) issues to ensure it has not already been reported.
-      - Verify that you are using a supported version.
+      - If you are using a custom build, please test if your issue is reproducible on an O3DE/O3DE official branch, installer or project.
 
 - type: input
   attributes:
     label: Commit ID or Build Version
     description: >
       Please provide either the build version or the [o3de/o3de](https://github.com/o3de/o3de) Git commit hash your project is using.
-      You can get the commit ID by running the `git rev-parse HEAD` command on your current branch or by looking at your Git history.
-      If you are using a custom build, please test if your issue is reproducible on an O3DE/O3DE official branch or build.
+      You can get the commit ID by running the `git rev-parse HEAD` command on your current branch or by looking at your Git history using `git log`. 
+      Build numbers will show on the Editor launch screen or via "About O3DE" under the Help menu, when using an O3DE installer or packaged releases.
     placeholder: f4760cf
-  validations:
-    required: true
 
 - type: textarea
   attributes:
     label: Issue description
     description: |
       Describe your issue briefly. What doesn't work, and how do you expect it to work instead?
-      You can include images or videos with drag and drop, and format code blocks or logs with <code>```</code> tags.
+      Please include any relevant information that may help reproduce issue. This could include setup, build or configuration information. You can [format code blocks](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#quoting-code), callstacks or logs with <code>```</code> tags.
   validations:
     required: true
 
@@ -45,8 +43,6 @@ body:
       3. Select attached asset '...'
       4. Scroll down to '...'
       5. See error
-  validations:
-    required: true
 
 - type: textarea
   attributes:
@@ -64,25 +60,23 @@ body:
   attributes:
     label: Minimal project, config or assets to aid reproduction
     description: |
-        [!Important!] Please provide sample assets needed to reproduce the issue, either as an [attachment](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files) or as a link to a public asset in GitHub.
+        [!Important!] Please consider providing sample assets needed to reproduce the issue, either as an [attachment](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files) or as a link to a public asset in GitHub.
 
 - type: textarea
   attributes:
     label: Screenshots/Video
     description: |
-      If applicable, add screenshots and/or a video to help explain your problem.
+      If applicable, [add screenshots](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#images) and/or a video to help explain your problem.  You can upload images or videos with drag and drop or add a link.
 
 - type: textarea
   attributes:
     label: Device/System Information
     description: |
-        Please tell us about the desktop or device issue was encountered on. Please include whats relevant
+        Please tell us about the desktop or device issue was encountered on.
     placeholder: |
         - Device: [e.g. PC, Mac, iPhone, Samsung] 
         - OS: [e.g. Windows, macOS, iOS, Android]
         - Version [e.g. 10, Monterey, Oreo]
-        - CPU [e.g. Intel I9-9900k , Ryzen 5900x, ]
-        - GPU [AMD 6800 XT, NVidia RTX 3090]
+        - CPU [e.g. Intel I9-9900k , Ryzen 5900x]
+        - GPU [AMD 6800 XT, NVIDIA RTX 3090]
         - Memory [e.g. 16GB]
-  validations:
-    required: true
