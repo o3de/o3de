@@ -61,7 +61,7 @@ ColorHexEdit::ColorHexEdit(QWidget* parent)
     , m_red(0)
     , m_green(0)
     , m_blue(0)
-    , m_alpha(0)
+    , m_alpha(1)
 {
     auto layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
