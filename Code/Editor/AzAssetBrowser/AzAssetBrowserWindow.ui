@@ -382,22 +382,7 @@
             <height>0</height>
            </size>
           </property>
-          <widget class="QWidget" name="m_thumbnailView">
-           <layout class="QVBoxLayout" name="m_thumbnailViewLayout">
-            <property name="spacing">
-             <number>0</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="m_thumbnailViewPlaceholder">
-              <property name="text">
-               <string>Thumbnail view placeholder</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-           </layout>
+          <widget class="AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView" name="m_thumbnailView">
           </widget>
           <widget class="QWidget" name="m_tableView">
            <layout class="QVBoxLayout" name="m_tableViewLayout">
@@ -471,6 +456,11 @@
    <class>AzQtComponents::BreadCrumbs</class>
    <extends>QWidget</extends>
    <header>AzQtComponents/Components/Widgets/BreadCrumbs.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView</class>
+   <extends>QWidget</extends>
+   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h</header>
   </customwidget>
  </customwidgets>
  <resources>
