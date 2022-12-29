@@ -54,12 +54,6 @@ namespace AZ
     //=========================================================================
     bool SystemAllocator::Create()
     {
-        AZ_Assert(IsReady() == false, "System allocator was already created!");
-        if (IsReady())
-        {
-            return false;
-        }
-
         m_subAllocator = new (&g_systemSchema) HphaSchema();
         return true;
     }

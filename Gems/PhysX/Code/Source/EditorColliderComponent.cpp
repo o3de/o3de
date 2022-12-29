@@ -1133,19 +1133,9 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    AZ::Transform EditorColliderComponent::GetCurrentTransform()
-    {
-        return GetWorldTM();
-    }
-
     AZ::Transform EditorColliderComponent::GetCurrentLocalTransform()
     {
         return GetColliderLocalTransform();
-    }
-
-    AZ::Vector3 EditorColliderComponent::GetBoxScale()
-    {
-        return AZ::Vector3::CreateOne();
     }
 
     void EditorColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)

@@ -19,6 +19,8 @@
 namespace SandboxEditor
 {
     using AngleSnappingChangedEvent = AZ::Event<bool>;
+    using CameraSpeedScaleChangedEvent = AZ::Event<float>;
+    using GridShowingChangedEvent = AZ::Event<bool>;
     using GridSnappingChangedEvent = AZ::Event<bool>;
     using PerspectiveChangedEvent = AZ::Event<float>;
     using NearFarPlaneChangedEvent = AZ::Event<float>;
@@ -30,6 +32,8 @@ namespace SandboxEditor
         virtual ~EditorViewportSettingsCallbacks() = default;
 
         virtual void SetAngleSnappingChangedEvent(AngleSnappingChangedEvent::Handler& handler) = 0;
+        virtual void SetCameraSpeedScaleChangedEvent(CameraSpeedScaleChangedEvent::Handler& handler) = 0;
+        virtual void SetGridShowingChangedEvent(GridShowingChangedEvent::Handler& handler) = 0;
         virtual void SetGridSnappingChangedEvent(GridSnappingChangedEvent::Handler& handler) = 0;
         virtual void SetFarPlaneDistanceChangedEvent(NearFarPlaneChangedEvent::Handler& handler) = 0;
         virtual void SetPerspectiveChangedEvent(PerspectiveChangedEvent::Handler& handler) = 0;
@@ -128,6 +132,12 @@ namespace SandboxEditor
     SANDBOX_API float CameraDefaultOrbitDistance();
     SANDBOX_API void SetCameraDefaultOrbitDistance(float distance);
 
+    SANDBOX_API bool CameraGoToPositionInstantlyEnabled();
+    SANDBOX_API void SetCameraGoToPositionInstantlyEnabled(bool instant);
+
+    SANDBOX_API float CameraGoToPositionDuration();
+    SANDBOX_API void SetCameraGoToPositionDuration(float duration); 
+
     SANDBOX_API AzFramework::InputChannelId CameraTranslateForwardChannelId();
     SANDBOX_API void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId);
 
@@ -200,6 +210,8 @@ namespace SandboxEditor
     SANDBOX_API void ResetCameraDefaultEditorPosition();
     SANDBOX_API void ResetCameraDefaultOrbitDistance();
     SANDBOX_API void ResetCameraDefaultEditorOrientation();
+    SANDBOX_API void ResetCameraGoToPositionInstantlyEnabled();
+    SANDBOX_API void ResetCameraGoToPositionDuration();
 
     SANDBOX_API void ResetCameraTranslateForwardChannelId();
     SANDBOX_API void ResetCameraTranslateBackwardChannelId();

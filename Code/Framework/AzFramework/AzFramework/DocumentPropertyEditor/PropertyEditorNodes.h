@@ -138,8 +138,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
         static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
-        static constexpr auto EnumValue = AttributeDefinition<Dom::Value>("EnumValue");
+        template <typename EnumValueType>
+        static constexpr auto EnumValue = EnumValueAttributeDefinition<EnumValueType>("EnumValue");
         static constexpr auto EnumValues = EnumValuesAttributeDefinition("EnumValues");
+
         static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
 

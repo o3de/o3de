@@ -247,8 +247,57 @@ namespace AZ::DocumentPropertyEditor
         AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
     };
 
-    using EnumValuesContainer = AZStd::vector<AZ::Edit::EnumConstant<AZ::u64>>;
+    template <typename EnumType>
+    class EnumValueAttributeDefinition final : public AttributeDefinition<AZ::Edit::EnumConstant<EnumType>>
+    {
+    public:
+        using EnumConstantValue = AZ::Edit::EnumConstant<EnumType>;
 
+        static constexpr const char* EntryDescriptionKey = "description";
+        static constexpr const char* EntryValueKey = "value";
+
+        explicit constexpr EnumValueAttributeDefinition(AZStd::string_view name)
+            : AttributeDefinition<EnumConstantValue>(name)
+        {
+        }
+
+        Dom::Value ValueToDom(const EnumConstantValue& attribute) const override
+        {
+            Dom::Value result(Dom::Type::Object);
+            result[EntryDescriptionKey] = Dom::Value(attribute.m_description, true);
+            result[EntryValueKey] = Dom::Value();
+            result[EntryValueKey].SetUint64(attribute.m_value);
+            return result;
+        }
+
+        AZStd::optional<EnumConstantValue> DomToValue(const Dom::Value& value) const override
+        {
+            if (!value.IsObject() || !value.HasMember(EntryDescriptionKey) || !value.HasMember(EntryValueKey))
+            {
+                return {};
+            }
+
+            return EnumConstantValue{ static_cast<EnumType>(value[EntryValueKey].GetUint64()), value[EntryDescriptionKey].GetString() };
+        }
+
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
+        {
+            if (attribute == nullptr)
+            {
+                return {};
+            }
+
+            AZ::AttributeReader reader(instance, attribute);
+            if (EnumConstantValue value; reader.Read<EnumConstantValue>(value))
+            {
+                return ValueToDom(value);
+            }
+
+            return {};
+        }
+    };
+
+    using EnumValuesContainer = AZStd::vector<AZ::Edit::EnumConstant<AZ::u64>>;
     class EnumValuesAttributeDefinition final : public AttributeDefinition<EnumValuesContainer>
     {
     public:

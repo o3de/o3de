@@ -86,11 +86,11 @@
                 "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/ClearCoatPropertyGroup.json"
             },
             { 
-                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/ParallaxPropertyGroup.json"
+                "$import": "MaterialPipelineTest_ParallaxPropertyGroup.json"
             },
-//            { 
-//                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/OpacityPropertyGroup.json"
-//            },
+            { 
+                "$import": "MaterialPipelineTest_OpacityPropertyGroup.json"
+            },
             { 
                 "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/UvPropertyGroup.json"
             },
@@ -98,7 +98,7 @@
                 "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/IrradiancePropertyGroup.json"
             },
             { 
-                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/GeneralCommonPropertyGroup.json"
+                "$import": "MaterialPipelineTest_GeneralCommonPropertyGroup.json"
             }
         ]
     },

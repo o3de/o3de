@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "CreateRandom",
-                    "context": "Uuid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Random"
@@ -34,7 +33,6 @@
                 },
                 {
                     "base": "CreateNull",
-                    "context": "Uuid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Null"
@@ -57,7 +55,6 @@
                 },
                 {
                     "base": "Create",
-                    "context": "Uuid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create"
@@ -80,7 +77,6 @@
                 },
                 {
                     "base": "CreateName",
-                    "context": "Uuid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Name"
@@ -111,7 +107,6 @@
                 },
                 {
                     "base": "Clone",
-                    "context": "Uuid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Clone"
@@ -142,7 +137,6 @@
                 },
                 {
                     "base": "LessThan",
-                    "context": "Uuid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Less Than"
@@ -179,7 +173,6 @@
                 },
                 {
                     "base": "IsNull",
-                    "context": "Uuid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Null"
@@ -210,7 +203,6 @@
                 },
                 {
                     "base": "CreateString",
-                    "context": "Uuid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create String"
@@ -247,7 +239,6 @@
                 },
                 {
                     "base": "ToString",
-                    "context": "Uuid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke To String"
@@ -278,7 +269,6 @@
                 },
                 {
                     "base": "Equal",
-                    "context": "Uuid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Equal"

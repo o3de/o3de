@@ -52,11 +52,11 @@ namespace AZ
             //! Returns the draw item and its properties associated with the provided index.
             DrawItemProperties GetDrawItem(size_t index) const;
 
-            //! Returns the draw list tag associated with the provided index.
+            //! Returns the draw list tag associated with the provided index, used to filter the draw item into an appropriate pass.
             DrawListTag GetDrawListTag(size_t index) const;
 
-            //! Returns the draw filter mask which applied to all the draw items.
-            DrawFilterMask GetDrawFilterMask() const;
+            //! Returns the draw filter mask associated with the provided index, used to filter the draw item into an appropriate render pipeline.
+            DrawFilterMask GetDrawFilterMask(size_t index) const;
 
             //! Overloaded operator delete for freeing a draw packet.
             void operator delete(void* p, size_t size);
@@ -70,9 +70,6 @@ namespace AZ
 
             // The bit-mask of all active filter tags.
             DrawListMask m_drawListMask = 0;
-
-            // The draw filter applies to each draw item
-            DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
 
             // The index buffer view used when the draw call is indexed.
             IndexBufferView m_indexBufferView;
@@ -93,6 +90,9 @@ namespace AZ
 
             // List of draw list tags associated with the draw item index.
             const DrawListTag* m_drawListTags = nullptr;
+
+            // List of draw filter masks associated with the draw item index.
+            const DrawFilterMask* m_drawFilterMasks = nullptr;
 
             // List of shader resource groups shared by all draw items.
             const ShaderResourceGroup* const* m_shaderResourceGroups = nullptr;

@@ -175,6 +175,11 @@ namespace AzToolsFramework
             return m_relativePath.Native();
         }
 
+        const AZStd::string& AssetBrowserEntry::GetVisiblePath() const
+        {
+            return m_visiblePath.Native();
+        }
+
         const AZStd::string AssetBrowserEntry::GetFullPath() const
         {
             // the full path could use a decoding:

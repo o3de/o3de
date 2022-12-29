@@ -19,11 +19,13 @@ namespace AzToolsFramework
         class PrefabFocusInterface;
         class PrefabSystemComponentInterface;
 
-        class PrefabOverridePublicHandler : private PrefabOverridePublicInterface
+        class PrefabOverridePublicHandler : public PrefabOverridePublicRequestBus::Handler
         {
         public:
             PrefabOverridePublicHandler();
             virtual ~PrefabOverridePublicHandler();
+
+            static void Reflect(AZ::ReflectContext* context);
 
         private:
             //! Checks whether overrides are present on the given entity id. Overrides can come from any ancestor prefab but

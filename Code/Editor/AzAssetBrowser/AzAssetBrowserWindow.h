@@ -62,12 +62,12 @@ protected:
     void resizeEvent(QResizeEvent* resizeEvent) override;
 
 private:
-    void OnInitToolsMenuButton();
     void UpdateDisplayInfo();
     void SetNarrowMode(bool narrow);
 
 protected slots:
     void CreateToolsMenu();
+    void AddCreateMenu();
     void SetTreeViewMode();
     void SetListViewMode();
     void UpdateWidgetAfterFilter();
@@ -80,6 +80,7 @@ private:
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
     QMenu* m_toolsMenu = nullptr;
+    QMenu* m_createMenu = nullptr;
     QAction* m_treeViewMode = nullptr;
     QAction* m_listViewMode = nullptr;
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
@@ -96,8 +97,9 @@ private:
     bool m_inNarrowMode = false;
 
 private Q_SLOTS:
-    void SelectionChangedSlot(const QItemSelection& selected, const QItemSelection& deselected) const;
+    void CurrentIndexChangedSlot(const QModelIndex& idx) const;
     void DoubleClickedItem(const QModelIndex& element);
+    void BreadcrumbsPathChangedSlot(const QString& path) const;
 };
 
 extern const char* AZ_ASSET_BROWSER_PREVIEW_NAME;

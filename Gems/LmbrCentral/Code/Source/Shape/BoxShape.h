@@ -57,6 +57,7 @@ namespace LmbrCentral
         BoxShapeConfig GetBoxConfiguration() override { return m_boxShapeConfig; }
         AZ::Vector3 GetBoxDimensions() override { return m_boxShapeConfig.m_dimensions; }
         void SetBoxDimensions(const AZ::Vector3& dimensions) override;
+        bool IsTypeAxisAligned() override;
 
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
