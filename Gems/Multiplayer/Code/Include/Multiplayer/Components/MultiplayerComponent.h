@@ -67,8 +67,9 @@ namespace Multiplayer
         NetworkEntityHandle GetEntityHandle();
         void MarkDirty();
 
+        //! Override to run component logic when the NetworkEntity has completed network activation
         //! Invoked when the NetworkEntity is attached and has RPCs bound via m_networkActivatedHandler
-        //! if m_networkActivatedHandler is registered via NetBindComponent::AddNetworkActivatedEventHandler 
+        //! Requires m_networkActivatedHandler be registered via NetBindComponent::AddNetworkActivatedEventHandler 
         virtual void OnNetworkActivated(){};
 
         virtual void SetOwningConnectionId(AzNetworking::ConnectionId connectionId) = 0;
