@@ -15,12 +15,12 @@ body:
 
 - type: input
   attributes:
-    label: Commit ID or Build Version
+    label: Commit ID or Release Version
     description: >
-      Please provide either the build version or the [o3de/o3de](https://github.com/o3de/o3de) Git commit hash your project is using.
-      You can get the commit ID by running the `git rev-parse HEAD` command on your current branch or by looking at your Git history using `git log`. 
-      Build numbers will show on the Editor launch screen or via "About O3DE" under the Help menu, when using an O3DE installer or packaged releases.
-    placeholder: f4760cf
+      Please provide either the release version or the [o3de/o3de](https://github.com/o3de/o3de) Git commit hash your project is using.
+      The release version can be found via the Editor launch screen or the "About O3DE" option in the Help menus when using an O3DE installer or packaged release.
+      You can get the commit ID by running the `git rev-parse HEAD` command on your current branch or by looking at your Git history using `git log`.
+    placeholder: 22.10
 
 - type: textarea
   attributes:
@@ -72,11 +72,7 @@ body:
   attributes:
     label: Device/System Information
     description: |
-        Please tell us about the desktop or device issue was encountered on.
+        Please tell us about the desktop or device issue was encountered on. For rendering issues please provide GPU details.
     placeholder: |
-        - Device: [e.g. PC, Mac, iPhone, Samsung] 
         - OS: [e.g. Windows, macOS, iOS, Android]
         - Version [e.g. 10, Monterey, Oreo]
-        - CPU [e.g. Intel I9-9900k , Ryzen 5900x]
-        - GPU [AMD 6800 XT, NVIDIA RTX 3090]
-        - Memory [e.g. 16GB]
