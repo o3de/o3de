@@ -603,21 +603,29 @@ namespace AzToolsFramework
                 return false;
             }
 
+            PrefabDom& loadedTemplateDomRef = loadedTemplateDom->get();
+
+            // first, decode the template DOM into actual Instance data.  This will actually create real
+            // C++ classes for the instances in the template DOM and fill their member properties with the
+            // properties from the DOM.
             Instance loadedPrefabInstance;
-            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(loadedPrefabInstance, loadedTemplateDom->get(),
+            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(loadedPrefabInstance, loadedTemplateDomRef,
                 PrefabDomUtils::LoadFlags::ReportDeprecatedComponents))
             {
                 return false;
             }
 
-            PrefabDom storedPrefabDom(&loadedTemplateDom->get().GetAllocator());
+            // To avoid having double the memory allocated at any given time, first empty the original:
+            loadedTemplateDomRef = PrefabDom(); // this will deallocate all the memory previously held.
+
+            // Now that the Instance has been created, convert it back into a Prefab DOM.  Because we
+            // don't specify to skip default fields in the call to StoreInstanceInPrefabDom,
+            // this new DOM will have all fields from all classes except link ids.
             if (!PrefabDomUtils::StoreInstanceInPrefabDom(
-                loadedPrefabInstance, storedPrefabDom, PrefabDomUtils::StoreFlags::StripLinkIds))
+                    loadedPrefabInstance, loadedTemplateDomRef, PrefabDomUtils::StoreFlags::StripLinkIds))
             {
                 return false;
             }
-
-            loadedTemplateDom->get().CopyFrom(storedPrefabDom, loadedTemplateDom->get().GetAllocator());
             return true;
         }
 
