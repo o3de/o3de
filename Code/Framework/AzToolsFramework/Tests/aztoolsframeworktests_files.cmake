@@ -66,6 +66,7 @@ set(FILES
     ManipulatorCoreTests.cpp
     ManipulatorViewTests.cpp
     Metadata/MetadataManagerTests.cpp
+    Metadata/UuidUtilTests.cpp
     PerforceComponentTests.cpp
     PlatformAddressedAssetCatalogTests.cpp
     Prefab/Benchmark/Link/SingleInstanceMultiplePatchesBenchmarks.cpp

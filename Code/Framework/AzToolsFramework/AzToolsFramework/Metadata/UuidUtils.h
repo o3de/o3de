@@ -19,18 +19,13 @@ namespace AzToolsFramework
         AZ_RTTI(IUuidUtil, "{C3281F96-430A-49C2-95EF-66505C34CD2E}");
         virtual ~IUuidUtil() = default;
 
-        //! Gets the UUID for a source asset
-        //! @param absoluteFilePath Absolute path to the source asset
-        //! @return
-        virtual AZ::Uuid GetSourceUuid(AZ::IO::PathView absoluteFilePath) = 0;
-        //! Assigns the provided UUID to a source asset
-        //! @param absoluteFilePath Absolute path to the source asset
+        //! Creates a metadata file with a randomly generated UUID.  This will fail if a metadata file with a UUID already exists for this asset.
+        //! @param absoluteFilePath Absolute path of the source asset (or metadata file)
         //! @param uuid Uuid to assign
-        //! @return
         virtual bool CreateSourceUuid(AZ::IO::PathView absoluteFilePath, AZ::Uuid uuid) = 0;
-        //! Assigns a randomly generated UUID to a source asset
-        //! @param absoluteFilePath Absolute path to the source asset
-        //! @return
+        //! Creates a metadata file with the assigned UUID.  This will fail if a metadata file with a UUID already exists for this asset.
+        //! @param absoluteFilePath Absolute path of the source asset (or metadata file)
+        //! @return The generated UUID if successful, a null UUID otherwise.
         virtual AZ::Uuid CreateSourceUuid(AZ::IO::PathView absoluteFilePath) = 0;
     };
 
@@ -45,7 +40,6 @@ namespace AzToolsFramework
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::Uuid GetSourceUuid(AZ::IO::PathView absoluteFilePath) override;
         bool CreateSourceUuid(AZ::IO::PathView absoluteFilePath, AZ::Uuid uuid) override;
         AZ::Uuid CreateSourceUuid(AZ::IO::PathView absoluteFilePath) override;
 
