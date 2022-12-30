@@ -73,6 +73,7 @@ namespace AssetProcessor
 
         if (itr != m_uuids.end())
         {
+            m_existingUuids.erase(itr->second.m_uuid);
             m_uuids.erase(itr);
         }
     }
@@ -155,9 +156,14 @@ namespace AssetProcessor
                     GetMetadataManager()->SetValue(sourceAsset.AbsolutePath(), AzToolsFramework::UuidUtilComponent::UuidKey, uuidInfo);
                 }
 
-                m_uuids[normalizedPath] = uuidInfo;
-
-                return uuidInfo;
+                if (CacheUuidEntry(normalizedPath, uuidInfo, isEnabledType))
+                {
+                    return uuidInfo;
+                }
+                else
+                {
+                    return {};
+                }
             }
         }
 
@@ -177,9 +183,10 @@ namespace AssetProcessor
         if (!isEnabledType ||
             GetMetadataManager()->SetValue(sourceAsset.AbsolutePath(), AzToolsFramework::UuidUtilComponent::UuidKey, newUuid))
         {
-            m_uuids[normalizedPath] = newUuid;
-
-            return newUuid;
+            if (CacheUuidEntry(normalizedPath, newUuid, isEnabledType))
+            {
+                return newUuid;
+            }
         }
 
         return {};
@@ -207,9 +214,48 @@ namespace AssetProcessor
         return newUuid;
     }
 
+    bool UuidManager::CacheUuidEntry(AZStd::string_view normalizedPath, AzToolsFramework::UuidEntry entry, bool enabledType)
+    {
+        if (enabledType)
+        {
+            auto result = m_existingUuids.insert(entry.m_uuid);
+
+            if (!result.second)
+            {
+                // Insertion failure means this UUID is duplicated
+                AZ_Error(
+                    "UuidManager",
+                    false,
+                    "UUID " AZ_STRING_FORMAT " is already assigned to another asset",
+                    AZ_STRING_ARG(entry.m_uuid.ToFixedString()));
+                return false;
+            }
+        }
+
+        m_uuids[normalizedPath] = AZStd::move(entry);
+        return true;
+    }
+
     AZ::Uuid UuidManager::CreateUuid()
     {
-        return AZ::Uuid::CreateRandom();
+        constexpr int MaxRetry = 50;
+
+        auto uuid = AZ::Uuid::CreateRandom();
+        int retry = 0;
+
+        while (m_existingUuids.contains(uuid) && retry < MaxRetry)
+        {
+            uuid = AZ::Uuid::CreateRandom();
+            ++retry;
+        }
+
+        if (retry >= MaxRetry)
+        {
+            AZ_Error("UuidManager", false, "Failed to randomly generate a unique UUID after %d attempts.  UUID not assigned.", retry);
+            return AZ::Uuid::CreateNull();
+        }
+
+        return uuid;
     }
 
     AZStd::unordered_set<AZ::Uuid> UuidManager::CreateLegacyUuids(const AZStd::string& relativePath)

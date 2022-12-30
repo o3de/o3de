@@ -79,6 +79,7 @@ namespace AssetProcessor
         AzToolsFramework::MetaUuidEntry GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset);
         AzToolsFramework::IMetadataRequests* GetMetadataManager();
         AzToolsFramework::MetaUuidEntry CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType);
+        bool CacheUuidEntry(AZStd::string_view normalizedPath, AzToolsFramework::UuidEntry entry, bool enabledType);
         AZ::Uuid CreateUuid();
         AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file);
         void InvalidateCacheEntry(AZ::IO::FixedMaxPath file);
@@ -88,6 +89,8 @@ namespace AssetProcessor
         AZStd::unordered_map<AZStd::string, AzToolsFramework::MetaUuidEntry> m_uuids;
         // Types which should use randomly generated UUIDs
         AZStd::unordered_set<AZStd::string> m_enabledTypes;
+        // List of already existing UUIDs
+        AZStd::unordered_set<AZ::Uuid> m_existingUuids;
         AzToolsFramework::IMetadataRequests* m_metadataManager{};
     };
 } // namespace AssetProcessor
