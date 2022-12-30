@@ -20,37 +20,27 @@ namespace AzToolsFramework
         }
     }
 
-    AZ::Uuid UuidUtilComponent::GetSourceUuid(AZ::IO::PathView /*absoluteFilePath*/)
-    {
-        auto* metadataInterface = AZ::Interface<IMetadataRequests>::Get();
-
-        AZ_Assert(metadataInterface, "Programmer Error - IMetadataRequests interface is not available");
-
-        if (!metadataInterface)
-        {
-            return {};
-        }
-
-        // metadataInterface->GetValue(absoluteFilePath, )
-        return {};
-    }
-
     bool UuidUtilComponent::CreateSourceUuid(AZ::IO::PathView absoluteFilePath, AZ::Uuid uuid)
     {
         auto* metadataInterface = AZ::Interface<IMetadataRequests>::Get();
 
-        AZ_Assert(metadataInterface, "Programmer Error - IMetadataRequests interface is not available");
-
         if (!metadataInterface)
         {
+            AZ_Assert(metadataInterface, "Programmer Error - IMetadataRequests interface is not available");
             return false;
         }
 
         AzToolsFramework::UuidEntry entry;
 
-        if (metadataInterface->GetValue(absoluteFilePath, UuidKey, entry))
+        if (metadataInterface->GetValue(absoluteFilePath, UuidKey, entry) && !entry.m_uuid.IsNull())
         {
-            // TODO Error
+            AZ_Error(
+                "UuidUtil",
+                false,
+                "File `" AZ_STRING_FORMAT "` already has a UUID assigned (" AZ_STRING_FORMAT ").  New UUID (" AZ_STRING_FORMAT ") will not be assigned.",
+                AZ_STRING_ARG(absoluteFilePath.Native()),
+                AZ_STRING_ARG(entry.m_uuid.ToFixedString()),
+                AZ_STRING_ARG(uuid.ToFixedString()));
             return false;
         }
 
