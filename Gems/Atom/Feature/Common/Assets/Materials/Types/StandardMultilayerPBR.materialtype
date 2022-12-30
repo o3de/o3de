@@ -266,8 +266,8 @@
                         "type": "Bool",
                         "defaultValue": true,
                         "connection": {
-                            "type": "ShaderEnabled",
-                            "name": "Shadowmap"
+                            "type": "InternalProperty",
+                            "name": "castShadows"
                         }
                     },
                     {
@@ -362,43 +362,9 @@
             }
         ]
     },
-    "shaders": [ 
-        {
-            "file": "Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_ForwardPass.shader",
-            "tag": "ForwardPass"
-        },
-        {
-            "file": "Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_ForwardPass_EDS.shader",
-            "tag": "ForwardPass_EDS"
-        },
-        {
-            "file": "Shaders/Shadow/Shadowmap.shader",
-            "tag": "Shadowmap"
-        },
-        {
-            "file": "Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Shadowmap_WithPS.shader",
-            "tag": "Shadowmap_WithPS"
-        },
-        {
-            "file": "Shaders/Depth/DepthPass.shader",
-            "tag": "DepthPass"
-        },
-        {
-            "file": "Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_DepthPass_WithPS.shader",
-            "tag": "DepthPass_WithPS"
-        },
-        {
-            "file": "Shaders/MotionVector/MeshMotionVector.shader",
-            "tag": "MeshMotionVector"
-        }    
-    ],
+    "lightingModel": "Standard",
+    "materialShaderCode": "StandardMultilayerPBR.azsli",
     "functors": [
-        {
-            "type": "Lua",
-            "args": {
-                "file": "Materials/Types/StandardMultilayerPBR_ShaderEnable.lua"
-            }
-        },
         {
             "type": "Lua",
             "args": {

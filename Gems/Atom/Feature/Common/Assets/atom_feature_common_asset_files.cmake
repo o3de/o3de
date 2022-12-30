@@ -26,7 +26,6 @@ set(FILES
     Materials/Types/StandardMultilayerPBR_ClearCoatEnableFeature.lua
     Materials/Types/StandardMultilayerPBR_Displacement.lua
     Materials/Types/StandardMultilayerPBR_LayerEnable.lua
-    Materials/Types/StandardMultilayerPBR_ShaderEnable.lua
     Materials/Types/StandardPBR.materialtype
     Materials/Types/StandardPBR_ClearCoatEnableFeature.lua
     Materials/Types/StandardPBR_ClearCoatState.lua
@@ -384,13 +383,6 @@ set(FILES
     Shaders/Materials/MaterialInputs/TransmissionInput.azsli
     Shaders/Materials/MaterialInputs/UvSetCount.azsli
     Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Common.azsli
-    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_DepthPass_WithPS.azsl
-    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_DepthPass_WithPS.shader
-    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_ForwardPass.azsl
-    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_ForwardPass.shader
-    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_ForwardPass_EDS.shader
-    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Shadowmap_WithPS.azsl
-    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Shadowmap_WithPS.shader
     Shaders/Materials/Skin/Skin.azsli
     Shaders/Materials/Skin/Skin_ForwardPass.azsl
     Shaders/Materials/Skin/Skin_ForwardPass.shader
