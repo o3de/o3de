@@ -294,6 +294,78 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
     ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
 }
 
+using AssetProcessorManagerUuid = UnitTests::AssetManagerTestingBase;
+
+TEST_F(AssetProcessorManagerUuid, UuidUpdated_SendsAssetRemovedMessage)
+{
+    // This test simulates a source control update where someone else has moved a file and created a new file with the same name as the old one (and a new UUID)
+    // This will appear to AP as a content change + UUID change
+    using namespace AssetBuilderSDK;
+
+    CreateBuilder("builder", "*.in", "stage2", false, ProductOutputFlags::ProductAsset);
+
+    AZ::Interface<IUuidRequests>::Get()->EnableGenerationForTypes({ ".in" });
+
+    AZ::IO::Path scanFolderDir(m_scanfolder.m_scanFolder);
+    AZStd::string testFilename = "test.in";
+    AZ::IO::Path filePath = (scanFolderDir / testFilename).AsPosix();
+
+    UnitTestUtils::CreateDummyFileAZ(filePath, "unit test file");
+
+    ProcessFileMultiStage(1, true, filePath.c_str());
+
+    auto metadataInterface = AZ::Interface<AzToolsFramework::IMetadataRequests>::Get();
+
+    // Get the existing UUID entry
+    AzToolsFramework::UuidEntry uuidEntry;
+
+    ASSERT_TRUE(metadataInterface->GetValue(filePath, AzToolsFramework::UuidUtilComponent::UuidKey, uuidEntry));
+
+    ASSERT_FALSE(uuidEntry.m_uuid.IsNull());
+
+    auto oldUuid = uuidEntry.m_uuid;
+
+    // Make a new UUID
+    uuidEntry.m_uuid = AZ::Uuid::CreateRandom();
+
+    // Save it out
+    ASSERT_TRUE(metadataInterface->SetValue(filePath, AzToolsFramework::UuidUtilComponent::UuidKey, uuidEntry));
+
+    AZ::Interface<IUuidRequests>::Get()->FileChanged(AzToolsFramework::MetadataManager::ToMetadataPath(filePath));
+
+    using namespace AzFramework::AssetSystem;
+    AZStd::vector<AssetNotificationMessage> notifications;
+
+    auto connection = QObject::connect(
+        m_assetProcessorManager.get(),
+        &AssetProcessorManager::AssetMessage,
+        [&notifications](AssetNotificationMessage message)
+        {
+            notifications.push_back(message);
+        });
+
+    // Run the file again
+    ProcessFileMultiStage(1, true, filePath.c_str());
+
+    // Verify asset removed and asset changed messages were sent
+    std::sort(
+        notifications.begin(),
+        notifications.end(),
+        [](auto lhs, auto rhs)
+        {
+            return lhs.m_type > rhs.m_type;
+        });
+
+    ASSERT_EQ(notifications.size(), 2);
+    EXPECT_EQ(notifications[0].m_data, "test.stage2");
+    EXPECT_EQ(notifications[0].m_assetId, AZ::Data::AssetId(oldUuid, AssetSubId));
+    EXPECT_EQ(notifications[0].m_type, AzFramework::AssetSystem::AssetNotificationMessage::AssetRemoved);
+
+    EXPECT_EQ(notifications[1].m_data, "test.stage2");
+    EXPECT_EQ(notifications[1].m_assetId, AZ::Data::AssetId(uuidEntry.m_uuid, AssetSubId));
+    EXPECT_EQ(notifications[1].m_type, AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged);
+}
+
 using AssetProcessorManagerFinishTests = UnitTests::AssetManagerTestingBase;
 
 TEST_F(AssetProcessorManagerFinishTests, IntermediateAsset_AnalysisCountHitsZero)

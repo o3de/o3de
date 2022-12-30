@@ -1243,7 +1243,14 @@ namespace AssetProcessor
                     AzToolsFramework::AssetDatabase::JobDatabaseEntry job;
                     m_stateData->GetJobByJobID(product.m_jobPK, job);
 
-                    AssetNotificationMessage oldAssetRemovedMessage(product.m_productName, AzFramework::AssetSystem::AssetNotificationMessage::NotificationType::AssetRemoved, product.m_assetType, job.m_platform);
+                    AZStd::string relativeProductPath =
+                        AssetUtilities::StripAssetPlatform(product.m_productName).toUtf8().constData();
+
+                    AssetNotificationMessage oldAssetRemovedMessage(
+                        relativeProductPath,
+                        AzFramework::AssetSystem::AssetNotificationMessage::NotificationType::AssetRemoved,
+                        product.m_assetType,
+                        job.m_platform);
                     oldAssetRemovedMessage.m_assetId = AZ::Data::AssetId(oldUuid, product.m_subID);
 
                     Q_EMIT AssetMessage(oldAssetRemovedMessage);
@@ -1960,7 +1967,7 @@ namespace AssetProcessor
 
                     // Note: legacy asset ids are not needed in the message, they'll be looked up based on the actual id
 
-                    Q_EMIT AssetMessage( message);
+                    Q_EMIT AssetMessage(message);
                 }
 
                 if (wrapper.HasIntermediateProduct())
