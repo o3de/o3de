@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <QWidget>
+#include <QMenu>
 #endif
 
 class QItemSelection;
@@ -29,6 +30,7 @@ namespace AzToolsFramework
         class AssetBrowserTableModel;
         class AssetBrowserModel;
         class AssetBrowserTableFilterModel;
+        class AssetBrowserTreeView;
 
         enum class AssetBrowserDisplayState : int
         {
@@ -54,6 +56,7 @@ public:
 
     static QObject* createListenerForShowAssetEditorEvent(QObject* parent);
 
+    bool TreeViewBelongsTo(AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView);
 
 Q_SIGNALS:
     void SizeChangedSignal(int newWidth);
