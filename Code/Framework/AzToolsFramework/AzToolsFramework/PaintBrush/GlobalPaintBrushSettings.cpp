@@ -33,7 +33,6 @@ namespace AzToolsFramework
                 editContext->Class<PaintBrushSettings>("Paint Brush", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         // There's no special meaning to 100, we just want the PaintBrushSettings to display after the GlobalPaintBrushSettings
                         ->Attribute(AZ::Edit::Attributes::DisplayOrder, 100)
                     ->DataElement(
