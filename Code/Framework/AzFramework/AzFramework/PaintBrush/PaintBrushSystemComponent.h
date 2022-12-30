@@ -48,10 +48,10 @@ namespace AzFramework
         void SmoothToLocation(
             const AZ::Uuid& sessionId, const AZ::Vector3& brushCenter, const AzFramework::PaintBrushSettings& brushSettings) override;
 
-        //! Instances of a PaintBrush for image modifications that exist for use with the high-level paint APIs exposed
-        //! on the PaintBrushSession. This is *only* used by the paint APIs on the bus - the Editor has its own instance
-        //! of a PaintBrush that it uses in conjunction with mouse tracking, manipulator drawing, etc.
-        //! These are only created and active between StartPaintSession / EndPaintSession calls.
+        //! Tracks one PaintBrush instance per paint session. These are only used to support the PaintBrushSessionBus.
+        //! When painting in the Editor, the Editor tracks its own PaintBrush instance that gets used in conjunction with
+        //! mouse tracking, manipulator drawing, etc.
+        //! These PaintBrush instances only exist between StartPaintSession and EndPaintSession.
         AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<AzFramework::PaintBrush>> m_brushSessions;
     };
 }; // namespace AzFramework

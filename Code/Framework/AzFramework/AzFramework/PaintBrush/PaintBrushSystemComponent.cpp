@@ -53,9 +53,8 @@ namespace AzFramework
     {
         AZ::EntityComponentIdPair entityComponentPair;
 
-        // To find the component associated with this entity id, visit every paintbrush notification bus and look for the ones
-        // that match the entity id. 
-        // Visit every paintbrush notification bus.
+        // To find the paintable component associated with this entity id, visit every paintbrush notification bus handler
+        // and look for the first one that matches the entity id. 
         AzFramework::PaintBrushNotificationBus::EnumerateHandlers(
             [entityId, &entityComponentPair]([[maybe_unused]]AzFramework::PaintBrushNotifications* handler) -> bool
             {
@@ -71,6 +70,7 @@ namespace AzFramework
                 return true;
             });
 
+        // If we found a match, create a new paint session for this entity/component pair.
         if (entityComponentPair.GetEntityId().IsValid())
         {
             auto paintBrush = AZStd::make_shared<AzFramework::PaintBrush>(entityComponentPair);
