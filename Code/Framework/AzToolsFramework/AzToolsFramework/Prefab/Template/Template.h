@@ -41,8 +41,6 @@ namespace AzToolsFramework
             Template(Template&& other) noexcept;
             Template& operator=(Template&& other) noexcept;
 
-            void GarbageCollect();
-
             virtual ~Template() noexcept = default;
 
             bool IsValid() const;

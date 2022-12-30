@@ -56,7 +56,8 @@ namespace AzToolsFramework
 
                     // Create redo patch.
                     PrefabDomValue redoPatch(rapidjson::kObjectType);
-                    PrefabDomValue path(entityAliasPath.data(), aznumeric_caster(entityAliasPath.length()), m_redoPatch.GetAllocator());
+                    rapidjson::Value path =
+                        rapidjson::Value(entityAliasPath.data(), aznumeric_caster(entityAliasPath.length()), m_redoPatch.GetAllocator());
 
                     redoPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("remove"), m_redoPatch.GetAllocator())
                         .AddMember(rapidjson::StringRef("path"), AZStd::move(path), m_redoPatch.GetAllocator());
@@ -64,9 +65,9 @@ namespace AzToolsFramework
 
                     // Create undo patch.
                     PrefabDomValue undoPatch(rapidjson::kObjectType);
-                    path = PrefabDomValue(entityAliasPath.data(), aznumeric_caster(entityAliasPath.length()), m_undoPatch.GetAllocator());
+                    path = rapidjson::Value(entityAliasPath.data(), aznumeric_caster(entityAliasPath.length()), m_undoPatch.GetAllocator());
 
-                    PrefabDomValue patchValue;
+                    rapidjson::Value patchValue;
                     patchValue.CopyFrom(*(entityDomAndPath.first), m_undoPatch.GetAllocator(), true);
                     undoPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("add"), m_undoPatch.GetAllocator())
                         .AddMember(rapidjson::StringRef("path"), AZStd::move(path), m_undoPatch.GetAllocator())
@@ -118,8 +119,13 @@ namespace AzToolsFramework
 
                 if (cachedDom.has_value())
                 {
+                    // Create a copy of the DOM of the end state so that it shares the lifecycle of the cached DOM.
+                    PrefabDom endStateCopy;
+                    endStateCopy.CopyFrom(endState, cachedDom->get().GetAllocator());
                     Prefab::PrefabDomPath entityPathInDom(entityAliasPath.c_str());
-                    entityPathInDom.Set(cachedDom->get(), endState);
+
+                    // Update the cached instance DOM corresponding to the entity so that the same modified entity isn't reloaded again.
+                    entityPathInDom.Set(cachedDom->get(), AZStd::move(endStateCopy));
                 }
             }
         }
