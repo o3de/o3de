@@ -16,7 +16,6 @@
 #include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
 
 #include <Editor/EditorImageGradientComponentMode.h>
-#include <Editor/EditorImageGradientRequestBus.h>
 
 namespace GradientSignal
 {
@@ -27,7 +26,7 @@ namespace GradientSignal
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzToolsFramework::EditorVisibilityNotificationBus::Handler
         , protected LmbrCentral::DependencyNotificationBus::Handler
-        , private EditorImageGradientRequestBus::Handler
+        , private AzFramework::PaintBrushNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(
@@ -60,10 +59,20 @@ namespace GradientSignal
         void OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion) override;
 
     protected:
-        // EditorImageGradientRequestBus overrides ...
-        AZ::EntityComponentIdPair StartImageModification() override;
-        void EndImageModification() override;
-        bool SaveImage() override;
+        bool SavePaintedData();
+
+        // PaintBrushNotificationBus overrides
+        void OnPaintModeBegin() override;
+        void OnPaintModeEnd() override;
+        void OnBrushStrokeBegin(const AZ::Color& color) override;
+        void OnBrushStrokeEnd() override;
+        void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn) override;
+        void OnSmooth(
+            const AZ::Aabb& dirtyArea,
+            ValueLookupFn& valueLookupFn,
+            AZStd::span<const AZ::Vector3> valuePointOffsets,
+            SmoothFn& smoothFn) override;
+        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) override;
 
         bool GetImageOptionsReadOnly() const;
 
