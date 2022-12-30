@@ -9,6 +9,10 @@
 #pragma once
 
 
+#ifndef ENABLE_DEBUG_MODIFY_OUTPUT
+#define ENABLE_DEBUG_MODIFY_OUTPUT 1
+#endif 
+
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 
 // --- Vertex Shader ---
@@ -111,9 +115,14 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     // --- Debug Output ---
 
+#if ENABLE_DEBUG_MODIFY_OUTPUT  
+    // TODO(MaterialPipeline): Turn this into an optional callback that the material type can provide, and just pass OUT, surface, 
+    // and geoData instead of the specific fields. That will provide better compatibility with material types that don't have
+    // some of these fields, like tangents and bitangents for example.
     DebugModifyOutput(OUT.m_diffuseColor, OUT.m_specularColor, OUT.m_albedo, OUT.m_specularF0, surface.normal,
                     geoData.tangents[0], geoData.bitangents[0],
                     surface.baseColor, surface.albedo, surface.roughnessLinear, surface.metallic);
+#endif
 
 #if ENABLE_SHADER_DEBUGGING
     if(any(customDebugFloats))
