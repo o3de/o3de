@@ -1765,8 +1765,6 @@ void TerrainSystem::RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::Terra
 void TerrainSystem::RefreshRegion(
     const AZ::Aabb& dirtyRegion, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask)
 {
-    using Terrain = AzFramework::Terrain::TerrainDataNotifications;
-
     m_dirtyRegion.AddAabb(dirtyRegion);
 
     // Keep track of which types of data have changed so that we can send out the appropriate notifications later.
