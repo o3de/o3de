@@ -347,7 +347,7 @@ namespace AzFramework
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
             //////////////////////////////////////////////////////////////////////////
 
-            enum TerrainDataChangedMask : uint8_t
+            enum class TerrainDataChangedMask : uint8_t
             {
                 None        = 0b00000000,
                 Settings    = 0b00000001,
@@ -389,6 +389,9 @@ namespace AzFramework
             };
         };
         using TerrainDataNotificationBus = AZ::EBus<TerrainDataNotifications>;
+
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(TerrainDataNotifications::TerrainDataChangedMask);
+
     } // namespace Terrain
 } // namespace AzFramework
 
