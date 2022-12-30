@@ -18,7 +18,7 @@ namespace AzFramework
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PaintBrushSettings>()
-                ->Version(6)
+                ->Version(7)
                 ->Field("Size", &PaintBrushSettings::m_size)
                 ->Field("SmoothMode", &PaintBrushSettings::m_smoothMode)
                 ->Field("SmoothingRadius", &PaintBrushSettings::m_smoothingRadius)
