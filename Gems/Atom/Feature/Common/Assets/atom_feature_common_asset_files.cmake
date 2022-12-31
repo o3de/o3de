@@ -35,7 +35,6 @@ set(FILES
     Materials/Types/StandardPBR_Metallic.lua
     Materials/Types/StandardPBR_ParallaxState.lua
     Materials/Types/StandardPBR_Roughness.lua
-    Materials/Types/StandardPBR_ShaderEnable.lua
     Materials/Types/MaterialInputs/DetailMapsCommonFunctor.lua
     Passes/AuxGeom.pass
     Passes/BlendColorGradingLuts.pass
