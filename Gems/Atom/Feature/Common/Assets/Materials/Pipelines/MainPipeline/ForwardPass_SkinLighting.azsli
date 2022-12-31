@@ -38,5 +38,5 @@
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli"
 
 
-#include <Atom/Features/Pipeline/Forward/ForwardPassVertexAndPixel.azsli>
+#include "ForwardPassVertexAndPixel.azsli"
 
