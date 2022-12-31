@@ -36,6 +36,7 @@ float GetSubsurfaceScatteringFactorAndQuality(Surface surface)
 
 // --- Pixel Shader ---
 
+// TODO(MaterialPipeline): Probably replace this with FORCE_EARLY_DEPTH_STENCIL like how it's done in MultiViewForwardPassVertexAndPixel.azsli
 #if !OUTPUT_DEPTH
     [earlydepthstencil]
 #endif
@@ -58,15 +59,6 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     OUT.m_diffuseColor.rgb = lightingData.diffuseLighting;
     OUT.m_diffuseColor.a = -1;  // Disable Subsurface Scattering
-
-#if !FORCE_OPAQUE
-    
-    if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
-    {
-        OUT.m_diffuseColor.a = surface.alpha;
-    }
-
-#endif
 
     // --- Specular Lighting ---
 
@@ -91,10 +83,6 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     // --- Subsurface ---
 #if OUTPUT_SUBSURFACE
     bool applySubsurfaceScattering = o_enableSubsurfaceScattering;
-
-#if !FORCE_OPAQUE
-    applySubsurfaceScattering = applySubsurfaceScattering && o_opacity_mode != OpacityMode::Blended && o_opacity_mode != OpacityMode::TintedTransparent;
-#endif
 
     if(applySubsurfaceScattering)
     {

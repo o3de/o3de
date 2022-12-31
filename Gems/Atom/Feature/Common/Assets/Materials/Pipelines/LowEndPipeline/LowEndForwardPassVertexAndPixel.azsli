@@ -21,6 +21,7 @@ VsOutput VertexShader(VsInput IN)
 
 // --- Pixel Shader ---
 
+// TODO(MaterialPipeline): Probably replace this with FORCE_EARLY_DEPTH_STENCIL like how it's done in MultiViewForwardPassVertexAndPixel.azsli
 #if !OUTPUT_DEPTH
     [earlydepthstencil]
 #endif
