@@ -479,6 +479,7 @@ namespace PhysX::Utils
                         actorData.childActor,
                         PxMathConvert(childLocalTM));
                 }
+                InitializePrismaticLimitProperties(configuration.m_limitProperties, joint_prismatic);
                 joint = static_cast<physx::PxJoint*>(joint_prismatic);
             }
 
