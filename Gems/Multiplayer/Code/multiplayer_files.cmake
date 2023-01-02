@@ -18,6 +18,7 @@ set(FILES
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
     Include/Multiplayer/MultiplayerEditorServerBus.h
+    Include/Multiplayer/Components/DefaultMultiplayerSpawnerComponent.h
     Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
     Include/Multiplayer/Components/MultiplayerComponent.h
     Include/Multiplayer/Components/MultiplayerComponentRegistry.h
@@ -84,6 +85,7 @@ set(FILES
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
     Source/AutoGen/NetworkHierarchyChildComponent.AutoComponent.xml
     Source/AutoGen/NetworkHierarchyRootComponent.AutoComponent.xml
+    Source/Components/DefaultMultiplayerSpawnerComponent.cpp
     Source/Components/LocalPredictionPlayerInputComponent.cpp
     Source/Components/MultiplayerComponent.cpp
     Source/Components/MultiplayerComponentRegistry.cpp
