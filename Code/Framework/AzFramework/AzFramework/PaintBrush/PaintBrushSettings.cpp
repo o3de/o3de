@@ -54,23 +54,6 @@ namespace AzFramework
         }
     }
 
-    // The following settings are visible but read-only when in the Eyedropper mode
-
-    bool PaintBrushSettings::GetColorReadOnly() const
-    {
-        return (m_brushMode == PaintBrushMode::Eyedropper);
-    }
-
-    bool PaintBrushSettings::GetIntensityReadOnly() const
-    {
-        return (m_brushMode == PaintBrushMode::Eyedropper);
-    }
-
-    bool PaintBrushSettings::GetOpacityReadOnly() const
-    {
-        return (m_brushMode == PaintBrushMode::Eyedropper);
-    }
-
     // The following settings aren't visible in Eyedropper mode, but are available in Paint / Smooth modes
 
     bool PaintBrushSettings::GetSizeVisibility() const

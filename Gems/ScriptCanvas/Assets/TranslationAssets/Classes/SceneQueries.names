@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "CreateRayCastRequest",
-                    "context": "SceneQueries",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CreateRayCastRequest"

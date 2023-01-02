@@ -91,19 +91,19 @@ namespace PhysX
 
     float EditorPrismaticJointComponent::GetLinearValue(const AZStd::string& parameterName)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxForce)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxForce)
         {
             return m_config.m_forceMax;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxTorque)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxTorque)
         {
             return m_config.m_torqueMax;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Damping)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Damping)
         {
             return m_linearLimit.m_standardLimitConfig.m_damping;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Stiffness)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Stiffness)
         {
             return m_linearLimit.m_standardLimitConfig.m_stiffness;
         }
@@ -113,7 +113,7 @@ namespace PhysX
 
     LinearLimitsFloatPair EditorPrismaticJointComponent::GetLinearValuePair(const AZStd::string& parameterName)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::LinearLimits)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::LinearLimits)
         {
             return LinearLimitsFloatPair(m_linearLimit.m_limitUpper, m_linearLimit.m_limitLower);
         }
@@ -121,18 +121,18 @@ namespace PhysX
         return LinearLimitsFloatPair();
     }
 
-    AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> EditorPrismaticJointComponent::GetSubComponentModesState()
+    AZStd::vector<JointsComponentModeCommon::SubModeParameterState> EditorPrismaticJointComponent::GetSubComponentModesState()
     {
         return {};
     }
 
     void EditorPrismaticJointComponent::SetBoolValue(const AZStd::string& parameterName, bool value)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::EnableLimits)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::EnableLimits)
         {
             m_linearLimit.m_standardLimitConfig.m_isLimited = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::EnableSoftLimits)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::EnableSoftLimits)
         {
             m_linearLimit.m_standardLimitConfig.m_isSoftLimit = value;
         }
@@ -140,19 +140,19 @@ namespace PhysX
 
     void EditorPrismaticJointComponent::SetLinearValue(const AZStd::string& parameterName, float value)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxForce)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxForce)
         {
             m_config.m_forceMax = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxTorque)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxTorque)
         {
             m_config.m_torqueMax = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Damping)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Damping)
         {
             m_linearLimit.m_standardLimitConfig.m_damping = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Stiffness)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Stiffness)
         {
             m_linearLimit.m_standardLimitConfig.m_stiffness = value;
         }
@@ -160,7 +160,7 @@ namespace PhysX
 
     void EditorPrismaticJointComponent::SetLinearValuePair(const AZStd::string& parameterName, const LinearLimitsFloatPair& valuePair)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::LinearLimits)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::LinearLimits)
         {
             m_linearLimit.m_limitUpper = valuePair.first;
             m_linearLimit.m_limitLower = valuePair.second;
@@ -196,7 +196,7 @@ namespace PhysX
         EditorJointRequestBus::EventResult(localTransform,
             AZ::EntityComponentIdPair(entityId, GetId()),
             &EditorJointRequests::GetTransformValue,
-            PhysX::JointsComponentModeCommon::ParamaterNames::Transform);
+            PhysX::JointsComponentModeCommon::ParameterNames::Transform);
 
         debugDisplay.PushMatrix(worldTransform);
         debugDisplay.PushMatrix(localTransform);

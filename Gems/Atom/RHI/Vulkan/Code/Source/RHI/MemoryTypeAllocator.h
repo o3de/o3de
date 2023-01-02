@@ -125,12 +125,25 @@ namespace AZ
                 memoryView = AllocateUnique(sizeInBytes);
             }
 
+            if (memoryView.IsValid())
+            {
+                RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+                heapMemoryUsage->m_usedResidentInBytes += memoryView.GetSize();
+                heapMemoryUsage->Validate();
+            }
+
             return memoryView;
         }
 
         template<typename SubAllocator, typename View>
         void MemoryTypeAllocator<SubAllocator, View>::DeAllocate(const View& memoryView)
         {
+            if (memoryView.IsValid())
+            {
+                RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+                heapMemoryUsage->m_usedResidentInBytes -= memoryView.GetSize();
+            }
+
             switch (memoryView.GetAllocationType())
             {
             case MemoryAllocationType::SubAllocated:

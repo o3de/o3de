@@ -23,24 +23,17 @@ PixelGeometryData EvaluatePixelGeometry_BasePBR(
     float3 tangent,
     float3 bitangent,
     float2 uvs[UvSetCount],
-    bool isFrontFace,
-    bool evaluateTangentFrame)
+    bool isFrontFace)
 {
     PixelGeometryData geoData;
 
     geoData.positionWS = positionWS;
     geoData.vertexNormal = normalize(normal);
 
-    geoData.tangents[0] = tangent;
-    geoData.tangents[1] = tangent;
-
-    geoData.bitangents[0] = bitangent;
-    geoData.bitangents[1] = bitangent;
-
     geoData.uvs = uvs;
     geoData.isFrontFace = isFrontFace;
 
-    if (evaluateTangentFrame)
+    if (NeedsTangentFrame())
     {
         for (int i = 0; i != UvSetCount; ++i)
         {
@@ -50,18 +43,6 @@ PixelGeometryData EvaluatePixelGeometry_BasePBR(
     }
 
     return geoData;
-}
-
-PixelGeometryData EvaluatePixelGeometry_BasePBR(
-    float3 positionWS,
-    float3 normal,
-    float3 tangent,
-    float3 bitangent,
-    float2 uvs[UvSetCount],
-    bool isFrontFace)
-{
-    bool evaluateTangentFrame = o_normal_useTexture;
-    return EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace, evaluateTangentFrame);
 }
 
 PixelGeometryData EvaluatePixelGeometry_BasePBR(VsOutput IN, bool isFrontFace)
