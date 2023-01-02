@@ -61,6 +61,8 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Module, "editor")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
             }
+
+            NonUniformScaleComponentMode::Reflect(context);
         }
 
         void EditorNonUniformScaleComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
