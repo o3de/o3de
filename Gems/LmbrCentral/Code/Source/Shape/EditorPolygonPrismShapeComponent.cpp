@@ -172,6 +172,8 @@ namespace LmbrCentral
                         ;
             }
         }
+
+        EditorPolygonPrismShapeComponentMode::Reflect(context);
     }
 
     void EditorPolygonPrismShapeComponent::DisplayEntityViewport(
