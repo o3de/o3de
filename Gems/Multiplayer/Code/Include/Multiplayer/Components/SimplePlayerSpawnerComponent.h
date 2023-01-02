@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
+ * this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -6,12 +13,12 @@
 
 namespace Multiplayer
 {
-    class DefaultMultiplayerSpawnerComponent
+    class SimplePlayerSpawnerComponent
         : public AZ::Component
         , public IMultiplayerSpawner
     {
     public:
-        AZ_COMPONENT(Multiplayer::DefaultMultiplayerSpawnerComponent, "{0A6D0132-3FD2-4F13-B537-2B1DA99E34E9}");
+        AZ_COMPONENT(Multiplayer::SimplePlayerSpawnerComponent, "{0A6D0132-3FD2-4F13-B537-2B1DA99E34E9}");
 
         /*
         * Reflects component data into the reflection contexts, including the serialization, edit, and behavior contexts.
@@ -33,9 +40,11 @@ namespace Multiplayer
         ////////////////////////////////////////////////////////////////////////
 
     private:
+        // Serialized properties
         NetworkSpawnable m_playerSpawnable;
         AZStd::vector<AZ::EntityId> m_spawnPoints;
 
+        // Runtime properties
         uint32_t m_spawnIndex = 0;
     };
 } // namespace Multiplayer

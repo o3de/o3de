@@ -9,7 +9,7 @@
 #include <MultiplayerToolsSystemComponent.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <Multiplayer/Components/NetBindComponent.h>
-#include <Multiplayer/Components/DefaultMultiplayerSpawnerComponent.h>
+#include <Multiplayer/Components/SimplePlayerSpawnerComponent.h>
 #include <Source/MultiplayerGem.h>
 #include <Source/MultiplayerSystemComponent.h>
 #include <Source/MultiplayerStatSystemComponent.h>
@@ -26,7 +26,7 @@ namespace Multiplayer
                 MultiplayerSystemComponent::CreateDescriptor(),
                 MultiplayerStatSystemComponent::CreateDescriptor(),
                 NetBindComponent::CreateDescriptor(),
-                DefaultMultiplayerSpawnerComponent::CreateDescriptor(),
+                SimplePlayerSpawnerComponent::CreateDescriptor(),
 #ifdef MULTIPLAYER_EDITOR
                 MultiplayerToolsSystemComponent::CreateDescriptor(),
 #endif
