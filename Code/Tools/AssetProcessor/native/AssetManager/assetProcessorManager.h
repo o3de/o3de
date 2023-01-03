@@ -190,6 +190,9 @@ namespace AssetProcessor
         //! and neither have any builders.
         void SetEnableModtimeSkippingFeature(bool enable);
 
+        //! Controls whether or not startup analysis is enabled or not.
+        void SetInitialScanSkippingFeature(bool enable);
+
         //! Query logging will log every asset database query.
         void SetQueryLogging(bool enableLogging);
 
@@ -608,6 +611,10 @@ namespace AssetProcessor
         // when true, only processes files if their modtime or builder(s) have changed
         // defaults to true (in the settings) for GUI mode, false for batch mode
         bool m_allowModtimeSkippingFeature = false;
+
+        // when true, startup scan is disabled which means modified files when asset processor
+        // was not running won't be processed. this may be useful when working on pure code changes.
+        bool m_initialScanSkippingFeature = false;
 
         // when true, a flag will be sent to builders process job indicating debug output/mode should be used
         bool m_builderDebugFlag = false;
