@@ -88,7 +88,8 @@ namespace AssetUtilsInternal
                 {
                     if (!failureOccurredOnce)
                     {
-                        AZ_Warning(AssetProcessor::ConsoleChannel, false, "Warning: Unable to remove file %s to copy source file %s in... (We may retry)\n", outputFile.toUtf8().constData(), sourceFile.toUtf8().constData());
+                        // This is not a warning because there is retry logic in place.
+                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Unable to remove file %s to copy source file %s in... (We may retry)\n", outputFile.toUtf8().constData(), sourceFile.toUtf8().constData());
                         failureOccurredOnce = true;
                     }
                     //not able to remove the file
