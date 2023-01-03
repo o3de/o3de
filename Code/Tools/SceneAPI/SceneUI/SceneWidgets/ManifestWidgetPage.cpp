@@ -90,11 +90,7 @@ namespace AZ
                 // Add new object to the list so it's ready for updating later on.
                 m_objects.push_back(object);
 
-                if (m_objects.size() >= m_capSize)
-                {
-                    ui->m_addButton->setToolTip(tr("This group container reached its cap of %1 entries.").arg(m_capSize));
-                    ui->m_addButton->setEnabled(false);
-                }
+                UpdateAddButtonStatus();
 
                 QTimer::singleShot(0, this,
                     [this]()
@@ -104,6 +100,20 @@ namespace AZ
                 );
 
                 return true;
+            }
+
+            void ManifestWidgetPage::UpdateAddButtonStatus()
+            {
+                if (m_objects.size() >= m_capSize)
+                {
+                    ui->m_addButton->setToolTip(tr("This group container reached its cap of %1 entries.").arg(m_capSize));
+                    ui->m_addButton->setEnabled(false);
+                }
+                else
+                {
+                    ui->m_addButton->setToolTip(QString());
+                    ui->m_addButton->setEnabled(true);
+                }
             }
 
             bool ManifestWidgetPage::RemoveObject(const AZStd::shared_ptr<DataTypes::IManifestObject>& object)
@@ -124,11 +134,7 @@ namespace AZ
 
                     m_objects.erase(it);
 
-                    if (m_objects.size() < m_capSize)
-                    {
-                        ui->m_addButton->setToolTip(QString());
-                        ui->m_addButton->setEnabled(true);
-                    }
+                    UpdateAddButtonStatus();
 
                     if (m_objects.size() == 0)
                     {
@@ -176,11 +182,7 @@ namespace AZ
             {
                 m_objects.clear();
                 m_propertyEditor->ClearInstances();
-                if (m_objects.size() < m_capSize)
-                {
-                    ui->m_addButton->setToolTip(QString());
-                    ui->m_addButton->setEnabled(true);
-                }
+                UpdateAddButtonStatus();
             }
 
             void ManifestWidgetPage::BeforePropertyModified(AzToolsFramework::InstanceDataNode* /*pNode*/)
@@ -253,11 +255,7 @@ namespace AZ
 
                     AddNewObject(m_classTypeIds[0]);
 
-                    if (m_objects.size() >= m_capSize)
-                    {
-                        ui->m_addButton->setToolTip(tr("This group container reached its cap of %1 entries.").arg(m_capSize));
-                        ui->m_addButton->setEnabled(false);
-                    }
+                    UpdateAddButtonStatus();
                 }
             }
 
@@ -271,11 +269,7 @@ namespace AZ
                 }
                 AddNewObject(id);
 
-                if (m_objects.size() >= m_capSize)
-                {
-                    ui->m_addButton->setToolTip(tr("This group container reached its cap of %1 entries.").arg(m_capSize));
-                    ui->m_addButton->setEnabled(false);
-                }
+                UpdateAddButtonStatus();
             }
 
             void ManifestWidgetPage::BuildAndConnectAddButton()
