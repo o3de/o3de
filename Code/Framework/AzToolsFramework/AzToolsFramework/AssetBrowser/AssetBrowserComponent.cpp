@@ -14,19 +14,18 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetEntryChangeset.h>
-#include <AzToolsFramework/AssetBrowser/AssetPicker/AssetPickerDialog.h>
-#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
-#include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Thumbnails/FolderThumbnail.h>
-#include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
-#include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/AssetEntryChangeset.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
+#include <AzToolsFramework/AssetBrowser/Thumbnails/FolderThumbnail.h>
+#include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
+#include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
+#include <AzToolsFramework/AssetBrowser/AssetPicker/AssetPickerDialog.h>
+#include <AzToolsFramework/Slice/SliceUtilities.h>
 
 #include <chrono>
 
@@ -87,8 +86,6 @@ namespace AzToolsFramework
                     HandleFileInfoNotification(buffer, bufferSize);
                 });
             }
-
-            m_inspectorWidget = new AssetBrowserEntityInspectorWidget();
         }
 
         void AssetBrowserComponent::Deactivate()
