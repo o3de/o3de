@@ -67,6 +67,7 @@ private:
 
 protected slots:
     void CreateToolsMenu();
+    void AddCreateMenu();
     void SetTreeViewMode();
     void SetListViewMode();
     void UpdateWidgetAfterFilter();
@@ -79,14 +80,12 @@ private:
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
     QMenu* m_toolsMenu = nullptr;
+    QMenu* m_createMenu = nullptr;
     QAction* m_treeViewMode = nullptr;
     QAction* m_listViewMode = nullptr;
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
         AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::ListViewMode;
 
-    //! Updates the asset preview panel with data about the passed entry.
-    //! Clears the panel if nullptr is passed
-    void UpdatePreview(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const;
 
     //! Updates breadcrumbs with the selectedEntry relative path if it's a folder or with the
     //! relative path of the first folder parent of the passed entry.

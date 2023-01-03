@@ -330,6 +330,19 @@ namespace AzToolsFramework
         };
         using AssetBrowserViewRequestBus = AZ::EBus<AssetBrowserViewRequests>;
 
+        //! Preview the currently selected Asset in a PreviewFrame
+        class AssetBrowserPreviewRequest
+            : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+
+            //! Updates the asset preview panel with data about the passed entry.
+            //! Clears the panel if nullptr is passed
+            virtual void PreviewAsset(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) = 0;
+        };
+        using AssetBrowserPreviewRequestBus = AZ::EBus<AssetBrowserPreviewRequest>;
+
         //////////////////////////////////////////////////////////////////////////
         // File creation notifications
         //////////////////////////////////////////////////////////////////////////

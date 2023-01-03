@@ -97,6 +97,33 @@ namespace GradientSignal
         bool m_modifiedAnyPixels = false;
     };
 
+    //! Tracks all of the data related to the image gradient size, including its transform.
+    struct ImageGradientSizeData
+    {
+        //! The meters per pixel in each direction for this image gradient.
+        //! These help us query the paintbrush for exactly one world position per image pixel.
+        float m_metersPerPixelX = 0.0f;
+        float m_metersPerPixelY = 0.0f;
+
+        //! The meters per pixel in each direction for this image gradient in the image's local space.
+        //! This accounts for image tiling and frequency zoom, but removes the effects of the transform's scale, since
+        //! the scale is applied outside of the local space calculations.
+        float m_localMetersPerPixelX = 0.0f;
+        float m_localMetersPerPixelY = 0.0f;
+
+        //! Image width and height in pixels.
+        int16_t m_imageWidth = 0;
+        int16_t m_imageHeight = 0;
+
+        //! The pixel indices for the pixels on the edges of the local bounds. These are used for calculating dirty region bounding boxes.
+        PixelIndex m_topLeftPixelIndex;
+        PixelIndex m_bottomRightPixelIndex;
+
+        //! The gradient transform for this image gradient.
+        GradientTransform m_gradientTransform;
+    };
+
+    //! Tracks all of the data that's specific to a paint stroke.
     struct PaintStrokeData
     {
         //! A buffer to accumulate a single paint stroke into. This buffer is used to ensure that within a single paint stroke,
@@ -104,22 +131,60 @@ namespace GradientSignal
         //! After the paint stroke is complete, this buffer is handed off to the undo/redo batch so that we can undo/redo each stroke.
         AZStd::shared_ptr<ImageTileBuffer> m_strokeBuffer;
 
-        //! The meters per pixel in each direction for this image gradient.
-        //! These help us query the paintbrush for exactly one world position per image pixel.
-        float m_metersPerPixelX = 0.0f;
-        float m_metersPerPixelY = 0.0f;
-
         //! The intensity of the paint stroke (0 - 1)
         float m_intensity = 0.0f;
 
         //! The opacity of the paint stroke (0 - 1)
         float m_opacity = 0.0f;
-
-        //! Track the dirty region for each paint stroke so that we can store it in the undo/redo buffer
-        //! to send with change notifications.
-        AZ::Aabb m_dirtyRegion = AZ::Aabb::CreateNull();
     };
 
+    //! Handles all of the calculations for figuring out the dirty region AABB for the image gradient based on all its settings.
+    //! Depending on the tiling and gradient transform settings, painting one pixel on an image can result in dirty regions that
+    //! are much larger than the one pixel, potentially even infinite in size if the image settings are "mirror" or "repeat".
+    struct ModifiedImageRegion
+    {
+    public:
+        ModifiedImageRegion() = default;
+        ModifiedImageRegion(const ImageGradientSizeData& imageData);
+
+        //! Add a pixel's pixel index into the dirty region.
+        void AddPoint(const PixelIndex& pixelIndex);
+
+        //! Calculate the dirty region that reflects everywhere that's changed.
+        //! The output dirty region accounts for image repeats (via tiling / frequency zoom / scale), transform wrapping modes,
+        //! rotation, and bilinear filtering.
+        AZ::Aabb GetDirtyRegion();
+
+        //! Returns true if there is a dirty region, false if there isn't.
+        bool IsModified() const
+        {
+            return m_isModified;
+        }
+
+    private:
+        // Adds the full bounds of a pixel in local space to the given AABB. 
+        // We have two variations of this method - one that calculates from the top left corner in local space, and one
+        // that calculates from the bottom right corner. Depending on the various tiling and frequency zoom settings, these will
+        // produce different results since the same pixel can appear multiple times within the image gradient's local bounds.
+        static void AddLocalSpacePixelAabbFromTopLeft(
+            const ImageGradientSizeData& imageData, int16_t pixelX, int16_t pixelY, AZ::Aabb& region);
+        static void AddLocalSpacePixelAabbFromBottomRight(
+            const ImageGradientSizeData& imageData, int16_t pixelX, int16_t pixelY, AZ::Aabb& region);
+
+        ImageGradientSizeData m_imageData;
+
+        PixelIndex m_minModifiedPixelIndex;
+        PixelIndex m_maxModifiedPixelIndex;
+
+        bool m_modifiedLeftEdge = false;
+        bool m_modifiedRightEdge = false;
+        bool m_modifiedTopEdge = false;
+        bool m_modifiedBottomEdge = false;
+
+        bool m_isModified = false;
+    };
+
+    //! Top-level class that handles all of the actual image modification calculations for a paintbrush.
     class ImageGradientModifier : private AzFramework::PaintBrushNotificationBus::Handler
     {
     public:
@@ -144,7 +209,15 @@ namespace GradientSignal
             AZStd::function<float(const AZ::Vector3& worldPosition, float gradientValue, float opacity)> combineFn);
 
     private:
+        //! Keeps a local copy of all the image size data that's needed for locating pixels and calculating dirty regions.
+        ImageGradientSizeData m_imageData;
+
+        //! Keeps track of all the data for a full brush stroke.
         PaintStrokeData m_paintStrokeData;
+
+        //! Track the dirty region for each brush stroke so that we can store it in the undo/redo buffer
+        //! to send with change notifications.
+        ModifiedImageRegion m_modifiedStrokeRegion;
 
         //! The entity/component that owns this paintbrush.
         AZ::EntityComponentIdPair m_ownerEntityComponentId;

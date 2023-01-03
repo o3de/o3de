@@ -38,5 +38,13 @@ namespace AzToolsFramework
             //! @return Whether overrides are successfully reverted on the entity.
             virtual bool RevertOverrides(AZ::EntityId entityId) = 0;
         };
+
+        class PrefabOverridePublicRequests : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        };
+
+        using PrefabOverridePublicRequestBus = AZ::EBus<PrefabOverridePublicInterface, PrefabOverridePublicRequests>;
     } // namespace Prefab
 } // namespace AzToolsFramework

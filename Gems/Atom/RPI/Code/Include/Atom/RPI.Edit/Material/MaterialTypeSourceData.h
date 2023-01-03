@@ -38,6 +38,8 @@ namespace AZ
 
             static constexpr const char Extension[] = "materialtype";
 
+            static constexpr AZ::u32 IntermediateMaterialTypeSubId = 0;
+
             static void Reflect(ReflectContext* context);
 
             //! The .materialtype file has two slightly different formats, in most cases users will want to author content in the abstract format, which is 
@@ -129,7 +131,7 @@ namespace AZ
                 //! Path to a ".shader" file, relative to the asset root
                 AZStd::string m_shaderFilePath;
 
-                //! Unique tag to identify the shader
+                //! Unique tag to identify the shader, particularly in lua functors
                 AZ::Name m_shaderTag;
 
                 //! This list provides a way for users to set shader option values in a 'hard-coded' way rather than connecting them to material properties.
@@ -173,9 +175,12 @@ namespace AZ
 
             //! This holds data that is specific to one material pipeline. A list of these will allow
             //! the MaterialTypeAsset to work with multiple render pipelines.
-            struct MaterialPipelineData
+            struct MaterialPipelineState
             {
-                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::MaterialPipelineData, "{AA4648A2-4E0A-4AAB-BC85-FE762D449CA7}");
+                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::MaterialPipelineState, "{AA4648A2-4E0A-4AAB-BC85-FE762D449CA7}");
+
+                //! The list of internal properties that will be used to pass data from the main material properties to the material pipeline.
+                AZStd::vector<MaterialPropertySourceData> m_pipelinePropertyLayout;
 
                 //! A list of specific shaders that will be used to render the material.
                 AZStd::vector<ShaderVariantReferenceData> m_shaderCollection;
@@ -194,13 +199,13 @@ namespace AZ
             //! This indicates the name of the lighting model that this material type uses.
             //! For example, "Standard", "Enhanced", "Skin". The actual set of available lighting models
             //! is determined by the .materialpipeline.
-            //! This is relevant for "abstract" material type files (see IsAbstractFormat()).
+            //! This is relevant for "abstract" material type files (see GetFormat()).
             AZStd::string m_lightingModel;
 
             //! This indicates a .azsli file that contains only material-specific shader code.
             //! The build system will automatically combine this code with .materialpipeline shader code
             //! for use in each available render pipeline.
-            //! This is relevant for "abstract" material type files (see IsAbstractFormat()).
+            //! This is relevant for "abstract" material type files (see GetFormat()).
             AZStd::string m_materialShaderCode;
 
             //! A list of specific shaders that will be used to render the material.
@@ -211,7 +216,7 @@ namespace AZ
 
             //! Contains shaders and other data for use in specific render pipelines.
             //! To apply shaders to all render pipelines, use the @m_shaderCollection and @m_materialFunctorSourceData above.
-            AZStd::unordered_map<Name, MaterialPipelineData> m_pipelineData;
+            AZStd::unordered_map<Name, MaterialPipelineState> m_pipelineData;
 
             //! Override names for UV input in the shaders of this material type.
             //! Using ordered map to sort names on loading.
@@ -327,6 +332,7 @@ namespace AZ
             bool BuildProperty(
                 const AZStd::string& materialTypeSourceFilePath,
                 MaterialTypeAssetCreator& materialTypeAssetCreator,
+                const Name& materialPipelineName,
                 MaterialNameContext materialNameContext,
                 const Name& propertyId,
                 const MaterialPropertySourceData& propertySourceData) const;

@@ -178,6 +178,7 @@ namespace GradientSignal
         void SmoothToLocation(const AZ::Vector3& brushCenter, const AzFramework::PaintBrushSettings& brushSettings) override;
 
         AZStd::vector<float>* GetImageModificationBuffer();
+        bool ImageIsModified() const;
 
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetImageAsset() const;
         void SetImageAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset);
@@ -260,6 +261,9 @@ namespace GradientSignal
 
         //! Temporary buffer for runtime modifications of the image data.
         AZStd::vector<float> m_modifiedImageData;
+
+        //! Track whether or not any data has been modified.
+        bool m_imageIsModified = false;
 
         //! Logic for handling image modification requests from PaintBrush instances.
         //! This is only created and active between StartImageModification / EndImageModification calls.

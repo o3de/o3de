@@ -1578,7 +1578,7 @@ namespace AZStd
     {
         va_list mark;
         va_start(mark, format);
-        basic_fixed_string<char, MaxElementCount, char_traits<char>> result = format_arg(format, mark);
+        auto result = format_arg(format, mark);
         va_end(mark);
         return result;
     }
@@ -1588,7 +1588,7 @@ namespace AZStd
     {
         va_list mark;
         va_start(mark, format);
-        basic_fixed_string<wchar_t, MaxElementCount, char_traits<wchar_t>> result = format_arg(format, mark);
+        auto result = format_arg(format, mark);
         va_end(mark);
         return result;
     }
