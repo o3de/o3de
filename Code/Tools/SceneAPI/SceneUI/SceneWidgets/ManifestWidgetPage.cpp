@@ -118,6 +118,12 @@ namespace AZ
 
                     m_objects.erase(it);
 
+                    if (m_objects.size() < m_capSize)
+                    {
+                        ui->m_addButton->setToolTip(QString());
+                        ui->m_addButton->setEnabled(true);
+                    }
+
                     if (m_objects.size() == 0)
                     {
                         // We won't get property modified event  if it's the last element removed
@@ -164,6 +170,11 @@ namespace AZ
             {
                 m_objects.clear();
                 m_propertyEditor->ClearInstances();
+                if (m_objects.size() < m_capSize)
+                {
+                    ui->m_addButton->setToolTip(QString());
+                    ui->m_addButton->setEnabled(true);
+                }
             }
 
             void ManifestWidgetPage::BeforePropertyModified(AzToolsFramework::InstanceDataNode* /*pNode*/)
@@ -235,6 +246,12 @@ namespace AZ
                     }
 
                     AddNewObject(m_classTypeIds[0]);
+
+                    if (m_objects.size() >= m_capSize)
+                    {
+                        ui->m_addButton->setToolTip(tr("This group container reached its cap of %1 entries.").arg(m_capSize));
+                        ui->m_addButton->setEnabled(false);
+                    }
                 }
             }
 
@@ -247,6 +264,12 @@ namespace AZ
                     return;
                 }
                 AddNewObject(id);
+
+                if (m_objects.size() >= m_capSize)
+                {
+                    ui->m_addButton->setToolTip(tr("This group container reached its cap of %1 entries.").arg(m_capSize));
+                    ui->m_addButton->setEnabled(false);
+                }
             }
 
             void ManifestWidgetPage::BuildAndConnectAddButton()
@@ -259,6 +282,25 @@ namespace AZ
                 {
                     AZStd::string className = ClassIdToName(m_classTypeIds[0]);
                     AZStd::to_lower(className.begin(), className.end());
+
+                    AZ::SerializeContext* serializeContext = nullptr;
+                    AZ::ComponentApplicationBus::BroadcastResult(
+                        serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+                    AZ_Assert(serializeContext, "No serialize context");
+                    auto classData = serializeContext->FindClassData(m_classTypeIds[0]);
+                    if (classData && classData->m_editData)
+                    {
+                        const AZ::Edit::ElementData* editorElementData =
+                            classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
+                        if (auto categoryAttribute = editorElementData->FindAttribute(AZ::Edit::Attributes::Max))
+                        {
+                            if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<int>*>(categoryAttribute))
+                            {
+                                m_capSize = categoryAttributeData->Get(nullptr);
+
+                            }
+                        }
+                    }
 
                     ui->m_addButton->setText(QString::fromLatin1("Add another %1").arg(className.c_str()));
                     connect(ui->m_addButton, &QPushButton::clicked, this, &ManifestWidgetPage::OnSingleGroupAdd);

@@ -119,6 +119,7 @@ namespace AZ::SceneAPI::SceneData
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute("AutoExpand", true)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                        ->Attribute(AZ::Edit::Attributes::Max, 1)
                     ->DataElement(0,
                         &PrefabGroup::m_createProceduralPrefab,
                         "Create default procedural prefab?",
