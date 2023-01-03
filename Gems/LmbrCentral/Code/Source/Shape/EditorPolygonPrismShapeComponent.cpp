@@ -145,6 +145,8 @@ namespace LmbrCentral
 
     void EditorPolygonPrismShapeComponent::Reflect(AZ::ReflectContext* context)
     {
+        EditorPolygonPrismShapeComponentMode::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorPolygonPrismShapeComponent, EditorBaseShapeComponent>()
@@ -172,8 +174,6 @@ namespace LmbrCentral
                         ;
             }
         }
-
-        EditorPolygonPrismShapeComponentMode::Reflect(context);
     }
 
     void EditorPolygonPrismShapeComponent::DisplayEntityViewport(

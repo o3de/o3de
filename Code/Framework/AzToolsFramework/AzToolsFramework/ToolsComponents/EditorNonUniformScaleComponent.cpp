@@ -24,6 +24,8 @@ namespace AzToolsFramework
 
         void EditorNonUniformScaleComponent::Reflect(AZ::ReflectContext* context)
         {
+            NonUniformScaleComponentMode::Reflect(context);
+
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorNonUniformScaleComponent, EditorComponentBase>()
@@ -61,8 +63,6 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Module, "editor")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
             }
-
-            NonUniformScaleComponentMode::Reflect(context);
         }
 
         void EditorNonUniformScaleComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
