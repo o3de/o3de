@@ -90,6 +90,12 @@ namespace AZ
                 // Add new object to the list so it's ready for updating later on.
                 m_objects.push_back(object);
 
+                if (m_objects.size() >= m_capSize)
+                {
+                    ui->m_addButton->setToolTip(tr("This group container reached its cap of %1 entries.").arg(m_capSize));
+                    ui->m_addButton->setEnabled(false);
+                }
+
                 QTimer::singleShot(0, this,
                     [this]()
                     {
