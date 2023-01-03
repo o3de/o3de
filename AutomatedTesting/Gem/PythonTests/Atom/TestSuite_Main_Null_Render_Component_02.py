@@ -21,10 +21,6 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_GridAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_GridAdded as test_module
 
-    @pytest.mark.test_case_id("C36553404")
-    class AtomEditorComponents_HairAdded(EditorBatchedTest):
-        from Atom.tests import hydra_AtomEditorComponents_HairAdded as test_module
-
     @pytest.mark.test_case_id("C36525671")
     class AtomEditorComponents_HDRColorGradingAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_HDRColorGradingAdded as test_module
@@ -44,10 +40,6 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C32078123")
     class AtomEditorComponents_MaterialAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_MaterialAdded as test_module
-
-    @pytest.mark.test_case_id("C32078124")
-    class AtomEditorComponents_MeshAdded(EditorBatchedTest):
-        from Atom.tests import hydra_AtomEditorComponents_MeshAdded as test_module
 
     @pytest.mark.test_case_id("C36525663")
     class AtomEditorComponents_OcclusionCullingPlaneAdded(EditorBatchedTest):

@@ -12,12 +12,13 @@
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/NotificationWidget.h>
 #include <Editor/SimulatedObjectHelpers.h>
 #include <Editor/SkeletonModel.h>
-#include <Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.h>
+#include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 #include <MysticQt/Source/MysticQtManager.h>
 #include <QLabel>
@@ -85,26 +86,6 @@ namespace EMotionFX
             layout->addWidget(m_collideWithWidget);
         }
 
-        // Add to simulated object button
-        AddToSimulatedObjectButton* addObjectButtonn = new AddToSimulatedObjectButton("Add to simulated object", result);
-        layout->addWidget(addObjectButtonn);
-
-        // Add collider button
-        AddColliderButton* addColliderButton = new AddColliderButton("Add simulated object collider", result,
-            PhysicsSetup::ColliderConfigType::SimulatedObjectCollider,
-            { azrtti_typeid<Physics::CapsuleShapeConfiguration>(),
-             azrtti_typeid<Physics::SphereShapeConfiguration>() });
-        addColliderButton->setObjectName("EMFX.SimulatedObjectColliderWidget.AddColliderButton");
-        connect(addColliderButton, &AddColliderButton::AddCollider, this, &SimulatedObjectColliderWidget::OnAddCollider);
-        layout->addWidget(addColliderButton);
-
-        m_instruction1 = new QLabel("To simulated the selected joint, add it to a Simulated Object by clicking on the \"Add to Simulated Object\" button above", result);
-        m_instruction1->setWordWrap(true);
-        m_instruction2 = new QLabel("If you want the selected joint to collide against a Simulated Object, add a collider to the selected joint, and then set up the \"Collide with\" settings under the Simulated Object", result);
-        m_instruction2->setWordWrap(true);
-        layout->addWidget(m_instruction1);
-        layout->addWidget(m_instruction2);
-
         // Collider notification
         m_colliderNotif = new NotificationWidget(result, "Currently, this collider doesn't collide against any simulated object. Select the Simulated Object you want to collide with from the Simulated Object Window, and choose this collider in the \"Collide with\" setting.");
         layout->addWidget(m_colliderNotif);
@@ -123,6 +104,8 @@ namespace EMotionFX
 
     void SimulatedObjectColliderWidget::InternalReinit()
     {
+        m_widgetCount = 0;
+
         const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
         if (selectedModelIndices.size() == 1)
         {
@@ -134,22 +117,18 @@ namespace EMotionFX
                 AZ_Error("EMotionFX", serializeContext, "Can't get serialize context from component application.");
 
                 m_collidersWidget->Update(GetActor(), GetNode(), PhysicsSetup::ColliderConfigType::SimulatedObjectCollider, nodeConfig->m_shapes, serializeContext);
+                m_content->show();
                 m_collidersWidget->show();
-                m_instruction1->hide();
-                m_instruction2->hide();
+                m_widgetCount = static_cast<int>(1 + nodeConfig->m_shapes.size()); // on Mac unsigned long (size_t) can't silent downcast to int, added static_cast
             }
             else
             {
                 m_collidersWidget->Reset();
-                m_instruction1->show();
-                m_instruction2->show();
             }
         }
         else
         {
             m_collidersWidget->Reset();
-            m_instruction1->show();
-            m_instruction2->show();
         }
 
         UpdateOwnershipLabel();
@@ -273,7 +252,7 @@ namespace EMotionFX
 
     Physics::CharacterColliderNodeConfiguration* SimulatedObjectColliderWidget::GetNodeConfig() const
     {
-        AZ_Assert(GetSelectedModelIndices().size() == 1, "Get Node config function only return the config when it is single seleted");
+        AZ_Assert(GetSelectedModelIndices().size() == 1, "Get Node config function only return the config when it is single selected");
         Actor* actor = GetActor();
         Node* joint = GetNode();
         if (!actor || !joint)

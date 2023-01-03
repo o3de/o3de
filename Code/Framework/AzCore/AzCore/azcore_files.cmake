@@ -252,6 +252,8 @@ set(FILES
     JSON/pointer.h
     JSON/prettywriter.h
     JSON/rapidjson.h
+    JSON/rapidjson.cpp
+    JSON/RapidJsonAllocator.h
     JSON/RapidjsonAllocatorAdapter.h
     JSON/reader.h
     JSON/schema.h
@@ -423,6 +425,8 @@ set(FILES
     Memory/SystemAllocator.h
     Metrics/EventLoggerFactoryImpl.h
     Metrics/EventLoggerFactoryImpl.cpp
+    Metrics/EventLoggerReflectUtils.cpp
+    Metrics/EventLoggerReflectUtils.h
     Metrics/EventLoggerUtils.cpp
     Metrics/EventLoggerUtils.h
     Metrics/JsonTraceEventLogger.h
@@ -466,13 +470,6 @@ set(FILES
     Preprocessor/Enum.h
     Preprocessor/EnumReflectUtils.h
     Preprocessor/Sequences.h
-    RTTI/RTTI.h
-    RTTI/TypeInfo.h
-    RTTI/TypeInfoSimple.h
-    RTTI/ReflectContext.h
-    RTTI/ReflectContext.cpp
-    RTTI/ReflectionManager.h
-    RTTI/ReflectionManager.cpp
     RTTI/AttributeReader.h
     RTTI/AzStdOnDemandPrettyName.inl
     RTTI/AzStdOnDemandReflection.inl
@@ -481,10 +478,19 @@ set(FILES
     RTTI/BehaviorContext.cpp
     RTTI/BehaviorContext.h
     RTTI/BehaviorContextEBusEventRawSignature.inl
-    RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorContextUtilities.cpp
+    RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorInterfaceProxy.h
     RTTI/BehaviorObjectSignals.h
+    RTTI/ChronoReflection.cpp
+    RTTI/ChronoReflection.h
+    RTTI/ReflectContext.h
+    RTTI/ReflectContext.cpp
+    RTTI/ReflectionManager.h
+    RTTI/ReflectionManager.cpp
+    RTTI/RTTI.h
+    RTTI/TypeInfo.h
+    RTTI/TypeInfoSimple.h
     RTTI/TypeSafeIntegral.h
     Script/lua/lua.h
     Script/ScriptAsset.cpp
@@ -596,6 +602,8 @@ set(FILES
     Serialization/std/VariantReflection.inl
     Settings/CommandLine.cpp
     Settings/CommandLine.h
+    Settings/ConfigParser.cpp
+    Settings/ConfigParser.h
     Settings/ConfigurableStack.cpp
     Settings/ConfigurableStack.inl
     Settings/ConfigurableStack.h

@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetOnCollisionEndEvent",
-                    "context": "SimulatedBody",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Collision End Event"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "GetOnCollisionPersistEvent",
-                    "context": "SimulatedBody",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Collision Persist Event"
@@ -74,7 +72,6 @@
                 },
                 {
                     "base": "GetOnTriggerEnterEvent",
-                    "context": "SimulatedBody",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Trigger Enter Event"
@@ -106,7 +103,6 @@
                 },
                 {
                     "base": "GetOnCollisionBeginEvent",
-                    "context": "SimulatedBody",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Collision Begin Event"
@@ -138,7 +134,6 @@
                 },
                 {
                     "base": "GetOnTriggerExitEvent",
-                    "context": "SimulatedBody",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Trigger Exit Event"

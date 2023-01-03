@@ -267,9 +267,16 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             " Perhaps it has been renamed")
     endif()
 
-    ly_add_googletest(
-        NAME AZ::AssetProcessor.Tests
-    )
+    # there are some tests in the main suite, and some in periodic.
+    ly_add_googletest(NAME AZ::AssetProcessor.Tests)
+    ly_add_googletest(NAME AZ::AssetProcessor.Tests.Periodic
+        TARGET AZ::AssetProcessor.Tests 
+        TEST_SUITE periodic)
+    # Sandbox the tests that fail intermittently
+    ly_add_googletest(NAME AZ::AssetProcessor.Tests.Sandbox
+        TARGET AZ::AssetProcessor.Tests 
+        TEST_SUITE sandbox)
+
     ly_add_googlebenchmark(
         NAME AZ::AssetProcessor.Benchmarks
         TARGET AZ::AssetProcessor.Tests

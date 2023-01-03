@@ -94,6 +94,8 @@ namespace AzToolsFramework
             template <class TEntryType>
             const TEntryType* GetEntryFromIndex(const QModelIndex& index) const;
 
+            const AssetBrowserEntry* GetEntryByPath(QStringView path);
+
             bool IsIndexExpandedByDefault(const QModelIndex& index) const override;
 
         Q_SIGNALS:

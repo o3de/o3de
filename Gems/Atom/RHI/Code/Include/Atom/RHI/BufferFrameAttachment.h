@@ -28,7 +28,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(BufferFrameAttachment, "{2E6463F2-AB93-46C4-AD3C-30C3DD0B7151}", FrameAttachment);
-            AZ_CLASS_ALLOCATOR(BufferFrameAttachment, AZ::PoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferFrameAttachment, SystemAllocator, 0);
             virtual ~BufferFrameAttachment() override = default;
 
             /// Initialization for imported buffers.

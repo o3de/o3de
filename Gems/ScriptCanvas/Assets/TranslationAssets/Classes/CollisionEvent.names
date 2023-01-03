@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetBody1EntityId",
-                    "context": "CollisionEvent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Body 1 Entity Id"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "GetBody2EntityId",
-                    "context": "CollisionEvent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Body 2 Entity Id"

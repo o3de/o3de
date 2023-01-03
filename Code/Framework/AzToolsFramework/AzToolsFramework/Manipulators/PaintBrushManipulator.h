@@ -36,8 +36,7 @@ namespace AzToolsFramework
     {
         //! Private constructor.
         PaintBrushManipulator(
-            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair,
-            AzFramework::PaintBrushColorMode colorMode);
+            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair, PaintBrushColorMode colorMode);
 
     public:
         AZ_RTTI(PaintBrushManipulator, "{0621CB58-21FD-474A-A296-5B1192E714E7}", BaseManipulator);
@@ -52,7 +51,7 @@ namespace AzToolsFramework
         //! A Manipulator must only be created and managed through a shared_ptr.
         static AZStd::shared_ptr<PaintBrushManipulator> MakeShared(
             const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair,
-            AzFramework::PaintBrushColorMode colorMode);
+            PaintBrushColorMode colorMode);
 
         //! Draw the current manipulator state.
         void Draw(

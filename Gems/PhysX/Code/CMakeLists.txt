@@ -228,13 +228,4 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAME Gem::PhysX.Editor.Tests
         )
     endif()
-    
-    ly_add_target_files(
-        TARGETS
-            ${testTargets}
-        FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/RagdollConfiguration.xml
-        OUTPUT_SUBDIRECTORY
-            Test.Assets/Gems/PhysX/Code/Tests
-            )
 endif()

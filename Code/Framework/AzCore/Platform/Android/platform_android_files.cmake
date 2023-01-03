@@ -88,3 +88,12 @@ if (LY_TEST_PROJECT)
         VALUES LY_NO_ASSETS
     )
 endif()
+
+# Disabling -ffast-math for 'IntersectSegment.cpp' file only.
+# It has an implementation of the "Watertight Ray/Triangle Intersection"
+# algorithm, which gets broken by the fast-math optimizations.
+ly_add_source_properties(
+    SOURCES ${CMAKE_CURRENT_LIST_DIR}/../../AzCore/Math/IntersectSegment.cpp
+    PROPERTY COMPILE_FLAGS
+    VALUES -fno-fast-math
+)
