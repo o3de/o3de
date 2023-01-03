@@ -19,6 +19,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
@@ -129,6 +130,19 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         connect(m_ui->m_assetBrowserTableViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
             this, &AzAssetBrowserWindow::CurrentIndexChangedSlot);
 
+        connect(
+            m_ui->m_assetBrowserTableViewWidget->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            [this](const QItemSelection& selected, const QItemSelection& deselected)
+            {
+                Q_UNUSED(deselected);
+                if (selected.indexes().size() > 0)
+                {
+                    CurrentIndexChangedSlot(selected.indexes()[0]);
+                }
+            });
+
         connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked,
             this, &AzAssetBrowserWindow::DoubleClickedItem);
 
@@ -140,6 +154,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
         m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
     }
+
+    m_ui->m_thumbnailView->SetPreviewerFrame(m_ui->m_previewerFrame);
 
     if (!ed_useWIPAssetBrowserDesign)
     {
@@ -181,6 +197,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     connect(m_ui->m_treeViewButton, &QAbstractButton::clicked, this, &AzAssetBrowserWindow::SetOneColumnMode);
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
+    // !!! Need to set the model on the tree widget first
+    m_ui->m_thumbnailView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
 
     connect(m_ui->m_searchWidget->GetFilter().data(), &AzAssetBrowser::AssetBrowserEntryFilter::updatedSignal,
         m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterUpdatedSlot);
@@ -195,6 +213,19 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     connect(m_ui->m_assetBrowserTreeViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
         this, &AzAssetBrowserWindow::CurrentIndexChangedSlot);
+
+    connect(
+        m_ui->m_assetBrowserTreeViewWidget->selectionModel(),
+        &QItemSelectionModel::selectionChanged,
+        this,
+        [this](const QItemSelection& selected, const QItemSelection& deselected)
+        {
+            Q_UNUSED(deselected);
+            if (selected.indexes().size() > 0)
+            {
+                CurrentIndexChangedSlot(selected.indexes()[0]);
+            }
+        });
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
 
@@ -280,6 +311,8 @@ void AzAssetBrowserWindow::RegisterViewClass()
     AzToolsFramework::ViewPaneOptions options;
     options.preferedDockingArea = Qt::LeftDockWidgetArea;
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(LyViewPane::AssetBrowser, LyViewPane::CategoryTools, options);
+    options.preferedDockingArea = Qt::RightDockWidgetArea;
+    AzToolsFramework::RegisterViewPane<AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget>(LyViewPane::AssetBrowserInspector, LyViewPane::CategoryTools, options);
 }
 
 QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* parent)
@@ -298,10 +331,9 @@ void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
     // but the resizeEvent holds the new size of the whole widget
     // So we have to save the proportions somehow
     const QWidget* leftLayout = m_ui->m_leftLayout;
-    const QVBoxLayout* rightLayout = m_ui->m_rightLayout;
 
     const float oldLeftLayoutWidth = aznumeric_cast<float>(leftLayout->geometry().width());
-    const float oldWidth = aznumeric_cast<float>(leftLayout->geometry().width() + rightLayout->geometry().width());
+    const float oldWidth = aznumeric_cast<float>(leftLayout->geometry().width());
 
     const float newWidth = oldLeftLayoutWidth * aznumeric_cast<float>(resizeEvent->size().width()) / oldWidth;
 
@@ -451,18 +483,6 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
     }
 }
 
-void AzAssetBrowserWindow::UpdatePreview(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const
-{
-    if (selectedEntry)
-    {
-        m_ui->m_previewerFrame->Display(selectedEntry);
-    }
-    else
-    {
-        m_ui->m_previewerFrame->Clear();
-    }
-}
-
 void AzAssetBrowserWindow::UpdateBreadcrumbs(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const
 {
     using namespace AzToolsFramework::AssetBrowser;
@@ -547,8 +567,8 @@ void AzAssetBrowserWindow::CurrentIndexChangedSlot(const QModelIndex& idx) const
     using namespace AzToolsFramework::AssetBrowser;
     auto* entry = idx.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
 
-    UpdatePreview(entry);
     UpdateBreadcrumbs(entry);
+    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
 }
 
 // while its tempting to use Activated here, we don't actually want it to count as activation

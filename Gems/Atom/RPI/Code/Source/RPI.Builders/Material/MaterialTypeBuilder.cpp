@@ -43,7 +43,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 36; // pipeline material functors
+            materialBuilderDescriptor.m_version = 38; // material type indirect references
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -364,7 +364,7 @@ namespace AZ
         {
             const AZStd::string materialTypeName = AZ::IO::Path{request.m_sourceFile}.Stem().Native();
 
-            AZ::u32 nextProductSubID = 0;
+            AZ::u32 nextProductSubID = MaterialTypeSourceData::IntermediateMaterialTypeSubId + 1;
 
             auto materialTypeLoadResult = MaterialUtils::LoadMaterialTypeSourceData(request.m_fullPath);
             if (!materialTypeLoadResult.IsSuccess())
@@ -582,7 +582,8 @@ namespace AZ
                 AssetBuilderSDK::JobProduct product;
                 product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
                 product.m_productFileName = outputMaterialTypeFilePath.String();
-                product.m_productSubID = nextProductSubID++;
+                product.m_productAssetType = azrtti_typeid<RPI::MaterialTypeSourceData>();
+                product.m_productSubID = MaterialTypeSourceData::IntermediateMaterialTypeSubId;
                 response.m_outputProducts.push_back(AZStd::move(product));
             }
             else
