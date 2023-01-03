@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/Shape.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 
 namespace AzPhysics
 {
@@ -104,6 +105,14 @@ namespace AzPhysics
         }
     }
 
+    const AZStd::string kinematicDescription =
+        "When active, the rigid body is not affected by gravity or other forces and is moved by script. ";
+
+    const AZStd::string ccdDescription =
+        "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
+        "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX "
+        "configuration. ";
+
     AZ_CLASS_ALLOCATOR_IMPL(RigidBodyConfiguration, AZ::SystemAllocator, 0);
 
     void RigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
@@ -182,6 +191,35 @@ namespace AzPhysics
     bool RigidBodyConfiguration::IsCcdEnabled() const
     {
         return m_ccdEnabled;
+    }
+
+    bool RigidBodyConfiguration::CcdReadOnly() const
+    {
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            return !physicsSystem->GetDefaultSceneConfiguration().m_enableCcd || m_kinematic;
+        }
+        return m_kinematic;
+    }
+
+    AZStd::string RigidBodyConfiguration::GetCcdTooltip() const
+    {
+        if (m_kinematic)
+        {
+            return ccdDescription +
+                "<b>CCD cannot be enabled if the rigid body is kinematic, set the rigid body as non-kinematic to allow changes to be made.</b>";
+        }
+        return ccdDescription;
+    }
+
+    AZStd::string RigidBodyConfiguration::GetKinematicTooltip() const
+    {
+        if (m_ccdEnabled)
+        {
+            return kinematicDescription +
+                "<b>The rigid body cannot be set as Kinematic if CCD is enabled, disable CCD to allow changes to be made.</b>";
+        }
+        return kinematicDescription;
     }
 
     AZ::Crc32 RigidBodyConfiguration::GetInitialVelocitiesVisibility() const
