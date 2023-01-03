@@ -358,3 +358,20 @@ def validate_expected_override_status(entity: EditorEntity, expected_override_st
     else:
         assert not entity.has_overrides(), \
             f"Found overrides present on unexpected entity: {entity.id}"
+
+
+def validate_expected_components(entity: EditorEntity, expected_components: list = None,
+                                 unexpected_components: list = None) -> None:
+    """
+    Validates that the entity has the given expected components, and none of the unexpected components.
+    Useful for ensuring prefab overrides have affected only specific entities.
+    :return: None
+    """
+    if expected_components:
+        for component in expected_components:
+            assert entity.has_component(component), \
+                f"Failed to find expected {component} component on {entity.get_name()} with id {entity.id}"
+    if unexpected_components:
+        for component in unexpected_components:
+            assert not entity.has_component(component), \
+                f"Unexpectedly found {component} component on {entity.get_name()} with id {entity.id}"

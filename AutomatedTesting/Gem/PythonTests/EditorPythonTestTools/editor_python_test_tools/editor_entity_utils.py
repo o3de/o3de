@@ -766,22 +766,6 @@ class EditorEntity:
         """
         return prefab.PrefabOverridePublicRequestBus(bus.Broadcast, "RevertOverrides", self.id)
 
-    def validate_expected_components(self, expected_components: list = None,
-                                     unexpected_components: list = None) -> None:
-        """
-        Validates that the entity has the given expected components, and none of the unexpected components.
-        Useful for ensuring prefab overrides have affected only specific entities.
-        :return: None
-        """
-        if expected_components:
-            for component in expected_components:
-                assert self.has_component(component), \
-                    f"Failed to find expected {component} component on {self.get_name()} with id {self.id}"
-        if unexpected_components:
-            for component in unexpected_components:
-                assert not self.has_component(component), \
-                    f"Unexpectedly found {component} component on {self.get_name()} with id {self.id}"
-
 
 class EditorLevelEntity:
     """

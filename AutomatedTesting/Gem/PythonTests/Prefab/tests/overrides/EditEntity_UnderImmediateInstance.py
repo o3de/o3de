@@ -104,9 +104,9 @@ def EditEntity_UnderImmediateInstance():
     car_entity_of_instance_2.add_component("Comment")
 
     # Validate each instance has the expected components: Mesh on both, and Comment only on the 2nd instance
-    car_entity_of_instance_1.validate_expected_components(expected_components=["Mesh"],
-                                                          unexpected_components=["Comment"])
-    car_entity_of_instance_2.validate_expected_components(expected_components=["Mesh", "Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_1, expected_components=["Mesh"],
+                                                   unexpected_components=["Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_2, expected_components=["Mesh", "Comment"])
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_1, False)
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_2, True)
 
@@ -117,8 +117,8 @@ def EditEntity_UnderImmediateInstance():
     PrefabWaiter.wait_for_propagation()
 
     # Validate each instance has reverted the addition of the new components with Undo
-    car_entity_of_instance_1.validate_expected_components(unexpected_components=["Mesh", "Comment"])
-    car_entity_of_instance_2.validate_expected_components(unexpected_components=["Mesh", "Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_1, unexpected_components=["Mesh", "Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_2, unexpected_components=["Mesh", "Comment"])
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_1, False)
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_2, False)
 
@@ -129,9 +129,9 @@ def EditEntity_UnderImmediateInstance():
     PrefabWaiter.wait_for_propagation()
 
     # Validate each instance has the expected components: Mesh on both, and Comment only on the 2nd instance
-    car_entity_of_instance_1.validate_expected_components(expected_components=["Mesh"],
-                                                          unexpected_components=["Comment"])
-    car_entity_of_instance_2.validate_expected_components(expected_components=["Mesh", "Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_1, expected_components=["Mesh"],
+                                                   unexpected_components=["Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_2, expected_components=["Mesh", "Comment"])
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_1, False)
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_2, True)
 
@@ -141,8 +141,8 @@ def EditEntity_UnderImmediateInstance():
     PrefabWaiter.wait_for_propagation()
 
     # Validate both instance entities now have overrides applied, and each has the proper components
-    car_entity_of_instance_1.validate_expected_components(unexpected_components=["Mesh", "Comment"])
-    car_entity_of_instance_2.validate_expected_components(expected_components=["Mesh", "Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_1, unexpected_components=["Mesh", "Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_2, expected_components=["Mesh", "Comment"])
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_1, True)
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_2, True)
 
@@ -151,9 +151,9 @@ def EditEntity_UnderImmediateInstance():
     PrefabWaiter.wait_for_propagation()
 
     # Validate expected overrides and components after Undo
-    car_entity_of_instance_1.validate_expected_components(expected_components=["Mesh"],
-                                                          unexpected_components=["Comment"])
-    car_entity_of_instance_2.validate_expected_components(expected_components=["Mesh", "Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_1, expected_components=["Mesh"],
+                                                   unexpected_components=["Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_2, expected_components=["Mesh", "Comment"])
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_1, False)
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_2, True)
 
@@ -162,8 +162,8 @@ def EditEntity_UnderImmediateInstance():
     PrefabWaiter.wait_for_propagation()
 
     # Validate expected overrides and components after Redo
-    car_entity_of_instance_1.validate_expected_components(unexpected_components=["Mesh", "Comment"])
-    car_entity_of_instance_2.validate_expected_components(expected_components=["Mesh", "Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_1, unexpected_components=["Mesh", "Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_2, expected_components=["Mesh", "Comment"])
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_1, True)
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_2, True)
 
@@ -173,10 +173,10 @@ def EditEntity_UnderImmediateInstance():
     PrefabWaiter.wait_for_propagation()
 
     # Validate expected overrides and component after reverting
-    car_entity_of_instance_1.validate_expected_components(expected_components=["Mesh"],
-                                                          unexpected_components=["Comment"])
-    car_entity_of_instance_2.validate_expected_components(expected_components=["Mesh"],
-                                                          unexpected_components=["Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_1, expected_components=["Mesh"],
+                                                   unexpected_components=["Comment"])
+    prefab_test_utils.validate_expected_components(car_entity_of_instance_2, expected_components=["Mesh"],
+                                                   unexpected_components=["Comment"])
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_1, False)
     prefab_test_utils.validate_expected_override_status(car_entity_of_instance_2, False)
 

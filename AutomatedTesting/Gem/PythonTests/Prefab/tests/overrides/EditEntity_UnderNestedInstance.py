@@ -109,16 +109,16 @@ def EditEntity_UnderNestedInstance():
 
     # Instance 1, which is already in focus
     prefab_test_utils.validate_expected_override_status(front_wheel_entity, True)
-    front_wheel_entity.validate_expected_components(expected_components=["Mesh", "Comment"])
+    prefab_test_utils.validate_expected_components(front_wheel_entity, expected_components=["Mesh", "Comment"])
     prefab_test_utils.validate_expected_override_status(back_wheel_entity, True)
-    back_wheel_entity.validate_expected_components(expected_components=["Mesh"], unexpected_components=["Comment"])
+    prefab_test_utils.validate_expected_components(back_wheel_entity, expected_components=["Mesh"], unexpected_components=["Comment"])
 
     # Focus instance 2, and validate
     motorcycle_instance_2.container_entity.focus_on_owning_prefab()
     front_wheel_entity_2 = motorcycle_instance_2.get_child_entity_by_name("Front_Wheel")
-    front_wheel_entity_2.validate_expected_components(expected_components=["Mesh", "Comment"])
+    prefab_test_utils.validate_expected_components(front_wheel_entity_2, expected_components=["Mesh", "Comment"])
     back_wheel_entity_2 = motorcycle_instance_2.get_child_entity_by_name("Back_Wheel")
-    back_wheel_entity_2.validate_expected_components(expected_components=["Mesh"], unexpected_components=["Comment"])
+    prefab_test_utils.validate_expected_components(back_wheel_entity_2, expected_components=["Mesh"], unexpected_components=["Comment"])
     prefab_test_utils.validate_expected_override_status(front_wheel_entity_2, True)
     prefab_test_utils.validate_expected_override_status(back_wheel_entity_2, True)
 
@@ -136,8 +136,8 @@ def EditEntity_UnderNestedInstance():
     for back_wheel in back_wheels:
         back_wheel.validate_world_translate_position(CREATION_POSITION)
 
-    front_wheel_entity.validate_expected_components(expected_components=["Mesh"], unexpected_components=["Comment"])
-    back_wheel_entity.validate_expected_components(expected_components=["Mesh"], unexpected_components=["Comment"])
+    prefab_test_utils.validate_expected_components(front_wheel_entity, expected_components=["Mesh"], unexpected_components=["Comment"])
+    prefab_test_utils.validate_expected_components(back_wheel_entity, expected_components=["Mesh"], unexpected_components=["Comment"])
 
     # Redo the override
     general.redo()  # Redo the transform override
