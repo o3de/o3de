@@ -20,8 +20,12 @@ namespace AzToolsFramework
         , m_sortAdapter(AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringSort>())
     {
         setWindowTitle(tr("Console Variables"));
+
+        /* <apm> disabling sortadapter for testing. Todo: re-enable!
         m_sortAdapter->SetSourceAdapter(m_cvarAdapter);
         SetAdapter(m_sortAdapter);
+        */
+        SetAdapter(m_cvarAdapter);
     }
 
     void CvarDPE::RegisterViewClass()
