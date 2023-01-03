@@ -19,6 +19,9 @@
 #include <Editor/EditorClassConverters.h>
 #include <Source/NameConstants.h>
 #include <Source/Utils.h>
+#include <PhysX/PhysXLocks.h>
+
+#include <LyViewPaneNames.h>
 
 namespace PhysX
 {
@@ -57,7 +60,7 @@ namespace PhysX
                 else
                 {
                     const Physics::ShapeConfiguration& shapeConfiguration = shapeConfigurationProxy.GetCurrent();
-                    if (!hasNonUniformScaleComponent)
+                    if (!hasNonUniformScaleComponent && !shapeConfigurationProxy.IsCylinderConfig())
                     {
                         AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
                             colliderConfigurationScaled, shapeConfiguration);
@@ -88,7 +91,7 @@ namespace PhysX
             const AZStd::vector<EditorShapeColliderComponent*> shapeColliders = entity->FindComponents<EditorShapeColliderComponent>();
             for (const EditorShapeColliderComponent* shapeCollider : shapeColliders)
             {
-                const Physics::ColliderConfiguration& colliderConfig = shapeCollider->GetColliderConfiguration();
+                const Physics::ColliderConfiguration colliderConfig = shapeCollider->GetColliderConfigurationScaled();
                 const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
                     shapeCollider->GetShapeConfigurations();
                 for (const auto& shapeConfig : shapeConfigs)
@@ -102,6 +105,26 @@ namespace PhysX
             return allShapes;
         }
     } // namespace Internal
+
+    bool IsDefaultSceneCcdEnabled()
+    {
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            return physicsSystem->GetDefaultSceneConfiguration().m_enableCcd;
+        }
+        return false;
+    }
+
+    static bool IsSceneCcdDisabled()
+    {
+        return !IsDefaultSceneCcdEnabled();
+    }
+
+    static void OpenPhysXConfigurationPane()
+    {
+        AzToolsFramework::EditorRequestBus::Broadcast(
+            &AzToolsFramework::EditorRequests::OpenViewPane, LyViewPane::PhysXConfigurationEditor);
+    }
 
     void EditorRigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
     {
@@ -184,21 +207,32 @@ namespace PhysX
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Continuous Collision Detection")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCCDVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCcdVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled,
                         "CCD enabled", "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
-                        "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX preferences.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCCDVisibility)
+                        "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX configuration.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCcdVisibility)
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdMinAdvanceCoefficient,
                         "Min advance coefficient", "Lower values reduce clipping but can affect simulation smoothness.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Max, 0.99f)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCCDEnabled)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCcdEnabled)
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdFrictionEnabled,
                         "CCD friction", "When active, friction is applied when continuous collision detection (CCD) collisions are resolved.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCCDEnabled)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCcdEnabled)
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Button,
+                        &AzPhysics::RigidBodyConfiguration::m_configButton,
+                        "",
+                        "Click here to open the PhysX Configuration window. Enable global CCD to enable component CCD editing.")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Open PhysX Configuration to Enable CCD")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &IsSceneCcdDisabled)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenPhysXConfigurationPane)
                     ->EndGroup()
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_maxAngularVelocity,
@@ -263,14 +297,31 @@ namespace PhysX
 
     void EditorRigidBodyComponent::Activate()
     {
+        const AZ::EntityId entityId = GetEntityId();
+
         AzToolsFramework::Components::EditorComponentBase::Activate();
-        AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
-        AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
-        Physics::ColliderComponentEventBus::Handler::BusConnect(GetEntityId());
+        AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(entityId);
+        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
+        Physics::ColliderComponentEventBus::Handler::BusConnect(entityId);
+        AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
+
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             AzPhysics::SceneHandle editorSceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
             sceneInterface->RegisterSceneSimulationStartHandler(editorSceneHandle, m_sceneStartSimHandler);
+        }
+
+        m_sceneConfigChangedHandler = AzPhysics::SystemEvents::OnDefaultSceneConfigurationChangedEvent::Handler(
+            []([[maybe_unused]] const AzPhysics::SceneConfiguration* config)
+            {
+                AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay,
+                    AzToolsFramework::Refresh_EntireTree);
+            });
+
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            physicsSystem->RegisterOnDefaultSceneConfigurationChangedEventHandler(m_sceneConfigChangedHandler);
         }
 
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
@@ -299,10 +350,12 @@ namespace PhysX
     void EditorRigidBodyComponent::Deactivate()
     {
         m_debugDisplayDataChangeHandler.Disconnect();
+        m_sceneConfigChangedHandler.Disconnect();
 
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
         m_sceneStartSimHandler.Disconnect();
+        AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         Physics::ColliderComponentEventBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
@@ -332,6 +385,7 @@ namespace PhysX
         {
             serializeContext->Class<EditorRigidBodyComponent, AzToolsFramework::Components::EditorComponentBase>()
                 ->Field("Configuration", &EditorRigidBodyComponent::m_config)
+                ->Field("PhysXSpecificConfiguration", &EditorRigidBodyComponent::m_physxSpecificConfig)
                 ->Version(1)
             ;
 
@@ -341,16 +395,24 @@ namespace PhysX
                 editContext->Class<EditorRigidBodyComponent>(
                     "PhysX Rigid Body", "The entity behaves as a movable rigid object in PhysX.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXRigidBody.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/rigid-body/")
+                    ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXRigidBody.svg")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(
+                        AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/rigid-body/")
                     ->DataElement(0, &EditorRigidBodyComponent::m_config, "Configuration", "Configuration for rigid body physics.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
-                ;
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorRigidBodyComponent::m_physxSpecificConfig,
+                        "PhysX-Specific Configuration",
+                        "Settings which are specific to PhysX, rather than generic.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
+                    ;
             }
         }
     }
@@ -366,11 +428,19 @@ namespace PhysX
         InitPhysicsTickHandler();
     }
 
+    EditorRigidBodyComponent::EditorRigidBodyComponent(
+        const EditorRigidBodyConfiguration& configuration, const RigidBodyConfiguration& physxSpecificConfiguration)
+        : m_config(configuration)
+        , m_physxSpecificConfig(physxSpecificConfiguration)
+    {
+        InitPhysicsTickHandler();
+    }
+
     void EditorRigidBodyComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         // for now use Invalid scene which will fall back on default scene when entity is activated.
         // update to correct scene once multi-scene is fully supported.
-        gameEntity->CreateComponent<RigidBodyComponent>(m_config, AzPhysics::InvalidSceneHandle);
+        gameEntity->CreateComponent<RigidBodyComponent>(m_config, m_physxSpecificConfig, AzPhysics::InvalidSceneHandle);
     }
 
     void EditorRigidBodyComponent::DisplayEntityViewport(
@@ -409,7 +479,6 @@ namespace PhysX
         configuration.m_position = colliderTransform.GetTranslation();
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
-        configuration.m_startSimulationEnabled = false;
         configuration.m_colliderAndShapeData = Internal::GetCollisionShapes(GetEntity());
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
@@ -423,6 +492,13 @@ namespace PhysX
                 m_config.m_mass = body->GetMass();
                 m_config.m_centerOfMassOffset = body->GetCenterOfMassLocal();
                 m_config.m_inertiaTensor = body->GetInertiaLocal();
+
+                // Set simulation disabled for this actor so it doesn't actually interact when the editor world is updated.
+                if (physx::PxActor* pxActor = static_cast<physx::PxActor*>(body->GetNativePointer()))
+                {
+                    PHYSX_SCENE_WRITE_LOCK(pxActor->getScene());
+                    pxActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+                }
             }
         }
         AZ_Error("EditorRigidBodyComponent",
@@ -557,5 +633,21 @@ namespace PhysX
         {
             m_shouldBeRecreated = true;
         }
+    }
+
+    AZ::Aabb EditorRigidBodyComponent::GetWorldBounds()
+    {
+        return GetAabb();
+    }
+
+    AZ::Aabb EditorRigidBodyComponent::GetLocalBounds()
+    {
+        AZ::Aabb worldBounds = GetWorldBounds();
+        if (worldBounds.IsValid())
+        {
+            return worldBounds.GetTransformedAabb(GetWorldTM().GetInverse());
+        }
+
+        return AZ::Aabb::CreateNull();
     }
 } // namespace PhysX

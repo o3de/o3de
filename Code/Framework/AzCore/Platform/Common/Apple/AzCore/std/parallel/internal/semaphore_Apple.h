@@ -11,7 +11,7 @@
 #include <AzCore/std/algorithm.h>
 #include <mach/kern_return.h>
 #include <unistd.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 /**
  * This file is to be included from the semaphore.h only. It should NOT be included by the user.
@@ -23,7 +23,7 @@ namespace AZStd
     {
         // Clamp the semaphores initial value to prevent issues with the semaphore.
         int initSemCount = static_cast<int>(AZStd::min(initialCount, static_cast<unsigned int>(semaphore::MAXIMUM_COUNT)));
-        int result = semaphore_create(mach_task_self(), &m_semaphore, SYNC_POLICY_FIFO, initSemCount);
+        [[maybe_unused]] int result = semaphore_create(mach_task_self(), &m_semaphore, SYNC_POLICY_FIFO, initSemCount);
         AZ_Assert(result == 0, "semaphore_create error %s\n", strerror(errno));
 
         int maxSemCount = static_cast<int>(AZStd::min(maximumCount, static_cast<unsigned int>(semaphore::MAXIMUM_COUNT)));
@@ -36,9 +36,9 @@ namespace AZStd
         (void) name; // name is used only for debug, if we pass it to the semaphore it will become named semaphore
         // Clamp the semaphores initial value to prevent issues with the semaphore.
         int initSemCount = static_cast<int>(AZStd::min(initialCount, static_cast<unsigned int>(semaphore::MAXIMUM_COUNT)));
-        int result = semaphore_create(mach_task_self(), &m_semaphore, SYNC_POLICY_FIFO, initSemCount);
+        [[maybe_unused]] int result = semaphore_create(mach_task_self(), &m_semaphore, SYNC_POLICY_FIFO, initSemCount);
         AZ_Assert(result == 0, "semaphore_create error %s\n", strerror(errno));
-        
+
         int maxSemCount = static_cast<int>(AZStd::min(maximumCount, static_cast<unsigned int>(semaphore::MAXIMUM_COUNT)));
         result = semaphore_create(mach_task_self(), &m_maxCountSemaphore, SYNC_POLICY_FIFO, maxSemCount);
         AZ_Assert(result == 0, "semaphore_create error for max count semaphore %s\n", strerror(errno));
@@ -70,7 +70,7 @@ namespace AZStd
         mach_timespec_t mts;
         // note that in the mach kernel (Mac), semaphore_timedwait is used instead of the posix
         // sem_timedwait.  The major difference is that semaphore_timedwait expects a delta time
-        // wheras sem_timedwait expects an absolute time. 
+        // wheras sem_timedwait expects an absolute time.
         mts.tv_sec = static_cast<unsigned int>(chrono::duration_cast<chrono::seconds>(rel_time).count());
         chrono::duration<Rep, Period> remainder = rel_time - chrono::seconds(mts.tv_sec);
         mts.tv_nsec = static_cast<clock_res_t>(chrono::duration_cast<chrono::nanoseconds>(remainder).count());
@@ -92,7 +92,7 @@ namespace AZStd
     template <class Clock, class Duration>
     AZ_FORCE_INLINE bool semaphore::try_acquire_until(const chrono::time_point<Clock, Duration>& abs_time)
     {
-        auto nowTime = chrono::system_clock::now();
+        auto nowTime = chrono::steady_clock::now();
         if (nowTime >= abs_time)
         {
             return false; // we have already timed out.

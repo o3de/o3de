@@ -336,25 +336,5 @@ namespace AZ
             return modelTriangleCount;
         }
 
-        bool ModelAssetHandler::HasConflictingProducts(const AZStd::vector<AZ::Data::AssetType>& productAssetTypes) const
-        {
-            size_t modelAssetCount = 0;
-            size_t actorAssetCount = 0;
-            for (const AZ::Data::AssetType& assetType : productAssetTypes)
-            {
-                if (assetType == azrtti_typeid<ModelAsset>())
-                {
-                    modelAssetCount++;
-                }
-                else if (assetType == AZ::Data::AssetType("{F67CC648-EA51-464C-9F5D-4A9CE41A7F86}")) // ActorAsset
-                {
-                    actorAssetCount++;
-                }
-            }
-
-            // When dropping a well-defined character, consisting of a mesh and a skeleton/actor,
-            // do not create an entity with a mesh component.
-            return modelAssetCount == 1 && actorAssetCount == 1;
-        }
     } // namespace RPI
 } // namespace AZ

@@ -11,25 +11,34 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzCore/IO/Path/Path.h>
 
-namespace AZ
+namespace AZ::IO
 {
-    namespace SerializeContextTools
+    class FileDescriptorCapturer;
+}
+
+namespace AZ::SerializeContextTools
+{
+    class Application final
+        : public AzToolsFramework::ToolsApplication
     {
-        class Application final
-            : public AzToolsFramework::ToolsApplication
-        {
-        public:
-            Application(int argc, char** argv);
-            ~Application() override = default;
-            
-            const char* GetConfigFilePath() const;
-            AZ::ComponentTypeList GetRequiredSystemComponents() const override;
-            void QueryApplicationType(AZ::ApplicationTypeQuery& appType) const override;
+    public:
+        Application(int argc, char** argv, AZ::IO::FileDescriptorCapturer* stdoutCapturer = {});
+        ~Application() override = default;
 
-        protected:
-            void SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations) override;
+        const char* GetConfigFilePath() const;
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
+        void QueryApplicationType(AZ::ApplicationTypeQuery& appType) const override;
 
-            AZ::IO::FixedMaxPath m_configFilePath;
-        };
-    } // namespace SerializeContextTools
-} // namespace AZ
+        //! Associates a FileDescriptorCapturer with the SerializeContextApplication that
+        //! redirects stdout to a visitor callback.
+        //! The FileDescriptorCapturer supports a write bypass to force writing to stdout if need be
+        void SetStdoutCapturer(AZ::IO::FileDescriptorCapturer* stdoutCapturer);
+        AZ::IO::FileDescriptorCapturer* GetStdoutCapturer() const;
+
+    protected:
+        void SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations) override;
+
+        AZ::IO::FixedMaxPath m_configFilePath;
+        AZ::IO::FileDescriptorCapturer* m_stdoutCapturer;
+    };
+} // namespace AZ::SerializeContextTools

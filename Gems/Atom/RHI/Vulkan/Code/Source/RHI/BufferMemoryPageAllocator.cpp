@@ -7,7 +7,7 @@
  */
 #include <RHI/BufferMemoryPageAllocator.h>
 #include <RHI/Device.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 namespace AZ
 {
     namespace Vulkan
@@ -37,26 +37,20 @@ namespace AZ
             bufferDescriptor.m_sharedQueueMask = m_descriptor.m_sharedQueueMask;
             bufferDescriptor.m_bindFlags = m_descriptor.m_bindFlags;
 
-            VkBuffer vkBuffer = GetDevice().CreateBufferResouce(bufferDescriptor);
-            VkMemoryRequirements memoryRequirements = {};
-            vkGetBufferMemoryRequirements(GetDevice().GetNativeDevice(), vkBuffer, &memoryRequirements);
-
+            VkMemoryRequirements memoryRequirements = GetDevice().GetBufferMemoryRequirements(bufferDescriptor);
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            if (!heapMemoryUsage.TryReserveMemory(memoryRequirements.size))
+            if (!heapMemoryUsage.CanAllocate(memoryRequirements.size))
             {
-                GetDevice().DestroyBufferResource(vkBuffer);
                 return nullptr;
             }
 
             AZ_PROFILE_SCOPE(RHI, "Create BufferMemory Page");
 
             RHI::Ptr<BufferMemory> bufferMemory;
-
             const VkMemoryPropertyFlags flags = ConvertHeapMemoryLevel(m_descriptor.m_heapMemoryLevel) | m_descriptor.m_additionalMemoryPropertyFlags;
             RHI::Ptr<Memory> memory = GetDevice().AllocateMemory(memoryRequirements.size, memoryRequirements.memoryTypeBits, flags, m_descriptor.m_bindFlags);
             if (memory)
             {
-                
                 bufferMemory = BufferMemory::Create();
                 RHI::ResultCode result = bufferMemory->Init(GetDevice(), MemoryView(memory, 0, memoryRequirements.size, 0, MemoryAllocationType::Unique), bufferDescriptor);
                 if (result != RHI::ResultCode::Success)
@@ -67,13 +61,8 @@ namespace AZ
 
             if (bufferMemory)
             {
-                heapMemoryUsage.m_residentInBytes += memoryRequirements.size;
+                heapMemoryUsage.m_totalResidentInBytes += memoryRequirements.size;
                 bufferMemory->SetName(m_debugName);
-            }
-            else
-            {
-                GetDevice().DestroyBufferResource(vkBuffer);
-                heapMemoryUsage.m_reservedInBytes -= memoryRequirements.size;
             }
 
             return bufferMemory;
@@ -82,8 +71,7 @@ namespace AZ
         void BufferMemoryPageFactory::ShutdownObject(BufferMemory& memory, bool isPoolShutdown)
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            heapMemoryUsage.m_residentInBytes -= memory.GetDescriptor().m_byteCount;
-            heapMemoryUsage.m_reservedInBytes -= memory.GetDescriptor().m_byteCount;
+            heapMemoryUsage.m_totalResidentInBytes -= memory.GetDescriptor().m_byteCount;
 
             if (isPoolShutdown)
             {

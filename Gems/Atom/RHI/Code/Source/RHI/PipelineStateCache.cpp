@@ -103,7 +103,7 @@ namespace AZ
                 }
 
                 handle = PipelineLibraryHandle(m_globalLibrarySet.size());
-                m_globalLibrarySet.push_back();
+                m_globalLibrarySet.emplace_back();
             }
 
             AZ_Assert(m_globalLibraryActiveBits[handle.GetIndex()] == false, "Attempted to allocate active library entry!");

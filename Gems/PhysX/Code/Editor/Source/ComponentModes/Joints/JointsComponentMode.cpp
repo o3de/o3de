@@ -90,10 +90,10 @@ namespace PhysX
 
         void RefreshUI()
         {
-            // The reason this is in a free function is because ColliderComponentMode
+            // The reason this is in a free function is because JointsComponentMode
             // privately inherits from ToolsApplicationNotificationBus. Trying to invoke
             // the bus inside the class scope causes the compiler to complain it's not accessible
-            // to due private inheritance.
+            // due to private inheritance.
             // Using the global namespace operator :: should have fixed that, except there
             // is a bug in the Microsoft compiler meaning it doesn't work. So this is a work around.
             AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
@@ -108,13 +108,13 @@ namespace PhysX
         SetupSubModes(entityComponentIdPair);
 
         EditorJointRequestBus::Event(
-            entityComponentIdPair, &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParamaterNames::ComponentMode, true);
+            entityComponentIdPair, &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParameterNames::ComponentMode, true);
     }
 
     JointsComponentMode::~JointsComponentMode()
     {
         EditorJointRequestBus::Event(
-            GetEntityComponentIdPair(), &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParamaterNames::ComponentMode,
+            GetEntityComponentIdPair(), &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParameterNames::ComponentMode,
             false);
 
         TeardownSubModes();
@@ -130,7 +130,7 @@ namespace PhysX
     {
         const AZ::EntityComponentIdPair entityComponentIdPair = GetEntityComponentIdPair();
 
-        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> subModesState;
+        AZStd::vector<JointsComponentModeCommon::SubModeParameterState> subModesState;
         EditorJointRequestBus::EventResult(subModesState, entityComponentIdPair, &EditorJointRequests::GetSubComponentModesState);
 
         auto makeActionOverride = [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Crc32& actionUri,
@@ -319,6 +319,16 @@ namespace PhysX
         return ids;
     }
 
+    AZStd::string JointsComponentMode::GetComponentModeName() const
+    {
+        return "Joint Edit Mode";
+    }
+
+    AZ::Uuid JointsComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<JointsComponentMode>();
+    }
+
     void JointsComponentMode::SetCurrentMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode, ButtonData& buttonData)
     {
         
@@ -363,7 +373,7 @@ namespace PhysX
     void JointsComponentMode::SetupSubModes(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         //retrieve the enabled sub components from the entity
-        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> subModesState;
+        AZStd::vector<JointsComponentModeCommon::SubModeParameterState> subModesState;
         EditorJointRequestBus::EventResult(subModesState, entityComponentIdPair, &EditorJointRequests::GetSubComponentModesState);
 
         //group 1 is always available so create it

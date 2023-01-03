@@ -6,6 +6,8 @@
  *
  */
 
+#include "AzCore/Math/MathUtils.h"
+#include "AzCore/Math/Vector3.h"
 #if defined(HAVE_BENCHMARK)
 
 #include <AzCore/Math/Quaternion.h>
@@ -758,6 +760,134 @@ namespace Benchmark
             benchmark::DoNotOptimize(position);
         }
     }
-}
+
+
+    class BM_MathQuaternionEulerRadians
+        : public benchmark::Fixture
+    {
+        void internalSetUp()
+        {
+            m_eulerDataArray.resize(1000);
+
+            const unsigned int seed = 1;
+            std::mt19937_64 rng(seed);
+            std::uniform_real_distribution<float> unif(-AZ::Constants::Pi, AZ::Constants::Pi);
+
+            std::generate(m_eulerDataArray.begin(), m_eulerDataArray.end(), [&unif, &rng]()
+            {
+                EulerData eulerData;
+                eulerData.radiansX = unif(rng);
+                eulerData.radiansY = unif(rng);
+                eulerData.radiansZ = unif(rng);
+
+                eulerData.degreesX = unif(rng) * (180.0f / AZ::Constants::Pi);
+                eulerData.degreesY = unif(rng) * (180.0f / AZ::Constants::Pi);
+                eulerData.degreesZ = unif(rng) * (180.0f / AZ::Constants::Pi);
+                return eulerData;
+            });
+        }
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
+
+        struct EulerData
+        {
+            float radiansX;
+            float radiansY;
+            float radiansZ;
+
+            float degreesX;
+            float degreesY;
+            float degreesZ;
+        };
+
+        std::vector<EulerData> m_eulerDataArray;
+    };
+
+    BENCHMARK_F(BM_MathQuaternionEulerRadians, CreateFromEulerRadiansXYZ)(benchmark::State& state)
+    {
+        for ([[maybe_unused]] auto _ : state)
+        {
+            for (auto& eulerData : m_eulerDataArray)
+            {
+                AZ::Quaternion result =
+                    AZ::Quaternion::CreateFromEulerRadiansXYZ(AZ::Vector3(eulerData.radiansX, eulerData.radiansY, eulerData.radiansZ));
+                benchmark::DoNotOptimize(result);
+            }
+        }
+    }
+
+    BENCHMARK_F(BM_MathQuaternionEulerRadians, CreateFromEulerRadiansYXZ)(benchmark::State& state)
+    {
+        for ([[maybe_unused]] auto _ : state)
+        {
+            for (auto& eulerData : m_eulerDataArray)
+            {
+                AZ::Quaternion result =
+                    AZ::Quaternion::CreateFromEulerRadiansYXZ(AZ::Vector3(eulerData.radiansX, eulerData.radiansY, eulerData.radiansZ));
+                benchmark::DoNotOptimize(result);
+            }
+        }
+    }
+
+    BENCHMARK_F(BM_MathQuaternionEulerRadians, CreateFromEulerRadiansZYX)(benchmark::State& state)
+    {
+        for ([[maybe_unused]] auto _ : state)
+        {
+            for (auto& eulerData : m_eulerDataArray)
+            {
+                AZ::Quaternion result =
+                    AZ::Quaternion::CreateFromEulerRadiansZYX(AZ::Vector3(eulerData.radiansX, eulerData.radiansY, eulerData.radiansZ));
+                benchmark::DoNotOptimize(result);
+            }
+        }
+    }
+
+    BENCHMARK_F(BM_MathQuaternionEulerRadians, CreateFromEulerDegreesXYZ)(benchmark::State& state)
+    {
+        for ([[maybe_unused]] auto _ : state)
+        {
+            for (auto& eulerData : m_eulerDataArray)
+            {
+                AZ::Quaternion result =
+                    AZ::Quaternion::CreateFromEulerDegreesXYZ(AZ::Vector3(eulerData.degreesX, eulerData.degreesY, eulerData.degreesZ));
+                benchmark::DoNotOptimize(result);
+            }
+        }
+    }
+
+    BENCHMARK_F(BM_MathQuaternionEulerRadians, CreateFromEulerDegreesYXZ)(benchmark::State& state)
+    {
+        for ([[maybe_unused]] auto _ : state)
+        {
+            for (auto& eulerData : m_eulerDataArray)
+            {
+                AZ::Quaternion result =
+                    AZ::Quaternion::CreateFromEulerDegreesYXZ(AZ::Vector3(eulerData.degreesX, eulerData.degreesY, eulerData.degreesZ));
+                benchmark::DoNotOptimize(result);
+            }
+        }
+    }
+
+    BENCHMARK_F(BM_MathQuaternionEulerRadians, CreateFromEulerDegreesZYX)(benchmark::State& state)
+    {
+        for ([[maybe_unused]] auto _ : state)
+        {
+            for (auto& eulerData : m_eulerDataArray)
+            {
+                AZ::Quaternion result =
+                    AZ::Quaternion::CreateFromEulerDegreesZYX(AZ::Vector3(eulerData.degreesX, eulerData.degreesY, eulerData.degreesZ));
+                benchmark::DoNotOptimize(result);
+            }
+        }
+    }
+
+} // namespace Benchmark
 
 #endif

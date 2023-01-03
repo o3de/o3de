@@ -29,6 +29,7 @@ void OutputArgs(const AzFramework::CommandLine& commandLine)
 
 int main(int argc, char** argv)
 {
+    const AZ::Debug::Trace tracer;
     AZ::AllocatorInstance<AZ::OSAllocator>::Create();
     AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 

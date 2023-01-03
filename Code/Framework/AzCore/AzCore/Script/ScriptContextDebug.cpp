@@ -510,8 +510,7 @@ ScriptContextDebug::PushCodeCallstack(int stackSuppressCount, int numStackLevels
     // TODO: Move this function to a common ScriptContextDebug.cpp there is no lua dependency here
     if (m_isRecordCallstack && numStackLevels > 0)
     {
-        m_callstack.push_back();
-        CallstackLine& cl = m_callstack.back();
+        CallstackLine& cl = m_callstack.emplace_back();
         cl.m_codeNumStackFrames = numStackLevels; // set non 0 number to indicate a C++ code on the callstack
         if (m_isRecordCodeCallstack)
         {
@@ -616,8 +615,7 @@ void LuaHook(lua_State* l, lua_Debug* ar)
         // add to callstack
         if (context->m_isRecordCallstack)
         {
-            context->m_callstack.push_back();
-            ScriptContextDebug::CallstackLine& cl = context->m_callstack.back();
+            ScriptContextDebug::CallstackLine& cl = context->m_callstack.emplace_back();
             cl.m_sourceName = ar->source;
             cl.m_functionType = ar->what;
             if (strcmp(ar->what, "main") != 0)
@@ -922,8 +920,7 @@ ScriptContextDebug::ReadValue(DebugValue& value, VoidPtrArray& tablesVisited, bo
             lua_pushnil(l);
             while (lua_next(l, -2))
             {
-                value.m_elements.push_back();
-                DebugValue& subValue = value.m_elements.back();
+                DebugValue& subValue = value.m_elements.emplace_back();
                 if (lua_type(l, -2) == LUA_TSTRING)
                 {
                     subValue.m_name = lua_tostring(l, -2);
@@ -999,8 +996,7 @@ ScriptContextDebug::ReadValue(DebugValue& value, VoidPtrArray& tablesVisited, bo
                     const char* subValueName = lua_tostring(l, -2);
                     if (lua_tocfunction(l, -1) == &Internal::LuaPropertyTagHelper)     // if it's a property
                     {
-                        value.m_elements.push_back();
-                        DebugValue& subValue = value.m_elements.back();
+                        DebugValue& subValue = value.m_elements.emplace_back();
                         subValue.m_name = subValueName;
 
                         //bool isRead = true;
@@ -1032,13 +1028,6 @@ ScriptContextDebug::ReadValue(DebugValue& value, VoidPtrArray& tablesVisited, bo
                             subValue.m_flags |= DebugValue::FLAG_READ_ONLY;     // it's ready only
                         }
                     }
-                    /*else if (lua_iscfunction(l, -1) && strncmp(subValueName, "__", 2) != 0)
-                    {
-                        value.m_elements.push_back();
-                        DebugValue& subValue = value.m_elements.back();
-                        subValue.m_name = subValueName;
-                        ReadValue(subValue, tablesVisited, isReadOnly);
-                    }*/
                 }
                 lua_pop(l, 1);    // pop the value and leave the key for next iteration
             }
@@ -1064,8 +1053,7 @@ ScriptContextDebug::ReadValue(DebugValue& value, VoidPtrArray& tablesVisited, bo
     // add the metatable if we have one
     if (showMetatable && lua_getmetatable(l, -1))
     {
-        value.m_elements.push_back();
-        DebugValue& subValue = value.m_elements.back();
+        DebugValue& subValue = value.m_elements.emplace_back();
         subValue.m_flags = DebugValue::FLAG_READ_ONLY; // we should NOT allow any modification of the metatable field.
         subValue.m_name = "__metatable__";
         ReadValue(subValue, tablesVisited, true);
@@ -1479,8 +1467,7 @@ ScriptContextDebug::SetValue(const DebugValue& sourceValue)
 
         for (AZ::OSString& token : tokens)
         {
-            current->m_elements.push_back();
-            current = &(current->m_elements.back());
+            current = &(current->m_elements.emplace_back());
             current->m_name = token;
             current->m_type = LUA_TTABLE;
         }

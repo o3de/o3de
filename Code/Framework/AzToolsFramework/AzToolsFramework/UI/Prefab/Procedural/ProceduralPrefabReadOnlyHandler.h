@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/RTTI.h>
 
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
+#include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 
 namespace AzToolsFramework
 {
@@ -23,6 +24,7 @@ namespace AzToolsFramework
         //! Ensures entities in a procedural prefab are correctly reported as read-only.
         class ProceduralPrefabReadOnlyHandler
             : public ReadOnlyEntityQueryRequestBus::Handler
+            , public PrefabFocusNotificationBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(ProceduralPrefabReadOnlyHandler, AZ::SystemAllocator, 0);
@@ -31,10 +33,14 @@ namespace AzToolsFramework
             ProceduralPrefabReadOnlyHandler();
             ~ProceduralPrefabReadOnlyHandler() override;
 
+            // PrefabFocusNotificationBus overrides ...
+            void OnPrefabEditScopeChanged() override;
+
             // ReadOnlyEntityQueryRequestBus overrides ...
             void IsReadOnly(const AZ::EntityId& entityId, bool& isReadOnly) override;
 
         private:
+            AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
             PrefabPublicInterface* m_prefabPublicInterface = nullptr;
             PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
         };

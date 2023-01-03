@@ -63,6 +63,7 @@ namespace
 
 int main(int argc, char** argv)
 {
+    const AZ::Debug::Trace tracer;
     bool waitForDebugger = false;
     for (int i = 1; i < argc; ++i)
     {
@@ -74,7 +75,7 @@ int main(int argc, char** argv)
     }
     if (waitForDebugger)
     {
-        while(!AZ::Debug::Trace::IsDebuggerPresent())
+        while(!AZ::Debug::Trace::Instance().IsDebuggerPresent())
         {
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(50));
         }

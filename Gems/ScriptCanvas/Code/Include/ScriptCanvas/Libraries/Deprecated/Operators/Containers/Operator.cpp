@@ -375,7 +375,7 @@ namespace ScriptCanvas
                         slot->SetDisplayType(m_sourceType);
                     }
                 }
-
+                
                 EndpointNotificationBus::MultiHandler::BusConnect({ GetEntityId(), sourceSlotId });
 
                 return sourceSlotId;

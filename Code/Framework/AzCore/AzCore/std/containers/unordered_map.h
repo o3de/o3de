@@ -9,6 +9,7 @@
 
 #include <AzCore/std/containers/node_handle.h>
 #include <AzCore/std/hash_table.h>
+#include <AzCore/std/typetraits/type_identity.h>
 
 namespace AZStd
 {
@@ -17,11 +18,11 @@ namespace AZStd
         template<class Key, class MappedType, class Hasher, class EqualKey, class Allocator, bool isMultiMap>
         struct UnorderedMapTableTraits
         {
-            typedef Key                             key_type;
-            typedef EqualKey                        key_eq;
-            typedef Hasher                          hasher;
-            typedef AZStd::pair<Key, MappedType>     value_type;
-            typedef Allocator                       allocator_type;
+            using key_type = Key;
+            using key_equal = EqualKey;
+            using hasher = Hasher;
+            using value_type = AZStd::pair<Key, MappedType>;
+            using allocator_type = Allocator;
             enum
             {
                 max_load_factor = 4,
@@ -33,7 +34,7 @@ namespace AZStd
                 fixed_num_buckets = 1,
                 fixed_num_elements = 4
             };
-            static AZ_FORCE_INLINE const key_type& key_from_value(const value_type& value)  { return value.first;   }
+            static AZ_FORCE_INLINE const key_type& key_from_value(const value_type& value) { return value.first; }
         };
 
         /**
@@ -43,11 +44,11 @@ namespace AZStd
         template<class KeyType>
         struct ConvertKeyType
         {
-            typedef KeyType             key_type;
+            using key_type = KeyType;
 
-            AZ_FORCE_INLINE const KeyType&      to_key(const KeyType& key) const { return key; }
+            AZ_FORCE_INLINE const KeyType& to_key(const KeyType& key) const { return key; }
             // We return key as the value so the pair is constructed using Pair(first) ctor.
-            AZ_FORCE_INLINE const KeyType&      to_value(const KeyType& key) const  { return key; }
+            AZ_FORCE_INLINE const KeyType& to_value(const KeyType& key) const { return key; }
         };
     }
 
@@ -69,117 +70,125 @@ namespace AZStd
             CONTAINER_VERSION = 1
         };
 
-        typedef unordered_map<Key, MappedType, Hasher, EqualKey, Allocator> this_type;
-        typedef hash_table< Internal::UnorderedMapTableTraits<Key, MappedType, Hasher, EqualKey, Allocator, false> > base_type;
+        using this_type = unordered_map<Key, MappedType, Hasher, EqualKey, Allocator>;
+        using base_type = hash_table<Internal::UnorderedMapTableTraits<Key, MappedType, Hasher, EqualKey, Allocator, false>>;
     public:
-        typedef typename base_type::traits_type traits_type;
+        using traits_type = typename base_type::traits_type;
 
-        typedef typename base_type::key_type    key_type;
-        typedef typename base_type::key_eq      key_eq;
-        typedef typename base_type::hasher      hasher;
-        typedef MappedType                      mapped_type;
+        using key_type = typename base_type::key_type;
+        using key_equal = typename base_type::key_equal;
+        using hasher = typename base_type::hasher;
+        using mapped_type = MappedType;
 
-        typedef typename base_type::allocator_type              allocator_type;
-        typedef typename base_type::size_type                   size_type;
-        typedef typename base_type::difference_type             difference_type;
-        typedef typename base_type::pointer                     pointer;
-        typedef typename base_type::const_pointer               const_pointer;
-        typedef typename base_type::reference                   reference;
-        typedef typename base_type::const_reference             const_reference;
+        using allocator_type = typename base_type::allocator_type;
+        using size_type = typename base_type::size_type;
+        using difference_type = typename base_type::difference_type;
+        using pointer = typename base_type::pointer;
+        using const_pointer = typename base_type::const_pointer;
+        using reference = typename base_type::reference;
+        using const_reference = typename base_type::const_reference;
 
-        typedef typename base_type::iterator                    iterator;
-        typedef typename base_type::const_iterator              const_iterator;
+        using iterator = typename base_type::iterator;
+        using const_iterator = typename base_type::const_iterator;
 
-        //typedef typename base_type::reverse_iterator          reverse_iterator;
-        //typedef typename base_type::const_reverse_iterator        const_reverse_iterator;
+        using value_type = typename base_type::value_type;
 
-        typedef typename base_type::value_type                  value_type;
+        using local_iterator = typename base_type::local_iterator;
+        using const_local_iterator = typename base_type::const_local_iterator;
 
-        typedef typename base_type::local_iterator              local_iterator;
-        typedef typename base_type::const_local_iterator        const_local_iterator;
-
-        typedef typename base_type::pair_iter_bool              pair_iter_bool;
+        using pair_iter_bool = typename base_type::pair_iter_bool;
 
         using node_type = map_node_handle<map_node_traits<key_type, mapped_type, allocator_type, typename base_type::list_node_type, typename base_type::node_deleter>>;
-        using insert_return_type = AZStd::AssociativeInternal::insert_return_type<iterator, node_type>;
+        using insert_return_type = AssociativeInternal::insert_return_type<iterator, node_type>;
 
-        AZ_FORCE_INLINE unordered_map()
-            : base_type(hasher(), key_eq(), allocator_type()) {}
-        explicit unordered_map(const allocator_type& alloc)
-            : base_type(hasher(), key_eq(), alloc) {}
-        AZ_FORCE_INLINE unordered_map(const unordered_map& rhs)
+        unordered_map()
+            : base_type(hasher(), key_equal(), allocator_type()) {}
+        explicit unordered_map(size_type numBucketsHint,
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal(),
+            const allocator_type& allocator = allocator_type())
+            : base_type(hash, keyEqual, allocator)
+        {
+            base_type::rehash(numBucketsHint);
+        }
+        template<class InputIterator>
+        unordered_map(InputIterator first, InputIterator last, size_type numBucketsHint = {},
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal(),
+            const allocator_type& alloc = allocator_type())
+            : base_type(hash, keyEqual, alloc)
+        {
+            base_type::rehash(numBucketsHint);
+            base_type::insert(first, last);
+        }
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        unordered_map(from_range_t, R&& rg, size_type numBucketsHint = {},
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal(),
+            const allocator_type& alloc = allocator_type())
+            : base_type(hash, keyEqual, alloc)
+        {
+            base_type::rehash(numBucketsHint);
+            base_type::insert_range(AZStd::forward<R>(rg));
+        }
+
+        unordered_map(const unordered_map& rhs)
             : base_type(rhs) {}
-        /// This constructor is AZStd extension (so we don't rehash/allocate memory)
-        AZ_FORCE_INLINE unordered_map(const hasher& hash, const key_eq& keyEqual, const allocator_type& allocator)
-            : base_type(hash, keyEqual, allocator) {}
-        AZ_FORCE_INLINE unordered_map(size_type numBucketsHint)
-            : base_type(hasher(), key_eq(), allocator_type())
-        {
-            base_type::rehash(numBucketsHint);
-        }
-        AZ_FORCE_INLINE unordered_map(size_type numBucketsHint, const hasher& hash, const key_eq& keyEqual)
-            : base_type(hash, keyEqual, allocator_type())
-        {
-            base_type::rehash(numBucketsHint);
-        }
-        AZ_FORCE_INLINE unordered_map(size_type numBucketsHint, const hasher& hash, const key_eq& keyEqual, const allocator_type& allocator)
+        unordered_map(unordered_map&& rhs)
+            : base_type(AZStd::move(rhs)) {}
+
+        explicit unordered_map(const allocator_type& alloc)
+            : base_type(hasher(), key_equal(), alloc) {}
+        unordered_map(const unordered_map& rhs, const type_identity_t<allocator_type>& alloc)
+            : base_type(rhs, alloc) {}
+        unordered_map(unordered_map&& rhs, const type_identity_t<allocator_type>& alloc)
+            : base_type(AZStd::move(rhs), alloc) {}
+
+        unordered_map(initializer_list<value_type> list, size_type numBucketsHint = {},
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal(),
+            const allocator_type& allocator = allocator_type())
             : base_type(hash, keyEqual, allocator)
         {
             base_type::rehash(numBucketsHint);
+            base_type::insert(list);
         }
-        template<class Iterator>
-        AZ_FORCE_INLINE unordered_map(Iterator first, Iterator last)
-            : base_type(hasher(), key_eq(), allocator_type())
+        unordered_map(size_type numBucketsHint, const allocator_type& alloc)
+            : unordered_map(numBucketsHint, hasher(), key_equal(), alloc)
         {
-            for (; first != last; ++first)
-            {
-                base_type::insert(*first);
-            }
         }
-        template<class Iterator>
-        AZ_FORCE_INLINE unordered_map(Iterator first, Iterator last, size_type numBucketsHint)
-            : base_type(hasher(), key_eq(), allocator_type())
+        unordered_map(size_type numBucketsHint, const hasher& hash, const allocator_type& alloc)
+            : unordered_map(numBucketsHint, hash, key_equal(), alloc)
         {
-            base_type::rehash(numBucketsHint);
-            for (; first != last; ++first)
-            {
-                base_type::insert(*first);
-            }
         }
-        template<class Iterator>
-        AZ_FORCE_INLINE unordered_map(Iterator first, Iterator last, size_type numBucketsHint, const hasher& hash, const key_eq& keyEqual)
-            : base_type(hash, keyEqual, allocator_type())
+        template<class InputIterator>
+        unordered_map(InputIterator f, InputIterator l, size_type n, const allocator_type& a)
+            : unordered_map(f, l, n, hasher(), key_equal(), a)
         {
-            base_type::rehash(numBucketsHint);
-            for (; first != last; ++first)
-            {
-                base_type::insert(*first);
-            }
         }
-        template<class Iterator>
-        AZ_FORCE_INLINE unordered_map(Iterator first, Iterator last, size_type numBucketsHint, const hasher& hash, const key_eq& keyEqual, const allocator_type& allocator)
-            : base_type(hash, keyEqual, allocator)
+        template<class InputIterator>
+        unordered_map(InputIterator f, InputIterator l, size_type n, const hasher& hf, const allocator_type& a)
+            : unordered_map(f, l, n, hf, key_equal(), a)
         {
-            base_type::rehash(numBucketsHint);
-            for (; first != last; ++first)
-            {
-                base_type::insert(*first);
-            }
         }
-        AZ_FORCE_INLINE unordered_map(const std::initializer_list<value_type>& list, const hasher& hash = hasher(), const key_eq& keyEqual = key_eq(), const allocator_type& allocator = allocator_type())
-            : base_type(hash, keyEqual, allocator)
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        unordered_map(from_range_t, R&& rg, size_type n, const allocator_type& a)
+            : unordered_map(from_range, AZStd::forward<R>(rg), n, hasher(), key_equal(), a)
         {
-            base_type::rehash(list.size());
-            for (const value_type& i : list)
-            {
-                base_type::insert(i);
-            }
+        }
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        unordered_map(from_range_t, R&& rg, size_type n, const hasher& hf, const allocator_type& a)
+            : unordered_map(from_range, AZStd::forward<R>(rg), n, hf, key_equal(), a)
+        {
+        }
+        unordered_map(initializer_list<value_type> il, size_type n, const allocator_type& a)
+            : unordered_map(il, n, hasher(), key_equal(), a)
+        {
+        }
+        unordered_map(initializer_list<value_type> il, size_type n, const hasher& hf, const allocator_type& a)
+            : unordered_map(il, n, hf, key_equal(), a)
+        {
         }
 
-        AZ_FORCE_INLINE unordered_map(this_type&& rhs)
-            : base_type(AZStd::move(rhs))
-        {
-        }
+        /// This constructor is AZStd extension (so we don't rehash/allocate memory)
+        unordered_map(const hasher& hash, const key_equal& keyEqual, const allocator_type& allocator)
+            : base_type(hash, keyEqual, allocator) {}
 
         this_type& operator=(this_type&& rhs)
         {
@@ -218,6 +227,8 @@ namespace AZStd
         }
 
         using base_type::insert;
+        // Bring hash_table::insert_range function into scope
+        using base_type::insert_range;
         insert_return_type insert(node_type&& nodeHandle)
         {
             AZSTD_CONTAINER_ASSERT(nodeHandle.empty() || nodeHandle.get_allocator() == base_type::get_allocator(),
@@ -349,24 +360,32 @@ namespace AZStd
         class Pred = equal_to<iter_key_type<InputIterator>>,
         class Allocator = allocator>
         unordered_map(InputIterator, InputIterator,
-            typename Internal::UnorderedMapTableTraits<iter_key_type<InputIterator>,
-                iter_mapped_type<InputIterator>, Hash, Pred, Allocator, false>::size_type = {},
+            typename allocator_traits<Allocator>::size_type = {},
             Hash = Hash(), Pred = Pred(), Allocator = Allocator())
         ->unordered_map<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>, Hash, Pred,
         Allocator>;
 
+    template<class R,
+        class Hash = hash<range_key_type<R>>,
+        class Pred = equal_to<range_key_type<R>>,
+        class Allocator = allocator,
+        class = enable_if_t<ranges::input_range<R>>>
+    unordered_map(from_range_t, R&&,
+        typename allocator_traits<Allocator>::size_type = {},
+        Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+        ->unordered_map<range_key_type<R>, range_mapped_type<R>, Hash, Pred, Allocator>;
+
     template<class Key, class T, class Hash = hash<Key>,
         class Pred = equal_to<Key>, class Allocator = allocator>
         unordered_map(initializer_list<pair<Key, T>>,
-            typename Internal::UnorderedMapTableTraits<Key, T, Hash, Pred, Allocator, false>::size_type = {},
+            typename allocator_traits<Allocator>::size_type = {},
             Hash = Hash(),
             Pred = Pred(), Allocator = Allocator())
         ->unordered_map<Key, T, Hash, Pred, Allocator>;
 
     template<class InputIterator, class Allocator>
     unordered_map(InputIterator, InputIterator,
-        typename Internal::UnorderedMapTableTraits<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
-            hash<iter_key_type<InputIterator>>, equal_to<iter_key_type<InputIterator>>, Allocator, false>::size_type,
+        typename allocator_traits<Allocator>::size_type,
         Allocator)
         ->unordered_map<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
         hash<iter_key_type<InputIterator>>,
@@ -380,16 +399,36 @@ namespace AZStd
 
     template<class InputIterator, class Hash, class Allocator>
     unordered_map(InputIterator, InputIterator,
-        typename Internal::UnorderedMapTableTraits<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
-            Hash, equal_to<iter_key_type<InputIterator>>, Allocator, false>::size_type,
+        typename allocator_traits<Allocator>::size_type,
         Hash, Allocator)
         ->unordered_map<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>, Hash,
         equal_to<iter_key_type<InputIterator>>, Allocator>;
 
-    template<class Key, class T, class Allocator>
-    unordered_map(initializer_list<pair<Key, T>>, typename Internal::UnorderedMapTableTraits<Key, T,
-        hash<Key>, equal_to<Key>, Allocator, false>::size_type,
+    template<class R,
+        class Allocator = allocator,
+        class = enable_if_t<ranges::input_range<R>>>
+    unordered_map(from_range_t, R&&,
+        typename allocator_traits<Allocator>::size_type,
         Allocator)
+        -> unordered_map<range_key_type<R>, range_mapped_type<R>, hash<range_key_type<R>>, equal_to<range_key_type<R>>, Allocator>;
+
+    template<class R,
+        class Allocator = allocator,
+        class = enable_if_t<ranges::input_range<R>>>
+    unordered_map(from_range_t, R&&, Allocator)
+        -> unordered_map<range_key_type<R>, range_mapped_type<R>, hash<range_key_type<R>>, equal_to<range_key_type<R>>, Allocator>;
+
+    template<class R,
+        class Hash,
+        class Allocator,
+        class = enable_if_t<ranges::input_range<R>>>
+    unordered_map(from_range_t, R&&,
+        typename allocator_traits<Allocator>::size_type,
+        Hash, Allocator = Allocator())
+        -> unordered_map<range_key_type<R>, range_mapped_type<R>, Hash, equal_to<range_key_type<R>>, Allocator>;
+
+    template<class Key, class T, class Allocator>
+    unordered_map(initializer_list<pair<Key, T>>, typename allocator_traits<Allocator>::size_type, Allocator)
         ->unordered_map<Key, T, hash<Key>, equal_to<Key>, Allocator>;
 
     template<class Key, class T, class Allocator>
@@ -397,8 +436,7 @@ namespace AZStd
         ->unordered_map<Key, T, hash<Key>, equal_to<Key>, Allocator>;
 
     template<class Key, class T, class Hash, class Allocator>
-    unordered_map(initializer_list<pair<Key, T>>, typename Internal::UnorderedMapTableTraits<Key, T,
-        Hash, equal_to<Key>, Allocator, true>::size_type,
+    unordered_map(initializer_list<pair<Key, T>>, typename allocator_traits<Allocator>::size_type,
         Hash, Allocator)
         ->unordered_map<Key, T, Hash, equal_to<Key>, Allocator>;
 
@@ -419,117 +457,124 @@ namespace AZStd
             CONTAINER_VERSION = 1
         };
 
-        typedef unordered_multimap<Key, MappedType, Hasher, EqualKey, Allocator> this_type;
-        typedef hash_table< Internal::UnorderedMapTableTraits<Key, MappedType, Hasher, EqualKey, Allocator, true> > base_type;
+        using this_type = unordered_multimap<Key, MappedType, Hasher, EqualKey, Allocator>;
+        using base_type = hash_table<Internal::UnorderedMapTableTraits<Key, MappedType, Hasher, EqualKey, Allocator, true>>;
     public:
-        using base_type::insert;
-        typedef typename base_type::traits_type traits_type;
+        using traits_type = typename base_type::traits_type;
 
-        typedef typename base_type::key_type    key_type;
-        typedef typename base_type::key_eq      key_eq;
-        typedef typename base_type::hasher      hasher;
-        typedef MappedType                      mapped_type;
+        using key_type = typename base_type::key_type;
+        using key_equal = typename base_type::key_equal;
+        using hasher = typename base_type::hasher;
+        using mapped_type = MappedType;
 
-        typedef typename base_type::allocator_type              allocator_type;
-        typedef typename base_type::size_type                   size_type;
-        typedef typename base_type::difference_type             difference_type;
-        typedef typename base_type::pointer                     pointer;
-        typedef typename base_type::const_pointer               const_pointer;
-        typedef typename base_type::reference                   reference;
-        typedef typename base_type::const_reference             const_reference;
+        using allocator_type = typename base_type::allocator_type;
+        using size_type = typename base_type::size_type;
+        using difference_type = typename base_type::difference_type;
+        using pointer = typename base_type::pointer;
+        using const_pointer = typename base_type::const_pointer;
+        using reference = typename base_type::reference;
+        using const_reference = typename base_type::const_reference;
 
-        typedef typename base_type::iterator                    iterator;
-        typedef typename base_type::const_iterator              const_iterator;
+        using iterator = typename base_type::iterator;
+        using const_iterator = typename base_type::const_iterator;
 
-        //typedef typename base_type::reverse_iterator          reverse_iterator;
-        //typedef typename base_type::const_reverse_iterator        const_reverse_iterator;
+        using value_type = typename base_type::value_type;
 
-        typedef typename base_type::value_type                  value_type;
+        using local_iterator = typename base_type::local_iterator;
+        using const_local_iterator = typename base_type::const_local_iterator;
 
-        typedef typename base_type::local_iterator              local_iterator;
-        typedef typename base_type::const_local_iterator        const_local_iterator;
-
-        typedef typename base_type::pair_iter_bool              pair_iter_bool;
+        using pair_iter_bool = typename base_type::pair_iter_bool;
 
         using node_type = map_node_handle<map_node_traits<key_type, mapped_type, allocator_type, typename base_type::list_node_type, typename base_type::node_deleter>>;
 
-        AZ_FORCE_INLINE unordered_multimap()
-            : base_type(hasher(), key_eq(), allocator_type()) {}
-        explicit unordered_multimap(const allocator_type& alloc)
-            : base_type(hasher(), key_eq(), alloc){}
-        AZ_FORCE_INLINE unordered_multimap(const unordered_multimap& rhs)
-            : base_type(rhs) {}
-        /// This constructor is AZStd extension (so we don't rehash/allocate memory)
-        AZ_FORCE_INLINE unordered_multimap(const hasher& hash, const key_eq& keyEqual, const allocator_type& allocator)
-            : base_type(hash, keyEqual, allocator) {}
-        AZ_FORCE_INLINE unordered_multimap(size_type numBuckets)
-            : base_type(hasher(), key_eq(), allocator_type())
-        {
-            base_type::rehash(numBuckets);
-        }
-        AZ_FORCE_INLINE unordered_multimap(size_type numBuckets, const hasher& hash, const key_eq& keyEqual)
-            : base_type(hash, keyEqual, allocator_type())
-        {
-            base_type::rehash(numBuckets);
-        }
-        AZ_FORCE_INLINE unordered_multimap(size_type numBuckets, const hasher& hash, const key_eq& keyEqual, const allocator_type& allocator)
+        unordered_multimap()
+            : base_type(hasher(), key_equal(), allocator_type()) {}
+        explicit unordered_multimap(size_type numBucketsHint,
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal(),
+            const allocator_type& allocator = allocator_type())
             : base_type(hash, keyEqual, allocator)
         {
-            base_type::rehash(numBuckets);
+            base_type::rehash(numBucketsHint);
         }
-        template<class Iterator>
-        AZ_FORCE_INLINE unordered_multimap(Iterator first, Iterator last)
-            : base_type(hasher(), key_eq(), allocator_type())
+        template<class InputIterator>
+        unordered_multimap(InputIterator first, InputIterator last, size_type numBucketsHint = {},
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal(),
+            const allocator_type& alloc = allocator_type())
+            : base_type(hash, keyEqual, alloc)
         {
-            for (; first != last; ++first)
-            {
-                base_type::insert(*first);
-            }
+            base_type::rehash(numBucketsHint);
+            base_type::insert(first, last);
         }
-        template<class Iterator>
-        AZ_FORCE_INLINE unordered_multimap(Iterator first, Iterator last, size_type numBuckets)
-            : base_type(hasher(), key_eq(), allocator_type())
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        unordered_multimap(from_range_t, R&& rg, size_type numBucketsHint = {},
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal(),
+            const allocator_type& alloc = allocator_type())
+            : base_type(hash, keyEqual, alloc)
         {
-            base_type::rehash(numBuckets);
-            for (; first != last; ++first)
-            {
-                base_type::insert(*first);
-            }
-        }
-        template<class Iterator>
-        AZ_FORCE_INLINE unordered_multimap(Iterator first, Iterator last, size_type numBuckets, const hasher& hash, const key_eq& keyEqual)
-            : base_type(hash, keyEqual, allocator_type())
-        {
-            base_type::rehash(numBuckets);
-            for (; first != last; ++first)
-            {
-                base_type::insert(*first);
-            }
-        }
-        template<class Iterator>
-        AZ_FORCE_INLINE unordered_multimap(Iterator first, Iterator last, size_type numBuckets, const hasher& hash, const key_eq& keyEqual, const allocator_type& allocator)
-            : base_type(hash, keyEqual, allocator)
-        {
-            base_type::rehash(numBuckets);
-            for (; first != last; ++first)
-            {
-                base_type::insert(*first);
-            }
-        }
-        AZ_FORCE_INLINE unordered_multimap(const std::initializer_list<value_type>& list, const hasher& hash = hasher(), const key_eq& keyEqual = key_eq(), const allocator_type& allocator = allocator_type())
-            : base_type(hash, keyEqual, allocator)
-        {
-            base_type::rehash(list.size());
-            for (const value_type& i : list)
-            {
-                base_type::insert(i);
-            }
+            base_type::rehash(numBucketsHint);
+            base_type::insert_range(AZStd::forward<R>(rg));
         }
 
-        AZ_FORCE_INLINE unordered_multimap(this_type&& rhs)
-            : base_type(AZStd::move(rhs))
+        unordered_multimap(const unordered_multimap& rhs)
+            : base_type(rhs) {}
+        unordered_multimap(unordered_multimap&& rhs)
+            : base_type(AZStd::move(rhs)) {}
+
+        explicit unordered_multimap(const allocator_type& alloc)
+            : base_type(hasher(), key_equal(), alloc) {}
+        unordered_multimap(const unordered_multimap& rhs, const type_identity_t<allocator_type>& alloc)
+            : base_type(rhs, alloc) {}
+        unordered_multimap(unordered_multimap&& rhs, const type_identity_t<allocator_type>& alloc)
+            : base_type(AZStd::move(rhs), alloc) {}
+
+        unordered_multimap(initializer_list<value_type> list, size_type numBucketsHint = {},
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal(),
+            const allocator_type& allocator = allocator_type())
+            : base_type(hash, keyEqual, allocator)
+        {
+            base_type::rehash(numBucketsHint);
+            base_type::insert(list);
+        }
+        unordered_multimap(size_type numBucketsHint, const allocator_type& alloc)
+            : unordered_multimap(numBucketsHint, hasher(), key_equal(), alloc)
         {
         }
+        unordered_multimap(size_type numBucketsHint, const hasher& hash, const allocator_type& alloc)
+            : unordered_multimap(numBucketsHint, hash, key_equal(), alloc)
+        {
+        }
+        template<class InputIterator>
+        unordered_multimap(InputIterator f, InputIterator l, size_type n, const allocator_type& a)
+            : unordered_multimap(f, l, n, hasher(), key_equal(), a)
+        {
+        }
+        template<class InputIterator>
+        unordered_multimap(InputIterator f, InputIterator l, size_type n, const hasher& hf, const allocator_type& a)
+            : unordered_multimap(f, l, n, hf, key_equal(), a)
+        {
+        }
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        unordered_multimap(from_range_t, R&& rg, size_type n, const allocator_type& a)
+            : unordered_multimap(from_range, AZStd::forward<R>(rg), n, hasher(), key_equal(), a)
+        {
+        }
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        unordered_multimap(from_range_t, R&& rg, size_type n, const hasher& hf, const allocator_type& a)
+            : unordered_multimap(from_range, AZStd::forward<R>(rg), n, hf, key_equal(), a)
+        {
+        }
+        unordered_multimap(initializer_list<value_type> il, size_type n, const allocator_type& a)
+            : unordered_multimap(il, n, hasher(), key_equal(), a)
+        {
+        }
+        unordered_multimap(initializer_list<value_type> il, size_type n, const hasher& hf, const allocator_type& a)
+            : unordered_multimap(il, n, hf, key_equal(), a)
+        {
+        }
+
+        /// This constructor is AZStd extension (so we don't rehash/allocate memory)
+        unordered_multimap(const hasher& hash, const key_equal& keyEqual, const allocator_type& allocator)
+            : base_type(hash, keyEqual, allocator) {}
 
         this_type& operator=(this_type&& rhs)
         {
@@ -543,6 +588,9 @@ namespace AZStd
             return *this;
         }
 
+        using base_type::insert;
+        // Bring hash_table::insert_range function into scope
+        using base_type::insert_range;
         AZ_FORCE_INLINE iterator insert(const value_type& value)
         {
             return base_type::insert_impl(value).first;
@@ -625,24 +673,32 @@ namespace AZStd
         class Hash = hash<iter_key_type<InputIterator>>,
         class Pred = equal_to<iter_key_type<InputIterator>>,
         class Allocator = allocator>
-        unordered_multimap(InputIterator, InputIterator,
-            typename Internal::UnorderedMapTableTraits<iter_key_type<InputIterator>,
-                iter_mapped_type<InputIterator>, Hash, Pred, Allocator, true>::size_type = {},
-            Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+    unordered_multimap(InputIterator, InputIterator,
+        typename allocator_traits<Allocator>::size_type = {},
+        Hash = Hash(), Pred = Pred(), Allocator = Allocator())
         ->unordered_multimap<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
         Hash, Pred, Allocator>;
 
+    template<class R,
+        class Hash = hash<range_key_type<R>>,
+        class Pred = equal_to<range_key_type<R>>,
+        class Allocator = allocator,
+        class = enable_if_t<ranges::input_range<R>>>
+    unordered_multimap(from_range_t, R&&,
+        typename allocator_traits<Allocator>::size_type = {},
+        Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+        ->unordered_multimap<range_key_type<R>, range_mapped_type<R>, Hash, Pred, Allocator>;
+
     template<class Key, class T, class Hash = hash<Key>,
         class Pred = equal_to<Key>, class Allocator = allocator>
-        unordered_multimap(initializer_list<pair<Key, T>>,
-            typename Internal::UnorderedMapTableTraits<Key, T, Hash, Pred, Allocator, true>::size_type = {},
-            Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+    unordered_multimap(initializer_list<pair<Key, T>>,
+        typename allocator_traits<Allocator>::size_type = {},
+        Hash = Hash(), Pred = Pred(), Allocator = Allocator())
         ->unordered_multimap<Key, T, Hash, Pred, Allocator>;
 
     template<class InputIterator, class Allocator>
     unordered_multimap(InputIterator, InputIterator,
-        typename Internal::UnorderedMapTableTraits<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
-            hash<iter_key_type<InputIterator>>, equal_to<iter_key_type<InputIterator>>, Allocator, true>::size_type,
+        typename allocator_traits<Allocator>::size_type,
         Allocator)
         ->unordered_multimap<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
         hash<iter_key_type<InputIterator>>,
@@ -656,16 +712,36 @@ namespace AZStd
 
     template<class InputIterator, class Hash, class Allocator>
     unordered_multimap(InputIterator, InputIterator,
-        typename Internal::UnorderedMapTableTraits<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
-            Hash, equal_to<iter_key_type<InputIterator>>, Allocator, true>::size_type,
+        typename allocator_traits<Allocator>::size_type,
         Hash, Allocator)
         ->unordered_multimap<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>, Hash,
         equal_to<iter_key_type<InputIterator>>, Allocator>;
 
-    template<class Key, class T, class Allocator>
-    unordered_multimap(initializer_list<pair<Key, T>>, typename Internal::UnorderedMapTableTraits<Key, T,
-            hash<Key>, equal_to<Key>, Allocator, true>::size_type,
+    template<class R,
+        class Allocator = allocator,
+        class = enable_if_t<ranges::input_range<R>>>
+    unordered_multimap(from_range_t, R&&,
+        typename allocator_traits<Allocator>::size_type,
         Allocator)
+        ->unordered_multimap<range_key_type<R>, range_mapped_type<R>, hash<range_key_type<R>>, equal_to<range_key_type<R>>, Allocator>;
+
+    template<class R,
+        class Allocator = allocator,
+        class = enable_if_t<ranges::input_range<R>>>
+    unordered_multimap(from_range_t, R&&, Allocator)
+        ->unordered_multimap<range_key_type<R>, range_mapped_type<R>, hash<range_key_type<R>>, equal_to<range_key_type<R>>, Allocator>;
+
+    template<class R,
+        class Hash,
+        class Allocator,
+        class = enable_if_t<ranges::input_range<R>>>
+    unordered_multimap(from_range_t, R&&,
+        typename allocator_traits<Allocator>::size_type,
+        Hash, Allocator = Allocator())
+        ->unordered_multimap<range_key_type<R>, range_mapped_type<R>, Hash, equal_to<range_key_type<R>>, Allocator>;
+
+    template<class Key, class T, class Allocator>
+    unordered_multimap(initializer_list<pair<Key, T>>, typename allocator_traits<Allocator>::size_type, Allocator)
         ->unordered_multimap<Key, T, hash<Key>, equal_to<Key>, Allocator>;
 
     template<class Key, class T, class Allocator>
@@ -673,8 +749,7 @@ namespace AZStd
         ->unordered_multimap<Key, T, hash<Key>, equal_to<Key>, Allocator>;
 
     template<class Key, class T, class Hash, class Allocator>
-    unordered_multimap(initializer_list<pair<Key, T>>, typename Internal::UnorderedMapTableTraits<Key, T,
-        Hash, equal_to<Key>, Allocator, true>::size_type,
+    unordered_multimap(initializer_list<pair<Key, T>>, typename allocator_traits<Allocator>::size_type,
         Hash, Allocator)
         ->unordered_multimap<Key, T, Hash, equal_to<Key>, Allocator>;
 }

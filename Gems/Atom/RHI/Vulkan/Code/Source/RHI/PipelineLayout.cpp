@@ -7,7 +7,7 @@
  */
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupPoolDescriptor.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/DescriptorSetLayout.h>
 #include <RHI/Device.h>
 #include <RHI/MergedShaderResourceGroup.h>
@@ -50,12 +50,14 @@ namespace AZ
             RHI::ShaderResourceGroupLayout& srgLayout,
             AZStd::span<const T> shaderInputs,
             const uint32_t bindingSlot,
-            const RHI::ShaderResourceGroupBindingInfo& srgBidingInfo)
+            const RHI::ShaderResourceGroupBindingInfo& srgBindingInfo)
         {
             for (const auto& shaderInputDesc : shaderInputs)
             {
                 auto newShaderInputDesc = shaderInputDesc;
-                newShaderInputDesc.m_registerId = srgBidingInfo.m_resourcesRegisterMap.find(shaderInputDesc.m_name)->second.m_registerId;
+                const RHI::ResourceBindingInfo& bindInfo = srgBindingInfo.m_resourcesRegisterMap.find(shaderInputDesc.m_name)->second;
+                newShaderInputDesc.m_registerId = bindInfo.m_registerId;
+                newShaderInputDesc.m_spaceId = bindInfo.m_spaceId;
                 newShaderInputDesc.m_name = MergedShaderResourceGroup::GenerateMergedShaderInputName(shaderInputDesc.m_name, bindingSlot);
                 AddShaderInput(srgLayout, newShaderInputDesc);
             }
@@ -96,7 +98,8 @@ namespace AZ
                         RHI::ShaderInputBufferType::Constant,
                         1,
                         srgLayout->GetConstantDataSize(),
-                        srgBindingInfo.m_constantDataBindingInfo.m_registerId);
+                        srgBindingInfo.m_constantDataBindingInfo.m_registerId,
+                        srgBindingInfo.m_constantDataBindingInfo.m_spaceId);
 
                     mergedLayout->AddShaderInput(constantsBufferDesc);
                 }
@@ -130,11 +133,21 @@ namespace AZ
             {
                 const auto& bindingInfo = pipelineLayoutDesc.GetShaderResourceGroupBindingInfo(srgIndex);
                 const auto* srgLayout = pipelineLayoutDesc.GetShaderResourceGroupLayout(srgIndex);
-                srgLayoutsPerSpace[bindingInfo.m_spaceId].push_back(srgLayout);
+
+                // In contrast to DX12, the "spaceId" in Vulkan (descriptor set index) permits multiple unbounded arrays, and we can assume
+                // that all inputs in a given SRG share the same spaceId.
+                uint32_t spaceId = bindingInfo.m_constantDataBindingInfo.m_spaceId;
+                if (spaceId == ~0u)
+                {
+                    AZ_Assert(!bindingInfo.m_resourcesRegisterMap.empty(), "SRG Binding Info has neither constant data nor resources bound");
+                    spaceId = bindingInfo.m_resourcesRegisterMap.begin()->second.m_spaceId;
+                }
+
+                srgLayoutsPerSpace[spaceId].push_back(srgLayout);
 
                 uint32_t bindingSlot = srgLayout->GetBindingSlot();
-                m_indexToSlot[bindingInfo.m_spaceId].set(bindingSlot);
-                m_slotToIndex[bindingSlot] = static_cast<uint8_t>(bindingInfo.m_spaceId);
+                m_indexToSlot[spaceId].set(bindingSlot);
+                m_slotToIndex[bindingSlot] = static_cast<uint8_t>(spaceId);
             }
 
             m_descriptorSetLayouts.reserve(srgCount);
@@ -181,7 +194,7 @@ namespace AZ
             if (m_nativePipelineLayout != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkDestroyPipelineLayout(device.GetNativeDevice(), m_nativePipelineLayout, nullptr);
+                device.GetContext().DestroyPipelineLayout(device.GetNativeDevice(), m_nativePipelineLayout, nullptr);
                 m_nativePipelineLayout = VK_NULL_HANDLE;
             }
             m_layoutDescriptor = nullptr;
@@ -242,7 +255,8 @@ namespace AZ
             createInfo.pPushConstantRanges = m_pushConstantRanges.empty() ? nullptr : m_pushConstantRanges.data();
 
             auto& device = static_cast<Device&>(GetDevice());
-            const VkResult result = vkCreatePipelineLayout(device.GetNativeDevice(), &createInfo, nullptr, &m_nativePipelineLayout);
+            const VkResult result =
+                device.GetContext().CreatePipelineLayout(device.GetNativeDevice(), &createInfo, nullptr, &m_nativePipelineLayout);
 
             return ConvertResult(result);
         }

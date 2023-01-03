@@ -32,6 +32,8 @@ namespace AzToolsFramework
 
         // EditorBaseComponentMode
         void Refresh() override;
+        AZStd::string GetComponentModeName() const override;
+        AZ::Uuid GetComponentModeType() const override;
 
     private:
         BoxViewportEdit m_boxEdit;

@@ -278,7 +278,7 @@ namespace AZStd
             {
                 Internal::destroy<pointer>::single(m_first);
             }
-            deallocate_memory(typename allocator_type::allow_memory_leaks());
+            deallocate_memory();
         }
 
         AZ_FORCE_INLINE this_type& operator = (const this_type& rhs)
@@ -288,7 +288,7 @@ namespace AZStd
                 return *this;
             }
             clear();
-            deallocate_memory(typename allocator_type::allow_memory_leaks());
+            deallocate_memory();
             m_buff = reinterpret_cast<pointer>(m_allocator.allocate(rhs.capacity() * sizeof(node_type), alignment_of<node_type>::value));
             m_end = m_buff + rhs.capacity();
             m_first = m_buff;
@@ -483,83 +483,67 @@ namespace AZStd
 
         inline void push_back(const_reference value)
         {
-            if (full())
-            {
-                if (m_size == 0)
-                {
-                    return;
-                }
-                replace(m_last, value);
-                increment(m_last);
-                m_first = m_last;
-            }
-            else
-            {
-                Internal::construct<pointer>::single(m_last, value);
-                increment(m_last);
-                ++m_size;
-            }
+            emplace_back(value);
         }
 
-        inline void push_back()
+        inline void push_back(value_type&& value)
+        {
+            emplace_back(AZStd::move(value));
+        }
+
+        template<class... Args>
+        inline reference emplace_back(Args&&... args)
         {
             if (full())
             {
-                if (m_size == 0)
-                {
-                    return;
-                }
+                AZSTD_CONTAINER_ASSERT(m_size > 0, "Cannot replaces last element in a ring buffer of zero capacity");
                 Internal::destroy<pointer>::single(m_last);
-                Internal::construct<pointer>::single(m_last);
+                Internal::construct<pointer>::single(m_last, AZStd::forward<Args>(args)...);
+                reference emplaceRef = *m_last;
                 increment(m_last);
                 m_first = m_last;
+                return emplaceRef;
             }
             else
             {
-                Internal::construct<pointer>::single(m_last);
+                Internal::construct<pointer>::single(m_last, AZStd::forward<Args>(args)...);
+                reference emplaceRef = *m_last;
                 increment(m_last);
                 ++m_size;
+                return emplaceRef;
             }
         }
 
         inline void push_front(const_reference value)
         {
-            if (full())
-            {
-                if (m_size == 0)
-                {
-                    return;
-                }
-                decrement(m_first);
-                replace(m_first, value);
-                m_last = m_first;
-            }
-            else
-            {
-                decrement(m_first);
-                Internal::construct<pointer>::single(m_first, value);
-                ++m_size;
-            }
+            emplace_front(value);
         }
 
-        inline void push_front()
+        inline void push_front(value_type&& value)
+        {
+            emplace_front(AZStd::move(value));
+        }
+
+        template<class... Args>
+        inline reference emplace_front(Args&&... args)
         {
             if (full())
             {
-                if (m_size == 0)
-                {
-                    return;
-                }
+                AZSTD_CONTAINER_ASSERT(m_size > 0, "Cannot replaces first element in a ring buffer of zero capacity");
                 decrement(m_first);
                 Internal::destroy<pointer>::single(m_first);
-                Internal::construct<pointer>::single(m_first);
+                Internal::construct<pointer>::single(m_first, AZStd::forward<Args>(args)...);
+                reference emplaceRef = *m_first;
                 m_last = m_first;
+                return emplaceRef;
             }
             else
             {
                 decrement(m_first);
-                Internal::construct<pointer>::single(m_first);
+                Internal::construct<pointer>::single(m_first, AZStd::forward<Args>(args)...);
+                reference emplaceRef = *m_first;
                 ++m_size;
+                return emplaceRef;
             }
         }
         AZ_FORCE_INLINE void pop_back()
@@ -714,7 +698,7 @@ namespace AZStd
             pointer last = AZStd::uninitialized_copy(b, b + AZStd::GetMin(new_capacity, m_size), buff, Internal::is_fast_copy<iterator, pointer>());
 
             clear();
-            deallocate_memory(typename allocator_type::allow_memory_leaks());
+            deallocate_memory();
 
             m_size = last - buff;
             m_buff = m_first = buff;
@@ -733,7 +717,7 @@ namespace AZStd
             pointer last = AZStd::uninitialized_copy(e - AZStd::GetMin(new_capacity, m_size), e, buff, Internal::is_fast_copy<iterator, pointer>());
 
             clear();
-            deallocate_memory(typename allocator_type::allow_memory_leaks());
+            deallocate_memory();
 
             m_size = last - buff;
             m_buff = m_first = buff;
@@ -826,9 +810,7 @@ namespace AZStd
         }
 
     private:
-        AZ_FORCE_INLINE void    deallocate_memory(const true_type& /* allocator::allow_memory_leaks */)     {}
-
-        AZ_FORCE_INLINE void    deallocate_memory(const false_type& /* !allocator::allow_memory_leaks */)
+        AZ_FORCE_INLINE void    deallocate_memory()
         {
             if (m_buff)
             {

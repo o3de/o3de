@@ -33,8 +33,8 @@ namespace ScriptCanvasEditor
             ScanConfiguration m_config;
             ScanResult m_result;
 
-            void FilterAsset(SourceHandle);
-            SourceHandle LoadAsset();
+            void FilterAsset(SourceHandle, bool isFromXMLSource);
+            AZStd::pair<SourceHandle, bool> LoadSource();
             SourceHandle& ModCurrentAsset();
             void OnSystemTick() override;
         };

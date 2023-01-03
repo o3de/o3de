@@ -11,7 +11,7 @@ def DetachPrefab_UnderAnotherPrefab():
     CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
     WHEEL_PREFAB_FILE_NAME = Path(__file__).stem + 'wheel_prefab'
 
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
 
     @pyside_utils.wrap_async
     async def run_test():
@@ -22,7 +22,8 @@ def DetachPrefab_UnderAnotherPrefab():
         import azlmbr.legacy.general as general
 
         from editor_python_test_tools.editor_entity_utils import EditorEntity
-        from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
+        from editor_python_test_tools.prefab_utils import Prefab
+        from editor_python_test_tools.wait_utils import PrefabWaiter
         import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
         def validate_entity_hierarchy(condition_checked):
@@ -69,7 +70,7 @@ def DetachPrefab_UnderAnotherPrefab():
 
         # Test undo/redo on prefab detach
         general.undo()
-        wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
         is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", wheel.container_entity.id,
                                                  azlmbr.globals.property.EditorPrefabComponentTypeId)
         assert is_prefab, "Undo operation failed. Entity is not recognized as a prefab."
@@ -78,7 +79,7 @@ def DetachPrefab_UnderAnotherPrefab():
         validate_entity_hierarchy("Undo")
 
         general.redo()
-        wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
         is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", wheel.container_entity.id,
                                                  azlmbr.globals.property.EditorPrefabComponentTypeId)
         assert not is_prefab, "Redo operation failed. Entity is still recognized as a prefab."

@@ -73,7 +73,6 @@ namespace AZ
 
             RPISystemDescriptor::Reflect(context);
             GpuQuerySystemDescriptor::Reflect(context);
-            ShaderMetricsSystem::Reflect(context);
 
             PipelineStatisticsResult::Reflect(context);
         }
@@ -83,7 +82,12 @@ namespace AZ
             //If xr system is registered with RPI init xr instance
             if (m_xrSystem)
             {
-                [[maybe_unused]] AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
+                AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
+                // Fail result code can happen if no compatible device is attached. UnRegister xr system if that happens
+                if (resultCode == AZ::RHI::ResultCode::Fail)
+                {
+                    UnregisterXRSystem();
+                }
                 AZ_Warning("RPISystem", resultCode == AZ::RHI::ResultCode::Success, "Unable to initialize XR System");
             }
 
@@ -103,7 +107,6 @@ namespace AZ
             m_materialSystem.Init();
             m_modelSystem.Init();
             m_shaderSystem.Init();
-            m_shaderMetricsSystem.Init();
             m_passSystem.Init();
             m_featureProcessorFactory.Init();
             m_querySystem.Init(m_descriptor.m_gpuQuerySystemDescriptor);
@@ -143,7 +146,6 @@ namespace AZ
             m_materialSystem.Shutdown();
             m_modelSystem.Shutdown();
             m_shaderSystem.Shutdown();
-            m_shaderMetricsSystem.Shutdown();
             m_imageSystem.Shutdown();
             m_querySystem.Shutdown();
             m_rhiSystem.Shutdown();
@@ -387,6 +389,7 @@ namespace AZ
                 AZ_Error("RPI system", false, "Failed to load RPI system asset %s", m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
+
             m_sceneSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Scene);
             if (!m_sceneSrgLayout)
             {
@@ -468,6 +471,12 @@ namespace AZ
             {
                 for (auto& renderPipeline : scene->GetRenderPipelines())
                 {
+                    // MSAA state set to the render pipeline at creation time from its data might be different
+                    // from the one set to the application. So it can arrive here having the same new
+                    // target state, but still needs to be marked as its MSAA state has changed so its passes
+                    // are recreated using the new supervariant name comming from MSAA at application level just set above.
+                    // In conclusion, it's not safe to skip here setting MSAA state to the render pipeline when it's the
+                    // same as the target.
                     renderPipeline->GetRenderSettings().m_multisampleState = multisampleState;
                     renderPipeline->MarkPipelinePassChanges(PipelinePassChanges::MultisampleStateChanged);
                 }
@@ -483,7 +492,7 @@ namespace AZ
         { 
             AZ_Assert(!m_xrSystem, "XR System is already registered");
             m_xrSystem = xrSystemInterface;
-            m_rhiSystem.RegisterXRSystem(dynamic_cast<RHI::XRRenderingInterface*>(xrSystemInterface));
+            m_rhiSystem.RegisterXRSystem(xrSystemInterface->GetRHIXRRenderingInterface());
         }
 
         void RPISystem::UnregisterXRSystem()

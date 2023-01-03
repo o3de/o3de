@@ -228,6 +228,7 @@ namespace ScriptCanvas
         bool m_isVisible = true;
         bool m_isLatent = false;
         bool m_isUserAdded = false;
+        bool m_canHaveInputField = true;
 
         AZStd::vector<ContractDescriptor> m_contractDescs;
         bool m_addUniqueSlotByNameAndType = true; // Only adds a new slot if a slot with the supplied name and CombinedSlotType does not exist on the node
@@ -298,6 +299,8 @@ namespace ScriptCanvas
         {
             m_datum.ReconfigureDatumTo(AZStd::move(datum));
         }
+
+        void CopyTypeAndValueFrom(const Datum& source);
 
         void DeepCopyFrom(const Datum& source);
 

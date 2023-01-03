@@ -52,8 +52,8 @@ namespace MCore
         return EMotionFX::Transform(azTransform);
     }
 
-    // AZ::Quaternion::CreateFromAxisAngle does not yield to the same results because it's using right handed system.
-    // This is left handed system version in MCore::Quaternion.
+    // O3DE_DEPRECATION_NOTICE(GHI-10471)
+    //! @deprecated AZ::Quaternion::CreateFromAxisAngle where the axis is normalized should be equivelent to MCore::CreateFromAxisAndAngle
     AZ_FORCE_INLINE AZ::Quaternion CreateFromAxisAndAngle(const AZ::Vector3& axis, const float angle)
     {
         const float squaredLength = axis.GetLengthSq();
@@ -72,6 +72,8 @@ namespace MCore
         }
     }
 
+    //! O3DE_DEPRECATION_NOTICE(GHI-10508)
+    //! @deprecated use AZ::Quaternion::CreateFromEulerRadiansZYX
     AZ_FORCE_INLINE AZ::Quaternion AzEulerAnglesToAzQuat(float pitch, float yaw, float roll)
     {
         // In the LY coordinate system, pitch: X, yaw: Z, roll: Y.

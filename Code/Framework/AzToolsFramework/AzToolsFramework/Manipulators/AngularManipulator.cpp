@@ -44,13 +44,14 @@ namespace AzToolsFramework
         // store initial world hit position
         Internal::CalculateRayPlaneIntersectingPoint(
             rayOrigin, rayDirection, actionInternal.m_start.m_planePoint, actionInternal.m_start.m_planeNormal,
-            actionInternal.m_current.m_worldHitPosition);
+            actionInternal.m_start.m_worldHitPosition);
 
         // store entity transform (to go from local to world space)
         // and store our own starting local transform
         actionInternal.m_start.m_worldFromLocal = worldFromLocal;
         actionInternal.m_start.m_localTransform = localTransform;
         actionInternal.m_current.m_radians = 0.0f;
+        actionInternal.m_current.m_worldHitPosition = actionInternal.m_start.m_worldHitPosition;
 
         return actionInternal;
     }
@@ -69,7 +70,7 @@ namespace AzToolsFramework
         const AZ::Transform worldFromLocalWithTransform = worldFromLocal * localTransform;
         const AZ::Vector3 worldAxis = TransformDirectionNoScaling(worldFromLocalWithTransform, fixed.m_axis);
 
-        AZ::Vector3 worldHitPosition = AZ::Vector3::CreateZero();
+        AZ::Vector3 worldHitPosition = actionInternal.m_start.m_worldHitPosition;
         Internal::CalculateRayPlaneIntersectingPoint(
             rayOrigin, rayDirection, actionInternal.m_start.m_planePoint, actionInternal.m_start.m_planeNormal, worldHitPosition);
 
@@ -78,9 +79,11 @@ namespace AzToolsFramework
         const AZ::Vector3 currentWorldHitVector = (worldHitPosition - center).GetNormalizedSafe();
         const AZ::Vector3 previousWorldHitVector = (actionInternal.m_current.m_worldHitPosition - center).GetNormalizedSafe();
 
-        // calculate which direction we rotated
-        const AZ::Vector3 worldAxisRight = worldAxis.Cross(previousWorldHitVector);
-        const float rotateSign = Sign(currentWorldHitVector.Dot(worldAxisRight));
+        // determine the direction (clockwise or counter clockwise) the rotation is happening
+        const float direction = !currentWorldHitVector.IsClose(previousWorldHitVector)
+            ? Sign(worldAxis.Dot(previousWorldHitVector.Cross(currentWorldHitVector)))
+            : 0.0f;
+
         // how far did we rotate this frame
         const float rotationAngleRad = AZ::Acos(AZ::GetMin<float>(1.0f, currentWorldHitVector.Dot(previousWorldHitVector)));
         actionInternal.m_current.m_worldHitPosition = worldHitPosition;
@@ -89,7 +92,7 @@ namespace AzToolsFramework
         // preSnapRadians is greater than the angleStep
         if (snapping && AZStd::abs(angleStepDegrees) > 0.0f)
         {
-            actionInternal.m_current.m_preSnapRadians += rotationAngleRad * rotateSign;
+            actionInternal.m_current.m_preSnapRadians += rotationAngleRad * direction;
 
             const float angleStepRad = AZ::DegToRad(angleStepDegrees);
             const float preSnapRotateSign = Sign(actionInternal.m_current.m_preSnapRadians);
@@ -103,13 +106,17 @@ namespace AzToolsFramework
         else
         {
             // no snapping, just update current radius immediately
-            actionInternal.m_current.m_radians += rotationAngleRad * rotateSign;
+            actionInternal.m_current.m_radians += rotationAngleRad * direction;
         }
 
         Action action;
+        action.m_fixed = fixed;
         action.m_start.m_space = actionInternal.m_start.m_worldFromLocal.GetRotation().GetNormalized();
         action.m_start.m_rotation = actionInternal.m_start.m_localTransform.GetRotation().GetNormalized();
+        action.m_start.m_worldHitPosition = actionInternal.m_start.m_worldHitPosition;
+        action.m_current.m_deltaRadians = actionInternal.m_current.m_radians;
         action.m_current.m_delta = AZ::Quaternion::CreateFromAxisAngle(fixed.m_axis, actionInternal.m_current.m_radians).GetNormalized();
+        action.m_current.m_worldHitPosition = actionInternal.m_current.m_worldHitPosition;
         action.m_modifiers = keyboardModifiers;
 
         return action;
@@ -190,9 +197,8 @@ namespace AzToolsFramework
         const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
         m_manipulatorView->Draw(
-            GetManipulatorManagerId(), managerState, GetManipulatorId(),
-            ManipulatorState{ ApplySpace(GetLocalTransform()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay,
-            cameraState, mouseInteraction);
+            GetManipulatorManagerId(), managerState, GetManipulatorId(), CalculateManipulatorState(), debugDisplay, cameraState,
+            mouseInteraction);
     }
 
     void AngularManipulator::SetAxis(const AZ::Vector3& axis)
@@ -215,4 +221,8 @@ namespace AzToolsFramework
         m_manipulatorView->Invalidate(GetManipulatorManagerId());
     }
 
+    ManipulatorState AngularManipulator::CalculateManipulatorState() const
+    {
+        return ManipulatorState{ ApplySpace(GetLocalTransform()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() };
+    }
 } // namespace AzToolsFramework

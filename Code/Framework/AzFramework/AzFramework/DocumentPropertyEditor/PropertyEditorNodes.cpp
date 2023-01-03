@@ -57,11 +57,22 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue<char>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue<AZ::s8>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue<AZ::u8>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue<AZ::s16>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue<AZ::u16>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue<int>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue<AZ::s32>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue<AZ::u32>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue<AZ::s64>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue<AZ::u64>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValues);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::AddNotify);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::RemoveNotify);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ClearNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueHashed);
 
         system->RegisterPropertyEditor<UIElement>();
         system->RegisterNodeAttribute<UIElement>(UIElement::Handler);

@@ -318,11 +318,11 @@ struct IConsole
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Print a string in the console and go to the new line
     // @param s the string to print
-    virtual void PrintLine(const char* s) = 0;
+    virtual void PrintLine(AZStd::string_view s) = 0;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Append a string in the last console line
     // @param s the string to print
-    virtual void PrintLinePlus(const char* s) = 0;
+    virtual void PrintLineAppendWithPrevLine(AZStd::string_view s) = 0;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Retrieve the status of the console (active/not active)
     // @return the variable value(true = active/false = not active)
@@ -483,9 +483,9 @@ struct IRemoteConsole
     virtual void Stop() = 0;
     virtual bool IsStarted() const = 0;
 
-    virtual void AddLogMessage(const char* log) = 0;
-    virtual void AddLogWarning(const char* log) = 0;
-    virtual void AddLogError(const char* log) = 0;
+    virtual void AddLogMessage(AZStd::string_view log) = 0;
+    virtual void AddLogWarning(AZStd::string_view log) = 0;
+    virtual void AddLogError(AZStd::string_view log) = 0;
 
     virtual void Update() = 0;
 

@@ -51,14 +51,13 @@ AZ_POP_DISABLE_WARNING
 
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+#include <UI/DocumentPropertyEditor/FilteredDPE.h>
 
 #include <QAction>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QVBoxLayout>
-
-AZ_CVAR_EXTERNED(bool, ed_enableDPE);
 
 namespace AzToolsFramework
 {
@@ -204,7 +203,7 @@ namespace AzToolsFramework
             m_header->show();
 
             QWidget* propertyEditor = nullptr;
-            m_useDPE = ed_enableDPE;
+            m_useDPE = DocumentPropertyEditor::ShouldReplaceRPE();
             if (!m_useDPE)
             {
                 m_propertyEditor = new ReflectedPropertyEditor(this);
@@ -214,8 +213,15 @@ namespace AzToolsFramework
             else
             {
                 m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
-                m_dpe = new DocumentPropertyEditor(this);
-                propertyEditor = m_dpe;
+                m_filteredWidget = new FilteredDPE(this);
+                m_dpe = m_filteredWidget->GetDPE();
+                propertyEditor = m_filteredWidget;
+                m_propertyChangeHandler = AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler(
+                    [this](const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
+                    {
+                        this->OnDocumentPropertyChanged(changeInfo);
+                    });
+                m_adapter->ConnectPropertyChangeHandler(m_propertyChangeHandler);
             }
 
             propertyEditor->setObjectName("AssetEditorWidgetPropertyEditor");
@@ -340,6 +346,9 @@ namespace AzToolsFramework
             auto serializeContext = AZ::EntityUtils::GetApplicationSerializeContext();
             serializeContext->CloneObjectInplace((*m_inMemoryAsset.GetData()), asset.GetData());
 
+            // Make sure the saved state key is reset since this could be a file opened with the same property editor isntance
+            m_savedStateKey = AZ::Crc32(&asset.GetId(), sizeof(AZ::Data::AssetId));
+
             UpdatePropertyEditor(m_inMemoryAsset);
 
             SetupHeader();
@@ -364,18 +373,18 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::UpdatePropertyEditor(AZ::Data::Asset<AZ::Data::AssetData>& asset)
         {
-            AZ::Crc32 saveStateKey;
-            saveStateKey.Add(&asset.GetId(), sizeof(AZ::Data::AssetId));
-
             if (m_useDPE)
             {
                 m_adapter->SetValue(asset.Get(), asset.GetType());
-                m_dpe->SetAdapter(m_adapter);
+                m_filteredWidget->SetAdapter(m_adapter);
+                m_filteredWidget->setEnabled(true);
+
+                m_dpe->SetSavedStateKey(m_savedStateKey, "AssetEditor");
             }
             else
             {
                 m_propertyEditor->ClearInstances();
-                m_propertyEditor->SetSavedStateKey(saveStateKey);
+                m_propertyEditor->SetSavedStateKey(m_savedStateKey);
                 m_propertyEditor->AddInstance(asset.Get(), asset.GetType(), nullptr);
 
                 m_propertyEditor->InvalidateAll();
@@ -387,7 +396,11 @@ namespace AzToolsFramework
         {
             m_dirty = false;
             m_saveAssetAction->setEnabled(false);
-            m_propertyEditor->ClearInstances();
+
+            if (!m_useDPE)
+            {
+                m_propertyEditor->ClearInstances();
+            }
 
             if (AZ::Data::AssetBus::MultiHandler::BusIsConnectedId(asset.GetId()))
             {
@@ -497,7 +510,10 @@ namespace AzToolsFramework
             {
                 AZStd::string targetFilePath(saveAsPath.toUtf8().constData());
 
-                m_propertyEditor->ForceQueuedInvalidation();
+                if (!m_useDPE)
+                {
+                    m_propertyEditor->ForceQueuedInvalidation();
+                }
 
                 AZStd::vector<char> byteBuffer;
                 AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
@@ -705,7 +721,14 @@ namespace AzToolsFramework
                 AZ::Data::AssetBus::MultiHandler::BusConnect(asset.GetId());
 
                 // Need to disable editing until OnAssetReady.
-                m_propertyEditor->setEnabled(false);
+                if (!m_useDPE)
+                {
+                    m_propertyEditor->setEnabled(false);
+                }
+                else
+                {
+                    m_filteredWidget->setEnabled(false);
+                }
             }
         }
 
@@ -780,7 +803,10 @@ namespace AzToolsFramework
                         if (saveSuccessful)
                         {
                             Q_EMIT OnAssetSavedSignal();
-                            m_propertyEditor->QueueInvalidation(Refresh_AttributesAndValues);
+                            if (!m_useDPE)
+                            {
+                                m_propertyEditor->QueueInvalidation(Refresh_AttributesAndValues);
+                            }
                             SetStatusText(Status::assetSaved);
 
                             if (m_closeAfterSave)
@@ -849,7 +875,15 @@ namespace AzToolsFramework
                 // given a chance to fix the errors and try again.
                 m_sourceAssetId.SetInvalid();
                 m_currentAsset = "New Asset";
-                m_propertyEditor->setEnabled(true);
+
+                if (!m_useDPE)
+                {
+                    m_propertyEditor->setEnabled(true);
+                }
+                else
+                {
+                    m_filteredWidget->setEnabled(true);
+                }
 
                 DirtyAsset();
             }
@@ -923,8 +957,14 @@ namespace AzToolsFramework
 
             DirtyAsset();
 
-            m_propertyEditor->ClearInstances();
+            if (!m_useDPE)
+            {
+                m_propertyEditor->ClearInstances();
+            }
             m_currentAsset = "New Asset";
+
+            // Make sure the saved state key is reset since this could be a file opened with the same property editor isntance
+            m_savedStateKey = AZ::Crc32(&newAssetId, sizeof(AZ::Data::AssetId));
 
             UpdatePropertyEditor(m_inMemoryAsset);
 
@@ -936,6 +976,14 @@ namespace AzToolsFramework
         void AssetEditorWidget::AfterPropertyModified(InstanceDataNode* /*node*/)
         {
             DirtyAsset();
+        }
+
+        void AssetEditorWidget::OnDocumentPropertyChanged(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
+        {
+            if (changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
+            {
+                DirtyAsset();
+            }
         }
 
         void AssetEditorWidget::RequestPropertyContextMenu(InstanceDataNode* node, const QPoint& point)
@@ -955,13 +1003,16 @@ namespace AzToolsFramework
                         {
                             InstanceDataHierarchy::CopyInstanceData(orig, node, m_serializeContext);
 
-                            PropertyRowWidget* widget = m_propertyEditor->GetWidgetFromNode(node);
-                            if (widget)
+                            if (!m_useDPE)
                             {
-                                widget->DoPropertyNotify();
-                            }
+                                PropertyRowWidget* widget = m_propertyEditor->GetWidgetFromNode(node);
+                               if (widget)
+                               {
+                                   widget->DoPropertyNotify();
+                               }
 
-                            m_propertyEditor->QueueInvalidation(Refresh_Values);
+                               m_propertyEditor->QueueInvalidation(Refresh_Values);
+                            }
                         }
                     });
                 menu.exec(point);
@@ -976,12 +1027,26 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::ExpandAll()
         {
-            m_propertyEditor->ExpandAll();
+            if (!m_useDPE)
+            {
+                m_propertyEditor->ExpandAll();
+            }
+            else
+            {
+                m_dpe->ExpandAll();
+            }
         }
 
         void AssetEditorWidget::CollapseAll()
         {
-            m_propertyEditor->CollapseAll();
+            if (!m_useDPE)
+            {
+                m_propertyEditor->CollapseAll();
+            }
+            else
+            {
+                m_dpe->CollapseAll();
+            }
         }
 
         void AssetEditorWidget::DirtyAsset()

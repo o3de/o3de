@@ -43,6 +43,7 @@
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsWindow.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 #include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkLoader.h>
@@ -52,6 +53,7 @@
 // AzQtComponents
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
+#include <AzQtComponents/Components/InputDialog.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -417,7 +419,7 @@ MainWindow::~MainWindow()
         GetEntityContextId(), &ActionOverrideRequests::TeardownActionOverrideHandler);
 
     m_instance = nullptr;
-    
+
     if (!IsNewActionManagerEnabled())
     {
         delete m_levelEditorMenuHandler;
@@ -507,16 +509,6 @@ void MainWindow::Initialize()
     // setup the ActionOverride (set overrideWidgets parent to be the MainWindow)
     ActionOverrideRequestBus::Event(
         GetEntityContextId(), &ActionOverrideRequests::SetupActionOverrideHandler, this);
-
-    if (auto imGuiManager = AZ::Interface<ImGui::IImGuiManager>::Get())
-    {
-        auto handleImGuiStateChangeFn = [](bool enabled)
-        {
-            EditorWindowUIRequestBus::Broadcast(&EditorWindowUIRequests::SetEditorUiEnabled, enabled);
-        };
-        m_handleImGuiStateChangeHandler = ImGui::IImGuiManager::ImGuiSetEnabledEvent::Handler(handleImGuiStateChangeFn);
-        imGuiManager->ConnectImGuiSetEnabledChangedHandler(m_handleImGuiStateChangeHandler);
-    }
 
     AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, this);
 }
@@ -772,7 +764,7 @@ void MainWindow::InitActions()
                 EditorTransformComponentSelectionRequestBus::Event(
                     GetEntityContextId(), &EditorTransformComponentSelectionRequests::SetTransformMode,
                     EditorTransformComponentSelectionRequests::Mode::Translation);
-            });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+            });
     am->AddAction(AzToolsFramework::EditModeRotate, tr("Rotate"))
         .SetIcon(Style::icon("Translate"))
         .SetShortcut(tr("2"))
@@ -896,7 +888,7 @@ void MainWindow::InitActions()
             return false;
         }
 
-        SandboxEditor::InterpolateDefaultViewportCameraToTransform(
+        SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(
             bookmark->m_position, AZ::DegToRad(bookmark->m_rotation.GetX()), AZ::DegToRad(bookmark->m_rotation.GetZ()));
 
         QString tagConsoleText = tr("View Bookmark %1 loaded position: x=%2, y=%3, z=%4")
@@ -1065,6 +1057,27 @@ void MainWindow::InitActions()
             []()
             {
                 AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
+                    AzToolsFramework::IconsVisible());
+            });
+    am->AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction, tr("Show Helpers for Selected Entities Only"))
+        .SetToolTip(tr("Show Helpers for Selected/All Entities"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
+                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             });
 
     // Audio actions
@@ -1422,7 +1435,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         auto cryEdit = CCryEditApp::instance();
         if (cryEdit)
         {
-            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
+            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectDisplayName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
         }
     }
     break;
@@ -1431,7 +1444,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         auto cryEdit = CCryEditApp::instance();
         if (cryEdit)
         {
-            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), nullptr);
+            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectDisplayName().c_str(), nullptr);
         }
     }
     break;
@@ -1475,11 +1488,11 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
     case eNotify_OnBeginSceneOpen:
     case eNotify_OnBeginNewScene:
     case eNotify_OnCloseScene:
-        ResetAutoSaveTimers();
+        StopAutoSaveTimers();
         break;
     case eNotify_OnEndSceneOpen:
     case eNotify_OnEndNewScene:
-        ResetAutoSaveTimers(true);
+        StartAutoSaveTimers();
         break;
     }
 }
@@ -1503,6 +1516,7 @@ void MainWindow::RegisterStdViewClasses()
     CSettingsManagerDialog::RegisterViewClass();
     AzAssetBrowserWindow::RegisterViewClass();
     AssetEditorWindow::RegisterViewClass();
+    AzToolsFramework::RegisterPaintBrushSettingsWindow();
 
     // Notify that views can now be registered
     AzToolsFramework::EditorEvents::Bus::Broadcast(
@@ -1520,7 +1534,7 @@ void MainWindow::RefreshStyle()
     GetIEditor()->Notify(eNotify_OnStyleChanged);
 }
 
-void MainWindow::ResetAutoSaveTimers(bool bForceInit)
+void MainWindow::StopAutoSaveTimers()
 {
     if (m_autoSaveTimer)
     {
@@ -1532,35 +1546,50 @@ void MainWindow::ResetAutoSaveTimers(bool bForceInit)
     }
     m_autoSaveTimer = nullptr;
     m_autoRemindTimer = nullptr;
+}
 
-    if (bForceInit)
+void MainWindow::StartAutoSaveTimers()
+{
+    if (gSettings.autoBackupTime > 0 && gSettings.autoBackupEnabled)
     {
-        if (gSettings.autoBackupTime > 0 && gSettings.autoBackupEnabled)
-        {
-            m_autoSaveTimer = new QTimer(this);
-            m_autoSaveTimer->start(gSettings.autoBackupTime * 1000 * 60);
-            connect(m_autoSaveTimer, &QTimer::timeout, this, [&]() {
+        m_autoSaveTimer = new QTimer(this);
+        m_autoSaveTimer->start(gSettings.autoBackupTime * 1000 * 60);
+        connect(
+            m_autoSaveTimer,
+            &QTimer::timeout,
+            this,
+            [&]()
+            {
                 if (gSettings.autoBackupEnabled)
                 {
                     // Call autosave function of CryEditApp
                     GetIEditor()->GetDocument()->SaveAutoBackup();
                 }
             });
-        }
-        if (gSettings.autoRemindTime > 0)
-        {
-            m_autoRemindTimer = new QTimer(this);
-            m_autoRemindTimer->start(gSettings.autoRemindTime * 1000 * 60);
-            connect(m_autoRemindTimer, &QTimer::timeout, this, [&]() {
+    }
+    if (gSettings.autoRemindTime > 0)
+    {
+        m_autoRemindTimer = new QTimer(this);
+        m_autoRemindTimer->start(gSettings.autoRemindTime * 1000 * 60);
+        connect(
+            m_autoRemindTimer,
+            &QTimer::timeout,
+            this,
+            [&]()
+            {
                 if (gSettings.autoRemindTime > 0)
                 {
                     // Remind to save.
                     CCryEditApp::instance()->SaveAutoRemind();
                 }
             });
-        }
     }
+}
 
+void MainWindow::ResetAutoSaveTimers()
+{
+    StopAutoSaveTimers();
+    StartAutoSaveTimers();
 }
 
 void MainWindow::ResetBackgroundUpdateTimer()
@@ -1627,7 +1656,7 @@ void MainWindow::SaveLayout()
         return;
     }
 
-    QString layoutName = QInputDialog::getText(this, tr("Layout Name"), QString()).toLower();
+    QString layoutName = InputDialog::getText(this, tr("Layout Name"), QString(), QLineEdit::Normal, QString(), "[a-z]+[a-z0-9\\-\\_]*");
     if (layoutName.isEmpty())
     {
         return;
@@ -1681,11 +1710,7 @@ void MainWindow::ViewRenamePaneLayout(const QString& layoutName)
     bool validName = false;
     while (!validName)
     {
-        newLayoutName = QInputDialog::getText(this, tr("Rename layout '%1'").arg(layoutName), QString());
-        if (newLayoutName.isEmpty())
-        {
-            return;
-        }
+        newLayoutName = InputDialog::getText(this, tr("Layout Name"), QString(), QLineEdit::Normal, QString(), "[a-z]+[a-z0-9\\-\\_]*");
 
         if (m_viewPaneManager->HasLayout(newLayoutName))
         {
@@ -1973,6 +1998,7 @@ void MainWindow::ConnectivityStateChanged(const AzToolsFramework::SourceControlS
 
     gSettings.enableSourceControl = connected;
     gSettings.SaveEnableSourceControlFlag(false);
+    gSettings.SaveSettingsRegistryFile();
 }
 
 void MainWindow::OnGotoSelected()
@@ -2007,9 +2033,14 @@ void MainWindow::ShowCustomizeToolbarDialog()
 QMenu* MainWindow::createPopupMenu()
 {
     QMenu* menu = QMainWindow::createPopupMenu();
-    menu->addSeparator();
-    QAction* action = menu->addAction(QStringLiteral("Customize..."));
-    connect(action, &QAction::triggered, this, &MainWindow::ShowCustomizeToolbarDialog);
+
+    if (!IsNewActionManagerEnabled())
+    {
+        menu->addSeparator();
+        QAction* action = menu->addAction(QStringLiteral("Customize..."));
+        connect(action, &QAction::triggered, this, &MainWindow::ShowCustomizeToolbarDialog);
+    }
+
     return menu;
 }
 

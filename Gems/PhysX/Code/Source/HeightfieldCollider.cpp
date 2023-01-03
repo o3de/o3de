@@ -267,9 +267,17 @@ namespace PhysX
 
         // Update the shape configuration with the new height and material data for the heightfield.
         // This assumes that the shape configuration already has been created with the correct number of samples.
-        Physics::HeightfieldProviderRequestsBus::Event(
-            m_entityId, &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterialsAsync,
-            modifySample, updateComplete, startColumn, startRow, numColumns, numRows);
+        if (Physics::HeightfieldProviderRequestsBus::HasHandlers(m_entityId))
+        {
+            Physics::HeightfieldProviderRequestsBus::Event(
+                m_entityId, &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterialsAsync,
+                modifySample, updateComplete, startColumn, startRow, numColumns, numRows);
+        }
+        else
+        {
+            // If nothing is connected to the bus, call updateComplete() directly so that the job processing chain completes.
+            updateComplete();
+        }
     }
 
     void HeightfieldCollider::UpdatePhysXHeightfieldRows(
@@ -437,6 +445,12 @@ namespace PhysX
         size_t startColumn = m_dirtyRegion.m_minColumnVertex;
         size_t numColumns = m_dirtyRegion.m_maxColumnVertex - m_dirtyRegion.m_minColumnVertex;
         size_t numRows = m_dirtyRegion.m_maxRowVertex - m_dirtyRegion.m_minRowVertex;
+
+        // If our dirty region is too small to affect any vertices, early-out.
+        if ((numRows == 0) || (numColumns == 0))
+        {
+            return;
+        }
 
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
         auto* scene = physicsSystem->GetScene(m_attachedSceneHandle);

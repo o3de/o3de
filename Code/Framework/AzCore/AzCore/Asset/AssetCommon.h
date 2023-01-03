@@ -58,6 +58,7 @@ namespace AZ
 
             /// Create asset id in invalid state
             AssetId();
+            explicit AssetId(AZStd::string_view guidString, u32 subId = 0);
             AssetId(const Uuid& guid, u32 subId = 0);
 
             bool IsValid() const;
@@ -160,7 +161,7 @@ namespace AZ
             bool IsLoading(bool includeQueued = true) const;
             AssetStatus GetStatus() const { return m_status.load(); }
             const AssetId& GetId() const { return m_assetId; }
-            const AssetType& GetType() const { return RTTI_GetType(); }
+            AssetType GetType() const { return RTTI_GetType(); }
             int GetUseCount() const { return m_useCount.load(); }
             int GetCreationToken() const { return m_creationToken; }
 
@@ -697,6 +698,10 @@ namespace AZ
         }
 
         //=========================================================================
+        inline AssetId::AssetId(AZStd::string_view guidString, u32 subId)
+            : AssetId(AZ::Uuid(guidString), subId)
+        {
+        }
         inline AssetId::AssetId(const Uuid& guid, u32 subId)
             : m_guid(guid)
             , m_subId(subId)
@@ -722,7 +727,7 @@ namespace AZ
                 result = StringType::format("%s:%x", m_guid.ToString<StringType>().c_str(), m_subId);
                 break;
             case SubIdDisplayType::Decimal:
-                result = StringType::format("%s:%d", m_guid.ToString<StringType>().c_str(), m_subId);
+                result = StringType::format("%s:%u", m_guid.ToString<StringType>().c_str(), m_subId);
                 break;
             }
         }

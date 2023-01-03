@@ -109,16 +109,18 @@ def on_update_manifest(args):
         log_exception_traceback()
     except:
         log_exception_traceback()
-
-    global sceneJobHandler
-    sceneJobHandler = None
+    finally:
+        global sceneJobHandler
+        # do not delete or set sceneJobHandler to None, just disconnect from it.
+        # this call is occuring while the scene Job Handler itself is in the callstack, so deleting it here
+        # would cause a crash.
+        sceneJobHandler.disconnect()
 
 # try to create SceneAPI handler for processing
 try:
     import azlmbr.scene as sceneApi
-    if (sceneJobHandler == None):
-        sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
-        sceneJobHandler.connect()
-        sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
+    sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
+    sceneJobHandler.connect()
+    sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
 except:
     sceneJobHandler = None

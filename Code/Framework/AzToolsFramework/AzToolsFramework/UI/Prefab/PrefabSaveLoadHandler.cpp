@@ -9,6 +9,8 @@
 #include <AzToolsFramework/UI/Prefab/PrefabSaveLoadHandler.h>
 
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -17,13 +19,16 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerDragAndDropContext.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
+#include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
@@ -41,6 +46,12 @@
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
+#include <QMimeData>
+#include <QDragLeaveEvent>
+
 
 namespace AzToolsFramework
 {
@@ -51,6 +62,7 @@ namespace AzToolsFramework
         PrefabSystemComponentInterface* PrefabSaveHandler::s_prefabSystemComponentInterface = nullptr;
 
         const AZStd::string PrefabSaveHandler::s_prefabFileExtension = ".prefab";
+        const AZStd::string PrefabSaveHandler::s_procPrefabFileExtension = ".procprefab";
 
         static const char* const ClosePrefabDialog = "ClosePrefabDialog";
         static const char* const FooterSeparatorLine = "FooterSeparatorLine";
@@ -103,12 +115,15 @@ namespace AzToolsFramework
                 return;
             }
 
-            AssetBrowser::AssetBrowserSourceDropBus::Handler::BusConnect(s_prefabFileExtension);
+            // we care about both outliner and viewport.
+            AzQtComponents::DragAndDropEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EditorViewport);
+            AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EntityOutliner);
         }
 
         PrefabSaveHandler::~PrefabSaveHandler()
         {
-            AssetBrowser::AssetBrowserSourceDropBus::Handler::BusDisconnect();
+            AzQtComponents::DragAndDropEventsBus::Handler::BusDisconnect();
+            AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusDisconnect();
         }
 
         bool PrefabSaveHandler::GetPrefabSaveLocation(AZStd::string& path, AZ::u32 settingsId)
@@ -129,13 +144,242 @@ namespace AzToolsFramework
             settings->m_saveLocation = path;
         }
 
-        void PrefabSaveHandler::HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const
+        // Drag and drop overrides:
+        int PrefabSaveHandler::GetDragAndDropEventsPriority() const
         {
-            auto instantiatePrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(sourceFilePath, parentId, position);
+            return CommonDragAndDropBusTraits::s_HighPriority; // This class gets ahead of other built in ones
+        }
 
-            if (!instantiatePrefabOutcome.IsSuccess())
+        // viewport dragging:
+        void PrefabSaveHandler::DragEnter(QDragEnterEvent* event, [[maybe_unused]] AzQtComponents::DragAndDropContextBase& context)
+        {
+            if (event->isAccepted())
             {
-                WarningDialog("Prefab Instantiation Error", instantiatePrefabOutcome.GetError());
+                return;
+            }
+
+            if (CanDragAndDropData(event->mimeData()))
+            {
+                event->accept();
+                event->setDropAction(Qt::DropAction::CopyAction);
+            }
+        }
+
+        void PrefabSaveHandler::DragMove(QDragMoveEvent* event, [[maybe_unused]] AzQtComponents::DragAndDropContextBase& context)
+        {
+            if (event->isAccepted())
+            {
+                return;
+            }
+
+            if (CanDragAndDropData(event->mimeData()))
+            {
+                event->accept();
+                event->setDropAction(Qt::DropAction::CopyAction);
+            }
+        }
+
+        void PrefabSaveHandler::DragLeave(QDragLeaveEvent* event)
+        {
+            if (event->isAccepted())
+            {
+                return;
+            }
+        }
+
+        void PrefabSaveHandler::DoDragAndDropData(
+            const AZ::Vector3& instantiateLocation,
+            const AZ::EntityId& parentEntity,
+            const AZStd::vector<AZStd::string>& prefabsToInstantiate,
+            const AZStd::vector<AZStd::string>& prefabsToDetach)
+        {
+            for (const AZStd::string& entry : prefabsToInstantiate)
+            {
+                // its a .prefab file.
+                auto instantiatePrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(entry, parentEntity, instantiateLocation);
+
+                if (!instantiatePrefabOutcome.IsSuccess())
+                {
+                    WarningDialog("Prefab Instantiation Error", instantiatePrefabOutcome.GetError());
+                }
+
+                // is it in the "to detach also" list?
+                if (AZStd::find(prefabsToDetach.begin(), prefabsToDetach.end(), entry) != prefabsToDetach.end())
+                {
+                    AZ::EntityId instantiatedContainerEntity = instantiatePrefabOutcome.GetValue();
+                    auto detachOutcome = s_prefabPublicInterface->DetachPrefab(instantiatedContainerEntity);
+                    if (!detachOutcome.IsSuccess())
+                    {
+                        WarningDialog("Prefab was instantiated but could not detach:", detachOutcome.GetError());
+                    }
+                }
+            }
+        }
+
+        void PrefabSaveHandler::Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context)
+        {
+            using namespace AzToolsFramework;
+            using namespace AzToolsFramework::AssetBrowser;
+            using namespace AzQtComponents;
+
+            if (event->isAccepted())
+            {
+                return;
+            }
+
+            if (ViewportDragContext* viewportContext = azrtti_cast<ViewportDragContext*>(&context))
+            {
+                AZ::Vector3 instantiateLocation = viewportContext->m_hitLocation;
+                AZStd::vector<AZStd::string> thingsToInstantiate;
+                AZStd::vector<AZStd::string> thingsToDetach;
+                if (CanDragAndDropData(event->mimeData(), &thingsToInstantiate, &thingsToDetach))
+                {
+                    event->accept();
+                    event->setDropAction(Qt::DropAction::CopyAction);
+                    ScopedUndoBatch undo("Instantiate Prefab");
+
+                    DoDragAndDropData(instantiateLocation, AZ::EntityId(), thingsToInstantiate, thingsToDetach);
+
+                    
+                }
+            }
+        }
+
+        bool PrefabSaveHandler::CanDragAndDropData(
+            const QMimeData* data, AZStd::vector<AZStd::string>* prefabsToInstantiate, AZStd::vector<AZStd::string>* prefabsToDetach) const
+        {
+            using namespace AzToolsFramework;
+            using namespace AzToolsFramework::AssetBrowser;
+            // this handler cares if the data contains a prefab or proc prefab.
+            // it also cares whether the proc prefab was directly selected, or was indirectly selected
+            // (indirectly, meaning, a FBX containing the procprefab was dragged into the viewport as
+            // opposed to the actual procprefab). indirectly-dragged procprefabs will auto-detach.
+            bool foundSomething = false;
+
+            if (!data)
+            {
+                return false;
+            }
+                        
+            // helper lambda: given a product, evaluate whether it is a proc prefab.
+            // if it is, add it to the list of things that should be instantiated.
+            // if its not selected, add it to the list of things that should also be detached.
+            auto evaluateProduct = [&](const ProductAssetBrowserEntry* entry, bool isSelected)
+            {
+                AZStd::string extension;
+                AZ::StringFunc::Path::GetExtension(entry->GetName().c_str(), extension);
+                if (AZ::StringFunc::Equal(PrefabSaveHandler::s_procPrefabFileExtension, extension.c_str()))
+                {
+                    // its a proc prefab file.
+                    if (prefabsToInstantiate)
+                    {
+                        AZStd::string actualPath = entry->GetFullPath();
+                        prefabsToInstantiate->emplace_back(actualPath);
+                        if ((prefabsToDetach) && (!isSelected))
+                        {
+                            // this procprefab should auto detach if it is not directly selected:
+                            prefabsToDetach->push_back(actualPath);
+                        }
+                    }
+                    foundSomething = true;
+                }
+            };
+
+            AZStd::vector<const AssetBrowserEntry*> decoded;
+            if (!Utils::FromMimeData(data, decoded))
+            {
+                return false;
+            }
+
+            for (auto entry : decoded)
+            {
+                if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                {
+                    // if you directly selected a .prefab source file, add it to the instantiate list:
+                    const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
+                    AZStd::string extension;
+                    AZ::StringFunc::Path::GetExtension(sourceEntry->GetFullPath().c_str(), extension);
+                    if (AZ::StringFunc::Equal(PrefabSaveHandler::s_prefabFileExtension, extension.c_str()))
+                    {
+                        // its a prefab file.
+                        if (prefabsToInstantiate)
+                        {
+                            prefabsToInstantiate->emplace_back(sourceEntry->GetFullPath());
+                        }
+                        foundSomething = true;
+                    }
+                    else
+                    {
+                        // user is dragging and dropping something that is not a prefab.
+                        // but its still valid if one of the products of the thing being dragged
+                        // is a procprefab:
+                        AZStd::vector<const ProductAssetBrowserEntry*> products;
+                        entry->GetChildrenRecursively<ProductAssetBrowserEntry>(products);
+                        for (auto product : products)
+                        {
+                            evaluateProduct(product, false);
+                        }
+                    }
+                }
+                if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+                {
+                    // we'll get here if the user specifically and intentionally selected a product
+                    // in the asset browser instead of a source (ie, selecting an actual model or procprefab
+                    // instead of the fbx that produced it).
+                    evaluateProduct(azrtti_cast<const ProductAssetBrowserEntry*>(entry), true);
+                }
+            }
+
+            return foundSomething;
+        }
+
+         // Drag and drop overrides:
+        int PrefabSaveHandler::GetDragAndDropItemViewEventsPriority() const
+        {
+            return CommonDragAndDropBusTraits::s_HighPriority; // This class gets ahead of other built in ones.
+        }
+        // listview/outliner dragging:
+
+        void PrefabSaveHandler::CanDropItemView(bool& accepted, AzQtComponents::DragAndDropContextBase& context)
+        {
+            if (accepted)
+            {
+                return;
+            }
+            using namespace AzToolsFramework;
+            if (EntityOutlinerDragAndDropContext* outlinerContext = azrtti_cast<EntityOutlinerDragAndDropContext*>(&context))
+            {
+                if (CanDragAndDropData(outlinerContext->m_dataBeingDropped))
+                {
+                    accepted = true;
+                }
+            }
+        }
+
+        void PrefabSaveHandler::DoDropItemView(bool& accepted, AzQtComponents::DragAndDropContextBase& context)
+        {
+            using namespace AzToolsFramework;
+            if (accepted)
+            {
+                return;
+            }
+
+            if (EntityOutlinerDragAndDropContext* outlinerContext = azrtti_cast<EntityOutlinerDragAndDropContext*>(&context))
+            {
+                AZStd::vector<AZStd::string> thingsToInstantiate;
+                AZStd::vector<AZStd::string> thingsToDetach;
+
+                AZ::Vector3 instantiateLocation = AZ::Vector3::CreateZero();
+                if (!outlinerContext->m_parentEntity.IsValid())
+                {
+                    EditorRequestBus::BroadcastResult(instantiateLocation, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
+                }
+               
+                if (CanDragAndDropData(outlinerContext->m_dataBeingDropped, &thingsToInstantiate, &thingsToDetach))
+                {
+                    accepted = true;
+                    DoDragAndDropData(instantiateLocation, outlinerContext->m_parentEntity, thingsToInstantiate, thingsToDetach);
+                }
             }
         }
 

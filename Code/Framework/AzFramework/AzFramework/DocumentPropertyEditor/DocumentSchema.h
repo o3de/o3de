@@ -10,7 +10,9 @@
 
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/DOM/DomValue.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -111,7 +113,7 @@ namespace AZ::DocumentPropertyEditor
         //! Retrieves the name of this attribute, as used as a key in the DOM.
         virtual Name GetName() const = 0;
         //! Gets this attribute's type ID.
-        virtual const AZ::TypeId& GetTypeId() const = 0;
+        virtual AZ::TypeId GetTypeId() const = 0;
         //! Converts this attribute to an AZ::Attribute usable by the ReflectedPropertyEditor.
         virtual AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const = 0;
         //! Converts this attribute from an AZ::Attribute to a Dom::Value usable in the DocumentPropertyEditor.
@@ -167,7 +169,7 @@ namespace AZ::DocumentPropertyEditor
             return DomToValue(memberIt->second);
         }
 
-        const AZ::TypeId& GetTypeId() const override
+        AZ::TypeId GetTypeId() const override
         {
             return azrtti_typeid<AttributeType>();
         }
@@ -180,7 +182,7 @@ namespace AZ::DocumentPropertyEditor
             }
             else
             {
-                AZStd::optional<AttributeType> attributeValue = AZ::Dom::Utils::ValueToType<AttributeType>(value);
+                AZStd::optional<AttributeType> attributeValue = DomToValue(value);
                 return attributeValue.has_value()
                     ? AZStd::make_shared<AZ::AttributeData<AttributeType>>(AZStd::move(attributeValue.value()))
                     : nullptr;
@@ -206,7 +208,7 @@ namespace AZ::DocumentPropertyEditor
                 {
                     return AZ::Dom::Value();
                 }
-                return AZ::Dom::Utils::ValueFromType(value);
+                return ValueToDom(value);
             }
         }
 
@@ -243,6 +245,72 @@ namespace AZ::DocumentPropertyEditor
         AZStd::optional<AZ::Name> DomToValue(const Dom::Value& value) const override;
         AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override;
         AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
+    };
+
+    template <typename EnumType>
+    class EnumValueAttributeDefinition final : public AttributeDefinition<AZ::Edit::EnumConstant<EnumType>>
+    {
+    public:
+        using EnumConstantValue = AZ::Edit::EnumConstant<EnumType>;
+
+        static constexpr const char* EntryDescriptionKey = "description";
+        static constexpr const char* EntryValueKey = "value";
+
+        explicit constexpr EnumValueAttributeDefinition(AZStd::string_view name)
+            : AttributeDefinition<EnumConstantValue>(name)
+        {
+        }
+
+        Dom::Value ValueToDom(const EnumConstantValue& attribute) const override
+        {
+            Dom::Value result(Dom::Type::Object);
+            result[EntryDescriptionKey] = Dom::Value(attribute.m_description, true);
+            result[EntryValueKey] = Dom::Value();
+            result[EntryValueKey].SetUint64(attribute.m_value);
+            return result;
+        }
+
+        AZStd::optional<EnumConstantValue> DomToValue(const Dom::Value& value) const override
+        {
+            if (!value.IsObject() || !value.HasMember(EntryDescriptionKey) || !value.HasMember(EntryValueKey))
+            {
+                return {};
+            }
+
+            return EnumConstantValue{ static_cast<EnumType>(value[EntryValueKey].GetUint64()), value[EntryDescriptionKey].GetString() };
+        }
+
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
+        {
+            if (attribute == nullptr)
+            {
+                return {};
+            }
+
+            AZ::AttributeReader reader(instance, attribute);
+            if (EnumConstantValue value; reader.Read<EnumConstantValue>(value))
+            {
+                return ValueToDom(value);
+            }
+
+            return {};
+        }
+    };
+
+    using EnumValuesContainer = AZStd::vector<AZ::Edit::EnumConstant<AZ::u64>>;
+    class EnumValuesAttributeDefinition final : public AttributeDefinition<EnumValuesContainer>
+    {
+    public:
+        static constexpr const char* EntryDescriptionKey = "description";
+        static constexpr const char* EntryValueKey = "value";
+
+        explicit constexpr EnumValuesAttributeDefinition(AZStd::string_view name)
+            : AttributeDefinition<EnumValuesContainer>(name)
+        {
+        }
+
+        Dom::Value ValueToDom(const EnumValuesContainer& attribute) const override;
+        AZStd::optional<EnumValuesContainer> DomToValue(const Dom::Value& value) const override;
     };
 
     //! Defines a callback applicable to a Node.

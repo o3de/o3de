@@ -18,6 +18,8 @@ import urllib.request
 import logging
 import zipfile
 
+from o3de import gitproviderinterface, github_utils
+
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
 
 logger = logging.getLogger('o3de.utils')
@@ -161,6 +163,15 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             folder.rename(backup_folder_name)
             if backup_folder_name.is_dir():
                 renamed = True
+
+
+def get_git_provider(parsed_uri):
+    """
+    Returns a git provider if one exists given the passed uri
+    :param parsed_uri: uniform resource identifier of a possible git repository
+    :return: A git provider implementation providing functions to get infomration about or clone a repository, see gitproviderinterface
+    """
+    return github_utils.get_github_provider(parsed_uri)
 
 
 def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
@@ -312,3 +323,26 @@ def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_
     """
     ancestor_file = find_ancestor_file(target_file_name, start_path, max_scan_up_range)
     return ancestor_file.parent if ancestor_file else None
+
+
+def remove_gem_duplicates(gems: list) -> list:
+    """
+    For working with the 'gem_names' lists in project.json
+    Adds names to a dict, and when a collision occurs, eject the existing one in favor of the new one.
+    This is because when adding gems the list is extended, so the override will come last.
+    :param gems: The original list of gems, strings or small dicts (json objects)
+    :return: A new list with duplicate gem entries removed
+    """
+    new_list = []
+    names = {}
+    for gem in gems:
+        if not (isinstance(gem, dict) or isinstance(gem, str)):
+            continue
+        gem_name = gem.get('name', '') if isinstance(gem, dict) else gem
+        if gem_name:
+            if gem_name not in names:
+                names[gem_name] = len(new_list)
+                new_list.append(gem)
+            else:
+                new_list[names[gem_name]] = gem
+    return new_list

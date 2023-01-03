@@ -19,7 +19,7 @@ namespace AZ
     {
         namespace DataTypes
         {
-            static const char* s_advancedDisabledString = "Disabled";
+            static constexpr const char* s_advancedDisabledString = "Disabled";
 
             class IMeshAdvancedRule
                 : public IRule

@@ -8,7 +8,7 @@
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/conversions.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Instance.h>
 #include <RHI/PhysicalDevice.h>
 #include <Vulkan_Traits_Platform.h>
@@ -22,10 +22,10 @@ namespace AZ
             RHI::PhysicalDeviceList physicalDeviceList;
             VkResult result = VK_SUCCESS;
 
-            VkInstance instance = Instance::GetInstance().GetNativeInstance();
+            auto& instance = Instance::GetInstance();
 
             uint32_t physicalDeviceCount = 0;
-            result = vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
+            result = instance.GetContext().EnumeratePhysicalDevices(instance.GetNativeInstance(), &physicalDeviceCount, nullptr);
             AssertSuccess(result);
             if (physicalDeviceCount == 0)
             {
@@ -36,7 +36,8 @@ namespace AZ
             AZStd::vector<VkPhysicalDevice> physicalDevices;
             physicalDevices.resize(physicalDeviceCount);
 
-            result = vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, physicalDevices.data());
+            result =
+                instance.GetContext().EnumeratePhysicalDevices(instance.GetNativeInstance(), &physicalDeviceCount, physicalDevices.data());
             AssertSuccess(result);
 
             if (ConvertResult(result) != RHI::ResultCode::Success)
@@ -106,6 +107,16 @@ namespace AZ
             return m_separateDepthStencilFeatures;
         }
 
+        const VkPhysicalDeviceShaderAtomicInt64Features& PhysicalDevice::GetShaderAtomicInt64Features() const
+        {
+            return m_shaderAtomicInt64Features;
+        }
+
+        const VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT& PhysicalDevice::GetShaderImageAtomicInt64Features() const
+        {
+            return m_shaderImageAtomicInt64Features;
+        }
+
         const VkPhysicalDeviceAccelerationStructurePropertiesKHR& PhysicalDevice::GetPhysicalDeviceAccelerationStructureProperties() const
         {
             return m_accelerationStructureProperties;
@@ -124,6 +135,31 @@ namespace AZ
         const VkPhysicalDeviceRayTracingPipelineFeaturesKHR& PhysicalDevice::GetPhysicalDeviceRayTracingPipelineFeatures() const
         {
             return m_rayTracingPipelineFeatures;
+        }
+
+        const VkPhysicalDeviceRayQueryFeaturesKHR& PhysicalDevice::GetRayQueryFeatures() const
+        {
+            return m_rayQueryFeatures;
+        }
+
+        const VkPhysicalDeviceFragmentShadingRateFeaturesKHR& PhysicalDevice::GetPhysicalDeviceFragmentShadingRateFeatures() const
+        {
+            return m_shadingRateFeatures;
+        }
+
+        const VkPhysicalDeviceFragmentDensityMapFeaturesEXT& PhysicalDevice::GetPhysicalDeviceFragmentDensityMapFeatures() const
+        {
+            return m_fragmentDensityMapFeatures;
+        }
+
+        const VkPhysicalDeviceFragmentDensityMapPropertiesEXT& PhysicalDevice::GetPhysicalDeviceFragmentDensityMapProperties() const
+        {
+            return m_fragmentDensityMapProperties;
+        }
+
+        const VkPhysicalDeviceFragmentShadingRatePropertiesKHR& PhysicalDevice::GetPhysicalDeviceFragmentShadingRateProperties() const
+        {
+            return m_fragmentShadingRateProperties;
         }
 
         const VkPhysicalDeviceShaderFloat16Int8FeaturesKHR& PhysicalDevice::GetPhysicalDeviceFloat16Int8Features() const
@@ -152,23 +188,25 @@ namespace AZ
             VkFormat vkFormat = ConvertFormat(format, raiseAsserts);
             if (vkFormat != VK_FORMAT_UNDEFINED)
             {
-                vkGetPhysicalDeviceFormatProperties(GetNativePhysicalDevice(), vkFormat, &formatProperties);
+                auto& instance = Instance::GetInstance();
+                instance.GetContext().GetPhysicalDeviceFormatProperties(GetNativePhysicalDevice(), vkFormat, &formatProperties);
             }
             return formatProperties;
         }
 
         StringList PhysicalDevice::GetDeviceLayerNames() const
         {
+            auto& instance = Instance::GetInstance();
             StringList layerNames;
             uint32_t layerPropertyCount = 0;
-            VkResult result = vkEnumerateDeviceLayerProperties(m_vkPhysicalDevice, &layerPropertyCount, nullptr);
+            VkResult result = instance.GetContext().EnumerateDeviceLayerProperties(m_vkPhysicalDevice, &layerPropertyCount, nullptr);
             if (IsError(result) || layerPropertyCount == 0)
             {
                 return layerNames;
             }
 
             AZStd::vector<VkLayerProperties> layerProperties(layerPropertyCount);
-            result = vkEnumerateDeviceLayerProperties(m_vkPhysicalDevice, &layerPropertyCount, layerProperties.data());
+            result = instance.GetContext().EnumerateDeviceLayerProperties(m_vkPhysicalDevice, &layerPropertyCount, layerProperties.data());
             if (IsError(result))
             {
                 return layerNames;
@@ -187,7 +225,9 @@ namespace AZ
         {
             StringList extensionNames;
             uint32_t extPropertyCount = 0;
-            VkResult result = vkEnumerateDeviceExtensionProperties(m_vkPhysicalDevice, layerName, &extPropertyCount, nullptr);
+            auto& instance = Instance::GetInstance();
+            VkResult result =
+                instance.GetContext().EnumerateDeviceExtensionProperties(m_vkPhysicalDevice, layerName, &extPropertyCount, nullptr);
             if (IsError(result) || extPropertyCount == 0)
             {
                 return extensionNames;
@@ -196,7 +236,8 @@ namespace AZ
             AZStd::vector<VkExtensionProperties> extProperties;
             extProperties.resize(extPropertyCount);
 
-            result = vkEnumerateDeviceExtensionProperties(m_vkPhysicalDevice, layerName, &extPropertyCount, extProperties.data());
+            result = instance.GetContext().EnumerateDeviceExtensionProperties(
+                m_vkPhysicalDevice, layerName, &extPropertyCount, extProperties.data());
             if (IsError(result))
             {
                 return extensionNames;
@@ -225,24 +266,24 @@ namespace AZ
             }
         }
 
-        void PhysicalDevice::LoadSupportedFeatures()
+        void PhysicalDevice::LoadSupportedFeatures(const GladVulkanContext& context)
         {
             uint32_t majorVersion = VK_VERSION_MAJOR(m_deviceProperties.apiVersion);
             uint32_t minorVersion = VK_VERSION_MINOR(m_deviceProperties.apiVersion);
 
             m_features.reset();
-            m_features.set(static_cast<size_t>(DeviceFeature::Compatible2dArrayTexture), (majorVersion >= 1 && minorVersion >= 1) || VK_DEVICE_EXTENSION_SUPPORTED(KHR_maintenance1));
-            m_features.set(static_cast<size_t>(DeviceFeature::CustomSampleLocation), VK_DEVICE_EXTENSION_SUPPORTED(EXT_sample_locations));
-            m_features.set(static_cast<size_t>(DeviceFeature::Predication), VK_DEVICE_EXTENSION_SUPPORTED(EXT_conditional_rendering));
-            m_features.set(static_cast<size_t>(DeviceFeature::ConservativeRaster), VK_DEVICE_EXTENSION_SUPPORTED(EXT_conservative_rasterization));
-            m_features.set(static_cast<size_t>(DeviceFeature::DepthClipEnable), VK_DEVICE_EXTENSION_SUPPORTED(EXT_depth_clip_enable) && m_dephClipEnableFeatures.depthClipEnable);
-            m_features.set(static_cast<size_t>(DeviceFeature::DrawIndirectCount), (majorVersion >= 1 && minorVersion >= 2 && m_vulkan12Features.drawIndirectCount) || VK_DEVICE_EXTENSION_SUPPORTED(KHR_draw_indirect_count));
-            m_features.set(static_cast<size_t>(DeviceFeature::NullDescriptor), m_robutness2Features.nullDescriptor && VK_DEVICE_EXTENSION_SUPPORTED(EXT_robustness2));
+            m_features.set(static_cast<size_t>(DeviceFeature::Compatible2dArrayTexture), (majorVersion >= 1 && minorVersion >= 1) || VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_maintenance1));
+            m_features.set(static_cast<size_t>(DeviceFeature::CustomSampleLocation), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_sample_locations));
+            m_features.set(static_cast<size_t>(DeviceFeature::Predication), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_conditional_rendering));
+            m_features.set(static_cast<size_t>(DeviceFeature::ConservativeRaster), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_conservative_rasterization));
+            m_features.set(static_cast<size_t>(DeviceFeature::DepthClipEnable), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_depth_clip_enable) && m_dephClipEnableFeatures.depthClipEnable);
+            m_features.set(static_cast<size_t>(DeviceFeature::DrawIndirectCount), (majorVersion >= 1 && minorVersion >= 2 && m_vulkan12Features.drawIndirectCount) || VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_draw_indirect_count));
+            m_features.set(static_cast<size_t>(DeviceFeature::NullDescriptor), m_robutness2Features.nullDescriptor && VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_robustness2));
             m_features.set(static_cast<size_t>(DeviceFeature::SeparateDepthStencil),
-                (m_separateDepthStencilFeatures.separateDepthStencilLayouts && VK_DEVICE_EXTENSION_SUPPORTED(KHR_separate_depth_stencil_layouts)) ||
+                (m_separateDepthStencilFeatures.separateDepthStencilLayouts && VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_separate_depth_stencil_layouts)) ||
                 (m_vulkan12Features.separateDepthStencilLayouts));
-            m_features.set(static_cast<size_t>(DeviceFeature::DescriptorIndexing), VK_DEVICE_EXTENSION_SUPPORTED(EXT_descriptor_indexing));
-            m_features.set(static_cast<size_t>(DeviceFeature::BufferDeviceAddress), VK_DEVICE_EXTENSION_SUPPORTED(EXT_buffer_device_address));
+            m_features.set(static_cast<size_t>(DeviceFeature::DescriptorIndexing), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_descriptor_indexing));
+            m_features.set(static_cast<size_t>(DeviceFeature::BufferDeviceAddress), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_buffer_device_address));
         }
 
         RawStringList PhysicalDevice::FilterSupportedOptionalExtensions()
@@ -258,15 +299,22 @@ namespace AZ
                 VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME,
                 VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
                 VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME,
+                VK_KHR_SHADER_ATOMIC_INT64_EXTENSION_NAME,
+                VK_EXT_SHADER_IMAGE_ATOMIC_INT64_EXTENSION_NAME,
 
                 // ray tracing extensions
                 VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
                 VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+                VK_KHR_RAY_QUERY_EXTENSION_NAME,
                 VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
                 VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
                 VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
                 VK_KHR_SPIRV_1_4_EXTENSION_NAME,
-                VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME
+                VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
+
+                VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
+                VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME,
+                VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
             } };
 
             [[maybe_unused]] uint32_t optionalExtensionCount = aznumeric_cast<uint32_t>(optionalExtensions.size());
@@ -294,9 +342,9 @@ namespace AZ
             return filteredOptionalExtensions;
         }
 
-        void PhysicalDevice::CompileMemoryStatistics(RHI::MemoryStatisticsBuilder& builder) const
+        void PhysicalDevice::CompileMemoryStatistics(const GladVulkanContext& context, RHI::MemoryStatisticsBuilder& builder) const
         {
-            if (VK_DEVICE_EXTENSION_SUPPORTED(KHR_get_physical_device_properties2) && VK_DEVICE_EXTENSION_SUPPORTED(EXT_memory_budget))
+            if (VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_get_physical_device_properties2) && VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_memory_budget))
             {
                 VkPhysicalDeviceMemoryBudgetPropertiesEXT budget = {};
                 budget.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT;
@@ -304,7 +352,7 @@ namespace AZ
                 VkPhysicalDeviceMemoryProperties2 properties = {};
                 properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
                 properties.pNext = &budget;
-                vkGetPhysicalDeviceMemoryProperties2KHR(m_vkPhysicalDevice, &properties);
+                Instance::GetInstance().GetContext().GetPhysicalDeviceMemoryProperties2KHR(m_vkPhysicalDevice, &properties);
 
                 for (uint32_t i = 0; i < properties.memoryProperties.memoryHeapCount; ++i)
                 {
@@ -312,8 +360,8 @@ namespace AZ
                     heapStats->m_name = AZStd::string::format("Heap %d", static_cast<int>(i));
                     heapStats->m_heapMemoryType = RHI::CheckBitsAll(properties.memoryProperties.memoryHeaps[i].flags, static_cast<VkMemoryHeapFlags>(VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)) ? RHI::HeapMemoryLevel::Device : RHI::HeapMemoryLevel::Host;
                     heapStats->m_memoryUsage.m_budgetInBytes = budget.heapBudget[i];
-                    heapStats->m_memoryUsage.m_reservedInBytes = 0;
-                    heapStats->m_memoryUsage.m_residentInBytes = budget.heapUsage[i];
+                    heapStats->m_memoryUsage.m_totalResidentInBytes = budget.heapUsage[i];
+                    heapStats->m_memoryUsage.m_usedResidentInBytes = 0;
                 }
             }
         }
@@ -321,8 +369,9 @@ namespace AZ
         void PhysicalDevice::Init(VkPhysicalDevice vkPhysicalDevice)
         {
             m_vkPhysicalDevice = vkPhysicalDevice;
+            const auto& context = Instance::GetInstance().GetContext();
 
-            if (VK_INSTANCE_EXTENSION_SUPPORTED(KHR_get_physical_device_properties2))
+            if (VK_INSTANCE_EXTENSION_SUPPORTED(context, KHR_get_physical_device_properties2))
             {
                 // features
                 VkPhysicalDeviceDescriptorIndexingFeaturesEXT& descriptorIndexingFeatures = m_descriptorIndexingFeatures;
@@ -339,10 +388,25 @@ namespace AZ
                 dephClipEnableFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
                 bufferDeviceAddressFeatures.pNext = &dephClipEnableFeatures;
 
+                VkPhysicalDeviceShaderAtomicInt64Features& shaderAtomicInt64Features = m_shaderAtomicInt64Features;
+                shaderAtomicInt64Features = {};
+                shaderAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES;
+                dephClipEnableFeatures.pNext = &shaderAtomicInt64Features;
+
+                VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT& shaderImageAtomicInt64Features = m_shaderImageAtomicInt64Features;
+                shaderImageAtomicInt64Features = {};
+                shaderImageAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT;
+                shaderAtomicInt64Features.pNext = &shaderImageAtomicInt64Features;
+
+                VkPhysicalDeviceRayQueryFeaturesKHR& rayQueryFeatures = m_rayQueryFeatures;
+                rayQueryFeatures = {};
+                rayQueryFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
+                shaderImageAtomicInt64Features.pNext = &rayQueryFeatures;
+
                 VkPhysicalDeviceRobustness2FeaturesEXT& robustness2Feature = m_robutness2Features;
                 robustness2Feature = {};
                 robustness2Feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
-                dephClipEnableFeatures.pNext = &robustness2Feature;
+                rayQueryFeatures.pNext = &robustness2Feature;
 
                 VkPhysicalDeviceShaderFloat16Int8FeaturesKHR& float16Int8Features = m_float16Int8Features;
                 float16Int8Features = {};
@@ -369,11 +433,21 @@ namespace AZ
                 rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
                 accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
 
+                VkPhysicalDeviceFragmentShadingRateFeaturesKHR& shadingRateFeatures = m_shadingRateFeatures;
+                shadingRateFeatures = {};
+                shadingRateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
+                rayTracingPipelineFeatures.pNext = &shadingRateFeatures;
+
+                VkPhysicalDeviceFragmentDensityMapFeaturesEXT& densityMapFeatures = m_fragmentDensityMapFeatures;
+                densityMapFeatures = {};
+                densityMapFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
+                shadingRateFeatures.pNext = &densityMapFeatures;
+
                 VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
                 deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
                 deviceFeatures2.pNext = &descriptorIndexingFeatures;
 
-                vkGetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, &deviceFeatures2);
+                context.GetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, &deviceFeatures2);
                 m_deviceFeatures = deviceFeatures2.features;
 
                 // properties
@@ -388,13 +462,19 @@ namespace AZ
                 m_accelerationStructureProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR;
                 m_rayTracingPipelineProperties.pNext = &m_accelerationStructureProperties;
 
-                vkGetPhysicalDeviceProperties2KHR(vkPhysicalDevice, &deviceProps2);
+                m_fragmentDensityMapProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT;
+                m_accelerationStructureProperties.pNext = &m_fragmentDensityMapProperties;
+
+                m_fragmentShadingRateProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
+                m_fragmentDensityMapProperties.pNext = &m_fragmentShadingRateProperties;
+
+                context.GetPhysicalDeviceProperties2KHR(vkPhysicalDevice, &deviceProps2);
                 m_deviceProperties = deviceProps2.properties;
             }
             else
             {
-                vkGetPhysicalDeviceFeatures(vkPhysicalDevice, &m_deviceFeatures);
-                vkGetPhysicalDeviceProperties(vkPhysicalDevice, &m_deviceProperties);
+                context.GetPhysicalDeviceFeatures(vkPhysicalDevice, &m_deviceFeatures);
+                context.GetPhysicalDeviceProperties(vkPhysicalDevice, &m_deviceProperties);
             }
 
             m_descriptor.m_description = m_deviceProperties.deviceName;
@@ -422,7 +502,7 @@ namespace AZ
             m_descriptor.m_deviceId = m_deviceProperties.deviceID;
             m_descriptor.m_driverVersion = m_deviceProperties.driverVersion;
 
-            vkGetPhysicalDeviceMemoryProperties(vkPhysicalDevice, &m_memoryProperty);
+            context.GetPhysicalDeviceMemoryProperties(vkPhysicalDevice, &m_memoryProperty);
 
             AZStd::set<uint32_t> heapIndicesDevice;
             AZStd::set<uint32_t> heapIndicesHost;

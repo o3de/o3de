@@ -62,6 +62,10 @@ namespace O3DE::ProjectManager
         };
         static QString GetDownloadStatusString(DownloadStatus status);
 
+        static Platforms GetPlatformFromString(const QString& platformText);
+
+        static Platforms GetPlatformsFromStringList(const QStringList& platformStrings);
+
         GemInfo() = default;
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
         bool IsPlatformSupported(Platform platform) const;
@@ -70,11 +74,15 @@ namespace O3DE::ProjectManager
 
         bool operator<(const GemInfo& gemInfo) const;
 
+        QStringList GetPlatformsAsStringList() const;
+
         QString m_path;
         QString m_name = "Unknown Gem Name";
         QString m_displayName;
-        QString m_creator = "Unknown Creator";
+        QString m_origin = "Unknown Creator";
         GemOrigin m_gemOrigin = Local;
+        QString m_originURL;
+        QString m_iconPath;
         bool m_isAdded = false; //! Is the gem explicitly added (not a dependency) and enabled in the project?
         QString m_summary = "No summary provided.";
         Platforms m_platforms;

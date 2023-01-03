@@ -21,7 +21,7 @@ namespace Compression
 
         ~CompressionFactoryImpl();
 
-        AZStd::span<ICompressionInterface* const> GetCompressionInterfaces() const override;
+        void VisitCompressionInterfaces(const VisitCompressionInterfaceCallback&) const override;
         bool RegisterCompressionInterface(AZStd::unique_ptr<ICompressionInterface>&&) override;
         bool UnregisterCompressionInterface(CompressionAlgorithmId) override;
         ICompressionInterface* FindCompressionInterface(CompressionAlgorithmId) const override;
@@ -35,6 +35,6 @@ namespace Compression
         };
         //! Index into the Compression Interfaces vector
         AZStd::vector<CompressionIdIndexEntry> m_compressionIdIndexSet;
-        AZStd::vector<ICompressionInterface*> m_compressionInterfaces;
+        AZStd::vector<AZStd::unique_ptr<ICompressionInterface>> m_compressionInterfaces;
     };
 }// namespace Compression

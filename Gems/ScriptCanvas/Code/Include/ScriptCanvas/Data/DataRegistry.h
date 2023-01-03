@@ -9,9 +9,10 @@
 #pragma once
 
 #include <AzCore/Module/Environment.h>
-#include <ScriptCanvas/Data/Traits.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/RTTI/ReflectContext.h>
+
+#include <ScriptCanvas/Data/Traits.h>
 
 namespace ScriptCanvas
 {
@@ -50,5 +51,6 @@ namespace ScriptCanvas
     void InitDataRegistry();
     void ResetDataRegistry();
     extern AZ::EnvironmentVariable<DataRegistry> GetDataRegistry();
-    static const char* s_dataRegistryName = "ScriptCanvasDataRegistry";
+
+    static constexpr const char* s_dataRegistryName = "ScriptCanvasDataRegistry";
 }

@@ -404,6 +404,13 @@ namespace AZStd
         AZStd::Internal::shared_count pn;    // reference counter
     };  // shared_ptr
 
+    // AZStd::shared_ptr deduction guides
+    template <class T>
+    shared_ptr(AZStd::weak_ptr<T>) -> shared_ptr<T>;
+
+    template <class T, class D>
+    shared_ptr(AZStd::unique_ptr<T, D>) -> shared_ptr<T>;
+
     template<class T, class U>
     inline bool operator==(shared_ptr<T> const& a, shared_ptr<U> const& b) { return a.get() == b.get(); }
     template<class T, class U>

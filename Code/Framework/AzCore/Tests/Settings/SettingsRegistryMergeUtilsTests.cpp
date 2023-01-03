@@ -32,7 +32,7 @@ namespace SettingsRegistryMergeUtilsTests
     };
 
     class SettingsRegistryMergeUtilsParamFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<DumpSettingsRegistryParams>
     {
     public:
@@ -243,7 +243,7 @@ namespace SettingsRegistryMergeUtilsTests
         AZStd::fixed_vector<SettingsKeyValuePair, 20> m_expectedSettings;
     };
     class SettingsRegistryMergeUtilsConfigFileFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<ConfigFileParams>
     {
     public:
@@ -280,7 +280,7 @@ namespace SettingsRegistryMergeUtilsTests
             {
                 if (size_t commentOffset = line.find(commentPrefix); commentOffset != AZStd::string_view::npos)
                 {
-                    return line.substr(0, commentOffset);
+                    line = line.substr(0, commentOffset);
                 }
             }
             return line;
@@ -479,7 +479,7 @@ tags=tools,renderer,metal)"
     };
 
     class SettingsRegistryGemVisitFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<SettingsRegistryGemVisitParams>
     {
     public:
@@ -527,13 +527,13 @@ tags=tools,renderer,metal)"
     TEST_P(SettingsRegistryGemVisitFixture, SettingsRegistryMergeUtils_AllManifestGems_AreInSettingsRegistry)
     {
         AZStd::vector<AZ::IO::Path> manifestGemPaths;
-        auto GetManifestGemPaths = [&manifestGemPaths, this](AZStd::string_view pathKey,
-            AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+        auto GetManifestGemPaths = [&manifestGemPaths, this](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
             AZ::IO::Path gemPath;
-            EXPECT_TRUE(m_registry->Get(gemPath.Native(), FixedValueString(pathKey) + "/Path"));
+            EXPECT_TRUE(m_registry->Get(gemPath.Native(), FixedValueString(visitArgs.m_jsonKeyPath) + "/Path"));
             manifestGemPaths.push_back(gemPath.LexicallyRelative(m_testFolder.GetDirectory()));
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         };
 
         EXPECT_TRUE(AZ::SettingsRegistryVisitorUtils::VisitObject(*m_registry,
@@ -557,6 +557,37 @@ tags=tools,renderer,metal)"
             gemVisitParams.m_expectedActiveGemPaths.begin(), gemVisitParams.m_expectedActiveGemPaths.end()));
     }
 
+    TEST_P(SettingsRegistryGemVisitFixture, Validate_SettingsRegistryUtilsQueries_WorksWithLocalRegistry)
+    {
+        const AZ::IO::FixedMaxPath tempRootFolder(m_testFolder.GetDirectory());
+        AZ::IO::FixedMaxPath testPath = AZ::Utils::GetO3deManifestDirectory(m_registry.get());
+        EXPECT_EQ((tempRootFolder / "o3de"), testPath);
+
+        testPath = AZ::Utils::GetEnginePath(m_registry.get());
+        EXPECT_EQ((tempRootFolder / "engine"), testPath);
+
+        testPath = AZ::Utils::GetProjectPath(m_registry.get());
+        EXPECT_EQ((tempRootFolder / "project"), testPath);
+
+        testPath = AZ::Utils::GetGemPath("outerGem1", m_registry.get());
+        EXPECT_EQ((tempRootFolder / "o3de/outerGem1"), testPath);
+
+        testPath = AZ::Utils::GetGemPath("outerGem2", m_registry.get());
+        EXPECT_EQ((tempRootFolder / "o3de/outerGem2"), testPath);
+
+        testPath = AZ::Utils::GetGemPath("innerGem1", m_registry.get());
+        EXPECT_EQ((tempRootFolder / "o3de/outerGem2/innerGem1"), testPath);
+
+        testPath = AZ::Utils::GetGemPath("engineGem1", m_registry.get());
+        EXPECT_EQ((tempRootFolder / "engine/engineGem1"), testPath);
+
+        testPath = AZ::Utils::GetGemPath("projectGem1", m_registry.get());
+        EXPECT_EQ((tempRootFolder / "project/projectGem1"), testPath);
+
+        testPath = AZ::Utils::GetGemPath("outsideGem1", m_registry.get());
+        EXPECT_EQ((tempRootFolder / "outsideGem1"), testPath);
+    }
+
     static auto MakeGemVisitTestingValues()
     {
         return AZStd::array{
@@ -577,7 +608,8 @@ tags=tools,renderer,metal)"
                 R"({
                     "project_name": "TestProject",
                     "external_subdirectories": [
-                        "projectGem1"
+                        "projectGem1",
+                        "../outsideGem1"
                     ]
                    })",
                 {
@@ -609,6 +641,11 @@ tags=tools,renderer,metal)"
                         "gem_name": "projectGem1",
                        })"
                     ),
+                    AZStd::make_tuple("outsideGem1",
+                    R"({
+                        "gem_name": "outsideGem1",
+                       })"
+                    ),
                 },
                 R"({
                     "O3DE": {
@@ -631,7 +668,8 @@ tags=tools,renderer,metal)"
                     "o3de/outerGem2",
                     "o3de/outerGem2/innerGem1",
                     "engine/engineGem1",
-                    "project/projectGem1"
+                    "project/projectGem1",
+                    "outsideGem1"
                 }
             } };
     }
@@ -642,7 +680,7 @@ tags=tools,renderer,metal)"
         ::testing::ValuesIn(MakeGemVisitTestingValues()));
 
     class SettingsRegistryMergeUtilsCommandLineFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override

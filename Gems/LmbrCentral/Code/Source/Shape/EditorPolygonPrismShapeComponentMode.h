@@ -42,6 +42,8 @@ namespace LmbrCentral
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
         bool HandleMouseInteraction(
             const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
+        AZStd::string GetComponentModeName() const override;
+        AZ::Uuid GetComponentModeType() const override;
 
         // Manipulator handling
         void CreateManipulators();

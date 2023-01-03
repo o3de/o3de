@@ -100,7 +100,7 @@ namespace UnitTest
     };
 
     class SliceUpgradeTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -574,7 +574,7 @@ namespace UnitTest
         AZ::Entity* entity = aznew AZ::Entity();
         entity->CreateComponent<TestComponentD_V1>();
         // Supply a specific Asset Guid to help with debugging
-        AZ::Data::AssetId sliceAssetId = SaveAsSlice(entity, "{10000000-0000-0000-0000-000000000000}", "datapatch_base.slice");
+        AZ::Data::AssetId sliceAssetId = SaveAsSlice(entity, AZ::Uuid{ "{10000000-0000-0000-0000-000000000000}" }, "datapatch_base.slice");
         entity = nullptr;
 
         AZ::Entity* instantiatedSliceEntity = InstantiateSlice(sliceAssetId);
@@ -588,7 +588,7 @@ namespace UnitTest
         testComponent->m_firstData = Value1_Override;
         testComponent->m_secondData = Value2_Override;
         testComponent->m_asset = AssetPath_Override;
-        AZ::Data::AssetId nestedSliceAssetId = SaveAsSlice(instantiatedSliceEntity,"{20000000-0000-0000-0000-000000000000}", "datapatch_nested.slice");
+        AZ::Data::AssetId nestedSliceAssetId = SaveAsSlice(instantiatedSliceEntity, AZ::Uuid{ "{20000000-0000-0000-0000-000000000000}" }, "datapatch_nested.slice");
         m_rootSliceComponent->RemoveEntity(instantiatedSliceEntity, true, true);
         instantiatedSliceEntity = nullptr;
 

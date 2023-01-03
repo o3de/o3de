@@ -21,8 +21,11 @@
 
 using namespace AWSCore;
 
+#ifdef AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
 static constexpr const int ExpectedActionNumOnWindowsPlatform = 9;
+#else
 static constexpr const int ExpectedActionNumOnOtherPlatform = 7;
+#endif
 
 class AWSCoreEditorMenuTest
     : public AWSCoreFixture

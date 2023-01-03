@@ -22,6 +22,12 @@ class Tests:
     cubemap_property_set = (
         "Cubemap property set on HDRi Skybox component",
         "Couldn't set Cubemap property on HDRi Skybox component")
+    exposure_set_to_negative_five = (
+        "Exposure set to -5.0",
+        "Exposure could not be set to -5.0")
+    exposure_set_to_default = (
+        "Exposure set to 0",
+        "Exposure could not be set to 0")
     enter_game_mode = (
         "Entered game mode",
         "Failed to enter game mode")
@@ -63,13 +69,16 @@ def AtomEditorComponents_HDRiSkybox_AddedToEntity():
     2) Add an HDRi Skybox component to HDRi Skybox.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
-    5) Enter/Exit game mode.
-    6) Test IsHidden.
-    7) Test IsVisible.
-    8) Delete HDRi Skybox.
-    9) UNDO deletion.
-    10) REDO deletion.
-    11) Look for errors.
+    5) Set Cubemap Texture on HDRi Skybox component.
+    6) Set Exposure value to -5.0.
+    7) Set Exposure value back to default, 0.0.
+    8) Enter/Exit game mode.
+    9) Test IsHidden.
+    10) Test IsVisible.
+    11) Delete HDRi Skybox.
+    12) UNDO deletion.
+    13) REDO deletion.
+    14) Look for errors.
 
     :return: None
     """
@@ -136,36 +145,53 @@ def AtomEditorComponents_HDRiSkybox_AddedToEntity():
             AtomComponentProperties.hdri_skybox('Cubemap Texture'))
         Report.result(Tests.cubemap_property_set, get_cubemap_property == skybox_cubemap_material_asset.id)
 
+        # 6. Set Exposure value to -5.0.
+        hdri_skybox_component.set_component_property_value(
+            AtomComponentProperties.hdri_skybox('Exposure'), -5.0)
+        general.idle_wait_frames(1)
+        Report.result(
+            Tests.exposure_set_to_negative_five,
+            hdri_skybox_component.get_component_property_value(
+                AtomComponentProperties.hdri_skybox('Exposure')) == -5.0)
 
-        # 6. Enter/Exit game mode.
+        # 7. Set Exposure value back to default, 0.0.
+        hdri_skybox_component.set_component_property_value(
+            AtomComponentProperties.hdri_skybox('Exposure'), 0.0)
+        general.idle_wait_frames(1)
+        Report.result(
+            Tests.exposure_set_to_default,
+            hdri_skybox_component.get_component_property_value(
+                AtomComponentProperties.hdri_skybox('Exposure')) == 0.0)
+
+        # 8. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 7. Test IsHidden.
+        # 9. Test IsHidden.
         hdri_skybox_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, hdri_skybox_entity.is_hidden() is True)
 
-        # 8. Test IsVisible.
+        # 10. Test IsVisible.
         hdri_skybox_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, hdri_skybox_entity.is_visible() is True)
 
-        # 9. Delete hdri_skybox entity.
+        # 11. Delete hdri_skybox entity.
         hdri_skybox_entity.delete()
         Report.result(Tests.entity_deleted, not hdri_skybox_entity.exists())
 
-        # 10. UNDO deletion.
+        # 12. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, hdri_skybox_entity.exists())
 
-        # 11. REDO deletion.
+        # 13. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not hdri_skybox_entity.exists())
 
-        # 12. Look for errors or asserts.
+        # 14. Look for errors or asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

@@ -8,6 +8,20 @@
 
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
+# The MultiplayerStats.API target declares the common interface for tracking and recording multiplayer stats for profiling purposes.
+ly_add_target(
+    NAME MultiplayerStats.API INTERFACE
+    NAMESPACE Gem
+    FILES_CMAKE
+        multiplayerstats_api_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            Include
+    BUILD_DEPENDENCIES
+        INTERFACE
+           AZ::AzCore
+)
+
 ly_add_target(
     NAME Multiplayer.Static STATIC
     NAMESPACE Gem
@@ -123,6 +137,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
+                Legacy::EditorLib
                 Legacy::CryCommon
                 Legacy::Editor.Headers
                 AZ::AzCore
@@ -134,7 +149,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Multiplayer.Static
                 Gem::Multiplayer.Tools.Static
     )
-    
+
     ly_create_alias(NAME Multiplayer.Builders  NAMESPACE Gem TARGETS Gem::Multiplayer.Editor)
     # use the Multiplayer.Editor module in tools like the Editor:  Such tools also get the visual debug view:
     ly_create_alias(NAME Multiplayer.Tools     NAMESPACE Gem TARGETS Gem::Multiplayer.Debug Gem::Multiplayer.Builders)
@@ -158,6 +173,7 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 Gem::Multiplayer.Static
+                Gem::PhysX.Static
         AUTOGEN_RULES
             *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
             *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
@@ -171,7 +187,7 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAME Gem::Multiplayer.Benchmarks
         TARGET Gem::Multiplayer.Tests
     )
-    
+
     if (PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
             NAME Multiplayer.Builders.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}

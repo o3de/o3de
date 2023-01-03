@@ -32,7 +32,6 @@ namespace AZ::Data
                 "end up in a perpetual loading state if there is no top-level container signalling the completion of the full load.");
         }
 
-        AssetBus::MultiHandler::BusDisconnect();
         AssetLoadBus::MultiHandler::BusDisconnect();
     }
 
@@ -108,6 +107,10 @@ namespace AZ::Data
         else if (loadParams.m_dependencyRules == AssetDependencyLoadRules::LoadAll)
         {
             AssetCatalogRequestBus::BroadcastResult(getDependenciesResult, &AssetCatalogRequestBus::Events::GetAllProductDependencies, rootAssetId);
+            for (const auto& thisAsset : getDependenciesResult.GetValue())
+            {
+                preloadDependencies[rootAssetId].insert(thisAsset.m_assetId);
+            }
         }
         // Do as much validation of dependencies as we can before the AddWaitingAssets and GetAsset calls for dependencies below
         if (getDependenciesResult.IsSuccess())
@@ -375,6 +378,12 @@ namespace AZ::Data
         HandleReadyAsset(asset);
     }
 
+    void AssetContainer::OnAssetReloadError(Asset<AssetData> asset)
+    {
+        AZ_Warning("AssetContainer", false, "Error loading asset %s", asset->GetId().ToString<AZStd::string>().c_str());
+        HandleReadyAsset(asset);
+    }
+
     void AssetContainer::HandleReadyAsset(Asset<AssetData> asset)
     {
         // Wait until we've finished initialization before allowing this
@@ -452,7 +461,7 @@ namespace AZ::Data
         m_waitingCount = 0;
         for (auto& thisAsset : m_waitingAssets)
         {
-            AssetBus::MultiHandler::BusDisconnect(thisAsset);
+            AssetLoadBus::MultiHandler::BusDisconnect(thisAsset);
         }
         m_waitingAssets.clear();
     }
@@ -497,7 +506,6 @@ namespace AZ::Data
             if (m_waitingAssets.insert(thisAsset).second)
             {
                 ++m_waitingCount;
-                AssetBus::MultiHandler::BusConnect(thisAsset);
                 AssetLoadBus::MultiHandler::BusConnect(thisAsset);
             }
         }
@@ -509,7 +517,6 @@ namespace AZ::Data
         if (m_waitingAssets.insert(thisAsset).second)
         {
             ++m_waitingCount;
-            AssetBus::MultiHandler::BusConnect(thisAsset);
             AssetLoadBus::MultiHandler::BusConnect(thisAsset);
         }
     }
@@ -537,7 +544,6 @@ namespace AZ::Data
 
             if(disconnectEbus)
             {
-                AssetBus::MultiHandler::BusDisconnect(thisAsset);
                 AssetLoadBus::MultiHandler::BusDisconnect(thisAsset);
             }
         }

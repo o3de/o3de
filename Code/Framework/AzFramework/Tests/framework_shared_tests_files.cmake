@@ -11,8 +11,9 @@ set(FILES
     DocumentPropertyEditor/DocumentPropertyEditorFixture.cpp
     Mocks/MockSpawnableEntitiesInterface.h
     Mocks/MockWindowRequests.h
+    Mocks/MockViewportRequests.h
     Utils/Utils.h
-    Utils/Utils.cpp
+
     Utils/Printers.h
     Utils/Printers.cpp
     FrameworkApplicationFixture.h

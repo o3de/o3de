@@ -5,18 +5,28 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import os
+import pyside_utils
+from editor_python_test_tools.utils import Report, Tracer
+from editor_python_test_tools.utils import TestHelper as helper
+import editor_python_test_tools.hydra_editor_utils as hydra
+import azlmbr.paths as paths
+import azlmbr.legacy.general as general
+import scripting_utils.scripting_tools as scripting_tools
+from scripting_utils.scripting_constants import (WAIT_TIME_3, BASE_LEVEL_NAME)
 
 # fmt: off
 class Tests():
-    level_created   = ("Successfully created temporary level", "Failed to create temporary level")
     entity_created  = ("Successfully created test entity",     "Failed to create test entity")
     enter_game_mode = ("Successfully entered game mode",       "Failed to enter game mode")
     lines_found     = ("Successfully found expected message",  "Failed to find expected message")
     exit_game_mode  = ("Successfully exited game mode",        "Failed to exit game mode")
 # fmt: on
 
+EXPECTED_LINES = ["T92567320: Message Received"]
+SC_ASSET_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "T92567320.scriptcanvas")
 
-def ScriptEvents_Default_SendReceiveSuccessfully():
+class ScriptEvents_Default_SendReceiveSuccessfully:
     """
     Summary:
      An entity exists in the level that contains a Script Canvas component. In the graph is both a Send Event
@@ -28,10 +38,9 @@ def ScriptEvents_Default_SendReceiveSuccessfully():
     Test Steps:
      1) Create test level
      2) Create test entity
-     3) Start Tracer
-     4) Enter Game Mode
-     5) Read for line
-     6) Exit Game Mode
+     3) Enter Game Mode
+     4) Read for line
+     5) Exit Game Mode
 
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
@@ -40,62 +49,39 @@ def ScriptEvents_Default_SendReceiveSuccessfully():
 
     :return: None
     """
-    import os
-    from editor_entity_utils import EditorEntity as Entity
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
 
-    import azlmbr.legacy.general as general
-    import azlmbr.asset as asset
-    import azlmbr.math as math
-    import azlmbr.bus as bus
+    def __init__(self):
+        editor_window = None
 
-    LEVEL_NAME = "tmp_level"
-    WAIT_TIME = 3.0  # SECONDS
-    EXPECTED_LINES = ["T92567320: Message Received"]
-    SC_ASSET_PATH = os.path.join("ScriptCanvas", "T92567320.scriptcanvas")
+    @pyside_utils.wrap_async
+    async def run_test(self):
 
-    def create_editor_entity(name, sc_asset):
-        entity = Entity.create_editor_entity(name)
-        sc_comp = entity.add_component("Script Canvas")
-        asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", sc_asset, math.Uuid(), False)
-        sc_comp.set_component_property_value("Script Canvas Asset|Script Canvas Asset", asset_id)
+        # Preconditions
+        general.idle_enable(True)
+
+        # 1) Create temp level
+        hydra.open_base_level()
+        helper.wait_for_condition(lambda: general.get_current_level_name() == BASE_LEVEL_NAME, WAIT_TIME_3)
+        general.close_pane("Error Report")
+
+        # 2) Create test entity
+        entity = scripting_tools.create_entity_with_sc_component_asset("TestEntity", SC_ASSET_PATH)
+        helper.wait_for_condition(lambda: entity is not None, WAIT_TIME_3)
         Report.critical_result(Tests.entity_created, entity.id.isValid())
 
-    def locate_expected_lines(line_list: list):
-        found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
+        with Tracer() as section_tracer:
 
-        return all(line in found_lines for line in line_list)
+            # 3) Enter Game Mode
+            helper.enter_game_mode(Tests.enter_game_mode)
 
-    # 1) Create temp level
-    general.idle_enable(True)
-    result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
-    Report.critical_result(Tests.level_created, result == 0)
-    helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
-    general.close_pane("Error Report")
+            # 4) Read for line
+            lines_located = helper.wait_for_condition(
+                lambda: scripting_tools.located_expected_tracer_lines(self, section_tracer, EXPECTED_LINES), WAIT_TIME_3)
+            Report.result(Tests.lines_found, lines_located)
 
-    # 2) Create test entity
-    create_editor_entity("TestEntity", SC_ASSET_PATH)
-
-    # 3) Start Tracer
-    with Tracer() as section_tracer:
-
-        # 4) Enter Game Mode
-        helper.enter_game_mode(Tests.enter_game_mode)
-
-        # 5) Read for line
-        lines_located = helper.wait_for_condition(lambda: locate_expected_lines(EXPECTED_LINES), WAIT_TIME)
-        Report.result(Tests.lines_found, lines_located)
-
-    # 6) Exit Game Mode
-    helper.exit_game_mode(Tests.exit_game_mode)
+        # 5) Exit Game Mode
+        helper.exit_game_mode(Tests.exit_game_mode)
 
 
-if __name__ == "__main__":
-    import ImportPathHelper as imports
-
-    imports.init()
-    from utils import Report
-
-    Report.start_test(ScriptEvents_Default_SendReceiveSuccessfully)
+test = ScriptEvents_Default_SendReceiveSuccessfully()
+test.run_test()

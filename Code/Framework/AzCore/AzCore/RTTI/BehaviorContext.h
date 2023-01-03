@@ -152,6 +152,9 @@ namespace AZ
      *
      * For reflecting type information of C+++ parameters use \ref BehaviorParameter.
      */
+    struct BehaviorArgumentValueTypeTag_t {};
+    constexpr BehaviorArgumentValueTypeTag_t BehaviorArgumentValueTypeTag;
+
     struct BehaviorArgument : public BehaviorParameter
     {
         BehaviorArgument();
@@ -162,10 +165,12 @@ namespace AZ
 
         /// Special handling for the generic object holder.
         BehaviorArgument(BehaviorObject* value);
+        BehaviorArgument(BehaviorArgumentValueTypeTag_t, BehaviorObject* value);
 
         template<class T>
         void Set(T* value);
         void Set(BehaviorObject* value);
+        void Set(BehaviorArgumentValueTypeTag_t, BehaviorObject* value);
         void Set(const BehaviorParameter& param);
         void Set(const BehaviorArgument& param);
 
@@ -312,6 +317,7 @@ namespace AZ
         : public OnDemandReflectionOwner
     {
     public:
+        using ResultOutcome = AZ::Outcome<void, AZStd::string>;
         BehaviorMethod(BehaviorContext* context);
         ~BehaviorMethod() override;
 
@@ -326,7 +332,13 @@ namespace AZ
         void SetDeprecatedName(const AZStd::string& name) { m_deprecatedName = name; }
         const AZStd::string& GetDeprecatedName() const { return m_deprecatedName; }
 
-        virtual bool Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result = nullptr) const = 0;
+        virtual bool Call(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result = nullptr) const = 0;
+        bool Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result = nullptr) const;
+
+        //! Returns success if the method is callable with the supplied arguments otherwise an error message
+        //! is returned with the reason the method is not callable
+        virtual ResultOutcome IsCallable(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result = nullptr) const = 0;
+
         virtual bool HasResult() const = 0;
         /// Returns true if the method is a class member method. If true the first argument should always be the "this"/ClassType pointer.
         virtual bool IsMember() const = 0;
@@ -498,7 +510,7 @@ namespace AZ
 
     namespace Internal
     {
-        const AZ::TypeId& GetUnderlyingTypeId(const IRttiHelper& enumRttiHelper);
+        AZ::TypeId GetUnderlyingTypeId(const IRttiHelper& enumRttiHelper);
 
         // Converts sourceAddress to targetType
         inline bool ConvertValueTo(void* sourceAddress, const IRttiHelper* sourceRtti, const AZ::Uuid& targetType, void*& targetAddress, BehaviorParameter::TempValueParameterAllocator& tempAllocator)
@@ -559,7 +571,7 @@ namespace AZ
         {
         public:
             using FunctionPointer = R(*)(Args...);
-            typedef void ClassType;
+            using ClassType = void;
 
             AZ_CLASS_ALLOCATOR(BehaviorMethodImpl, AZ::SystemAllocator, 0);
 
@@ -568,7 +580,9 @@ namespace AZ
 
             BehaviorMethodImpl(FunctionPointer functionPointer, BehaviorContext* context, const AZStd::string& name = AZStd::string());
 
-            bool Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const override;
+            bool Call(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const override;
+            // The implementation should return true if the method can be called with the specified BehaviorArgument list
+            ResultOutcome IsCallable(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const override;
 
             bool HasResult() const override;
             bool IsMember() const override;
@@ -592,8 +606,8 @@ namespace AZ
 
             FunctionPointer m_functionPtr;
 
-            BehaviorParameter m_parameters[sizeof...(Args)+s_startNamedArgumentIndex];
-            AZStd::array<BehaviorParameterMetadata, sizeof...(Args)+s_startNamedArgumentIndex> m_metadataParameters; ///< Stores the per parameter metadata which is used to add names, tooltips, trait, default values, etc... to the parameters
+            BehaviorParameter m_parameters[sizeof...(Args) + s_startNamedArgumentIndex];
+            AZStd::array<BehaviorParameterMetadata, sizeof...(Args) + s_startNamedArgumentIndex> m_metadataParameters; ///< Stores the per parameter metadata which is used to add names, tooltips, trait, default values, etc... to the parameters
         };
 
 #if __cpp_noexcept_function_type
@@ -626,7 +640,8 @@ namespace AZ
             BehaviorMethodImpl(FunctionPointer functionPointer, BehaviorContext* context, const AZStd::string& name = AZStd::string());
             BehaviorMethodImpl(FunctionPointerConst functionPointer, BehaviorContext* context, const AZStd::string& name = AZStd::string());
 
-            bool Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const override;
+            bool Call(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const override;
+            ResultOutcome IsCallable(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const;
 
             bool HasResult() const override;
             bool IsMember() const override;
@@ -648,11 +663,11 @@ namespace AZ
             void OverrideParameterTraits(size_t index, AZ::u32 addTraits, AZ::u32 removeTraits) override;
 
             FunctionPointer m_functionPtr;
-            BehaviorParameter m_parameters[sizeof...(Args)+s_startNamedArgumentIndex];
-            AZStd::array<BehaviorParameterMetadata, sizeof...(Args)+s_startNamedArgumentIndex> m_metadataParameters; ///< Stores the per parameter metadata which is used to add names, tooltips, trait, default values, etc... to the parameters
+            BehaviorParameter m_parameters[sizeof...(Args) + s_startNamedArgumentIndex];
+            AZStd::array<BehaviorParameterMetadata, sizeof...(Args) + s_startNamedArgumentIndex> m_metadataParameters; ///< Stores the per parameter metadata which is used to add names, tooltips, trait, default values, etc... to the parameters
         };
 
- #if __cpp_noexcept_function_type
+#if __cpp_noexcept_function_type
         // C++17 makes exception specifications as part of the type in paper P0012R1
         // Therefore noexcept overloads must be distinguished from non-noexcept overloads
         template<class R, class C, class... Args>
@@ -779,7 +794,8 @@ namespace AZ
 
             BehaviorEBusEvent(FunctionPointer functionPointer, BehaviorContext* context);
 
-            bool Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const override;
+            bool Call(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const override;
+            ResultOutcome IsCallable(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result = nullptr) const;
             bool HasResult() const override;
             bool IsMember() const override;
             bool HasBusId() const override;
@@ -804,7 +820,7 @@ namespace AZ
             BehaviorParameter m_parameters[sizeof...(Args) + s_startNamedArgumentIndex];
             AZStd::array<BehaviorParameterMetadata, sizeof...(Args) + s_startNamedArgumentIndex>
                 m_metadataParameters; ///< Stores the per parameter metadata which is used to add names, tooltips, trait, default values,
-                                      ///< etc... to the parameters
+            ///< etc... to the parameters
         };
 
 #if __cpp_noexcept_function_type
@@ -843,7 +859,8 @@ namespace AZ
             template<bool IsBusId>
             inline AZStd::enable_if_t<!IsBusId> SetBusIdType();
 
-            bool Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const override;
+            bool Call(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const override;
+            ResultOutcome IsCallable(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result = nullptr) const;
             bool HasResult() const override;
             bool IsMember() const override;
             bool HasBusId() const override;
@@ -1129,15 +1146,46 @@ namespace AZ
         /// Compare values
         using EqualityComparisonType = bool(*)(const void* lhs, const void* rhs, void* userData);
 
+        struct ScopedBehaviorObject
+        {
+            using CleanupFunction = AZStd::function<void(const AZ::BehaviorObject&)>;
+            ScopedBehaviorObject();
+            // Accepting an rvalue BehaviorObject to imply "ownership" over it
+            // Does not actually use any move semantics
+            ScopedBehaviorObject(AZ::BehaviorObject&& behaviorObject, CleanupFunction cleanupFunction);
+
+            // Prevents copy constructor and copy assignment from being instantiated
+            // which would cause the cleanupFunction to run twice.
+            ScopedBehaviorObject(ScopedBehaviorObject&&) = default;
+            ScopedBehaviorObject& operator=(ScopedBehaviorObject&&);
+            ~ScopedBehaviorObject();
+
+            bool IsValid() const;
+
+            BehaviorObject m_behaviorObject;
+        private:
+            CleanupFunction m_cleanupFunction;
+        };
+
         // Create the object with default constructor if possible otherwise returns an invalid object
         BehaviorObject Create() const;
 
         // Create the object with default constructor in the provided memory if possible otherwise returns an invalid object
         BehaviorObject Create(void* address) const;
 
-        // TODO: Should we do that or just ask users to Allocate and invoke the constructor manually ?
-        //template<class... Args>
-        //BehaviorObject Create();
+        // Create a scoped behavior object using the  default constructor
+        // The scoped object will automatically destruct AND deallocate the created object
+        ScopedBehaviorObject CreateWithScope() const;
+        // Create a scoped behavior object using default constructor in the provided memory if possible.
+        // The scoped object will automatically destruct the created object
+        // This function does not deallocate since the memory was provided by the user
+        ScopedBehaviorObject CreateWithScope(void* address) const;
+
+        // Create the object using the first registered constructor which can accept all the arguments in the provided memory address
+        // The scoped object will automatically destruct AND deallocate the created object
+        ScopedBehaviorObject CreateWithScope(AZStd::span<BehaviorArgument> arguments) const;
+        // Create the object using the first registered constructor which can accept all the arguments in the provided memory address
+        ScopedBehaviorObject CreateWithScope(void* address, AZStd::span<BehaviorArgument> arguments) const;
 
         BehaviorObject Clone(const BehaviorObject& object) const;
         BehaviorObject Move(BehaviorObject&& object) const;
@@ -1164,11 +1212,14 @@ namespace AZ
 
         const BehaviorMethod* FindMethodByReflectedName(const AZStd::string& reflectedName) const;
         bool IsMethodOverloaded(const AZStd::string& string) const;
-        bool IsMethodOverloaded(BehaviorMethod* method) const;
         AZStd::vector<BehaviorMethod*> GetOverloads(const AZStd::string& string) const;
         AZStd::vector<BehaviorMethod*> GetOverloadsIncludeMethod(BehaviorMethod* method) const;
         AZStd::vector<BehaviorMethod*> GetOverloadsExcludeMethod(BehaviorMethod* method) const;
         void PostProcessMethod(BehaviorContext* context, BehaviorMethod& method);
+
+        const BehaviorProperty* FindPropertyByReflectedName(AZStd::string_view reflectedName) const;
+        const BehaviorMethod* FindGetterByReflectedName(AZStd::string_view reflectedName) const;
+        const BehaviorMethod* FindSetterByReflectedName(AZStd::string_view reflectedName) const;
 
         void* m_userData;
         AZStd::string m_name;
@@ -1230,7 +1281,7 @@ namespace AZ
         template<class Getter, class Setter>
         bool Set(Getter getter, Setter setter, BehaviorClass* currentClass, BehaviorContext* context);
 
-        const AZ::Uuid& GetTypeId() const;
+        AZ::TypeId GetTypeId() const;
 
         AZStd::string m_name;
         BehaviorMethod* m_getter;
@@ -1381,7 +1432,14 @@ namespace AZ
 
         virtual bool Connect(BehaviorArgument* id = nullptr) = 0;
 
-        virtual void Disconnect() = 0;
+        virtual void Disconnect(BehaviorArgument* id = nullptr) = 0;
+
+        template<class BusId>
+        void Disconnect(BusId id)
+        {
+            BehaviorArgument p(&id);
+            Disconnect(&p);
+        }
 
         virtual bool IsConnected() = 0;
         virtual bool IsConnectedId(BehaviorArgument* id) = 0;
@@ -1531,7 +1589,7 @@ namespace AZ
             static void* Allocate(void* userData)
             {
                 (void)userData;
-                return azmalloc(sizeof(T), AZStd::alignment_of<T>::value, AZ::SystemAllocator, AZ::AzTypeInfo<T>::Name());
+                return azmalloc(sizeof(T), AZStd::alignment_of<T>::value, AZ::SystemAllocator);
             }
 
             static void DeAllocate(void* address, void* userData)
@@ -1771,7 +1829,7 @@ namespace AZ
             ClassBuilder* Property(const char* name, Getter getter, Setter setter);
 
             /// All enums are treated as the enum type
-            template<auto Value, typename T = decltype(Value)>
+            template<auto Value>
             ClassBuilder* Enum(const char* name);
 
             template<class Getter>
@@ -1871,7 +1929,7 @@ namespace AZ
         GlobalPropertyBuilder Property(const char* name, Getter getter, Setter setter);
 
         /// All enums are treated as the enum type
-        template<auto Value, typename T = decltype(Value)>
+        template<auto Value>
         BehaviorContext* Enum(const char* name);
 
         template<auto Value, typename T = decltype(Value)>
@@ -1921,12 +1979,21 @@ namespace AZ
             return uuid == GetVoidTypeId();
         }
 
+        const BehaviorMethod* FindMethodByReflectedName(AZStd::string_view reflectedName) const;
+        const BehaviorProperty* FindPropertyByReflectedName(AZStd::string_view reflectedName) const;
+        const BehaviorMethod* FindGetterByReflectedName(AZStd::string_view reflectedName) const;
+        const BehaviorMethod* FindSetterByReflectedName(AZStd::string_view reflectedName) const;
+        const BehaviorClass* FindClassByReflectedName(AZStd::string_view reflectedName) const;
+        const BehaviorClass* FindClassByTypeId(const AZ::TypeId& typeId) const;
+        const BehaviorEBus* FindEBusByReflectedName(AZStd::string_view reflectedName) const;
 
-        AZStd::unordered_map<AZStd::string, BehaviorMethod*> m_methods; // TODO: make it a set and use the name inside method
-        AZStd::unordered_map<AZStd::string, BehaviorProperty*> m_properties; // TODO: make it a set and use the name inside property
-        AZStd::unordered_map<AZStd::string, BehaviorClass*> m_classes; // TODO: make it a set and use the name inside class
-        AZStd::unordered_map<AZ::Uuid, BehaviorClass*> m_typeToClassMap; // TODO: make it a set and use the UUID inside the class
-        AZStd::unordered_map<AZStd::string, BehaviorEBus*> m_ebuses; // TODO: make it a set and use the name inside EBus
+        //! Prefer to access BehaviorContext methods, properties, classes and EBuses through the Find* functions
+        //! instead of direct member access
+        AZStd::unordered_map<AZStd::string, BehaviorMethod*> m_methods;
+        AZStd::unordered_map<AZStd::string, BehaviorProperty*> m_properties;
+        AZStd::unordered_map<AZStd::string, BehaviorClass*> m_classes;
+        AZStd::unordered_map<AZ::Uuid, BehaviorClass*> m_typeToClassMap;
+        AZStd::unordered_map<AZStd::string, BehaviorEBus*> m_ebuses;
 
         AZStd::unordered_set<ExplicitOverloadInfo> m_explicitOverloads;
         AZStd::unordered_map< const BehaviorMethod*, AZStd::pair<const BehaviorMethod*, const BehaviorClass*>> m_checksByOperations;
@@ -1991,8 +2058,8 @@ namespace AZ
         AZ_SEQ_FOR_EACH(AZ_BEHAVIOR_EBUS_FUNC_INDEX, AZ_EBUS_SEQ(__VA_ARGS__))\
         return -1;\
     }\
-    void Disconnect() override {\
-        _Handler::BusDisconnect();\
+    void Disconnect(AZ::BehaviorArgument* id = nullptr) override {\
+        AZ::Internal::EBusConnector<_Handler>::Disconnect(this, id);\
     }\
     _Handler(){\
         m_events.resize(FN_MAX);\
@@ -2021,8 +2088,8 @@ namespace AZ
         AZ_SEQ_FOR_EACH(AZ_BEHAVIOR_EBUS_FUNC_INDEX, AZ_EBUS_SEQ(__VA_ARGS__))\
         return -1;\
     }\
-    void Disconnect() override {\
-        _Handler::BusDisconnect();\
+    void Disconnect(AZ::BehaviorArgument* id = nullptr) override {\
+        AZ::Internal::EBusConnector<_Handler>::Disconnect(this, id);\
     }\
     _Handler(){\
         m_events.resize(FN_MAX);\
@@ -2087,8 +2154,8 @@ namespace AZ
         AZ_BEHAVIOR_EBUS_MACRO_CALLER(AZ_BEHAVIOR_EBUS_FUNC_INDEX, __VA_ARGS__)\
         return -1;\
     }\
-    void Disconnect() override {\
-        BusDisconnect();\
+    void Disconnect(AZ::BehaviorArgument* id = nullptr) override {\
+        AZ::Internal::EBusConnector<_Handler>::Disconnect(this, id);\
     }\
     _Handler(){\
         m_events.resize(FN_MAX);\
@@ -2363,6 +2430,11 @@ namespace AZ
         Set(value);
     }
 
+    inline BehaviorArgument::BehaviorArgument(BehaviorArgumentValueTypeTag_t, BehaviorObject* value)
+    {
+        Set(BehaviorArgumentValueTypeTag, value);
+    }
+
     //////////////////////////////////////////////////////////////////////////
     template<typename T, typename>
     inline void BehaviorArgument::StoreInTempData(T&& value)
@@ -2392,6 +2464,15 @@ namespace AZ
         m_value = &value->m_address;
         m_typeId = value->m_typeId;
         m_traits = BehaviorParameter::TR_POINTER;
+        m_name = value->m_rttiHelper ? value->m_rttiHelper->GetActualTypeName(value->m_address) : nullptr;
+        m_azRtti = value->m_rttiHelper;
+    }
+
+    inline void BehaviorArgument::Set(BehaviorArgumentValueTypeTag_t, BehaviorObject* value)
+    {
+        m_value = value->m_address;
+        m_typeId = value->m_typeId;
+        m_traits = BehaviorParameter::TR_NONE;
         m_name = value->m_rttiHelper ? value->m_rttiHelper->GetActualTypeName(value->m_address) : nullptr;
         m_azRtti = value->m_rttiHelper;
     }
@@ -3160,7 +3241,7 @@ namespace AZ
     {
         if (!Base::m_context->IsRemovingReflection())
         {
-        AZ_Error("BehaviorContext", m_class, "You can set constructors only on valid classes!");
+            AZ_Error("BehaviorContext", m_class, "You can set constructors only on valid classes!");
         }
         if (m_class)
         {
@@ -3179,7 +3260,7 @@ namespace AZ
             " As wrapped types are implicitly reflected by the ScriptContext, this prevents a recursive loop");
         if (!Base::m_context->IsRemovingReflection())
         {
-        AZ_Error("BehaviorContext", m_class, "You can wrap only valid classes!");
+            AZ_Error("BehaviorContext", m_class, "You can wrap only valid classes!");
         }
         if (m_class)
         {
@@ -3503,7 +3584,7 @@ namespace AZ
 
     //////////////////////////////////////////////////////////////////////////
     template<class C>
-    template<auto Value, typename T>
+    template<auto Value>
     BehaviorContext::ClassBuilder<C>* BehaviorContext::ClassBuilder<C>::Enum(const char* name)
     {
         Property(name, []() { return Value; }, nullptr);
@@ -3600,7 +3681,7 @@ namespace AZ
     }
 
     //////////////////////////////////////////////////////////////////////////
-    template<auto Value, typename T>
+    template<auto Value>
     BehaviorContext* BehaviorContext::Enum(const char* name)
     {
         Property(name, []() { return Value; }, nullptr);
@@ -3957,17 +4038,22 @@ namespace AZ
             (BehaviorOnDemandReflectHelper<typename AZStd::function_traits<Functions>::function_type>::QueueReflect(onDemandReflection), ...);
         }
 
+        // First removes the const and reference qualifiers from the argument type, next remove any pointer decoration from that type
+        // and finally if that type is an enum type, convert it to the underlying integral type
+        template<class T>
+        using UnqualifiedRemovePointerUnderlyingType = AZStd::RemoveEnumT<AZStd::remove_pointer_t<AZStd::decay_t<T>>>;
+
         // Assumes parameters array is big enough to store all parameters
         template<class... Args>
         inline void SetParametersStripped(BehaviorParameter* parameters, OnDemandReflectionOwner* onDemandReflection)
         {
             // +1 to avoid zero array size
-            Uuid argumentTypes[sizeof...(Args)+1] = { AzTypeInfo<AZStd::remove_pointer_t<AZStd::remove_cvref_t<Args>>>::Uuid()... };
+            Uuid argumentTypes[sizeof...(Args) + 1] = { AzTypeInfo<UnqualifiedRemovePointerUnderlyingType<Args>>::Uuid()... };
             const char* argumentNames[sizeof...(Args)+1] = { AzTypeInfo<Args>::Name()... };
-            bool argumentIsPointer[sizeof...(Args)+1] = { AZStd::is_pointer<typename AZStd::remove_reference<Args>::type>::value... };
-            bool argumentIsConst[sizeof...(Args)+1] = { AZStd::is_const<typename AZStd::remove_pointer<Args>::type>::value... };
-            bool argumentIsReference[sizeof...(Args)+1] = { AZStd::is_reference<Args>::value... };
-            IRttiHelper* rttiHelper[sizeof...(Args)+1] = { GetRttiHelper<typename AZStd::remove_pointer<typename AZStd::decay<Args>::type>::type>()... };
+            bool argumentIsPointer[sizeof...(Args)+1] = { AZStd::is_pointer_v<AZStd::remove_reference_t<Args>>... };
+            bool argumentIsConst[sizeof...(Args)+1] = { AZStd::is_const_v<AZStd::remove_pointer_t<AZStd::remove_reference_t<Args>>>... };
+            bool argumentIsReference[sizeof...(Args)+1] = { AZStd::is_reference_v<Args>... };
+            IRttiHelper* rttiHelper[sizeof...(Args)+1] = { GetRttiHelper<UnqualifiedRemovePointerUnderlyingType<Args>>()... };
             (void)argumentIsPointer; (void)argumentIsConst; (void)argumentIsReference;
             // function / member function pointer ?
             for (size_t i = 0; i < sizeof...(Args); ++i)
@@ -3990,7 +4076,7 @@ namespace AZ
             if (onDemandReflection)
             {
                 // deal with OnDemand reflection
-                StaticReflectionFunctionPtr reflectHooks[sizeof...(Args)+1] = { OnDemandReflectHook<typename AZStd::remove_pointer<typename AZStd::decay<Args>::type>::type>::Get()... };
+                StaticReflectionFunctionPtr reflectHooks[sizeof...(Args)+1] = { OnDemandReflectHook<UnqualifiedRemovePointerUnderlyingType<Args>>::Get()... };
                 for (size_t i = 0; i < sizeof...(Args); ++i)
                 {
                     if (reflectHooks[i])
@@ -4003,7 +4089,7 @@ namespace AZ
         template<class... Args>
         inline void SetParameters(BehaviorParameter* parameters, OnDemandReflectionOwner* onDemandReflection)
         {
-            SetParametersStripped<AZStd::RemoveEnumT<Args>...>(parameters, onDemandReflection);
+            SetParametersStripped<Args...>(parameters, onDemandReflection);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -4051,17 +4137,17 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         template<class R, class... Args>
-        bool BehaviorMethodImpl<R(Args...)>::Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const
+        bool BehaviorMethodImpl<R(Args...)>::Call(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const
         {
             size_t totalArguments = GetNumArguments();
-            if (numArguments < totalArguments)
+            if (arguments.size() < totalArguments)
             {
                 // We are cloning all arguments on the stack, since Call is called only from Invoke we can reserve bigger "arguments" array
                 // that can always handle all parameters. So far the don't use default values that ofter, so we will optimize for the common case first.
-                BehaviorArgument* newArguments = reinterpret_cast<BehaviorArgument*>(alloca(sizeof(BehaviorArgument)*  totalArguments));
+                AZStd::span<BehaviorArgument> newArguments(reinterpret_cast<BehaviorArgument*>(alloca(sizeof(BehaviorArgument) * totalArguments)), totalArguments);
                 // clone the input parameters (we don't need to clone temp buffers, etc. as they will be still on the stack)
                 size_t argIndex = 0;
-                for (; argIndex < numArguments; ++argIndex)
+                for (; argIndex < arguments.size(); ++argIndex)
                 {
                     new(&newArguments[argIndex]) BehaviorArgument(arguments[argIndex]);
                 }
@@ -4072,7 +4158,7 @@ namespace AZ
                     BehaviorDefaultValuePtr defaultValue = GetDefaultValue(argIndex);
                     if (!defaultValue)
                     {
-                        AZ_Warning("Behavior", false, "Not enough arguments to make a call! %d needed %d", numArguments, totalArguments);
+                        AZ_Warning("Behavior", false, "Not enough arguments to make a call! %d needed %d", arguments.size(), totalArguments);
                         return false;
                     }
                     new(&newArguments[argIndex]) BehaviorArgument(defaultValue->GetValue());
@@ -4083,16 +4169,107 @@ namespace AZ
 
             for (size_t i = s_startArgumentIndex; i < AZ_ARRAY_SIZE(m_parameters); ++i)
             {
+                // Verify that argument is a pointer for pointer type parameters and a value or reference for value type or reference type parameters
+                bool isArgumentPointer = arguments[i - 1].m_traits & BehaviorParameter::Traits::TR_POINTER;
+                bool isParameterPointer = m_parameters[i].m_traits & BehaviorParameter::Traits::TR_POINTER;
                 if (!arguments[i - 1].ConvertTo(m_parameters[i].m_typeId))
                 {
-                    AZ_Warning("Behavior", false, "Invalid parameter type for method '%s'! Can not convert method parameter %d from %s(%s) to %s(%s)", m_name.c_str(), i - 1, arguments[i - 1].m_name, arguments[i - 1].m_typeId.template ToString<AZStd::string>().c_str(), m_parameters[i].m_name, m_parameters[i].m_typeId.template ToString<AZStd::string>().c_str());
+                    AZ_Warning("Behavior", false, "Invalid parameter type for method '%s'! Can not convert method parameter %d from %s(%s) to %s(%s)",
+                        m_name.c_str(), i - 1, arguments[i - 1].m_name,
+                        arguments[i - 1].m_typeId.ToFixedString().c_str(),
+                        m_parameters[i].m_name, m_parameters[i].m_typeId.ToFixedString().c_str());
+                    return false;
+                }
+                else if (isArgumentPointer != isParameterPointer)
+                {
+                    AZ_Warning("Behavior", false, R"(Argument is a "%s" type of %s, while parameter accepts a "%s" type of %s )",
+                        isArgumentPointer ? "pointer" : "value", arguments[i - 1].m_name,
+                        isParameterPointer ? "pointer" : "value", m_parameters[i].m_name);
                     return false;
                 }
             }
 
-            CallFunction<R, Args...>::Global(m_functionPtr, arguments, result, AZStd::make_index_sequence<sizeof...(Args)>());
+            CallFunction<R, Args...>::Global(m_functionPtr, arguments.data(), result, AZStd::make_index_sequence<sizeof...(Args)>());
 
             return true;
+        }
+
+        template<class R,  class... Args>
+        auto BehaviorMethodImpl<R(Args...)>::IsCallable(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const
+            -> ResultOutcome
+        {
+            size_t totalArguments = GetNumArguments();
+            if (arguments.size() < totalArguments)
+            {
+                // Clone the arguments on the stack and validate that the method can be invoked with the arguments
+                AZStd::span<BehaviorArgument> newArguments(reinterpret_cast<BehaviorArgument*>(alloca(sizeof(BehaviorArgument) * totalArguments)), totalArguments);
+                // clone the input parameters (we don't need to clone temp buffers, etc. as they will be still on the stack)
+                size_t argIndex = 0;
+                for (; argIndex < arguments.size(); ++argIndex)
+                {
+                    new(&newArguments[argIndex]) BehaviorArgument(arguments[argIndex]);
+                }
+
+                // clone the default parameters if they exist
+                for (; argIndex < totalArguments; ++argIndex)
+                {
+                    BehaviorDefaultValuePtr defaultValue = GetDefaultValue(argIndex);
+                    if (!defaultValue)
+                    {
+                        return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                            "Not enough arguments to make call to method %s. %zu supplied, needed %zu",
+                            m_name.c_str(), arguments.size(), newArguments.size()) };
+                    }
+                    new(&newArguments[argIndex]) BehaviorArgument(defaultValue->GetValue());
+                }
+
+                arguments = newArguments;
+            }
+            else if (arguments.size() > totalArguments)
+            {
+                return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                    "Too many arguments supplied to method '%s'. Expects %zu arguments, provided %zu",
+                    m_name.c_str(), totalArguments, arguments.size()) };
+            }
+
+            for (size_t i = s_startArgumentIndex; i < AZ_ARRAY_SIZE(m_parameters); ++i)
+            {
+                // Verify that argument is a pointer for pointer type parameters and a value or reference for value type or reference type parameters
+                bool isArgumentPointer = arguments[i - 1].m_traits & BehaviorParameter::Traits::TR_POINTER;
+                bool isParameterPointer = m_parameters[i].m_traits & BehaviorParameter::Traits::TR_POINTER;
+                if (!arguments[i - 1].ConvertTo(m_parameters[i].m_typeId))
+                {
+                    return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                        "Invalid parameter type for method '%s'!"
+                        " Can not convert method parameter %zu from %s(%s) to %s(%s)",
+                        m_name.c_str(), i - 1,
+                        arguments[i - 1].m_name, arguments[i - 1].m_typeId.ToFixedString().c_str(),
+                        m_parameters[i].m_name, m_parameters[i].m_typeId.ToFixedString().c_str()
+                    ) };
+                }
+                else if (isArgumentPointer != isParameterPointer)
+                {
+                    return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                        R"(Argument is a "%s" type of %s, while parameter accepts a "%s" type of %s )",
+                        isArgumentPointer ? "pointer" : "value", arguments[i - 1].m_name,
+                        isParameterPointer ? "pointer" : "value", m_parameters[i].m_name) };
+                }
+            }
+
+            if (result != nullptr)
+            {
+                const AZ::BehaviorParameter* returnParam = GetResult();
+                if (bool canStoreResult = result->m_typeId.IsNull() || result->m_typeId == returnParam->m_typeId ||
+                    (returnParam->m_azRtti != nullptr && returnParam->m_azRtti->IsTypeOf(result->m_typeId));
+                    !canStoreResult)
+                {
+                    return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                        "The behavior argument for the return value cannot store the return type %s",
+                        returnParam->m_typeId.ToFixedString().c_str()) };
+                }
+            }
+
+            return AZ::Success();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -4255,17 +4432,17 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         template<class R, class C, class... Args>
-        bool BehaviorMethodImpl<R(C::*)(Args...)>::Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const
+        bool BehaviorMethodImpl<R(C::*)(Args...)>::Call(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const
         {
             size_t totalArguments = GetNumArguments();
-            if (numArguments < totalArguments)
+            if (arguments.size() < totalArguments)
             {
                 // We are cloning all arguments on the stack, since Call is called only from Invoke we can reserve bigger "arguments" array
                 // that can always handle all parameters. So far the don't use default values that ofter, so we will optimize for the common case first.
-                BehaviorArgument* newArguments = reinterpret_cast<BehaviorArgument*>(alloca(sizeof(BehaviorArgument)*  totalArguments));
+                AZStd::span<BehaviorArgument> newArguments(reinterpret_cast<BehaviorArgument*>(alloca(sizeof(BehaviorArgument) * totalArguments)), totalArguments);
                 // clone the input parameters (we don't need to clone temp buffers, etc. as they will be still on the stack)
                 size_t argIndex = 0;
-                for (; argIndex < numArguments; ++argIndex)
+                for (; argIndex < arguments.size(); ++argIndex)
                 {
                     new(&newArguments[argIndex]) BehaviorArgument(arguments[argIndex]);
                 }
@@ -4276,7 +4453,7 @@ namespace AZ
                     BehaviorDefaultValuePtr defaultValue = GetDefaultValue(argIndex);
                     if (!defaultValue)
                     {
-                        AZ_Warning("Behavior", false, "Not enough arguments to make a call! %d needed %d", numArguments, totalArguments);
+                        AZ_Warning("Behavior", false, "Not enough arguments to make a call! %d needed %d", arguments.size(), totalArguments);
                         return false;
                     }
                     new(&newArguments[argIndex]) BehaviorArgument(defaultValue->GetValue());
@@ -4294,18 +4471,115 @@ namespace AZ
 
             for (size_t i = s_startNamedArgumentIndex; i < AZ_ARRAY_SIZE(m_parameters); ++i)
             {
+                // Verify that argument is a pointer for pointer type parameters and a value or reference for value type or reference type parameters
+                bool isArgumentPointer = arguments[i - 1].m_traits & BehaviorParameter::Traits::TR_POINTER;
+                bool isParameterPointer = m_parameters[i].m_traits & BehaviorParameter::Traits::TR_POINTER;
                 if (!arguments[i - 1].ConvertTo(m_parameters[i].m_typeId))
                 {
-                    AZ_Warning("Behavior", false, "Invalid parameter type for method '%s'! Can not convert method parameter %d from %s(%s) to %s(%s)", m_name.c_str(), i - 1, arguments[i - 1].m_name, arguments[i - 1].m_typeId.template ToString<AZStd::string>().c_str(), m_parameters[i].m_name, m_parameters[i].m_typeId.template ToString<AZStd::string>().c_str());
+                    AZ_Warning("Behavior", false, "Invalid parameter type for method '%s'! Can not convert method parameter %d from %s(%s) to %s(%s)",
+                        m_name.c_str(), i - 1, arguments[i - 1].m_name,
+                        arguments[i - 1].m_typeId.ToFixedString().c_str(),
+                        m_parameters[i].m_name, m_parameters[i].m_typeId.ToFixedString().c_str());
+                    return false;
+                }
+                else if (isArgumentPointer != isParameterPointer)
+                {
+                    AZ_Warning("Behavior", false, R"(Argument is a "%s" type of %s, while parameter accepts a "%s" type of %s )",
+                        isArgumentPointer ? "pointer" : "value", arguments[i - 1].m_name,
+                        isParameterPointer ? "pointer" : "value", m_parameters[i].m_name);
                     return false;
                 }
             }
 
-            CallFunction<R, Args...>::Member(m_functionPtr, *arguments[0].GetAsUnsafe<C*>(), &arguments[1], result, AZStd::make_index_sequence<sizeof...(Args)>());
+            CallFunction<R, Args...>::Member(m_functionPtr, *arguments[0].GetAsUnsafe<C*>(), arguments.data() + 1, result, AZStd::make_index_sequence<sizeof...(Args)>());
 
             EBUS_EVENT_ID(((void*)(*arguments[0].GetAsUnsafe<C*>())), BehaviorObjectSignals, OnMemberMethodCalled, this);
 
             return true;
+        }
+
+        template<class R, class C, class... Args>
+        auto BehaviorMethodImpl<R(C::*)(Args...)>::IsCallable(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const
+            -> ResultOutcome
+        {
+            size_t totalArguments = GetNumArguments();
+            if (arguments.size() < totalArguments)
+            {
+                // Clone the arguments on the stack and validate that the method can be invoked with the arguments
+                AZStd::span<BehaviorArgument> newArguments(reinterpret_cast<BehaviorArgument*>(alloca(sizeof(BehaviorArgument) * totalArguments)), totalArguments);
+                // clone the input parameters (we don't need to clone temp buffers, etc. as they will be still on the stack)
+                size_t argIndex = 0;
+                for (; argIndex < arguments.size(); ++argIndex)
+                {
+                    new(&newArguments[argIndex]) BehaviorArgument(arguments[argIndex]);
+                }
+
+                // clone the default parameters if they exist
+                for (; argIndex < totalArguments; ++argIndex)
+                {
+                    BehaviorDefaultValuePtr defaultValue = GetDefaultValue(argIndex);
+                    if (!defaultValue)
+                    {
+                        return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                            "Not enough arguments to make call to method %s. %zu supplied, needed %zu",
+                            m_name.c_str(), arguments.size(), newArguments.size()) };
+                    }
+                    new(&newArguments[argIndex]) BehaviorArgument(defaultValue->GetValue());
+                }
+
+                arguments = newArguments;
+            }
+            else if (arguments.size() > totalArguments)
+            {
+                return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                    "Too many arguments supplied to method '%s'. Expects %zu arguments, provided %zu",
+                    m_name.c_str(), totalArguments, arguments.size()) };
+            }
+
+            if (!arguments[0].ConvertTo(AzTypeInfo<C>::Uuid()))
+            {
+                return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                    "First parameter should be the 'this' pointer for the member function! %s", m_name.c_str()) };
+            }
+
+            for (size_t i = s_startNamedArgumentIndex; i < AZ_ARRAY_SIZE(m_parameters); ++i)
+            {
+                // Verify that argument is a pointer for pointer type parameters and a value or reference for value type or reference type parameters
+                bool isArgumentPointer = arguments[i - 1].m_traits & BehaviorParameter::Traits::TR_POINTER;
+                bool isParameterPointer = m_parameters[i].m_traits & BehaviorParameter::Traits::TR_POINTER;
+                if (!arguments[i - 1].ConvertTo(m_parameters[i].m_typeId))
+                {
+                    return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                        "Invalid parameter type for method '%s'!"
+                        " Can not convert method parameter %zu from %s(%s) to %s(%s)",
+                        m_name.c_str(), i - 1,
+                        arguments[i - 1].m_name, arguments[i - 1].m_typeId.ToFixedString().c_str(),
+                        m_parameters[i].m_name, m_parameters[i].m_typeId.ToFixedString().c_str()
+                    ) };
+                }
+                else if (isArgumentPointer != isParameterPointer)
+                {
+                    return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                        R"(Argument is a "%s" type of %s, while parameter accepts a "%s" type of %s )",
+                        isArgumentPointer ? "pointer" : "value", arguments[i - 1].m_name,
+                        isParameterPointer ? "pointer" : "value", m_parameters[i].m_name) };
+                }
+            }
+
+            if (result != nullptr)
+            {
+                const AZ::BehaviorParameter* returnParam = GetResult();
+                if (bool canStoreResult = result->m_typeId.IsNull() || result->m_typeId == returnParam->m_typeId ||
+                    (returnParam->m_azRtti != nullptr && returnParam->m_azRtti->IsTypeOf(result->m_typeId));
+                    !canStoreResult)
+                {
+                    return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                        "The behavior argument for the return value cannot store the return type %s",
+                        returnParam->m_typeId.ToFixedString().c_str()) };
+                }
+            }
+
+            return AZ::Success();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -4398,7 +4672,7 @@ namespace AZ
         template<class R, class C, class... Args>
         const AZStd::string* BehaviorMethodImpl<R(C::*)(Args...)>::GetArgumentToolTip(size_t index) const
         {
-            if (index <GetNumArguments())
+            if (index < GetNumArguments())
             {
                 return &m_metadataParameters[index + s_startArgumentIndex].m_toolTip;
             }
@@ -4482,17 +4756,17 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         template<class EBus, BehaviorEventType EventType, class R, class C, class... Args>
-        bool BehaviorEBusEvent<EBus, EventType, R(C::*)(Args...)>::Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const
+        bool BehaviorEBusEvent<EBus, EventType, R(C::*)(Args...)>::Call(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const
         {
             size_t totalArguments = GetNumArguments();
-            if (numArguments < totalArguments)
+            if (arguments.size() < totalArguments)
             {
                 // We are cloning all arguments on the stack, since Call is called only from Invoke we can reserve bigger "arguments" array
                 // that can always handle all parameters. So far the don't use default values that ofter, so we will optimize for the common case first.
-                BehaviorArgument* newArguments = reinterpret_cast<BehaviorArgument*>(alloca(sizeof(BehaviorArgument)*  totalArguments));
+                AZStd::span<BehaviorArgument> newArguments(reinterpret_cast<BehaviorArgument*>(alloca(sizeof(BehaviorArgument) * totalArguments)), totalArguments);
                 // clone the input parameters (we don't need to clone temp buffers, etc. as they will be still on the stack)
                 size_t argIndex = 0;
-                for (; argIndex < numArguments; ++argIndex)
+                for (; argIndex < arguments.size(); ++argIndex)
                 {
                     new(&newArguments[argIndex]) BehaviorArgument(arguments[argIndex]);
                 }
@@ -4503,7 +4777,7 @@ namespace AZ
                     BehaviorDefaultValuePtr defaultValue = GetDefaultValue(argIndex);
                     if (!defaultValue)
                     {
-                        AZ_Warning("Behavior", false, "Not enough arguments to make a call! %d needed %d", numArguments, totalArguments);
+                        AZ_Warning("Behavior", false, "Not enough arguments to make a call! %d needed %d", arguments.size(), totalArguments);
                         return false;
                     }
                     new(&newArguments[argIndex]) BehaviorArgument(defaultValue->GetValue());
@@ -4523,16 +4797,118 @@ namespace AZ
 
             for (size_t i = s_startNamedArgumentIndex; i < AZ_ARRAY_SIZE(m_parameters); ++i)
             {
+                // Verify that argument is a pointer for pointer type parameters and a value or reference for value type or reference type parameters
+                bool isArgumentPointer = arguments[i - 1].m_traits & BehaviorParameter::Traits::TR_POINTER;
+                bool isParameterPointer = m_parameters[i].m_traits & BehaviorParameter::Traits::TR_POINTER;
                 if (!arguments[i - 1].ConvertTo(m_parameters[i].m_typeId))
                 {
-                    AZ_Warning("Behavior", false, "Invalid parameter type for method '%s'! Can not convert method parameter %d from %s(%s) to %s(%s)", m_name.c_str(), i - 1, arguments[i - 1].m_name, arguments[i - 1].m_typeId.template ToString<AZStd::string>().c_str(), m_parameters[i].m_name, m_parameters[i].m_typeId.template ToString<AZStd::string>().c_str());
+                    AZ_Warning("Behavior", false, "Invalid parameter type for method '%s'! Can not convert method parameter %d from %s(%s) to %s(%s)",
+                        m_name.c_str(), i - 1, arguments[i - 1].m_name,
+                        arguments[i - 1].m_typeId.ToFixedString().c_str(),
+                        m_parameters[i].m_name, m_parameters[i].m_typeId.ToFixedString().c_str());
+                    return false;
+                }
+                else if (isArgumentPointer != isParameterPointer)
+                {
+                    AZ_Warning("Behavior", false, R"(Argument is a "%s" type of %s, while parameter accepts a "%s" type of %s )",
+                        isArgumentPointer ? "pointer" : "value", arguments[i - 1].m_name,
+                        isParameterPointer ? "pointer" : "value", m_parameters[i].m_name);
                     return false;
                 }
             }
 
-            AZ::Internal::EBusCaller<EventType, EBus, R, Args...>::Call(m_functionPtr, &arguments[0], result, AZStd::make_index_sequence<sizeof...(Args)>());
+            AZ::Internal::EBusCaller<EventType, EBus, R, Args...>::Call(m_functionPtr, arguments.data(), result, AZStd::make_index_sequence<sizeof...(Args)>());
 
             return true;
+        }
+
+        template<class EBus, BehaviorEventType EventType, class R, class C, class... Args>
+        auto BehaviorEBusEvent<EBus, EventType, R(C::*)(Args...)>::IsCallable(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const
+            -> ResultOutcome
+        {
+            size_t totalArguments = GetNumArguments();
+            if (arguments.size() < totalArguments)
+            {
+                // Clone the arguments on the stack and validate that the method can be invoked with the arguments
+                AZStd::span<BehaviorArgument> newArguments(reinterpret_cast<BehaviorArgument*>(alloca(sizeof(BehaviorArgument) * totalArguments)), totalArguments);
+                // clone the input parameters (we don't need to clone temp buffers, etc. as they will be still on the stack)
+                size_t argIndex = 0;
+                for (; argIndex < arguments.size(); ++argIndex)
+                {
+                    new(&newArguments[argIndex]) BehaviorArgument(arguments[argIndex]);
+                }
+
+                // clone the default parameters if they exist
+                for (; argIndex < totalArguments; ++argIndex)
+                {
+                    BehaviorDefaultValuePtr defaultValue = GetDefaultValue(argIndex);
+                    if (!defaultValue)
+                    {
+                        return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                            "Not enough arguments to make call to method %s. %zu supplied, needed %zu",
+                            m_name.c_str(), arguments.size(), newArguments.size()) };
+                    }
+                    new(&newArguments[argIndex]) BehaviorArgument(defaultValue->GetValue());
+                }
+
+                arguments = newArguments;
+            }
+            else if (arguments.size() > totalArguments)
+            {
+                return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                    "Too many arguments supplied to method '%s'. Expects %zu arguments, provided %zu",
+                    m_name.c_str(), totalArguments, arguments.size()) };
+            }
+
+            if constexpr (s_isBusIdParameter)
+            {
+                if (!arguments[0].ConvertTo(m_parameters[1].m_typeId))
+                {
+                    AZ_Warning("Behavior", false, "Invalid BusIdType type can't convert! %s -> %s", arguments[0].m_name, m_parameters[1].m_name);
+                    return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                        "Invalid BusIdType type can't convert! %s -> %s",
+                        arguments[0].m_name, m_parameters[1].m_name) };
+                }
+            }
+
+            for (size_t i = s_startNamedArgumentIndex; i < AZ_ARRAY_SIZE(m_parameters); ++i)
+            {
+                // Verify that argument is a pointer for pointer type parameters and a value or reference for value type or reference type parameters
+                bool isArgumentPointer = arguments[i - 1].m_traits & BehaviorParameter::Traits::TR_POINTER;
+                bool isParameterPointer = m_parameters[i].m_traits & BehaviorParameter::Traits::TR_POINTER;
+                if (!arguments[i - 1].ConvertTo(m_parameters[i].m_typeId))
+                {
+                    return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                        "Invalid parameter type for method '%s'!"
+                        " Can not convert method parameter %zu from %s(%s) to %s(%s)",
+                        m_name.c_str(), i - 1,
+                        arguments[i - 1].m_name, arguments[i - 1].m_typeId.ToFixedString().c_str(),
+                        m_parameters[i].m_name, m_parameters[i].m_typeId.ToFixedString().c_str()
+                    ) };
+                }
+                else if (isArgumentPointer != isParameterPointer)
+                {
+                    return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                        R"(Argument is a "%s" type of %s, while parameter accepts a "%s" type of %s )",
+                        isArgumentPointer ? "pointer" : "value", arguments[i - 1].m_name,
+                        isParameterPointer ? "pointer" : "value", m_parameters[i].m_name) };
+                }
+            }
+
+            if (result != nullptr)
+            {
+                const AZ::BehaviorParameter* returnParam = GetResult();
+                if (bool canStoreResult = result->m_typeId.IsNull() || result->m_typeId == returnParam->m_typeId ||
+                    (returnParam->m_azRtti != nullptr && returnParam->m_azRtti->IsTypeOf(result->m_typeId));
+                    !canStoreResult)
+                {
+                    return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                        "The behavior argument for the return value cannot store the return type %s",
+                        returnParam->m_typeId.ToFixedString().c_str()) };
+                }
+            }
+
+            return AZ::Success();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -4824,6 +5200,24 @@ namespace AZ
                 return false;
             }
 
+            static bool Disconnect(BusHandler* handler, BehaviorArgument* id)
+            {
+                if (id)
+                {
+                    if (id->ConvertTo<typename BusHandler::BusType::BusIdType>())
+                    {
+                        handler->BusDisconnect(*id->GetAsUnsafe<typename BusHandler::BusType::BusIdType>());
+                        return true;
+                    }
+                }
+                else // null id passed, attempt id-less disconnect
+                {
+                    handler->BusDisconnect();
+                    return true;
+                }
+                return false;
+            }
+
             static bool IsConnected(BusHandler* handler)
             {
                 return handler->BusIsConnected();
@@ -4851,6 +5245,13 @@ namespace AZ
             {
                 (void)id;
                 handler->BusConnect();
+                return true;
+            }
+
+            static bool Disconnect(BusHandler* handler, BehaviorArgument* id)
+            {
+                (void)id;
+                handler->BusDisconnect();
                 return true;
             }
 

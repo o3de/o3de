@@ -9,13 +9,15 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzTest/Utils.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
 #include <native/resourcecompiler/rcjob.h>
 #include <native/utilities/AssetServerHandler.h>
 #include <native/utilities/assetUtils.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 #include <QStandardPaths>
 #include <QDir>
 
@@ -43,7 +45,7 @@ namespace UnitTest
     };
 
     class AssetServerHandlerUnitTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
 
     public:
@@ -71,7 +73,7 @@ namespace UnitTest
         {
             auto getString = [this](AZStd::string& result, AZStd::string_view input) -> bool
             {
-                if (input == "/Amazon/AssetProcessor/Settings/Server/cacheServerAddress")
+                if (input == "/O3DE/AssetProcessor/Settings/Server/cacheServerAddress")
                 {
                     result = this->m_tempFolder.toUtf8().toStdString().c_str();
                 }
@@ -81,7 +83,7 @@ namespace UnitTest
 
             auto getBool = [this](bool& result, AZStd::string_view input) -> bool
             {
-                if (input == "/Amazon/AssetProcessor/Settings/Server/enableCacheServer")
+                if (input == "/O3DE/AssetProcessor/Settings/Server/enableCacheServer")
                 {
                     result = this->m_enableServer;
                 }

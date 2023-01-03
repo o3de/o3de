@@ -5,29 +5,30 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+# Built-in Imports
 from __future__ import annotations
-from collections import Counter
-from collections import deque
 from os import path
-from pathlib import Path
 from typing import List
 
+# 3rdParty Imports
 from PySide2 import QtWidgets
 
+# O3DE Imports
 import azlmbr.legacy.general as general
 from azlmbr.entity import EntityId
 from azlmbr.math import Vector3
-from editor_python_test_tools.editor_entity_utils import EditorEntity
-from editor_python_test_tools.utils import Report
-
 import azlmbr.entity as entity
 import azlmbr.bus as bus
 import azlmbr.components as components
 import azlmbr.editor as editor
 import azlmbr.globals
-import azlmbr.math as math
 import azlmbr.prefab as prefab
-import editor_python_test_tools.pyside_utils as pyside_utils
+
+# Helper Imports
+from editor_python_test_tools.editor_entity_utils import EditorEntity
+from editor_python_test_tools.utils import Report
+from editor_python_test_tools.wait_utils import PrefabWaiter
+import pyside_utils
 
 
 def get_prefab_file_path(prefab_path):
@@ -40,11 +41,10 @@ def get_prefab_file_path(prefab_path):
         prefab_path = name + ".prefab"
     return prefab_path
 
+
 def get_all_entity_ids():
     return entity.SearchBus(bus.Broadcast, 'SearchEntities', entity.SearchFilter())
 
-def wait_for_propagation():
-    general.idle_wait_frames(1)
 
 # This is a helper class which contains some of the useful information about a prefab instance.
 class PrefabInstance:
@@ -104,7 +104,7 @@ class PrefabInstance:
         new_parent_before_reparent_children_ids = {child_id.ToString(): child_id for child_id in new_parent.get_children_ids()}
 
         pyside_utils.run_soon(lambda: self.container_entity.set_parent_entity(parent_entity_id))
-        pyside_utils.run_soon(lambda: wait_for_propagation())
+        pyside_utils.run_soon(lambda: PrefabWaiter.wait_for_propagation())
 
         try:
             active_modal_widget = await pyside_utils.wait_for_modal_widget()
@@ -225,7 +225,7 @@ class Prefab:
 
         assert len(children_entity_ids) == len(entities), f"Entity count of created prefab instance does *not* match the count of given entities."
         
-        wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
 
         new_prefab_instance = PrefabInstance(new_prefab.file_path, EditorEntity(container_entity_id))
         if prefab_instance_name:
@@ -254,7 +254,7 @@ class Prefab:
         delete_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'DeleteEntitiesAndAllDescendantsInInstance', container_entity_ids)
         assert delete_prefab_result.IsSuccess(), f"Prefab operation 'DeleteEntitiesAndAllDescendantsInInstance' failed. Error: {delete_prefab_result.GetError()}"
 
-        wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
 
         entity_ids_after_delete = set(get_all_entity_ids())
         
@@ -316,7 +316,7 @@ class Prefab:
         duplicate_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'DuplicateEntitiesInInstance', container_entity_ids)
         assert duplicate_prefab_result.IsSuccess(), f"Prefab operation 'DuplicateEntitiesInInstance' failed. Error: {duplicate_prefab_result.GetError()}"
 
-        wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
 
         duplicate_container_entity_ids = duplicate_prefab_result.GetValue()
         common_parent_children_ids_after_duplicate = set([child_id.ToString() for child_id in common_parent.get_children_ids()])
@@ -361,7 +361,7 @@ class Prefab:
         assert len(parent_children_ids_after_detach) == len(parent_children_ids_before_detach), \
             "Parent entity should still keep the same amount of children entities."
 
-        wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
 
         instance_owner_prefab = Prefab.get_prefab(prefab_instance.prefab_file_path)
         instance_owner_prefab.instances.remove(prefab_instance)
@@ -385,7 +385,7 @@ class Prefab:
         container_entity_id = instantiate_prefab_result.GetValue()
         container_entity = EditorEntity(container_entity_id)
 
-        wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
 
         new_prefab_instance = PrefabInstance(self.file_path, EditorEntity(container_entity_id))
         assert not new_prefab_instance in self.instances, "This prefab instance already existed before this instantiation."

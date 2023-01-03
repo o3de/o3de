@@ -185,7 +185,7 @@ namespace AZ::Render
         AZ_Warning("AtomActorInstance", m_transformInterface, "Unable to attach to a TransformBus handler. This skinned mesh will always be rendered at the origin.");
 
         SkinnedMeshFeatureProcessorNotificationBus::Handler::BusConnect();
-        MaterialReceiverRequestBus::Handler::BusConnect(m_entityId);
+        MaterialConsumerRequestBus::Handler::BusConnect(m_entityId);
         LmbrCentral::SkeletalHierarchyRequestBus::Handler::BusConnect(m_entityId);
 
         Create();
@@ -195,7 +195,7 @@ namespace AZ::Render
     {
         SkinnedMeshOutputStreamNotificationBus::Handler::BusDisconnect();
         LmbrCentral::SkeletalHierarchyRequestBus::Handler::BusDisconnect();
-        MaterialReceiverRequestBus::Handler::BusDisconnect();
+        MaterialConsumerRequestBus::Handler::BusDisconnect();
         SkinnedMeshFeatureProcessorNotificationBus::Handler::BusDisconnect();
 
         Destroy();
@@ -595,6 +595,12 @@ namespace AZ::Render
 
     void AtomActorInstance::RegisterActor()
     {
+        if (!m_skinnedMeshInstance)
+        {
+            AZ_Error("AtomActorInstance", m_skinnedMeshInstance, "SkinnedMeshInstance must be created before register this actor.");
+            return;
+        }
+        
         MaterialAssignmentMap materials;
         MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialMap);
         CreateRenderProxy(materials);
@@ -609,6 +615,7 @@ namespace AZ::Render
 
         const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, GetModelAsset(), model);
+        MeshHandleStateNotificationBus::Event(m_entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &(*m_meshHandle));
 
         m_meshFeatureProcessor->SetVisible(*m_meshHandle, IsVisible());
     }
@@ -626,6 +633,7 @@ namespace AZ::Render
         if (m_meshHandle)
         {
             m_meshFeatureProcessor->ReleaseMesh(*m_meshHandle);
+            MeshHandleStateNotificationBus::Event(m_entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &(*m_meshHandle));
             m_meshHandle = nullptr;
         }
     }
@@ -641,6 +649,7 @@ namespace AZ::Render
 
             // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
             meshDescriptor.m_isRayTracingEnabled = false;
+            meshDescriptor.m_isAlwaysDynamic = true;
 
             m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
                 m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));
@@ -667,7 +676,7 @@ namespace AZ::Render
         m_skinnedMeshInstance = m_skinnedMeshInputBuffers->CreateSkinnedMeshInstance();
         if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
         {
-            MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
+            MaterialConsumerNotificationBus::Event(m_entityId, &MaterialConsumerNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
 
             RegisterActor();
         }

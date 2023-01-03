@@ -248,15 +248,16 @@ namespace AZ
         //=========================================================================
         void ObjectStreamImpl::PreparseOldVersion(SerializeContext& sc, SerializeContext::DataElementNode& elementNode, IO::GenericStream& stream, const SerializeContext::ClassData* elementClass)
         {
-            // whenever tracing is availalble we make error logging available.
+            // whenever tracing is available we make error logging available.
 #if defined(AZ_ENABLE_TRACING) 
             {
-                SerializeContext::DbgStackEntry de;
-                de.m_dataPtr = nullptr;
-                de.m_uuidPtr = &elementClass->m_typeId;
-                de.m_elementName = elementNode.GetNameString();
-                de.m_classData = elementClass;
-                de.m_classElement = nullptr;
+                SerializeContext::DbgStackEntry de {
+                    /*.m_dataPtr =*/ nullptr,
+                    /*.m_uuid =*/ elementClass ? elementClass->m_typeId : AZ::Uuid{},
+                    /*.m_classData =*/ elementClass,
+                    /*.m_elementName =*/ elementNode.GetNameString(),
+                    /*.m_classElement =*/ nullptr,
+                };
                 m_errorLogger.Push(de);
             }
 #endif // AZ_ENABLE_TRACING
@@ -273,8 +274,7 @@ namespace AZ
 
                 nextLevel = false;
 
-                elementNode.m_subElements.push_back();
-                SerializeContext::DataElementNode& childNode = elementNode.m_subElements.back();
+                SerializeContext::DataElementNode& childNode = elementNode.m_subElements.emplace_back();
                 // we might need to copy the element name, if it's deleted after the read element
                 // otherwise it will be left dangling
                 childNode.m_element = AZStd::move(childElement);
@@ -282,7 +282,17 @@ namespace AZ
 
                 if (childClass)
                 {
-                    AZ_Assert(childNode.m_element.m_version <= childClass->m_version, "Serialize was parsing old version class and found newer version element! This should be impossible!");
+                    AZ_Error("Error", childNode.m_element.m_version <= childClass->m_version,
+                        "The current class (%s) version is (%d). The field (%s) of class (%s) with version (%d) is a newer version than the code supports. "
+                        "First, check if you've built latest, your C++ code could be out of date. "
+                        "It is possible that the class version has been reset. Please check if the team provides a conversion tool. "
+                        "To resolve you'll either need to get the latest version of this class, use any provided migration tools or re-sync to an early commit. ",
+                        childClass->m_name,
+                        childClass->m_version,
+                        childNode.m_element.m_name,
+                        childClass->m_name,
+                        childNode.m_element.m_version
+                    );
 
                     // Only proceed if:
                     // * the child node is out of date AND the class does not have a custom serializer
@@ -302,11 +312,6 @@ namespace AZ
                         }
                         continue;
                     }
-                }
-                else
-                {
-                    // output a warning
-                    //AZ_Warning("Serializer",false,"Element '%s' with class ID '%s' found while converting '%s' is not registered with the serializer! You will have to parse this data yourself!",childElement.m_name,childElement.m_id.ToString<AZStd::string>().c_str(), parent->m_name);
                 }
 
                 if (childNode.m_element.m_dataSize > 0) // if we have values to convert
@@ -765,12 +770,13 @@ namespace AZ
 
 #if defined(AZ_ENABLE_TRACING)
                 {
-                    SerializeContext::DbgStackEntry de;
-                    de.m_dataPtr = dataAddress;
-                    de.m_uuidPtr = &element.m_id;
-                    de.m_elementName = element.m_name;
-                    de.m_classData = classData;
-                    de.m_classElement = classElement;
+                    SerializeContext::DbgStackEntry de {
+                        /*.m_dataPtr =*/ dataAddress,
+                        /*.m_uuid =*/ element.m_id,
+                        /*.m_classData =*/ classData,
+                        /*.m_elementName =*/ element.m_name,
+                        /*.m_classElement =*/ classElement,
+                    };
                     m_errorLogger.Push(de);
                 }
 #endif // AZ_ENABLE_TRACING
@@ -801,8 +807,6 @@ namespace AZ
                 // Serializable leaf element.
                 else if (classData->m_serializer)
                 {
-                    AZ_PROFILE_SCOPE(AzCore, "ObjectStreamImpl::LoadClass Load");
-
                     // Wrap the stream
                     IO::GenericStream* currentStream = &m_inStream;
                     IO::MemoryStream memStream(m_inStream.GetData()->data(), 0, element.m_dataSize);
@@ -1764,8 +1768,7 @@ namespace AZ
             }
             else if (GetType() == ST_JSON)
             {
-                m_jsonWriteValues.push_back();
-                rapidjson::Value& classObject = m_jsonWriteValues.back();
+                rapidjson::Value& classObject = m_jsonWriteValues.emplace_back();
                 classObject.SetObject();
                 // element name
                 if (element.m_name)
@@ -1800,8 +1803,7 @@ namespace AZ
                     AZ_Assert(element.m_dataSize == 0, "We can't serialize values for %s(0x%x), value=%s without a serializer to do DataToText()!", element.m_name ? element.m_name : "NULL", element.m_nameCrc, idBuffer);
                 }
                 // Add child fields array
-                m_jsonWriteValues.push_back();
-                m_jsonWriteValues.back().SetArray();
+                m_jsonWriteValues.emplace_back().SetArray();
             }
             else /*ST_BINARY*/
             {
@@ -1972,8 +1974,7 @@ namespace AZ
                     m_jsonDoc->SetObject();
                     m_jsonDoc->AddMember("name", "ObjectStream", m_jsonDoc->GetAllocator());
                     m_jsonDoc->AddMember("version", m_version, m_jsonDoc->GetAllocator());
-                    m_jsonWriteValues.push_back();
-                    m_jsonWriteValues.back().SetArray();
+                    m_jsonWriteValues.emplace_back().SetArray();
                 }
                 else
                 {

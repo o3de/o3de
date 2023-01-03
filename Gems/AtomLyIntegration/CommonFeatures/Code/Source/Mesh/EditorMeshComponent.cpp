@@ -41,7 +41,7 @@ namespace AZ
                     editContext->Class<EditorMeshComponent>(
                         "Mesh", "The mesh component is the primary method of adding visual geometry to entities")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Category, "Atom")
+                            ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Mesh")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Mesh.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mesh.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
@@ -82,6 +82,7 @@ namespace AZ
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_isRayTracingEnabled, "Use ray tracing",
                                 "Includes this mesh in ray tracing calculations.")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_isAlwaysDynamic, "Always Moving", "Forces this mesh to be considered to always be moving, even if the transform didn't update. Useful for meshes with vertex shader animation.")
                             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshComponentConfig::m_lodType, "Lod Type", "Determines how level of detail (LOD) will be selected during rendering.")
                                 ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "LOD Type")
                                 ->EnumAttribute(RPI::Cullable::LodType::Default, "Default")
@@ -263,7 +264,7 @@ namespace AZ
             // This is a bug with AssetManager [LYN-2249]
             auto temp = m_controller.m_configuration.m_modelAsset;
 
-            m_stats.m_meshStatsForLod.swap({});
+            m_stats.m_meshStatsForLod = {};
             SetDirty();
 
             return BaseClass::OnConfigurationChanged();

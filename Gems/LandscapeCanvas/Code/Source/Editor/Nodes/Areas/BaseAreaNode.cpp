@@ -19,9 +19,6 @@
 #include <GraphModel/Integration/Helpers.h>
 #include <GraphModel/Model/Slot.h>
 
-// Vegetation
-#include <Vegetation/Editor/EditorVegetationComponentTypeIds.h>
-
 // Landscape Canvas
 #include "BaseAreaNode.h"
 #include <Editor/Core/GraphContext.h>

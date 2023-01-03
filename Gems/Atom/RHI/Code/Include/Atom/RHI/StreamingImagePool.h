@@ -98,32 +98,46 @@ namespace AZ
         public:
             AZ_RTTI(StreamingImagePool, "{C9F1E40E-D852-4515-ADCC-E2D3AB4B56AB}", ImagePoolBase);
             virtual ~StreamingImagePool() = default;
+
+            static const uint64_t ImagePoolMininumSizeInBytes = 16ul  * 1024 * 1024;
             
-            /// Initializes the pool. The pool must be initialized before images can be registered with it.
+            //! Initializes the pool. The pool must be initialized before images can be registered with it.
             ResultCode Init(Device& device, const StreamingImagePoolDescriptor& descriptor);
 
-            /// Initializes the backing resources of an image.
+            //! Initializes the backing resources of an image.
             ResultCode InitImage(const StreamingImageInitRequest& request);
 
-            /**
-             * Expands a streaming image with new mip chain data. The expansion can be performed
-             * asynchronously or synchronously depends on @m_waitForUpload in @StreamingImageExpandRequest. 
-             * Upon completion, the views will be invalidated and map to the newly
-             * streamed mip levels.
-             */
+            //! Expands a streaming image with new mip chain data. The expansion can be performed
+            //! asynchronously or synchronously depends on @m_waitForUpload in @StreamingImageExpandRequest. 
+            //! Upon completion, the views will be invalidated and map to the newly
+            //! streamed mip levels.
             ResultCode ExpandImage(const StreamingImageExpandRequest& request);
 
-            /**
-             * Trims a streaming image down to (and including) the target mip level. This occurs
-             * immediately. The newly evicted mip levels are no longer accessible by image views
-             * and the contents are considered undefined.
-             */
+            //! Trims a streaming image down to (and including) the target mip level. This occurs
+            //! immediately. The newly evicted mip levels are no longer accessible by image views
+            //! and the contents are considered undefined.
             ResultCode TrimImage(Image& image, uint32_t targetMipLevel);
 
             const StreamingImagePoolDescriptor& GetDescriptor() const override final;
 
+            //! Set a callback function that is called when the pool is out of memory for new allocations
+            //! User could provide such a callback function which releases some resources from the pool
+            //! If some resources are released, the function may return true.
+            //! If nothing is released, the function should return false.
+            using LowMemoryCallback = AZStd::function<bool()>;
+            void SetLowMemoryCallback(LowMemoryCallback callback);
+            
+            //! Set memory budget
+            //! Return true if the pool was set to new memory budget successfully
+            bool SetMemoryBudget(size_t newBudget);
+            
+            //! Return if it supports tiled image feature
+            bool SupportTiledImage() const;
+
         protected:
             StreamingImagePool() = default;
+
+            LowMemoryCallback m_memoryReleaseCallback = nullptr;
 
         private:
             using ResourcePool::Init;
@@ -135,23 +149,29 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // Platform API
 
-            /// Called when the pool is being initialized.
+            // Called when the pool is being initialized.
             virtual ResultCode InitInternal(Device& device, const StreamingImagePoolDescriptor& descriptor);
 
-            /// Called when an image is being initialized on the pool.
+            // Called when an image is being initialized on the pool.
             virtual ResultCode InitImageInternal(const StreamingImageInitRequest& request);
 
-            /// Called when an image mips are being expanded.
+            // Called when an image mips are being expanded.
             virtual ResultCode ExpandImageInternal(const StreamingImageExpandRequest& request);
 
-            /// Called when an image mips are being trimmed.
+            // Called when an image mips are being trimmed.
             virtual ResultCode TrimImageInternal(Image& image, uint32_t targetMipLevel);
+            
+            // Called when set a new memory budget.
+            virtual ResultCode SetMemoryBudgetInternal(size_t newBudget);
+                        
+            // Return if it supports tiled image feature
+            virtual bool SupportTiledImageInternal() const;
 
             //////////////////////////////////////////////////////////////////////////
 
             StreamingImagePoolDescriptor m_descriptor;
 
-            /// Frame mutex prevents image update requests from overlapping with frame.
+            // Frame mutex prevents image update requests from overlapping with frame.
             AZStd::shared_mutex m_frameMutex;
         };
     }

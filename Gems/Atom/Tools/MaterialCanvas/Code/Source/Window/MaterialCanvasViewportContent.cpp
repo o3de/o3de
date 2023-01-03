@@ -8,6 +8,7 @@
 
 #include <Atom/Feature/SkyBox/SkyboxConstants.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConfig.h>
@@ -25,9 +26,10 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
+#include <AtomToolsFramework/Graph/GraphCompilerRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <Document/MaterialCanvasDocumentRequestBus.h>
 #include <Window/MaterialCanvasViewportContent.h>
 
 namespace MaterialCanvas
@@ -64,6 +66,10 @@ namespace MaterialCanvas
         AZ::NonUniformScaleRequestBus::Event(
             GetShadowCatcherEntityId(), &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(100, 100, 1.0));
 
+        // Avoid z-fighting with the cube model when double-sided rendering is enabled
+        AZ::TransformBus::Event(
+            GetShadowCatcherEntityId(), &AZ::TransformInterface::SetWorldZ, -0.01f);
+
         AZ::Render::MeshComponentRequestBus::Event(
             GetShadowCatcherEntityId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAssetId,
             AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/viewportmodels/plane_1x1.azmodel"));
@@ -87,11 +93,13 @@ namespace MaterialCanvas
             });
 
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
+        AtomToolsFramework::GraphCompilerNotificationBus::Handler::BusConnect(m_toolId);
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
     MaterialCanvasViewportContent::~MaterialCanvasViewportContent()
     {
+        AtomToolsFramework::GraphCompilerNotificationBus::Handler::BusDisconnect();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
@@ -120,8 +128,42 @@ namespace MaterialCanvas
         return m_gridEntity ? m_gridEntity->GetId() : AZ::EntityId();
     }
 
+    void MaterialCanvasViewportContent::OnDocumentClosed([[maybe_unused]] const AZ::Uuid& documentId)
+    {
+        AZ::Render::MaterialComponentRequestBus::Event(
+            GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialAssetIdOnDefaultSlot, AZ::Data::AssetId());
+    }
+
     void MaterialCanvasViewportContent::OnDocumentOpened([[maybe_unused]] const AZ::Uuid& documentId)
     {
+        m_lastOpenedDocumentId = documentId;
+        ApplyMaterial(documentId);
+    }
+
+    void MaterialCanvasViewportContent::OnCompileGraphStarted(const AZ::Uuid& documentId)
+    {
+        if (m_lastOpenedDocumentId == documentId &&
+            AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphStarted", true))
+        {
+            ApplyMaterial({});
+        }
+    }
+
+    void MaterialCanvasViewportContent::OnCompileGraphCompleted(const AZ::Uuid& documentId)
+    {
+        if (m_lastOpenedDocumentId == documentId)
+        {
+            ApplyMaterial(documentId);
+        }
+    }
+
+    void MaterialCanvasViewportContent::OnCompileGraphFailed(const AZ::Uuid& documentId)
+    {
+        if (m_lastOpenedDocumentId == documentId &&
+            AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphFailed", true))
+        {
+            ApplyMaterial({});
+        }
     }
 
     void MaterialCanvasViewportContent::OnViewportSettingsChanged()
@@ -171,5 +213,29 @@ namespace MaterialCanvas
                     GetGridEntityId(), &AZ::Render::GridComponentRequestBus::Events::SetSize,
                     viewportRequests->GetGridEnabled() ? 4.0f : 0.0f);
             });
+    }
+
+    void MaterialCanvasViewportContent::ApplyMaterial(const AZ::Uuid& documentId)
+    {
+        AZ::Data::AssetId assetId;
+
+        AZStd::vector<AZStd::string> generatedFiles;
+        AtomToolsFramework::GraphCompilerRequestBus::EventResult(
+            generatedFiles, documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::GetGeneratedFilePaths);
+
+        for (const auto& generatedFile : generatedFiles)
+        {
+            if (generatedFile.ends_with(".material"))
+            {
+                if (auto assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(generatedFile, 0))
+                {
+                    assetId = assetIdOutcome.GetValue();
+                    break;
+                }
+            }
+        }
+
+        AZ::Render::MaterialComponentRequestBus::Event(
+            GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialAssetIdOnDefaultSlot, assetId);
     }
 } // namespace MaterialCanvas

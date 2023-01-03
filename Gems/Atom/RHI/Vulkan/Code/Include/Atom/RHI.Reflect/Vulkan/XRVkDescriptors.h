@@ -35,6 +35,7 @@ namespace AZ::Vulkan
         struct 
         {
             VkInstance m_xrVkInstance = VK_NULL_HANDLE;
+            GladVulkanContext m_context;
         } m_outputData;
 
     };
@@ -84,6 +85,7 @@ namespace AZ::Vulkan
         struct
         {
             VkDevice m_xrVkDevice = VK_NULL_HANDLE;
+            GladVulkanContext m_context;
         } m_outputData;
     };
 

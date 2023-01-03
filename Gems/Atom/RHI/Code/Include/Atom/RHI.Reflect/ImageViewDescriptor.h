@@ -81,7 +81,8 @@ namespace AZ
 
             ImageViewDescriptor() = default;
             explicit ImageViewDescriptor(Format overrideFormat);
-
+            bool operator==(const ImageViewDescriptor& other) const;
+            
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
             // Returns true if other is the same sub resource

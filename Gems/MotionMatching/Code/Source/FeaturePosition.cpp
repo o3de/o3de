@@ -11,9 +11,9 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/TransformData.h>
-#include <MotionMatchingData.h>
-#include <MotionMatchingInstance.h>
+#include <FeatureMatrixTransformer.h>
 #include <FrameDatabase.h>
+#include <MotionMatchingInstance.h>
 #include <FeaturePosition.h>
 
 #include <AzCore/Serialization/EditContext.h>
@@ -57,7 +57,6 @@ namespace EMotionFX::MotionMatching
         const FeatureMatrixTransformer* featureTransformer,
         size_t frameIndex)
     {
-        const Transform jointModelTM = currentPose.GetModelSpaceTransform(m_jointIndex);
         const Transform relativeToWorldTM = currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex);
 
         AZ::Vector3 position = GetFeatureData(featureMatrix, frameIndex);

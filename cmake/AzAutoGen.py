@@ -37,7 +37,7 @@ class AutoGenConfig:
         self.pythonPaths = pythonPaths
 
 def SanitizeTargetName(targetName):
-    return targetName.replace('.', '').replace('::', '')
+    return re.sub(r'[^\w]', '', targetName.lstrip('0123456789'))
 
 def ParseInputFile(inputFilePath):
     result = []
@@ -79,9 +79,21 @@ def CreateHashGuid(string):
     hashStr = hash.hexdigest()
     return ("{" + hashStr[0:8] + "-" + hashStr[8:12] + "-" + hashStr[12:16] + "-" + hashStr[16:20] + "-" + hashStr[20:] + "}").upper()
 
+def CreateAZHashValue64(btyes):
+    hash = hashlib.new('sha256')
+    hash.update(btyes)
+    hashStr = hash.hexdigest()
+    return ("AZ::HashValue64{ 0x" + hashStr[0:16] + " }")  # grab the first 64-bits of a sha256; any 64-bits of a sha256 are just as secure as any other 64.
+
 def EtreeToString(xmlNode):
     return etree.tostring(xmlNode)
 
+def EtreeToStringStripped(xmlNode):
+    for elem in xmlNode.iter():
+        if elem.text: elem.text = elem.text.strip()
+        if elem.tail: elem.tail = elem.tail.strip()
+    return etree.tostring(xmlNode)
+    
 def SanitizePath(path):
     return (path or '').replace('\\', '/').replace('//', '/')
 
@@ -176,7 +188,9 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
         templateEnv.filters['camelToHuman'  ] = CamelToHuman
         templateEnv.filters['booleanTrue'   ] = BooleanTrue
         templateEnv.filters['createHashGuid'] = CreateHashGuid
+        templateEnv.filters['createAZHashValue64'] = CreateAZHashValue64
         templateEnv.filters['etreeToString' ] = EtreeToString
+        templateEnv.filters['etreeToStringStripped' ] = EtreeToStringStripped
         templateJinja  = templateEnv.get_template(os.path.basename(templateFile))
         templateVars   = \
             { \
@@ -248,11 +262,18 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
                     currentFile.truncate()
                     with open(outputFile, 'w+') as currentFile:
                         currentFile.write(compareFD.getvalue())
-                        print('Generating %s with template %s and inputs %s' % (outputFile, templateFile, ", ".join(dataInputFiles)))
+                        if autogenConfig.verbose == True:
+                            print(f'Generated {outputFile} with template {templateFile} and inputs, '.join(dataInputFiles))
+                        else:
+                            print('Generated %s' % (os.path.basename(outputFile)))
         else:
             with open(outputFile, 'w+') as outputFD:
-                outputFD.write(compareFD.getvalue())                
-                print('Generating %s using template %s and inputs %s' % (outputFile, templateFile, ", ".join(dataInputFiles)))
+                outputFD.write(compareFD.getvalue())
+                if autogenConfig.verbose == True:
+                    print(f'Generated {outputFile} using template {templateFile} and inputs, '.join(dataInputFiles))
+                else:
+                    print('Generated %s' % (os.path.basename(outputFile)))
+
     except IOError as e:
         PrintError('%s(%s) : error I/O(%s) accessing %s : %s' % (fileinput.filename(), str(fileinput.filelineno()), e.errno, e.filename, e.strerror))
     except:

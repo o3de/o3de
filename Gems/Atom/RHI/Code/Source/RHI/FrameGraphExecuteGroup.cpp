@@ -26,7 +26,8 @@ namespace AZ
 
             for (uint32_t i = 0; i < request.m_scopeCount; ++i)
             {
-                descriptor.m_scopeId = request.m_scopeIds[i];
+                descriptor.m_scopeId = request.m_scopeEntries[i].m_scopeId;
+                descriptor.m_submitRange = { 0, request.m_scopeEntries[i].m_submitCount };
                 m_contexts.emplace_back(descriptor);
             }
         }
@@ -41,10 +42,15 @@ namespace AZ
             descriptor.m_scopeId = request.m_scopeId;
             descriptor.m_commandListCount = request.m_commandListCount;
 
+            // build the execute contexts
+            // Note: each context includes a submission range, with the number of items in range equal to (submitCount / commandListCount)
+            uint32_t submitCount = request.m_submitCount;
+            uint32_t commandListCount = request.m_commandListCount;
             for (uint32_t i = 0; i < request.m_commandListCount; ++i)
             {
                 descriptor.m_commandListIndex = i;
                 descriptor.m_commandList = request.m_commandLists[i];
+                descriptor.m_submitRange = { (i * submitCount) / commandListCount, ((i + 1) * submitCount) / commandListCount };
                 m_contexts.emplace_back(descriptor);
             }
         }

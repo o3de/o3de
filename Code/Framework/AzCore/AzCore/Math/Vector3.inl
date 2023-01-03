@@ -274,17 +274,19 @@ namespace AZ
 
     AZ_MATH_INLINE float Vector3::NormalizeWithLength()
     {
-        const Simd::Vec1::FloatType length = Simd::Vec1::Sqrt(Simd::Vec3::Dot(m_value, m_value));
-        (*this) /= Vector3(Simd::Vec3::FromVec1(length));
-        return Simd::Vec1::SelectFirst(length);
+        const float length = Simd::Vec1::SelectFirst(
+            Simd::Vec1::Sqrt(Simd::Vec3::Dot(m_value, m_value)));
+        m_value = Simd::Vec3::Div(m_value, Simd::Vec3::Splat(length));
+        return length;
     }
 
 
     AZ_MATH_INLINE float Vector3::NormalizeWithLengthEstimate()
     {
-        const Simd::Vec1::FloatType length = Simd::Vec1::SqrtEstimate(Simd::Vec3::Dot(m_value, m_value));
-        (*this) /= Vector3(Simd::Vec3::FromVec1(length));
-        return Simd::Vec1::SelectFirst(length);
+        const float length = Simd::Vec1::SelectFirst(
+            Simd::Vec1::SqrtEstimate(Simd::Vec3::Dot(m_value, m_value)));
+        m_value = Simd::Vec3::Div(m_value, Simd::Vec3::Splat(length));
+        return length;
     }
 
 
@@ -551,14 +553,6 @@ namespace AZ
     {
         return AZStd::min<float>(m_x, AZStd::min<float>(m_y, m_z));
     }
-
-
-    AZ_MATH_INLINE Vector3& Vector3::operator=(const Vector3& rhs)
-    {
-        m_value = rhs.m_value;
-        return *this;
-    }
-
 
     AZ_MATH_INLINE Vector3 Vector3::operator-() const
     {

@@ -14,6 +14,7 @@ import re
 import os
 
 import ly_test_tools.environment.file_system
+import ly_test_tools._internal.exceptions as exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -35,12 +36,8 @@ class LySettings(object):
         _edit_text_settings_file(self._resource_locator.asset_processor_config_file(), setting, value)
 
     def modify_platform_setting(self, setting, value):
-        logger.info(f'Updating setting {setting} to {value}')
+        logger.debug(f'Updating setting {setting} to {value}')
         _edit_text_settings_file(self._resource_locator.platform_config_file(), setting, value)
-
-    def modify_shader_compiler_setting(self, setting, value):
-        logger.info(f'Updating setting {setting} to {value}')
-        _edit_text_settings_file(self._resource_locator.shader_compiler_config_file(), setting, value)
 
     def backup_asset_processor_settings(self, backup_path=None):
         self._backup_settings(self._resource_locator.asset_processor_config_file(), backup_path)
@@ -53,9 +50,6 @@ class LySettings(object):
         """
         self._backup_settings(self._resource_locator.platform_config_file(), backup_path)
 
-    def backup_shader_compiler_settings(self, backup_path=None):
-        self._backup_settings(self._resource_locator.shader_compiler_config_file(), backup_path)
-
     def restore_asset_processor_settings(self, backup_path):
         self._restore_settings(self._resource_locator.asset_processor_config_file(), backup_path)
 
@@ -66,9 +60,6 @@ class LySettings(object):
         If no backup_path is provided, it will attempt to retrieve the backup from the workspace temp path.
         """
         self._restore_settings(self._resource_locator.platform_config_file(), backup_path)
-
-    def restore_shader_compiler_settings(self, backup_path=None):
-        self._restore_settings(self._resource_locator.shader_compiler_config_file(), backup_path)
 
     def backup_json_settings(self, json_settings_file, backup_path=None):
         """
@@ -256,7 +247,7 @@ def _edit_text_settings_file(settings_file, setting, value, comment_char=""):
     """
 
     if not os.path.isfile(settings_file):
-        raise IOError(f"Invalid file and/or path {settings_file}.")
+        raise exceptions.LyTestToolsFrameworkException(f"Invalid file and/or path {settings_file}.")
 
     match_obj = None
     document = None
@@ -282,20 +273,22 @@ def _edit_text_settings_file(settings_file, setting, value, comment_char=""):
                     print("")
                 else:
                     print(f"{comment_char}{setting}={value}")
-                logger.info(f"Updated setting {setting} in {settings_file} to {value} from {match_obj.group(3)}")
+                logger.debug(f"Updated setting {setting} in {settings_file} to {value} from {match_obj.group(3)}")
             else:
                 print(line)
 
     except PermissionError as error:
-        logger.warning(f"PermissionError, possibly due to ({settings_file}) already being open. Error: {error}")
+        logger.warning(f"PermissionError originating from LyTT, possibly due to ({settings_file}) already being open. "
+                       f"Error: {error}")
     finally:
         if document is not None:
             document.close()
 
     # Append the settings change if setting doesn't exist in file.
     if match_obj is None:
-        logger.info(
+        logger.debug(
             "Unable to locate setting in file. "
             f"Appending {comment_char}{setting}={value} to {settings_file}.")
         with open(settings_file, "a") as document:
             document.write(f"{comment_char}{setting}={value}")
+

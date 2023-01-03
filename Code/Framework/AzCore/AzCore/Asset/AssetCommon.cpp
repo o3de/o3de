@@ -46,7 +46,7 @@ namespace AZ::Data
             return AssetId();
         }
 
-        assetId.m_subId = strtoul(&input[separatorIdx + 1], nullptr, 16);
+        assetId.m_subId = static_cast<AZ::u32>(strtoul(&input[separatorIdx + 1], nullptr, 16));
 
         return assetId;
     }
@@ -70,11 +70,14 @@ namespace AZ::Data
                 ->Attribute(AZ::Script::Attributes::Module, "asset")
                 ->Constructor()
                 ->Constructor<const Uuid&, u32>()
+                ->Constructor<AZStd::string_view, u32>()
                 ->Method("CreateString", &Data::AssetId::CreateString)
                 ->Method("IsValid", &Data::AssetId::IsValid)
                     ->Attribute(AZ::Script::Attributes::Alias, "is_valid")
                 ->Method("ToString", [](const Data::AssetId* self) { return self->ToString<AZStd::string>(); })
                     ->Attribute(AZ::Script::Attributes::Alias, "to_string")
+                    ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
+                ->Method("__repr__", [](const Data::AssetId* self) { return self->ToString<AZStd::string>(); })
                 ->Method("IsEqual", [](const Data::AssetId& self, const Data::AssetId& other) { return self == other; })
                     ->Attribute(AZ::Script::Attributes::Alias, "is_equal")
                     ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Equal)

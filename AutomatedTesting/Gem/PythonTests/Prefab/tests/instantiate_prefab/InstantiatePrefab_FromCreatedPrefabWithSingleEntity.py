@@ -13,7 +13,8 @@ def InstantiatePrefab_FromCreatedPrefabWithSingleEntity():
     import azlmbr.legacy.general as general
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
+    from editor_python_test_tools.prefab_utils import Prefab
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
@@ -37,13 +38,13 @@ def InstantiatePrefab_FromCreatedPrefabWithSingleEntity():
 
     # Undo the instantiation
     general.undo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     child_ids = instance_parent_id.get_children_ids()
     assert instance.id not in child_ids, "Undo Failed: Instance was still found after undo."
 
     # Redo the instantiation
     general.redo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     child_ids = instance_parent_id.get_children_ids()
     instance_children = instance.get_children()
     assert instance.id in child_ids, "Redo Failed: Instance was not found after redo"

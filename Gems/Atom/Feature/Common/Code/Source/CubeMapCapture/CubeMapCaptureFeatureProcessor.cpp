@@ -20,7 +20,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<CubeMapCaptureFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 
@@ -123,11 +123,15 @@ namespace AZ
             cubeMapCapture->SetRelativePath(relativePath);
         }
 
-        void CubeMapCaptureFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
+        void CubeMapCaptureFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
+                RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
-            for (auto& cubeMapCapture : m_cubeMapCaptures)
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
             {
-                cubeMapCapture->OnRenderPipelinePassesChanged(renderPipeline);
+                for (auto& cubeMapCapture : m_cubeMapCaptures)
+                {
+                    cubeMapCapture->OnRenderPipelinePassesChanged(renderPipeline);
+                }
             }
         }
     } // namespace Render

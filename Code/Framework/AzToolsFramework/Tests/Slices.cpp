@@ -390,7 +390,7 @@ namespace UnitTest
                     return false;
                 }
 
-                const AZStd::chrono::system_clock::time_point startTime = AZStd::chrono::system_clock::now();
+                const AZStd::chrono::steady_clock::time_point startTime = AZStd::chrono::steady_clock::now();
 
                 size_t nextIndex = 1;
                 size_t assetsLoaded = 1;
@@ -402,10 +402,10 @@ namespace UnitTest
                     EBUS_EVENT(AZ::TickBus, OnTick, 0.3f, AZ::ScriptTimePoint());
                 }
 
-                const AZStd::chrono::system_clock::time_point assetLoadFinishTime = AZStd::chrono::system_clock::now();
+                const AZStd::chrono::steady_clock::time_point assetLoadFinishTime = AZStd::chrono::steady_clock::now();
 
                 AZ_Printf("StressTest", "All Assets Loaded: %u assets, took %.2f ms\n", assetsLoaded,
-                    float(AZStd::chrono::microseconds(assetLoadFinishTime - startTime).count()) * 0.001f);
+                    float(AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(assetLoadFinishTime - startTime).count()) * 0.001f);
 
                 return true;
             }
@@ -442,9 +442,9 @@ namespace UnitTest
                     totalAllocs = AZ::AllocatorInstance<AZ::SystemAllocator>::GetAllocator().GetRecords()->RequestedAllocs();
                     AZ_TracePrintf("StressTest", "Allocs Before Inst: %u live, %u total\n", liveAllocs, totalAllocs);
 
-                    const AZStd::chrono::system_clock::time_point startTime = AZStd::chrono::system_clock::now();
+                    const AZStd::chrono::steady_clock::time_point startTime = AZStd::chrono::steady_clock::now();
                     StressInstDrill(baseSliceAsset, nextIndex, 1, slices);
-                    const AZStd::chrono::system_clock::time_point instantiateFinishTime = AZStd::chrono::system_clock::now();
+                    const AZStd::chrono::steady_clock::time_point instantiateFinishTime = AZStd::chrono::steady_clock::now();
 
                     liveAllocs = 0;
                     totalAllocs = 0;
@@ -465,7 +465,7 @@ namespace UnitTest
                     rootSlice->GetEntities(entities);
 
                     AZ_Printf("StressTest", "All Assets Instantiated: %u slices, %u entities, took %.2f ms\n", slices, entities.size(),
-                        float(AZStd::chrono::microseconds(instantiateFinishTime - startTime).count()) * 0.001f);
+                        float(AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(instantiateFinishTime - startTime).count()) * 0.001f);
 
                     return true;
                 }
@@ -657,9 +657,9 @@ namespace UnitTest
     {
         run();
     }
-    
+
     class SortTransformParentsBeforeChildrenTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZStd::vector<AZ::Entity*> m_unsorted;
@@ -1019,13 +1019,13 @@ namespace UnitTest
         {
             switch (m_exportType)
             {
-                case EXPORT_EDITOR_COMPONENT:    
+                case EXPORT_EDITOR_COMPONENT:
                     return AZ::ExportedComponent(thisComponent, false, m_exportHandled);
-                case EXPORT_RUNTIME_COMPONENT:   
+                case EXPORT_RUNTIME_COMPONENT:
                     return AZ::ExportedComponent(aznew TestExportRuntimeComponent(true, true), true, m_exportHandled);
                 case EXPORT_OTHER_RUNTIME_COMPONENT:
                     return AZ::ExportedComponent(aznew TestExportOtherRuntimeComponent(), true, m_exportHandled);
-                case EXPORT_NULL_COMPONENT:      
+                case EXPORT_NULL_COMPONENT:
                     return AZ::ExportedComponent(nullptr, false, m_exportHandled);
             }
 
@@ -1043,7 +1043,7 @@ namespace UnitTest
 
 
     class SliceCompilerTest
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         AzToolsFramework::ToolsApplication m_app;
@@ -1067,7 +1067,7 @@ namespace UnitTest
             m_app.Start(AzFramework::Application::Descriptor());
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 

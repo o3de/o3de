@@ -5,9 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include "rcjob.h"
-
-
 
 #include <AzToolsFramework/UI/Logging/LogLine.h>
 
@@ -21,7 +20,6 @@
 
 #include <qstorageinfo.h>
 
-
 namespace
 {
     bool s_typesRegistered = false;
@@ -33,8 +31,6 @@ namespace
     const unsigned int g_jobMaximumWaitTime = 1000 * 60 * 60;
 
     const unsigned int g_sleepDurationForLockingAndFingerprintChecking = 100;
-
-    const unsigned int g_graceTimeBeforeLockingAndFingerprintChecking = 300;
 
     const unsigned int g_timeoutInSecsForRetryingCopy = 30;
 
@@ -100,7 +96,7 @@ namespace AssetProcessor
     void RCJob::Init(JobDetails& details)
     {
         m_jobDetails = AZStd::move(details);
-        m_queueElementID = QueueElementID(GetJobEntry().m_databaseSourceName, GetPlatformInfo().m_identifier.c_str(), GetJobKey());
+        m_queueElementID = QueueElementID(GetJobEntry().m_sourceAssetReference, GetPlatformInfo().m_identifier.c_str(), GetJobKey());
     }
 
     const JobEntry& RCJob::GetJobEntry() const
@@ -238,9 +234,9 @@ namespace AssetProcessor
         processJobRequest.m_jobDescription.m_priority = GetPriority();
         processJobRequest.m_platformInfo = GetPlatformInfo();
         processJobRequest.m_builderGuid = GetBuilderGuid();
-        processJobRequest.m_sourceFile = GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data();
+        processJobRequest.m_sourceFile = GetJobEntry().m_sourceAssetReference.RelativePath().c_str();
         processJobRequest.m_sourceFileUUID = GetInputFileUuid();
-        processJobRequest.m_watchFolder = GetJobEntry().m_watchFolderPath.toUtf8().data();
+        processJobRequest.m_watchFolder = GetJobEntry().m_sourceAssetReference.ScanFolderPath().c_str();
         processJobRequest.m_fullPath = GetJobEntry().GetAbsoluteSourcePath().toUtf8().data();
         processJobRequest.m_jobId = GetJobEntry().m_jobRunKey;
     }
@@ -351,6 +347,7 @@ namespace AssetProcessor
         QElapsedTimer ticker;
         ticker.start();
         AssetBuilderSDK::ProcessJobResponse result;
+        AssetBuilderSDK::JobCancelListener cancelListener(builderParams.m_processJobRequest.m_jobId);
 
         if (builderParams.m_rcJob->m_jobDetails.m_autoFail)
         {
@@ -367,46 +364,24 @@ namespace AssetProcessor
             return;
         }
 
-        // We are adding a grace time before we check exclusive lock and validate the fingerprint of the file.
-        // This grace time should prevent multiple jobs from getting added to the queue if the source file is still updating.
-        qint64 milliSecsDiff = QDateTime::currentMSecsSinceEpoch() - builderParams.m_rcJob->GetJobEntry().m_computedFingerprintTimeStamp;
-        if (milliSecsDiff < g_graceTimeBeforeLockingAndFingerprintChecking)
-        {
-            QThread::msleep(aznumeric_cast<unsigned long>(g_graceTimeBeforeLockingAndFingerprintChecking - milliSecsDiff));
-        }
-        // Lock and unlock the source file to ensure it is not still open by another process.
-        // This prevents premature processing of some source files that are opened for writing, but are zero bytes for longer than the modification threshhold
+        // If requested, make sure we can open the file with exclusive permissions
         QString inputFile = builderParams.m_rcJob->GetJobEntry().GetAbsoluteSourcePath();
         if (builderParams.m_rcJob->GetJobEntry().m_checkExclusiveLock && QFile::exists(inputFile))
         {
             // We will only continue once we get exclusive lock on the source file
             while (!AssetUtilities::CheckCanLock(inputFile))
             {
+                // Wait for a while before checking again, we need to let some time pass for the other process to finish whatever work it is doing
                 QThread::msleep(g_sleepDurationForLockingAndFingerprintChecking);
-                if (listener.WasQuitRequested() || (ticker.elapsed() > g_jobMaximumWaitTime))
+
+                // If AP shutdown is requested, the job is canceled or we exceeded the max wait time, abort the loop and mark the job as canceled
+                if (listener.WasQuitRequested() || cancelListener.IsCancelled() || (ticker.elapsed() > g_jobMaximumWaitTime))
                 {
                     result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
                     Q_EMIT builderParams.m_rcJob->JobFinished(result);
                     return;
                 }
             }
-        }
-
-        // We will only continue once the fingerprint of the file stops changing
-        unsigned int fingerprint = AssetUtilities::GenerateFingerprint(builderParams.m_rcJob->m_jobDetails);
-        while (fingerprint != builderParams.m_rcJob->GetOriginalFingerprint())
-        {
-            builderParams.m_rcJob->SetOriginalFingerprint(fingerprint);
-            QThread::msleep(g_sleepDurationForLockingAndFingerprintChecking);
-
-            if (listener.WasQuitRequested() || (ticker.elapsed() > g_jobMaximumWaitTime))
-            {
-                result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
-                Q_EMIT builderParams.m_rcJob->JobFinished(result);
-                return;
-            }
-
-            fingerprint = AssetUtilities::GenerateFingerprint(builderParams.m_rcJob->m_jobDetails);
         }
 
         Q_EMIT builderParams.m_rcJob->BeginWork();
@@ -542,7 +517,11 @@ namespace AssetProcessor
                         AssetServerBus::BroadcastResult(assetServerMode, &AssetServerBus::Events::GetRemoteCachingMode);
 
                         QFileInfo fileInfo(builderParams.m_processJobRequest.m_sourceFile.c_str());
-                        builderParams.m_serverKey = QString("%1_%2_%3_%4").arg(fileInfo.completeBaseName(), builderParams.m_processJobRequest.m_jobDescription.m_jobKey.c_str(), builderParams.m_processJobRequest.m_platformInfo.m_identifier.c_str()).arg(builderParams.m_rcJob->GetOriginalFingerprint());
+                        builderParams.m_serverKey = QString("%1_%2_%3_%4")
+                            .arg(fileInfo.completeBaseName(),
+                                 builderParams.m_processJobRequest.m_jobDescription.m_jobKey.c_str(),
+                                 builderParams.m_processJobRequest.m_platformInfo.m_identifier.c_str())
+                            .arg(builderParams.m_rcJob->GetOriginalFingerprint());
                         bool operationResult = false;
                         if (assetServerMode == AssetServerMode::Server)
                         {
@@ -564,8 +543,15 @@ namespace AssetProcessor
                                 if (!operationResult)
                                 {
                                     AZ_TracePrintf(AssetProcessor::DebugChannel, "Unable to save job (%s, %s, %s) with fingerprint (%u) to the server.\n",
-                                        builderParams.m_rcJob->GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
+                                        builderParams.m_rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
                                         builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str(), builderParams.m_rcJob->GetOriginalFingerprint());
+                                }
+                                else
+                                {
+                                    for (auto& product : result.m_outputProducts)
+                                    {
+                                        product.m_outputFlags |= AssetBuilderSDK::ProductOutputFlags::CachedAsset;
+                                    }
                                 }
                             }
                         }
@@ -582,8 +568,16 @@ namespace AssetProcessor
                             else
                             {
                                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Unable to get job (%s, %s, %s) with fingerprint (%u) from the server. Processing locally.\n",
-                                    builderParams.m_rcJob->GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
+                                    builderParams.m_rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
                                     builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str(), builderParams.m_rcJob->GetOriginalFingerprint());
+                            }
+
+                            if (operationResult)
+                            {
+                                for (auto& product : result.m_outputProducts)
+                                {
+                                    product.m_outputFlags |= AssetBuilderSDK::ProductOutputFlags::CachedAsset;
+                                }
                             }
 
                             runProcessJob = !operationResult;
@@ -610,13 +604,17 @@ namespace AssetProcessor
         if (result.m_resultCode == AssetBuilderSDK::ProcessJobResult_Success)
         {
             // do a final check of this job to make sure its not making colliding subIds.
-            AZStd::unordered_set<AZ::u32> subIdsFound;
+            AZStd::unordered_map<AZ::u32, AZStd::string> subIdsFound;
             for (const AssetBuilderSDK::JobProduct& product : result.m_outputProducts)
             {
-                if (!subIdsFound.insert(product.m_productSubID).second)
+                if (!subIdsFound.insert({ product.m_productSubID, product.m_productFileName }).second)
                 {
                     // if this happens the element was already in the set.
-                    AZ_Error(AssetBuilderSDK::ErrorWindow, false, "The builder created more than one asset with the same subID (%u) when emitting product %s\n  Builders should set a unique m_productSubID value for each product, as this is used as part of the address of the asset.", product.m_productSubID, product.m_productFileName.c_str());
+                    AZ_Error(AssetBuilderSDK::ErrorWindow, false,
+                        "The builder created more than one asset with the same subID (%u) when emitting product %.*s, colliding with %.*s\n  Builders should set a unique m_productSubID value for each product, as this is used as part of the address of the asset.",
+                        product.m_productSubID,
+                        AZ_STRING_ARG(product.m_productFileName),
+                        AZ_STRING_ARG(subIdsFound[product.m_productSubID]));
                     result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     break;
                 }
@@ -994,7 +992,7 @@ namespace AssetProcessor
         }
         AzToolsFramework::AssetSystem::JobInfo jobInfo;
         AzToolsFramework::AssetSystem::AssetJobLogResponse jobLogResponse;
-        jobInfo.m_sourceFile = builderParams.m_rcJob->GetJobEntry().m_databaseSourceName.toUtf8().data();
+        jobInfo.m_sourceFile = builderParams.m_rcJob->GetJobEntry().m_sourceAssetReference.RelativePath().c_str();
         jobInfo.m_platform = builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str();
         jobInfo.m_jobKey = builderParams.m_rcJob->GetJobKey().toUtf8().data();
         jobInfo.m_builderGuid = builderParams.m_rcJob->GetBuilderGuid();
@@ -1039,7 +1037,7 @@ namespace AssetProcessor
         if (!jobLogResponse.m_isSuccess)
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Job log request was unsuccessful for job (%s, %s, %s) from the server.\n",
-                builderParams.m_rcJob->GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
+                builderParams.m_rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
                 builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str());
 
             if(jobLogResponse.m_jobLog.find("No log file found") != AZStd::string::npos)

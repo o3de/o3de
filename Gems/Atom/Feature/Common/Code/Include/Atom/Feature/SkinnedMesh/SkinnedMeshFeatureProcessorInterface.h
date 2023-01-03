@@ -25,7 +25,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::SkinnedMeshFeatureProcessorInterface, "{6BE6D9D7-FFD7-4C35-9A84-4EFDE730F06B}");
+            AZ_RTTI(AZ::Render::SkinnedMeshFeatureProcessorInterface, "{6BE6D9D7-FFD7-4C35-9A84-4EFDE730F06B}", AZ::RPI::FeatureProcessor);
 
             using SkinnedMeshHandle = StableDynamicArrayHandle<SkinnedMeshRenderProxy>;
 

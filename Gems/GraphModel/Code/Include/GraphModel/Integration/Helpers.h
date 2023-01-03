@@ -18,7 +18,7 @@ namespace GraphModelIntegration
 {
     namespace Attributes
     {
-        const static AZ::Crc32 TitlePaletteOverride = AZ_CRC("TitlePaletteOverride", 0x2faad537);
+        const static AZ::Crc32 TitlePaletteOverride = AZ_CRC_CE("TitlePaletteOverride");
     }
 
     class Helpers
@@ -26,7 +26,7 @@ namespace GraphModelIntegration
     public:
         //! Helper method to retrieve the TitlePaletteOverride attribute (if exists) set on
         //! a given AZ type class, that will also check any base class that it is derived from
-        static AZStd::string GetTitlePaletteOverride(const AZ::TypeId& typeId)
+        static AZStd::string GetTitlePaletteOverride(void* nodePtr, const AZ::TypeId& typeId)
         {
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
@@ -62,7 +62,7 @@ namespace GraphModelIntegration
                         {
                             if (auto titlePaletteAttribute = elementData->FindAttribute(Attributes::TitlePaletteOverride))
                             {
-                                AZ::AttributeReader nameReader(nullptr, titlePaletteAttribute);
+                                AZ::AttributeReader nameReader(nodePtr, titlePaletteAttribute);
                                 nameReader.Read<AZStd::string>(paletteOverride);
                             }
                         }

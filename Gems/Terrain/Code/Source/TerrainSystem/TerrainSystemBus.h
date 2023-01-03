@@ -46,6 +46,8 @@ namespace Terrain
         virtual void RegisterArea(AZ::EntityId areaId) = 0;
         virtual void UnregisterArea(AZ::EntityId areaId) = 0;
         virtual void RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask) = 0;
+        virtual void RefreshRegion(
+            const AZ::Aabb& dirtyRegion, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask) = 0;
     };
 
     using TerrainSystemServiceRequestBus = AZ::EBus<TerrainSystemServiceRequests>;
@@ -95,7 +97,7 @@ namespace Terrain
 
         virtual ~TerrainSpawnerRequests() = default;
 
-        virtual void GetPriority(AZ::u32& outLayer, AZ::u32& outPriority) = 0;
+        virtual void GetPriority(uint32_t& outLayer, int32_t& outPriority) = 0;
         virtual bool GetUseGroundPlane() = 0;
 
     };

@@ -54,5 +54,5 @@ def kill_processes(processes_list):
     if type(processes_list) is not list:
         raise LyProcessKillerException('processes_list must be of type "list" for the kill_processes() function.')
 
-    logger.info('Killing list of processes by name: {}'.format(processes_list))
+    logger.debug('Killing list of processes by name: {}'.format(processes_list))
     ly_test_tools.environment.process_utils.kill_processes_named(names=processes_list, ignore_extensions=True)

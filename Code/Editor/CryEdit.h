@@ -233,6 +233,7 @@ public:
     void OnUpdateNewLevel(QAction* action);
     void OnUpdatePlayGame(QAction* action);
     void OnToolsLogMemoryUsage();
+    void OnToolsPreferences();
 
 protected:
     // ------- AzFramework::AssetSystemInfoBus::Handler ------
@@ -240,6 +241,8 @@ protected:
     // -------------------------------------------
 
 private:
+    friend class EditorActionsHandler;
+
     void InitLevel(const CEditCommandLineInfo& cmdInfo);
 
     bool ConnectToAssetProcessor() const;
@@ -359,7 +362,6 @@ private:
     void OnDisplayGotoPosition();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
-    void OnToolsPreferences();
     void OnSwitchToDefaultCamera();
     void OnUpdateSwitchToDefaultCamera(QAction* action);
     void OnSwitchToSequenceCamera();

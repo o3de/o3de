@@ -28,4 +28,6 @@ set(ENABLED_GEMS
     StartingPointInput
     TextureAtlas
     WhiteBox
+    DiffuseProbeGrid
+    Compression
 )

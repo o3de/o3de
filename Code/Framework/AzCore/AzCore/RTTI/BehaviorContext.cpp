@@ -87,7 +87,7 @@ namespace AZ
                     azEventDescValid = false;
                 }
 
-                size_t parameterIndex = 0;
+                [[maybe_unused]] size_t parameterIndex = 0;
                 for (AZStd::string_view parameterName : behaviorAzEventDesc.m_parameterNames)
                 {
                     if (parameterName.empty())
@@ -152,6 +152,13 @@ namespace AZ
         {
             delete attrIt.second;
         }
+    }
+
+
+    // BehaviorMethod legacy Call forwarder
+    bool BehaviorMethod::Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const
+    {
+        return Call(AZStd::span(arguments, numArguments), result);
     }
 
     bool BehaviorMethod::AddOverload(BehaviorMethod* overload)
@@ -270,7 +277,7 @@ namespace AZ
     //=========================================================================
     // GetTypeId
     //=========================================================================
-    const AZ::Uuid& BehaviorProperty::GetTypeId() const
+    AZ::TypeId BehaviorProperty::GetTypeId() const
     {
         if (m_getter)
         {
@@ -468,6 +475,43 @@ namespace AZ
         return (classTypeIt != m_typeToClassMap.end());
     }
 
+    // BehaviorContext bound objects query functions
+    const BehaviorMethod* BehaviorContext::FindMethodByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto methodIt = m_methods.find(reflectedName);
+        return methodIt != m_methods.end() ? methodIt->second : nullptr;
+    }
+    const BehaviorProperty* BehaviorContext::FindPropertyByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto propertyIt = m_properties.find(reflectedName);
+        return propertyIt != m_properties.end() ? propertyIt->second : nullptr;
+    }
+    const BehaviorMethod* BehaviorContext::FindGetterByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto propertyIt = m_properties.find(reflectedName);
+        return propertyIt != m_properties.end() && propertyIt->second != nullptr ? propertyIt->second->m_getter : nullptr;
+    }
+    const BehaviorMethod* BehaviorContext::FindSetterByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto propertyIt = m_properties.find(reflectedName);
+        return propertyIt != m_properties.end() && propertyIt->second != nullptr ? propertyIt->second->m_setter : nullptr;
+    }
+    const BehaviorClass* BehaviorContext::FindClassByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto classIt = m_classes.find(reflectedName);
+        return classIt != m_classes.end() ? classIt->second : nullptr;
+    }
+    const BehaviorClass* BehaviorContext::FindClassByTypeId(const AZ::TypeId& typeId) const
+    {
+        auto classTypeIt = m_typeToClassMap.find(typeId);
+        return classTypeIt != m_typeToClassMap.end() ? classTypeIt->second : nullptr;
+    }
+    const BehaviorEBus* BehaviorContext::FindEBusByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto ebusIt = m_ebuses.find(reflectedName);
+        return ebusIt != m_ebuses.end() ? ebusIt->second: nullptr;
+    }
+
     //=========================================================================
     // BehaviorClass
     //=========================================================================
@@ -538,6 +582,132 @@ namespace AZ
         }
 
         return BehaviorObject(address, m_azRtti);
+    }
+
+
+
+    // ScopedBehaviorObject class constructor/destructor definition
+    BehaviorClass::ScopedBehaviorObject::ScopedBehaviorObject() = default;
+    BehaviorClass::ScopedBehaviorObject::ScopedBehaviorObject(AZ::BehaviorObject&& behaviorObject, CleanupFunction cleanupFunction)
+        : m_behaviorObject(behaviorObject)
+        , m_cleanupFunction(AZStd::move(cleanupFunction))
+    {
+
+    }
+
+    // Move assignment needs to deallocate the previous scoped object
+    auto BehaviorClass::ScopedBehaviorObject::operator=(ScopedBehaviorObject&& other) ->ScopedBehaviorObject&
+    {
+        if (this != &other)
+        {
+            // Swap with the other scoped behavior object
+            // When the other object goes out of scope it will cleanup the old BehaviorObject instance.
+            AZStd::swap(m_behaviorObject, other.m_behaviorObject);
+            AZStd::swap(m_cleanupFunction, other.m_cleanupFunction);
+        }
+        return *this;
+    }
+
+    BehaviorClass::ScopedBehaviorObject::~ScopedBehaviorObject()
+    {
+        if (m_cleanupFunction)
+        {
+            m_cleanupFunction(m_behaviorObject);
+        }
+    }
+
+    bool BehaviorClass::ScopedBehaviorObject::IsValid() const
+    {
+        return m_behaviorObject.IsValid();
+    }
+
+    auto BehaviorClass::CreateWithScope() const -> ScopedBehaviorObject
+    {
+        return ScopedBehaviorObject(Create(Allocate()), [this](const AZ::BehaviorObject& behaviorObject)
+            {
+                this->Destroy(behaviorObject);
+            });
+    }
+
+    auto BehaviorClass::CreateWithScope(void* address) const -> ScopedBehaviorObject
+    {
+        return ScopedBehaviorObject(Create(address), [this](const AZ::BehaviorObject& behaviorObject)
+            {
+                if (behaviorObject.m_typeId == m_typeId && this->m_destructor && behaviorObject.m_address)
+                {
+                    this->m_destructor(behaviorObject.m_address, m_userData);
+                }
+            });
+    }
+
+    auto BehaviorClass::CreateWithScope(AZStd::span<BehaviorArgument> arguments) const -> ScopedBehaviorObject
+    {
+        // If the arguments list is empty fallback to using the default constructor overload
+        if (arguments.empty())
+        {
+            return CreateWithScope();
+        }
+
+        AZ::BehaviorObject selfObject(Allocate(), m_azRtti);
+        AZStd::fixed_vector<AZ::BehaviorArgument, 64> addressPlusArguments{ AZ::BehaviorArgument{&selfObject} };
+        addressPlusArguments.append_range(arguments);
+
+        bool constructorInvoked{};
+        for (AZ::BehaviorMethod* constructor : m_constructors)
+        {
+            if (constructor->IsCallable(addressPlusArguments) && constructor->Call(addressPlusArguments))
+            {
+                constructorInvoked = true;
+                break;
+            }
+        }
+
+        if (constructorInvoked)
+        {
+            return ScopedBehaviorObject(AZStd::move(selfObject), [this](const AZ::BehaviorObject& behaviorObject)
+                {
+                    this->Destroy(behaviorObject);
+                });
+        }
+
+        // No the constructor has been invoked, so deallocate the new object instance created in this function
+        Deallocate(selfObject.m_address);
+
+        return {};
+    }
+
+    auto BehaviorClass::CreateWithScope(void* address, AZStd::span<BehaviorArgument> arguments) const -> ScopedBehaviorObject
+    {
+        // If the arguments list is empty fallback to using the default constructor overload with the supplied memory address
+        if (arguments.empty())
+        {
+            return CreateWithScope(address);
+        }
+
+        // Use the supplied memory address to create a new object instance
+        AZ::BehaviorObject selfObject(address, m_azRtti);
+        AZStd::fixed_vector<AZ::BehaviorArgument, 64> addressPlusArguments{ AZ::BehaviorArgument{&selfObject} };
+        addressPlusArguments.append_range(arguments);
+
+        bool constructorInvoked{};
+        for (AZ::BehaviorMethod* constructor : m_constructors)
+        {
+            if (constructor->IsCallable(addressPlusArguments) && constructor->Call(addressPlusArguments))
+            {
+                constructorInvoked = true;
+                break;
+            }
+        }
+
+        if (constructorInvoked)
+        {
+            return ScopedBehaviorObject(AZStd::move(selfObject), [this](const AZ::BehaviorObject& behaviorObject)
+                {
+                    this->Destroy(behaviorObject);
+                });
+        }
+
+        return {};
     }
 
     //=========================================================================
@@ -672,6 +842,25 @@ namespace AZ
         return methodIter != m_methods.end() && methodIter->second->m_overload != nullptr;
     }
 
+    // Property method query functions implementations
+    const BehaviorProperty* BehaviorClass::FindPropertyByReflectedName(AZStd::string_view reflectedName) const
+    {
+        auto propertyIter = m_properties.find(reflectedName);
+        return propertyIter != m_properties.end() ? propertyIter->second : nullptr;
+    }
+
+    const BehaviorMethod* BehaviorClass::FindGetterByReflectedName(AZStd::string_view reflectedName) const
+    {
+        const BehaviorProperty* behaviorProperty = FindPropertyByReflectedName(reflectedName);
+        return behaviorProperty != nullptr ? behaviorProperty->m_getter : nullptr;
+    }
+
+    const BehaviorMethod* BehaviorClass::FindSetterByReflectedName(AZStd::string_view reflectedName) const
+    {
+        const BehaviorProperty* behaviorProperty = FindPropertyByReflectedName(reflectedName);
+        return behaviorProperty != nullptr ? behaviorProperty->m_setter : nullptr;
+    }
+
     //=========================================================================
     // Move
     //=========================================================================
@@ -715,7 +904,7 @@ namespace AZ
         }
         else
         {
-            return azmalloc(m_size, m_alignment, AZ::SystemAllocator, m_name.c_str());
+            return azmalloc(m_size, m_alignment, AZ::SystemAllocator);
         }
     }
 
@@ -960,7 +1149,7 @@ namespace AZ
             return ((static_cast<AZ::u64>(scopeType) & static_cast<AZ::u64>(scope)) == static_cast<AZ::u64>(scope));
         }
 
-        const AZ::TypeId& GetUnderlyingTypeId(const IRttiHelper& enumRttiHelper)
+        AZ::TypeId GetUnderlyingTypeId(const IRttiHelper& enumRttiHelper)
         {
             const size_t underlyingTypeSize = enumRttiHelper.GetTypeSize();
             const TypeTraits underlyingTypeTraits = enumRttiHelper.GetTypeTraits();

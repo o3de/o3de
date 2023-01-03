@@ -13,7 +13,8 @@
 
 namespace O3DE::ProjectManager
 {
-    class ScreenWidget;
+    QT_FORWARD_DECLARE_CLASS(ScreenWidget);
+    QT_FORWARD_DECLARE_CLASS(DownloadController);
 
-    ScreenWidget* BuildScreen(QWidget* parent = nullptr, ProjectManagerScreen screen = ProjectManagerScreen::Empty);
+    ScreenWidget* BuildScreen(QWidget* parent = nullptr, ProjectManagerScreen screen = ProjectManagerScreen::Empty, DownloadController* downloadController = nullptr);
 } // namespace O3DE::ProjectManager

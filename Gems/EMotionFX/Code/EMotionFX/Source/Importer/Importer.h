@@ -83,7 +83,6 @@ namespace EMotionFX
             bool m_optimizeForServer = false;                       /**< Set to true if you witsh to optimize this actor to be used on server. */
             uint32 m_threadIndex = 0;
             AZStd::vector<uint32>    m_chunkIDsToIgnore;      /**< Add chunk ID's to this array. Chunks with these ID's will not be processed. */
-            AZStd::vector<uint32>    m_layerIDsToIgnore;      /**< Add vertex attribute layer ID's to ignore. */
 
             /**
              * If the actor need to be optimized for server, will overwrite a few other actor settings.
@@ -451,11 +450,6 @@ namespace EMotionFX
          */
         bool ProcessChunk(MCore::File* file, Importer::ImportParameters& importParams);
 
-        /**
-         * Validate and resolve any conflicting settings inside a specific actor import settings object.
-         * @param settings The actor settings to verify and fix/modify when needed.
-         */
-        void ValidateActorSettings(ActorSettings* settings);
 
         /**
          * Validate and resolve any conflicting settings inside a specific motion import settings object.

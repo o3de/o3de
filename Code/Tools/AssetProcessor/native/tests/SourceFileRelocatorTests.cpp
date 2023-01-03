@@ -14,7 +14,9 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include "AssetProcessorTest.h"
 #include "AzToolsFramework/API/AssetDatabaseBus.h"
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
@@ -44,7 +46,7 @@ namespace UnitTests
 
 
     class SourceFileRelocatorTest
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
         , public ::UnitTest::SourceControlTest
     {
     public:
@@ -98,16 +100,16 @@ namespace UnitTests
                 false, true, platforms, 0, m_data->m_scanFolder2.m_scanFolderID);
             m_data->m_platformConfig.AddScanFolder(scanFolder2);
 
-            SourceDatabaseEntry sourceFile1 = { m_data->m_scanFolder1.m_scanFolderID, "subfolder1/somefile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile2 = { m_data->m_scanFolder1.m_scanFolderID, "subfolder1/otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile3 = { m_data->m_scanFolder2.m_scanFolderID, "otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile4 = { m_data->m_scanFolder2.m_scanFolderID, "a/b/c/d/otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile5 = { m_data->m_scanFolder1.m_scanFolderID, "duplicate/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile6 = { m_data->m_scanFolder2.m_scanFolderID, "duplicate/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile7 = { m_data->m_scanFolder1.m_scanFolderID, "subfolder2/file.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile8 = { m_data->m_scanFolder1.m_scanFolderID, "test.txt", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile9 = { m_data->m_scanFolder1.m_scanFolderID, "duplicate/folder/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile10 = { m_data->m_scanFolder1.m_scanFolderID, "folder/file.foo", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile1{ m_data->m_scanFolder1.m_scanFolderID, "subfolder1/somefile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile2{ m_data->m_scanFolder1.m_scanFolderID, "subfolder1/otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile3{ m_data->m_scanFolder2.m_scanFolderID, "otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile4{ m_data->m_scanFolder2.m_scanFolderID, "a/b/c/d/otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile5{ m_data->m_scanFolder1.m_scanFolderID, "duplicate/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile6{ m_data->m_scanFolder2.m_scanFolderID, "duplicate/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile7{ m_data->m_scanFolder1.m_scanFolderID, "subfolder2/file.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile8{ m_data->m_scanFolder1.m_scanFolderID, "test.txt", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile9{ m_data->m_scanFolder1.m_scanFolderID, "duplicate/folder/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile10{ m_data->m_scanFolder1.m_scanFolderID, "folder/file.foo", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile1));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile2));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile3));
@@ -119,8 +121,8 @@ namespace UnitTests
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile9));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile10));
 
-            SourceFileDependencyEntry dependency1{ AZ::Uuid::CreateRandom(), "subfolder1/somefile.tif", "subfolder1/otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_SourceToSource, false, "" };
-            SourceFileDependencyEntry dependency2{ AZ::Uuid::CreateRandom(), "subfolder1/otherfile.tif", "otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_JobToJob, false, "" };
+            SourceFileDependencyEntry dependency1{ AZ::Uuid::CreateRandom(), m_data->m_dependency1Uuid, PathOrUuid("subfolder1/otherfile.tif"), SourceFileDependencyEntry::TypeOfDependency::DEP_SourceToSource, false, "" };
+            SourceFileDependencyEntry dependency2{ AZ::Uuid::CreateRandom(), m_data->m_dependency2Uuid, PathOrUuid("otherfile.tif"), SourceFileDependencyEntry::TypeOfDependency::DEP_JobToJob, false, "" };
             ASSERT_TRUE(m_data->m_connection->SetSourceFileDependency(dependency1));
             ASSERT_TRUE(m_data->m_connection->SetSourceFileDependency(dependency2));
 
@@ -394,6 +396,9 @@ namespace UnitTests
             AZStd::unique_ptr<SourceFileRelocator> m_reporter;
             AZStd::unique_ptr<MockPerforceComponent> m_perforceComponent;
 
+            AZ::Uuid m_dependency1Uuid{ "{2C083160-DD50-459A-9482-CE663F4B558B}" };
+            AZ::Uuid m_dependency2Uuid{ "{013BF607-A52A-4D1A-B2F4-AA8222C1BD68}" };
+
             AZ::JobManager* m_jobManager = nullptr;
             AZ::JobContext* m_jobContext = nullptr;
         };
@@ -638,14 +643,14 @@ namespace UnitTests
 
         m_data->m_reporter->PopulateDependencies(entryContainer);
 
-        AZStd::vector<AZStd::string> databaseSourceNames;
+        AZStd::vector<AZ::Uuid> databaseSourceNames;
         AZStd::vector<AZ::s64> databaseProductDependencyNames;
 
         for(const auto& relocationInfo : entryContainer)
         {
             for (const auto& dependencyEntry : relocationInfo.m_sourceDependencyEntries)
             {
-                databaseSourceNames.push_back(dependencyEntry.m_source);
+                databaseSourceNames.push_back(dependencyEntry.m_sourceGuid);
             }
         }
 
@@ -657,7 +662,7 @@ namespace UnitTests
             }
         }
 
-        ASSERT_THAT(databaseSourceNames, testing::UnorderedElementsAreArray({ "subfolder1/otherfile.tif" }));
+        ASSERT_THAT(databaseSourceNames, testing::UnorderedElementsAreArray({ m_data->m_dependency2Uuid }));
         ASSERT_THAT(databaseProductDependencyNames, testing::UnorderedElementsAreArray({ 2 }));
     }
 
@@ -857,7 +862,7 @@ namespace UnitTests
     {
         QDir tempPath(m_tempDir.path());
 
-        auto result = m_data->m_reporter->Move("subfolder1/otherfile.tif", "someOtherPlace/otherfile.tif", false, false, true, true);
+        auto result = m_data->m_reporter->Move("subfolder1/otherfile.tif", "someOtherPlace/otherfile.tif", RelocationParameters_RemoveEmptyFoldersFlag | RelocationParameters_UpdateReferencesFlag);
 
         ASSERT_TRUE(result.IsSuccess());
 

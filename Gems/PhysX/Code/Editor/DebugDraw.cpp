@@ -499,26 +499,17 @@ namespace PhysX
             debugDisplay.PopMatrix();
         }
 
-        void Collider::DrawBox(AzFramework::DebugDisplayRequests& debugDisplay,
+        void Collider::DrawBox(
+            AzFramework::DebugDisplayRequests& debugDisplay,
             const Physics::ColliderConfiguration& colliderConfig,
             const Physics::BoxShapeConfiguration& boxShapeConfig,
-            const AZ::Vector3& colliderScale,
-            const bool forceUniformScaling) const
+            const AZ::Vector3& colliderScale) const
         {
             // The resulting scale is the product of the scale in the entity's transform and the collider scale.
             const AZ::Vector3 resultantScale = Utils::GetTransformScale(m_entityId) * colliderScale;
 
             // Scale the box parameters using the desired method (uniform or non-uniform).
-            AZ::Vector3 scaledBoxParameters = boxShapeConfig.m_dimensions * 0.5f;
-
-            if (forceUniformScaling)
-            {
-                scaledBoxParameters *= resultantScale.GetMaxElement();
-            }
-            else
-            {
-                scaledBoxParameters *= resultantScale;
-            }
+            const AZ::Vector3 scaledBoxParameters = boxShapeConfig.m_dimensions * 0.5f * resultantScale;
 
             const AZ::Color& faceColor = CalcDebugColor(colliderConfig);
 
@@ -533,8 +524,7 @@ namespace PhysX
         void Collider::DrawCapsule(AzFramework::DebugDisplayRequests& debugDisplay,
             const Physics::ColliderConfiguration& colliderConfig,
             const Physics::CapsuleShapeConfiguration& capsuleShapeConfig,
-            const AZ::Vector3& colliderScale,
-            const bool forceUniformScaling) const
+            const AZ::Vector3& colliderScale) const
         {
             AZStd::vector<AZ::Vector3> verts;
             AZStd::vector<AZ::Vector3> points;
@@ -545,18 +535,7 @@ namespace PhysX
 
             // Scale the capsule parameters using the desired method (uniform or non-uniform).
             AZ::Vector2 scaledCapsuleParameters = AZ::Vector2(capsuleShapeConfig.m_radius, capsuleShapeConfig.m_height);
-
-            if (forceUniformScaling)
-            {
-                scaledCapsuleParameters *= resultantScale.GetMaxElement();
-            }
-            else
-            {
-                scaledCapsuleParameters *= AZ::Vector2(
-                    AZ::GetMax(resultantScale.GetX(), resultantScale.GetY()),
-                    resultantScale.GetZ()
-                );
-            }
+            scaledCapsuleParameters *= AZ::Vector2(AZ::GetMax(resultantScale.GetX(), resultantScale.GetY()), resultantScale.GetZ());
 
             debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
 
@@ -705,20 +684,22 @@ namespace PhysX
 
             if (!vertices.empty())
             {
-                // Each heightfield quad consists of 6 vertices, or 2 triangles.
-                // If we naively draw each triangle, we'll need 6 lines per quad. However, the diagonal line would be drawn twice,
-                // and the quad borders with adjacent quads would also be drawn twice, so we can reduce this down to 3 lines, so
-                // that we're drawing a per-quad pattern like this:
-                // 2 --- 3
-                //   |\
-                // 0 | \ 1
-                //  
-                // To draw 3 lines, we need 6 vertices. Because our results *already* have 6 vertices per quad, we just need to make
-                // sure each set of 6 is the *right* set of vertices for what we want to draw, and then we can submit the entire set
-                // directly to DrawLines().
-                // We currently get back 6 vertices in the pattern 0-1-2, 1-3-2, for our two triangles. The lines we want to draw
-                // are 0-2, 2-1, and 3-2. We can create this pattern by just copying the third vertex onto the second vertex for
-                // every quad so that 0 1 2 1 3 2 becomes 0 2 2 1 3 2.
+                /* 
+                   Each heightfield quad consists of 6 vertices, or 2 triangles.
+                   If we naively draw each triangle, we'll need 6 lines per quad. However, the diagonal line would be drawn twice,
+                   and the quad borders with adjacent quads would also be drawn twice, so we can reduce this down to 3 lines, so
+                   that we're drawing a per-quad pattern like this:
+                   2 --- 3
+                     |\
+                   0 | \ 1
+                  
+                   To draw 3 lines, we need 6 vertices. Because our results *already* have 6 vertices per quad, we just need to make
+                   sure each set of 6 is the *right* set of vertices for what we want to draw, and then we can submit the entire set
+                   directly to DrawLines().
+                   We currently get back 6 vertices in the pattern 0-1-2, 1-3-2, for our two triangles. The lines we want to draw
+                   are 0-2, 2-1, and 3-2. We can create this pattern by just copying the third vertex onto the second vertex for
+                   every quad so that 0 1 2 1 3 2 becomes 0 2 2 1 3 2.
+                */
                 for (size_t vertex = 0; vertex < vertices.size(); vertex += 6)
                 {
                     vertices[vertex + 1] = vertices[vertex + 2];

@@ -600,12 +600,12 @@ namespace AzToolsFramework
             const AZ::Data::Asset<AZ::SliceAsset>& targetSlice,
             WillPushEntityCallback willPushEntityCallback);
 
-        static const char* splitterColor = "black";
-        static const char* detachMenuItemHoverColor = "#4285F4";
-        static const char* detachMenuItemDefaultColor = "#ffffff";
-        static const char* detailWidgetBackgroundColor = "#303030";
-        static const char* unsavableChangesTextColor = "#ff3f3f";
-        static const char* conflictedChangesTextColor = "red";
+        static constexpr const char* splitterColor = "black";
+        static constexpr const char* detachMenuItemHoverColor = "#4285F4";
+        static constexpr const char* detachMenuItemDefaultColor = "#ffffff";
+        static constexpr const char* detailWidgetBackgroundColor = "#303030";
+        static constexpr const char* unsavableChangesTextColor = "#ff3f3f";
+        static constexpr const char* conflictedChangesTextColor = "red";
 
     } // namespace SliceUtilities
 

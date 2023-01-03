@@ -37,6 +37,7 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MixedGradientLayer::m_operation, "Operation", "Function used to mix the current gradient with the previous result.")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Initialize, "Initialize")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Multiply, "Multiply")
+                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Screen, "Screen")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Add, "Linear Dodge (Add)")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Subtract, "Subtract")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Min, "Darken (Min)")
@@ -212,6 +213,32 @@ namespace GradientSignal
     void MixedGradientComponent::Activate()
     {
         m_dependencyMonitor.Reset();
+
+        m_dependencyMonitor.SetEntityNotificationFunction(
+            [this](const AZ::EntityId& ownerId, const AZ::EntityId& dependentId, const AZ::Aabb& dirtyRegion)
+            {
+                for (const auto& layer : m_configuration.m_layers)
+                {
+                    if (layer.m_enabled &&
+                        (layer.m_gradientSampler.m_gradientId == dependentId) &&
+                        layer.m_gradientSampler.m_opacity != 0.0f)
+                    {
+                        if (dirtyRegion.IsValid())
+                        {
+                            AZ::Aabb transformedRegion = layer.m_gradientSampler.TransformDirtyRegion(dirtyRegion);
+
+                            LmbrCentral::DependencyNotificationBus::Event(
+                                ownerId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, transformedRegion);
+                        }
+                        else
+                        {
+                            LmbrCentral::DependencyNotificationBus::Event(
+                                ownerId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+                        }
+                    }
+                }
+            });
+
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         for (const auto& layer : m_configuration.m_layers)
         {

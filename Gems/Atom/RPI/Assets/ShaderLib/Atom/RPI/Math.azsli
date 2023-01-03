@@ -33,22 +33,47 @@ void swap(inout float a, inout float b)
 
 // ---------- Power -----------
 
-float Pow2(float x)
+float Pow2(float x)         // 1 multiplication
 {
     return x * x;
 }
-float Pow3(float x)
+float Pow3(float x)         // 2 multiplications
 {
     return x * x * x;
 }
-float Pow4(float x)
+float Pow4(float x)         // 2 multiplications
 {
     x *= x;
     return x * x;
 }
-float Pow5(float x)
+float Pow5(float x)         // 3 multiplications
 {
     return x * Pow4(x);
+}
+float Pow6(float x)         // 3 multiplications
+{
+    x *= x;
+    return x * x * x;
+}
+float Pow7(float x)         // 4 multiplications
+{
+    return x * Pow6(x);
+}
+float Pow8(float x)         // 3 multiplications
+{
+    x *= x;
+    x *= x;
+    return x * x;
+}
+float Pow9(float x)         // 4 multiplications
+{
+    x = x * x * x;
+    return x * x * x;
+}
+float Pow10(float x)        // 4 multiplications
+{
+    x = Pow5(x);
+    return x * x;
 }
 
 // ---------- Min & Max -----------
@@ -87,6 +112,17 @@ float max4(float4 abcd)
     return max4(abcd.x, abcd.y, abcd.z, abcd.w);
 }
 
+// ---------- Matrix ----------
+
+float3x3 ExtractFloat3x3(float3x4 input)
+{
+    return float3x3(input[0].xyz, input[1].xyz, input[2].xyz);
+}
+
+float3x3 ExtractFloat3x3(float4x4 input)
+{
+    return float3x3(input[0].xyz, input[1].xyz, input[2].xyz);
+}
 
 // ---------- Intersection -----------
 
@@ -298,6 +334,7 @@ float PerspectiveDepthToLinear(float clipDepth, float3 coefficients)
 }
 
 // ---------- Random number generators -----------
+
 // George Marsaglia's Xorshift RNGs
 // https://www.jstatsoft.org/article/view/v008i14/xorshift.pdf
 uint Xorshift(in uint value) 
@@ -333,7 +370,9 @@ float LerpInverse(float a, float b, float value)
         return (value - a) / (b - a);
     }
 }
-//-------- Gaussinan distribution functions ---------
+
+// -------- Gaussinan distribution functions ---------
+
 // https://en.wikipedia.org/wiki/Gaussian_function
 // Parameter:
 // amplitude - the height of the curve's peak

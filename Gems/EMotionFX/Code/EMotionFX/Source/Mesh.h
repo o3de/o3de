@@ -20,7 +20,6 @@
 #include <MCore/Source/Vector.h>
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Ray.h>
-#include <MCore/Source/Color.h>
 
 namespace AZ::RPI
 {
@@ -70,9 +69,7 @@ namespace EMotionFX
             ATTRIB_NORMALS          = 1,    /**< Vertex normals. Typecast to AZ::Vector3. Normals are always exist. */
             ATTRIB_TANGENTS         = 2,    /**< Vertex tangents. Typecast to <b> AZ::Vector4 </b>. */
             ATTRIB_UVCOORDS         = 3,    /**< Vertex uv coordinates. Typecast to AZ::Vector2. */
-            ATTRIB_COLORS32         = 4,    /**< Vertex colors in 32-bits. Typecast to uint32. */
             ATTRIB_ORGVTXNUMBERS    = 5,    /**< Original vertex numbers. Typecast to uint32. Original vertex numbers always exist. */
-            ATTRIB_COLORS128        = 6,    /**< Vertex colors in 128-bits. */
             ATTRIB_BITANGENTS       = 7,    /**< Vertex bitangents (aka binormal). Typecast to AZ::Vector3. When tangents exists bitangents may still not exist! */
         };
 
@@ -612,12 +609,6 @@ namespace EMotionFX
          * @return True in case all indices have been ported correctly, false if any of the indices was out of the 16-bit range.
          */
         bool ConvertTo16BitIndices();
-
-        /**
-         * Convert RGBAColors consisting of 4 floats to 32bit DWORD color
-         * if 32bit colors do not exist yet and if 128bit colors do exist.
-         */
-        void ConvertTo32BitColors();
 
         /**
          * Check if this mesh is a pure triangle mesh.

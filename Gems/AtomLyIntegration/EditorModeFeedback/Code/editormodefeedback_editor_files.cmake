@@ -8,20 +8,43 @@
 
 set(FILES
     Include/EditorModeFeedback/EditorModeFeedbackInterface.h
+    Include/EditorModeFeedback/EditorStateRequestsBus.h
     Source/Pass/EditorModeFeedbackParentPass.cpp
     Source/Pass/EditorModeFeedbackParentPass.h
-    Source/Pass/EditorModeFeedbackPassBase.cpp
-    Source/Pass/EditorModeFeedbackPassBase.h
-    Source/Pass/EditorModeDesaturationPass.cpp
-    Source/Pass/EditorModeDesaturationPass.h
-    Source/Pass/EditorModeTintPass.cpp
-    Source/Pass/EditorModeTintPass.h
-    Source/Pass/EditorModeBlurPass.cpp
-    Source/Pass/EditorModeBlurPass.h
-    Source/Pass/EditorModeOutlinePass.cpp
-    Source/Pass/EditorModeOutlinePass.h
-    Source/FocusedEntity/FocusedMeshEntity.cpp
-    Source/FocusedEntity/FocusedMeshEntity.h
+    Source/Pass/Child/EditorModeFeedbackChildPassBase.cpp
+    Source/Pass/Child/EditorModeFeedbackChildPassBase.h
+    Source/Pass/Child/EditorModeDesaturationPass.cpp
+    Source/Pass/Child/EditorModeDesaturationPass.h
+    Source/Pass/Child/EditorModeTintPass.cpp
+    Source/Pass/Child/EditorModeTintPass.h
+    Source/Pass/Child/EditorModeBlurPass.cpp
+    Source/Pass/Child/EditorModeBlurPass.h
+    Source/Pass/Child/EditorModeOutlinePass.cpp
+    Source/Pass/Child/EditorModeOutlinePass.h
+    Source/Pass/EditorStatePassSystem.cpp
+    Source/Pass/EditorStatePassSystem.h
+    Source/Pass/EditorStatePassSystemUtils.cpp
+    Source/Pass/EditorStatePassSystemUtils.h
+    Source/Pass/State/EditorStateParentPass.cpp
+    Source/Pass/State/EditorStateParentPass.h
+    Source/Pass/State/EditorStateParentPassData.h
+    Source/Pass/State/EditorStateBase.cpp
+    Source/Pass/State/EditorStateBase.h
+    Source/Pass/State/EditorStateBufferCopyPass.cpp
+    Source/Pass/State/EditorStateBufferCopyPass.h
+    Source/Pass/State/EditorStateBufferCopyPass.cpp
+    Source/Pass/State/EditorStateBufferCopyPass.h
+    Source/Pass/State/EditorStateBufferCopyPassData.h
+    Source/Pass/State/FocusedEntityState.cpp
+    Source/Pass/State/FocusedEntityState.h
+    Source/Pass/State/SelectedEntityState.cpp
+    Source/Pass/State/SelectedEntityState.h
+    Source/Draw/DrawableMeshEntity.cpp
+    Source/Draw/DrawableMeshEntity.h
+    Source/Draw/EditorStateMaskRenderer.cpp
+    Source/Draw/EditorStateMaskRenderer.h
+    Source/Draw/EditorStateMeshDrawPacket.cpp
+    Source/Draw/EditorStateMeshDrawPacket.h
     Source/EditorModeFeedbackSystemComponent.cpp
     Source/EditorModeFeedbackSystemComponent.h
     Source/EditorModeFeedbackFeatureProcessor.cpp

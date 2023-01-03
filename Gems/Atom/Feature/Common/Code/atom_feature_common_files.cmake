@@ -14,6 +14,7 @@ set(FILES
     Include/Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h
     Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
+    Include/Atom/Feature/CoreLights/LightCommon.h
     Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformPass.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h
@@ -40,6 +41,7 @@ set(FILES
     Include/Atom/Feature/SphericalHarmonics/SphericalHarmonicsUtility.inl
     Include/Atom/Feature/TransformService/TransformServiceFeatureProcessor.h
     Include/Atom/Feature/Utils/FrameCaptureBus.h
+    Include/Atom/Feature/Utils/FrameCaptureTestBus.h
     Include/Atom/Feature/Utils/GpuBufferHandler.h
     Include/Atom/Feature/Utils/IndexedDataVector.h
     Include/Atom/Feature/Utils/IndexedDataVector.inl
@@ -81,6 +83,13 @@ set(FILES
     Source/CoreLights/DiskLightFeatureProcessor.cpp
     Source/CoreLights/EsmShadowmapsPass.h
     Source/CoreLights/EsmShadowmapsPass.cpp
+    Source/CoreLights/LightCullingPass.cpp
+    Source/CoreLights/LightCullingPass.h
+    Source/CoreLights/LightCullingTilePreparePass.cpp
+    Source/CoreLights/LightCullingTilePreparePass.h
+    Source/CoreLights/LightCullingRemap.cpp
+    Source/CoreLights/LightCullingRemap.h
+    Source/CoreLights/LightCullingConstants.h
     Source/CoreLights/LtcCommon.h
     Source/CoreLights/LtcCommon.cpp
     Source/CoreLights/PointLightFeatureProcessor.h
@@ -101,13 +110,6 @@ set(FILES
     Source/CoreLights/ShadowmapAtlas.cpp
     Source/CoreLights/ShadowmapPass.h
     Source/CoreLights/ShadowmapPass.cpp
-    Source/CoreLights/LightCullingPass.cpp
-    Source/CoreLights/LightCullingPass.h
-    Source/CoreLights/LightCullingTilePreparePass.cpp
-    Source/CoreLights/LightCullingTilePreparePass.h
-    Source/CoreLights/LightCullingRemap.cpp
-    Source/CoreLights/LightCullingRemap.h
-    Source/CoreLights/LightCullingConstants.h
     Source/Checkerboard/CheckerboardColorResolvePass.cpp
     Source/Checkerboard/CheckerboardColorResolvePass.h
     Source/Checkerboard/CheckerboardPass.cpp
@@ -127,42 +129,6 @@ set(FILES
     Source/Decals/AsyncLoadTracker.h
     Source/Decals/DecalTextureArrayFeatureProcessor.h
     Source/Decals/DecalTextureArrayFeatureProcessor.cpp    
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingPass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiancePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiancePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridBlendDistancePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridBlendDistancePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdatePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdatePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGrid.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGrid.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridTextureReadback.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridTextureReadback.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.h
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp
     Source/DisplayMapper/AcesOutputTransformLutPass.cpp
     Source/DisplayMapper/ApplyShaperLookupTablePass.cpp
@@ -185,8 +151,6 @@ set(FILES
     Source/Material/Transform2DFunctor.h
     Source/Material/UseTextureFunctor.cpp
     Source/Material/UseTextureFunctor.h
-    Source/Material/DrawListFunctor.cpp
-    Source/Material/DrawListFunctor.h
     Source/Math/GaussianMathFilter.h
     Source/Math/GaussianMathFilter.cpp
     Source/Math/MathFilter.h
@@ -343,6 +307,12 @@ set(FILES
     Source/SkyBox/SkyBoxFeatureProcessor.h
     Source/SkyBox/SkyBoxFogSettings.h
     Source/SkyBox/SkyBoxFogSettings.cpp
+    Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.cpp
+    Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.h
+    Source/SkyAtmosphere/SkyAtmosphereParentPass.cpp
+    Source/SkyAtmosphere/SkyAtmosphereParentPass.h
+    Source/SkyAtmosphere/SkyAtmospherePass.cpp
+    Source/SkyAtmosphere/SkyAtmospherePass.h
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
 )

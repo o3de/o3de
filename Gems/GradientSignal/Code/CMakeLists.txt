@@ -61,6 +61,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         AUTOMOC
         FILES_CMAKE
             gradientsignal_editor_files.cmake
+        PLATFORM_INCLUDE_FILES
+            Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/gradient_signal_editor_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
@@ -73,6 +75,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 3rdParty::OpenImageIO
                 Gem::LmbrCentral.Editor
+                Gem::Atom_RPI.Edit
             PUBLIC
                 3rdParty::Qt::Widgets
                 AZ::AzCore
@@ -184,12 +187,15 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAMESPACE Gem
             FILES_CMAKE
                 gradientsignal_editor_tests_files.cmake
+            PLATFORM_INCLUDE_FILES
+                Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/gradient_signal_editor_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     .
                     Source
             BUILD_DEPENDENCIES
                 PRIVATE
+                    3rdParty::OpenImageIO
                     AZ::AzTest
                     AZ::AzTestShared
                     Gem::GradientSignal.Tests.Static

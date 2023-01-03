@@ -1,0 +1,40 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        "Name": "DiffuseGlobalIlluminationPass",
+        "TemplateName": "DiffuseGlobalIlluminationPassTemplate",
+        "Enabled": true,
+        "Connections": [
+            {
+                "LocalSlot": "DiffuseInputOutput",
+                "AttachmentRef": {
+                    "Pass": "Forward",
+                    "Attachment": "DiffuseOutput"
+                }
+            },
+            {
+                "LocalSlot": "AlbedoInput",
+                "AttachmentRef": {
+                    "Pass": "Forward",
+                    "Attachment": "AlbedoOutput"
+                }
+            },
+            {
+                "LocalSlot": "NormalInput",
+                "AttachmentRef": {
+                    "Pass": "Forward",
+                    "Attachment": "NormalOutput"
+                }
+            },
+            {
+                "LocalSlot": "DepthStencilInputOutput",
+                "AttachmentRef": {
+                    "Pass": "Forward",
+                    "Attachment": "DepthStencilInputOutput"
+                }
+            }
+        ]
+    }
+}

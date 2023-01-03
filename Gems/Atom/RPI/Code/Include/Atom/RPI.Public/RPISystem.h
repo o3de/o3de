@@ -20,7 +20,6 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderSystem.h>
-#include <Atom/RPI.Public/Shader/Metrics/ShaderMetricsSystem.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQuerySystem.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
 
@@ -116,7 +115,6 @@ namespace AZ
             MaterialSystem m_materialSystem;
             ModelSystem m_modelSystem;
             ShaderSystem m_shaderSystem;
-            ShaderMetricsSystem m_shaderMetricsSystem;
             BufferSystem m_bufferSystem;
             ImageSystem m_imageSystem;
             PassSystem m_passSystem;

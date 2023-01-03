@@ -7,6 +7,7 @@
  */
 #include <RHI/CommandList.h>
 #include <RHI/Conversion.h>
+#include <RHI/Device.h>
 #include <RHI/Query.h>
 #include <RHI/QueryPool.h>
 
@@ -23,12 +24,14 @@ namespace AZ
         {
             auto* queryPool = static_cast<const QueryPool*>(GetQueryPool());
             auto& commandList = static_cast<CommandList&>(commandListBase);
-            
-            vkCmdBeginQuery(
-                commandList.GetNativeCommandBuffer(),
-                queryPool->GetNativeQueryPool(),
-                GetHandle().GetIndex(),
-                ConvertQueryControlFlags(flags));
+
+            static_cast<Device&>(GetDevice())
+                .GetContext()
+                .CmdBeginQuery(
+                    commandList.GetNativeCommandBuffer(),
+                    queryPool->GetNativeQueryPool(),
+                    GetHandle().GetIndex(),
+                    ConvertQueryControlFlags(flags));
 
             return RHI::ResultCode::Success;
         }
@@ -37,10 +40,9 @@ namespace AZ
         {
             auto* queryPool = static_cast<const QueryPool*>(GetQueryPool());
             auto& commandList = static_cast<CommandList&>(commandListBase);
-            vkCmdEndQuery(
-                commandList.GetNativeCommandBuffer(),
-                queryPool->GetNativeQueryPool(),
-                GetHandle().GetIndex());
+            static_cast<Device&>(GetDevice())
+                .GetContext()
+                .CmdEndQuery(commandList.GetNativeCommandBuffer(), queryPool->GetNativeQueryPool(), GetHandle().GetIndex());
 
             return RHI::ResultCode::Success;
         }
@@ -50,12 +52,13 @@ namespace AZ
             auto* queryPool = static_cast<const QueryPool*>(GetQueryPool());
             auto& commandList = static_cast<CommandList&>(commandListBase);
 
-            vkCmdWriteTimestamp(
-                commandList.GetNativeCommandBuffer(),
-                VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                queryPool->GetNativeQueryPool(),
-                GetHandle().GetIndex()
-            );
+            static_cast<Device&>(GetDevice())
+                .GetContext()
+                .CmdWriteTimestamp(
+                    commandList.GetNativeCommandBuffer(),
+                    VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                    queryPool->GetNativeQueryPool(),
+                    GetHandle().GetIndex());
             return RHI::ResultCode::Success;
         }
     }

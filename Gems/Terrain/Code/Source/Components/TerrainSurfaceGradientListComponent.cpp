@@ -14,8 +14,7 @@
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <TerrainSystem/TerrainSystemBus.h>
-
-AZ_DECLARE_BUDGET(Terrain);
+#include <TerrainProfiler.h>
 
 namespace Terrain
 {
@@ -96,6 +95,7 @@ namespace Terrain
         // Make sure we get update notifications whenever this entity or any dependent gradient entity changes in any way.
         // We'll use that to notify the terrain system that the surface information needs to be refreshed.
         m_dependencyMonitor.Reset();
+        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(GetEntityId());
 
@@ -176,7 +176,7 @@ namespace Terrain
         AZStd::span<const AZ::Vector3> inPositionList,
         AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList) const
     {
-        AZ_PROFILE_FUNCTION(Terrain);
+        TERRAIN_PROFILE_FUNCTION_VERBOSE
 
         AZ_Assert(
             inPositionList.size() == outSurfaceWeightsList.size(), "The position list size doesn't match the outSurfaceWeights list size.");
@@ -189,10 +189,15 @@ namespace Terrain
             return;
         }
 
-        AZStd::vector<float> gradientValues(inPositionList.size());
+        AZStd::vector<float> gradientValues;
+
+        gradientValues.resize_no_construct(inPositionList.size());
 
         for (const auto& mapping : m_configuration.m_gradientSurfaceMappings)
         {
+            // Clear out the gradient values before every GetValues call to ensure we don't accidentally end up with stale data.
+            AZStd::fill(gradientValues.begin(), gradientValues.end(), 0.0f);
+
             GradientSignal::GradientRequestBus::Event(
                 mapping.m_gradientEntityId, &GradientSignal::GradientRequestBus::Events::GetValues, inPositionList, gradientValues);
 
@@ -205,9 +210,25 @@ namespace Terrain
 
     void TerrainSurfaceGradientListComponent::OnCompositionChanged()
     {
-        TerrainSystemServiceRequestBus::Broadcast(
-            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-            AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+        OnCompositionRegionChanged(AZ::Aabb::CreateNull());
+    }
+
+    void TerrainSurfaceGradientListComponent::OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion)
+    {
+        if (dirtyRegion.IsValid())
+        {
+            TerrainSystemServiceRequestBus::Broadcast(
+                &TerrainSystemServiceRequestBus::Events::RefreshRegion,
+                dirtyRegion,
+                AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+        }
+        else
+        {
+            TerrainSystemServiceRequestBus::Broadcast(
+                &TerrainSystemServiceRequestBus::Events::RefreshArea,
+                GetEntityId(),
+                AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+        }
     }
 
 } // namespace Terrain

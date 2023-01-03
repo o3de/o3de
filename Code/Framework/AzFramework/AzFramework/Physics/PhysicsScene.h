@@ -35,6 +35,11 @@ namespace AzPhysics
         //! @returns Will return a SceneHandle to a Scene connected with the given name, otherwise will return InvalidSceneHandle.
         virtual SceneHandle GetSceneHandle(const AZStd::string& sceneName) = 0;
 
+        //! Get the Scene of the requested SceneHandle.
+        //! @param handle The SceneHandle of the requested scene.
+        //! @return Returns a Scene pointer if found, otherwise nullptr.
+        virtual Scene* GetScene(SceneHandle handle) = 0;
+
         //! Start the simulation process.
         //! As an example, this is a good place to trigger and queue any long running work in separate threads.
         //! @param sceneHandle The SceneHandle of the scene to use.
@@ -444,8 +449,8 @@ namespace AzPhysics
         SceneEvents::OnSimulationBodyRemoved m_simulatedBodyRemovedEvent;
         SceneEvents::OnSimulationBodySimulationEnabled m_simulatedBodySimulationEnabledEvent;
         SceneEvents::OnSimulationBodySimulationDisabled m_simulatedBodySimulationDisabledEvent;
-        SceneEvents::OnSceneSimulationStartEvent m_sceneSimuationStartEvent;
-        SceneEvents::OnSceneSimulationFinishEvent m_sceneSimuationFinishEvent;
+        SceneEvents::OnSceneSimulationStartEvent m_sceneSimulationStartEvent;
+        SceneEvents::OnSceneSimulationFinishEvent m_sceneSimulationFinishEvent;
         SceneEvents::OnSceneActiveSimulatedBodiesEvent m_sceneActiveSimulatedBodies;
         SceneEvents::OnSceneCollisionsEvent m_sceneCollisionEvent;
         SceneEvents::OnSceneTriggersEvent m_sceneTriggerEvent;
@@ -485,12 +490,12 @@ namespace AzPhysics
 
     inline void Scene::RegisterSceneSimulationStartHandler(SceneEvents::OnSceneSimulationStartHandler& handler)
     {
-        handler.Connect(m_sceneSimuationStartEvent);
+        handler.Connect(m_sceneSimulationStartEvent);
     }
 
     inline void Scene::RegisterSceneSimulationFinishHandler(SceneEvents::OnSceneSimulationFinishHandler& handler)
     {
-        handler.Connect(m_sceneSimuationFinishEvent);
+        handler.Connect(m_sceneSimulationFinishEvent);
     }
 
     inline void Scene::RegisterSceneActiveSimulatedBodiesHandler(SceneEvents::OnSceneActiveSimulatedBodiesEvent::Handler& handler)

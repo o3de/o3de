@@ -10,21 +10,21 @@
 # -------------------------------------------------------------------------
 """
 Module Documentation:
-    DccScriptingInterface:: SDK//maya//scripts//set_menu.py
+    DccScriptingInterface//Tools//DCC//maya//scripts//set_menu.py
 
 This module creates and manages a DCCsi mainmenu
 """
 # -------------------------------------------------------------------------
 # -- Standard Python modules
-# none
+import logging as _logging
 
 # -- External Python modules
 # none
 
 # -- DCCsi Extension Modules
-import azpy
-from constants import OBJ_DCCSI_MAINMENU
-from constants import TAG_DCCSI_MAINMENU
+import DccScriptingInterface.azpy
+from DccScriptingInterface.Tools.DCC.Maya.constants import OBJ_DCCSI_MAINMENU
+from DccScriptingInterface.Tools.DCC.Maya.constants import TAG_DCCSI_MAINMENU
 
 # -- maya imports
 import pymel.core as pm
@@ -32,18 +32,13 @@ import pymel.core as pm
 
 
 # -------------------------------------------------------------------------
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
+#  global scope
+from DccScriptingInterface.Tools.DCC.Maya import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.set_menu'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.info(f'Initializing: {_MODULENAME}')
 
-#  global space
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-
-_MODULENAME = r'DCCsi.SDK.Maya.Scripts.set_menu'
-
-_LOGGER = azpy.initialize_logger(_MODULENAME, default_log_level=int(20))
-_LOGGER.debug('Invoking:: {0}.'.format({_MODULENAME}))
+from DccScriptingInterface.globals import *
 # -------------------------------------------------------------------------
 
 
@@ -53,10 +48,40 @@ def menu_cmd_test():
     return
 # -------------------------------------------------------------------------
 
+
+# -------------------------------------------------------------------------
+def export_scene_materials(args):
+    # It is unclear why a False argument is being passed when called from the menu item below, but needed to add args
+    # for function to fire
+
+    _LOGGER.info('Exporting Scene Materials')
+
+    from importlib import reload
+    from DccScriptingInterface.azpy.dcc.maya.helpers import maya_materials_conversion
+    from DccScriptingInterface.azpy.o3de.renderer.materials import material_utilities
+    from DccScriptingInterface.azpy.o3de.renderer.materials import o3de_material_generator
+    from DccScriptingInterface.azpy.dcc.maya.helpers import convert_aiStandardSurface_material
+    from DccScriptingInterface.azpy.dcc.maya.helpers import convert_aiStandard_material
+    from DccScriptingInterface.azpy.dcc.maya.helpers import convert_stingray_material
+    from DccScriptingInterface.azpy import general_utils
+    from DccScriptingInterface.Tools.DCC.Maya.Scripts.Python.scene_exporter import export_tool
+
+    reload(maya_materials_conversion)
+    reload(material_utilities)
+    reload(o3de_material_generator)
+    reload(convert_aiStandardSurface_material)
+    reload(convert_aiStandard_material)
+    reload(convert_stingray_material)
+    reload(general_utils)
+    reload(export_tool)
+    export_tool.SceneExporter('convert')
+# -------------------------------------------------------------------------
+
+
 # -------------------------------------------------------------------------
 def set_main_menu(obj_name=OBJ_DCCSI_MAINMENU, label=TAG_DCCSI_MAINMENU):
     _main_window = pm.language.melGlobals['gMainWindow']
-    
+
     _menu_obj = obj_name
     _menu_label = label
 
@@ -70,14 +95,16 @@ def set_main_menu(obj_name=OBJ_DCCSI_MAINMENU, label=TAG_DCCSI_MAINMENU):
                                  parent=_main_window,
                                  tearOff=True)
 
-    # make a dummpy sub-menu
-    pm.menuItem(label='Menu Item Stub',
+    # Conversion Section (sub-menu)
+    _LOGGER.info('A')
+    pm.menuItem(label='Scene Export',
                 subMenu=True,
                 parent=_custom_tools_menu,
                 tearOff=True)
-    
-    # make a dummy menu item to test
-    pm.menuItem(label='Test', command=pm.Callback(menu_cmd_test))
+
+    # Conversion Section Menu Items
+    pm.menuItem(label='Export Scene FBX Models and Materials', command=export_scene_materials)
+
     return _custom_tools_menu
 
 # ==========================================================================

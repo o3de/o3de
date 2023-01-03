@@ -119,6 +119,8 @@ namespace
             return Styling::Attributes::Selectors;
         case Styling::Attribute::TextAlignment:
             return Styling::Attributes::TextAlignment;
+        case Styling::Attribute::LayoutOrientation:
+            return Styling::Attributes::LayoutOrientation;
         case Styling::Attribute::Invalid:
         default:
             return "Invalid Attribute";

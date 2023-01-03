@@ -90,8 +90,8 @@ namespace PhysXEditorTests
         AddEditorBoxShapeComponent(editorEntity);
 
         // Add two EditorColliderComponent components to the entity
-        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
-        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
 
         // Create game entity and verify only one StaticRigidBodyComponent was created
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());

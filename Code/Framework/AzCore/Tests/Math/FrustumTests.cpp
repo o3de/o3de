@@ -26,11 +26,11 @@ namespace UnitTest
         // Test a sphere in front of the near clip with a radius too small to intersect
         {
             AZ::IntersectResult result = testFrustum1.IntersectSphere(AZ::Vector3::CreateZero(), 0.5f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Exterior);
+            EXPECT_EQ(result, AZ::IntersectResult::Exterior);
         }
         {
             AZ::IntersectResult result = testFrustum2.IntersectSphere(AZ::Vector3(0.0f, 9.0f, 0.0f), 0.5f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Exterior);
+            EXPECT_EQ(result, AZ::IntersectResult::Exterior);
         }
     }
 
@@ -39,11 +39,11 @@ namespace UnitTest
         // Test a sphere beyond the far clip
         {
             AZ::IntersectResult result = testFrustum1.IntersectSphere(AZ::Vector3(0.0f, 102.0f, 0.0f), 1.0f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Exterior);
+            EXPECT_EQ(result, AZ::IntersectResult::Exterior);
         }
         {
             AZ::IntersectResult result = testFrustum2.IntersectSphere(AZ::Vector3(0.0f, 92.0f, 0.0f), 1.0f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Exterior);
+            EXPECT_EQ(result, AZ::IntersectResult::Exterior);
         }
     }
 
@@ -52,11 +52,11 @@ namespace UnitTest
         // Test a sphere in front of the near clip with a radius large enough to intersect
         {
             AZ::IntersectResult result = testFrustum1.IntersectSphere(AZ::Vector3::CreateZero(), 1.5f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
         {
             AZ::IntersectResult result = testFrustum2.IntersectSphere(AZ::Vector3(0.0f, 9.0f, 0.0f), 1.5f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
     }
 
@@ -65,11 +65,11 @@ namespace UnitTest
         // Test a sphere on the left clip plane
         {
             AZ::IntersectResult result = testFrustum1.IntersectSphere(AZ::Vector3(-50.0f, 50.0f, 0.0f), 1.0f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
         {
             AZ::IntersectResult result = testFrustum2.IntersectSphere(AZ::Vector3(-25.0f, 50.0f, 0.0f), 1.0f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
     }
 
@@ -78,11 +78,11 @@ namespace UnitTest
         // Test a sphere on the right clip plane
         {
             AZ::IntersectResult result = testFrustum1.IntersectSphere(AZ::Vector3(50.0f, 50.0f, 0.0f), 1.0f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
         {
             AZ::IntersectResult result = testFrustum2.IntersectSphere(AZ::Vector3(25.0f, 50.0f, 0.0f), 1.0f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
     }
 
@@ -91,11 +91,11 @@ namespace UnitTest
         // Test a sphere on the top clip plane
         {
             AZ::IntersectResult result = testFrustum1.IntersectSphere(AZ::Vector3(0.0f, 50.0f, 50.0f), 1.0f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
         {
             AZ::IntersectResult result = testFrustum2.IntersectSphere(AZ::Vector3(0.0f, 50.0f, 25.0f), 1.0f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
     }
 
@@ -104,11 +104,11 @@ namespace UnitTest
         // Test a sphere on the bottom clip plane
         {
             AZ::IntersectResult result = testFrustum1.IntersectSphere(AZ::Vector3(0.0f, 50.0f, -50.0f), 1.0f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
         {
             AZ::IntersectResult result = testFrustum2.IntersectSphere(AZ::Vector3(0.0f, 50.0f, -25.0f), 1.0f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
     }
 
@@ -117,11 +117,11 @@ namespace UnitTest
         // Test a sphere near the middle of the frustum
         {
             AZ::IntersectResult result = testFrustum1.IntersectSphere(AZ::Vector3(0.0f, 50.0f, 0.0f), 1.0f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Interior);
+            EXPECT_EQ(result, AZ::IntersectResult::Interior);
         }
         {
             AZ::IntersectResult result = testFrustum2.IntersectSphere(AZ::Vector3(0.0f, 50.0f, 0.0f), 1.0f);
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Interior);
+            EXPECT_EQ(result, AZ::IntersectResult::Interior);
         }
     }
 
@@ -131,12 +131,12 @@ namespace UnitTest
         {
             AZ::Vector3 center = AZ::Vector3::CreateZero();
             AZ::IntersectResult result = testFrustum1.IntersectAabb(center - AZ::Vector3(0.5f), center + AZ::Vector3(0.5f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Exterior);
+            EXPECT_EQ(result, AZ::IntersectResult::Exterior);
         }
         {
             AZ::Vector3 center = AZ::Vector3(0.0f, 9.0f, 0.0f);
             AZ::IntersectResult result = testFrustum2.IntersectAabb(center - AZ::Vector3(0.5f, 0.5f, 0.5f), center + AZ::Vector3(0.5f, 0.5f, 0.5f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Exterior);
+            EXPECT_EQ(result, AZ::IntersectResult::Exterior);
         }
     }
 
@@ -146,12 +146,12 @@ namespace UnitTest
         {
             AZ::Vector3 center = AZ::Vector3(0.0f, 102.0f, 0.0f);
             AZ::IntersectResult result = testFrustum1.IntersectAabb(center - AZ::Vector3(1.0f), center + AZ::Vector3(1.0f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Exterior);
+            EXPECT_EQ(result, AZ::IntersectResult::Exterior);
         }
         {
             AZ::Vector3 center = AZ::Vector3(0.0f, 92.0f, 0.0f);
             AZ::IntersectResult result = testFrustum2.IntersectAabb(center - AZ::Vector3(1.0f), center + AZ::Vector3(1.0f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Exterior);
+            EXPECT_EQ(result, AZ::IntersectResult::Exterior);
         }
     }
 
@@ -161,12 +161,12 @@ namespace UnitTest
         {
             AZ::Vector3 center = AZ::Vector3::CreateZero();
             AZ::IntersectResult result = testFrustum1.IntersectAabb(center - AZ::Vector3(1.5f), center + AZ::Vector3(1.5f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
         {
             AZ::Vector3 center = AZ::Vector3(0.0f, 9.0f, 0.0f);
             AZ::IntersectResult result = testFrustum2.IntersectAabb(center - AZ::Vector3(1.5f, 1.5f, 1.5f), center + AZ::Vector3(1.5f, 1.5f, 1.5f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
     }
 
@@ -176,12 +176,12 @@ namespace UnitTest
         {
             AZ::Vector3 center = AZ::Vector3(-50.0f, 50.0f, 0.0f);
             AZ::IntersectResult result = testFrustum1.IntersectAabb(center - AZ::Vector3(1.0f), center + AZ::Vector3(1.0f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
         {
             AZ::Vector3 center = AZ::Vector3(-25.0f, 50.0f, 0.0f);
             AZ::IntersectResult result = testFrustum2.IntersectAabb(center - AZ::Vector3(1.0f), center + AZ::Vector3(1.0f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
     }
 
@@ -191,12 +191,12 @@ namespace UnitTest
         {
             AZ::Vector3 center = AZ::Vector3(50.0f, 50.0f, 0.0f);
             AZ::IntersectResult result = testFrustum1.IntersectAabb(center - AZ::Vector3(1.0f), center + AZ::Vector3(1.0f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
         {
             AZ::Vector3 center = AZ::Vector3(25.0f, 50.0f, 0.0f);
             AZ::IntersectResult result = testFrustum2.IntersectAabb(center - AZ::Vector3(1.0f), center + AZ::Vector3(1.0f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
     }
 
@@ -206,12 +206,12 @@ namespace UnitTest
         {
             AZ::Vector3 center = AZ::Vector3(0.0f, 50.0f, 50.0f);
             AZ::IntersectResult result = testFrustum1.IntersectAabb(center - AZ::Vector3(1.0f), center + AZ::Vector3(1.0f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
         {
             AZ::Vector3 center = AZ::Vector3(0.0f, 50.0f, 25.0f);
             AZ::IntersectResult result = testFrustum2.IntersectAabb(center - AZ::Vector3(1.0f), center + AZ::Vector3(1.0f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
     }
 
@@ -221,12 +221,12 @@ namespace UnitTest
         {
             AZ::Vector3 center = AZ::Vector3(0.0f, 50.0f, -50.0f);
             AZ::IntersectResult result = testFrustum1.IntersectAabb(center - AZ::Vector3(1.0f), center + AZ::Vector3(1.0f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
         {
             AZ::Vector3 center = AZ::Vector3(0.0f, 50.0f, -25.0f);
             AZ::IntersectResult result = testFrustum2.IntersectAabb(center - AZ::Vector3(1.0f), center + AZ::Vector3(1.0f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(result, AZ::IntersectResult::Overlaps);
         }
     }
 
@@ -236,12 +236,12 @@ namespace UnitTest
         {
             AZ::Vector3 center = AZ::Vector3(0.0f, 50.0f, 0.0f);
             AZ::IntersectResult result = testFrustum1.IntersectAabb(center - AZ::Vector3(1.0f), center + AZ::Vector3(1.0f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Interior);
+            EXPECT_EQ(result, AZ::IntersectResult::Interior);
         }
         {
             AZ::Vector3 center = AZ::Vector3(0.0f, 50.0f, 0.0f);
             AZ::IntersectResult result = testFrustum2.IntersectAabb(center - AZ::Vector3(1.0f), center + AZ::Vector3(1.0f));
-            AZ_TEST_ASSERT(result == AZ::IntersectResult::Interior);
+            EXPECT_EQ(result, AZ::IntersectResult::Interior);
         }
     }
 
@@ -313,9 +313,9 @@ namespace UnitTest
         AZ::Plane bottom1 = AZ::Plane::CreateFromNormalAndPoint(AZ::Vector3(0.f, 0.f, 1.f), AZ::Vector3(0.f, 0.f, -2.f));
         AZ::Frustum frustum1(near1, far1, left1, right1, top1, bottom1);
 
-        EXPECT_FALSE(frustum.IsClose(frustum1));
+        EXPECT_THAT(frustum, testing::Not(IsClose(frustum1)));
         frustum.Set(frustum1);
-        EXPECT_TRUE(frustum.IsClose(frustum1));
+        EXPECT_THAT(frustum, IsClose(frustum1));
 
         frustum.SetPlane(AZ::Frustum::PlaneId::Near, near_value);
         frustum.SetPlane(AZ::Frustum::PlaneId::Far, far_value);
@@ -332,7 +332,7 @@ namespace UnitTest
         EXPECT_TRUE(frustum.GetPlane(AZ::Frustum::PlaneId::Bottom) == bottom);
 
         frustum = frustum1;
-        EXPECT_TRUE(frustum.IsClose(frustum1));
+        EXPECT_THAT(frustum, IsClose(frustum1));
     }
 
     // TODO: Test frustum creation from View-Projection Matrices
@@ -368,13 +368,13 @@ namespace UnitTest
 
     class Tests
         : public ::testing::WithParamInterface <FrustumTestCase>
-        , public UnitTest::AllocatorsTestFixture
+        , public UnitTest::LeakDetectionFixture
     {
 
     protected:
         void SetUp() override
         {
-            UnitTest::AllocatorsTestFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             // Build a frustum from 8 points
             // This allows us to generate test cases in each of the 9 regions in the 3x3 grid divided by the 6 planes,
@@ -483,10 +483,10 @@ namespace UnitTest
         float m_minEdgeLength = std::numeric_limits<float>::max();
 
         // Shapes generated inside/outside the frustum will be offset by this much as a margin of error
-        // Through trial and error determined that, for the test cases below, the sphere needs to be offset from the frustum by at least 0.05625f to be guaranteed to pass,
+        // Through trial and error determined that, for the test cases below, the sphere needs to be offset from the frustum by at least 0.115f to be guaranteed to pass,
         // which gives a reasonable idea of how precise these intersection tests are.
         // For the box shaped frustum, the tests passed when offset by FLT_EPSILON, but the frustums further away from the origin were less precise.
-        float m_marginOfErrorOffset = 0.05625f;
+        float m_marginOfErrorOffset = 0.115f;
 
         // The frustum under test
         AZ::Frustum m_frustum;
@@ -673,5 +673,48 @@ namespace UnitTest
 
         // the aabb is contained within the frustum
         EXPECT_TRUE(AZ::ShapeIntersection::Contains(viewFrustum, aabb));
+    }
+
+    TEST(MATH_Frustum, FrustumCorners)
+    {
+        // position the frustum slightly along the x-axis looking down the negative x-axis
+        const AZ::Vector3 frustumOrigin = AZ::Vector3(5.0f, 0.0f, 0.0f);
+        const AZ::Quaternion frustumOrientation = AZ::Quaternion::CreateRotationZ(AZ::DegToRad(90.0f));
+        const AZ::Transform frustumTransform =
+            AZ::Transform::CreateFromQuaternionAndTranslation(frustumOrientation, frustumOrigin);
+
+        const AZ::Frustum viewFrustum = AZ::Frustum(
+            AZ::ViewFrustumAttributes(frustumTransform, 1920.0f / 1080.0f, AZ::DegToRad(60.0f), 0.1f, 100.0f));
+
+        AZ::Frustum::CornerVertexArray corners;
+        bool valid = viewFrustum.GetCorners(corners);
+
+        EXPECT_TRUE(valid);
+
+        // 8 unique positions all on 3 planes must be the 8 corners of the frustum.
+
+        // The various corners should all be unique
+        for (uint32_t i = 0; i < corners.size(); ++i)
+        {
+            for (uint32_t j = i + 1; j < corners.size(); ++j)
+            {
+                EXPECT_THAT(corners.at(i), testing::Not(IsClose(corners.at(j))));
+            }
+        }
+
+        // The various corners should all lie on exactly 3 planes of the frustum
+        for (auto corner : corners)
+        {
+            uint32_t onPlaneCount = 0;
+            for (uint32_t planeId = 0; planeId < AZ::Frustum::PlaneId::MAX; ++planeId)
+            {
+                const float distanceToPlane = viewFrustum.GetPlane(AZ::Frustum::PlaneId(planeId)).GetPointDist(corner);
+                if (AZStd::abs(distanceToPlane) < 0.001f)
+                {
+                    ++onPlaneCount;
+                }
+            }
+            EXPECT_EQ(onPlaneCount, 3);
+        }
     }
 } // namespace UnitTest

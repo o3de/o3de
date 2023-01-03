@@ -18,7 +18,6 @@
 
 #include <Editor/MultiplayerEditorConnection.h>
 #include <Multiplayer/IMultiplayer.h>
-#include <Multiplayer/IMultiplayerEditorConnectionViewportMessage.h>
 #include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <Multiplayer/MultiplayerConstants.h>
 #include <Multiplayer/MultiplayerEditorServerBus.h>
@@ -56,7 +55,7 @@ namespace Multiplayer
             {
                 AZ::ComponentApplicationLifecycle::RegisterHandler(
                     *settingsRegistry, m_componentApplicationLifecycleHandler,
-                    [this](AZStd::string_view /*path*/, AZ::SettingsRegistryInterface::Type /*type*/)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
                     {
                         ActivateDedicatedEditorServer();
                     },
@@ -238,14 +237,11 @@ namespace Multiplayer
         if (AZ::Interface<IMultiplayer>::Get()->Connect(editorsv_serveraddr.c_str(), sv_port))
         {
             AZ_Printf("MultiplayerEditorConnection", "Editor-server ready. Editor has successfully connected to the editor-server's network simulation.")
-            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->StopViewportDebugMessaging();
+            MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnConnectToSimulationSuccess);
         }
         else
         {   
-            char connection_fail_message[256];
-            azsnprintf(connection_fail_message, 256, "EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?", sv_port);
-            AZLOG_WARN("%s", connection_fail_message)
-            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(connection_fail_message);
+            MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnConnectToSimulationFail, sv_port);
         }
         return true;
     }

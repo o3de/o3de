@@ -368,10 +368,16 @@ function(ly_setup_subdirectory absolute_target_source_dir)
     ly_file_read(${LY_ROOT_FOLDER}/cmake/install/Copyright.in cmake_copyright_comment)
 
     # 1. Create the base CMakeLists.txt that will just include a cmake file per platform
-    file(CONFIGURE OUTPUT "${target_install_source_dir}/CMakeLists.txt" CONTENT [[
+    string(CONFIGURE [[
 @cmake_copyright_comment@
 include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-]] @ONLY)
+]] subdirectory_cmakelist_content @ONLY)
+
+    # Store off the generated CMakeLists.txt into a DIRECTORY property based on the subdirectory being visited
+    # In the ly_setup_assets() function, it generates an empty CMakeLists.txt into the gem root directory
+    # if one does not exist by checking if this property is set
+    set_property(DIRECTORY "${absolute_target_source_dir}" APPEND_STRING PROPERTY O3DE_SUBDIRECTORY_CMAKELIST_CONTENT "${subdirectory_cmakelist_content}")
+    file(WRITE "${target_install_source_dir}/CMakeLists.txt" "${subdirectory_cmakelist_content}")
 
     ly_install(FILES "${target_install_source_dir}/CMakeLists.txt"
         DESTINATION ${relative_target_source_dir}
@@ -530,6 +536,13 @@ function(ly_setup_cmake_install)
     # Add to find_subdirectories all directories in which ly_add_target were called in
     get_property(all_subdirectories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
     foreach(target_subdirectory IN LISTS all_subdirectories)
+        # If the subdirectory is an external_subdirectory, then it is being added in the engine.json file
+        # Therefore it is not added to the o3de_subdirectories_<Platform>.cmake file to avoid
+        # invoking add_subdirectory twice
+        get_property(is_external_subdir GLOBAL PROPERTY "O3DE_SUBDIRECTORY_${target_subdirectory}" SET)
+        if(is_external_subdir)
+            continue()
+        endif()
         ly_get_root_subdirectory_which_is_parent(${target_subdirectory} root_subdir_of_target)
         cmake_path(RELATIVE_PATH target_subdirectory BASE_DIRECTORY ${root_subdir_of_target} OUTPUT_VARIABLE relative_target_subdirectory)
 
@@ -761,6 +774,27 @@ function(ly_setup_assets)
                     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
                 )
             elseif (EXISTS ${gem_absolute_path})
+                # Special case for the gem.json file, generate an empty CMakeLists.txt with the gem.json file
+                # if there is not already a CMakeLists.txy being installed to gem root directory
+                cmake_path(GET gem_absolute_path FILENAME filename)
+                cmake_path(COMPARE "${filename}" EQUAL "gem.json" is_gem_root)
+                get_property(has_gem_root_cmakelist_content DIRECTORY "${gem_candidate_dir}" PROPERTY O3DE_SUBDIRECTORY_CMAKELIST_CONTENT SET)
+                if (is_gem_root AND NOT has_gem_root_cmakelist_content)
+                    ly_file_read(${LY_ROOT_FOLDER}/cmake/install/Copyright.in cmake_copyright_comment)
+                    # Generate an empty CMakeLists.txt  inside the cmake binary directory
+                    # to allow it to be installed next to the gem.json
+                    set(gem_scratch_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/install/${gem_install_dest_dir}")
+
+                    # copy the empty CMakeList.txt into the gem root directory, to allow add_subdirectory
+                    # calls to succeed on the gem root in the install layout
+                    file(CONFIGURE OUTPUT "${gem_scratch_binary_dir}/CMakeLists.txt" CONTENT [[@cmake_copyright_comment@]] @ONLY)
+
+                    ly_install(FILES "${gem_scratch_binary_dir}/CMakeLists.txt"
+                        DESTINATION ${gem_install_dest_dir}
+                        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+                    )
+                endif()
+
                 ly_install(FILES ${gem_absolute_path}
                     DESTINATION ${gem_install_dest_dir}
                     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}

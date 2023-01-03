@@ -9,7 +9,7 @@
 #include <Atom/RHI.Reflect/Bits.h>
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <RHI/Memory.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 
 namespace AZ
@@ -44,7 +44,7 @@ namespace AZ
             
             allocInfo.pNext = &memAllocInfo;
             VkDeviceMemory deviceMemory;
-            VkResult vkResult = vkAllocateMemory(device.GetNativeDevice(), &allocInfo, nullptr, &deviceMemory);
+            VkResult vkResult = device.GetContext().AllocateMemory(device.GetNativeDevice(), &allocInfo, nullptr, &deviceMemory);
             AZ_Error(
                 "Vulkan",
                 vkResult == VK_SUCCESS || vkResult == VK_ERROR_OUT_OF_HOST_MEMORY || vkResult == VK_ERROR_OUT_OF_DEVICE_MEMORY,
@@ -75,7 +75,8 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             if (!m_mappedMemory)
             {
-                VkResult result = vkMapMemory(device.GetNativeDevice(), m_nativeDeviceMemory, 0, VK_WHOLE_SIZE, 0, reinterpret_cast<void**>(&m_mappedMemory));
+                VkResult result = device.GetContext().MapMemory(
+                    device.GetNativeDevice(), m_nativeDeviceMemory, 0, VK_WHOLE_SIZE, 0, reinterpret_cast<void**>(&m_mappedMemory));
                 AssertSuccess(result);
                 if (result != VK_SUCCESS)
                 {
@@ -91,7 +92,7 @@ namespace AZ
                 readRange.memory = m_nativeDeviceMemory;
                 readRange.offset = offset;
                 readRange.size = size;
-                vkInvalidateMappedMemoryRanges(device.GetNativeDevice(), 1, &readRange);
+                device.GetContext().InvalidateMappedMemoryRanges(device.GetNativeDevice(), 1, &readRange);
             }
 
             m_mappings[offset] = size;
@@ -118,7 +119,7 @@ namespace AZ
                 writeRange.memory = m_nativeDeviceMemory;
                 writeRange.offset = offset;
                 writeRange.size = it->second;
-                vkFlushMappedMemoryRanges(device.GetNativeDevice(), 1, &writeRange);
+                device.GetContext().FlushMappedMemoryRanges(device.GetNativeDevice(), 1, &writeRange);
             }
 
             m_mappings.erase(it);
@@ -138,13 +139,13 @@ namespace AZ
             if (m_mappedMemory)
             {
                 AZ_Assert(m_mappings.empty(), "Shutting down and there's still memory mappings left");
-                vkUnmapMemory(device.GetNativeDevice(), m_nativeDeviceMemory);
+                device.GetContext().UnmapMemory(device.GetNativeDevice(), m_nativeDeviceMemory);
                 m_mappedMemory = nullptr;
             }
             
             if (m_nativeDeviceMemory)
             {
-                vkFreeMemory(device.GetNativeDevice(), m_nativeDeviceMemory, nullptr);
+                device.GetContext().FreeMemory(device.GetNativeDevice(), m_nativeDeviceMemory, nullptr);
                 m_nativeDeviceMemory = VK_NULL_HANDLE;
             }
 

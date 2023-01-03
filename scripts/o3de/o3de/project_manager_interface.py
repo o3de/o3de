@@ -194,7 +194,7 @@ def unregister_gem(gem_path: str, project_path: str = None,):
 
 
 def get_gem_info(gem_path: str) -> dict or None:
-        """
+    """
         Call get_gem_json_data
 
         :param gem_path: Gem path to gather info for

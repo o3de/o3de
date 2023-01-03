@@ -165,7 +165,7 @@ namespace AZ
 
             // Need to get the name of the azsl file from the .shader source asset, to be able to declare a dependency to SRG Layout Job.
             // and the macro options to preprocess.
-            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderAssetSourceFileFullPath);
+            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderAssetSourceFileFullPath, false);
             if (!descriptorParseOutcome.IsSuccess())
             {
                 AZ_Error(
@@ -241,13 +241,13 @@ namespace AZ
             AZStd::string shaderAssetFileName = AZStd::string::format("%s.%s", shaderAsset->GetName().GetCStr(), RPI::ShaderAsset::Extension);
             AZStd::string shaderAssetOutputPath;
             AzFramework::StringFunc::Path::ConstructFull(tempDirPath.data(), shaderAssetFileName.data(), shaderAssetOutputPath, true);
-        
+
             if (!Utils::SaveObjectToFile(shaderAssetOutputPath, DataStream::ST_BINARY, shaderAsset.Get()))
             {
                 AZ_Error(ShaderAssetBuilderName, false, "Failed to output Shader Descriptor");
                 return false;
             }
-        
+
             AssetBuilderSDK::JobProduct shaderJobProduct;
             if (!AssetBuilderSDK::OutputObject(shaderAsset.Get(), shaderAssetOutputPath, azrtti_typeid<RPI::ShaderAsset>(),
                 aznumeric_cast<uint32_t>(RPI::ShaderAssetSubId::ShaderAsset), shaderJobProduct))
@@ -256,7 +256,7 @@ namespace AZ
                 return false;
             }
             response.m_outputProducts.push_back(AZStd::move(shaderJobProduct));
-        
+
             return true;
         }
 
@@ -329,8 +329,15 @@ namespace AZ
             AZStd::string shaderFileName;
             AzFramework::StringFunc::Path::GetFileName(request.m_sourceFile.c_str(), shaderFileName);
 
-            // No error checking because the same calls were already executed during CreateJobs()
             auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderFullPath);
+            if (!descriptorParseOutcome.IsSuccess())
+            {
+                AZ_Error(
+                    ShaderAssetBuilderName, false, "Failed to parse Shader Descriptor JSON: %s",
+                    descriptorParseOutcome.GetError().c_str());
+                return;
+            }
+
             RPI::ShaderSourceData shaderSourceData = descriptorParseOutcome.TakeValue();
             AZStd::string azslFullPath;
             ShaderBuilderUtility::GetAbsolutePathToAzslFile(shaderFullPath, shaderSourceData.m_source, azslFullPath);
@@ -389,8 +396,8 @@ namespace AZ
             RPI::ShaderAssetCreator shaderAssetCreator;
             shaderAssetCreator.Begin(Uuid::CreateRandom());
 
-            shaderAssetCreator.SetName(AZ::Name{shaderFileName.c_str()});
-            shaderAssetCreator.SetDrawListName(Name(shaderSourceData.m_drawListName));
+            shaderAssetCreator.SetName(AZ::Name{shaderFileName});
+            shaderAssetCreator.SetDrawListName(shaderSourceData.m_drawListName);
             shaderAssetCreator.SetShaderAssetBuildTimestamp(shaderAssetBuildTimestamp);
 
             // The ShaderOptionGroupLayout must be the same across all supervariants because
@@ -406,16 +413,16 @@ namespace AZ
             // 1- Preprocess an AZSL file with MCPP (a C-Preprocessor), and generate a flat AZSL file without #include lines and any macros in it.
             //    Let's call it the Flat-AZSL file. There are two levels of macro definition that need to be merged before we can invoke MCPP:
             //    1.1-  From <GameProject>/Config/shader_global_build_options.json, which we have stored in the local variable @buildOptions.
-            //    1.2-  From the "Supervariant" definition key, which can be different for each supervariant. 
+            //    1.2-  From the "Supervariant" definition key, which can be different for each supervariant.
             // 2- There will be one Flat-AZSL per supervariant. Each Flat-AZSL will be transpiled to HLSL with AZSLc. This means there will be one HLSL file
             //    per supervariant.
             // 3- The generated HLSL (one HLSL per supervariant) file may contain C-Preprocessor Macros inserted by AZSLc. And that file will be given to DXC.
             //    DXC has a preprocessor embedded in it.  DXC will be executed once for each entry function listed in the .shader file.
             //    There will be one DXIL compiled binary for each entry function. All the DXIL compiled binaries for each supervariant will be combined
             //    in the ROOT ShaderVariantAsset.
-            
+
             // Remark: In general, the work done by the ShaderVariantAssetBuilder is similar, but it will start from the HLSL file created; in step 2, mentioned above; by this builder,
-            // for each supervariant. 
+            // for each supervariant.
 
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
             {
@@ -443,13 +450,6 @@ namespace AZ
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     return;
                 }
-
-                // The register number only makes sense if the platform uses "spaces",
-                // since the register Id of the resource will not change even if the pipeline layout changes.
-                // We can pass in a default ShaderCompilerArguments because all we care about is whether the shaderPlatformInterface
-                // appends the "--use-spaces" flag.
-                const auto& azslcArguments = buildArgsManager.GetCurrentArguments().m_azslcArguments;
-                const bool platformUsesRegisterSpaces = RHI::ShaderBuildArguments::HasArgument(azslcArguments, "--use-spaces");
 
                 uint32_t supervariantIndex = 0;
                 for (const auto& supervariantInfo : supervariantList)
@@ -500,11 +500,11 @@ namespace AZ
 
                     // In addition to the hlsl file, there are other json files that were generated.
                     // Each output file will become a product.
+                    static constexpr AZ::Uuid AzslOutcomeType{ "{6977AEB1-17AD-4992-957B-23BB2E85B18B}" };
                     for (int i = 0; i < subProductsPaths.size(); ++i)
                     {
                         AssetBuilderSDK::JobProduct jobProduct;
                         jobProduct.m_productFileName = subProductsPaths[i];
-                        static const AZ::Uuid AzslOutcomeType = "{6977AEB1-17AD-4992-957B-23BB2E85B18B}";
                         jobProduct.m_productAssetType = AzslOutcomeType;
                         // uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, uint32_t subProductType
                         jobProduct.m_productSubID = RPI::ShaderAsset::MakeProductAssetSubId(
@@ -525,8 +525,8 @@ namespace AZ
                     BindingDependencies bindingDependencies;
                     RootConstantData rootConstantData;
                     AssetBuilderSDK::ProcessJobResultCode azslJsonReadResult = ShaderBuilderUtility::PopulateAzslDataFromJsonFiles(
-                        ShaderAssetBuilderName, subProductsPaths, platformUsesRegisterSpaces, azslData, srgLayoutList, shaderOptionGroupLayout,
-                        bindingDependencies, rootConstantData);
+                        ShaderAssetBuilderName, subProductsPaths, azslData, srgLayoutList,
+                        shaderOptionGroupLayout, bindingDependencies, rootConstantData);
                     if (azslJsonReadResult != AssetBuilderSDK::ProcessJobResult_Success)
 
                     {
@@ -619,16 +619,43 @@ namespace AZ
 
                     if (hasRasterProgram)
                     {
-                        // Set the various states to what is in the descriptor.
-                        const RHI::TargetBlendState& targetBlendState = shaderSourceData.m_blendState;
                         RHI::RenderStates renderStates;
                         renderStates.m_rasterState = shaderSourceData.m_rasterState;
                         renderStates.m_depthStencilState = shaderSourceData.m_depthStencilState;
-                        // [GFX TODO][ATOM-930] We should support unique blend states per RT
+                        renderStates.m_blendState = shaderSourceData.m_blendState;
+
+                        const RHI::TargetBlendState& globalTargetBlendState = shaderSourceData.m_globalTargetBlendState;
+                        const auto& targetBlendStates = shaderSourceData.m_targetBlendStates;
+
+                        // There are three ways to set blend state in the .shader file: "BlendState", "GlobalTargetBlendState", and "TargetBlendStates".
+                        // "BlendState" is a raw serialization of the BlendState struct, and is not very convenient to work with because it requires
+                        // every target to be specified in order for the data to load successfully. Normally users will want to use "GlobalTargetBlendState"
+                        // or "TargetBlendStates".
                         for (size_t i = 0; i < colorAttachmentCount; ++i)
                         {
-                            renderStates.m_blendState.m_targets[i] = targetBlendState;
+                            if (targetBlendStates.contains(static_cast<uint32_t>(i)))
+                            {
+                                renderStates.m_blendState.m_targets[i] = targetBlendStates.at(static_cast<uint32_t>(i));
+                            }
+                            // We have to ensure this actually has data before applying it, otherwise this would stomp any
+                            // data in the "BlendState" or "TargetBlendStates" with default values.
+                            else if(globalTargetBlendState.m_enable) 
+                            {
+                                renderStates.m_blendState.m_targets[i] = globalTargetBlendState;
+                            }
                         }
+
+#if defined(AZ_ENABLE_TRACING)
+                        // Enable unused target blend state tracking
+                        for (const auto& targetBlendState : targetBlendStates)
+                        {
+                            const bool invalidBlendStateIndex = targetBlendState.first >= colorAttachmentCount;
+                            AZ_Warning(
+                                ShaderAssetBuilderName, !invalidBlendStateIndex,
+                                "Invalid target blend state index detected, setting index %d out of %d possible color attachements. Ignoring this target blend state definition.",
+                                targetBlendState.first, colorAttachmentCount);
+                        }
+#endif // defined(AZ_ENABLE_TRACING)
 
                         shaderAssetCreator.SetRenderStates(renderStates);
                     }
@@ -723,29 +750,34 @@ namespace AZ
 
                 } // end for the supervariant
 
+                for (auto& [shaderOptionName, value] : shaderSourceData.m_shaderOptionValues)
+                {
+                    shaderAssetCreator.SetShaderOptionDefaultValue(shaderOptionName, value);
+                }
+
                 buildArgsManager.PopArgumentScope(); // Pop  .shader arguments
                 buildArgsManager.PopArgumentScope(); // Pop rhi api arguments.
                 shaderAssetCreator.EndAPI();
 
             } // end for all ShaderPlatformInterfaces
-            
+
             Data::Asset<RPI::ShaderAsset> shaderAsset;
             if (!shaderAssetCreator.End(shaderAsset))
             {
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                 return;
             }
-            
+
             if (!SerializeOutShaderAsset(shaderAsset, request.m_tempDirPath, response))
             {
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                 return;
             }
-            
+
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-                        
+
             AZ_TracePrintf(ShaderAssetBuilderName, "Finished processing %s in %.3f seconds\n", request.m_sourceFile.c_str(), timer.GetDeltaTimeInSeconds());
-            
+
             ShaderBuilderUtility::LogProfilingData(ShaderAssetBuilderName, shaderFileName);
         }
 

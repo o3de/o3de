@@ -116,7 +116,7 @@ namespace AZ::IO
         }
 
         m_cache = reinterpret_cast<u8*>(AZ::AllocatorInstance<AZ::SystemAllocator>::Get().Allocate(
-            m_cacheSize, alignment, 0, "AZ::IO::Streamer BlockCache", __FILE__, __LINE__));
+            m_cacheSize, alignment));
         m_cachedPaths = AZStd::unique_ptr<RequestPath[]>(new RequestPath[m_numBlocks]);
         m_cachedOffsets = AZStd::unique_ptr<u64[]>(new u64[m_numBlocks]);
         m_blockLastTouched = AZStd::unique_ptr<TimePoint[]>(new TimePoint[m_numBlocks]);
@@ -195,7 +195,7 @@ namespace AZ::IO
             m_delayedSections.empty();
     }
 
-    void BlockCache::UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+    void BlockCache::UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
         StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd)
     {
         // Have the stack downstream estimate the completion time for the requests that are waiting for a slot to execute in.
@@ -688,7 +688,7 @@ namespace AZ::IO
     void BlockCache::TouchBlock(u32 index)
     {
         AZ_Assert(index < m_numBlocks, "Index for touch a cache entry in the BlockCache is out of bounds.");
-        m_blockLastTouched[index] = AZStd::chrono::high_resolution_clock::now();
+        m_blockLastTouched[index] = AZStd::chrono::steady_clock::now();
     }
 
     u32 BlockCache::RecycleOldestBlock(const RequestPath& filePath, u64 offset)

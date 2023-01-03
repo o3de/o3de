@@ -3,5 +3,12 @@
         "Preferences": {
             "EnablePrefabSystem": true
         }
+    },
+    "O3DE": {
+        "Preferences": {
+            "Prefabs": {
+                "EnableOverridesUx": false
+            }
+        }
     }
 }

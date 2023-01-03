@@ -76,7 +76,7 @@ void CRemoteConsole::Stop()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void CRemoteConsole::AddLogMessage(const char* log)
+void CRemoteConsole::AddLogMessage(AZStd::string_view log)
 {
     if (!IsStarted())
     {
@@ -88,7 +88,7 @@ void CRemoteConsole::AddLogMessage(const char* log)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void CRemoteConsole::AddLogWarning(const char* log)
+void CRemoteConsole::AddLogWarning(AZStd::string_view log)
 {
     if (!IsStarted())
     {
@@ -100,7 +100,7 @@ void CRemoteConsole::AddLogWarning(const char* log)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void CRemoteConsole::AddLogError(const char* log)
+void CRemoteConsole::AddLogError(AZStd::string_view log)
 {
     if (!IsStarted())
     {

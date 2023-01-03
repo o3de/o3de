@@ -39,6 +39,7 @@ namespace AzToolsFramework
 {
     class ReflectedPropertyEditor;
     class DocumentPropertyEditor;
+    class FilteredDPE;
 
     namespace AssetEditor
     {
@@ -103,6 +104,9 @@ namespace AzToolsFramework
 
             void OnNewAsset();
 
+            // For subscribing to document property editor adapter property specific changes
+            void OnDocumentPropertyChanged(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo);
+
         Q_SIGNALS:
             void OnAssetSavedSignal();
             void OnAssetSaveFailedSignal(const AZStd::string& error);
@@ -145,10 +149,11 @@ namespace AzToolsFramework
             AZStd::vector<AZ::Data::AssetType>  m_genericAssetTypes;
             AZ::Data::AssetId                    m_sourceAssetId;
             AZ::Data::Asset<AZ::Data::AssetData> m_inMemoryAsset;
-            Ui::AssetEditorHeader* m_header;
-            ReflectedPropertyEditor* m_propertyEditor;
+            Ui::AssetEditorHeader* m_header = nullptr;
+            ReflectedPropertyEditor* m_propertyEditor = nullptr;
             AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> m_adapter;
-            DocumentPropertyEditor* m_dpe;
+            FilteredDPE* m_filteredWidget = nullptr;
+            DocumentPropertyEditor* m_dpe = nullptr;
             AZ::SerializeContext* m_serializeContext = nullptr;
             AZ::Uuid m_observerId; // Id of the component that requested a new asset be created, if relevant. Used as a bus id to send OnAssetCreated event. 
 
@@ -175,6 +180,9 @@ namespace AzToolsFramework
 
             AZStd::intrusive_ptr<AssetEditorWidgetUserSettings> m_userSettings;
             AZStd::unique_ptr< Ui::AssetEditorStatusBar > m_statusBar;
+
+            AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
+            AZ::Crc32 m_savedStateKey;
 
             void PopulateGenericAssetTypes();
             void CreateAssetImpl(AZ::Data::AssetType assetType);

@@ -47,6 +47,8 @@ namespace ScriptCanvas
 
         void Execute();
 
+        const RuntimeDataOverrides& GetRuntimeOverrides() const;
+
         void Initialize();
 
         void InitializeAndExecute();

@@ -42,14 +42,14 @@ string(APPEND gem_name_template
 )
 
 #!ly_detect_cycle_through_visitation: Detects if there is a cycle based on a list of visited
-# items. If the passed item is in the list, then there is a cycle. 
+# items. If the passed item is in the list, then there is a cycle.
 # \arg:item - item being checked for the cycle
 # \arg:visited_items - list of visited items
 # \arg:visited_items_var - list of visited items variable, "item" will be added to the list
-# \arg:cycle(variable) - empty string if there is no cycle (an empty string in cmake evaluates 
+# \arg:cycle(variable) - empty string if there is no cycle (an empty string in cmake evaluates
 #     to false). If there is a cycle a cycle dependency string detailing the sequence of items
 #     that produce a cycle, e.g. A --> B --> C --> A
-# 
+#
 function(ly_detect_cycle_through_visitation item visited_items visited_items_var cycle)
     if(item IN_LIST visited_items)
         unset(dependency_cycle_loop)
@@ -80,7 +80,7 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
     if(NOT TARGET ${ly_TARGET})
         return() # Nothing to do
     endif()
-    # Internally we use a third parameter to pass the list of targets that we have traversed. This is 
+    # Internally we use a third parameter to pass the list of targets that we have traversed. This is
     # used to detect runtime cycles
     if(ARGC EQUAL 3)
         set(ly_CYCLE_DETECTION_TARGETS ${ARGV2})
@@ -140,23 +140,9 @@ function(ly_get_gem_module_root output_gem_module_root output_gem_name gem_targe
     unset(${output_gem_module_root} PARENT_SCOPE)
     get_property(gem_source_dir TARGET ${gem_target} PROPERTY SOURCE_DIR)
 
-    if(gem_source_dir)
-        set(candidate_gem_dir ${gem_source_dir})
-        # Locate the root of the gem by finding the gem.json location
-        while(NOT EXISTS ${candidate_gem_dir}/gem.json)
-            get_filename_component(parent_dir ${candidate_gem_dir} DIRECTORY)
-            if (${parent_dir} STREQUAL ${candidate_gem_dir})
-                # "Did not find a gem.json while processing GEM_MODULE target ${gem_target}!"
-                return()
-            endif()
-            set(candidate_gem_dir ${parent_dir})
-        endwhile()
-    endif()
-
-    if (EXISTS ${candidate_gem_dir}/gem.json)
-        set(gem_source_dir ${candidate_gem_dir})
-        o3de_read_json_key(gem_name ${candidate_gem_dir}/gem.json "gem_name")
-    endif()
+    # the o3de_find_ancestor_gem_root looks up the nearest gem root path
+    # at or above the current directory visited by cmake
+    o3de_find_ancestor_gem_root(gem_source_dir gem_name "${gem_source_dir}")
 
     # Set the gem module root output directory to the location with the gem.json file within it or
     # the supplied gem_target SOURCE_DIR location if no gem.json file was found
@@ -280,8 +266,6 @@ function(ly_delayed_generate_settings_registry)
                 string(TOUPPER ${conf} UCONF)
                 string(APPEND target_dir $<$<CONFIG:${conf}>:${CMAKE_RUNTIME_OUTPUT_DIRECTORY_${UCONF}}>)
             endforeach()
-        elseif(prefix)
-            set(target_dir $<TARGET_FILE_DIR:${prefix}>)
         else()
             set(target_dir $<TARGET_FILE_DIR:${target}>)
         endif()

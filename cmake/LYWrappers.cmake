@@ -231,6 +231,15 @@ function(ly_add_target)
         )
     endif()
 
+    # Add the target dependencies so they can be walked later
+    if(ly_add_target_BUILD_DEPENDENCIES)
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS_${ly_add_target_NAME}_BUILD_DEPENDENCIES ${ly_add_target_BUILD_DEPENDENCIES})
+    endif()
+
+    if(ly_add_target_RUNTIME_DEPENDENCIES)
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS_${ly_add_target_NAME}_RUNTIME_DEPENDENCIES ${ly_add_target_RUNTIME_DEPENDENCIES})
+    endif()
+
     if (ly_add_target_SHARED OR ly_add_target_MODULE OR ly_add_target_EXECUTABLE OR ly_add_target_APPLICATION)
 
         if (ly_add_target_OUTPUT_SUBDIRECTORY)
@@ -268,7 +277,7 @@ function(ly_add_target)
     # For any target that depends on AzTest and is built as an executable, an additional 'AZ_TEST_EXECUTABLE' define will
     # enable the 'AZ_UNIT_TEST_HOOK' macro to also implement main() so that running the executable directly will run
     # the AZ_UNIT_TEST_HOOK function
-    if (${PAL_TRAIT_TEST_TARGET_TYPE} STREQUAL "EXECUTABLE" AND "AZ::AzTest" IN_LIST ly_add_target_BUILD_DEPENDENCIES)
+    if (${linking_options} STREQUAL "EXECUTABLE" AND "AZ::AzTest" IN_LIST ly_add_target_BUILD_DEPENDENCIES)
         target_compile_definitions(${ly_add_target_NAME}
             PRIVATE
                 AZ_TEST_EXECUTABLE

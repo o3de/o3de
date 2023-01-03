@@ -256,7 +256,7 @@ namespace AssetProcessor
         //! Retrieve the remote folder location for the shared cache 
         virtual const AZStd::string& GetServerAddress() const = 0;
         //! Store the remote folder location for the shared cache 
-        virtual void SetServerAddress(const AZStd::string& address) = 0;
+        virtual bool SetServerAddress(const AZStd::string& address) = 0;
     };
     using AssetServerBus = AZ::EBus<AssetServerBusTraits>;
 

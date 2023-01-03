@@ -15,7 +15,7 @@ namespace AZStd::ranges
     template<class View, class Func, class = enable_if_t<conjunction_v<
         bool_constant<input_range<View>>,
         bool_constant<view<View>>,
-        bool_constant<copy_constructible<Func>>,
+        bool_constant<move_constructible<Func>>,
         is_object<Func>,
         bool_constant<regular_invocable<Func&, range_reference_t<View>>>,
         bool_constant<AZStd::Internal::can_reference<invoke_result_t<Func&, range_reference_t<View>>>>
@@ -142,7 +142,7 @@ namespace AZStd::ranges
 
     private:
         View m_base{};
-        Internal::copyable_box<Func> m_func{};
+        Internal::movable_box<Func> m_func{};
     };
 
     // deduction guides
@@ -225,14 +225,12 @@ namespace AZStd::ranges
     // which requires that the iterator type has the aliases
     // of difference_type, value_type, pointer, reference, iterator_category,
     // With C++20, the iterator concept support is used to deduce the traits
-    // needed, therefore alleviating the need to special std::iterator_traits
+    // needed, therefore alleviating the need to specialize std::iterator_traits
     // The following code allows std::reverse_iterator(which is aliased into AZStd namespace)
     // to work with the AZStd range views
     #if !__cpp_lib_concepts
         using pointer = void;
-        using reference = conditional_t<is_reference_v<invoke_result_t<Func&, range_reference_t<Base>>>,
-            invoke_result_t<Func&, range_reference_t<Base>>,
-            dangling>;
+        using reference = invoke_result_t<Func&, range_reference_t<Base>>;
     #endif
 
         template<bool Enable = default_initializable<iterator_t<Base>>, class = enable_if_t<Enable>>
@@ -262,7 +260,7 @@ namespace AZStd::ranges
         }
 
         constexpr decltype(auto) operator*() const
-            noexcept(noexcept(AZStd::invoke(*m_parent->m_func, *m_current)))
+            noexcept(noexcept(AZStd::invoke(*declval<Parent>().m_func, *declval<iterator_t<Base>>())))
         {
             return AZStd::invoke(*m_parent->m_func, *m_current);
         }

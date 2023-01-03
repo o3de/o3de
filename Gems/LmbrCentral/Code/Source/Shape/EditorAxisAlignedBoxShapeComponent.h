@@ -11,11 +11,9 @@
 #include "AxisAlignedBoxShape.h"
 #include "AxisAlignedBoxShapeComponent.h"
 #include "EditorBaseShapeComponent.h"
-
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
-
 
 namespace LmbrCentral
 {
@@ -34,7 +32,10 @@ namespace LmbrCentral
         // AZ::Component
         void Init() override;
         void Activate() override;
-        void Deactivate() override;        
+        void Deactivate() override;
+
+        // BoundsRequestBus overrides ...
+        AZ::Aabb GetLocalBounds() override;
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -57,9 +58,7 @@ namespace LmbrCentral
         // AzToolsFramework::BoxManipulatorRequestBus
         AZ::Vector3 GetDimensions() override;
         void SetDimensions(const AZ::Vector3& dimensions) override;
-        AZ::Transform GetCurrentTransform() override;
         AZ::Transform GetCurrentLocalTransform() override;
-        AZ::Vector3 GetBoxScale() override;
 
         void ConfigurationChanged();        
 

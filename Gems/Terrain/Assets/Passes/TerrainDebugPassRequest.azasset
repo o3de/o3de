@@ -5,6 +5,6 @@
     "ClassData": {
         "Name": "TerrainClipmapDebugPass",
         "TemplateName": "TerrainClipmapDebugPassTemplate",
-        "Enabled": false
+        "Enabled": true
     }
 }

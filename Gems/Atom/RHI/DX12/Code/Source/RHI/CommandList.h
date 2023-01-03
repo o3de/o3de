@@ -8,6 +8,7 @@
 #pragma once
 
 #include <RHI/CommandListBase.h>
+#include <RHI/DescriptorContext.h>
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineState.h>
 #include <RHI/MemoryView.h>
@@ -74,21 +75,25 @@ namespace AZ
             void SetScissors(const RHI::Scissor* scissors, uint32_t count) override;
             void SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup) override;
             void SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup) override;
-            void Submit(const RHI::DrawItem& drawItem) override;
-            void Submit(const RHI::CopyItem& copyItem) override;
-            void Submit(const RHI::DispatchItem& dispatchItem) override;
-            void Submit(const RHI::DispatchRaysItem& dispatchRaysItem) override;
+            void Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
             void BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
             void EndPredication() override;
             void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
             void BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas) override;
+            void SetFragmentShadingRate(
+                RHI::ShadingRate rate,
+                const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override;
             //////////////////////////////////////////////////////////////////////////
 
             void SetRenderTargets(
                 uint32_t renderTargetCount,
                 const ImageView* const* renderTarget,
                 const ImageView* depthStencilAttachment,
-                RHI::ScopeAttachmentAccess depthStencilAccess);
+                RHI::ScopeAttachmentAccess depthStencilAccess,
+                const ImageView* shadingRateAttachment);
 
             //////////////////////////////////////////////////////////////////////////
             // Tile Mapping Methods
@@ -123,11 +128,9 @@ namespace AZ
                 // are mapped to null.
                 ID3D12Heap* m_destinationHeap = nullptr;
 
-                // If m_destinationHeap is valid, the size of this vector must match the number of tiles
-                // in m_sourceSize. Each index is the source tile index in the resource, and the value is
-                // the destination heap tile index. If m_destinationHeap is null, this vector is ignored and
-                // may be left empty.
-                AZStd::vector<uint32_t> m_destinationTileMap;
+                AZStd::vector<D3D12_TILE_RANGE_FLAGS> m_rangeFlags;     // pRangeFlags in UpdateTileMappings 
+                AZStd::vector<uint32_t> m_rangeStartOffsets;            // pHeapRangeStartOffsets in UpdateTileMappings 
+                AZStd::vector<uint32_t> m_rangeTileCounts;              // pRangeTileCounts in UpdateTileMappings 
             };
 
             // Queues a new tile map requests.
@@ -194,6 +197,7 @@ namespace AZ
             void SetTopology(RHI::PrimitiveTopology topology);
             void CommitViewportState();
             void CommitScissorState();
+            void CommitShadingRateState();
 
             void ExecuteIndirect(const RHI::IndirectArguments& arguments);
 
@@ -228,6 +232,7 @@ namespace AZ
                 RHI::PrimitiveTopology m_topology = RHI::PrimitiveTopology::Undefined;
                 RHI::CommandListViewportState m_viewportState;
                 RHI::CommandListScissorState m_scissorState;
+                RHI::CommandListShadingRateState m_shadingRateState;
 
                 // Array of shader resource bindings, indexed by command pipe.
                 AZStd::array<ShaderResourceBindings, static_cast<size_t>(RHI::PipelineStateType::Count)> m_bindingsByPipe;
@@ -240,6 +245,12 @@ namespace AZ
 
                 // Signal if the commandlist is using custom sample positions for multisample
                 bool m_customSamplePositions = false;
+
+                // Signal that the global bindless heap is bound
+                bool m_bindBindlessHeap = false;
+
+                // The currently bound shading rate image
+                const ImageView* m_shadingRateImage = nullptr;
 
             } m_state;
 
@@ -401,7 +412,41 @@ namespace AZ
             {
                 const size_t srgSlot = pipelineLayout->GetSlotByIndex(srgIndex);
                 const ShaderResourceGroup* shaderResourceGroup = bindings.m_srgsBySlot[srgSlot];
+                RootParameterBinding binding = pipelineLayout->GetRootParameterBindingByIndex(srgIndex);
 
+                //Check if we are iterating over the bindless srg slot
+                if (srgSlot != RHI::Limits::Pipeline::ShaderResourceGroupCountMax && shaderResourceGroup == nullptr)
+                {
+                    // Skip in case the global static heap is already bound
+                    if (m_state.m_bindBindlessHeap)
+                    {
+                        continue;
+                    }
+                    AZ_Assert(srgSlot == RHI::ShaderResourceGroupData::BindlessSRGFrequencyId,"Bindless SRG slot needs to match the one described in the shader.");
+                    AZ_Assert(binding.m_bindlessTable.IsValid(), "BindlessSRG handles is not valid.");
+
+                    switch (pipelineType)
+                    {
+                    case RHI::PipelineStateType::Draw:
+                        {
+                            GetCommandList()->SetGraphicsRootDescriptorTable(
+                                binding.m_bindlessTable.GetIndex(), m_descriptorContext->GetBindlessGpuPlatformHandle());
+                            break;
+                        }
+                    case RHI::PipelineStateType::Dispatch:
+                        {
+                            GetCommandList()->SetComputeRootDescriptorTable(
+                                binding.m_bindlessTable.GetIndex(), m_descriptorContext->GetBindlessGpuPlatformHandle());
+                            break;
+                        }
+                    default:
+                        AZ_Assert(false, "Invalid PipelineType");
+                        break;
+                    }
+                    m_state.m_bindBindlessHeap = true;
+                    continue;
+                }
+                
                 if (AZ::RHI::Validation::IsEnabled())
                 {
                     if (!shaderResourceGroup)
@@ -432,12 +477,12 @@ namespace AZ
                 }
 
                 bool updateSRG = bindings.m_srgsByIndex[srgIndex] != shaderResourceGroup;
+
                 if (updateSRG)
                 {
                     bindings.m_srgsByIndex[srgIndex] = shaderResourceGroup;
 
                     const ShaderResourceGroupCompiledData& compiledData = shaderResourceGroup->GetCompiledData();
-                    RootParameterBinding binding = pipelineLayout->GetRootParameterBindingByIndex(srgIndex);
 
                     switch (pipelineType)
                     {
@@ -457,16 +502,19 @@ namespace AZ
                             GetCommandList()->SetGraphicsRootDescriptorTable(binding.m_samplerTable.GetIndex(), compiledData.m_gpuSamplersDescriptorHandle);
                         }
 
-                        for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
+                        
+                        for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays;
+                             ++unboundedArrayIndex)
                         {
-                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid() &&
+                            if (binding.m_bindlessTable.IsValid() &&
                                 compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                             {
                                 GetCommandList()->SetGraphicsRootDescriptorTable(
-                                    binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
+                                    binding.m_bindlessTable.GetIndex(),
                                     compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex]);
                             }
                         }
+                        
                         break;
 
                     case RHI::PipelineStateType::Dispatch:
@@ -485,13 +533,14 @@ namespace AZ
                             GetCommandList()->SetComputeRootDescriptorTable(binding.m_samplerTable.GetIndex(), compiledData.m_gpuSamplersDescriptorHandle);
                         }
 
-                        for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
+                        for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays;
+                             ++unboundedArrayIndex)
                         {
-                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid() &&
+                            if (binding.m_bindlessTable.IsValid() &&
                                 compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                             {
                                 GetCommandList()->SetComputeRootDescriptorTable(
-                                    binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
+                                    binding.m_bindlessTable.GetIndex(),
                                     compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex]);
                             }
                         }

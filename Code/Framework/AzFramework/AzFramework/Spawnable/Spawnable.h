@@ -209,4 +209,7 @@ namespace AzFramework
 
         mutable AZStd::atomic<int32_t> m_shareState{ ShareState::NotShared };
     };
+
+    using SpawnableAsset = AZ::Data::Asset<AzFramework::Spawnable>;
+    using SpawnableAssetVector = AZStd::vector<AZ::Data::Asset<AzFramework::Spawnable>>;
 } // namespace AzFramework

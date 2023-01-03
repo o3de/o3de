@@ -66,4 +66,24 @@ namespace AzQtComponents
         static int execIfNecessary(QMessageBox::Icon icon, QWidget* parent, const QString& settingKey, const QString& title, const QString& text, QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton, const QString& autoHideCheckBoxText);
     };
 
+    class AZ_QT_COMPONENTS_API FixedWidthMessageBox : public QMessageBox
+    {
+        Q_OBJECT
+    public:
+        FixedWidthMessageBox(
+            int width,
+            const QString& title,
+            const QString& text,
+            const QString& informativeText,
+            const QString& detailedText,
+            QMessageBox::Icon icon,
+            QMessageBox::StandardButton standardButton,
+            QMessageBox::StandardButton defaultButton,
+            QWidget* parent = nullptr);
+
+    private:
+        void SetWidth(int width);
+    };
+
+
 } // namespace AzQtComponents

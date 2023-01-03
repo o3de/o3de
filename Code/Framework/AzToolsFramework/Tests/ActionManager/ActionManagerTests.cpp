@@ -25,6 +25,12 @@ namespace UnitTest
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, VerifyActionContextIsRegistered)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        EXPECT_TRUE(m_actionManagerInterface->IsActionContextRegistered("o3de.context.test"));
+    }
+
     TEST_F(ActionManagerFixture, RegisterActionToUnregisteredContext)
     {
         auto outcome = m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
@@ -47,6 +53,14 @@ namespace UnitTest
         auto outcome = m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, VerifyActionIsRegistered)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        EXPECT_TRUE(m_actionManagerInterface->IsActionRegistered("o3de.action.test"));
     }
 
     TEST_F(ActionManagerFixture, RegisterCheckableActionToUnregisteredContext)
@@ -370,6 +384,130 @@ namespace UnitTest
         EXPECT_TRUE(action->isChecked());
     }
 
+    TEST_F(ActionManagerFixture, RegisterWidgetAction)
+    {
+        auto outcome = m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test", {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RegisterWidgetActionTwice)
+    {
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test", {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+        auto outcome = m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test", {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, VerifyWidgetActionIsRegistered)
+    {
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+        EXPECT_TRUE(m_actionManagerInterface->IsWidgetActionRegistered("o3de.widgetAction.test"));
+    }
+
+    TEST_F(ActionManagerFixture, GetWidgetActionName)
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_name = "Test Widget";
+
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        auto outcome = m_actionManagerInterface->GetWidgetActionName("o3de.widgetAction.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_THAT(outcome.GetValue().c_str(), ::testing::StrEq("Test Widget"));
+    }
+
+    TEST_F(ActionManagerFixture, SetWidgetActionName)
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_name = "Wrong Widget Name";
+
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        auto setOutcome = m_actionManagerInterface->SetWidgetActionName("o3de.widgetAction.test", "Correct Widget Name");
+        EXPECT_TRUE(setOutcome.IsSuccess());
+
+        auto getOutcome = m_actionManagerInterface->GetWidgetActionName("o3de.widgetAction.test");
+        EXPECT_THAT(getOutcome.GetValue().c_str(), ::testing::StrEq("Correct Widget Name"));
+    }
+
+    TEST_F(ActionManagerFixture, GetWidgetActionCategory)
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_category = "Test Widget Category";
+
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        auto outcome = m_actionManagerInterface->GetWidgetActionCategory("o3de.widgetAction.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_THAT(outcome.GetValue().c_str(), ::testing::StrEq("Test Widget Category"));
+    }
+
+    TEST_F(ActionManagerFixture, SetWidgetActionCategory)
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_category = "Wrong Widget Category";
+
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        auto setOutcome = m_actionManagerInterface->SetWidgetActionCategory("o3de.widgetAction.test", "Correct Widget Category");
+        EXPECT_TRUE(setOutcome.IsSuccess());
+
+        auto getOutcome = m_actionManagerInterface->GetWidgetActionCategory("o3de.widgetAction.test");
+        EXPECT_THAT(getOutcome.GetValue().c_str(), ::testing::StrEq("Correct Widget Category"));
+    }
+
     TEST_F(ActionManagerFixture, RegisterActionUpdater)
     {
         auto outcome = m_actionManagerInterface->RegisterActionUpdater("o3de.updater.onTestChange");
@@ -428,20 +566,162 @@ namespace UnitTest
         }
 
         enabledState = true;
-        
         {
             auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
             EXPECT_TRUE(enabledOutcome.IsSuccess());
             EXPECT_FALSE(enabledOutcome.GetValue());
         }
 
-        auto outcome = m_actionManagerInterface->TriggerActionUpdater("o3de.updater.onTestChange");
-        
+        m_actionManagerInterface->TriggerActionUpdater("o3de.updater.onTestChange");
         {
             auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
             EXPECT_TRUE(enabledOutcome.IsSuccess());
             EXPECT_TRUE(enabledOutcome.GetValue());
         }
+    }
+
+    TEST_F(ActionManagerFixture, SetUnregisteredActionContextModeOnAction)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        auto outcome = m_actionManagerInterface->AssignModeToAction("o3de.context.mode.test", "o3de.action.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, SetActionContextModeOnAction)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContextMode("o3de.context.test", "o3de.context.mode.test");
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        {
+            auto outcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(outcome.GetValue());
+        }
+
+        // Set Action to the "o3de.context.mode.test" mode and verify it's no longer enabled (since "o3de.context.test" is set to "default").
+        m_actionManagerInterface->AssignModeToAction("o3de.context.mode.test", "o3de.action.test");
+
+        {
+            auto outcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_FALSE(outcome.GetValue());
+        }
+    }
+
+    TEST_F(ActionManagerFixture, SetActionContextDefaultModeOnAction)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        {
+            auto outcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(outcome.GetValue());
+        }
+
+        // Set Action to the "default" mode and verify it's still enabled (since "o3de.context.test" is set to "default").
+        m_actionManagerInterface->AssignModeToAction("default", "o3de.action.test");
+
+        {
+            auto outcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(outcome.GetValue());
+        }
+    }
+
+    TEST_F(ActionManagerFixture, ChangeModeAndVerifyActionWithNoSetMode)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContextMode("o3de.context.test", "o3de.context.mode.test");
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        {
+            auto outcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(outcome.GetValue());
+        }
+
+        // Set the Action Context Mode to "o3de.context.mode.test" and verify that the action is still enabled.
+        m_actionManagerInterface->SetActiveActionContextMode("o3de.context.test", "o3de.context.mode.test");
+
+        {
+            auto outcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(outcome.GetValue());
+        }
+    }
+
+    TEST_F(ActionManagerFixture, ChangeModeAndVerifyActionSetToDefaultMode)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContextMode("o3de.context.test", "o3de.context.mode.test");
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        {
+            auto outcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(outcome.GetValue());
+        }
+
+        // Set Action to the "default" mode and verify it's still enabled (since "o3de.context.test" is set to "default").
+        m_actionManagerInterface->AssignModeToAction("default", "o3de.action.test");
+
+        {
+            auto outcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(outcome.GetValue());
+        }
+
+        // Set the Action Context Mode to "o3de.context.mode.test" and verify that the action is now disabled.
+        m_actionManagerInterface->SetActiveActionContextMode("o3de.context.test", "o3de.context.mode.test");
+
+        {
+            auto outcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_FALSE(outcome.GetValue());
+        }
+    }
+
+    TEST_F(ActionManagerFixture, ModeSwitchingTest)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContextMode("o3de.context.test", "o3de.context.mode.test1");
+        m_actionManagerInterface->RegisterActionContextMode("o3de.context.test", "o3de.context.mode.test2");
+
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.testDefault", {}, []{});
+        m_actionManagerInterface->AssignModeToAction("default", "o3de.action.testDefault");
+
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test1", {}, []{});
+        m_actionManagerInterface->AssignModeToAction("o3de.context.mode.test1", "o3de.action.test1");
+
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
+        m_actionManagerInterface->AssignModeToAction("o3de.context.mode.test2", "o3de.action.test2");
+
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.testAll", {}, []{});
+
+        // At the beginning, "o3de.context.test" is set to mode "default".
+        EXPECT_TRUE(m_actionManagerInterface->IsActionEnabled("o3de.action.testDefault").GetValue());
+        EXPECT_FALSE(m_actionManagerInterface->IsActionEnabled("o3de.action.test1").GetValue());
+        EXPECT_FALSE(m_actionManagerInterface->IsActionEnabled("o3de.action.test2").GetValue());
+        EXPECT_TRUE(m_actionManagerInterface->IsActionEnabled("o3de.action.testAll").GetValue());
+
+        // Set the Action Context Mode to "o3de.context.mode.test1" and verify that the actions are updated accordingly.
+        m_actionManagerInterface->SetActiveActionContextMode("o3de.context.test", "o3de.context.mode.test1");
+
+        EXPECT_FALSE(m_actionManagerInterface->IsActionEnabled("o3de.action.testDefault").GetValue());
+        EXPECT_TRUE(m_actionManagerInterface->IsActionEnabled("o3de.action.test1").GetValue());
+        EXPECT_FALSE(m_actionManagerInterface->IsActionEnabled("o3de.action.test2").GetValue());
+        EXPECT_TRUE(m_actionManagerInterface->IsActionEnabled("o3de.action.testAll").GetValue());
+
+        // Set the Action Context Mode to "o3de.context.mode.test2" and verify that the actions are updated accordingly.
+        m_actionManagerInterface->SetActiveActionContextMode("o3de.context.test", "o3de.context.mode.test2");
+
+        EXPECT_FALSE(m_actionManagerInterface->IsActionEnabled("o3de.action.testDefault").GetValue());
+        EXPECT_FALSE(m_actionManagerInterface->IsActionEnabled("o3de.action.test1").GetValue());
+        EXPECT_TRUE(m_actionManagerInterface->IsActionEnabled("o3de.action.test2").GetValue());
+        EXPECT_TRUE(m_actionManagerInterface->IsActionEnabled("o3de.action.testAll").GetValue());
+
+        // Set the Action Context Mode back to "default" and verify that the actions are updated accordingly.
+        m_actionManagerInterface->SetActiveActionContextMode("o3de.context.test", "default");
+
+        EXPECT_TRUE(m_actionManagerInterface->IsActionEnabled("o3de.action.testDefault").GetValue());
+        EXPECT_FALSE(m_actionManagerInterface->IsActionEnabled("o3de.action.test1").GetValue());
+        EXPECT_FALSE(m_actionManagerInterface->IsActionEnabled("o3de.action.test2").GetValue());
+        EXPECT_TRUE(m_actionManagerInterface->IsActionEnabled("o3de.action.testAll").GetValue());
     }
 
 } // namespace UnitTest

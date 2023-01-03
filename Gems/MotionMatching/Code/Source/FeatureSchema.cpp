@@ -41,7 +41,7 @@ namespace EMotionFX::MotionMatching
 
         if (iterator != m_featuresById.end())
         {
-            AZ_Assert(false, "Cannot add feature. Feature with id '%s' has already been registered.", feature->GetId().data);
+            AZ_Assert(false, "Cannot add feature. Feature with id '%s' has already been registered.", feature->GetId().ToFixedString().c_str());
             return;
         }
 
@@ -94,6 +94,22 @@ namespace EMotionFX::MotionMatching
 
         Feature* featureObject = reinterpret_cast<Feature*>(classData->m_factory->Create(classData->m_name));
         return featureObject;
+    }
+
+    AZStd::vector<AZStd::string> FeatureSchema::CollectColumnNames() const
+    {
+        AZStd::vector<AZStd::string> columnNames;
+
+        for (Feature* feature : m_features)
+        {
+            const size_t numDimensions = feature->GetNumDimensions();
+            for (size_t dimension = 0; dimension < numDimensions; ++dimension)
+            {
+                columnNames.push_back(feature->GetDimensionName(dimension));
+            }
+        }
+
+        return columnNames;
     }
 
     void FeatureSchema::Reflect(AZ::ReflectContext* context)

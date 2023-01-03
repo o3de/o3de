@@ -318,7 +318,7 @@ namespace PhysXEditorTests
         EXPECT_TRUE(sortOutcome.GetError().m_code == AZ::Entity::DependencySortResult::HasIncompatibleServices);
     }
 
-    TEST_F(PhysXEditorFixture, DISABLED_EditorHeightfieldColliderComponentHeightfieldColliderWithCorrectComponentsCorrectRuntimeComponents)
+    TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponentHeightfieldColliderWithCorrectComponentsCorrectRuntimeComponents)
     {
         EntityPtr editorEntity = SetupHeightfieldComponent();
         NiceMock<UnitTest::MockPhysXHeightfieldProvider> mockShapeRequests(editorEntity->GetId());
@@ -335,10 +335,14 @@ namespace PhysXEditorTests
         EXPECT_TRUE(gameEntity->FindComponent<PhysX::HeightfieldColliderComponent>() != nullptr);
         EXPECT_TRUE(gameEntity->FindComponent(LmbrCentral::AxisAlignedBoxShapeComponentTypeId) != nullptr);
 
+        // Make sure to deactivate the entities before destroying the mocks, or else it's possible to get deadlocked.
+        gameEntity->Deactivate();
+        editorEntity->Deactivate();
+
         CleanupHeightfieldComponent();
     }
 
-    TEST_F(PhysXEditorHeightfieldFixture, DISABLED_EditorHeightfieldColliderComponentHeightfieldColliderWithAABoxCorrectRuntimeGeometry)
+    TEST_F(PhysXEditorHeightfieldFixture, EditorHeightfieldColliderComponentHeightfieldColliderWithAABoxCorrectRuntimeGeometry)
     {
         AZ::EntityId gameEntityId = m_gameEntity->GetId();
 
@@ -391,7 +395,7 @@ namespace PhysXEditorTests
         }
     }
 
-    TEST_F(PhysXEditorHeightfieldFixture, DISABLED_EditorHeightfieldColliderComponentHeightfieldColliderCorrectMaterials)
+    TEST_F(PhysXEditorHeightfieldFixture, EditorHeightfieldColliderComponentHeightfieldColliderCorrectMaterials)
     {
         AZ::EntityId gameEntityId = m_gameEntity->GetId();
 

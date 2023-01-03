@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -28,9 +30,9 @@ namespace ScriptCanvasBuilder
 // #define SCRIPT_CANVAS_BUILDER_DATA_SYSTEM_DIAGNOSTICS_ENABLED
 
 #if defined(SCRIPT_CANVAS_BUILDER_DATA_SYSTEM_DIAGNOSTICS_ENABLED)
-#define DATA_SYSTEM_STATUS(window, msg, ...) AZ_TracePrintf(window, msg, __VA_ARGS__);
+#define DATA_SYSTEM_STATUS(window, ...) AZ_TracePrintf(window, __VA_ARGS__);
 #else
-#define DATA_SYSTEM_STATUS(window, msg, ...)
+#define DATA_SYSTEM_STATUS(window, ...)
 #endif//defined(SCRIPT_CANVAS_BUILDER_DATA_SYSTEM_DIAGNOSTICS_ENABLED)
 
     /// <summary>
@@ -44,10 +46,12 @@ namespace ScriptCanvasBuilder
     /// configuration loaded from latest source file on disk. This system reduces file I/O and compilation work by maintaining and providing
     /// access to the very latest results.
     class DataSystem final
-        : public DataSystemAssetRequestsBus::Handler
-        , public DataSystemSourceRequestsBus::Handler
+        : public AZ::Data::AssetBus::MultiHandler
+        , public AzFramework::AssetCatalogEventBus::Handler
+        , public AzFramework::AssetSystemInfoBus::Handler
         , public AzToolsFramework::AssetSystemBus::Handler
-        , public AZ::Data::AssetBus::MultiHandler
+        , public DataSystemSourceRequestsBus::Handler
+        , public DataSystemAssetRequestsBus::Handler
     {
     public:
         AZ_TYPE_INFO(DataSystem, "{27B74209-319D-4A8C-B37D-F85EFA6D2FFA}");
@@ -84,12 +88,20 @@ namespace ScriptCanvasBuilder
         
         void AddResult(const SourceHandle& handle, BuilderSourceStorage&& result);
         void AddResult(AZ::Uuid&& id, BuilderSourceStorage&& result);
+
         void CompileBuilderDataInternal(SourceHandle sourceHandle);
+        void MarkAssetInError(AZ::Uuid sourceId);
         BuilderAssetResult& MonitorAsset(AZ::Uuid fileAssetId);
+
         void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetUnloaded(const AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType);
+
+        void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
+        void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
+        void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
+
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;

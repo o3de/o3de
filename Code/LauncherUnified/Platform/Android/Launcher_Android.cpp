@@ -297,6 +297,7 @@ namespace
 // It runs in its own thread, with its own event loop for receiving input events
 void android_main(android_app* appState)
 {
+    const AZ::Debug::Trace tracer;
     // Adding a start up banner so you can see when the game is starting up in amongst the logcat spam
     LOGI("****************************************************************");
     LOGI("*                      Launching Game...                       *");

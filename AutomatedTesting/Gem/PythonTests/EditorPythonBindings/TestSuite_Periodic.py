@@ -4,9 +4,12 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+
 import pytest
-from ly_test_tools import LAUNCHERS
+import sys
+
 from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorBatchedTest, EditorSingleTest
+
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
@@ -22,6 +25,7 @@ class TestAutomation_BasicBatch(EditorTestSuite):
     class Editor_ComponentCommands_BuildComponentTypeNameList(EditorBatchedTest):
         from .tests import Editor_ComponentCommands_BuildComponentTypeNameList as test_module
 
+    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="https://github.com/o3de/o3de/issues/11032")
     class Editor_ComponentCommands_Works(EditorSingleTest):
         from .tests import Editor_ComponentCommands_Works as test_module
 

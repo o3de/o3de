@@ -10,8 +10,8 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 
-#include "native/utilities/AssetBuilderInfo.h"
-#include "MockApplicationManager.h"
+#include <native/utilities/AssetBuilderInfo.h>
+#include <native/unittests/MockApplicationManager.h>
 
 namespace AssetProcessor
 {

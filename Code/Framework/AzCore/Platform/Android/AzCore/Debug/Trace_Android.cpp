@@ -7,19 +7,30 @@
  */
 
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/std/string/string_view.h>
+#include <AzCore/std/string/fixed_string.h>
 
 #include <android/log.h>
 
-namespace AZ
+namespace AZ::Debug::Platform
 {
-    namespace Debug
+    void OutputToDebugger(AZStd::string_view window, AZStd::string_view message)
     {
-        namespace Platform
+        constexpr size_t MaxMessageBufferLength = 4096;
+        AZStd::fixed_string<MaxMessageBufferLength> windowBuffer(window);
+        AZStd::fixed_string<MaxMessageBufferLength> messageBuffer;
+        while (message.size() > messageBuffer.max_size())
         {
-            void OutputToDebugger([[maybe_unused]] const char* window, [[maybe_unused]] const char* message)
-            {
-                __android_log_print(ANDROID_LOG_INFO, window, "%s", message);
-            }
+            // Transfer over messageBuffer max_size() characters over to output buffer
+            messageBuffer = message.substr(0, messageBuffer.max_size());
+            message = message.substr(messageBuffer.max_size());
+            __android_log_write(ANDROID_LOG_INFO, windowBuffer.c_str(), messageBuffer.c_str());
+        }
+
+        if (!message.empty())
+        {
+            messageBuffer = message;
+            __android_log_write(ANDROID_LOG_INFO, windowBuffer.c_str(), messageBuffer.c_str());
         }
     }
 }

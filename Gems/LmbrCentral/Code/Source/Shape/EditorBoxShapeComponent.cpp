@@ -27,7 +27,7 @@ namespace LmbrCentral
             // Deprecate: EditorBoxColliderComponent -> EditorBoxShapeComponent
             serializeContext->ClassDeprecate(
                 "EditorBoxColliderComponent",
-                "{E1707478-4F5F-4C28-A31A-EF42B7BD2A68}",
+                AZ::Uuid("{E1707478-4F5F-4C28-A31A-EF42B7BD2A68}"),
                 &ClassConverters::DeprecateEditorBoxColliderComponent)
                 ;
 
@@ -162,18 +162,8 @@ namespace LmbrCentral
         return m_boxShape.SetBoxDimensions(dimensions);
     }
 
-    AZ::Transform EditorBoxShapeComponent::GetCurrentTransform()
-    {
-        return AzToolsFramework::TransformNormalizedScale(m_boxShape.GetCurrentTransform());
-    }
-
     AZ::Transform EditorBoxShapeComponent::GetCurrentLocalTransform()
     {
         return AZ::Transform::CreateIdentity();
-    }
-
-    AZ::Vector3 EditorBoxShapeComponent::GetBoxScale()
-    {
-        return AZ::Vector3(m_boxShape.GetCurrentTransform().GetUniformScale() * m_boxShape.GetCurrentNonUniformScale());
     }
 } // namespace LmbrCentral

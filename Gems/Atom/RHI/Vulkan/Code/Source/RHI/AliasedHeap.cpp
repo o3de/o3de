@@ -9,7 +9,7 @@
 #include <RHI/AliasingBarrierTracker.h>
 #include <RHI/Image.h>
 #include <RHI/Buffer.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Scope.h>
 #include <RHI/Memory.h>
@@ -70,11 +70,12 @@ namespace AZ
             imageDescriptor.m_bindFlags |= RHI::ImageBindFlags::CopyWrite;
             RHI::ResourceMemoryRequirements memoryRequirements = GetDevice().GetResourceMemoryRequirements(imageDescriptor);
 
-            RHI::ResultCode result = image->Init(GetVulkanRHIDevice(), imageDescriptor);
+            const bool tryUseSparse = false;
+            RHI::ResultCode result = image->Init(GetVulkanRHIDevice(), imageDescriptor, tryUseSparse);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             MemoryView memoryView = MemoryView(m_heapMemory, heapOffset, memoryRequirements.m_sizeInBytes, memoryRequirements.m_alignmentInBytes, MemoryAllocationType::SubAllocated);
-            result = image->BindMemoryView(memoryView, RHI::HeapMemoryLevel::Device);
+            result = image->BindMemoryView(memoryView);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             image->SetDescriptor(imageDescriptor);

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Internal/MathTypes.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/algorithm.h>
 

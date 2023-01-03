@@ -75,7 +75,7 @@ def GradientMixer_NodeConstruction():
     import azlmbr.paths
 
     import editor_python_test_tools.hydra_editor_utils as hydra
-    import editor_python_test_tools.prefab_utils as PrefabUtils
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     from editor_python_test_tools.utils import Report
 
     editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
@@ -142,7 +142,7 @@ def GradientMixer_NodeConstruction():
     gradientMixerNode = landscapecanvas.LandscapeCanvasNodeFactoryRequestBus(bus.Broadcast, 'CreateNodeForTypeName', newGraph,
                                                                              'GradientMixerNode')
     graph.GraphControllerRequestBus(bus.Event, 'AddNode', newGraphId, gradientMixerNode, math.Vector2(positionX, positionY))
-    PrefabUtils.wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     gradientMixerEntityId = newEntityId
 
     boundsSlotId = graph.GraphModelSlotId('Bounds')
@@ -178,7 +178,7 @@ def GradientMixer_NodeConstruction():
     perlinNoiseComponent = perlinNoiseOutcome.GetValue()
 
     # Verify the Preview EntityId property on our Perlin Noise Gradient component has been set to our Box Shape's EntityId
-    previewEntityId = hydra.get_component_property_value(perlinNoiseComponent, 'Preview Settings|Pin Preview to Shape')
+    previewEntityId = hydra.get_component_property_value(perlinNoiseComponent, 'Previewer|Preview Settings|Pin Preview to Shape')
     Report.result(Tests.preview_entity_set, previewEntityId and boxShapeEntityId.invoke("Equal", previewEntityId))
 
     # Verify the 1st Inbound Gradient EntityId property on our Gradient Mixer component has been set to our Perlin Noise

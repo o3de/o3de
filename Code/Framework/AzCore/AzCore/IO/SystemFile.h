@@ -53,6 +53,8 @@ namespace AZ
             using FileHandleType = AZ::IO::Internal::FileHandleType;
 
             SystemFile();
+            //! Constructor which invokes Open() using the file name and mode
+            SystemFile(const char* fileName, int mode, int platformFlags = 0);
             ~SystemFile();
 
             SystemFile(SystemFile&&);
@@ -217,6 +219,9 @@ namespace AZ
 
             //! Stops capture of file descriptor and reset it back to it's previous value
             void Stop(const OutputRedirectVisitor& redirectCallback);
+
+            // Writes to the original source descriptor, bypassing the capture
+            int WriteBypassingCapture(const void* data, unsigned int size);
 
         private:
             void Reset();

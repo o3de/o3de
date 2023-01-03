@@ -18,32 +18,35 @@
 #include <EngineScreenCtrl.h>
 #include <EngineSettingsScreen.h>
 #include <GemRepo/GemRepoScreen.h>
+#include <CreateAGemScreen.h>
+#include <EditAGemScreen.h>
+#include <DownloadController.h>
 
 namespace O3DE::ProjectManager
 {
-    ScreenWidget* BuildScreen(QWidget* parent, ProjectManagerScreen screen)
+    ScreenWidget* BuildScreen(QWidget* parent, ProjectManagerScreen screen, DownloadController* downloadController)
     {
         ScreenWidget* newScreen;
 
         switch(screen)
         {
         case (ProjectManagerScreen::CreateProject):
-            newScreen = new CreateProjectCtrl(parent);
+            newScreen = new CreateProjectCtrl(downloadController, parent);
             break;
         case (ProjectManagerScreen::NewProjectSettings):
-            newScreen = new NewProjectSettingsScreen(parent);
+            newScreen = new NewProjectSettingsScreen(downloadController, parent);
             break;
         case (ProjectManagerScreen::GemCatalog):
-            newScreen = new GemCatalogScreen(parent);
+            newScreen = new GemCatalogScreen(downloadController, true, parent);
             break;
         case (ProjectManagerScreen::ProjectGemCatalog):
-            newScreen = new ProjectGemCatalogScreen(parent);
+            newScreen = new ProjectGemCatalogScreen(downloadController, parent);
             break;
         case (ProjectManagerScreen::Projects):
-            newScreen = new ProjectsScreen(parent);
+            newScreen = new ProjectsScreen(downloadController, parent);
             break;
         case (ProjectManagerScreen::UpdateProject):
-            newScreen = new UpdateProjectCtrl(parent);
+            newScreen = new UpdateProjectCtrl(downloadController, parent);
             break;
         case (ProjectManagerScreen::UpdateProjectSettings):
             newScreen = new UpdateProjectSettingsScreen(parent);
@@ -60,10 +63,19 @@ namespace O3DE::ProjectManager
         case (ProjectManagerScreen::GemRepos):
             newScreen = new GemRepoScreen(parent);
             break;
+        case (ProjectManagerScreen::CreateGem):
+            newScreen = new CreateGem(parent);
+            break;
+        case (ProjectManagerScreen::EditGem):
+            newScreen = new EditGem(parent);
+            break;
         case (ProjectManagerScreen::Empty):
         default:
             newScreen = new ScreenWidget(parent);
         }
+
+        //handle any code that needs to run after construction but before startup 
+        newScreen->Init();
 
         return newScreen;
     }

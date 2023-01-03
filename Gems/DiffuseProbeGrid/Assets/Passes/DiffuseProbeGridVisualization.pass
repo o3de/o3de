@@ -1,0 +1,65 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DiffuseProbeGridVisualizationPassTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "ColorInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "DepthInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "DiffuseProbeGridVisualizationPreparePass",
+                    "TemplateName": "DiffuseProbeGridVisualizationPreparePassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridVisualizationAccelerationStructurePass",
+                    "TemplateName": "DiffuseProbeGridVisualizationAccelerationStructurePassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridVisualizationRayTracingPass",
+                    "TemplateName": "DiffuseProbeGridVisualizationRayTracingPassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridVisualizationCompositePass",
+                    "TemplateName": "DiffuseProbeGridVisualizationCompositePassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "VisualizationInput",
+                            "AttachmentRef": {
+                                "Pass": "DiffuseProbeGridVisualizationRayTracingPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ColorInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "ColorInputOutput"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
+ 

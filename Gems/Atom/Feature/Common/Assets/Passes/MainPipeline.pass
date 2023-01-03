@@ -44,13 +44,6 @@
                     "TemplateName": "RayTracingAccelerationStructurePassTemplate"
                 },
                 {
-                    "Name": "DiffuseProbeGridUpdatePass",
-                    "TemplateName": "DiffuseProbeGridUpdatePassTemplate",
-                    "ExecuteAfter": [
-                        "RayTracingAccelerationStructurePass"
-                    ]
-                },
-                {
                     "Name": "DepthPrePass",
                     "TemplateName": "DepthParentTemplate",
                     "Connections": [
@@ -373,33 +366,6 @@
                     ]
                 },
                 {
-                    "Name": "DiffuseProbeGridVisualizationCompositePass",
-                    "TemplateName": "DiffuseProbeGridVisualizationCompositePassTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "VisualizationInput",
-                            "AttachmentRef": {
-                                "Pass": "OpaquePass",
-                                "Attachment": "DiffuseProbeGridVisualization"
-                            }
-                        },
-                        {
-                            "LocalSlot": "Depth",
-                            "AttachmentRef": {
-                                "Pass": "DepthPrePass",
-                                "Attachment": "Depth"
-                            }
-                        },
-                        {
-                            "LocalSlot": "ColorInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "PostProcessPass",
-                                "Attachment": "Output"
-                            }
-                        }
-                    ]
-                },
-                {
                     "Name": "AuxGeomPass",
                     "TemplateName": "AuxGeomPassTemplate",
                     "Enabled": true,
@@ -407,8 +373,8 @@
                         {
                             "LocalSlot": "ColorInputOutput",
                             "AttachmentRef": {
-                                "Pass": "DiffuseProbeGridVisualizationCompositePass",
-                                "Attachment": "ColorInputOutput"
+                                "Pass": "PostProcessPass",
+                                "Attachment": "Output"
                             }
                         },
                         {

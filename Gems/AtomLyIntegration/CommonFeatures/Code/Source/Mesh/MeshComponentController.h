@@ -26,6 +26,7 @@
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
+#include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
 
 namespace AZ
 {
@@ -50,6 +51,7 @@ namespace AZ
             Data::Asset<RPI::ModelAsset> m_modelAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
             RHI::DrawItemSortKey m_sortKey = 0;
             bool m_excludeFromReflectionCubeMaps = false;
+            bool m_isAlwaysDynamic = false;
             bool m_useForwardPassIblSpecular = false;
             bool m_isRayTracingEnabled = true;
             RPI::Cullable::LodType m_lodType = RPI::Cullable::LodType::Default;
@@ -61,10 +63,11 @@ namespace AZ
         class MeshComponentController final
             : private MeshComponentRequestBus::Handler
             , private MeshHandleStateRequestBus::Handler
+            , private AtomImGuiTools::AtomImGuiMeshCallbackBus::Handler
             , public AzFramework::BoundsRequestBus::Handler
             , public AzFramework::RenderGeometry::IntersectionRequestBus::Handler
             , private TransformNotificationBus::Handler
-            , private MaterialReceiverRequestBus::Handler
+            , private MaterialConsumerRequestBus::Handler
             , private MaterialComponentNotificationBus::Handler
         {
         public:
@@ -100,11 +103,17 @@ namespace AZ
             AZStd::string GetModelAssetPath() const override;
             AZ::Data::Instance<RPI::Model> GetModel() const override;
 
+            // AtomImGuiTools::AtomImGuiMeshCallbackBus::Handler overrides ...
+            const RPI::MeshDrawPacketLods* GetDrawPackets() const override;
+
             // AtomMeshRequestBus overrides ...
             const MeshFeatureProcessorInterface::MeshHandle* GetMeshHandle() const override;
 
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
+
+            void SetIsAlwaysDynamic(bool isAlwaysDynamic) override;
+            bool GetIsAlwaysDynamic() const override;
 
             void SetLodType(RPI::Cullable::LodType lodType) override;
             RPI::Cullable::LodType GetLodType() const override;
@@ -134,7 +143,7 @@ namespace AZ
             // TransformNotificationBus::Handler overrides ...
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
-            // MaterialReceiverRequestBus::Handler overrides ...
+            // MaterialConsumerRequestBus::Handler overrides ...
             MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
             MaterialAssignmentLabelMap GetMaterialLabels() const override;

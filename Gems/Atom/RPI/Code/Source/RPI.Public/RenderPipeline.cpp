@@ -84,22 +84,27 @@ namespace AZ
         }
 
         RenderPipelinePtr RenderPipeline::CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext,
-                                                                        const WindowContext::SwapChainMode swapchainMode)
+                                                                        const ViewType viewType)
         {
-            RenderPipeline* pipeline = aznew RenderPipeline();
+            RenderPipelinePtr pipeline{aznew RenderPipeline()};
             PassSystemInterface* passSystem = PassSystemInterface::Get();
 
             PassDescriptor swapChainDescriptor(Name(desc.m_name));
             Name templateName = Name(desc.m_rootPassTemplate.c_str());
             swapChainDescriptor.m_passTemplate = passSystem->GetPassTemplate(templateName);
-            AZ_Assert(swapChainDescriptor.m_passTemplate, "Root-PassTemplate %s not found!", templateName.GetCStr());
 
-            pipeline->m_passTree.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, swapchainMode);
+            if (!swapChainDescriptor.m_passTemplate)
+            {
+                AZ_Error("RPISystem", false, "Root-PassTemplate %s not found!", templateName.GetCStr());
+                return nullptr;
+            }
+
+            pipeline->m_passTree.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, viewType);
             pipeline->m_windowHandle = windowContext.GetWindowHandle();
+            pipeline->m_viewType = viewType;
+            InitializeRenderPipeline(pipeline.get(), desc);
 
-            InitializeRenderPipeline(pipeline, desc);
-
-            return RenderPipelinePtr(pipeline);
+            return pipeline;
         }
 
         void RenderPipeline::InitializeRenderPipeline(RenderPipeline* pipeline, const RenderPipelineDescriptor& desc)
@@ -107,6 +112,7 @@ namespace AZ
             pipeline->m_descriptor = desc;
             pipeline->m_mainViewTag = Name(desc.m_mainViewTagName);
             pipeline->m_nameId = desc.m_name.data();
+            pipeline->m_materialPipelineTagName = Name{desc.m_materialPipelineTag};
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
             pipeline->m_passTree.m_rootPass->SetRenderPipeline(pipeline);
             pipeline->m_passTree.m_rootPass->m_flags.m_isPipelineRoot = true;
@@ -167,8 +173,38 @@ namespace AZ
             m_passTree.m_rootPass->GetViewDrawListInfo(views.m_drawListMask, views.m_passesByDrawList, views.m_viewTag);
         }
 
+        bool RenderPipeline::CanRegisterView(const PipelineViewTag& allowedViewTag, const View* view) const
+        {
+            auto registeredViewItr = m_persistentViewsByViewTag.find(view);
+            if (registeredViewItr != m_persistentViewsByViewTag.end() && registeredViewItr->second != allowedViewTag)
+            {
+                AZ_Warning("RenderPipeline", false, "View [%s] is already registered for persistent ViewTag [%s].",
+                         view->GetName().GetCStr(), registeredViewItr->second.GetCStr());
+                return false;
+            }
+
+            registeredViewItr = m_transientViewsByViewTag.find(view);
+            if (registeredViewItr != m_transientViewsByViewTag.end() && registeredViewItr->second != allowedViewTag)
+            {
+                AZ_Warning("RenderPipeline", false, "View [%s] is already registered for transient ViewTag [%s].",
+                         view->GetName().GetCStr(), registeredViewItr->second.GetCStr());
+                return false;
+            }
+            return true;
+        }
+
         void RenderPipeline::SetPersistentView(const PipelineViewTag& viewTag, ViewPtr view)
         {
+            // If a view is registered for multiple viewTags, it gets only the PassesByDrawList of whatever
+            // DrawList it was registered last, which will cause a crash during SortDrawList later. So we check
+            // here if the view is already registered with another viewTag.
+            // TODO: remove this check and merge the PassesByDrawList if that behaviour is actually needed.
+            if (!CanRegisterView(viewTag, view.get()))
+            {
+                AZ_Assert(false, "Can't register view [%s] with viewTag [%s]", view->GetName().GetCStr(), viewTag.GetCStr());
+                return;
+            }
+
             auto viewItr = m_pipelineViewsByTag.find(viewTag);
             if (viewItr != m_pipelineViewsByTag.end())
             {
@@ -190,10 +226,12 @@ namespace AZ
                     view->OnAddToRenderPipeline();
                 }
                 pipelineViews.m_views[0] = view;
+                m_persistentViewsByViewTag[view.get()] = viewTag;
 
                 if (previousView)
                 {
                     previousView->SetPassesByDrawList(nullptr);
+                    m_persistentViewsByViewTag.erase(previousView.get());
                 }
 
                 if (m_scene)
@@ -233,8 +271,28 @@ namespace AZ
             }
         }
 
+        void RenderPipeline::SetDefaultStereoscopicViewFromEntity(EntityId entityId, RPI::ViewType viewType)
+        {
+            ViewPtr cameraView;
+            ViewProviderBus::EventResult(cameraView, entityId, &ViewProvider::GetStereoscopicView, viewType);
+            if (cameraView)
+            {
+                SetDefaultView(cameraView);
+            }
+        }
+
         void RenderPipeline::AddTransientView(const PipelineViewTag& viewTag, ViewPtr view)
         {
+            // If a view is registered for multiple viewTags, it gets only the PassesByDrawList of whatever
+            // DrawList it was registered last, which will cause a crash during SortDrawList later. So we check
+            // here if the view is already registered with another viewTag.
+            // TODO: remove this check and merge the PassesByDrawList if that behaviour is actually needed.
+            if (!CanRegisterView(viewTag, view.get()))
+            {
+                AZ_Assert(false, "Can't register transient view [%s] with viewTag [%s]", view->GetName().GetCStr(), viewTag.GetCStr());
+                return;
+            }
+
             auto viewItr = m_pipelineViewsByTag.find(viewTag);
             if (viewItr != m_pipelineViewsByTag.end())
             {
@@ -251,6 +309,7 @@ namespace AZ
                 view->SetPassesByDrawList(&pipelineViews.m_passesByDrawList);
                 view->OnAddToRenderPipeline();
                 pipelineViews.m_views.push_back(view);
+                m_transientViewsByViewTag[view.get()] = viewTag;
             }
         }
 
@@ -304,7 +363,8 @@ namespace AZ
             m_scene = nullptr;
             PassSystemInterface::Get()->RemoveRenderPipeline(this);
 
-            m_drawFilterTag.Reset();
+            m_drawFilterTagForPipelineInstanceName.Reset();
+            m_drawFilterTagForMaterialPipeline.Reset();
             m_drawFilterMask = 0;
         }
 
@@ -371,6 +431,8 @@ namespace AZ
                 if (m_scene)
                 {
                     SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelinePassesChanged, this);
+                    SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelineChanged, this,
+                        SceneNotification::RenderPipelineChangeType::PassChanged);
 
                     // Pipeline state lookup
                     if (PipelineStateLookupNeedsRebuild(m_pipelinePassChanges))
@@ -417,11 +479,10 @@ namespace AZ
                 }
                 else if (pipelineViews.m_type == PipelineViewType::Persistent)
                 {
-                    // Reset persistent view: clean draw list mask and draw lists
-                    pipelineViews.m_views[0]->Reset();
                     pipelineViews.m_views[0]->SetPassesByDrawList(&pipelineViews.m_passesByDrawList);
                 }
             }
+            m_transientViewsByViewTag.clear();
         }
 
         void RenderPipeline::OnFrameEnd()
@@ -434,6 +495,7 @@ namespace AZ
 
         void RenderPipeline::PassSystemFrameBegin(Pass::FramePrepareParams params)
         {
+            AZ_PROFILE_FUNCTION(RPI);
             if (GetRenderMode() != RenderPipeline::RenderMode::NoRender)
             {
                 m_passTree.m_rootPass->FrameBegin(params);
@@ -442,6 +504,7 @@ namespace AZ
 
         void RenderPipeline::PassSystemFrameEnd()
         {
+            AZ_PROFILE_FUNCTION(RPI);
             if (GetRenderMode() != RenderPipeline::RenderMode::NoRender)
             {
                 m_passTree.m_rootPass->FrameEnd();
@@ -568,15 +631,10 @@ namespace AZ
         {
             return m_renderMode;
         }
-        
+
         bool RenderPipeline::NeedsRender() const
         {
             return m_renderMode != RenderMode::NoRender;
-        }
-
-        RHI::DrawFilterTag RenderPipeline::GetDrawFilterTag() const
-        {
-            return m_drawFilterTag;
         }
 
         RHI::DrawFilterMask RenderPipeline::GetDrawFilterMask() const
@@ -584,17 +642,29 @@ namespace AZ
             return m_drawFilterMask;
         }
 
-        void RenderPipeline::SetDrawFilterTag(RHI::DrawFilterTag tag)
+        void RenderPipeline::SetDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry)
+        {   
+            m_drawFilterTagForPipelineInstanceName = tagRegistry->AcquireTag(m_nameId);
+            m_drawFilterTagForMaterialPipeline = tagRegistry->AcquireTag(m_materialPipelineTagName);
+                        
+            m_drawFilterMask = 0;
+            
+            if (m_drawFilterTagForPipelineInstanceName.IsValid())
+            {
+                m_drawFilterMask |= 1 << m_drawFilterTagForPipelineInstanceName.GetIndex();
+            }
+            if (m_drawFilterTagForMaterialPipeline.IsValid())
+            {
+                m_drawFilterMask |= 1 << m_drawFilterTagForMaterialPipeline.GetIndex();
+            }
+        }
+
+        void RenderPipeline::ReleaseDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry)
         {
-            m_drawFilterTag = tag;
-            if (m_drawFilterTag.IsValid())
-            {
-                m_drawFilterMask = 1 << tag.GetIndex();
-            }
-            else
-            {
-                m_drawFilterMask = 0;
-            }
+            tagRegistry->ReleaseTag(m_drawFilterTagForPipelineInstanceName);
+            tagRegistry->ReleaseTag(m_drawFilterTagForMaterialPipeline);
+            m_drawFilterTagForPipelineInstanceName.Reset();
+            m_drawFilterTagForMaterialPipeline.Reset();
         }
 
         const RenderPipelineDescriptor& RenderPipeline::GetDescriptor() const
@@ -613,7 +683,7 @@ namespace AZ
                 return false;
             }
 
-            // insert the pass 
+            // insert the pass
             auto parentPass = foundPass->GetParent();
             auto passIndex = parentPass->FindChildPassIndex(referencePassName);
             // Note: no need to check if passIndex is valid since the pass was already found
@@ -621,7 +691,7 @@ namespace AZ
         }
 
         bool RenderPipeline::AddPassAfter(Ptr<Pass> newPass, const AZ::Name& referencePassName)
-        {            
+        {
             auto foundPass = FindFirstPass(referencePassName);
 
             if (!foundPass)
@@ -631,7 +701,7 @@ namespace AZ
                 return false;
             }
 
-            // insert the pass 
+            // insert the pass
             auto parentPass = foundPass->GetParent();
             auto passIndex = parentPass->FindChildPassIndex(referencePassName);
             // Note: no need to check if passIndex is valid since the pass was already found
@@ -650,6 +720,11 @@ namespace AZ
                 });
 
             return foundPass;
+        }
+
+        ViewType RenderPipeline::GetViewType() const
+        {
+            return m_viewType;
         }
     }
 }

@@ -23,11 +23,16 @@ namespace AZ::Utils
         ::MessageBoxW(0, wmessage.c_str(), wtitle.c_str(), MB_OK | MB_ICONERROR);
     }
 
-    AZ::IO::FixedMaxPathString GetHomeDirectory()
+    AZ::IO::FixedMaxPathString GetHomeDirectory(AZ::SettingsRegistryInterface* settingsRegistry)
     {
         constexpr AZStd::string_view overrideHomeDirKey = "/Amazon/Settings/override_home_dir";
         AZ::IO::FixedMaxPathString overrideHomeDir;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
         {
             if (settingsRegistry->Get(overrideHomeDir, overrideHomeDirKey))
             {

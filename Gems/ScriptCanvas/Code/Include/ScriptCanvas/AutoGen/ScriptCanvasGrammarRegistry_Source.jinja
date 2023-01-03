@@ -87,7 +87,9 @@ namespace ScriptCanvas
 
     AZStd::vector<AZ::ComponentDescriptor*> {{autogenTargetName}}GrammarRegistry::GetComponentDescriptors()
     {
-        return AZStd::vector<AZ::ComponentDescriptor*>({
+        if (m_cachedDescriptors.empty())
+        {
+            m_cachedDescriptors = {
 {% for ScriptCanvas in dataFiles %}
 {%     for Class in ScriptCanvas %}
 {%         set namespaceName = '::' %}
@@ -105,6 +107,8 @@ namespace ScriptCanvas
 {%         endif %}
 {%     endfor %}
 {% endfor %}
-        });
+            };
+        }
+        return m_cachedDescriptors;
     }
 }

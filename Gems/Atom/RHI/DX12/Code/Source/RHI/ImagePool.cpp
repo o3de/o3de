@@ -147,7 +147,7 @@ namespace AZ
                 }
             }
 
-            void QueuePrologueTransitionBarriers(CommandList& commandList) const override
+            void QueuePrologueTransitionBarriers(CommandList& commandList) override
             {
                 for (const auto& barrier : m_prologueBarriers)
                 {
@@ -279,7 +279,7 @@ namespace AZ
             device.GetImageAllocationInfo(request.m_descriptor, allocationInfo);
 
             RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            if (!memoryUsage.TryReserveMemory(allocationInfo.SizeInBytes))
+            if (!memoryUsage.CanAllocate(allocationInfo.SizeInBytes))
             {
                 return RHI::ResultCode::OutOfMemory;
             }
@@ -302,12 +302,12 @@ namespace AZ
                 image->m_memoryView.SetName(image->GetName().GetStringView());
                 image->m_streamedMipLevel = image->GetResidentMipLevel();
 
-                memoryUsage.m_residentInBytes += allocationInfo.SizeInBytes;
+                memoryUsage.m_totalResidentInBytes += allocationInfo.SizeInBytes;
+                memoryUsage.m_usedResidentInBytes += allocationInfo.SizeInBytes;
                 return RHI::ResultCode::Success;
             }
             else
             {
-                memoryUsage.m_reservedInBytes -= allocationInfo.SizeInBytes;
                 return RHI::ResultCode::OutOfMemory;
             }
         }
@@ -332,8 +332,8 @@ namespace AZ
 
             Image& image = static_cast<Image&>(resourceBase);
             RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            memoryUsage.m_residentInBytes -= image.m_residentSizeInBytes;
-            memoryUsage.m_reservedInBytes -= image.m_residentSizeInBytes;
+            memoryUsage.m_totalResidentInBytes -= image.m_residentSizeInBytes;
+            memoryUsage.m_usedResidentInBytes -= image.m_residentSizeInBytes;
 
             GetDevice().QueueForRelease(image.m_memoryView);
             image.m_memoryView = {};

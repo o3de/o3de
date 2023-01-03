@@ -29,6 +29,7 @@
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Task/TaskGraph.h>
+#include <AzCore/std/time.h>
 
 namespace AZ
 {
@@ -232,7 +233,7 @@ namespace AZ
 
             for (ScopeProducer* scopeProducer : m_scopeProducers)
             {
-                AZ_PROFILE_SCOPE(RHI, "FrameScheduler: PrepareProducers: Scope %s", scopeProducer->GetScopeId().GetCStr());
+                RHI_PROFILE_SCOPE_VERBOSE("FrameScheduler: PrepareProducers: Scope %s", scopeProducer->GetScopeId().GetCStr());
                 m_frameGraph->BeginScope(*scopeProducer->GetScope());
                 scopeProducer->SetupFrameGraphDependencies(*m_frameGraph);
                 
@@ -275,7 +276,7 @@ namespace AZ
                 const uint32_t compilesPerJob = m_compileRequest.m_shaderResourceGroupCompilesPerJob;
                 if (m_taskGraphActive && m_taskGraphActive->IsTaskGraphActive())
                 {
-                    AZ::TaskGraph taskGraph;
+                    AZ::TaskGraph taskGraph{ "SRG Compilation" };
 
                     const auto compileIntervalsFunction = [compilesPerJob, &taskGraph](ShaderResourceGroupPool* srgPool)
                     {
@@ -312,7 +313,7 @@ namespace AZ
                     resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileIntervalsFunction)>(AZStd::move(compileIntervalsFunction));
                     if (!taskGraph.IsEmpty())
                     {
-                        AZ::TaskGraphEvent finishedEvent;
+                        AZ::TaskGraphEvent finishedEvent{ "SRG Compile Wait" };
                         taskGraph.Submit(&finishedEvent);
                         finishedEvent.Wait();
                     }
@@ -494,7 +495,20 @@ namespace AZ
                 ScopeProducer* scopeProducer = FindScopeProducer(executeContext->GetScopeId());
 
                 AZ_PROFILE_SCOPE(RHI, "ScopeProducer: %s", scopeProducer->GetScopeId().GetCStr());
+
+                if (executeContext->GetCommandList())
+                {
+                    // reset the submit count in preparation for the scope submits
+                    executeContext->GetCommandList()->ResetTotalSubmits();
+                }
+
                 scopeProducer->BuildCommandList(*executeContext);
+
+                if (executeContext->GetCommandList())
+                {
+                    // validate the submits that were added during BuildCommandList
+                    executeContext->GetCommandList()->ValidateTotalSubmits(scopeProducer);
+                }
             }
 
             group.EndContext(index);

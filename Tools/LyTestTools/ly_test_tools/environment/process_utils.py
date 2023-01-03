@@ -180,7 +180,7 @@ def process_exists(name, ignore_extensions=False):
                          f"during process_exists()", exc_info=True)
             continue
         except psutil.AccessDenied as e:
-            logger.info(f"Permissions issue on {process} during process_exists check", exc_info=True)
+            logger.warning(f"Permissions issue on {process} during process_exists check", exc_info=True)
             continue
 
         if proc_name == name:  # abc.exe matches abc.exe

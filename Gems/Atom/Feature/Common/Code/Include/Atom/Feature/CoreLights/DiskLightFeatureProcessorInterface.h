@@ -52,7 +52,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::DiskLightFeatureProcessorInterface, "{A78A8FBD-1494-4EF9-9C05-AF153FDB1F17}"); 
+            AZ_RTTI(AZ::Render::DiskLightFeatureProcessorInterface, "{A78A8FBD-1494-4EF9-9C05-AF153FDB1F17}", AZ::RPI::FeatureProcessor);
 
             using LightHandle = RHI::Handle<uint16_t, class DiskLight>;
             static constexpr PhotometricUnit PhotometricUnitType = PhotometricUnit::Candela;
@@ -100,6 +100,11 @@ namespace AZ
             virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
             //! Sets the Esm exponent to use. Higher values produce a steeper falloff in the border areas between light and shadow.
             virtual void SetEsmExponent(LightHandle handle, float exponent) = 0;
+            //! Sets if this shadow should be rendered every frame (not cached) or only when it detects a change (cached).
+            virtual void SetUseCachedShadows(LightHandle handle, bool useCachedShadows) = 0;
+
+            // GI Settings
+
             //! Specifies if this light affects the diffuse global illumination in the scene.
             virtual void SetAffectsGI(LightHandle handle, bool affectsGI) = 0;
             //! Specifies the contribution of this light to the diffuse global illumination in the scene.

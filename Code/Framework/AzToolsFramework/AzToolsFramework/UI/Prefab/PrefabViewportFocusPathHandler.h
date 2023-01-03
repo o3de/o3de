@@ -21,6 +21,7 @@ namespace AzToolsFramework::Prefab
 {
     class PrefabFocusPublicInterface;
 
+    // Handler for the Prefab Focus Path widget used with the legacy Action Manager
     class PrefabViewportFocusPathHandler
         : public PrefabFocusNotificationBus::Handler
         , private QObject
@@ -32,9 +33,13 @@ namespace AzToolsFramework::Prefab
         void Initialize(AzQtComponents::BreadCrumbs* breadcrumbsWidget, QToolButton* backButton);
 
         // PrefabFocusNotificationBus overrides ...
-        void OnPrefabFocusChanged() override;
+        void OnPrefabFocusChanged(
+            [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId) override;
+        void OnPrefabFocusRefreshed() override;
 
     private:
+        void Refresh();
+
         AzQtComponents::BreadCrumbs* m_breadcrumbsWidget = nullptr;
         QToolButton* m_backButton = nullptr;
 
@@ -42,4 +47,26 @@ namespace AzToolsFramework::Prefab
 
         PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
     };
+
+    // Prefab Focus Path widget for use with the new Action Manager
+    
+    class PrefabFocusPathWidget
+        : public AzQtComponents::BreadCrumbs
+        , private PrefabFocusNotificationBus::Handler
+    {
+    public:
+        PrefabFocusPathWidget();
+        ~PrefabFocusPathWidget();
+
+        // PrefabFocusNotificationBus overrides ...
+        void OnPrefabFocusChanged(AZ::EntityId previousContainerEntityId, AZ::EntityId newContainerEntityId) override;
+        void OnPrefabFocusRefreshed() override;
+
+    private:
+        void Refresh();
+
+        AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
+    };
+
 } // namespace AzToolsFramework::Prefab

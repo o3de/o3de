@@ -467,7 +467,8 @@ namespace AssetUtilities
         fileName.toWCharArray(usableFileName.data());
 
         // third parameter dwShareMode (0) prevents share access
-        HANDLE fileHandle = CreateFileW(usableFileName.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, 0, 0);
+        const DWORD dwShareMode = 0;
+        HANDLE fileHandle = CreateFileW(usableFileName.c_str(), GENERIC_READ, dwShareMode, nullptr, OPEN_EXISTING, 0, 0);
 
         if (fileHandle != INVALID_HANDLE_VALUE)
         {
@@ -1039,7 +1040,7 @@ namespace AssetUtilities
                 // we do not want to include the fingerprint of dependent jobs if the job dependency type is OrderOnce.
                 continue;
             }
-            AssetProcessor::JobDesc jobDesc(jobDependencyInternal.m_jobDependency.m_sourceFile.m_sourceFileDependencyPath,
+            AssetProcessor::JobDesc jobDesc(AssetProcessor::SourceAssetReference(jobDependencyInternal.m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str()),
                 jobDependencyInternal.m_jobDependency.m_jobKey, jobDependencyInternal.m_jobDependency.m_platformIdentifier);
 
             for (auto builderIter = jobDependencyInternal.m_builderUuidList.begin(); builderIter != jobDependencyInternal.m_builderUuidList.end(); ++builderIter)
@@ -1061,7 +1062,7 @@ namespace AssetUtilities
         }
 
         AZ::Sha1 sha;
-        sha.ProcessBytes(fingerprintString.data(), fingerprintString.size());
+        sha.ProcessBytes(AZStd::as_bytes(AZStd::span(fingerprintString)));
         AZ::u32 digest[5];
         sha.GetDigest(digest);
 
@@ -1175,7 +1176,8 @@ namespace AssetUtilities
 
     AZStd::string ComputeJobLogFileName(const AssetProcessor::JobEntry& jobEntry)
     {
-        return AZStd::string::format("%s-%u-%llu.log", jobEntry.m_databaseSourceName.toUtf8().constData(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
+        return AZStd::string::format(
+            "%s-%u-%llu.log", jobEntry.m_sourceAssetReference.RelativePath().c_str(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
     }
 
     bool CreateTempRootFolder(QString startFolder, QDir& tempRoot)
@@ -1319,47 +1321,6 @@ namespace AssetUtilities
         return productName.toLower();
     }
 
-    static void CollectDependenciesRecursively(AssetProcessor::AssetDatabaseConnection& databaseConnection, const AZ::Uuid& assetId,
-        AZStd::unordered_set<AZ::Uuid>& uuidSet, AZStd::vector<AZ::Uuid>& dependecyList)
-    {
-        if (uuidSet.count(assetId))
-        {
-            return;
-        }
-        dependecyList.push_back(assetId);
-        uuidSet.insert(assetId);
-        AzToolsFramework::AssetDatabase::SourceDatabaseEntry entry;
-        if (!databaseConnection.GetSourceBySourceGuid(assetId, entry))
-        {
-            return;
-        }
-
-        AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer container;
-        if (!databaseConnection.GetDependsOnSourceBySource(entry.m_sourceName.c_str(), AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any, container))
-        {
-            return;
-        }
-        for (const auto& sourceFileEntry : container)
-        {
-            databaseConnection.QuerySourceBySourceName(sourceFileEntry.m_dependsOnSource.c_str(), [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
-                {
-                    CollectDependenciesRecursively(databaseConnection, entry.m_sourceGuid, uuidSet, dependecyList);
-                    return true;
-                });
-        }
-    }
-
-    AZStd::vector<AZ::Uuid> CollectAssetAndDependenciesRecursively(AssetProcessor::AssetDatabaseConnection& databaseConnection, const AZStd::vector<AZ::Uuid>& assetList)
-    {
-        AZStd::unordered_set<AZ::Uuid> uuidSet; // Used to guarantee uniqueness and prevent infinite recursion.
-        AZStd::vector<AZ::Uuid> completeAssetList;
-        for (const AZ::Uuid& assetId : assetList)
-        {
-            CollectDependenciesRecursively(databaseConnection, assetId, uuidSet, completeAssetList);
-        }
-        return completeAssetList;
-    }
-
     bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot)
     {
         // normalize the input string:
@@ -1439,11 +1400,11 @@ namespace AssetUtilities
         return (platformPrefix / relativePath).LexicallyNormal().StringAsPosix();
     }
 
-    AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForProduct(
-        AZ::IO::PathView relativePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
+    AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForIntermediateAsset(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
     {
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
-        db->GetSourcesByProductName(GetIntermediateAssetDatabaseName(relativePath).c_str(), sources);
+        db->GetSourcesByProductName(GetIntermediateAssetDatabaseName(sourceAsset.RelativePath()).c_str(), sources);
 
         if (sources.empty())
         {
@@ -1452,7 +1413,7 @@ namespace AssetUtilities
 
         if (sources.size() > 1)
         {
-            AZ_Error(AssetProcessor::ConsoleChannel, false, "GetTopLevelSourceForProduct found multiple sources for product %s", relativePath.FixedMaxPathStringAsPosix().c_str());
+            AZ_Error(AssetProcessor::ConsoleChannel, false, "GetTopLevelSourceForProduct found multiple sources for product %s", sourceAsset.AbsolutePath().c_str());
             return {};
         }
 
@@ -1467,22 +1428,28 @@ namespace AssetUtilities
         return source;
     }
 
-    AZStd::vector<AZStd::string> GetAllIntermediateSources(
-        AZ::IO::PathView relativeSourcePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
+    AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
     {
-        AZStd::vector<AZStd::string> sources;
+        AZStd::vector<AssetProcessor::SourceAssetReference> sources;
 
-        auto topLevelSource = GetTopLevelSourceForProduct(relativeSourcePath, db);
+        auto topLevelSource = GetTopLevelSourceForIntermediateAsset(sourceAsset, db);
 
         if (!topLevelSource)
         {
             AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
-            db->GetSourceBySourceName(relativeSourcePath.FixedMaxPathStringAsPosix().c_str(), source);
+            if(!db->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source))
+            {
+                return {};
+            }
 
             topLevelSource = source;
         }
 
-        sources.emplace_back(topLevelSource->m_sourceName);
+        AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolder;
+        db->GetScanFolderByScanFolderID(topLevelSource->m_scanFolderPK, scanFolder);
+
+        sources.emplace_back(scanFolder.m_scanFolder.c_str(), topLevelSource->m_sourceName.c_str());
 
         AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
         db->GetProductsBySourceID(topLevelSource->m_sourceID, products);
@@ -1494,12 +1461,12 @@ namespace AssetUtilities
 
             if ((static_cast<AssetBuilderSDK::ProductOutputFlags>(product.m_flags.to_ullong()) & AssetBuilderSDK::ProductOutputFlags::IntermediateAsset) == AssetBuilderSDK::ProductOutputFlags::IntermediateAsset)
             {
-                auto productSourceName = StripAssetPlatformNoCopy(product.m_productName);
-                sources.emplace_back(productSourceName);
+                auto productPath = ProductPath::FromDatabasePath(product.m_productName);
+                sources.emplace_back(productPath.GetIntermediatePath().c_str());
 
                 // Note: This call is intentionally re-using the products array.  The new results will be appended to the end (via push_back).
                 // The array will not be cleared.  We're essentially using products as a queue
-                db->GetProductsBySourceName(QString(QByteArray(productSourceName.data(), static_cast<int>(productSourceName.size()))), products);
+                db->GetProductsBySourceNameScanFolderID(sources.back().RelativePath().c_str(), sources.back().ScanFolderId(), products);
                 size = products.size(); // Update the loop size since the array grew
             }
         }
@@ -1726,6 +1693,14 @@ namespace AssetUtilities
     void JobLogTraceListener::AddWarning()
     {
         ++m_warningCount;
+    }
+
+    AZStd::string GetRelativeProductPathForIntermediateSourcePath(AZStd::string_view relativeSourcePath)
+    {
+        AZStd::string productPath((AZ::IO::FixedMaxPath(AssetBuilderSDK::CommonPlatformName) / relativeSourcePath).StringAsPosix());
+        // Product paths are always lowercase
+        AZStd::to_lower(productPath.begin(), productPath.end());
+        return productPath;
     }
 
     ProductPath::ProductPath(AZStd::string scanfolderRelativeProductPath, AZStd::string platformIdentifier)

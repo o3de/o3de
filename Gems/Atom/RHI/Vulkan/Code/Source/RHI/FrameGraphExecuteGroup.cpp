@@ -40,6 +40,7 @@ namespace AZ
             
             InitRequest request;
             request.m_scopeId = scope.GetId();
+            request.m_submitCount = scope.GetEstimatedItemCount();
             request.m_commandLists = reinterpret_cast<RHI::CommandList*const*>(m_secondaryCommands.data());
             request.m_commandListCount = commandListCount;
             request.m_jobPolicy = globalJobPolicy;

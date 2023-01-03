@@ -50,6 +50,9 @@ QLabel#portLabel {
 QTreeView#SourceAssetsTreeView,
 QTreeView#SourceAssetsTreeView::item,
 QTreeView#SourceAssetsTreeView::branch,
+QTreeView#IntermediateAssetsTreeView,
+QTreeView#IntermediateAssetsTreeView::item,
+QTreeView#IntermediateAssetsTreeView::branch,
 QTreeView#ProductAssetsTreeView,
 QTreeView#ProductAssetsTreeView::item,
 QTreeView#ProductAssetsTreeView::branch,
@@ -64,6 +67,8 @@ QTreeView#IncomingProductDependenciesTreeView::branch {
 
 QTreeView#SourceAssetsTreeView::item:hover,
 QTreeView#SourceAssetsTreeView::branch:hover,
+QTreeView#IntermediateAssetsTreeView::item:hover,
+QTreeView#IntermediateAssetsTreeView::branch:hover,
 QTreeView#ProductAssetsTreeView::item:hover,
 QTreeView#ProductAssetsTreeView::branch:hover,
 QTreeView#OutgoingProductDependenciesTreeView::item:hover,
@@ -76,6 +81,9 @@ QTreeView#IncomingProductDependenciesTreeView::branch:hover {
 QTreeView#SourceAssetsTreeView::item:selected,
 QTreeView#SourceAssetsTreeView::branch:selected,
 QTreeView#SourceAssetsTreeView::item:selected:active,
+QTreeView#IntermediateAssetsTreeView::item:selected,
+QTreeView#IntermediateAssetsTreeView::branch:selected,
+QTreeView#IntermediateAssetsTreeView::item:selected:active,
 QTreeView#ProductAssetsTreeView::item:selected,
 QTreeView#ProductAssetsTreeView::branch:selected,
 QTreeView#ProductAssetsTreeView::item:selected:active,
@@ -89,6 +97,7 @@ QTreeView#IncomingProductDependenciesTreeView::item:selected:active {
 }
 
 QTreeView#SourceAssetsTreeView::item:selected:!active,
+QTreeView#IntermediateAssetsTreeView::item:selected:!active,
 QTreeView#ProductAssetsTreeView::item:selected:!active,
 QTreeView#OutgoingProductDependenciesTreeView::item:selected:!active,
 QTreeView#IncomingProductDependenciesTreeView::item:selected:!active,
@@ -102,6 +111,7 @@ QTableWidget#incomingSourceDependenciesTable:item:selected:!active {
     selection-color: rgb(192, 192, 192);
 }
 
+QPushButton#sharedCacheSupport,
 QPushButton#supportButton,
 QPushButton#MissingProductDependenciesSupport {
     min-height: 24px; /* We have to set the min- and max-height otherwise the margins are not respected. */
@@ -154,4 +164,51 @@ QListWidget::item:hover {
 
 QListWidget QHeaderView::section {
     background-color: rgb(34,34,34);
+}
+
+QLabel#sharedCacheStatus {
+    background-color: transparent;
+    color : white;
+}
+
+QLabel#sharedCacheStatus[highlight = "blue"] {
+    color : white;
+    font-weight: normal; 
+    background-color: rgba(88, 140, 188, 0.1);
+    border: 1px solid #4285F4;
+}
+
+QLabel#sharedCacheStatus[highlight = "green"] {
+    color : white;
+    font-weight: normal;
+    background-color: rgba(88, 188, 97, 0.1);
+    border: 1px solid #58BC61;
+}
+
+QLabel#sharedCacheStatus[highlight = "red"] {
+    color : white;
+    font-weight: normal;
+    background-color: rgba(255, 0, 0, 0.1);
+    border: 1px solid #FA2727;
+}
+
+QToolButton#serverAddressToolButton {
+    min-width: -1px;
+    border-width: 0px;
+    border-radius: 0px;
+    border-image: url(":/Browse_on.png") 0 0 0 0 stretch stretch;
+    padding: 0 0 0 0;
+}
+
+QPushButton#removeButton {
+    background-color: transparent;
+    min-width: -1px;
+    border-width: 0px;
+    border-radius: 0px;
+    padding: 0 0 0 0;
+}
+
+QWidget#SharedCachePage {
+    background-color: rgba(34, 34, 34, 0.5);
+    border: none;
 }

@@ -29,7 +29,6 @@
 #include <AzGameFramework/Application/GameApplication.h>
 
 #include <ISystem.h>
-#include <LegacyAllocator.h>
 
 #include <Launcher_Traits_Platform.h>
 
@@ -58,7 +57,7 @@ namespace
         AzFramework::NativeWindowHandle windowHandle = nullptr;
         AzFramework::WindowSystemRequestBus::BroadcastResult(windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
         AzFramework::WindowSize newSize = AzFramework::WindowSize(aznumeric_cast<int32_t>(value.GetX()), aznumeric_cast<int32_t>(value.GetY()));
-        AzFramework::WindowRequestBus::Broadcast(&AzFramework::WindowRequestBus::Events::ResizeClientArea, newSize);
+        AzFramework::WindowRequestBus::Broadcast(&AzFramework::WindowRequestBus::Events::ResizeClientArea, newSize, AzFramework::WindowPosOptions());
     }
 
     AZ_CVAR(AZ::Vector2, r_viewportPos, AZ::Vector2::CreateZero(), CVar_OnViewportPosition, AZ::ConsoleFunctorFlags::DontReplicate,
@@ -252,6 +251,8 @@ namespace O3DELauncher
             };
             AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
 
+            AZ_TracePrintf("Launcher", "CriticalAssetsCompiled\n");
+
             // Broadcast that critical assets are ready
             AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CriticalAssetsCompiled", R"({})");
         }
@@ -431,8 +432,6 @@ namespace O3DELauncher
             AZ_TracePrintf("Launcher", "The asset cache folder of %s has been successfully read from the Settings Registry\n",
                 pathToAssets.c_str());
         }
-
-        CryAllocatorsRAII cryAllocatorsRAII;
 
         // System Init Params ("Legacy" Open 3D Engine)
         SSystemInitParams systemInitParams;

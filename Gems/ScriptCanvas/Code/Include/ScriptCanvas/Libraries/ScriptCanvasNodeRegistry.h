@@ -36,5 +36,5 @@ namespace ScriptCanvas
         AZStd::unordered_map<AZ::Uuid, NodeList> m_nodeMap;
     };
 
-    static const char* s_nodeRegistryName = "ScriptCanvasNodeRegistry";
+    static constexpr const char* s_nodeRegistryName = "ScriptCanvasNodeRegistry";
 } // namespace ScriptCanvas

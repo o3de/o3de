@@ -11,7 +11,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <AzCore/EBus/EBus.h>
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 
@@ -114,7 +114,7 @@ namespace ScriptCanvas
             AZ_TYPE_INFO(Target, "{5127E021-1020-4B3A-BAA4-CA7174E3D07A}");
             
             // optional, empty means use sender
-            AzFramework::TargetInfo m_info; 
+            AzFramework::RemoteToolsEndpointInfo m_info; 
 
             ScriptTarget m_script;
 
@@ -122,7 +122,7 @@ namespace ScriptCanvas
 
             Target(const Target&) = default;
 
-            explicit Target(const AzFramework::TargetInfo& info);
+            explicit Target(const AzFramework::RemoteToolsEndpointInfo& info);
 
             // copies ScriptCanvas and game information, not networking/machine information
             void CopyScript(const Target& other);

@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
@@ -56,7 +57,7 @@ namespace PhysX
         AngleLimitsFloatPair GetLinearValuePair(const AZStd::string& parameterName) override;
         AZ::Transform GetTransformValue(const AZStd::string& parameterName) override;
         AZ::Vector3 GetVector3Value(const AZStd::string& parameterName) override;
-        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> GetSubComponentModesState() override;
+        AZStd::vector<JointsComponentModeCommon::SubModeParameterState> GetSubComponentModesState() override;
         void SetBoolValue(const AZStd::string& parameterName, bool value) override;
         void SetEntityIdValue(const AZStd::string& parameterName, AZ::EntityId value) override;
         void SetLinearValue(const AZStd::string& parameterName, float value) override;

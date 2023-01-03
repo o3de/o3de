@@ -108,14 +108,14 @@ void CProcessInfo::QueryMemInfo(ProcessMemInfo& meminfo)
     }
 #elif defined(AZ_PLATFORM_LINUX)
 
-    auto parseSize = [](const char* target, const AZStd::string_view& line, int* value)
+    auto parseSize = [](const char* target, const AZStd::string_view& line, int64& value)
     {
         if (line.starts_with(target))
         {
             auto substr = line.substr(strlen(target));
             if (!substr.empty())
             {
-                (*value) = (AZ::StringFunc::ToInt(substr.begin()) * 1024);
+                value = (aznumeric_cast<int64>(AZ::StringFunc::ToInt(substr.begin())) * 1024);
                 return true;
             }
         }
@@ -127,18 +127,18 @@ void CProcessInfo::QueryMemInfo(ProcessMemInfo& meminfo)
     while (fgets(line, 128, file) != NULL)
     {
         const AZStd::string_view currentLine(line);
-        int size = 0;
-        if (parseSize("VmSize:", line, &size))
+        int64 size = 0;
+        if (parseSize("VmSize:", line, size))
         {
             meminfo.PagefileUsage = size;
         }
 
-        if (parseSize("VmRSS:", line, &size))
+        if (parseSize("VmRSS:", line, size))
         {
             meminfo.WorkingSet = size;
         }
 
-        if (parseSize("VmPeak:", line, &size))
+        if (parseSize("VmPeak:", line, size))
         {
             meminfo.PeakWorkingSet = size;
         }

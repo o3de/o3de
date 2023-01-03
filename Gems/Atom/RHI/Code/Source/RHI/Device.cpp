@@ -304,5 +304,15 @@ namespace AZ
                 }
             }
         }
+
+        void Device::SetLastExecutingScope(const AZStd::string_view scopeName)
+        {
+            m_lastExecutingScope = scopeName;
+        }
+
+        AZStd::string_view Device::GetLastExecutingScope() const
+        {
+            return m_lastExecutingScope;
+        }
     }
 }

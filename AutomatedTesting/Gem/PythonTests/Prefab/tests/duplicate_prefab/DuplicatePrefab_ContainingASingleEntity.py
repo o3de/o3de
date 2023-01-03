@@ -14,7 +14,8 @@ def DuplicatePrefab_ContainingASingleEntity():
     import azlmbr.legacy.general as general
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
+    from editor_python_test_tools.prefab_utils import Prefab
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
@@ -34,7 +35,7 @@ def DuplicatePrefab_ContainingASingleEntity():
 
     # Test undo/redo on prefab duplication
     general.undo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     search_filter = entity.SearchFilter()
     search_filter.names = [CAR_PREFAB_FILE_NAME]
     prefab_entities_found = len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter))
@@ -44,7 +45,7 @@ def DuplicatePrefab_ContainingASingleEntity():
     assert child_entities_found == 1, "Undo failed: Found duplicated child entities"
 
     general.redo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     search_filter.names = [CAR_PREFAB_FILE_NAME]
     prefab_entities_found = len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter))
     assert prefab_entities_found == 2, "Redo failed: Failed to find duplicated prefab entities"

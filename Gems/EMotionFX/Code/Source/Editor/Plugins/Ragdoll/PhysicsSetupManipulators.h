@@ -74,4 +74,15 @@ namespace EMotionFX
     protected:
         AZ::s32 m_viewportId;
     };
+
+    //! Used when null mode is selected.
+    class PhysicsSetupManipulatorsNull
+        : public PhysicsSetupManipulatorsBase
+    {
+    public:
+        void Setup([[maybe_unused]] const PhysicsSetupManipulatorData& physicsSetupManipulatorData) override {};
+        void Refresh() override {};
+        void Teardown() override {};
+        void ResetValues() override {};
+    };
 } // namespace EMotionFX

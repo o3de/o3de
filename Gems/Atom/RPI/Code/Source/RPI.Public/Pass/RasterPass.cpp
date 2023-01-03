@@ -146,7 +146,6 @@ namespace AZ
 
         void RasterPass::UpdateDrawList()
         {
-            AZ_PROFILE_SCOPE(RPI, "RasterPass::UpdateDrawList");
              // DrawLists from dynamic draw
             AZStd::vector<RHI::DrawListView> drawLists = DynamicDrawInterface::Get()->GetDrawListsForPass(this);
 
@@ -227,25 +226,31 @@ namespace AZ
             m_shaderResourceGroup->Compile();
         }
 
+        void RasterPass::SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t indexOffset) const
+        {
+            RHI::CommandList* commandList = context.GetCommandList();
+
+            uint32_t clampedEndIndex = AZStd::GetMin<uint32_t>(endIndex, static_cast<uint32_t>(m_drawListView.size()));
+            for (uint32_t index = startIndex; index < clampedEndIndex; ++index)
+            {
+                const RHI::DrawItemProperties& drawItemProperties = m_drawListView[index];
+                if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
+                {
+                    commandList->Submit(*drawItemProperties.m_item, index + indexOffset);
+                }
+            }
+        }
+
         void RasterPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            const RHI::DrawListView drawListViewPartition = RHI::GetDrawListPartition(m_drawListView, context.GetCommandListIndex(), context.GetCommandListCount());
-
-            if (!drawListViewPartition.empty())
+            if (!m_drawListView.empty())
             {
                 commandList->SetViewport(m_viewportState);
                 commandList->SetScissor(m_scissorState);
                 SetSrgsForDraw(commandList);
-            }
-
-            for (const RHI::DrawItemProperties& drawItemProperties : drawListViewPartition)
-            {
-                if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
-                {
-                    commandList->Submit(*drawItemProperties.m_item);
-                }
+                SubmitDrawItems(context, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex, 0);
             }
         }
 

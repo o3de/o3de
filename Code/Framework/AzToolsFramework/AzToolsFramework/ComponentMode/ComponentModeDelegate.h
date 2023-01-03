@@ -73,10 +73,17 @@ namespace AzToolsFramework
 
             /// Has this specific ComponentModeDelegate (for a specific Entity and Component)
             /// been added to ComponentMode.
-            bool AddedToComponentMode();
+            bool AddedToComponentMode() const;
             /// The function to call when this ComponentModeDelegate detects an event to enter ComponentMode.
             void SetAddComponentModeCallback(
                 const AZStd::function<void(const AZ::EntityComponentIdPair&)>& addComponentModeCallback);
+            
+            /// Is the EntityComponentIdPair connected to the ComponentModeDelegate.
+            bool IsConnected() const
+            {
+                return m_entityComponentIdPair != AZ::EntityComponentIdPair(AZ::EntityId(), AZ::InvalidComponentId) &&
+                    !m_componentType.IsNull();  
+            }
 
         private:
             void ConnectInternal(

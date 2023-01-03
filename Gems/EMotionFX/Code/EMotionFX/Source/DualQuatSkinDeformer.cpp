@@ -27,8 +27,7 @@ namespace EMotionFX
     DualQuatSkinDeformer::DualQuatSkinDeformer(Mesh* mesh)
         : MeshDeformer(mesh)
     {
-        AZ::TaskGraphActiveInterface* taskGraphActiveInterface = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
-        m_useTaskGraph = taskGraphActiveInterface && taskGraphActiveInterface->IsTaskGraphActive();
+        m_useTaskGraph = false;
     }
 
     DualQuatSkinDeformer::~DualQuatSkinDeformer()
@@ -79,7 +78,7 @@ namespace EMotionFX
         if (m_useTaskGraph)
         {
             // Skin the vertices by executing the task graph.
-            AZ::TaskGraphEvent finishedEvent;
+            AZ::TaskGraphEvent finishedEvent{ "DualQuatSkinning Wait" };
             m_taskGraph.Submit(&finishedEvent);
             finishedEvent.Wait();
         }

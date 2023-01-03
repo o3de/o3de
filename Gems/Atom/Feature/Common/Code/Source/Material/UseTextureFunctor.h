@@ -27,9 +27,9 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
-            void Process(RuntimeContext& context) override;
-
-            void Process(EditorContext& context) override;
+            using RPI::MaterialFunctor::Process;
+            void Process(RPI::MaterialFunctorAPI::RuntimeContext& context) override;
+            void Process(RPI::MaterialFunctorAPI::EditorContext& context) override;
 
         private:
             // Material property inputs...
@@ -40,8 +40,7 @@ namespace AZ
             AZStd::vector<RPI::MaterialPropertyIndex> m_dependentPropertyIndexes;
 
             // Shader option output...
-            AZStd::vector<AZ::Name> m_shaderTags;                  //!< Shaders identified by tags belonging to materials that this functor will affect
-            AZStd::unordered_map<AZ::Name, RPI::ShaderOptionIndex> m_useTextureOptionIndices; //!< the shader option that controls whether the texture should be sampled on a shader
+            Name m_useTextureOptionName;
         };
 
     } // namespace Render

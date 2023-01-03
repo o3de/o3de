@@ -1,0 +1,163 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ // Based on https://github.com/sebh/UnrealEngineSkyAtmosphere by Sébastien Hillaire
+
+#define ENABLE_ATMOSPHERE_SHADOWS 1
+
+#include <viewsrg.srgi>
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+#include <SkyAtmosphereCommon.azsli>
+
+struct RayMarchPixelOutputStruct
+{
+    float4 m_luminance : SV_Target0;
+    float4 m_reflection : SV_Target1;
+};
+
+float3 GetSunLuminance(float3 worldPos, float3 worldDir, float planetRadius)
+{
+    if(o_enableSun)
+    {
+        const float angle = dot(worldDir, PassSrg::m_constants.m_sunDirection);
+        const float sunAngle = cos(0.5 * PassSrg::m_constants.m_sunRadiusFactor * 3.14159 / 180.0);
+        if (angle > sunAngle)
+        {
+            float t = RaySphereClosestHitWS(float3(0.0f, 0.0f, 0.0f), planetRadius, worldPos, worldDir);
+            if (t < 0.0f) // no intersection with surface
+            {
+                const float d = (1.0 - angle) / (1.0 - sunAngle) ;
+                const float falloff = pow(1.0 - d, PassSrg::m_constants.m_sunFalloffFactor);
+                if(PassSrg::m_constants.m_sunFalloffFactor <= 1.0)
+                {
+                    // crisp sun disk
+                    return lerp(PassSrg::m_constants.m_sunLimbColor, PassSrg::m_constants.m_sunColor, falloff);
+                }
+                else
+                {
+                    // soft sun disk
+                    return lerp(PassSrg::m_constants.m_sunLimbColor, PassSrg::m_constants.m_sunColor, falloff) * falloff;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+// For each pixel in the screen we get the sky atmosphere color from a LUT (SkyViewLUT) or by tracing
+// from the camera into the scene. The SkyViewLUT is only used on pixels where just the sky is visible. 
+// For every pixel that has a depth value within the far-plane we trace using the IntegrateScatteredLuminance() function.
+// IntegrateScatteredLuminance() can use a variable number of samples by changing
+// PassSrg::m_constants.m_minSamples and PassSrg::m_constants.m_maxSamples. Using more samples will increase quality
+// but decrease performance
+RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV_SampleIndex)
+{
+    RayMarchPixelOutputStruct output = (RayMarchPixelOutputStruct)0;
+
+    AtmosphereParameters Atmosphere = GetAtmosphereParameters();
+
+    // atmosphere units are km, but world units are meters
+    const float worldScale = 0.001f;
+    const float exposure = 20.0;
+    float3 luminance = 0;
+
+    // re-construct the world space coords
+    float2 screenCoords = Input.m_position.xy;
+    float depth = PassSrg::m_depth.Load(screenCoords, sampleIndex).r;
+
+    float2 ndcPos = float2(Input.m_texCoord.x, 1.0f - Input.m_texCoord.y) * 2.0f - 1.0f;
+    float4 projectedPos = float4(ndcPos, depth, 1.0f);
+    float4 positionWS = mul(ViewSrg::m_viewProjectionInverseMatrix, projectedPos);
+    positionWS /= positionWS.w;
+
+    float3 viewToPosition =  positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition;
+    const float worldDepth = length(viewToPosition);
+    if (worldDepth < PassSrg::m_constants.m_nearClip)
+    {
+        return output;
+    }
+    const float worldDepthKm = worldDepth * worldScale;
+    float3 worldDir = normalize(viewToPosition);
+
+    // Atmosphere.PlanetOrigin is in KM already
+    // cameraPlanetPosKm is relative to the planet origin
+    float3 cameraPlanetPosKm = ViewSrg::m_worldPosition * worldScale - Atmosphere.PlanetOrigin;
+
+    if (depth == 0.0f)
+    {
+        // nothing is obstructing, add any luminance from the sun
+        luminance = GetSunLuminance(cameraPlanetPosKm, worldDir, Atmosphere.BottomRadius);
+
+        if(o_enableFastSky)
+        {
+            // fast path that uses the SkyViewLUT when inside the atmosphere and the pixel only contains sky
+
+            float viewHeight = length(cameraPlanetPosKm);
+            if(viewHeight < Atmosphere.TopRadius)
+            {
+                float2 uv;
+                float3 upVector = normalize(cameraPlanetPosKm);
+                float viewZenithCosAngle = dot(worldDir, upVector);
+
+                float3 sideVector = normalize(cross(upVector, worldDir));        // assumes non parallel vectors
+                float3 forwardVector = normalize(cross(sideVector, upVector));    // aligns toward the sun light but perpendicular to up vector
+                float2 lightOnPlane = float2(dot(PassSrg::m_constants.m_sunDirection, forwardVector), dot(PassSrg::m_constants.m_sunDirection, sideVector));
+                lightOnPlane = normalize(lightOnPlane);
+                float lightViewCosAngle = lightOnPlane.x;
+
+                const bool intersectGround = RaySphereClosestHitWS(float3(0, 0, 0), Atmosphere.BottomRadius, cameraPlanetPosKm, worldDir) >= 0.0f;
+
+                SkyViewLutParamsToUv(Atmosphere, intersectGround, viewZenithCosAngle, lightViewCosAngle, viewHeight, uv);
+
+                luminance += PassSrg::m_skyViewLUT.SampleLevel(PassSrg::LinearSampler, uv, 0).rgb;
+
+                output.m_luminance = float4(TransformColor(luminance * exposure, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg), 1.0);
+                output.m_reflection = output.m_luminance;
+                return output;
+            }
+        }
+    }
+
+    // when outside the atmosphere, this moves worldPosKM to the 
+    // start of the atmosphere, unless the entire ray never intersects
+    float distanceToTop = 0.f;
+    if (!MoveToTopAtmosphere(cameraPlanetPosKm, distanceToTop, worldDir, Atmosphere.TopRadius, worldDepthKm))
+    {
+        // Ray is not intersecting the atmosphere
+        output.m_luminance = float4(TransformColor(luminance * exposure, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg), 1.0);
+        output.m_reflection = output.m_luminance;
+        return output;
+    }
+
+    // calculate maxTraceDepth here to avoid modifying shared skycommon 
+    float maxTraceDepth = 9000000.0f; 
+    if (depth > 0.0f)
+    {
+        maxTraceDepth = min(length(worldDepthKm) - distanceToTop, maxTraceDepth);
+    }
+
+    const bool ground = true; 
+    const float sampleCountIni = 14.0f;
+    const bool variableSampleCount = true;
+    const bool mieRayPhase = true;
+
+    SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, Input.m_texCoord, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, depth, variableSampleCount, mieRayPhase, maxTraceDepth);
+    luminance += ss.L;
+    const float Transmittance = dot(ss.Transmittance, float3(1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f));
+
+    output.m_luminance = float4(TransformColor(luminance * exposure, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg), 1.0 - Transmittance);
+    if (worldDepth < PassSrg::m_constants.m_nearClip + PassSrg::m_constants.m_nearFadeDistance)
+    {
+        output.m_luminance *= (worldDepth - PassSrg::m_constants.m_nearClip) / PassSrg::m_constants.m_nearFadeDistance;
+    }
+    output.m_reflection = output.m_luminance;
+    return output;
+}

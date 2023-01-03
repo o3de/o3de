@@ -154,7 +154,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             // Adds a new heap page to the allocator of the provided size.
-            AliasedHeap* AddAliasedHeapPage(size_t sizeInBytes);
+            AliasedHeap* AddAliasedHeapPage(size_t sizeInBytes, uint32_t heapIndex = 0);
 
             // Calculates the size of a new page depending on the strategy of the allocator.
             // The heap must at least have "minSizeInBytes" size.
@@ -195,9 +195,9 @@ namespace AZ
                 // In this strategy the page size is equal to the memory needed to handle all allocations of the begin/end cycle.
                 // We know how much memory is needed thanks to the hint provided.
                 AZ_Assert(m_memoryUsageHint, "No memory hint provided for aliased allocator %s", GetName().GetCStr());
-                if (m_memoryUsageHint > m_memoryUsage.m_reservedInBytes)
+                if (m_memoryUsageHint > m_memoryUsage.m_totalResidentInBytes)
                 {
-                    pageSize = m_memoryUsageHint - m_memoryUsage.m_reservedInBytes;
+                    pageSize = m_memoryUsageHint - m_memoryUsage.m_totalResidentInBytes;
                 }
                 // Limit the size to the m_minHeapSizeInBytes provided in the descriptor.
                 pageSize = AZStd::max(pageSize, static_cast<size_t>(heapAllocationParameters.m_usageHintParameters.m_minHeapSizeInBytes));
@@ -256,7 +256,7 @@ namespace AZ
             collectorDescriptor.m_collectFunction = [this](Object& object)
             {
                 AliasedHeap& heap = static_cast<AliasedHeap&>(object);
-                m_memoryUsage.m_reservedInBytes -= heap.GetDescriptor().m_budgetInBytes;
+                m_memoryUsage.m_totalResidentInBytes -= heap.GetDescriptor().m_budgetInBytes;
             };
             m_garbageCollector.Init(collectorDescriptor);
 
@@ -343,7 +343,7 @@ namespace AZ
                     if (m_descriptor.m_allocationParameters.m_type != HeapAllocationStrategy::Fixed)
                     {
                         ResourceMemoryRequirements memRequirements = GetDevice().GetResourceMemoryRequirements(descriptor.m_bufferDescriptor);
-                        heap = AddAliasedHeapPage(CalculateHeapPageSize(memRequirements.m_sizeInBytes));
+                        heap = AddAliasedHeapPage(CalculateHeapPageSize(memRequirements.m_sizeInBytes), aznumeric_cast<uint32_t>(m_heapPages.size()));
                         result = heap->ActivateBuffer(descriptor, scope, &buffer);
                     }
 
@@ -410,7 +410,7 @@ namespace AZ
                     if (m_descriptor.m_allocationParameters.m_type != HeapAllocationStrategy::Fixed)
                     {
                         ResourceMemoryRequirements memRequirements = GetDevice().GetResourceMemoryRequirements(descriptor.m_imageDescriptor);
-                        heap = AddAliasedHeapPage(CalculateHeapPageSize(memRequirements.m_sizeInBytes));
+                        heap = AddAliasedHeapPage(CalculateHeapPageSize(memRequirements.m_sizeInBytes), aznumeric_cast<uint32_t>(m_heapPages.size()));
                         AZ_Assert(heap, "Failed to allocated aliased heap page");
                         if (!heap)
                         {
@@ -428,6 +428,17 @@ namespace AZ
             }
 
             m_attachmentToHeapMap.insert({ descriptor.m_attachmentId, heap });
+
+            // Remove any stale resource entries made in pages other than the one where it currently resides. 
+            for (const HeapPage& page : m_heapPages)
+            {
+                Ptr<AliasedHeap> aliasedHeap = page.m_heap;
+                if (heap == aliasedHeap)
+                {
+                    continue;
+                }
+                aliasedHeap->RemoveFromCache(descriptor.m_attachmentId);
+            }
             return image;
         }
 
@@ -458,7 +469,7 @@ namespace AZ
             {
                 CompactHeapPages();
 
-                if (m_memoryUsage.m_budgetInBytes && m_memoryUsage.m_reservedInBytes > m_memoryUsage.m_budgetInBytes)
+                if (m_memoryUsage.m_budgetInBytes && m_memoryUsage.m_totalResidentInBytes > m_memoryUsage.m_budgetInBytes)
                 {
                     // Log an error to let the user know they are going over the budget.
                     AZ_Error(
@@ -467,7 +478,7 @@ namespace AZ
                         "Going over the budget for aliased heap %s. Budget: %d. Current: %d. Please increase the memory budget or decrease memory usage for the heap",
                         GetName().GetCStr(),
                         m_memoryUsage.m_budgetInBytes,
-                        m_memoryUsage.m_reservedInBytes.load());
+                        m_memoryUsage.m_totalResidentInBytes.load());
                 }
             }
         }
@@ -502,21 +513,21 @@ namespace AZ
         }
 
         template<class Heap>
-        AliasedHeap* AliasedAttachmentAllocator<Heap>::AddAliasedHeapPage(size_t sizeInBytes)
+        AliasedHeap* AliasedAttachmentAllocator<Heap>::AddAliasedHeapPage(size_t sizeInBytes, uint32_t heapIndex)
         {
             size_t newHeapSize = static_cast<size_t>(GetHeapPageScaleFactor() * sizeInBytes);
 
             typename Heap::Descriptor heapDescriptor = m_descriptor;
             heapDescriptor.m_budgetInBytes = newHeapSize;
             Ptr<AliasedHeap> newHeap = Heap::Create();
-            newHeap->SetName(GetName());
+            newHeap->SetName(Name(AZStd::string::format("%s_Page%i", GetName().GetCStr(), heapIndex)));
             ResultCode result = newHeap->Init(GetDevice(), heapDescriptor);
             if (result != ResultCode::Success)
             {
                 return nullptr;
             }
 
-            m_memoryUsage.m_reservedInBytes += newHeapSize;
+            m_memoryUsage.m_totalResidentInBytes += newHeapSize;
             m_heapPages.push_back({ newHeap, 0 });
             return newHeap.get();
         }
@@ -571,7 +582,7 @@ namespace AZ
                         }
                         else
                         {
-                            AddAliasedHeapPage(watermarkSize);
+                            AddAliasedHeapPage(watermarkSize, i);
                             AZStd::iter_swap(m_heapPages.begin() + i, m_heapPages.rbegin());
                             m_heapPages.pop_back();
                         }

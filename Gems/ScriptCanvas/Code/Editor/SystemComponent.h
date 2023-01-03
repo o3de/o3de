@@ -27,6 +27,7 @@
 #include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/ScriptCanvasExecutionBus.h>
+#include <Editor/Include/ScriptCanvas/Components/NodeReplacementSystem.h>
 
 namespace ScriptCanvasEditor
 {
@@ -83,6 +84,7 @@ namespace ScriptCanvasEditor
         ////////////////////////////////////////////////////////////////////////
         //  AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus...
         AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
+        void AddSourceFileCreators(const char* fullSourceFolderName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators) override;
         void AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers) override;
         ////////////////////////////////////////////////////////////////////////
 
@@ -122,5 +124,6 @@ namespace ScriptCanvasEditor
         bool m_isGarbageCollectRequested = true;
 
         ScriptCanvasBuilder::DataSystem m_dataSystem;
+        NodeReplacementSystem m_nodeReplacementSystem;
     };
 }

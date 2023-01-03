@@ -14,7 +14,7 @@ namespace O3DE::ProjectManager
 {
     GemInfo::GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded)
         : m_name(name)
-        , m_creator(creator)
+        , m_origin(creator)
         , m_summary(summary)
         , m_platforms(platforms)
         , m_isAdded(isAdded)
@@ -99,5 +99,57 @@ namespace O3DE::ProjectManager
     bool GemInfo::operator<(const GemInfo& gemInfo) const
     {
         return (m_displayName < gemInfo.m_displayName);
+    }
+
+    GemInfo::Platforms GemInfo::GetPlatformFromString(const QString& platformText)
+    {
+        if(platformText == "Windows")
+        {
+            return GemInfo::Platform::Windows;
+        }
+        else if(platformText == "Linux")
+        {
+            return GemInfo::Platform::Linux;
+        }
+        else if(platformText == "Android")
+        {
+            return GemInfo::Platform::Android;
+        }
+        else if(platformText == "iOS")
+        {
+            return GemInfo::Platform::iOS;
+        }
+        else if(platformText == "macOS")
+        {
+            return GemInfo::Platform::macOS;
+        }
+        else
+        {
+            return GemInfo::Platforms();
+        }
+    }
+
+    GemInfo::Platforms GemInfo::GetPlatformsFromStringList(const QStringList& platformStrings)
+    {
+        GemInfo::Platforms newPlatforms = GemInfo::Platforms();
+        for(const QString& platform : platformStrings)
+        {
+            newPlatforms |= GetPlatformFromString(platform);
+        }
+        return newPlatforms;
+    }
+
+    QStringList GemInfo::GetPlatformsAsStringList() const
+    {
+        QStringList platformStrings;
+        for (int i = 0; i < GemInfo::NumPlatforms; ++i)
+        {
+            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
+            if(m_platforms & platform)
+            {
+                platformStrings << GetPlatformString(platform);
+            }
+        }
+        return platformStrings;
     }
 } // namespace O3DE::ProjectManager

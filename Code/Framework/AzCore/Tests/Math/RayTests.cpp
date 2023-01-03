@@ -32,6 +32,7 @@ namespace UnitTest
 
     TEST(MATH_Ray, Ray_CreateDirectionNonNormalizedFail)
     {
+        AZ_PUSH_DISABLE_WARNING_GCC("-Wunused-but-set-variable")
         AZ_TEST_START_TRACE_SUPPRESSION;
         AZ::Ray rayUnused = AZ::Ray(AZ::Vector3(), AZ::Vector3(3, 0, 0));
 #ifdef AZ_DEBUG_BUILD
@@ -40,6 +41,7 @@ namespace UnitTest
 #else
         AZ_TEST_STOP_TRACE_SUPPRESSION(0);
 #endif
+        AZ_POP_DISABLE_WARNING_GCC
     }
 
 } // namespace UnitTest

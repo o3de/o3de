@@ -31,6 +31,10 @@ namespace AZ::DocumentPropertyEditor
         void EnumerateRegisteredAttributes(AZ::Name name, const AZStd::function<void(const AttributeDefinitionInterface&)>& enumerateCallback) const override;
         AZ::Name LookupNameFromId(AZ::Crc32 crc) const override;
 
+        /*! returns whether the ed_DebugDPE CVar indicates that the DPE should print additional info / error messages to
+         *  the console and spawn a DPEDebugWindow per DPE instance */
+        static bool DPEDebugEnabled();
+
     private:
         void AddNameToCrcTable(AZ::Name name);
 

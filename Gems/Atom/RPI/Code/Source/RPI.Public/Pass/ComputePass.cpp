@@ -102,11 +102,8 @@ namespace AZ
             }
 
             // Load Draw SRG...
-            const auto drawSrgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Draw);
-            if (drawSrgLayout)
-            {
-                m_drawSrg = ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), drawSrgLayout->GetName());
-            }
+            const bool compileDrawSrg = false; // The SRG will be compiled in CompileResources()
+            m_drawSrg = m_shader->CreateDefaultDrawSrg(compileDrawSrg);
 
             RHI::DispatchDirect dispatchArgs;
             dispatchArgs.m_totalNumberOfThreadsX = passData->m_totalNumberOfThreadsX;
@@ -126,8 +123,7 @@ namespace AZ
 
             // Setup pipeline state...
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            const auto& shaderVariant = m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+            m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor);
 
             m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
 
@@ -140,7 +136,6 @@ namespace AZ
         void ComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RenderPass::SetupFrameGraphDependencies(frameGraph);
-            frameGraph.SetEstimatedItemCount(1);
         }
 
         void ComputePass::CompileResources(const RHI::FrameGraphCompileContext& context)
@@ -199,9 +194,14 @@ namespace AZ
             arguments.m_totalNumberOfThreadsZ = targetThreadCountZ;
         }
 
-        Data::Instance<ShaderResourceGroup> ComputePass::GetShaderResourceGroup()
+        Data::Instance<ShaderResourceGroup> ComputePass::GetShaderResourceGroup() const
         {
             return m_shaderResourceGroup;
+        }
+
+        Data::Instance<Shader> ComputePass::GetShader() const
+        {
+            return m_shader;
         }
 
         void ComputePass::FrameBeginInternal(FramePrepareParams params)

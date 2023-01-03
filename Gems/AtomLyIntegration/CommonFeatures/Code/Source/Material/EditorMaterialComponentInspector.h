@@ -38,7 +38,7 @@ namespace AZ
                 : public AtomToolsFramework::InspectorWidget
                 , public AzToolsFramework::IPropertyEditorNotify
                 , public AZ::EntitySystemBus::Handler
-                , public AZ::TickBus::Handler
+                , public AZ::SystemTickBus::Handler
                 , public MaterialComponentNotificationBus::MultiHandler
                 , public EditorMaterialSystemComponentNotificationBus::Handler
             {
@@ -96,14 +96,14 @@ namespace AZ
                 void OnEntityDeactivated(const AZ::EntityId& entityId) override;
                 void OnEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name) override;
 
-                //! AZ::TickBus::Handler overrides...
-                void OnTick(float deltaTime, ScriptTimePoint time) override;
+                //! AZ::SystemTickBus::Handler overrides...
+                void OnSystemTick() override;
 
                 //! MaterialComponentNotificationBus::MultiHandler overrides...
                 void OnMaterialsEdited() override;
 
                 //! EditorMaterialSystemComponentNotificationBus::Handler overrides...
-                void OnRenderMaterialPreviewComplete(
+                void OnRenderMaterialPreviewReady(
                     const AZ::EntityId& entityId,
                     const AZ::Render::MaterialAssignmentId& materialAssignmentId,
                     const QPixmap& pixmap) override;

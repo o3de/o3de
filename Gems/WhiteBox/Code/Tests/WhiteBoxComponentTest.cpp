@@ -253,7 +253,7 @@ namespace UnitTest
         EXPECT_THAT(polygonModifierDetector.m_nextPolygonHandle, Ne(polygonModifierDetector.m_previousPolygonHandle));
     }
 
-    TEST_F(EditorWhiteBoxModifierTestFixture, SwitchToRestoreModeDestroysModiferWhileInteracting)
+    TEST_F(EditorWhiteBoxModifierTestFixture, SwitchToRestoreModeDestroysModifierWhileInteractingWithFace)
     {
         namespace Api = WhiteBox::Api;
         using AzToolsFramework::ViewportInteraction::KeyboardModifier;
@@ -346,6 +346,96 @@ namespace UnitTest
             ->ExpectEq(subMode(), WhiteBox::SubMode::Default);
     }
 
+    TEST_F(EditorWhiteBoxModifierTestFixture, SwitchToRestoreModeDestroysModifierWhileInteractingWithVertex)
+    {
+        namespace Api = WhiteBox::Api;
+        using AzToolsFramework::ViewportInteraction::KeyboardModifier;
+
+        const auto entityComponentIdPair = AZ::EntityComponentIdPair(m_whiteBoxEntityId, m_whiteBoxComponent->GetId());
+
+        const auto displayEntityViewport = [whiteBoxEntityId = m_whiteBoxEntityId]()
+        {
+            AzFramework::EntityDebugDisplayEventBus::Event(
+                whiteBoxEntityId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
+                AzFramework::ViewportInfo{0}, NullDebugDisplayRequests{});
+        };
+
+        // helper to check which submode we're in
+        const auto subMode = [entityComponentIdPair]()
+        {
+            WhiteBox::SubMode subMode;
+            WhiteBox::EditorWhiteBoxComponentModeRequestBus::EventResult(
+                subMode, entityComponentIdPair,
+                &WhiteBox::EditorWhiteBoxComponentModeRequestBus::Events::GetCurrentSubMode);
+            return subMode;
+        };
+
+        // the initial starting position of the entity (in front of and just below the camera)
+        const AZ::Transform initialEntityTransformWorld =
+            AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 7.0f, 23.0f));
+
+        // grab the White Box Mesh (for use with the White Box Tool Api)
+        WhiteBox::WhiteBoxMesh* whiteBox = nullptr;
+        WhiteBox::EditorWhiteBoxComponentRequestBus::EventResult(
+            whiteBox, entityComponentIdPair, &WhiteBox::EditorWhiteBoxComponentRequestBus::Events::GetWhiteBoxMesh);
+
+        // move the entity to its starting position
+        AzToolsFramework::SetWorldTransform(m_whiteBoxEntityId, initialEntityTransformWorld);
+        // select the entity with the White Box Component
+        AzToolsFramework::SelectEntity(m_whiteBoxEntityId);
+        // mimic pressing the 'Edit' button on the Component Card
+        EnterComponentMode<WhiteBox::EditorWhiteBoxComponent>();
+
+        // override the default modifier key behavior for the white box component mode
+        WhiteBox::EditorWhiteBoxComponentModeRequestBus::Event(
+            entityComponentIdPair,
+            &WhiteBox::EditorWhiteBoxComponentModeRequestBus::Events::OverrideKeyboardModifierQuery,
+            [this]()
+            {
+                return m_actionDispatcher->QueryKeyboardModifiers();
+            });
+
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-45.0f)), AZ::Vector3(0.0f, 4.0f, 26.0f)));
+
+        const AZ::Vector3 vertexLocalPosition = Api::VertexPosition(*whiteBox, Api::VertexHandle(1)); 
+        const AZ::Vector3 topPolygonNextPositionLocal = vertexLocalPosition + AZ::Vector3::CreateAxisZ(0.5f);
+
+        // the middle of the top
+        MultiSpacePoint topPolygonMidpoint(vertexLocalPosition, initialEntityTransformWorld, m_cameraState);
+        MultiSpacePoint topPolygonNext(topPolygonNextPositionLocal, initialEntityTransformWorld, m_cameraState);
+
+        // begin interacting with a polygon and then use the modifier keys to
+        // mimic transitioning to restore mode
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(topPolygonMidpoint.GetScreenSpace())
+            ->MouseLButtonDown()
+            ->MousePosition(topPolygonNext.GetScreenSpace())
+            ->KeyboardModifierDown(KeyboardModifier::Ctrl)
+            ->KeyboardModifierDown(KeyboardModifier::Shift)
+            // trigger moving to RestoreMode (handled in Display of EditorWhiteBoxComponentMode)
+            ->ExecuteBlock(
+                [displayEntityViewport]()
+                {
+                    displayEntityViewport();
+                })
+            ->ExpectEq(subMode(), WhiteBox::SubMode::EdgeRestore)
+            // continue trying to move in RestoreMode
+            ->MousePosition(topPolygonMidpoint.GetScreenSpace())
+            ->MouseLButtonUp()
+            ->KeyboardModifierUp(KeyboardModifier::Ctrl)
+            ->KeyboardModifierUp(KeyboardModifier::Shift)
+            // run update/draw logic again to change modes
+            ->ExecuteBlock(
+                [displayEntityViewport]()
+                {
+                    displayEntityViewport();
+                })
+            // verify we are back in DefaultMode
+            ->ExpectEq(subMode(), WhiteBox::SubMode::Default);
+    }
     TEST_F(EditorWhiteBoxModifierTestFixture, SelectedVertexModifierIsCleanedUpAfterDefaultShapeChange)
     {
         namespace Api = WhiteBox::Api;
@@ -599,7 +689,7 @@ namespace UnitTest
         EXPECT_FALSE(saveResult.has_value());
     }
 
-    class EditorWhiteBoxAssetFixture : public ToolsApplicationFixture
+    class EditorWhiteBoxAssetFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override;

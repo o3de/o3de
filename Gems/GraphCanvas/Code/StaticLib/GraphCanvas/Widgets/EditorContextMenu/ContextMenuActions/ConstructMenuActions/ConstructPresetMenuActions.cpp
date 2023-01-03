@@ -52,8 +52,11 @@ namespace GraphCanvas
         QPixmap* pixmap = preset->GetDisplayIcon(contextMenu->GetEditorId());
 
         if (pixmap)
-        {
-            setIcon(QIcon((*pixmap)));
+        {     
+            QIcon icon;
+            icon.addPixmap(*pixmap, QIcon::Normal);
+            icon.addPixmap(*pixmap, QIcon::Active);
+            setIcon(icon);
         }
 
         m_isInToolbar = contextMenu->IsToolBarMenu();
@@ -124,7 +127,10 @@ namespace GraphCanvas
 
         if (pixmap)
         {
-            setIcon(QIcon((*pixmap)));
+            QIcon icon;
+            icon.addPixmap(*pixmap, QIcon::Normal);
+            icon.addPixmap(*pixmap, QIcon::Active);
+            setIcon(icon);
         }
     }
 
@@ -252,7 +258,7 @@ namespace GraphCanvas
             // more dynamic. For now I'll just bypass most of the underlying logic
             // and treat it like a normal QMenu.
             bool isFinalized = m_contextMenu->IsFinalized();
-            
+
             if (isFinalized)
             {
                 if (m_contextMenu->IsToolBarMenu())
@@ -263,11 +269,8 @@ namespace GraphCanvas
                 {
                     for (const AZStd::string& subMenu : m_subMenus)
                     {
-                        QMenu* menu = m_contextMenu->FindSubMenu(subMenu);
-
-                        // Remove all of the previous preset actions to avoid needing to figure out what
-                        // actually changed.
-                        if (menu)
+                        // Remove all of the previous preset actions to avoid needing to figure out what actually changed.
+                        if (QMenu* menu = m_contextMenu->FindSubMenu(subMenu))
                         {
                             menu->clear();
                         }
@@ -276,32 +279,35 @@ namespace GraphCanvas
             }
 
             const ConstructTypePresetBucket* presetBucket = nullptr;
-            AssetEditorSettingsRequestBus::EventResult(presetBucket, m_contextMenu->GetEditorId(), &AssetEditorSettingsRequests::GetConstructTypePresetBucket, m_constructType);
+            AssetEditorSettingsRequestBus::EventResult(
+                presetBucket, m_contextMenu->GetEditorId(), &AssetEditorSettingsRequests::GetConstructTypePresetBucket, m_constructType);
 
             if (presetBucket)
             {
                 for (auto preset : presetBucket->GetPresets())
                 {
-                    ConstructContextMenuAction* menuAction = CreatePresetMenuAction(m_contextMenu, preset);
-
-                    if (isFinalized)
+                    if (ConstructContextMenuAction* menuAction = CreatePresetMenuAction(m_contextMenu, preset))
                     {
-                        if (m_contextMenu->IsToolBarMenu())
+                        if (isFinalized)
                         {
-                            m_contextMenu->addAction(menuAction);
+                            if (m_contextMenu->IsToolBarMenu())
+                            {
+                                m_contextMenu->addAction(menuAction);
+                            }
+                            else
+                            {
+                                if (QMenu* menu = m_contextMenu->FindSubMenu(menuAction->GetSubMenuPath()))
+                                {
+                                    menu->addAction(menuAction);
+                                    m_menus.insert(menu);
+                                }
+                            }
                         }
                         else
                         {
-                            QMenu* menu = m_contextMenu->FindSubMenu(menuAction->GetSubMenuPath());
-                            menu->addAction(menuAction);
-
-                            m_menus.insert(menu);
+                            m_subMenus.insert(menuAction->GetSubMenuPath());
+                            m_contextMenu->AddMenuAction(menuAction);
                         }
-                    }
-                    else
-                    {
-                        m_subMenus.insert(menuAction->GetSubMenuPath());
-                        m_contextMenu->AddMenuAction(menuAction);
                     }
                 }
             }

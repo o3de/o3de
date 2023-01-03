@@ -14,13 +14,13 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <Prefab/PrefabTestFixture.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
-#include <Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AZTestShared/Utils/Utils.h>
 
 namespace UnitTest
 {
     struct ProceduralPrefabSystemComponentTests
-        : AllocatorsTestFixture
+        : LeakDetectionFixture
           , AZ::ComponentApplicationBus::Handler
     {
         void SetUp() override
@@ -31,11 +31,9 @@ namespace UnitTest
             TestRunner::Instance().m_suppressErrors = false;
             TestRunner::Instance().m_suppressAsserts = false;
 
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             AZ::ComponentApplicationBus::Handler::BusConnect();
-
-            ASSERT_TRUE(m_temporaryDirectory.IsValid());
 
             m_localFileIo = AZStd::make_unique<AZ::IO::LocalFileIO>();
 
@@ -94,9 +92,14 @@ namespace UnitTest
             AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
 
             AZ::ComponentApplicationBus::Handler::BusDisconnect();
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
 
             TestRunner::Instance().ResetSuppressionSettingsToDefault();
+
+            delete m_procSystem;
+            m_procSystem = nullptr;
+            delete m_prefabSystem;
+            m_prefabSystem = nullptr;
         }
 
         // ComponentApplicationBus
@@ -169,7 +172,7 @@ namespace UnitTest
         AZ::SerializeContext m_context;
         AZ::JsonRegistrationContext m_jsonContext;
         AZStd::unique_ptr<AZ::IO::LocalFileIO> m_localFileIo;
-        ScopedTemporaryDirectory m_temporaryDirectory;
+        AZ::Test::ScopedAutoTempDirectory m_temporaryDirectory;
         AZStd::unique_ptr<AZ::Entity> m_systemEntity;
 
         AZ::IO::FileIOBase* m_prevIoBase{};

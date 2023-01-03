@@ -58,8 +58,7 @@ namespace AZ
             }
             else
             {
-                m_channelDescriptors.push_back();
-                StreamChannelDescriptor& channel = m_channelDescriptors.back();
+                StreamChannelDescriptor& channel = m_channelDescriptors.emplace_back();
 
                 channel.m_bufferIndex = m_bufferIndex;
                 channel.m_byteOffset = m_byteOffset;
@@ -94,9 +93,7 @@ namespace AZ
                 return &m_dummyBufferDescriptorBuilder;
             }
 
-            m_bufferDescriptorBuilders.push_back();
-
-            BufferDescriptorBuilder* builder = &m_bufferDescriptorBuilders.back();
+            BufferDescriptorBuilder* builder = &m_bufferDescriptorBuilders.emplace_back();
             builder->m_bufferIndex = static_cast<uint32_t>(m_bufferDescriptorBuilders.size() - 1);
             builder->m_bufferDescriptor.m_stepFunction = stepFunction;
             builder->m_bufferDescriptor.m_stepRate = stepRate;

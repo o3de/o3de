@@ -20,6 +20,7 @@
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzCore/JSON/document.h>
+#include <AzCore/Console/IConsole.h>
 
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
@@ -115,12 +116,8 @@ struct SViewportsSettings
     bool bAlwaysShowRadiuses;
     //! True if 2D viewports will be synchronized with same view and origin.
     bool bSync2DViews;
-    //! Camera FOV for perspective View.
-    float fDefaultFov;
     //! Camera Aspect Ratio for perspective View.
     float fDefaultAspectRatio;
-    //! Show safe frame.
-    bool bShowSafeFrame;
     //! To highlight selected geometry.
     bool bHighlightSelectedGeometry;
     //! To highlight selected vegetation.
@@ -181,12 +178,6 @@ struct SSelectObjectDialogSettings
 //////////////////////////////////////////////////////////////////////////
 struct SGUI_Settings
 {
-    bool bWindowsVista;        // true when running on windows Vista
-    QFont hSystemFont;         // Default system GUI font.
-    QFont hSystemFontBold;     // Default system GUI bold font.
-    QFont hSystemFontItalic;   // Default system GUI italic font.
-    int nDefaultFontHieght;    // Default font height for 8 logical units.
-
     int nToolbarIconSize;      // Override size of the toolbar icons
 };
 
@@ -253,6 +244,7 @@ struct SSmartOpenDialogSettings
 //////////////////////////////////////////////////////////////////////////
 /** Various editor settings.
 */
+AZ_CVAR_EXTERNED(int64_t, ed_backgroundSystemTickCap);
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 struct SANDBOX_API SEditorSettings
     : AzToolsFramework::EditorSettingsAPIBus::Handler
@@ -273,6 +265,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SettingOutcome SetValue(const AZStd::string_view path, const AZStd::any& value) override;
     AzToolsFramework::ConsoleColorTheme GetConsoleColorTheme() const override;
     AZ::u64 GetMaxNumberOfItemsShownInSearchView() const override;
+    void SaveSettingsRegistryFile() override;
 
     void ConvertPath(const AZStd::string_view sourcePath, AZStd::string& category, AZStd::string& attribute);
 
@@ -282,12 +275,9 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     // need to expose updating of the source control enable/disable flag
     // because its state is updateable through the main status bar
     void SaveEnableSourceControlFlag(bool triggerUpdate = false);
-
     void LoadEnableSourceControlFlag();
 
     void PostInitApply();
-
-    bool BrowseTerrainTexture(bool bIsSave);
 
     //////////////////////////////////////////////////////////////////////////
     // Variables.
@@ -357,7 +347,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SSnapSettings snap;
 
     //! Source Control Enabling.
-    bool enableSourceControl;
+    bool enableSourceControl = false;
     bool clearConsoleOnGameModeStart;
 
     //! Text editor.
@@ -378,9 +368,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     SGUI_Settings gui;
 
-    //! Terrain Texture Export/Import filename.
-    QString terrainTextureExport;
-
     // Read only parameter.
     // Refects the status of GetIEditor()->GetOperationMode
     // To change current operation mode use GetIEditor()->SetOperationMode
@@ -397,9 +384,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SAssetBrowserSettings sAssetBrowserSettings;
 
     SSelectObjectDialogSettings selectObjectDialog;
-
-    // For Terrain Texture Generation Multiplier.
-    float fBrMultiplier;
 
     AzToolsFramework::ConsoleColorTheme consoleBackgroundColorTheme;
 
@@ -447,20 +431,6 @@ private:
     void LoadValue(const char* sSection, const char* sKey, QString& value);
 
     void SaveCloudSettings();
-
-    void SaveSettingsRegistryFile();
-
-    //! Set a boolean setting value from the registry.
-    //! \param key[in] The key to set.
-    //! \param value[in] The new value for the setting.
-    //! \return Whether the value for the key was correctly set in the registry.
-    bool SetSettingsRegistry_Bool(const char* key, bool value);
-
-    //! Gets a boolean setting value from the registry.
-    //! \param key[in] The key to query.
-    //! \param value[out] The variable the queried value will be saved to, by reference.
-    //! \return Whether a value for the key was found in the registry.
-    bool GetSettingsRegistry_Bool(const char* key, bool& value);
 };
 
 //! Single instance of editor settings for fast access.

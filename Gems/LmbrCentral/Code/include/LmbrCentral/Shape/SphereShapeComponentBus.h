@@ -14,10 +14,10 @@
 namespace LmbrCentral
 {
     /// Type ID for SphereShapeComponent
-    static const AZ::Uuid SphereShapeComponentTypeId = "{E24CBFF0-2531-4F8D-A8AB-47AF4D54BCD2}";
+    inline constexpr AZ::TypeId SphereShapeComponentTypeId{ "{E24CBFF0-2531-4F8D-A8AB-47AF4D54BCD2}" };
 
     /// Type ID for EditorSphereShapeComponent
-    static const AZ::Uuid EditorSphereShapeComponentTypeId = "{2EA56CBF-63C8-41D9-84D5-0EC2BECE748E}";
+    inline constexpr AZ::TypeId EditorSphereShapeComponentTypeId{ "{2EA56CBF-63C8-41D9-84D5-0EC2BECE748E}" };
 
     /// Configuration data for SphereShapeComponent
     class SphereShapeConfig
@@ -45,6 +45,7 @@ namespace LmbrCentral
         }
 
         float m_radius = 0.5f;
+        AZ::Vector3 m_translationOffset = AZ::Vector3::CreateZero(); ///< Translation offset from the entity position.
     };
 
     using SphereShapeConfiguration = SphereShapeConfig; ///< @deprecated Use SphereShapeConfig.

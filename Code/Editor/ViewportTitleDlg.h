@@ -64,11 +64,15 @@ public:
 
     bool eventFilter(QObject* object, QEvent* event) override;
 
-    void SetSpeedComboBox(double value);
-
     QMenu* const GetFovMenu();
     QMenu* const GetAspectMenu();
     QMenu* const GetResolutionMenu();
+
+    void SetNoViewportInfo();
+    void SetNormalViewportInfo();
+    void SetFullViewportInfo();
+    void SetCompactViewportInfo();
+    void OnToggleDisplayInfo();
 
     void InitializePrefabViewportFocusPathHandler(AzQtComponents::BreadCrumbs* breadcrumbsWidget, QToolButton* backButton);
 
@@ -82,10 +86,12 @@ protected:
     void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 
     void OnMaximize();
+    void UpdatePrefabEditMode();
     void UpdateDisplayInfo();
 
     void SetupCameraDropdownMenu();
     void SetupResolutionDropdownMenu();
+    void SetupPrefabEditModeMenu();
     void SetupViewportInformationMenu();
     void SetupOverflowMenu();
     void SetupHelpersButton();
@@ -99,18 +105,13 @@ protected:
     QStringList m_customFOVPresets;
     QStringList m_customAspectRatioPresets;
 
-    float m_prevMoveSpeed;
+    float m_prevMoveSpeedScale;
 
     // Speed combobox/lineEdit settings
-    double m_minSpeed = 0.01;
-    double m_maxSpeed = 100.0;
-    double m_speedStep = 0.001;
-    int m_numDecimals = 3;
-
-    // Speed presets
-    float m_speedPresetValues[4] = { 0.01f, 0.1f, 1.0f, 10.0f };
-
-    double m_fieldWidthMultiplier = 1.8;
+    double m_speedScaleMin = 0.001;
+    double m_speedScaleMax = 100.0;
+    double m_speedScaleStep = 0.01;
+    int m_speedScaleDecimalCount = 3;
 
     void OnMenuFOVCustom();
 
@@ -121,23 +122,19 @@ protected:
 
     void OnMenuResolutionCustom();
     void CreateResolutionMenu();
+    
+    void CreatePrefabEditModeMenu();
+    QMenu* const GetPrefabEditModeMenu();
+    void SetNormalPrefabEditMode();
+    void SetMonochromaticPrefabEditMode();
 
     void CreateViewportInformationMenu();
     QMenu* const GetViewportInformationMenu();
-    void SetNoViewportInfo();
-    void SetNormalViewportInfo();
-    void SetFullViewportInfo();
-    void SetCompactViewportInfo();
 
     void OnBnClickedGotoPosition();
     void OnBnClickedMuteAudio();
 
     void UpdateMuteActionText();
-
-    void OnToggleDisplayInfo();
-
-    void OnSpeedComboBoxEnter();
-    void OnUpdateMoveSpeedText(const QString&);
 
     void CheckForCameraSpeedUpdate();
 
@@ -149,13 +146,17 @@ protected:
 
     void UpdateOverFlowMenuState();
 
+    QAction* m_normalPrefabEditModeAction = nullptr;
+    QAction* m_monochromaticPrefabEditModeAction = nullptr;
     QMenu* m_fovMenu = nullptr;
     QMenu* m_aspectMenu = nullptr;
     QMenu* m_resolutionMenu = nullptr;
+    QMenu* m_prefabEditModeMenu = nullptr;
     QMenu* m_viewportInformationMenu = nullptr;
     QMenu* m_helpersMenu = nullptr;
     QAction* m_helpersAction = nullptr;
     QAction* m_iconsAction = nullptr;
+    QAction* m_onlySelectedAction = nullptr;
     QAction* m_noInformationAction = nullptr;
     QAction* m_normalInformationAction = nullptr;
     QAction* m_fullInformationAction = nullptr;
@@ -164,7 +165,7 @@ protected:
     QCheckBox* m_enableGridSnappingCheckBox = nullptr;
     QCheckBox* m_enableGridVisualizationCheckBox = nullptr;
     QCheckBox* m_enableAngleSnappingCheckBox = nullptr;
-    QComboBox* m_cameraSpeed = nullptr;
+    AzQtComponents::DoubleSpinBox* m_cameraSpinBox = nullptr;
     AzQtComponents::DoubleSpinBox* m_gridSpinBox = nullptr;
     AzQtComponents::DoubleSpinBox* m_angleSpinBox = nullptr;
     QWidgetAction* m_gridSizeActionWidget = nullptr;
@@ -173,6 +174,16 @@ protected:
     AzToolsFramework::Prefab::PrefabViewportFocusPathHandler* m_prefabViewportFocusPathHandler = nullptr;
 
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
+
+    //! The different prefab edit mode effects available in the Edit mode menu.
+    enum class PrefabEditModeUXSetting
+    {
+        Normal, //!< No effect.
+        Monochromatic //!< Monochromatic effect.
+    };
+
+    //! The currently active edit mode effect.
+    PrefabEditModeUXSetting m_prefabEditMode = PrefabEditModeUXSetting::Monochromatic;
 };
 
 namespace AzToolsFramework

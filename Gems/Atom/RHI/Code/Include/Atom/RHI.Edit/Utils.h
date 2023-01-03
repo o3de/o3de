@@ -64,7 +64,7 @@ namespace AZ
         template< size_t N >
         AZStd::string ByteToHexString(const unsigned char (&array)[N])
         {
-            AZStd::string result{ N * 2, '\0' };
+            AZStd::string result(N * 2, '\0');
             for (int i = 0; i < N; ++i)
             {
                 char msb = (array[i] >> 4) & 0x0F;
@@ -113,11 +113,11 @@ namespace AZ
         {
             //! @param commandLineString: A string with command line arguments of the form:
             //!             "-<arg1> --<arg2> --<arg3>[=<value3>] ..."
-            //!             Example: "--use-spaces --namespace=vk -W1"
+            //!             Example: "--srg --namespace=vk -W1"
             //! Returns: A list with just the [-|--]<argument name>:
             //!          ["-<arg1>", "--<arg2>", "--arg3"]
             //!          For the example shown above it will return this vector:
-            //!          ["--use-spaces", "--namespace", "-W1]
+            //!          ["--srg", "--namespace", "-W1]
             AZStd::vector<AZStd::string> GetListOfArgumentNames(AZStd::string_view commandLineString);
 
             //! Takes a list of names of command line arguments and removes those arguments from @commandLineString.

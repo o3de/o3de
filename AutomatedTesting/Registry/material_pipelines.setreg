@@ -1,0 +1,12 @@
+{
+    "O3DE": {
+        "Atom": {
+            "RPI": {
+                "MaterialPipelineFiles": [
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MainPipeline/MainPipeline.materialpipeline",
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/LowEndPipeline/LowEndPipeline.materialpipeline"
+                ]
+            }
+        }
+    }
+}

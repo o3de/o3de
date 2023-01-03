@@ -128,7 +128,10 @@ namespace AZStd::Internal
         bool = is_trivially_constructible_v<ValueType>>
         struct construct
     {
-        static constexpr void range(InputIterator first, InputIterator last) { (void)first; (void)last; }
+        static constexpr void range(InputIterator first, InputIterator last)
+        {
+            range(first, last, ValueType());
+        }
         static constexpr void range(InputIterator first, InputIterator last, const ValueType& value)
         {
             for (; first != last; ++first)
@@ -136,7 +139,10 @@ namespace AZStd::Internal
                 *first = value;
             }
         }
-        static constexpr void single(InputIterator iter) { (void)iter; }
+        static constexpr void single(InputIterator iter)
+        {
+            single(iter, ValueType());
+        }
         static constexpr void single(InputIterator iter, const ValueType& value)
         {
             *iter = value;
@@ -168,11 +174,6 @@ namespace AZStd::Internal
             }
         }
 
-        static void single(InputIterator iter)
-        {
-            ::new (&*iter) ValueType();
-        }
-
         template<class ... InputArguments>
         static void single(InputIterator iter, InputArguments&& ... inputArguments)
         {
@@ -190,7 +191,7 @@ namespace AZStd
     //! `new (declval<void*>()) T(declval<Args>()...)` is well-formed
     template <typename T, typename... Args>
     constexpr auto construct_at(T* ptr, Args&&... args)
-        -> enable_if_t<AZStd::is_void_v<AZStd::void_t<decltype(new (AZStd::declval<void*>()) T(AZStd::forward<Args>(args)...))>>, T*>
+        -> decltype(new (AZStd::declval<void*>()) T(AZStd::forward<Args>(args)...), (T*)nullptr)
     {
         return ::new (ptr) T(AZStd::forward<Args>(args)...);
     }

@@ -83,6 +83,8 @@ namespace AZStd
             bool m_isPointer = false;
             // Should the object be stored on the heap? (never true for pointers)
             bool m_useHeap = false;
+            // The size of the value stored by this type
+            size_t m_valueSize = 0;
         };
 
         /// Constructs an empty object.
@@ -191,7 +193,7 @@ namespace AZStd
             m_typeInfo.m_handler(Action::Reserve, this, nullptr);
 
             // Call copy constructor
-            construct<decay_t<ValueType>>(this, forward<ValueType>(val));
+            construct<decay_t<ValueType>>(this, AZStd::forward<ValueType>(val));
         }
 
 
@@ -246,7 +248,7 @@ namespace AZStd
         template <typename ValueType, typename = enable_if_t<!is_same<decay_t<ValueType>, any>::value>>
         any& operator=(ValueType&& val)
         {
-            any(forward<ValueType>(val)).swap(*this);
+            any(AZStd::forward<ValueType>(val)).swap(*this);
             return *this;
         }
 
@@ -287,7 +289,7 @@ namespace AZStd
         template<typename ValueType, typename ParamType> // ParamType must be deduced to allow universal ref
         static void construct(AZStd::any* dest, ParamType&& value, AZStd::enable_if_t<AZStd::is_constructible_v<ValueType, ParamType>, AZStd::true_type*> = nullptr /* AZStd::is_constructible_v<ValueType, ParamType>*/)
         {
-            new (dest->get_data()) ValueType(forward<ParamType>(value));
+            new (dest->get_data()) ValueType(AZStd::forward<ParamType>(value));
         }
 
         // The ValueType is not copy constructible in this case
@@ -374,6 +376,7 @@ namespace AZStd
             ti.m_id = azrtti_typeid<ValueType>();
             ti.m_isPointer = is_pointer<ValueType>::value;
             ti.m_useHeap = AZStd::GetMax(sizeof(ValueType), AZStd::alignment_of<ValueType>::value) > Internal::ANY_SBO_BUF_SIZE;
+            ti.m_valueSize = sizeof(AZStd::decay_t<AZStd::remove_pointer_t<ValueType>>);
             ti.m_handler = type_info::HandleFnT(&action_handler<ValueType>);
             return ti;
         }

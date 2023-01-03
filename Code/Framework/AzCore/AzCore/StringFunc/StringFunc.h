@@ -943,6 +943,16 @@ namespace AZ
             *! path=="C:\\project\\intermediateassets\\"
             */
             AZStd::string& AppendSeparator(AZStd::string& inout);
+
+            //! MakeUniqueFilenameWithSuffix
+            /*! given a directory path and an optional extension will return a unique filename
+            *! EX: StringFunc::Path::MakeUniqueFilenameWithSuffix("c:\\folder\\NewFile.txt", "-copy")
+            *! if "NewFile.txt" doesn't exist, returns "c:\\folder\\Newfile.txt"
+            *! if "NewFile.txt" exists, returns "c:\\folder\\Newfile-copy1.txt"
+            *! if both "NewFile.txt" and "NewFile-copy1.txt" exist, returns "c:\\folder\\Newfile-copy2.txt" etc.
+            */
+            AZ::IO::FixedMaxPath MakeUniqueFilenameWithSuffix(const AZ::IO::PathView& basePath, const AZStd::string_view& suffix = "");
+
         } // namespace Path
 
         namespace Json

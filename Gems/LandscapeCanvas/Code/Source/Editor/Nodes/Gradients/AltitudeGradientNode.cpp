@@ -32,7 +32,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString AltitudeGradientNode::TITLE = QObject::tr("Altitude");
+    const char* AltitudeGradientNode::TITLE = "Altitude";
 
     AltitudeGradientNode::AltitudeGradientNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)

@@ -178,7 +178,7 @@ namespace ScriptCanvas
 
         // create the Symbol strings
 #define REGISTER_ENUM(x) #x,
-        static const char* g_SymbolNames[] =
+        static constexpr const char* g_SymbolNames[] =
         {
 #include    "SymbolNames.h"
             "<ERROR>"

@@ -13,8 +13,6 @@
 #include <AzTest/Utils.h>
 
 #include <AzCore/Math/MathUtils.h>
-#include <AzCore/Settings/SettingsRegistryImpl.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <Benchmarks/PhysXBenchmarksCommon.h>
 #include <Benchmarks/PhysXBenchmarksUtilities.h>
@@ -23,6 +21,7 @@
 #include <AzFramework/Physics/SystemBus.h>
 
 #include <RagdollTestData.h>
+#include <RagdollConfiguration.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <PhysXCharacters/API/Ragdoll.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
@@ -141,18 +140,12 @@ namespace PhysX::Benchmarks
 
     PhysX::Ragdoll* CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
     {
-        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-        AZ::SettingsRegistryImpl localRegistry;
-        localRegistry.Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZ::Test::GetEngineRootPath());
-
-        // Look up the path to the PhysX Gem root
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ManifestGemsPaths(localRegistry);
-        AZ::IO::Path physXGemFolder;
-        localRegistry.Get(physXGemFolder.Native(), FixedValueString::format("%s/PhysX/Path",
-            AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey));
-
-        Physics::RagdollConfiguration* configuration =
-            AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>((physXGemFolder / "Code/Tests/RagdollConfiguration.xml").Native());
+        Physics::RagdollConfiguration* configuration = AZ::Utils::LoadObjectFromBuffer<Physics::RagdollConfiguration>(
+            RagdollTestData::RagdollConfiguration.data(), RagdollTestData::RagdollConfiguration.size());
+        if (!configuration)
+        {
+            return nullptr;
+        }
 
         configuration->m_initialState = GetTPose();
         configuration->m_parentIndices.reserve(configuration->m_nodes.size());
@@ -214,11 +207,11 @@ namespace PhysX::Benchmarks
         {
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }
@@ -280,11 +273,11 @@ namespace PhysX::Benchmarks
         {
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }

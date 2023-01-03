@@ -10,27 +10,19 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <QDir>
+#include <QVariant>
 
 namespace AssetProcessor
 {
-
-    AZStd::shared_ptr<SourceAssetTreeItemData> SourceAssetTreeItemData::MakeShared(
-        const AzToolsFramework::AssetDatabase::SourceDatabaseEntry* sourceInfo,
-        const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry* scanFolderInfo,
-        const AZStd::string& assetDbName,
-        QString name,
-        bool isFolder)
-    {
-        return AZStd::make_shared<SourceAssetTreeItemData>(sourceInfo, scanFolderInfo, assetDbName, name, isFolder);
-    }
-
     SourceAssetTreeItemData::SourceAssetTreeItemData(
         const AzToolsFramework::AssetDatabase::SourceDatabaseEntry* sourceInfo,
         const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry* scanFolderInfo,
         const AZStd::string& assetDbName,
         QString name,
-        bool isFolder) :
-        AssetTreeItemData(assetDbName, name, isFolder, sourceInfo ? sourceInfo->m_sourceGuid : AZ::Uuid::CreateNull())
+        bool isFolder,
+        AZ::s64 analysisJobDuration)
+        : AssetTreeItemData(assetDbName, name, isFolder, sourceInfo ? sourceInfo->m_sourceGuid : AZ::Uuid::CreateNull())
+        , m_analysisDuration(analysisJobDuration)
     {
         if (sourceInfo && scanFolderInfo)
         {
@@ -42,7 +34,40 @@ namespace AssetProcessor
         {
             m_hasDatabaseInfo = false;
         }
+    }
 
+    int SourceAssetTreeItemData::GetColumnCount() const
+    {
+        return aznumeric_cast<int>(SourceAssetTreeColumns::Max);
+    }
+
+    QVariant SourceAssetTreeItemData::GetDataForColumn(int column) const
+    {
+        if (column == aznumeric_cast<int>(SourceAssetTreeColumns::AnalysisJobDuration))
+        {
+            if (m_analysisDuration < 0)
+            {
+                return "";
+            }
+            QTime duration = QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(m_analysisDuration));
+            if (duration.hour() > 0)
+            {
+                return duration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'");
+            }
+            if (duration.minute() > 0)
+            {
+                return duration.toString("zzz' ms, 'ss' sec, 'mm' min'");
+            }
+            if (duration.second() > 0)
+            {
+                return duration.toString("zzz' ms, 'ss' sec'");
+            }
+            return duration.toString("zzz' ms'");
+        }
+        else
+        {
+            return AssetTreeItemData::GetDataForColumn(column);
+        }
     }
 
     QString BuildAbsolutePathToFile(const AZStd::shared_ptr<const SourceAssetTreeItemData> file)

@@ -16,7 +16,7 @@ import ly_test_tools.launchers.exceptions
 import ly_test_tools.environment.process_utils
 import ly_test_tools.environment.waiter
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Launcher(object):
@@ -29,7 +29,7 @@ class Launcher(object):
         :param workspace: Workspace containing the launcher
         :param args: list of arguments passed to the game during launch
         """
-        log.debug(f"Initializing launcher for workspace '{workspace}' with args '{args}'")
+        logger.debug(f"Initializing launcher for workspace '{workspace}' with args '{args}'")
         self.workspace = workspace  # type: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager
 
         if args:
@@ -86,14 +86,14 @@ class Launcher(object):
                     artifact_ext = os.path.splitext(artifact)[1]
                     if artifact_ext == '.dmp':
                         os.remove(os.path.join(self.workspace.paths.project_log(), artifact))
-                        log.info(f"Removing pre-existing artifact {artifact} from calling Launcher.setup()")
+                        logger.info(f"Removing pre-existing artifact {artifact} from calling Launcher.setup()")
                     # For logs, we are going to keep the file in existance and clear it to play nice with filesystem caching and
                     # our code reading the contents of the file
                     elif artifact_ext == '.log':
                         open(os.path.join(self.workspace.paths.project_log(), artifact), 'w').close() # clear it
-                        log.debug(f"Clearing pre-existing artifact {artifact} from calling Launcher.setup()")
+                        logger.debug(f"Clearing pre-existing artifact {artifact} from calling Launcher.setup()")
                 except PermissionError:
-                    log.warning(f'Unable to remove artifact: {artifact}, skipping.')
+                    logger.warning(f'Unable to remove artifact: {artifact}, skipping.')
                     pass
 
         # In case this is the first run, we will create default logs to prevent the logmonitor from not finding the file
@@ -106,9 +106,9 @@ class Launcher(object):
 
         # Wait for the AssetProcessor to be open.
         if launch_ap:
+            logger.debug('AssetProcessor started from calling Launcher.setup()')
             self.workspace.asset_processor.start(connect_to_ap=True, connection_timeout=10)  # verify connection
             self.workspace.asset_processor.wait_for_idle()
-            log.debug('AssetProcessor started from calling Launcher.setup()')
 
     def backup_settings(self):
         """
@@ -120,9 +120,8 @@ class Launcher(object):
         :return: None
         """
         backup_path = self.workspace.settings.get_temp_path()
-        log.debug(f"Performing automatic backup of bootstrap, platform and user settings in path {backup_path}")
+        logger.debug(f"Performing automatic backup of bootstrap, platform and user settings in path {backup_path}")
         self.workspace.settings.backup_platform_settings(backup_path)
-        self.workspace.settings.backup_shader_compiler_settings(backup_path)
 
     def configure_settings(self):
         """
@@ -133,7 +132,7 @@ class Launcher(object):
 
         :return: None
         """
-        log.debug("No-op settings configuration requested")
+        logger.debug("No-op settings configuration requested")
         pass
 
     def restore_settings(self):
@@ -143,9 +142,8 @@ class Launcher(object):
         :return: None
         """
         backup_path = self.workspace.settings.get_temp_path()
-        log.debug(f"Restoring backup of bootstrap, platform and user settings in path {backup_path}")
+        logger.debug(f"Restoring backup of bootstrap, platform and user settings in path {backup_path}")
         self.workspace.settings.restore_platform_settings(backup_path)
-        self.workspace.settings.restore_shader_compiler_settings(backup_path)
 
     def teardown(self):
         """
@@ -246,7 +244,7 @@ class Launcher(object):
 
         :return None:
         """
-        log.debug("No-op package requested")
+        logger.debug("No-op package requested")
         pass
 
     def wait(self, timeout=30):
@@ -255,7 +253,8 @@ class Launcher(object):
         """
         ly_test_tools.environment.waiter.wait_for(
             lambda: not self.is_alive(),
-            exc=ly_test_tools.launchers.exceptions.WaitTimeoutError("Application is unexpectedly still active"),
+            exc=ly_test_tools.launchers.exceptions.WaitTimeoutError(f"Application is unexpectedly still active after "
+                                                                    f"timeout of {timeout} seconds"),
             timeout=timeout
         )
 
@@ -270,7 +269,8 @@ class Launcher(object):
         try:
             ly_test_tools.environment.waiter.wait_for(
                 lambda: not self.is_alive(),
-                exc=ly_test_tools.launchers.exceptions.TeardownError("Application is unexpectedly still active"),
+                exc=ly_test_tools.launchers.exceptions.TeardownError(f"Application is unexpectedly still active after "
+                                                                     f"timeout of {timeout} seconds"),
                 timeout=timeout
             )
         except ly_test_tools.launchers.exceptions.TeardownError:

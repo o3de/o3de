@@ -29,33 +29,37 @@ namespace AzToolsFramework
                 m_prefabFocusPublicInterface != nullptr,
                 "ProceduralPrefabReadOnlyHandler requires a PrefabFocusPublicInterface instance on Initialize.");
 
-            AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-            EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
-            ReadOnlyEntityQueryRequestBus::Handler::BusConnect(editorEntityContextId);
+            EditorEntityContextRequestBus::BroadcastResult(m_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+            ReadOnlyEntityQueryRequestBus::Handler::BusConnect(m_editorEntityContextId);
 
              // Refresh the whole read-only cache
             if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
             {
                 readOnlyEntityQueryInterface->RefreshReadOnlyStateForAllEntities();
             }
+
+            PrefabFocusNotificationBus::Handler::BusConnect(m_editorEntityContextId);
         }
 
         ProceduralPrefabReadOnlyHandler ::~ProceduralPrefabReadOnlyHandler()
         {
+            PrefabFocusNotificationBus::Handler::BusDisconnect();
             ReadOnlyEntityQueryRequestBus::Handler::BusDisconnect();
+        }
+
+        void ProceduralPrefabReadOnlyHandler::OnPrefabEditScopeChanged()
+        {
+            // Refresh the whole read-only cache
+            if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
+            {
+                readOnlyEntityQueryInterface->RefreshReadOnlyStateForAllEntities();
+            }
         }
 
         void ProceduralPrefabReadOnlyHandler::IsReadOnly(const AZ::EntityId& entityId, bool& isReadOnly)
         {
             if(m_prefabPublicInterface->IsOwnedByProceduralPrefabInstance(entityId))
             {
-                // All entities nested inside a procedural prefabs should always be marked as read-only.
-                if (!m_prefabPublicInterface->IsInstanceContainerEntity(entityId))
-                {
-                    isReadOnly = true;
-                }
-
                 // The container entity of a procedural prefab should only be marked as read-only when the prefab is being edited.
                 if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
                 {

@@ -72,6 +72,7 @@ namespace GradientSignal
 
                     ->GroupElementToggle("Advanced", &GradientTransformConfig::m_advancedMode)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
                     ->DataElement(0, &GradientTransformConfig::m_allowReference, "Allow Reference", "When enabled, the shape reference can be overridden. When disabled, all operations are relative to this entity.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
@@ -288,6 +289,7 @@ namespace GradientSignal
         GradientTransformModifierRequestBus::Handler::BusConnect(GetEntityId());
 
         m_dependencyMonitor.Reset();
+        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(GetEntityId());
         m_dependencyMonitor.ConnectDependency(GetShapeEntityId());

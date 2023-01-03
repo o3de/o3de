@@ -6,12 +6,8 @@
  *
  */
 
-#include <PostProcess/PostProcessFeatureProcessor.h>
 #include <Pass/EditorModeFeedbackParentPass.h>
 
-#include <Atom/RPI.Public/RenderPipeline.h>
-#include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Public/View.h>
 #include <EditorModeFeedback/EditorModeFeedbackInterface.h>
 
 namespace AZ

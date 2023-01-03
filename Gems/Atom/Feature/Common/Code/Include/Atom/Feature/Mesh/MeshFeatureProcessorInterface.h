@@ -22,20 +22,26 @@ namespace AZ
 {
     namespace Render
     {
+        AZ_CVAR(bool,
+            r_enablePerMeshShaderOptionFlags,
+            false,
+            nullptr,
+            AZ::ConsoleFunctorFlags::Null,
+            "Enable allowing systems to set shader options on a per-mesh basis."
+        );
+
         class ModelDataInstance;
         
-        using MeshDrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
-        using MeshDrawPacketLods = AZStd::fixed_vector<MeshDrawPacketList, RPI::ModelLodAsset::LodCountMax>;
-
         //! Settings to apply to a mesh handle when acquiring it for the first time
         struct MeshHandleDescriptor
         {
             using RequiresCloneCallback = AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>;
 
             Data::Asset<RPI::ModelAsset> m_modelAsset;
+            RequiresCloneCallback m_requiresCloneCallback = {};
             bool m_isRayTracingEnabled = true;
             bool m_useForwardPassIblSpecular = false;
-            RequiresCloneCallback m_requiresCloneCallback = {};
+            bool m_isAlwaysDynamic = false;
         };
 
         //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying MeshFeatureProcessor
@@ -43,7 +49,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::MeshFeatureProcessorInterface, "{975D7F0C-2E7E-4819-94D0-D3C4E2024721}", FeatureProcessor);
+            AZ_RTTI(AZ::Render::MeshFeatureProcessorInterface, "{975D7F0C-2E7E-4819-94D0-D3C4E2024721}", AZ::RPI::FeatureProcessor);
 
             using MeshHandle = StableDynamicArrayHandle<ModelDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
@@ -71,7 +77,7 @@ namespace AZ
             virtual Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const = 0;
             //! This function is primarily intended for debug output and testing, by providing insight into what
             //! materials, shaders, etc. are actively being used to render the model.
-            virtual const MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const = 0;
+            virtual const RPI::MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const = 0;
 
             //! Gets the ObjectSrgs for a meshHandle.
             //! Updating the ObjectSrgs should be followed by a call to QueueObjectSrgForCompile,
@@ -114,12 +120,19 @@ namespace AZ
             virtual RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const = 0;
             //! Sets the option to exclude this mesh from baked reflection probe cubemaps
             virtual void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) = 0;
+            //! Sets a mesh to be considered to be always moving even if the transform hasn't changed. This is useful for meshes that are skinned or have vertex animation.
+            virtual void SetIsAlwaysDynamic(const MeshHandle& meshHandle, bool isAlwaysDynamic) = 0;
+            //! Gets if a mesh is considered to always be moving.
+            virtual bool GetIsAlwaysDynamic(const MeshHandle& meshHandle) const = 0;
             //! Sets the option to exclude this mesh from raytracing
             virtual void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) = 0;
             //! Gets whether this mesh is excluded from raytracing
             virtual bool GetRayTracingEnabled(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh as visible or hidden.  When the mesh is hidden it will not be rendered by the feature processor.
             virtual void SetVisible(const MeshHandle& meshHandle, bool visible) = 0;
+            //! Returns the visibility state of the mesh.
+            //! This only refers to whether or not the mesh has been explicitly hidden, and is not related to view frustum visibility.
+            virtual bool GetVisible(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh to render IBL specular in the forward pass.
             virtual void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) = 0;
         };

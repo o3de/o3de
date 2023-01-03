@@ -9,8 +9,10 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
 
 #include <AzCore/Component/TransformBus.h>
-#include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 
 namespace AzToolsFramework
 {
@@ -109,6 +111,49 @@ namespace AzToolsFramework
         if (!entityId.IsValid())
         {
             return entityId;
+        }
+
+        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+        if (Prefab::IsPrefabOverridesUxEnabled())
+        {
+            // Get currently selected entities
+            EntityIdList selectedEntities;
+            ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
+
+            if (AZStd::find(selectedEntities.begin(), selectedEntities.end(), entityId) != selectedEntities.end())
+            {
+                // Entity is already selected, keep the same selection
+                return entityId;
+            }
+
+            // Return the highest unselected ancestor container of the entity, or the entity if none is found.
+            AZ::EntityId highestUnselectedAncestorContainer = entityId;
+
+            // Skip the queried entity, as we only want to check its ancestors.
+            AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+            // Go up the hierarchy until you hit the root or a selected container
+            while (entityId.IsValid())
+            {
+                if (IsContainer(entityId))
+                {
+                    if (AZStd::find(selectedEntities.begin(), selectedEntities.end(), entityId) != selectedEntities.end())
+                    {
+                        // Found a selected container
+                        break;
+                    }
+                    else
+                    {
+                        highestUnselectedAncestorContainer = entityId;
+                    }
+                }
+
+                AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+            }
+
+            return highestUnselectedAncestorContainer;
         }
 
         // Return the highest closed container, or the entity if none is found.

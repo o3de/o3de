@@ -11,7 +11,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/containers/list.h>
-#include <AzCore/Memory/AllocatorScope.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
@@ -80,12 +79,9 @@
 
 namespace LmbrCentral
 {
-    using LmbrCentralAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator>;
-
     // This component boots the required allocators for LmbrCentral everywhere but AssetBuilders
     class LmbrCentralAllocatorComponent
         : public AZ::Component
-        , protected LmbrCentralAllocatorScope
     {
     public:
         AZ_COMPONENT(LmbrCentralAllocatorComponent, "{B0512A75-AC4A-423A-BB55-C3355C0B186A}", AZ::Component);
@@ -95,12 +91,10 @@ namespace LmbrCentral
 
         void Activate() override
         {
-            LmbrCentralAllocatorScope::ActivateAllocators();
         }
 
         void Deactivate() override
         {
-            LmbrCentralAllocatorScope::DeactivateAllocators();
         }
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -257,7 +251,7 @@ namespace LmbrCentral
         {
             // Allow loading of Material and Texture Assets which explicitly specialized AzTypeInfo instead of using
             // the AZ_RTTI Uuid from SimpleAssetReference<T>
-            serializeContext->ClassDeprecate("SimpleAssetReference_MaterialAsset", "{B7B8ECC7-FF89-4A76-A50E-4C6CA2B6E6B4}",
+            serializeContext->ClassDeprecate("SimpleAssetReference_MaterialAsset", AZ::Uuid("{B7B8ECC7-FF89-4A76-A50E-4C6CA2B6E6B4}"),
                 [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
                 {
                     AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
@@ -273,7 +267,7 @@ namespace LmbrCentral
                     }
                     return true;
                 });
-            serializeContext->ClassDeprecate("SimpleAssetReference_TextureAsset", "{68E92460-5C0C-4031-9620-6F1A08763243}",
+            serializeContext->ClassDeprecate("SimpleAssetReference_TextureAsset", AZ::Uuid("{68E92460-5C0C-4031-9620-6F1A08763243}"),
                 [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
                 {
                     AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
@@ -333,12 +327,6 @@ namespace LmbrCentral
 
     void LmbrCentralSystemComponent::Activate()
     {
-        if (!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-            m_allocatorShutdowns.push_back([]() { AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy(); });
-        }
-
         // Register asset handlers. Requires "AssetDatabaseService"
         AZ_Assert(AZ::Data::AssetManager::IsReady(), "Asset manager isn't ready!");
 

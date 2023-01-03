@@ -9,7 +9,6 @@
 
 #include <limits>
 
-#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzCore/std/containers/unordered_set.h>
@@ -227,7 +226,7 @@ namespace AZ
         {
             void  ToString(AZStd::string& str) const;
             const void*         m_dataPtr;
-            const Uuid*         m_uuidPtr;
+            Uuid                m_uuid;
             const ClassData*    m_classData;
             const char*         m_elementName;
             const ClassElement* m_classElement;
@@ -299,7 +298,7 @@ namespace AZ
          * \param errorHandler optional pointer to the error handler.
          */
         bool EnumerateInstanceConst(EnumerateInstanceCallContext* callContext, const void* ptr, const Uuid& classId, const ClassData* classData, const ClassElement* classElement) const;
-        bool EnumerateInstance(EnumerateInstanceCallContext* callContext, void* ptr, const Uuid& classId, const ClassData* classData, const ClassElement* classElement) const;
+        bool EnumerateInstance(EnumerateInstanceCallContext* callContext, void* ptr, Uuid classId, const ClassData* classData, const ClassElement* classElement) const;
 
         // Deprecated overloads for EnumerateInstance*. Prefer versions that take a \ref EnumerateInstanceCallContext directly.
         bool EnumerateInstanceConst(const void* ptr, const Uuid& classId, const BeginElemEnumCB& beginElemCB, const EndElemEnumCB& endElemCB, unsigned int accessFlags, const ClassData* classData, const ClassElement* classElement, ErrorHandler* errorHandler = nullptr) const;
@@ -783,6 +782,8 @@ namespace AZ
                 virtual void*   GetElementByKey(void* instance, const ClassElement* classElement, const void* key) = 0;
                 /// Populates element with key (for associative containers). Not used for serialization.
                 virtual void    SetElementKey(void* element, void* key) = 0;
+                /// Get the mapped value's address by its key. If there is no mapped value (like in a set<>) the value returned is the key itself
+                virtual void* GetValueByKey(void* instance, const void* key) = 0;
             };
 
             /// Return default element generic name (used by most containers).
@@ -1119,7 +1120,7 @@ namespace AZ
          * and the enum type is registered with the SerializeContext
          * otherwise the supplied typeId is returned
         */
-        const TypeId& GetUnderlyingTypeId(const TypeId& enumTypeId) const;
+        AZ::TypeId GetUnderlyingTypeId(const TypeId& enumTypeId) const;
 
     private:
 
@@ -1396,13 +1397,13 @@ namespace AZ
 
         virtual size_t GetNumTemplatedArguments() = 0;
 
-        virtual const Uuid& GetTemplatedTypeId(size_t element) = 0;
+        virtual AZ::TypeId GetTemplatedTypeId(size_t element) = 0;
 
         /// By default returns AzTypeInfo<ValueType>::Uuid
-        virtual const Uuid& GetSpecializedTypeId() const = 0;
+        virtual AZ::TypeId GetSpecializedTypeId() const = 0;
 
         /// Return the generic Type Id associated with the GenericClassInfo
-        virtual const Uuid& GetGenericTypeId() const { return GetSpecializedTypeId(); }
+        virtual AZ::TypeId GetGenericTypeId() const { return GetSpecializedTypeId(); }
 
         /// Register the generic class info using the SerializeContext
         virtual void Reflect(SerializeContext*) = 0;
@@ -1412,7 +1413,7 @@ namespace AZ
 
         /// Returns the legacy specialized type id which removed the pointer types from templates when calculating type ids.
         /// i.e Typeids for AZStd::vector<AZ::Entity> and AZStd::vector<AZ::Entity*> are the same for legacy ids
-        virtual const Uuid& GetLegacySpecializedTypeId() const { return GetSpecializedTypeId(); }
+        virtual AZ::TypeId GetLegacySpecializedTypeId() const { return GetSpecializedTypeId(); }
     };
 
     /**
@@ -1438,7 +1439,7 @@ namespace AZ
         /// By default we don't have generic class info
         static GenericClassInfo* GetGenericInfo() { return nullptr; }
         /// By default just return the ValueTypeInfo
-        static const Uuid& GetClassTypeId();
+        static constexpr Uuid GetClassTypeId();
     };
 
     /**
@@ -1472,7 +1473,7 @@ namespace AZ
             else
             {
                 // Otherwise use the AZ::SystemAllocator
-                return azmalloc(sizeof(T), alignof(T), AZ::SystemAllocator, "");
+                return azmalloc(sizeof(T), alignof(T), AZ::SystemAllocator);
             }
         }
         template<typename T>
@@ -1512,12 +1513,15 @@ namespace AZ
                 }
                 case AZStd::any::Action::Construct:
                 {
-                    // Default construct the ValueType object
-                    // This occurs in the case where a Copy and Move action is invoked
-                    void* ptr = AZStd::any_cast<void>(dest);
-                    if (ptr)
+                    if constexpr (AZStd::is_default_constructible_v<ValueType>)
                     {
-                        new (ptr) ValueType();
+                        // Default construct the ValueType object
+                        // This occurs in the case where a Copy and Move action is invoked
+                        void* ptr = AZStd::any_cast<void>(dest);
+                        if (ptr)
+                        {
+                            new (ptr) ValueType();
+                        }
                     }
                     break;
                 }
@@ -1566,8 +1570,7 @@ namespace AZ
             }
             else
             {
-                ValueType instance;
-                return serializeContext ? AZStd::any(reinterpret_cast<const void*>(&instance), typeinfo) : AZStd::any();
+                return {};
             }
         }
     };
@@ -1595,15 +1598,15 @@ namespace AZ
     struct SerializeTypeInfo
     {
         typedef typename AZStd::remove_pointer<T>::type ValueType;
-        static const Uuid& GetUuid(const T* instance = nullptr)
+        static Uuid GetUuid(const T* instance = nullptr)
         {
             return GetUuid(instance, typename AZStd::is_pointer<T>::type());
         }
-        static const Uuid& GetUuid(const T* instance, const AZStd::true_type& /*is_pointer<T>*/)
+        static Uuid GetUuid(const T* instance, const AZStd::true_type& /*is_pointer<T>*/)
         {
             return GetUuidHelper(instance ? *instance : nullptr, typename HasAZRtti<ValueType>::type());
         }
-        static const Uuid& GetUuid(const T* instance, const AZStd::false_type& /*is_pointer<T>*/)
+        static Uuid GetUuid(const T* instance, const AZStd::false_type& /*is_pointer<T>*/)
         {
             return GetUuidHelper(instance, typename HasAZRtti<ValueType>::type());
         }
@@ -1624,16 +1627,16 @@ namespace AZ
             return "NotAZRttiType";
         }
 
-        static const Uuid& GetRttiTypeId(ValueType* const* instance)
+        static AZ::TypeId GetRttiTypeId(ValueType* const* instance)
         {
             return GetRttiTypeId(instance ? *instance : nullptr, typename HasAZRtti<ValueType>::type());
         }
-        static const Uuid& GetRttiTypeId(const ValueType* instance) { return GetRttiTypeId(instance, typename HasAZRtti<ValueType>::type()); }
-        static const Uuid& GetRttiTypeId(const ValueType* instance, const AZStd::true_type& /*HasAZRtti<ValueType>*/)
+        static AZ::TypeId GetRttiTypeId(const ValueType* instance) { return GetRttiTypeId(instance, typename HasAZRtti<ValueType>::type()); }
+        static AZ::TypeId GetRttiTypeId(const ValueType* instance, const AZStd::true_type& /*HasAZRtti<ValueType>*/)
         {
             return instance ? AZ::RttiTypeId(instance) : AzTypeInfo<ValueType>::Uuid();
         }
-        static const Uuid& GetRttiTypeId(const ValueType* /*instance*/, const AZStd::false_type& /*!HasAZRtti<ValueType>*/)
+        static AZ::TypeId GetRttiTypeId(const ValueType* /*instance*/, const AZStd::false_type& /*!HasAZRtti<ValueType>*/)
         {
             static Uuid s_nullUuid = Uuid::CreateNull();
             return s_nullUuid;
@@ -1692,11 +1695,11 @@ namespace AZ
         }
 
     private:
-        static const AZ::Uuid& GetUuidHelper(const ValueType* /* ptr */, const AZStd::false_type& /* !HasAZRtti<U>::type() */)
+        static AZ::Uuid GetUuidHelper(const ValueType* /* ptr */, const AZStd::false_type& /* !HasAZRtti<U>::type() */)
         {
             return SerializeGenericTypeInfo<ValueType>::GetClassTypeId();
         }
-        static const AZ::Uuid& GetUuidHelper(const ValueType* ptr, const AZStd::true_type& /* HasAZRtti<U>::type() */)
+        static AZ::Uuid GetUuidHelper(const ValueType* ptr, const AZStd::true_type& /* HasAZRtti<U>::type() */)
         {
             return ptr ? AZ::RttiTypeId(ptr) : SerializeGenericTypeInfo<ValueType>::GetClassTypeId();
         }
@@ -1728,9 +1731,9 @@ namespace AZ
         struct InstanceFactory<T, false, false>
             : public SerializeContext::IObjectFactory
         {
-            void* Create(const char* name) override
+            void* Create([[maybe_unused]] const char* name) override
             {
-                return new(azmalloc(sizeof(T), AZStd::alignment_of<T>::value, AZ::SystemAllocator, name))T;
+                return new(azmalloc(sizeof(T), AZStd::alignment_of<T>::value, AZ::SystemAllocator))T;
             }
             void Destroy(void* ptr) override
             {
@@ -1925,7 +1928,7 @@ namespace AZ
 
 
                 // Remove the deprecated type name -> typeid mapping
-                auto RemoveDeprecatedNames = [this, &typeUuid](AZStd::string_view deprecatedName)
+                auto RemoveDeprecatedNames = [this, &typeUuid = typeUuid](AZStd::string_view deprecatedName)
                 {
                     auto deprecatedNameRange = m_deprecatedNameToTypeIdMap.equal_range(Crc32(deprecatedName));
                     for (auto classNameRangeIter = deprecatedNameRange.first; classNameRangeIter != deprecatedNameRange.second;)
@@ -1963,7 +1966,7 @@ namespace AZ
         else
         {
             // Add any the deprecated type names to the deprecated type name to type id map
-            auto AddDeprecatedNames = [this, &typeUuid](AZStd::string_view deprecatedName)
+            auto AddDeprecatedNames = [this, &typeUuid = typeUuid](AZStd::string_view deprecatedName)
             {
                 m_deprecatedNameToTypeIdMap.emplace(deprecatedName, typeUuid);
             };
@@ -2510,7 +2513,7 @@ namespace AZ
     // SerializeGenericTypeInfo<ValueType>::GetClassTypeId
     //=========================================================================
     template<class ValueType>
-    const Uuid& SerializeGenericTypeInfo<ValueType>::GetClassTypeId()
+    constexpr Uuid SerializeGenericTypeInfo<ValueType>::GetClassTypeId()
     {
         // Detect the scenario when an enum type doesn't specialize AzTypeInfo
         // The underlying type Uuid is returned instead
@@ -2524,12 +2527,9 @@ namespace AZ
     class SerializeContext::PerModuleGenericClassInfo final
     {
     public:
-        using GenericInfoModuleMap = AZStd::unordered_map<AZ::Uuid, AZ::GenericClassInfo*, AZStd::hash<AZ::Uuid>, AZStd::equal_to<AZ::Uuid>, AZ::AZStdIAllocator>;
+        using GenericInfoModuleMap = AZStd::unordered_map<AZ::Uuid, AZ::GenericClassInfo*>;
 
-        PerModuleGenericClassInfo();
         ~PerModuleGenericClassInfo();
-
-        AZ::IAllocator& GetAllocator();
 
         void AddGenericClassInfo(AZ::GenericClassInfo* genericClassInfo);
         void RemoveGenericClassInfo(const AZ::TypeId& canonicalTypeId);
@@ -2546,13 +2546,12 @@ namespace AZ
         template <typename T>
         AZ::GenericClassInfo* FindGenericClassInfo() const;
         AZ::GenericClassInfo* FindGenericClassInfo(const AZ::TypeId& genericTypeId) const;
-    private:
+
         void Cleanup();
 
-        AZ::OSAllocator m_moduleOSAllocator;
-
+    private:
         GenericInfoModuleMap m_moduleLocalGenericClassInfos;
-        using SerializeContextSet = AZStd::unordered_set<SerializeContext*, AZStd::hash<SerializeContext*>, AZStd::equal_to<SerializeContext*>, AZ::AZStdIAllocator>;
+        using SerializeContextSet = AZStd::unordered_set<SerializeContext*>;
         SerializeContextSet m_serializeContextSet;
     };
 
@@ -2569,9 +2568,7 @@ namespace AZ
             return static_cast<GenericClassInfoType*>(findIt->second);
         }
 
-        void* rawMemory = m_moduleOSAllocator.Allocate(sizeof(GenericClassInfoType), alignof(GenericClassInfoType));
-        new (rawMemory) GenericClassInfoType();
-        auto genericClassInfo = static_cast<GenericClassInfoType*>(rawMemory);
+        auto genericClassInfo = azcreate(GenericClassInfoType, ());
         if (genericClassInfo)
         {
             AddGenericClassInfo(genericClassInfo);
@@ -2592,17 +2589,15 @@ namespace AZ
     template <typename T, typename ContainerType>
     AttributePtr CreateModuleAttribute(T&& attrValue)
     {
-        IAllocator& moduleAllocator = GetCurrentSerializeContextModule().GetAllocator();
-        void* rawMemory = moduleAllocator.Allocate(sizeof(ContainerType), alignof(ContainerType));
+        void* rawMemory = AllocatorInstance<SystemAllocator>::Get().allocate(sizeof(ContainerType), alignof(ContainerType));
         new (rawMemory) ContainerType{ AZStd::forward<T>(attrValue) };
         auto attributeDeleter = [](Attribute* attribute)
         {
-            IAllocator& moduleAllocator = GetCurrentSerializeContextModule().GetAllocator();
             attribute->~Attribute();
-            moduleAllocator.DeAllocate(attribute);
+            AllocatorInstance<SystemAllocator>::Get().deallocate(attribute);
         };
 
-        return AttributePtr{ static_cast<ContainerType*>(rawMemory), AZStd::move(attributeDeleter), AZStdIAllocator(&moduleAllocator) };
+        return AttributePtr{ static_cast<ContainerType*>(rawMemory), AZStd::move(attributeDeleter) };
     }
 }   // namespace AZ
 

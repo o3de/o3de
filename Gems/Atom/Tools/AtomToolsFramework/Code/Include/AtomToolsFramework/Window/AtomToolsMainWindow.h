@@ -10,6 +10,7 @@
 
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
+#include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
@@ -43,15 +44,15 @@ namespace AtomToolsFramework
         AZStd::vector<AZStd::string> GetDockWidgetNames() const override;
         void QueueUpdateMenus(bool rebuildMenus) override;
 
+        void SetStatusMessage(const AZStd::string& message) override;
+        void SetStatusWarning(const AZStd::string& message) override;
+        void SetStatusError(const AZStd::string& message) override;
+
         // AtomToolsMainMenuRequestBus::Handler overrides...
         void CreateMenus(QMenuBar* menuBar) override;
         void UpdateMenus(QMenuBar* menuBar) override;
 
-        void SetStatusMessage(const QString& message);
-        void SetStatusWarning(const QString& message);
-        void SetStatusError(const QString& message);
-
-        virtual AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> GetSettingsDialogGroups() const;
+        virtual void PopulateSettingsInspector(InspectorWidget* inspector) const;
         virtual void OpenSettingsDialog();
 
         virtual AZStd::string GetHelpDialogText() const;
@@ -62,6 +63,17 @@ namespace AtomToolsFramework
     protected:
         void showEvent(QShowEvent* showEvent) override;
         void closeEvent(QCloseEvent* closeEvent) override;
+
+        void BuildDockingMenu();
+        void BuildLayoutsMenu();
+        void BuildScriptsMenu();
+
+        static constexpr const char* ToolLayoutSettingsKey = "/O3DE/AtomToolsFramework/MainWindow/Layouts/Tool";
+        static constexpr const char* UserLayoutSettingsKey = "/O3DE/AtomToolsFramework/MainWindow/Layouts/User";
+        using LayoutSettingsMap = AZStd::map<AZStd::string, AZStd::string>;
+
+        void RestoreDefaultLayout();
+        void RestoreSavedLayout();
 
         virtual void SetupMetrics();
         virtual void UpdateMetrics();
@@ -92,5 +104,8 @@ namespace AtomToolsFramework
 
         AtomToolsFramework::AtomToolsAssetBrowser* m_assetBrowser = {};
         AzToolsFramework::LogPanel::TracePrintFLogPanel* m_logPanel = {};
+
+        mutable AZStd::shared_ptr<DynamicPropertyGroup> m_applicationSettingsGroup;
+        mutable AZStd::shared_ptr<DynamicPropertyGroup> m_assetBrowserSettingsGroup;
     };
 } // namespace AtomToolsFramework

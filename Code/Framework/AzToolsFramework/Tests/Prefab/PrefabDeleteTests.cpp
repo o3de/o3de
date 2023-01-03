@@ -6,145 +6,107 @@
  *
  */
 
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-
-#include <Prefab/PrefabTestComponent.h>
-#include <Prefab/PrefabTestDomUtils.h>
 #include <Prefab/PrefabTestFixture.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
 namespace UnitTest
 {
-    using PrefabDeleteTest = PrefabTestFixture;
+    using PrefabDeleteTests = PrefabTestFixture;
 
-    TEST_F(PrefabDeleteTest, DeleteEntitiesInInstance_DeleteSingleEntitySucceeds)
+    TEST_F(PrefabDeleteTests, DeleteEntitiesAndAllDescendantsInInstance_DeleteSingleEntitySucceeds)
     {
-        PrefabEntityResult createEntityResult = m_prefabPublicInterface->CreateEntity(AZ::EntityId(), AZ::Vector3());
+        const AZStd::string entityToDeleteName = "EntityToDelete";
 
-        // Verify that a valid entity is created.
-        AZ::EntityId testEntityId = createEntityResult.GetValue();
-        ASSERT_TRUE(testEntityId.IsValid());
-        AZ::Entity* testEntity = AzToolsFramework::GetEntityById(testEntityId);
-        ASSERT_TRUE(testEntity != nullptr);
+        AZ::EntityId entityId = CreateEditorEntityUnderRoot(entityToDeleteName);
+        EntityAlias entityAlias = FindEntityAliasInInstance(GetRootContainerEntityId(), entityToDeleteName);
 
-        m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(AzToolsFramework::EntityIdList{ testEntityId });
+        PrefabOperationResult result = m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance({ entityId });
+        ASSERT_TRUE(result.IsSuccess());
 
         // Verify that entity can't be found after deletion.
-        testEntity = AzToolsFramework::GetEntityById(testEntityId);
-        EXPECT_TRUE(testEntity == nullptr);
+        AZ::Entity* entityToDelete = AzToolsFramework::GetEntityById(entityId);
+        EXPECT_TRUE(entityToDelete == nullptr);
+
+        ValidateEntityNotUnderInstance(GetRootContainerEntityId(), entityAlias);
     }
 
-    TEST_F(PrefabDeleteTest, DeleteEntitiesInInstance_DeleteSinglePrefabSucceeds)
+    TEST_F(PrefabDeleteTests, DeleteEntitiesAndAllDescendantsInInstance_DeleteSinglePrefabSucceeds)
     {
-        PrefabEntityResult createEntityResult = m_prefabPublicInterface->CreateEntity(AZ::EntityId(), AZ::Vector3());
+        const AZStd::string entityName = "EntityUnderPrefab";
+        const AZStd::string prefabName = "PrefabToDelete";
 
-        // Verify that a valid entity is created.
-        AZ::EntityId createdEntityId = createEntityResult.GetValue();
-        ASSERT_TRUE(createdEntityId.IsValid());
-        AZ::Entity* createdEntity = AzToolsFramework::GetEntityById(createdEntityId);
-        ASSERT_TRUE(createdEntity != nullptr);
+        AZ::IO::Path engineRootPath;
+        m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        AZ::IO::Path prefabFilepath(engineRootPath);
+        prefabFilepath.Append(prefabName);
 
-        // Rather than hardcode a path, use a path from settings registry since that will work on all platforms.
-        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
-        AZ::IO::FixedMaxPath path;
-        registry->Get(path.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-        CreatePrefabResult createPrefabResult =
-            m_prefabPublicInterface->CreatePrefabInMemory(AzToolsFramework::EntityIdList{ createdEntityId }, path);
-
-        AZ::EntityId createdPrefabContainerId = createPrefabResult.GetValue();
-        ASSERT_TRUE(createdPrefabContainerId.IsValid());
-        AZ::Entity* prefabContainerEntity = AzToolsFramework::GetEntityById(createdPrefabContainerId);
-        ASSERT_TRUE(prefabContainerEntity != nullptr);
+        AZ::EntityId entityId = CreateEditorEntityUnderRoot(entityName);
+        AZ::EntityId containerEntityId = CreateEditorPrefab(prefabFilepath, { entityId });
+        InstanceAlias prefabInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), prefabName);
 
         // Verify that the prefab container entity and the entity within are deleted.
-        m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(AzToolsFramework::EntityIdList{ createdPrefabContainerId });
-        prefabContainerEntity = AzToolsFramework::GetEntityById(createdPrefabContainerId);
-        EXPECT_TRUE(prefabContainerEntity == nullptr);
-        createdEntity = AzToolsFramework::GetEntityById(createdEntityId);
-        EXPECT_TRUE(createdEntity == nullptr);
+        PrefabOperationResult result = m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance({ containerEntityId });
+        ASSERT_TRUE(result.IsSuccess());
+
+        AZ::Entity* containerEntity = AzToolsFramework::GetEntityById(containerEntityId);
+        EXPECT_TRUE(containerEntity == nullptr);
+
+        ValidateNestedInstanceNotUnderInstance(GetRootContainerEntityId(), prefabInstanceAlias);
     }
 
-    TEST_F(PrefabDeleteTest, DeleteEntitiesAndAllDescendantsInInstance_DeletingEntityDeletesChildEntityToo)
+    TEST_F(PrefabDeleteTests, DeleteEntitiesAndAllDescendantsInInstance_DeletingEntityDeletesChildEntityToo)
     {
-        PrefabEntityResult parentEntityCreationResult = m_prefabPublicInterface->CreateEntity(AZ::EntityId(), AZ::Vector3());
+        const AZStd::string parentEntityName = "ParentEntity";
+        const AZStd::string childEntityName = "ChildEntity";
 
-        // Verify that valid parent entity is created.
-        AZ::EntityId parentEntityId = parentEntityCreationResult.GetValue();
-        ASSERT_TRUE(parentEntityId.IsValid());
-        AZ::Entity* parentEntity = AzToolsFramework::GetEntityById(parentEntityId);
-        ASSERT_TRUE(parentEntity != nullptr);
-
-        // Verify that valid child entity is created.
-        PrefabEntityResult childEntityCreationResult = m_prefabPublicInterface->CreateEntity(parentEntityId, AZ::Vector3());
-        AZ::EntityId childEntityId = childEntityCreationResult.GetValue();
-        ASSERT_TRUE(childEntityId.IsValid());
-        AZ::Entity* childEntity = AzToolsFramework::GetEntityById(childEntityId);
-        ASSERT_TRUE(childEntity != nullptr);
-
-        // PrefabTestFixture won't add required editor components by default. Hence we add them here.
-        AddRequiredEditorComponents(childEntity);
-        AddRequiredEditorComponents(parentEntity);
-
-        // Parent the child entity under the parent entity.
-        AZ::TransformBus::Event(childEntityId, &AZ::TransformBus::Events::SetParent, parentEntityId);
-
-        // Delete parent entity and its children.
-        m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(AzToolsFramework::EntityIdList{ parentEntityId });
-
-        // Verify that both the parent and child entities are deleted.
-        parentEntity = AzToolsFramework::GetEntityById(parentEntityId);
-        EXPECT_TRUE(parentEntity == nullptr);
-        childEntity = AzToolsFramework::GetEntityById(childEntityId);
-        EXPECT_TRUE(childEntity == nullptr);
-    }
-
-    TEST_F(PrefabDeleteTest, DeleteEntitiesAndAllDescendantsInInstance_DeletingEntityDeletesChildPrefabToo)
-    {
-        PrefabEntityResult entityToBePutUnderPrefabResult = m_prefabPublicInterface->CreateEntity(AZ::EntityId(), AZ::Vector3());
-
-        // Verify that a valid entity is created that will be put in a prefab later.
-        AZ::EntityId entityToBePutUnderPrefabId = entityToBePutUnderPrefabResult.GetValue();
-        ASSERT_TRUE(entityToBePutUnderPrefabId.IsValid());
-        AZ::Entity* entityToBePutUnderPrefab = AzToolsFramework::GetEntityById(entityToBePutUnderPrefabId);
-        ASSERT_TRUE(entityToBePutUnderPrefab != nullptr);
-
-        // Verify that a valid parent entity is created.
-        PrefabEntityResult parentEntityCreationResult = m_prefabPublicInterface->CreateEntity(AZ::EntityId(), AZ::Vector3());
-        AZ::EntityId parentEntityId = parentEntityCreationResult.GetValue();
-        ASSERT_TRUE(parentEntityId.IsValid());
-        AZ::Entity* parentEntity = AzToolsFramework::GetEntityById(parentEntityId);
-        ASSERT_TRUE(parentEntity != nullptr);
-
-        // Rather than hardcode a path, use a path from settings registry since that will work on all platforms.
-        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
-        AZ::IO::FixedMaxPath path;
-        registry->Get(path.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-        CreatePrefabResult createPrefabResult =
-            m_prefabPublicInterface->CreatePrefabInMemory(AzToolsFramework::EntityIdList{ entityToBePutUnderPrefabId }, path);
-
-        // Verify that a valid prefab container entity is created.
-        AZ::EntityId createdPrefabContainerId = createPrefabResult.GetValue();
-        ASSERT_TRUE(createdPrefabContainerId.IsValid());
-        AZ::Entity* prefabContainerEntity = AzToolsFramework::GetEntityById(createdPrefabContainerId);
-        ASSERT_TRUE(prefabContainerEntity != nullptr);
-
-        // PrefabTestFixture won't add required editor components by default. Hence we add them here.
-        AddRequiredEditorComponents(parentEntity);
-        AddRequiredEditorComponents(prefabContainerEntity);
-
-        // Parent the prefab under the parent entity.
-        AZ::TransformBus::Event(createdPrefabContainerId, &AZ::TransformBus::Events::SetParent, parentEntityId);
+        AZ::EntityId parentEntityId = CreateEditorEntityUnderRoot(parentEntityName);
+        AZ::EntityId childEntityId = CreateEditorEntity(childEntityName, parentEntityId);
+        EntityAlias parentEntityAlias = FindEntityAliasInInstance(GetRootContainerEntityId(), parentEntityName);
+        EntityAlias childEntityAlias = FindEntityAliasInInstance(GetRootContainerEntityId(), childEntityName);
 
         // Delete the parent entity.
-        m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(AzToolsFramework::EntityIdList{ parentEntityId });
+        PrefabOperationResult result = m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance({ parentEntityId });
+        ASSERT_TRUE(result.IsSuccess());
 
-        // Validate that the parent and the prefab under it and the entity inside the prefab are all deleted.
-        parentEntity = AzToolsFramework::GetEntityById(parentEntityId);
-        ASSERT_TRUE(parentEntity == nullptr);
-        entityToBePutUnderPrefab = AzToolsFramework::GetEntityById(entityToBePutUnderPrefabId);
-        ASSERT_TRUE(entityToBePutUnderPrefab == nullptr);
-        prefabContainerEntity = AzToolsFramework::GetEntityById(createdPrefabContainerId);
-        EXPECT_TRUE(prefabContainerEntity == nullptr);
+        // Verify that both the parent and its child entity are deleted.
+        AZ::Entity* parentEntity = AzToolsFramework::GetEntityById(parentEntityId);
+        EXPECT_TRUE(parentEntity == nullptr);
+        AZ::Entity* childEntity = AzToolsFramework::GetEntityById(childEntityId);
+        EXPECT_TRUE(childEntity == nullptr);
+
+        ValidateEntityNotUnderInstance(GetRootContainerEntityId(), parentEntityAlias);
+        ValidateEntityNotUnderInstance(GetRootContainerEntityId(), childEntityAlias);
+    }
+
+    TEST_F(PrefabDeleteTests, DeleteEntitiesAndAllDescendantsInInstance_DeletingEntityDeletesChildPrefabToo)
+    {
+        const AZStd::string parentEntityName = "ParentEntity";
+        const AZStd::string childEntityName = "ChildEntity";
+        const AZStd::string childPrefabName = "ChildPrefab";
+
+        AZ::IO::Path engineRootPath;
+        m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        AZ::IO::Path prefabFilepath(engineRootPath);
+        prefabFilepath.Append(childPrefabName);
+
+        AZ::EntityId parentEntityId = CreateEditorEntityUnderRoot(parentEntityName);
+        EntityAlias parentEntityAlias = FindEntityAliasInInstance(GetRootContainerEntityId(), parentEntityName);
+
+        AZ::EntityId childEntityId = CreateEditorEntity(childEntityName, parentEntityId);
+        AZ::EntityId childContainerId = CreateEditorPrefab(prefabFilepath, { childEntityId });
+        InstanceAlias childInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), childPrefabName);
+
+        // Delete the parent entity.
+        PrefabOperationResult result = m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance({ parentEntityId });
+        ASSERT_TRUE(result.IsSuccess());
+
+        // Validate that the parent and the prefab instance under it are deleted.
+        AZ::Entity* parentEntity = AzToolsFramework::GetEntityById(parentEntityId);
+        EXPECT_TRUE(parentEntity == nullptr);
+        AZ::Entity* childContainerEntity = AzToolsFramework::GetEntityById(childContainerId);
+        EXPECT_TRUE(childContainerEntity == nullptr);
+
+        ValidateEntityNotUnderInstance(GetRootContainerEntityId(), parentEntityAlias);
+        ValidateNestedInstanceNotUnderInstance(GetRootContainerEntityId(), childPrefabName);
     }
 } // namespace UnitTest

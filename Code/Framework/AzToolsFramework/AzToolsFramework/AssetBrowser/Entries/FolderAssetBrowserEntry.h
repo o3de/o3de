@@ -13,11 +13,6 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
-namespace AZ
-{
-    class ReflectContext;
-}
-
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -32,21 +27,24 @@ namespace AzToolsFramework
             AZ_RTTI(FolderAssetBrowserEntry, "{938E6FCD-1582-4B63-A7EA-5C4FD28CABDC}", AssetBrowserEntry);
             AZ_CLASS_ALLOCATOR(FolderAssetBrowserEntry, AZ::SystemAllocator, 0);
 
-            FolderAssetBrowserEntry() = default;
-            ~FolderAssetBrowserEntry() override = default;
-
-            static void Reflect(AZ::ReflectContext* context);
+            FolderAssetBrowserEntry();
+            ~FolderAssetBrowserEntry() override;
 
             AssetEntryType GetEntryType() const override;
-            bool IsGemsFolder() const;
 
             SharedThumbnailKey CreateThumbnailKey() override;
+
+            bool IsScanFolder() const;
+            const AZ::Uuid& GetFolderUuid() const;
+
+            static const FolderAssetBrowserEntry* GetFolderByUuid(const AZ::Uuid& folderUuid);
 
         protected:
             void UpdateChildPaths(AssetBrowserEntry* child) const override;
 
         private:
-            bool m_isGemsFolder = false;
+            bool m_isScanFolder = false;
+            AZ::Uuid m_folderUuid;
 
             AZ_DISABLE_COPY_MOVE(FolderAssetBrowserEntry);
         };

@@ -1,6 +1,15 @@
 ProductName: OneMeshOneMaterial.dbgsg
 debugSceneGraphVersion: 1
 OneMeshOneMaterial
+Node Name: RootNode
+Node Path: RootNode
+Node Type: RootBoneData
+	WorldTransform:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: Cube
 Node Path: RootNode.Cube
 Node Type: MeshData

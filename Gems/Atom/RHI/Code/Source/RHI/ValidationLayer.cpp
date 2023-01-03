@@ -24,29 +24,44 @@ namespace AZ
             ConsoleFunctorFlags::Null,
             "Use this cvar to override device validation for debug builds.");
 
-        static const char* ValidationCommandLineOption = "rhi-device-validation";
-
-        AZStd::optional<ValidationMode> ReadValidationModeFromCommandArgs()
+        ValidationMode ReadValidationMode()
         {
+#if defined(AZ_RELEASE_BUILD)
+            // Always disabled in Release configuration.
+            return ValidationMode::Disabled;
+#else
+            const char* ValidationCommandLineOption = "rhi-device-validation";
+            const char* ValidationSetting = "/O3DE/Atom/rhi-device-validation";
+
             ValidationMode mode = ValidationMode::Disabled;
-            bool debugBuildDeviceValidationOverride = true;
-            if (auto* console = Interface<IConsole>::Get())
+
+            // Always enabled in Debug configuration by default, unless overriden by cvar, command line or setting registry.
+            if constexpr (AZ::RHI::BuildOptions::IsDebugBuild)
             {
-                console->GetCvarValue("r_debugBuildDeviceValidationOverride", debugBuildDeviceValidationOverride);
+                mode = r_debugBuildDeviceValidationOverride ? ValidationMode::Enabled : ValidationMode::Disabled;
             }
 
-            bool isDebugBuild = AZ::RHI::BuildOptions::IsDebugBuild;
-            if (isDebugBuild && debugBuildDeviceValidationOverride)
-            {
-                mode = ValidationMode::Enabled;
-            }
+            AZStd::string validationValue;
 
+            // Check command line option first.
             const AzFramework::CommandLine* commandLine = nullptr;
             AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
             if (commandLine)
             {
-                AZStd::string validationValue = RHI::GetCommandLineValue(ValidationCommandLineOption);
-                
+                validationValue = RHI::GetCommandLineValue(ValidationCommandLineOption);
+            }
+
+            // Check settings registry next.
+            if (validationValue.empty())
+            {
+                if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
+                {
+                    settingsRegistry->Get(validationValue, ValidationSetting);
+                }
+            }
+
+            if (!validationValue.empty())
+            {
                 if (AzFramework::StringFunc::Equal(validationValue.c_str(), "disable"))
                 {
                     mode = ValidationMode::Disabled;
@@ -63,12 +78,10 @@ namespace AZ
                 {
                     mode = ValidationMode::GPU;
                 }
-                return AZStd::optional<ValidationMode>(mode);
             }
-            else
-            {
-                return AZStd::optional<ValidationMode>();
-            }
+
+            return mode;
+#endif // defined(AZ_RELEASE_BUILD)
         }
     }
 }

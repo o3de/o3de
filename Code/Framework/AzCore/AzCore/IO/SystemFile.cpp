@@ -66,6 +66,12 @@ namespace AZ::IO
     {
     }
 
+    SystemFile::SystemFile(const char* fileName, int mode, int platformFlags)
+        : SystemFile()
+    {
+        Open(fileName, mode, platformFlags);
+    }
+
     SystemFile::~SystemFile()
     {
         if (IsOpen())
@@ -416,4 +422,9 @@ namespace AZ::IO
         }
     }
 
+    int FileDescriptorCapturer::WriteBypassingCapture(const void* data, unsigned int size)
+    {
+        const int writeDescriptor = m_dupSourceDescriptor == -1 ? m_sourceDescriptor : m_dupSourceDescriptor;
+        return AZ::IO::PosixInternal::Write(writeDescriptor, data, size);
+    }
 } // namespace AZ::IO

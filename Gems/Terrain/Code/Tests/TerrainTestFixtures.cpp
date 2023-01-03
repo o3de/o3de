@@ -11,7 +11,9 @@
 
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
+#include <Atom/RPI.Public/RPISystem.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Scene/SceneSystemComponent.h>
 #include <GradientSignal/Components/GradientSurfaceDataComponent.h>
 #include <GradientSignal/Components/GradientTransformComponent.h>
 #include <GradientSignal/Components/RandomGradientComponent.h>
@@ -44,6 +46,7 @@ namespace UnitTest
         AddDynamicModulePaths({ "LmbrCentral", "SurfaceData", "GradientSignal" });
 
         AddComponentDescriptors({
+            AzFramework::SceneSystemComponent::CreateDescriptor(),
             AzFramework::TransformComponent::CreateDescriptor(),
 
             Terrain::TerrainHeightGradientListComponent::CreateDescriptor(),
@@ -78,6 +81,12 @@ namespace UnitTest
         SurfaceData::SurfaceDataProviderRequestBus::GetOrCreateContext();
         SurfaceData::SurfaceDataModifierRequestBus::GetOrCreateContext();
         LmbrCentral::ShapeComponentRequestsBus::GetOrCreateContext();
+
+        // Call the AZ::RPI::RPISystem reflection for use with the terrain rendering component unit tests.
+        auto serializeContext = AZ::ReflectionEnvironment::GetReflectionManager()
+            ? AZ::ReflectionEnvironment::GetReflectionManager()->GetReflectContext<AZ::SerializeContext>()
+            : nullptr;
+        AZ::RPI::RPISystem::Reflect(serializeContext);
     }
 
     void TerrainBaseFixture::SetupCoreSystems()
@@ -183,12 +192,22 @@ namespace UnitTest
     // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
     // on a test-by-test basis.
     AZStd::unique_ptr<Terrain::TerrainSystem> TerrainBaseFixture::CreateAndActivateTerrainSystem(
-        float queryResolution, AZ::Aabb worldBounds) const
+        float queryResolution, AzFramework::Terrain::FloatRange heightBounds) const
+    {
+        const float defaultSurfaceQueryResolution = 1.0f;
+        return CreateAndActivateTerrainSystem(queryResolution, defaultSurfaceQueryResolution, heightBounds);
+    }
+
+    // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
+    // on a test-by-test basis.
+    AZStd::unique_ptr<Terrain::TerrainSystem> TerrainBaseFixture::CreateAndActivateTerrainSystem(
+        float heightQueryResolution, float surfaceQueryResolution, const AzFramework::Terrain::FloatRange& heightBounds) const
     {
         // Create the terrain system and give it one tick to fully initialize itself.
         auto terrainSystem = AZStd::make_unique<Terrain::TerrainSystem>();
-        terrainSystem->SetTerrainAabb(worldBounds);
-        terrainSystem->SetTerrainHeightQueryResolution(queryResolution);
+        terrainSystem->SetTerrainHeightBounds(heightBounds);
+        terrainSystem->SetTerrainHeightQueryResolution(heightQueryResolution);
+        terrainSystem->SetTerrainSurfaceDataQueryResolution(surfaceQueryResolution);
         terrainSystem->Activate();
         AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.f, AZ::ScriptTimePoint{});
         return terrainSystem;
@@ -224,7 +243,8 @@ namespace UnitTest
 
         // Create the terrain system (do this after creating the terrain layer entity to ensure that we don't need any data refreshes)
         // Also ensure to do this after creating the global JobManager.
-        m_terrainSystem = CreateAndActivateTerrainSystem(queryResolution, worldBounds);
+        AzFramework::Terrain::FloatRange heightBounds = { worldBounds.GetMin().GetZ(), worldBounds.GetMax().GetZ() };
+        m_terrainSystem = CreateAndActivateTerrainSystem(queryResolution, heightBounds);
     }
 
     void TerrainBaseFixture::DestroyTestTerrainSystem()
@@ -369,8 +389,50 @@ namespace UnitTest
 
         // Create the terrain system (do this after creating the terrain layer entity to ensure that we don't need any data refreshes)
         // Also ensure to do this after creating the global JobManager.
-        m_terrainSystem = CreateAndActivateTerrainSystem(queryResolution, worldBounds);
+        AzFramework::Terrain::FloatRange heightBounds = { worldBounds.GetMin().GetZ(), worldBounds.GetMax().GetZ() };
+        m_terrainSystem = CreateAndActivateTerrainSystem(queryResolution, heightBounds);
     }
 
+    TerrainSystemTestFixture::TerrainSystemTestFixture()
+        : m_restoreFileIO(m_fileIOMock)
+    {
+        // Install Mock File IO, since the ShaderMetricsSystem inside of Atom's RPISystem will try to read/write a file.
+        AZ::IO::MockFileIOBase::InstallDefaultReturns(m_fileIOMock);
+    }
+
+    void TerrainSystemTestFixture::SetUp()
+    {
+        UnitTest::TerrainTestFixture::SetUp();
+
+        // Create a system entity with a SceneSystemComponent for Atom and a TerrainSystemComponent for the TerrainWorldComponent.
+        // However, we don't initialize and activate it until *after* the RPI system is initialized, since the TerrainSystemComponent
+        // relies on the RPI.
+        m_systemEntity = CreateEntity();
+        m_systemEntity->CreateComponent<AzFramework::SceneSystemComponent>();
+        m_systemEntity->CreateComponent<Terrain::TerrainSystemComponent>();
+
+        // Create a stub RHI for use by Atom
+        m_rhiFactory.reset(aznew UnitTest::StubRHI::Factory());
+
+        // Create the Atom RPISystem
+        AZ::RPI::RPISystemDescriptor rpiSystemDescriptor;
+        m_rpiSystem = AZStd::make_unique<AZ::RPI::RPISystem>();
+        m_rpiSystem->Initialize(rpiSystemDescriptor);
+
+        // Now that the RPISystem is activated, activate the system entity.
+        m_systemEntity->Init();
+        m_systemEntity->Activate();
+    }
+
+    void TerrainSystemTestFixture::TearDown()
+    {
+        m_rpiSystem->Shutdown();
+        m_rpiSystem = nullptr;
+        m_rhiFactory = nullptr;
+
+        m_systemEntity.reset();
+
+        UnitTest::TerrainTestFixture::TearDown();
+    }
 }
 

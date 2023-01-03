@@ -1,0 +1,68 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic lets you use the EvaluatePixelGeometry function in this file without making it the final EvaluatePixelGeometry
+// used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
+//
+#ifndef EvaluatePixelGeometry
+#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_EnhancedPBR(IN, isFrontFace)
+#endif
+
+#include "../StandardPBR/StandardPBR_PixelGeometryEval.azsli"
+
+#include <Atom/Features/Debug.azsli>
+
+PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
+    inout float4 positionSV,
+    float3 positionWS,
+    float3 normal,
+    float3 tangent,
+    float3 bitangent,
+    float2 uvs[UvSetCount],
+    float2 detailUvs[UvSetCount],
+    bool isFrontFace)
+{
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace);
+
+    // ------- Detail UVs -------
+
+    geoData.detailUvs = detailUvs;
+
+    // ------- Parallax -------
+
+    geoData.isDisplacementClipped = false;
+
+    if(ShouldHandleParallax())
+    {
+        SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
+                      geoData.uvs, geoData.detailUvs, isFrontFace, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
+    }
+
+    return geoData;
+}
+
+PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(inout VsOutput IN, bool isFrontFace)
+{
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+
+    return EvaluatePixelGeometry_EnhancedPBR(
+        IN.position,
+        IN.worldPosition,
+        vertexNormal,
+        vertexTangent,
+        vertexBitangent,
+        IN.uvs,
+        IN.detailUvs,
+        isFrontFace);
+}

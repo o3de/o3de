@@ -25,7 +25,7 @@ namespace CryEditPythonBindingsUnitTests
 {
 
     class CryEditPythonBindingsFixture
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
@@ -96,7 +96,7 @@ namespace CryEditPythonBindingsUnitTests
         QTimer timer;
         loop.connect(&timer, &QTimer::timeout, [&numTicks]()
         {
-            AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.01f, AZ::ScriptTimePoint(AZStd::chrono::system_clock().now()));
+            AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.01f, AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
             ++numTicks;
         });
         timer.start(100);

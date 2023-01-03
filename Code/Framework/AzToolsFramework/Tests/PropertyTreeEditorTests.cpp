@@ -190,7 +190,7 @@ namespace UnitTest
     };
 
     class PropertyTreeEditorTests
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
@@ -607,7 +607,7 @@ namespace UnitTest
 
         // BuildPathsListWithTypes
         {
-            static auto stringContains = [](const AZStd::string& data, const char* subString) -> bool
+            [[maybe_unused]] static auto stringContains = [](const AZStd::string& data, const char* subString) -> bool
             {
                 return data.find(subString) != AZStd::string::npos;
             };

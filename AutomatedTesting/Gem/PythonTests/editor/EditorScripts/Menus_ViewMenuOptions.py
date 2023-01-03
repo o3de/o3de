@@ -27,7 +27,7 @@ def Menus_ViewMenuOptions_Work():
     """
 
     import editor_python_test_tools.hydra_editor_utils as hydra
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
     from editor_python_test_tools.utils import Report
 
     view_menu_options = [

@@ -17,8 +17,11 @@
 #include <CreateProjectCtrl.h>
 #include <TagWidget.h>
 #include <ProjectUtils.h>
+#include <AddRemoteTemplateDialog.h>
+#include <DownloadRemoteTemplateDialog.h>
 
 #include <AzCore/Math/Uuid.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzQtComponents/Components/FlowLayout.h>
 
 #include <QVBoxLayout>
@@ -38,9 +41,11 @@
 namespace O3DE::ProjectManager
 {
     constexpr const char* k_templateIndexProperty = "TemplateIndex";
+    constexpr const char* k_templateNameProperty = "TemplateName";
 
-    NewProjectSettingsScreen::NewProjectSettingsScreen(QWidget* parent)
+    NewProjectSettingsScreen::NewProjectSettingsScreen(DownloadController* downloadController, QWidget* parent)
         : ProjectSettingsScreen(parent)
+        , m_downloadController(downloadController)
     {
         const QString defaultName = GetDefaultProjectName();
         const QString defaultPath = QDir::toNativeSeparators(ProjectUtils::GetDefaultProjectPath() + "/" + defaultName);
@@ -95,6 +100,49 @@ namespace O3DE::ProjectManager
                             emit OnTemplateSelectionChanged(/*oldIndex=*/oldIndex, /*newIndex=*/m_selectedTemplateIndex);
                         }
                     }
+                    else if (button == m_remoteTemplateButton)
+                    {
+                        AddRemoteTemplateDialog* addRemoteTemplateDialog = new AddRemoteTemplateDialog(this);
+                        if (addRemoteTemplateDialog->exec() == QDialog::DialogCode::Accepted)
+                        {
+                            auto remoteTemplatesResult =
+                                PythonBindingsInterface::Get()->GetProjectTemplatesForRepo(addRemoteTemplateDialog->GetRepoPath());
+                            if (remoteTemplatesResult.IsSuccess() && !remoteTemplatesResult.GetValue().isEmpty())
+                            {
+                                // remove remote template button from layout so we can insert the new templates before it
+                                m_templateFlowLayout->removeWidget(m_remoteTemplateButton);
+
+                                int currentTemplateIndex = m_templates.size();
+                                const QVector<ProjectTemplateInfo>& remoteTemplates = remoteTemplatesResult.GetValue();
+                                for (const ProjectTemplateInfo& remoteTemplate : remoteTemplates)
+                                {
+                                    m_templates.push_back(remoteTemplate);
+
+                                    // create template button
+                                    QString projectPreviewPath = QDir(remoteTemplate.m_path).filePath(ProjectPreviewImagePath);
+                                    QFileInfo doesPreviewExist(projectPreviewPath);
+                                    if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
+                                    {
+                                        projectPreviewPath = ":/DefaultTemplate.png";
+                                    }
+                                    TemplateButton* templateButton =
+                                        new TemplateButton(projectPreviewPath, remoteTemplate.m_displayName, this);
+                                    templateButton->SetIsRemote(remoteTemplate.m_isRemote);
+                                    templateButton->setCheckable(true);
+                                    templateButton->setProperty(k_templateIndexProperty, currentTemplateIndex);
+                                    templateButton->setProperty(k_templateNameProperty, remoteTemplate.m_name);
+
+                                    m_projectTemplateButtonGroup->addButton(templateButton);
+                                    m_templateFlowLayout->addWidget(templateButton);
+                                    m_templateButtons.append(templateButton);
+                                    ++currentTemplateIndex;
+                                }
+
+                                // add remote template button back to layout
+                                m_templateFlowLayout->addWidget(m_remoteTemplateButton);
+                            }
+                        }
+                    }
                 });
 
             containerLayout->addWidget(templatesScrollArea);
@@ -105,6 +153,67 @@ namespace O3DE::ProjectManager
         QFrame* projectTemplateDetails = CreateTemplateDetails(s_templateDetailsContentMargin);
         projectTemplateDetails->setObjectName("projectTemplateDetails");
         m_horizontalLayout->addWidget(projectTemplateDetails);
+
+        connect(m_downloadController, &DownloadController::Done, this, &NewProjectSettingsScreen::HandleDownloadResult);
+        connect(m_downloadController, &DownloadController::ObjectDownloadProgress, this, &NewProjectSettingsScreen::HandleDownloadProgress);
+    }
+
+    void NewProjectSettingsScreen::HandleDownloadResult(const QString& templateName, bool succeeded)
+    {
+        auto foundButton = AZStd::ranges::find_if(
+            m_templateButtons,
+            [&templateName](const QAbstractButton* value)
+            {
+                return value->property(k_templateNameProperty) == templateName;
+            });
+
+        if (foundButton != m_templateButtons.end()  && succeeded)
+        {
+            // Convert button to point at the now downloaded template
+            auto templatesResult = PythonBindingsInterface::Get()->GetProjectTemplates();
+            if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
+            {
+                QVector<ProjectTemplateInfo> templates = templatesResult.GetValue();
+                auto foundTemplate = AZStd::ranges::find_if(
+                    templates,
+                    [&templateName](const ProjectTemplateInfo& value)
+                    {
+                        return value.m_name == templateName;
+                    });
+
+                if (foundTemplate != templates.end())
+                {
+                    int templateIndex = (*foundButton)->property(k_templateIndexProperty).toInt();
+                    m_templates[templateIndex] = (*foundTemplate);
+                    (*foundButton)->SetIsRemote(false);
+                }
+            }
+        }
+        else if (foundButton != m_templateButtons.end())
+        {
+            (*foundButton)->ShowDownloadProgress(false);
+        }
+    }
+
+    void NewProjectSettingsScreen::HandleDownloadProgress(const QString& templateName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes)
+    {
+        if (objectType != DownloadController::DownloadObjectType::Template)
+        {
+            return;
+        }
+
+        auto foundButton = AZStd::ranges::find_if(
+            m_templateButtons,
+            [&templateName](const QAbstractButton* value)
+            {
+                return value->property(k_templateNameProperty) == templateName;
+            });
+
+        if (foundButton != m_templateButtons.end())
+        {
+            float percentage = static_cast<float>(bytesDownloaded) / totalBytes;
+            (*foundButton)->SetProgressPercentage(percentage);
+        }
     }
 
     QString NewProjectSettingsScreen::GetDefaultProjectName()
@@ -129,6 +238,25 @@ namespace O3DE::ProjectManager
         if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
         {
             m_templates = templatesResult.GetValue();
+
+            // Add in remote templates
+            auto remoteTemplatesResult = PythonBindingsInterface::Get()->GetProjectTemplatesForAllRepos();
+            if (remoteTemplatesResult.IsSuccess() && !remoteTemplatesResult.GetValue().isEmpty())
+            {
+                const QVector<ProjectTemplateInfo>& remoteTemplates = remoteTemplatesResult.GetValue();
+                for (const ProjectTemplateInfo& remoteTemplate : remoteTemplates)
+                {
+                    const auto found = AZStd::ranges::find_if(m_templates,
+                        [remoteTemplate](const ProjectTemplateInfo& value)
+                        {
+                            return remoteTemplate.m_name == value.m_name;
+                        });
+                    if (found == m_templates.end())
+                    {
+                        m_templates.append(remoteTemplate);
+                    }
+                }
+            }
 
             // sort alphabetically by display name (but putting Standard first) because they could be in any order
             std::sort(m_templates.begin(), m_templates.end(), [](const ProjectTemplateInfo& arg1, const ProjectTemplateInfo& arg2)
@@ -157,13 +285,20 @@ namespace O3DE::ProjectManager
                     projectPreviewPath = ":/DefaultTemplate.png";
                 }
                 TemplateButton* templateButton = new TemplateButton(projectPreviewPath, projectTemplate.m_displayName, this);
+                templateButton->SetIsRemote(projectTemplate.m_isRemote);
                 templateButton->setCheckable(true);
                 templateButton->setProperty(k_templateIndexProperty, index);
+                templateButton->setProperty(k_templateNameProperty, projectTemplate.m_name);
                 
                 m_projectTemplateButtonGroup->addButton(templateButton);
-
                 m_templateFlowLayout->addWidget(templateButton);
+                m_templateButtons.append(templateButton);
             }
+
+            // Insert the add a remote template button
+            m_remoteTemplateButton = new TemplateButton(":/DefaultTemplate.png", tr("Add remote Template"), this);
+            m_projectTemplateButtonGroup->addButton(m_remoteTemplateButton);
+            m_templateFlowLayout->addWidget(m_remoteTemplateButton);
 
             // Select the first project template (default selection).
             SelectProjectTemplate(0, /*blockSignals=*/true);
@@ -227,6 +362,10 @@ namespace O3DE::ProjectManager
             browseCatalogLabel->setWordWrap(true);
             templateDetailsLayout->addWidget(browseCatalogLabel);
 
+            m_downloadTemplateButton = new QPushButton(tr("Download Template"), this);
+            m_downloadTemplateButton->setVisible(false);
+            templateDetailsLayout->addWidget(m_downloadTemplateButton);
+
             QPushButton* configureGemsButton = new QPushButton(tr("Configure with more Gems"), this);
             connect(configureGemsButton, &QPushButton::clicked, this, [=]()
                 {
@@ -238,11 +377,38 @@ namespace O3DE::ProjectManager
         return projectTemplateDetails;
     }
 
+    void NewProjectSettingsScreen::StartTemplateDownload(const QString& templateName, const QString& destinationPath)
+    {
+        AZ_Assert(m_downloadController, "DownloadController must exist.");
+        m_downloadController->AddObjectDownload(templateName, destinationPath, DownloadController::DownloadObjectType::Template);
+        auto foundButton = AZStd::ranges::find_if(
+            m_templateButtons,
+            [&templateName](const QAbstractButton* value)
+            {
+                return value->property(k_templateNameProperty) == templateName;
+            });
+
+        if (foundButton != m_templateButtons.end())
+        {
+            (*foundButton)->ShowDownloadProgress(true);
+        }
+    }
+
     void NewProjectSettingsScreen::UpdateTemplateDetails(const ProjectTemplateInfo& templateInfo)
     {
         m_templateDisplayName->setText(templateInfo.m_displayName);
         m_templateSummary->setText(templateInfo.m_summary);
         m_templateIncludedGems->Update(templateInfo.m_includedGems);
+        m_downloadTemplateButton->setVisible(templateInfo.m_isRemote);
+        m_downloadTemplateButton->disconnect();
+        connect(m_downloadTemplateButton, &QPushButton::clicked, this, [&, templateInfo]()
+                {
+                    DownloadRemoteTemplateDialog* downloadRemoteTemplateDialog = new DownloadRemoteTemplateDialog(templateInfo, this);
+                    if (downloadRemoteTemplateDialog->exec() == QDialog::DialogCode::Accepted)
+                    {
+                        StartTemplateDownload(templateInfo.m_name, downloadRemoteTemplateDialog->GetInstallPath());
+                    }
+                });
     }
 
     void NewProjectSettingsScreen::SelectProjectTemplate(int index, bool blockSignals)
@@ -267,6 +433,17 @@ namespace O3DE::ProjectManager
             m_projectTemplateButtonGroup->blockSignals(false);
         }
     }
+
+    AZ::Outcome<void, QString> NewProjectSettingsScreen::Validate() const
+    {
+        if (m_selectedTemplateIndex != -1 && m_templates[m_selectedTemplateIndex].m_isRemote)
+        {
+            return AZ::Failure<QString>(tr("You cannot create a new project with a template that has not been downloaded. Please download it before proceeding."));
+        }
+
+        return ProjectSettingsScreen::Validate();
+    }
+
     void NewProjectSettingsScreen::OnProjectNameUpdated()
     {
         if (ValidateProjectName() && !m_userChangedProjectPath)

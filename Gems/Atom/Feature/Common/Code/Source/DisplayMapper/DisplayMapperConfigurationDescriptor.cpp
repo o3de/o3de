@@ -7,6 +7,8 @@
  */
 
 
+#include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -103,39 +105,28 @@ namespace AZ
             m_gamma = displayMapperParameters.m_gamma;
         }
 
+        AZ_ENUM_DEFINE_REFLECT_UTILITIES(DisplayMapperOperationType);
+
         void DisplayMapperConfigurationDescriptor::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Enum<DisplayMapperOperationType>()
-                    ->Value("Aces", DisplayMapperOperationType::Aces)
-                    ->Value("AcesLut", DisplayMapperOperationType::AcesLut)
-                    ->Value("Passthrough", DisplayMapperOperationType::Passthrough)
-                    ->Value("GammaSRGB", DisplayMapperOperationType::GammaSRGB)
-                    ->Value("Reinhard", DisplayMapperOperationType::Reinhard)
-                    ->Value("Invalid", DisplayMapperOperationType::Invalid)
-                    ;
+                DisplayMapperOperationTypeReflect(*serializeContext);
                 
                 serializeContext->Class<DisplayMapperConfigurationDescriptor>()
-                    ->Version(2)
+                    ->Version(3)
                     ->Field("Name", &DisplayMapperConfigurationDescriptor::m_name)
                     ->Field("OperationType", &DisplayMapperConfigurationDescriptor::m_operationType)
                     ->Field("LdrGradingLutEnabled", &DisplayMapperConfigurationDescriptor::m_ldrGradingLutEnabled)
                     ->Field("LdrColorGradingLut", &DisplayMapperConfigurationDescriptor::m_ldrColorGradingLut)
                     ->Field("AcesParameterOverrides", &DisplayMapperConfigurationDescriptor::m_acesParameterOverrides)
                 ;
+
             }
 
             if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->Class<DisplayMapperOperationType>()
-                    ->Enum<(uint32_t)DisplayMapperOperationType::Aces>("DisplayMapperOperationType_Aces")
-                    ->Enum<(uint32_t)DisplayMapperOperationType::AcesLut>("DisplayMapperOperationType_AcesLut")
-                    ->Enum<(uint32_t)DisplayMapperOperationType::Passthrough>("DisplayMapperOperationType_Passthrough")
-                    ->Enum<(uint32_t)DisplayMapperOperationType::GammaSRGB>("DisplayMapperOperationType_GammaSRGB")
-                    ->Enum<(uint32_t)DisplayMapperOperationType::Reinhard>("DisplayMapperOperationType_Reinhard")
-                    ->Enum<(uint32_t)DisplayMapperOperationType::Invalid>("DisplayMapperOperationType_Invalid")
-                    ;
+                DisplayMapperOperationTypeReflect(*behaviorContext);
             }
         }
 

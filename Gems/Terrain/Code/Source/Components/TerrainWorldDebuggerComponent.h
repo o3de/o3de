@@ -24,6 +24,47 @@ namespace LmbrCentral
 
 namespace Terrain
 {
+    class TerrainDebugQueryVisualizerConfig
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(TerrainDebugQueryVisualizerConfig, AZ::SystemAllocator, 0);
+        AZ_RTTI(TerrainDebugQueryVisualizerConfig, "{6FA6540D-D90A-44AC-8F5D-35071689291B}");
+
+        TerrainDebugQueryVisualizerConfig() = default;
+        virtual ~TerrainDebugQueryVisualizerConfig() = default;
+
+        bool DrawQueriesDisabled()
+        {
+            return !m_drawQueries;
+        }
+
+        bool DisableHeights()
+        {
+            return !(m_drawQueries && m_drawHeights);
+        }
+
+        bool DisableNormals()
+        {
+            return !(m_drawQueries && m_drawNormals);
+        }
+
+        bool DisableCenterPosition()
+        {
+            return !m_drawQueries || m_useCameraPosition;
+        }
+
+        bool m_drawQueries{ false };
+        AzFramework::Terrain::TerrainDataRequests::Sampler m_sampler{ AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR };
+        size_t m_pointsPerDirection{ 32 };
+        float m_spacing{ 0.5f };
+        bool m_drawHeights{ true };
+        float m_heightPointSize{ 1.0f / 16.0f };
+        bool m_drawNormals{ true };
+        float m_normalHeight{ 1.0f };
+        bool m_useCameraPosition{ true };
+        AZ::Vector3 m_centerPosition{ AZ::Vector3(0.0f) };
+    };
+
     class TerrainWorldDebuggerConfig
         : public AZ::ComponentConfig
     {
@@ -34,6 +75,8 @@ namespace Terrain
 
         bool m_drawWireframe{ true };
         bool m_drawWorldBounds{ true };
+        bool m_drawLastDirtyRegion{ false };
+        TerrainDebugQueryVisualizerConfig m_debugQueries;
     };
 
 
@@ -112,8 +155,10 @@ namespace Terrain
 
         void RebuildSectorWireframe(WireframeSector& sector, float gridResolution);
         void MarkDirtySectors(const AZ::Aabb& dirtyRegion);
+        void DrawLastDirtyRegion(AzFramework::DebugDisplayRequests& debugDisplay);
         void DrawWorldBounds(AzFramework::DebugDisplayRequests& debugDisplay);
         void DrawWireframe(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay);
+        void DrawQueries(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay);
 
         // Each sector contains an N x N grid of squares that it will draw.  Since this is a count of the number of terrain grid points
         // in each direction, the actual world size will depend on the terrain grid resolution in each direction.
@@ -134,5 +179,7 @@ namespace Terrain
 
         // The size in sectors of our wireframe grid in each direction (i.e. a 5 x 5 sector grid has a sectorGridSize of 5)
         int32_t m_sectorGridSize{ 0 };
+
+        AZ::Aabb m_lastDirtyRegion{ AZ::Aabb::CreateNull() };
     };
 }

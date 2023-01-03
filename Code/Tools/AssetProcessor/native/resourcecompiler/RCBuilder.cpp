@@ -76,7 +76,7 @@ namespace AssetProcessor
 
             descriptor.m_additionalFingerprintInfo = extraInformationForFingerprinting;
 
-            bool isCopyJob = (platformSpec == AssetInternalSpec::Copy);
+            const bool isCopyJob = (platformSpec == AssetInternalSpec::Copy);
 
             // Temporary solution to get around the fact that we don't have job dependencies
             if (isCopyJob)

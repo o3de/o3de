@@ -19,6 +19,7 @@ namespace AZStd
     using std::atan2;
     using std::ceil;
     using std::cos;
+    using std::exp;
     using std::exp2;
     using std::floor;
     using std::fmod;
@@ -75,4 +76,23 @@ namespace AZStd
     {
         return Internal::lerp(a, b, t);
     }
+
+// When using -ffast-math flag INFs and NaNs are not handled and
+// it is expected that std::isinf() and std::isnan() have undefined behaviour.
+// In this case we will provide a replacement following IEEE 754 standard.
+#ifdef __FAST_MATH__
+    constexpr bool isinf(float f) noexcept
+    {
+        union { float f; uint32_t x; } u = { f };
+        return (u.x & 0x7FFFFFFFU) == 0x7F800000U;
+    }
+    constexpr bool isnan(float f) noexcept
+    {
+        union { float f; uint32_t x; } u = { f };
+        return !isinf(f) && ((u.x) & 0x7F800000U) == 0x7F800000U;
+    }
+#else
+    using std::isinf;
+    using std::isnan;
+#endif
 } // namespace AZStd

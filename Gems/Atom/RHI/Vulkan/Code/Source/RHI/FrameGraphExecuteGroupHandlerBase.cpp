@@ -26,7 +26,14 @@ namespace AZ
         void FrameGraphExecuteGroupHandlerBase::End()
         {
             EndInternal();
-            m_device->GetCommandQueueContext().GetCommandQueue(m_hardwareQueueClass).ExecuteWork(AZStd::move(m_workRequest));
+            CommandQueue* cmdQueue = &m_device->GetCommandQueueContext().GetCommandQueue(m_hardwareQueueClass);
+            cmdQueue->ExecuteWork(AZStd::move(m_workRequest));
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+            //Cache the name of the scope we just queued and wait for it to finish on the cpu
+            m_device->SetLastExecutingScope(m_workRequest.m_commandList->GetName().GetStringView());
+            cmdQueue->FlushCommands();
+            cmdQueue->WaitForIdle();
+#endif
             m_isExecuted = true;
         }
 

@@ -256,13 +256,6 @@ namespace EMotionFX
                     mesh, Mesh::ATTRIB_BITANGENTS, /*keepOriginals=*/true,
                     AZ::Vector3(1.0f, 0.0f, 0.0f));
             }
-            else if (name == AZ::Name("COLOR"))
-            {
-                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector4, AtomMeshHelpers::Vector4>(sourceModelLod, modelVertexCount,
-                    name, bufferData,
-                    mesh, Mesh::ATTRIB_COLORS128, /*keepOriginals=*/false,
-                    AZ::Vector4(0.0f, 0.0f, 0.0f, 0.0f));
-            }
             else if (name == AZ::Name("SKIN_JOINTINDICES"))
             {
                 // Atom stores the skin indices as uint16, but the buffer itself is a buffer of uint32 with two id's per element
@@ -1600,38 +1593,6 @@ namespace EMotionFX
         m_indices = (uint32*)MCore::AlignedRealloc(m_indices, sizeof(uint16) * m_numIndices, 32, EMFX_MEMCATEGORY_GEOMETRY_MESHES, Mesh::MEMORYBLOCK_ID);
         return result;
     }
-
-
-    // function to convert the 128bit colors into 32bit ones, if they exist
-    void Mesh::ConvertTo32BitColors()
-    {
-        // get the colors
-        MCore::RGBAColor*   colors128   = (MCore::RGBAColor*)FindOriginalVertexData(Mesh::ATTRIB_COLORS128);
-        uint32*             colors32    = (uint32*)FindOriginalVertexData(Mesh::ATTRIB_COLORS32);
-
-        // check if 32bit colors already exist or 128bit colors do not exist
-        if (colors128 == nullptr || colors32)
-        {
-            return;
-        }
-
-        // get the number of original vertices
-        const uint32 numVertices = GetNumVertices();
-
-        // create new vertex attribute layer for the 32bit colors
-        VertexAttributeLayerAbstractData* layer = VertexAttributeLayerAbstractData::Create(numVertices, Mesh::ATTRIB_COLORS32, sizeof(uint32));
-
-        // fill the layer with the converted float colors
-        uint32* data = (uint32*)layer->GetData();
-        for (uint32 i = 0; i < numVertices; ++i)
-        {
-            data[i] = colors128[i].ToInt();
-        }
-
-        // add the new layer
-        AddVertexAttributeLayer(layer);
-    }
-
 
     // extract the original vertex positions
     void Mesh::ExtractOriginalVertexPositions(AZStd::vector<AZ::Vector3>& outPoints) const

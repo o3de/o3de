@@ -80,7 +80,7 @@ namespace JsonSerializationTests
     };
 
     using MaterialPropertyValueSourceDataSerializerTestTypes = ::testing::Types<MaterialPropertyValueSourceDataSerializerTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(MaterialPropertyValueSourceDataTests, JsonSerializerConformityTests, MaterialPropertyValueSourceDataSerializerTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(MaterialPropertyValueSourceDataTests, JsonSerializerConformityTests, MaterialPropertyValueSourceDataSerializerTestTypes));
 } // namespace JsonSerializationTests
 
 namespace UnitTest
@@ -241,7 +241,7 @@ namespace UnitTest
         for (uint32_t i = static_cast<uint32_t>(MaterialPropertyDataType::Invalid) + 1u; i < propertyTypeCount; ++i)
         {
             MaterialPropertyDataType type = static_cast<MaterialPropertyDataType>(i);
-            azsprintf(inputJson,
+            azsnprintf(inputJson, AZ_ARRAY_SIZE(inputJson),
                 R"(
                     {
                         "propertyName": "general.%s",
@@ -265,7 +265,6 @@ namespace UnitTest
                     "Dummy.materialtype",
                     m_materialTypeCreator.GetMaterialPropertiesLayout(),
                     m_materialTypeCreator.GetMaterialShaderResourceGroupLayout(),
-                    m_materialTypeCreator.GetShaderCollection(),
                     &nameContext
                 )
             );

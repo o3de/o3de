@@ -19,6 +19,8 @@
 
 #include <QModelIndex>
 #include <QPointer>
+#include <QDialog>
+#include <QMessageBox>
 #endif
 
 class QTimer;
@@ -36,8 +38,11 @@ namespace AzToolsFramework
             : public QTreeViewWithStateSaving
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler
+            , public AssetBrowserInteractionNotificationBus::Handler
+
         {
             Q_OBJECT
+
         public:
             explicit AssetBrowserTreeView(QWidget* parent = nullptr);
             ~AssetBrowserTreeView() override;
@@ -49,14 +54,24 @@ namespace AzToolsFramework
 
             //! Set unique asset browser name, used to persist tree expansion states
             void SetName(const QString& name);
+            QString& GetName(){ return m_name; }
 
             // O3DE_DEPRECATED
             void LoadState(const QString& name);
             void SaveState() const;
 
-            AZStd::vector<AssetBrowserEntry*> GetSelectedAssets() const;
+            //! Gets the selected entries.  if includeProducts is false, it will only
+            //! count sources and folders - many common operations such as deleting, renaming, etc,
+            //! can only work on sources and folders.
+            AZStd::vector<AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
 
             void SelectFolder(AZStd::string_view folderPath);
+
+            void DeleteEntries();
+            void RenameEntry();
+            void DuplicateEntries();
+            void MoveEntries();
+            void AfterRename(QString newVal);
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
@@ -79,6 +94,8 @@ namespace AzToolsFramework
             template <class TEntryType>
             const TEntryType* GetEntryFromIndex(const QModelIndex& index) const;
 
+            const AssetBrowserEntry* GetEntryByPath(QStringView path);
+
             bool IsIndexExpandedByDefault(const QModelIndex& index) const override;
 
         Q_SIGNALS:
@@ -86,16 +103,19 @@ namespace AzToolsFramework
             void ClearStringFilter();
             void ClearTypeFilter();
 
-        protected Q_SLOTS:
-            void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
-            void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
+        public Q_SLOTS:
+            void OpenItemForEditing(const QModelIndex& index);
 
         protected:
             QModelIndexList selectedIndexes() const override;
 
+        protected Q_SLOTS:
+            void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
+            void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
+
         private:
-            QPointer<AssetBrowserModel> m_assetBrowserModel = nullptr;
-            QPointer<AssetBrowserFilterModel> m_assetBrowserSortFilterProxyModel = nullptr;
+            QPointer<AssetBrowserModel> m_assetBrowserModel;
+            QPointer<AssetBrowserFilterModel> m_assetBrowserSortFilterProxyModel;
             EntryDelegate* m_delegate = nullptr;
 
             bool m_expandToEntriesByDefault = false;
@@ -110,6 +130,9 @@ namespace AzToolsFramework
 
             //! Grab one entry from the source thumbnail list and update it
             void UpdateSCThumbnails();
+
+            //! AssetBrowserInteractionNotificationBus::Handler overrides...
+            void AddSourceFileCreators(const char* fullSourceFolderName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators) override;
 
         private Q_SLOTS:
             void OnContextMenu(const QPoint& point);
@@ -129,5 +152,8 @@ namespace AzToolsFramework
             }
             return nullptr;
         }
+
+        void MoveEntry(AZStd::string_view fromPath, AZStd::string_view toPath, bool isFolder, QWidget* parent = nullptr);
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

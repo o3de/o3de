@@ -170,6 +170,7 @@ namespace AzToolsFramework
         m_handler = nullptr;
         m_isMultiSizeContainer = false;
         m_isFixedSizeOrSmartPtrContainer = false;
+        m_custom = false;
         if (m_selectionEnabled) 
         {
             SetSelected(false);
@@ -197,6 +198,9 @@ namespace AzToolsFramework
 
         if (!m_containerClearButton)
         {
+            QIcon icon = QIcon(QStringLiteral(":/Cursors/Grab_release.svg"));
+            this->setCursor(QCursor(icon.pixmap(16), 5, 2));
+
             // add those extra controls on the right hand side
             m_containerClearButton = new QToolButton(this);
             m_containerClearButton->setAutoRaise(true);
@@ -238,6 +242,8 @@ namespace AzToolsFramework
         m_sourceNode = dataNode;
         m_treeDepth = depth;
         m_requestedLabelWidth = labelWidth;
+
+        this->unsetCursor();
 
         // discover stuff about node.
 
@@ -367,8 +373,6 @@ namespace AzToolsFramework
             delete m_containerClearButton;
             delete m_containerAddButton;
         }
-
-        this->unsetCursor();
 
         if ((m_parentRow) && (m_parentRow->IsContainerEditable()))
         {

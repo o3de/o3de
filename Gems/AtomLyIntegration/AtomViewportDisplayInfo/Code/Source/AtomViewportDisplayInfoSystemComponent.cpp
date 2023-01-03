@@ -152,10 +152,13 @@ namespace AZ::Render
 
         if (m_updateRootPassQuery)
         {
-            if (auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass())
+            if (auto currentPipeline = viewportContext->GetCurrentPipeline())
             {
-                rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
-                m_updateRootPassQuery = false;
+                if (auto rootPass = currentPipeline->GetRootPass())
+                {
+                    rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
+                    m_updateRootPassQuery = false;
+                }
             }
         }
 
@@ -244,6 +247,10 @@ namespace AZ::Render
     void AtomViewportDisplayInfoSystemComponent::DrawPassInfo()
     {
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
+        if (!viewportContext->GetCurrentPipeline())
+        {
+            return;
+        }
         auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
         const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
 
@@ -264,7 +271,7 @@ namespace AZ::Render
 
     void AtomViewportDisplayInfoSystemComponent::UpdateFramerate()
     {
-        auto currentTime = AZStd::chrono::system_clock::now();
+        auto currentTime = AZStd::chrono::steady_clock::now();
         while (!m_fpsHistory.empty() && (currentTime - m_fpsHistory.front()) > m_fpsInterval)
         {
             m_fpsHistory.pop_front();
@@ -292,8 +299,8 @@ namespace AZ::Render
 
         for (const auto& pool : stats->m_pools)
         {
-            deviceReserved += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_reservedInBytes;
-            deviceResident += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_residentInBytes;
+            deviceReserved += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes;
+            deviceResident += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_usedResidentInBytes;
         }
 
         // Query for available device memory
@@ -329,22 +336,29 @@ namespace AZ::Render
                 "VRAM (resident/reserved): %.2f / %.2f MiB | %.2f available", deviceResidentMB, deviceReservedMB, availableDeviceMemoryMB),
             deviceMemoryColor);
 
-        // RPI AssetStreamingImagePool usage
-        Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetStreamingPool();
+        // RPI default StreamingImagePool usage
+        Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetSystemStreamingPool();
         const RHI::HeapMemoryUsage& imagePoolMemoryUsage = streamingImagePool->GetRHIPool()->GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
 
-        float imagePoolReservedMB = static_cast<float>(imagePoolMemoryUsage.m_reservedInBytes) / MB;
+        float imagePoolUsedAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_usedResidentInBytes) / MB;
+        float imagePoolTotalAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_totalResidentInBytes) / MB;
         float imagePoolBudgetMB = static_cast<float>(imagePoolMemoryUsage.m_budgetInBytes) / MB;
+        bool supportTiledImage = streamingImagePool->GetRHIPool()->SupportTiledImage();
+        AZ::Color fontColor = AZ::Colors::White;
+        if (streamingImagePool->IsMemoryLow())
+        {
+            fontColor = AZ::Colors::Red;
+        }
 
         DrawLine(
-            AZStd::string::format("RPI AssetStreamingImagePool: %.2f / %.2f MiB", imagePoolReservedMB, imagePoolBudgetMB),
-            (imagePoolReservedMB > 0.99f * imagePoolBudgetMB) ? AZ::Colors::Red : AZ::Colors::White
+            AZStd::string::format("StreamingImagePool %s (used/allocated/budget): %.2f / %.2f/%.2f MiB", supportTiledImage?"Tiled":"", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
+            fontColor
         );
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawFramerate()
     {
-        AZStd::optional<AZStd::chrono::system_clock::time_point> lastTime;
+        AZStd::optional<AZStd::chrono::steady_clock::time_point> lastTime;
         double minFPS = DBL_MAX;
         double maxFPS = 0;
         AZStd::chrono::duration<double> deltaTime;

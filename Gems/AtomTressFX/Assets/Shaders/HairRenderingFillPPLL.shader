@@ -21,7 +21,7 @@
         "CullMode" : "None"
     },
 
-    "BlendState" : 
+    "GlobalTargetBlendState" : 
     {
         "Enable" : false
     },

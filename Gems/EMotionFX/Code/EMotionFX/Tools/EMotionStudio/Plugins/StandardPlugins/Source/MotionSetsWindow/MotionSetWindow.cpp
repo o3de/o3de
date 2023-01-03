@@ -1179,7 +1179,7 @@ namespace EMStudio
             }
 
             // Check if the motion is not valid, that means the motion is not loaded.
-            if (EMotionFX::Motion* motion = motionEntry->GetMotion())
+            if (motionEntry->GetMotion())
             {
                 // Calculcate how many motion sets except than the provided one use the given motion.
                 size_t numExternalUses = CalcNumMotionEntriesUsingMotionExcluding(motionEntry->GetFilename(), motionSet);
@@ -1617,7 +1617,12 @@ namespace EMStudio
                     for (size_t i = 0; i < selection.GetNumSelectedMotions(); ++i)
                     {
                         EMotionFX::Motion* motion = selection.GetMotion(i);
-                        AzQtComponents::ShowFileOnDesktop(motion->GetFileName());
+
+                        // The browser action should point to the source file's folder.
+                        AZStd::string fileName = motion->GetFileName();
+                        GetMainWindow()->GetFileManager()->RelocateToAssetSourceFolder(fileName);
+
+                        AzQtComponents::ShowFileOnDesktop(fileName.c_str());
                     }
                 });
         }

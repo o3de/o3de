@@ -14,7 +14,9 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/EditorToolBar.h>
+#include <AzToolsFramework/ActionManager/ToolBar/EditorToolBarArea.h>
 
 namespace AzToolsFramework
 {
@@ -30,12 +32,16 @@ namespace AzToolsFramework
         , private ActionManagerNotificationBus::Handler
     {
     public:
-        ToolBarManager();
+        ToolBarManager(QWidget* defaultParentWidget);
         virtual ~ToolBarManager();
+
+        static void Reflect(AZ::ReflectContext* context);
 
     private:
         // ToolBarManagerInterface overrides ...
         ToolBarManagerOperationResult RegisterToolBar(const AZStd::string& toolBarIdentifier, const ToolBarProperties& properties) override;
+        ToolBarManagerOperationResult RegisterToolBarArea(
+            const AZStd::string& toolBarAreaIdentifier, QMainWindow* mainWindow, Qt::ToolBarArea toolBarArea) override;
         ToolBarManagerOperationResult AddActionToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, int sortIndex) override;
         ToolBarManagerOperationResult AddActionWithSubMenuToToolBar(
@@ -47,14 +53,22 @@ namespace AzToolsFramework
         ToolBarManagerOperationResult RemoveActionsFromToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::vector<AZStd::string>& actionIdentifiers) override;
         ToolBarManagerOperationResult AddSeparatorToToolBar(const AZStd::string& toolBarIdentifier, int sortIndex) override;
-        ToolBarManagerOperationResult AddWidgetToToolBar(const AZStd::string& toolBarIdentifier, QWidget* widget, int sortIndex) override;
+        ToolBarManagerOperationResult AddWidgetToToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) override;
+        ToolBarManagerOperationResult AddToolBarToToolBarArea(
+            const AZStd::string& toolBarAreaIdentifier, const AZStd::string& toolBarIdentifier, int sortIndex) override;
         QToolBar* GetToolBar(const AZStd::string& toolBarIdentifier) override;
-        ToolBarManagerIntegerResult GetSortKeyOfActionInToolBar(const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const override;
+        ToolBarManagerIntegerResult GetSortKeyOfActionInToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const override;
+        ToolBarManagerIntegerResult GetSortKeyOfWidgetInToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier) const override;
 
         // ToolBarManagerInternalInterface overrides ...
         ToolBarManagerOperationResult QueueToolBarRefresh(const AZStd::string& toolBarIdentifier) override;
         ToolBarManagerOperationResult QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier) override;
         void RefreshToolBars() override;
+        void RefreshToolBarAreas() override;
+        ToolBarManagerStringResult SerializeToolBar(const AZStd::string& toolBarIdentifier) override;
 
         // SystemTickBus overrides ...
         void OnSystemTick() override;
@@ -63,10 +77,11 @@ namespace AzToolsFramework
         void OnActionStateChanged(AZStd::string actionIdentifier) override;
 
         AZStd::unordered_map<AZStd::string, EditorToolBar> m_toolBars;
+        AZStd::unordered_map<AZStd::string, EditorToolBarArea> m_toolBarAreas;
 
         AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> m_actionsToToolBarsMap;
-
         AZStd::unordered_set<AZStd::string> m_toolBarsToRefresh;
+        AZStd::unordered_set<AZStd::string> m_toolBarAreasToRefresh;
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
         ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;

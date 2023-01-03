@@ -119,6 +119,8 @@ namespace GraphCanvas
         GeneralNodeTitleGraphicsWidget(const AZ::EntityId& entityId);
         ~GeneralNodeTitleGraphicsWidget() override;
 
+        void Initialize();
+
         void Activate();
         void Deactivate();
 
@@ -176,6 +178,6 @@ namespace GraphCanvas
         const Styling::StyleHelper* m_paletteOverride;
         Styling::StyleHelper* m_colorOverride;        
 
-        Styling::StyleHelper m_styleHelper;        
+        Styling::StyleHelper m_styleHelper;
     };
 }

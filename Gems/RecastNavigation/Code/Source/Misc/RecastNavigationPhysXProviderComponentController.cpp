@@ -213,9 +213,13 @@ namespace RecastNavigation
                 continue;
             }
 
-            overlapHit.m_shape->GetGeometry(vertices, indices, nullptr);
+            // Create an AABB for the Recast tile in local space and pass it in to GetGeometry so that large geometry sets
+            // (like heightfields) can just return the subset of geometry that overlaps the AABB.
             auto pose = overlapHit.m_shape->GetLocalPose();
-            // Note: geometry data is in local space
+            AZ::Aabb localScanBounds = geometry.m_scanBounds.GetTranslated(-pose.first);
+            overlapHit.m_shape->GetGeometry(vertices, indices, &localScanBounds);
+
+            // Note: returned geometry data is also in local space
             AZ::Transform tBody = AZ::Transform::CreateFromQuaternionAndTranslation(body->GetOrientation(), body->GetPosition());
             AZ::Transform t = tBody * AZ::Transform::CreateTranslation(pose.first);
 
@@ -314,6 +318,7 @@ namespace RecastNavigation
 
                 AZStd::shared_ptr<TileGeometry> geometryData = AZStd::make_unique<TileGeometry>();
                 geometryData->m_worldBounds = tileVolume;
+                geometryData->m_scanBounds = scanVolume;
                 AppendColliderGeometry(*geometryData, results);
 
                 geometryData->m_tileX = x;
@@ -365,7 +370,7 @@ namespace RecastNavigation
         {
             AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometryAsync");
 
-            m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>();
+            m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>("RecastNavigation PhysX Wait");
             m_taskGraph.Reset();
 
             AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;

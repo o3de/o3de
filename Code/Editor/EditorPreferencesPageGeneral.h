@@ -45,7 +45,7 @@ private:
         AZ_TYPE_INFO(GeneralSettings, "{C2AE8F6D-7AA6-499E-A3E8-ECCD0AC6F3D2}")
 
         bool m_previewPanel;
-        bool m_enableSourceControl;
+        bool m_enableSourceControl = false;
         bool m_clearConsoleOnGameModeStart;
         AzToolsFramework::ConsoleColorTheme m_consoleBackgroundColorTheme;
         bool m_autoLoadLastLevel;
@@ -103,5 +103,4 @@ private:
     QIcon m_icon;
 };
 
-static const char* EditorPreferencesGeneralRestoreViewportCameraSettingName = "Restore Viewport Camera on Game Mode Exit";
-
+static constexpr const char* EditorPreferencesGeneralRestoreViewportCameraSettingName = "Restore Viewport Camera on Game Mode Exit";

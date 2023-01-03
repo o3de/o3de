@@ -73,7 +73,7 @@ namespace UnitTest
 
     // This is how long we wait when asked to wait a FULL duration.  This number should be as small as possible
     // for test efficiency while still being significant compared to the margin above.
-    constexpr AZStd::chrono::milliseconds WAIT_TIME_MS(60); 
+    constexpr AZStd::chrono::milliseconds WAIT_TIME_MS(60);
 
     TEST(Parallel, Semaphore_TryAcquireFor_WaitsMinimumTime)
     {
@@ -83,11 +83,11 @@ namespace UnitTest
         auto minDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
         auto minDurationWithMarginForError = minDuration - AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS);
 
-        auto startTime = AZStd::chrono::system_clock::now();
-        
+        auto startTime = AZStd::chrono::steady_clock::now();
+
         EXPECT_FALSE(sema.try_acquire_for(minDuration));
-        
-        auto actualDuration = AZStd::chrono::system_clock::now() - startTime;
+
+        auto actualDuration = AZStd::chrono::steady_clock::now() - startTime;
         EXPECT_GE(actualDuration, minDurationWithMarginForError);
     }
 
@@ -97,12 +97,12 @@ namespace UnitTest
         semaphore sema;
         auto minDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
         auto minDurationWithMarginForError = minDuration - AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS);
-        auto startTime = AZStd::chrono::system_clock::now();
+        auto startTime = AZStd::chrono::steady_clock::now();
         auto absTime = startTime + minDuration;
-        
+
         EXPECT_FALSE(sema.try_acquire_until(absTime));
-        
-        auto duration = AZStd::chrono::system_clock::now() - startTime;
+
+        auto duration = AZStd::chrono::steady_clock::now() - startTime;
         EXPECT_GE(duration, minDurationWithMarginForError);
     }
 
@@ -112,11 +112,11 @@ namespace UnitTest
 
         // this duration should not matter since it should not wait at all so we don't need an error margin.
         auto minDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-        auto startTime = AZStd::chrono::system_clock::now();
+        auto startTime = AZStd::chrono::steady_clock::now();
         sema.release();
         EXPECT_TRUE(sema.try_acquire_for(minDuration));
-        
-        auto durationSpent = AZStd::chrono::system_clock::now() - startTime;
+
+        auto durationSpent = AZStd::chrono::steady_clock::now() - startTime;
         EXPECT_LT(durationSpent, minDuration);
     }
 
@@ -125,12 +125,12 @@ namespace UnitTest
         semaphore sema;
         // we should not wait all at here, since we start with it already signalled.
         auto minDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-        auto startTime = AZStd::chrono::system_clock::now();
+        auto startTime = AZStd::chrono::steady_clock::now();
         auto absTime = startTime + minDuration;
         sema.release();
         EXPECT_TRUE(sema.try_acquire_until(absTime));
-        
-        auto duration = AZStd::chrono::system_clock::now() - startTime;
+
+        auto duration = AZStd::chrono::steady_clock::now() - startTime;
         EXPECT_LT(duration, minDuration);
     }
 
@@ -153,7 +153,7 @@ namespace UnitTest
      * Thread test
      */
     class Parallel_Thread
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
         int m_data;
         int m_dataMax;
@@ -162,16 +162,6 @@ namespace UnitTest
         thread_desc      m_desc[3];
         int m_numThreadDesc = 0;
     public:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
-
         void increment_data()
         {
             while (m_data < m_dataMax)
@@ -530,12 +520,12 @@ namespace UnitTest
             trDel.join();
             AZ_TEST_ASSERT(m_data == m_dataMax);
 
-            chrono::system_clock::time_point startTime = chrono::system_clock::now();
+            chrono::steady_clock::time_point startTime = chrono::steady_clock::now();
             {
                 AZStd::thread tr1(desc1, AZStd::bind(&Parallel_Thread::sleep_thread, this, chrono::milliseconds(100)));
                 tr1.join();
             }
-            auto sleepTime = chrono::system_clock::now() - startTime;
+            auto sleepTime = chrono::steady_clock::now() - startTime;
             //printf("\nSleeptime: %d Ms\n",(unsigned int)  ());
             // On Windows we use Sleep. Sleep is dependent on MM timers.
             // 99000 can be used only if we support 1 ms resolution timeGetDevCaps() and we set it timeBeginPeriod(1) timeEndPeriod(1)
@@ -645,7 +635,7 @@ namespace UnitTest
 
 #if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     TEST_F(Parallel_Thread, DISABLED_Test)
-#else 
+#else
     TEST_F(Parallel_Thread, Test)
 #endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
@@ -676,7 +666,7 @@ namespace UnitTest
         }
 
         // Clean up the threads
-        AZStd::for_each(threadVector.begin(), threadVector.end(), 
+        AZStd::for_each(threadVector.begin(), threadVector.end(),
             [](AZStd::thread* thread)
             {
                 thread->join();
@@ -686,7 +676,7 @@ namespace UnitTest
     }
 
     class Parallel_Combinable
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -847,7 +837,7 @@ namespace UnitTest
     }
 
     class Parallel_SharedMutex
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         static const int s_numOfReaders = 4;
@@ -888,7 +878,7 @@ namespace UnitTest
                 {
                     lock_guard<shared_mutex> lock(m_access);
                     // now we have exclusive access
-                    
+
                     // m_currentValue must be checked within the mutex as it is possible that
                     // the other writer thread incremented the m_currentValue to 100 between the check of
                     // the while loop condition and the acquiring of the shared_mutex exclusive lock
@@ -980,9 +970,9 @@ namespace UnitTest
     }
 
     class ConditionVariable
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {};
-    
+
     TEST_F(ConditionVariable, NotifyOneSingleWait)
     {
         AZStd::condition_variable cv;
@@ -1010,7 +1000,7 @@ namespace UnitTest
                 lock.unlock();
                 cv.notify_one();
                 lock.lock();
-            }            
+            }
         };
 
         EXPECT_EQ(0, i);
@@ -1086,7 +1076,7 @@ namespace UnitTest
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
         AZStd::atomic_int i(0);
-        
+
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
@@ -1120,7 +1110,7 @@ namespace UnitTest
             waitThreads[threadIdx] = AZStd::thread(wait);
         }
         AZStd::thread signalThread(signal);
-        
+
         for (auto& thread : waitThreads)
         {
             thread.join();
@@ -1136,7 +1126,7 @@ namespace UnitTest
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
         AZStd::atomic<AZStd::cv_status> status = { AZStd::cv_status::no_timeout };
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         // note that we capture the start and end time in the thread - this is because threads starting and stopping
         // can have unpredictable scheduling.
 
@@ -1146,12 +1136,12 @@ namespace UnitTest
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             auto waitUntilTime = startTime + waitDuration;
             status = cv.wait_until(lock, waitUntilTime);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         // we aren't going to signal it, and ensure the timeout was reached.
         AZStd::thread waitThread1(wait);
 
@@ -1167,18 +1157,18 @@ namespace UnitTest
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
         AZStd::atomic<AZStd::cv_status> status = { AZStd::cv_status::no_timeout };
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
-            auto waitUntilTime = AZStd::chrono::system_clock::now();
+            auto waitUntilTime = AZStd::chrono::steady_clock::now();
             startTime = waitUntilTime;
             status = cv.wait_until(lock, waitUntilTime);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         AZStd::thread waitThread1(wait);
         waitThread1.join();
 
@@ -1193,22 +1183,22 @@ namespace UnitTest
         AZStd::mutex cv_mutex;
         AZStd::atomic_bool status = { true };
         auto pred = [](){ return false; };
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
-        
+
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
-            auto waitUntilTime = AZStd::chrono::system_clock::now();
+            auto waitUntilTime = AZStd::chrono::steady_clock::now();
             startTime = waitUntilTime;
             status = cv.wait_until(lock, waitUntilTime, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
-        
+
+
         AZStd::thread waitThread1(wait);
         waitThread1.join();
-        
+
         // we should have timed out immediately:
         EXPECT_LT(timeSpent, AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS));
         EXPECT_FALSE(status); // if the time has passed, the status should be false.
@@ -1220,25 +1210,25 @@ namespace UnitTest
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
         AZStd::atomic_bool retVal = { true };
-        
+
         auto pred = []() { return false; }; // should cause it to wait the entire duration
 
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-            startTime = AZStd::chrono::system_clock::now();
-            auto waitUntilTime =  startTime + waitDuration;
+            startTime = AZStd::chrono::steady_clock::now();
+            auto waitUntilTime = startTime + waitDuration;
             retVal = cv.wait_until(lock, waitUntilTime, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         // we aren't going to signal it, and ensure the timeout was reached.
         AZStd::thread waitThread1(wait);
-        
+
         waitThread1.join();
 
         // the duration given is a minimum time, for wait_until, so we should have timed out above
@@ -1251,26 +1241,26 @@ namespace UnitTest
     {
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
-        AZStd::atomic_bool retVal = {true};
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::atomic_bool retVal = { true };
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto pred = []() { return true; }; // should cause it to immediately return
-        
+
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             auto waitUntilTime = startTime + waitDuration;
-            
+
             retVal = cv.wait_until(lock, waitUntilTime, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         AZStd::thread waitThread1(wait);
         waitThread1.join();
-        
+
         // we should NOT have reached the minimum time or in fact waited at all:
         EXPECT_LE(timeSpent, AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS));
         EXPECT_TRUE(retVal); // we didn't wake up but still returned true.
@@ -1284,22 +1274,22 @@ namespace UnitTest
         AZStd::mutex cv_mutex;
         AZStd::atomic<AZStd::cv_status> status = { AZStd::cv_status::no_timeout };
 
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             status = cv.wait_for(lock, waitDuration);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         // we aren't going to signal it, and ensure the timeout was reached.
         AZStd::thread waitThread1(wait);
         waitThread1.join();
-        
+
         // note that wait_for is allowed to spuriously wake up on some platforms but even when it does, its likely to
         // have taken longer than margin of error to do so.  If the below triggers, its because it wasn't sleeping at
         // all and there is an error in the implementation which is causing it to return without sleeping.
@@ -1314,18 +1304,18 @@ namespace UnitTest
         AZStd::atomic_bool status = {true};
         auto pred = []() { return false; };
 
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
             status = cv.wait_for(lock, waitDuration, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         // we aren't going to signal it, and ensure the timeout was reached.
         AZStd::thread waitThread1(wait);
         waitThread1.join();
@@ -1341,24 +1331,24 @@ namespace UnitTest
         AZStd::mutex cv_mutex;
         AZStd::atomic_int i(0);
         AZStd::atomic_bool done(false);
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
         constexpr AZStd::chrono::seconds waitTimeCrossThread(10);
         // normally we'd wait for WAIT_TIME_MS, but in this case, a completely different thread is doing the signalling,
         // and it could be very slow to start if the machine is under load.  So instead, we wait for a long time.
         // In normal conditions, the wait will be very short (milliseconds), since we start the other thread that wakes
         // this one up immediately.
-        
+
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
-            
+
             auto waitDuration = waitTimeCrossThread;
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             auto waitUntilTime = startTime + waitDuration;
             // we expect the other thread to wake us up before the timeout expires so the following should return true
             EXPECT_TRUE(cv.wait_until(lock, waitUntilTime, [&]{ return i == 1; }));
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
             EXPECT_EQ(1, i);
             done = true;
         };
@@ -1396,18 +1386,8 @@ namespace UnitTest
     // Fixture for thread-event-bus related calls
     // exists only to categorize the tests.
     class ThreadEventsBus :
-        public AllocatorsFixture
+        public LeakDetectionFixture
     {
-        public:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     template <typename T> class ThreadEventCounter :
@@ -1435,7 +1415,7 @@ namespace UnitTest
             ++m_exitCount;
         }
     };
-    
+
     TEST_F(ThreadEventsBus, Broadcasts_BothBusses)
     {
         ThreadEventCounter<AZStd::ThreadEventBus::Handler> eventBusCounter;
@@ -1468,18 +1448,8 @@ namespace UnitTest
     // OnThreadExit() because it cannot lock the mutex.
 
     class ThreadEventsDeathTest :
-        public AllocatorsFixture
+        public LeakDetectionFixture
     {
-        public:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     class DeadlockCauser : public AZStd::ThreadEventBus::Handler
@@ -1540,11 +1510,11 @@ namespace UnitTest
 
             AZStd::thread deadlocker_thread = AZStd::thread(deadlocker_function);
 
-            chrono::system_clock::time_point startTime = chrono::system_clock::now();
+            chrono::steady_clock::time_point startTime = chrono::steady_clock::now();
             while (!doneIt.load())
             {
                 AZStd::this_thread::yield();
-                auto sleepTime = chrono::system_clock::now() - startTime;
+                auto sleepTime = chrono::steady_clock::now() - startTime;
 
                 // the test normally succeeds in under a second
                 // but machines can be slow, so we'll give it 20x the
@@ -1562,7 +1532,7 @@ namespace UnitTest
             EXPECT_TRUE(doneIt.load()) << "A test has deadlocked, aborting module";
             if (!doneIt.load())
             {
-                abort();
+                exit(1);
             }
             BusDisconnect();
             deadlocker_thread.join();
@@ -1586,17 +1556,21 @@ namespace UnitTest
     };
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TEST_F(ThreadEventsDeathTest, DISABLED_UsingClientBus_AvoidsDeadlock)
+#else
     TEST_F(ThreadEventsDeathTest, UsingClientBus_AvoidsDeadlock)
+#endif
     {
         EXPECT_EXIT(
             {
                 DeadlockCauser cause;
                 cause.PerformTest();
                 // you MUST exit for EXPECT_EXIT to function.
-                _exit(0); // this will cause spew, but it wont be considered to have failed.
+                exit(0); // this will cause spew, but it wont be considered to have failed.
             }
         , ::testing::ExitedWithCode(0),".*");
-        
+
     }
 #endif // GTEST_HAS_DEATH_TEST
 }

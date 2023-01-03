@@ -67,6 +67,8 @@ namespace AZ
         };
 
         const uint32_t ShaderStageCount = static_cast<uint32_t>(ShaderStage::Count);
+        const uint32_t ShaderStageVertex = static_cast<uint32_t>(ShaderStage::Vertex);
+        const uint32_t ShaderStageFragment = static_cast<uint32_t>(ShaderStage::Fragment);
         const uint32_t ShaderStageGraphicsCount = static_cast<uint32_t>(ShaderStage::GraphicsCount);
 
         using ShaderStageAttributeArguments = AZStd::vector<AZStd::any>;

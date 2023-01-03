@@ -975,13 +975,24 @@
                     },
                     {
                         "name": "enableShadows",
-                        "displayName": "Enable Shadows",
-                        "description": "Whether to use the shadow maps.",
+                        "displayName": "Receive Shadows",
+                        "description": "Whether to use the shadow maps during lighting.",
                         "type": "Bool",
                         "defaultValue": true,
                         "connection": {
                             "type": "ShaderOption",
                             "name": "o_enableShadows"
+                        }
+                    },
+                    {
+                        "name": "castShadows",
+                        "displayName": "Cast Shadows",
+                        "description": "Whether to cast shadows onto other objects.",
+                        "type": "Bool",
+                        "defaultValue": true,
+                        "connection": {
+                            "type": "ShaderEnabled",
+                            "name": "Shadowmap"
                         }
                     },
                     {
@@ -1034,7 +1045,7 @@
     },
     "shaders": [
         {
-            "file": "./Skin.shader",
+            "file": "Shaders/Materials/Skin/Skin_ForwardPass.shader",
             "tag": "ForwardPass"
         },
         {

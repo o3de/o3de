@@ -310,9 +310,6 @@ namespace EMotionFX
             actorSettings.OptimizeForServer();
         }
 
-        // fix any possible conflicting settings
-        ValidateActorSettings(&actorSettings);
-
         // create the actor
         AZStd::unique_ptr<Actor> actor = AZStd::make_unique<Actor>("Unnamed actor");
         MCORE_ASSERT(actor);
@@ -831,6 +828,7 @@ namespace EMotionFX
         RegisterChunkProcessor(aznew ChunkProcessorMotionSubMotions());
         RegisterChunkProcessor(aznew ChunkProcessorMotionMorphSubMotions());
         RegisterChunkProcessor(aznew ChunkProcessorMotionData());
+        RegisterChunkProcessor(aznew ChunkProcessorRootMotionExtraction());
 
         // node map
         RegisterChunkProcessor(aznew ChunkProcessorNodeMap());
@@ -926,37 +924,6 @@ namespace EMotionFX
         // try to process the chunk
         return processor->Process(file, importParams);
     }
-
-
-    // make sure no settings conflict or can cause crashes
-    void Importer::ValidateActorSettings(ActorSettings* settings)
-    {
-        // After atom: Make sure we are not loading the tangents and bitangents
-        if (AZStd::find(begin(settings->m_layerIDsToIgnore), end(settings->m_layerIDsToIgnore), Mesh::ATTRIB_TANGENTS) == end(settings->m_layerIDsToIgnore))
-        {
-            settings->m_layerIDsToIgnore.emplace_back(Mesh::ATTRIB_TANGENTS);
-        }
-
-        if (AZStd::find(begin(settings->m_layerIDsToIgnore), end(settings->m_layerIDsToIgnore), Mesh::ATTRIB_BITANGENTS) == end(settings->m_layerIDsToIgnore))
-        {
-            settings->m_layerIDsToIgnore.emplace_back(Mesh::ATTRIB_BITANGENTS);
-        }
-
-        // make sure we load at least the position and normals and org vertex numbers
-        if(const auto it = AZStd::find(begin(settings->m_layerIDsToIgnore), end(settings->m_layerIDsToIgnore), Mesh::ATTRIB_ORGVTXNUMBERS); it != end(settings->m_layerIDsToIgnore))
-        {
-            settings->m_layerIDsToIgnore.erase(it);
-        }
-        if(const auto it = AZStd::find(begin(settings->m_layerIDsToIgnore), end(settings->m_layerIDsToIgnore), Mesh::ATTRIB_NORMALS); it != end(settings->m_layerIDsToIgnore))
-        {
-            settings->m_layerIDsToIgnore.erase(it);
-        }
-        if(const auto it = AZStd::find(begin(settings->m_layerIDsToIgnore), end(settings->m_layerIDsToIgnore), Mesh::ATTRIB_POSITIONS); it != end(settings->m_layerIDsToIgnore))
-        {
-            settings->m_layerIDsToIgnore.erase(it);
-        }
-    }
-
 
     // make sure no settings conflict or can cause crashes
     void Importer::ValidateMotionSettings(MotionSettings* settings)

@@ -7,34 +7,31 @@
  */
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentApplication.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 
 #include <QCoreApplication>
 
-#include <native/unittests/UnitTestRunner.h> // for UnitTestUtils like CreateDummyFile / AssertAbsorber.
+#include <native/unittests/UnitTestUtils.h> // for UnitTestUtils like CreateDummyFile / AssertAbsorber.
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <native/resourcecompiler/RCBuilder.h>
 
 #include "AssetManager/FileStateCache.h"
+#include <tests/UnitTestUtilities.h>
 
 namespace AssetProcessor
 {
     using namespace AZ;
     using namespace AZ::Data;
     using namespace testing;
-    using ::testing::NiceMock;
     using namespace UnitTestUtils;
     using namespace UnitTest;
     using namespace AzFramework::AssetSystem;
     using namespace AzToolsFramework::AssetSystem;
     using namespace AzToolsFramework::AssetDatabase;
-
-    class AssetCatalogUnitTestsMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    {
-    public:
-        MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
-    };
 
     class AssetCatalogForUnitTest : public AssetProcessor::AssetCatalog
     {
@@ -62,17 +59,16 @@ namespace AssetProcessor
     };
 
     class AssetCatalogTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
 
         // store all data we create here so that it can be destroyed on shutdown before we remove allocators
         struct DataMembers
         {
-            NiceMock<AssetCatalogUnitTestsMockDatabaseLocationListener> m_databaseLocationListener;
+            MockAssetDatabaseRequestsHandler m_databaseLocationListener;
             FileStatePassthrough m_fileStateCache;
-            QTemporaryDir m_temporaryDir;
-            QDir m_temporarySourceDir;
+            QDir m_assetRootSourceDir;
             QDir m_priorAssetRoot;
             AssetDatabaseConnection m_dbConn;
             UnitTestUtils::ScopedDir m_scopedDir;
@@ -109,23 +105,18 @@ namespace AssetProcessor
             AssetUtilities::ComputeAssetRoot(m_data->m_priorAssetRoot);
             AssetUtilities::ResetAssetRoot();
 
-            // the canonicalization of the path here is to get around the fact that on some platforms
-            // the "temporary" folder location could be junctioned into some other folder and getting "QDir::current()"
-            // and other similar functions may actually return a different string but still be referring to the same folder
-            m_data->m_temporarySourceDir = QDir(m_data->m_temporaryDir.path());
-            QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(m_data->m_temporarySourceDir.canonicalPath());
-            m_data->m_temporarySourceDir = QDir(canonicalTempDirPath);
-            m_data->m_scopedDir.Setup(m_data->m_temporarySourceDir.path());
+            m_data->m_assetRootSourceDir = QDir(m_data->m_databaseLocationListener.GetAssetRootDir().c_str());
+            m_data->m_scopedDir.Setup(m_data->m_assetRootSourceDir.path());
             m_data->m_gameName = AssetUtilities::ComputeProjectName("AutomatedTesting"); // uses the above file.
 
             AssetUtilities::ResetAssetRoot();
             QDir newRoot; // throwaway dummy var - we just want to invoke the below function
-            AssetUtilities::ComputeAssetRoot(newRoot, &m_data->m_temporarySourceDir);
+            AssetUtilities::ComputeAssetRoot(newRoot, &m_data->m_assetRootSourceDir);
 
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             auto cacheRootKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_cache_path";
-            settingsRegistry->Set(cacheRootKey, m_data->m_temporarySourceDir.absoluteFilePath("Cache").toUtf8().constData());
+            settingsRegistry->Set(cacheRootKey, m_data->m_assetRootSourceDir.absoluteFilePath("Cache").toUtf8().constData());
             auto projectPathKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
             AZ::IO::FixedMaxPath enginePath;
@@ -139,57 +130,44 @@ namespace AssetProcessor
             // create the files we'll use for this test:
             QSet<QString> expectedFiles;
             // set up some interesting files:
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("rootfile2.txt");
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder1/rootfile1.txt"); // note:  Must override the actual root file
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder1/basefile.txt");
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder2/basefile.txt");
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder2/aaa/basefile.txt");
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder2/aaa/bbb/basefile.txt");
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder2/aaa/bbb/ccc/basefile.txt");
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder2/aaa/bbb/ccc/ddd/basefile.txt");
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder3/BaseFile.txt"); // note the case upper here
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder8/a/b/c/test.txt");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("rootfile2.txt");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder1/rootfile1.txt"); // note:  Must override the actual root file
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder1/basefile.txt");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder2/basefile.txt");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder2/aaa/basefile.txt");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder2/aaa/bbb/basefile.txt");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder2/aaa/bbb/ccc/basefile.txt");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder2/aaa/bbb/ccc/ddd/basefile.txt");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder3/BaseFile.txt"); // note the case upper here
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder8/a/b/c/test.txt");
 
             // subfolder3 is not recursive so none of these should show up in any scan or override check
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder3/aaa/basefile.txt");
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder3/aaa/bbb/basefile.txt");
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder3/aaa/bbb/ccc/basefile.txt");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder3/aaa/basefile.txt");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder3/aaa/bbb/basefile.txt");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder3/aaa/bbb/ccc/basefile.txt");
 
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder3/uniquefile.txt"); // only exists in subfolder3
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder3/uniquefile.ignore"); // only exists in subfolder3
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder3/uniquefile.txt"); // only exists in subfolder3
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder3/uniquefile.ignore"); // only exists in subfolder3
 
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder3/rootfile3.txt"); // must override rootfile3 in root
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("rootfile1.txt");
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("rootfile3.txt");
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("unrecognised.file"); // a file that should not be recognised
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("unrecognised2.file"); // a file that should not be recognised
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder1/test/test.format"); // a file that should be recognised
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("test.format"); // a file that should NOT be recognised
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder3/somefile.xxx");
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder3/savebackup/test.txt");//file that should be excluded
-            expectedFiles << m_data->m_temporarySourceDir.absoluteFilePath("subfolder3/somerandomfile.random");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder3/rootfile3.txt"); // must override rootfile3 in root
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("rootfile1.txt");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("rootfile3.txt");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("unrecognised.file"); // a file that should not be recognised
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("unrecognised2.file"); // a file that should not be recognised
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder1/test/test.format"); // a file that should be recognised
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("test.format"); // a file that should NOT be recognised
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder3/somefile.xxx");
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder3/savebackup/test.txt");//file that should be excluded
+            expectedFiles << m_data->m_assetRootSourceDir.absoluteFilePath("subfolder3/somerandomfile.random");
 
             for (const QString& expect : expectedFiles)
             {
                 CreateDummyFile(expect);
             }
 
-            // in other unit tests we may open the database called ":memory:" to use an in-memory database instead of one on disk.
-            // in this test, however, we use a real database, because the catalog shares it and opens its own connection to it.
-            // ":memory:" databases are one-instance-only, and even if another connection is opened to ":memory:" it would
-            // not share with others created using ":memory:" and get a unique database instead.
-            m_data->m_databaseLocation = m_data->m_temporarySourceDir.absoluteFilePath("test_database.sqlite").toUtf8().constData();
-
-            ON_CALL(m_data->m_databaseLocationListener, GetAssetDatabaseLocation(_))
-                .WillByDefault(
-                    DoAll( // set the 0th argument ref (string) to the database location and return true.
-                        SetArgReferee<0>(m_data->m_databaseLocation.c_str()),
-                        Return(true)));
-
-            m_data->m_databaseLocationListener.BusConnect();
             m_data->m_dbConn.OpenDatabase();
 
-            BuildConfig(m_data->m_temporarySourceDir, &(m_data->m_dbConn), m_data->m_config);
+            BuildConfig(m_data->m_assetRootSourceDir, &(m_data->m_dbConn), m_data->m_config);
             m_data->m_assetCatalog.reset(new AssetCatalogForUnitTest(nullptr, &(m_data->m_config)));
         }
 
@@ -211,15 +189,17 @@ namespace AssetProcessor
         // -- utility functions to create default state data --
 
         // Adds a scan folder to the config and to the database
-        void AddScanFolder(const ScanFolderInfo& scanFolderInfo, PlatformConfiguration& config, AssetDatabaseConnection* dbConn)
+        void AddScanFolder(ScanFolderInfo scanFolderInfo, PlatformConfiguration& config, AssetDatabaseConnection* dbConn)
         {
-            config.AddScanFolder(scanFolderInfo);
             ScanFolderDatabaseEntry newScanFolder(
                 scanFolderInfo.ScanPath().toStdString().c_str(),
                 scanFolderInfo.GetDisplayName().toStdString().c_str(),
                 scanFolderInfo.GetPortableKey().toStdString().c_str(),
                 scanFolderInfo.IsRoot());
             dbConn->SetScanFolder(newScanFolder);
+
+            scanFolderInfo.SetScanFolderID(newScanFolder.m_scanFolderID);
+            config.AddScanFolder(scanFolderInfo);
         }
 
         virtual void AddScanFolders(
@@ -425,7 +405,7 @@ namespace AssetProcessor
         m_data->m_absorber.Clear();
 
         ASSERT_TRUE(TestGetRelativeProductPath("", false, { "" }));
-        ASSERT_TRUE(TestGetFullSourcePath("", m_data->m_temporarySourceDir, false, ""));
+        ASSERT_TRUE(TestGetFullSourcePath("", m_data->m_assetRootSourceDir, false, ""));
     }
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativePath_GivenRootPath_ReturnsFailure)
@@ -515,7 +495,7 @@ namespace AssetProcessor
 
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_RelativePathToSourceFile_ReturnsProductFilePath)
     {
-        QString fileToCheck = m_data->m_temporarySourceDir.absoluteFilePath("subfolder3/BaseFile.txt");
+        QString fileToCheck = m_data->m_assetRootSourceDir.absoluteFilePath("subfolder3/BaseFile.txt");
         ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "basefilez.arc2", "basefileaz.azm2",
             "basefile.arc2", "basefile.azm2" }));
     }
@@ -523,8 +503,106 @@ namespace AssetProcessor
     TEST_F(AssetCatalogTestWithProducts, GetRelativeProductPathFromFullSourceOrProductPath_RelativePathToSourceFile_BadCasing_ReturnsProductFilePath)
     {
         // note that the casing of the source file is not correct.  It must still work.
-        QString fileToCheck = m_data->m_temporarySourceDir.absoluteFilePath("subfolder2/aaa/basefile.txt");
+        QString fileToCheck = m_data->m_assetRootSourceDir.absoluteFilePath("subfolder2/aaa/basefile.txt");
         ASSERT_TRUE(TestGetRelativeProductPath(fileToCheck, true, { "aaa/basefile.txt" }));
+    }
+
+    struct MockConnection : AssetProcessor::ConnectionBus::Handler
+    {
+        MockConnection(int connectionId)
+        {
+            BusConnect(connectionId);
+        }
+
+        ~MockConnection()
+        {
+            BusDisconnect();
+        }
+
+        virtual size_t Send([[maybe_unused]] unsigned int serial, const AzFramework::AssetSystem::BaseAssetProcessorMessage& message)
+        {
+            auto* bulkMessage = azrtti_cast<const BulkAssetNotificationMessage*>(&message);
+
+            EXPECT_TRUE(bulkMessage);
+            EXPECT_EQ(bulkMessage->m_type, AssetNotificationMessage::AssetChanged);
+            EXPECT_GT(bulkMessage->m_messages.size(), 0);
+            m_messages += bulkMessage->m_messages.size();
+
+            return sizeof(message);
+        }
+        virtual size_t SendRaw(unsigned int /*type*/, unsigned int /*serial*/, const QByteArray& /*data*/)
+        {
+            GTEST_NONFATAL_FAILURE_("Not supported");
+            return 0;
+        }
+        virtual size_t SendPerPlatform(
+            unsigned int /*serial*/, const AzFramework::AssetSystem::BaseAssetProcessorMessage& /*message*/, const QString& /*platform*/)
+        {
+            GTEST_NONFATAL_FAILURE_("Not supported");
+            return 0;
+        }
+        virtual size_t SendRawPerPlatform(
+            unsigned int /*type*/, unsigned int /*serial*/, const QByteArray& /*data*/, const QString& /*platform*/)
+        {
+            GTEST_NONFATAL_FAILURE_("Not supported");
+            return 0;
+        }
+
+        virtual unsigned int SendRequest(
+            const AzFramework::AssetSystem::BaseAssetProcessorMessage& /*message*/, const ResponseCallback& /*callback*/)
+        {
+            GTEST_NONFATAL_FAILURE_("Not supported");
+            return 0;
+        }
+        virtual size_t SendResponse(unsigned int /*serial*/, const AzFramework::AssetSystem::BaseAssetProcessorMessage& /*message*/)
+        {
+            GTEST_NONFATAL_FAILURE_("Not supported");
+            return 0;
+        }
+        virtual void RemoveResponseHandler(unsigned int /*serial*/)
+        {
+            GTEST_NONFATAL_FAILURE_("Not supported");
+        }
+
+        size_t m_messages = 0;
+    };
+
+    TEST_F(AssetCatalogTestWithProducts, SendAssetUpdateOnConnect)
+    {
+        static constexpr int ConnId = 1;
+
+        AssetNotificationMessage message;
+        message.m_type = AssetNotificationMessage::AssetChanged;
+        message.m_data = "filea.png";
+        message.m_assetId = AZ::Data::AssetId("{4DBBC5A7-ACEE-4084-A435-9CA8AA05B01B}");
+        message.m_assetType = AZ::Data::AssetType("{01E432B8-4252-40F5-86CC-4CB554004C49}");
+        message.m_platform = "pc";
+        message.m_sizeBytes = 10;
+
+        // Add 2 assets to the catalog
+        m_data->m_assetCatalog->OnAssetMessage(message);
+
+        message.m_data = "fileb.png";
+        message.m_assetId = AZ::Data::AssetId("{29AA7E27-4A80-4443-8DFD-6FC459833BD2}");
+
+        m_data->m_assetCatalog->OnAssetMessage(message);
+
+        // Simulate a connection afterwards
+        MockConnection mockConnection(ConnId);
+        MockConnection android(ConnId + 1);
+
+        EXPECT_EQ(mockConnection.m_messages, 0);
+        EXPECT_EQ(android.m_messages, 0);
+
+        m_data->m_assetCatalog->OnConnect(ConnId, { "pc" });
+
+        // Should recieve both asset messages
+        EXPECT_EQ(mockConnection.m_messages, 2);
+
+        m_data->m_assetCatalog->OnConnect(ConnId + 1, { "android" });
+
+        EXPECT_EQ(android.m_messages, 0); // No assets for the android platform
+        EXPECT_EQ(mockConnection.m_messages, 2); // No extra messages for the pc platform
     }
 
     class AssetCatalogTestRelativeSourcePath : public AssetCatalogTest
@@ -730,70 +808,70 @@ namespace AssetProcessor
     {
         // feed it an relative product, and expect a full, absolute source file path in return.
         QString fileToCheck = "subfolder3/randomfileoutput.random1";
-        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
+        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_assetRootSourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
     TEST_F(AssetCatalogTest_GetFullSourcePath, SecondProduct_ReturnsAbsolutePathToSource)
     {
         // feed it another relative product from the same source file, expect the same source.
         QString fileToCheck = "subfolder3/randomfileoutput.random2";
-        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
+        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_assetRootSourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
     TEST_F(AssetCatalogTest_GetFullSourcePath, IncorrectSeperators_ReturnsAbsolutePathToSource)
     {
         //feed it the same relative product with different separators
         QString fileToCheck = "subfolder3\\randomfileoutput.random2";
-        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
+        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_assetRootSourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
     TEST_F(AssetCatalogTest_GetFullSourcePath, SourcePath_ReturnsSourcePath)
     {
         // feed it a full path to a source file, we expect that path back
-        QString fileToCheck = m_data->m_temporarySourceDir.filePath("somefolder/somefile.txt");
-        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "somefolder/somefile.txt"));
+        QString fileToCheck = m_data->m_assetRootSourceDir.filePath("somefolder/somefile.txt");
+        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_assetRootSourceDir, true, "somefolder/somefile.txt"));
     }
 
     TEST_F(AssetCatalogTest_GetFullSourcePath, AliasedCachePath_ReturnsAbsolutePathToSource)
     {
         //feed it a path with alias and asset id
         QString fileToCheck = "@products@/subfolder3/randomfileoutput.random1";
-        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
+        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_assetRootSourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
     TEST_F(AssetCatalogTest_GetFullSourcePath, InvalidAlias_ReturnsAbsolutePathToSource)
     {
         //feed it a path with some random alias and asset id
         QString fileToCheck = "@somerandomalias@/subfolder3/randomfileoutput.random1";
-        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
+        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_assetRootSourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
     TEST_F(AssetCatalogTest_GetFullSourcePath, InvalidAliasMissingSeperator_ReturnsAbsolutePathToSource)
     {
         //feed it a path with some random alias and asset id but no separator
         QString fileToCheck = "@somerandomalias@subfolder3/randomfileoutput.random1";
-        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
+        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_assetRootSourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
     TEST_F(AssetCatalogTest_GetFullSourcePath, InvalidSourcePathContainingCacheAlias_ReturnsAbsolutePathToSource)
     {
         //feed it a path with alias and input name
         QString fileToCheck = "@products@/somerandomfile.random";
-        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
+        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_assetRootSourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
     TEST_F(AssetCatalogTest_GetFullSourcePath, AbsolutePathToCache_ReturnsAbsolutePathToSource)
     {
         //feed it an absolute path with cacheroot
         QString fileToCheck = m_data->m_cacheRootDir.filePath(QString("pc") + "/subfolder3/randomfileoutput.random1");
-        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
+        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_assetRootSourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
     TEST_F(AssetCatalogTest_GetFullSourcePath, ProductNameIncludingPlatformAndGameName_ReturnsAbsolutePathToSource)
     {
         //feed it a productName directly
         QString fileToCheck = QString("pc") + "/subfolder3/randomfileoutput.random1";
-        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
+        EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_assetRootSourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
     class AssetCatalogTest_AssetInfo
@@ -822,7 +900,7 @@ namespace AssetProcessor
         {
             AssetCatalogTest::SetUp();
             m_customDataMembers = azcreate(AssetCatalogTest_AssetInfo_DataMembers, ());
-            m_customDataMembers->m_subfolder1AbsolutePath = m_data->m_temporarySourceDir.absoluteFilePath("subfolder1").toStdString().c_str();
+            m_customDataMembers->m_subfolder1AbsolutePath = m_data->m_assetRootSourceDir.absoluteFilePath("subfolder1").toStdString().c_str();
 
             AzFramework::StringFunc::Path::Join(m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str(), m_customDataMembers->m_assetAFullPath);
             CreateDummyFile(QString::fromUtf8(m_customDataMembers->m_assetAFullPath.c_str()), m_customDataMembers->m_assetTestString.c_str());
@@ -846,6 +924,12 @@ namespace AssetProcessor
 
             if (expectedResult)
             {
+                EXPECT_EQ(assetInfo.m_assetId, m_customDataMembers->m_assetA);
+                EXPECT_EQ(assetInfo.m_assetType, m_customDataMembers->m_assetAType);
+                EXPECT_EQ(assetInfo.m_relativePath, expectedRelPath);
+                EXPECT_EQ(assetInfo.m_sizeBytes, m_customDataMembers->m_assetTestString.size());
+                EXPECT_EQ(rootPath, expectedRootPath);
+
                 return (assetInfo.m_assetId == m_customDataMembers->m_assetA)
                     && (assetInfo.m_assetType == m_customDataMembers->m_assetAType)
                     && (assetInfo.m_relativePath == expectedRelPath)
@@ -915,6 +999,17 @@ namespace AssetProcessor
         EXPECT_TRUE(GetSourceInfoBySourcePath(false, "", AZ::Uuid::CreateNull(), "", ""));
     }
 
+    TEST_F(AssetCatalogTest_AssetInfo, Sanity_InvalidPath)
+    {
+        auto* ebus = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
+
+        AZ::Data::AssetInfo assetInfo;
+        AZStd::string watchFolder;
+
+        EXPECT_FALSE(ebus->GetSourceInfoBySourcePath("G:/random/folder/does/not/exist.png", assetInfo, watchFolder)); // Absolute path
+        EXPECT_FALSE(ebus->GetSourceInfoBySourcePath("random/folder/does/not/exist.png", assetInfo, watchFolder)); // Relative path
+    }
+
     TEST_F(AssetCatalogTest_AssetInfo, FindAssetNotRegisteredAsSource_FindsProduct)
     {
         // Setup: Add asset to database
@@ -944,7 +1039,11 @@ namespace AssetProcessor
     TEST_F(AssetCatalogTest_AssetInfo, FindAssetInBuildQueue_FindsSource)
     {
         // Setup:  Add a source to queue.
-        m_data->m_assetCatalog->OnSourceQueued(m_customDataMembers->m_assetA.m_guid, m_customDataMembers->m_assetALegacyUuid, m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str());
+        m_data->m_assetCatalog->OnSourceQueued(
+            m_customDataMembers->m_assetA.m_guid,
+            m_customDataMembers->m_assetALegacyUuid,
+            AssetProcessor::SourceAssetReference(
+                m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str()));
 
         // TEST: Asset in queue, not registered as source asset
         EXPECT_TRUE(GetAssetInfoByIdPair(false, "", ""));
@@ -957,7 +1056,11 @@ namespace AssetProcessor
     TEST_F(AssetCatalogTest_AssetInfo, FindAssetInBuildQueue_RegisteredAsSourceType_StillFindsSource)
     {
         // Setup:  Add a source to queue.
-        m_data->m_assetCatalog->OnSourceQueued(m_customDataMembers->m_assetA.m_guid, m_customDataMembers->m_assetALegacyUuid, m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str());
+        m_data->m_assetCatalog->OnSourceQueued(
+            m_customDataMembers->m_assetA.m_guid,
+            m_customDataMembers->m_assetALegacyUuid,
+            AssetProcessor::SourceAssetReference(
+                m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str()));
 
         // Register as source type
         AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::RegisterSourceAssetType, m_customDataMembers->m_assetAType, m_customDataMembers->m_assetAFileFilter.c_str());
@@ -978,7 +1081,11 @@ namespace AssetProcessor
         // Setup:  Add a source to queue, then notify its finished and add it to the database (simulates a full pipeline)
         AZ::s64 jobId;
         EXPECT_TRUE(AddSourceAndJob("subfolder1", m_customDataMembers->m_assetASourceRelPath.c_str(), &(m_data->m_dbConn), jobId, m_customDataMembers->m_assetA.m_guid));
-        m_data->m_assetCatalog->OnSourceQueued(m_customDataMembers->m_assetA.m_guid, m_customDataMembers->m_assetALegacyUuid, m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str());
+        m_data->m_assetCatalog->OnSourceQueued(
+            m_customDataMembers->m_assetA.m_guid,
+            m_customDataMembers->m_assetALegacyUuid,
+            AssetProcessor::SourceAssetReference(
+                m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str()));
         m_data->m_assetCatalog->OnSourceFinished(m_customDataMembers->m_assetA.m_guid, m_customDataMembers->m_assetALegacyUuid);
         ProductDatabaseEntry assetAEntry(jobId, 0, m_customDataMembers->m_assetAProductRelPath.c_str(), m_customDataMembers->m_assetAType);
         m_data->m_dbConn.SetProduct(assetAEntry);
@@ -1061,7 +1168,7 @@ namespace AssetProcessor
         );
 
         AssetNotificationMessage message("some/path/image.png", AssetNotificationMessage::NotificationType::AssetChanged, AZ::Data::AssetType::CreateRandom(), "pc");
-        message.m_assetId = { "{C1A73521-E770-475F-8D91-30DF88E4D4C9}" };
+        message.m_assetId = AZ::Data::AssetId{ "{C1A73521-E770-475F-8D91-30DF88E4D4C9}" };
 
         for (int i = 0; i < NumUpdateIterations; ++i)
         {

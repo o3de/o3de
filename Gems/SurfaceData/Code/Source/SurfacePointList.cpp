@@ -159,7 +159,7 @@ namespace SurfaceData
         // If we've made it here, we're adding the point, not merging it.
 
         // Verify we aren't adding more points than expected.
-        AZ_Assert(m_numSurfacePointsPerInput[inPositionIndex] < m_maxSurfacePointsPerInput, "Adding too many surface points.");
+        AZ_Assert(m_numSurfacePointsPerInput[inPositionIndex] <= m_maxSurfacePointsPerInput, "Adding too many surface points.");
 
         // Expand our output AABB to include this point.
         m_surfacePointBounds.AddPoint(position);

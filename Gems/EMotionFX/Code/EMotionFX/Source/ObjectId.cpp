@@ -6,10 +6,10 @@
  *
  */
 
-#include <EMotionFX/Source/ObjectId.h>
 #include <AzCore/Math/Sfmt.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/conversions.h>
-
+#include <EMotionFX/Source/ObjectId.h>
 
 namespace EMotionFX
 {
@@ -43,7 +43,7 @@ namespace EMotionFX
     {
         const AZ::u64 result = AZStd::stoull(text);
 
-        if (result == 0 || result == ULLONG_MAX)
+        if (result == 0 || result == AZStd::numeric_limits<unsigned long long>::max())
         {
             return ObjectId::InvalidId;
         }
@@ -74,5 +74,16 @@ namespace EMotionFX
     bool ObjectId::operator!=(const ObjectId& rhs) const
     {
         return m_id != rhs.m_id;
+    }
+
+    void ObjectId::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (!serializeContext)
+        {
+            return;
+        }
+
+        serializeContext->Class<ObjectId>()->Version(1)->Field("id", &ObjectId::m_id);
     }
 } // namespace EMotionFX

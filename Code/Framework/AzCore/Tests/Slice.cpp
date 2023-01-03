@@ -156,8 +156,8 @@ namespace UnitTest
             if (!info.m_streamName.empty())
             {
                 // this ensures tha parallel running unit tests do not overlap their files that they use.
-                AZStd::string fullName = AZStd::string::format("%s%s-%s", GetTestFolderPath().c_str(), randomUuid.ToString<AZStd::string>().c_str(), info.m_streamName.c_str());
-                info.m_streamName = fullName;
+                AZ::IO::Path fullName = GetTestFolderPath() / AZStd::string::format("%s-%s", randomUuid.ToString<AZStd::string>().c_str(), info.m_streamName.c_str());
+                info.m_streamName = AZStd::move(fullName.Native());
                 info.m_dataLen = static_cast<size_t>(AZ::IO::SystemFile::Length(info.m_streamName.c_str()));
             }
             else
@@ -200,17 +200,12 @@ namespace UnitTest
     };
 
     class SliceTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
-        SliceTest()
-            : AllocatorsFixture()
-        {
-        }
-
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
@@ -253,7 +248,7 @@ namespace UnitTest
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZ::IO::FileIOBase* m_prevFileIO{ nullptr };
@@ -626,8 +621,8 @@ namespace UnitTest
             if (!info.m_streamName.empty())
             {
                 // this ensures the parallel running unit tests do not overlap their files that they use.
-                AZStd::string fullName = AZStd::string::format("%s%s-%s", GetTestFolderPath().c_str(), randomUuid.ToString<AZStd::string>().c_str(), info.m_streamName.c_str());
-                info.m_streamName = fullName;
+                AZ::IO::Path fullName = GetTestFolderPath() / AZStd::string::format("%s-%s", randomUuid.ToString<AZStd::string>().c_str(), info.m_streamName.c_str());
+                info.m_streamName = AZStd::move(fullName.Native());
                 info.m_dataLen = static_cast<size_t>(AZ::IO::SystemFile::Length(info.m_streamName.c_str()));
             }
             else
@@ -648,7 +643,7 @@ namespace UnitTest
     };
 
     class DataFlags_CleanupTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override

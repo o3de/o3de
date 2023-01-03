@@ -135,10 +135,6 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Visibility, &RagdollComponent::IsMaxMassRatioVisible);
             }
         }
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-        }
     }
 
     bool RagdollComponent::IsJointProjectionVisible() const

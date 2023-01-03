@@ -19,8 +19,6 @@ namespace ScriptCanvasPhysics
 {
     void ScriptCanvasPhysicsSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        REFLECT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasPhysicsStatic, context);
-
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<ScriptCanvasPhysicsSystemComponent, AZ::Component>()

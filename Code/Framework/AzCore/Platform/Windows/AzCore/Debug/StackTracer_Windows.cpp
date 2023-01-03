@@ -627,8 +627,7 @@ namespace AZ {
                 // find insert position
                 if (g_moduleInfo.size() <  g_moduleInfo.capacity())
                 {
-                    g_moduleInfo.push_back();
-                    SymbolStorage::ModuleInfo& modInfo = g_moduleInfo.back();
+                    SymbolStorage::ModuleInfo& modInfo = g_moduleInfo.emplace_back();
                     modInfo.m_baseAddress = (u64)baseAddr;
                     azstrcpy(modInfo.m_modName, AZ_ARRAY_SIZE(modInfo.m_modName), szMod);
                     azstrcpy(modInfo.m_fileName, AZ_ARRAY_SIZE(modInfo.m_fileName), img);

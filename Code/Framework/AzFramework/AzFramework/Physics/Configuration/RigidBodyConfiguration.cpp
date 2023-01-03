@@ -138,6 +138,7 @@ namespace AzPhysics
                 ->Field("Include All Shapes In Mass", &RigidBodyConfiguration::m_includeAllShapesInMassCalculation)
                 ->Field("CCD Min Advance", &RigidBodyConfiguration::m_ccdMinAdvanceCoefficient)
                 ->Field("CCD Friction", &RigidBodyConfiguration::m_ccdFrictionEnabled)
+                ->Field("Open PhysX Configuration", &RigidBodyConfiguration::m_configButton)
                 ;
         }
     }
@@ -178,7 +179,7 @@ namespace AzPhysics
             MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & MassComputeFlags::INCLUDE_ALL_SHAPES);
     }
 
-    bool RigidBodyConfiguration::IsCCDEnabled() const
+    bool RigidBodyConfiguration::IsCcdEnabled() const
     {
         return m_ccdEnabled;
     }
@@ -236,7 +237,7 @@ namespace AzPhysics
         return Internal::GetPropertyVisibility(m_propertyVisibilityFlags, RigidBodyConfiguration::PropertyVisibility::Kinematic);
     }
 
-    AZ::Crc32 RigidBodyConfiguration::GetCCDVisibility() const
+    AZ::Crc32 RigidBodyConfiguration::GetCcdVisibility() const
     {
         return Internal::GetPropertyVisibility(m_propertyVisibilityFlags, RigidBodyConfiguration::PropertyVisibility::ContinuousCollisionDetection);
     }

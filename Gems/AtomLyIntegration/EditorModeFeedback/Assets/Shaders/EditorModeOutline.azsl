@@ -61,7 +61,7 @@ PSOutput MainPS(VSOutput IN)
     float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask.r);
 
     // Outline effect
-    const float lineThickness = lerp(1., PassSrg::m_lineThickness, 1.0 - t);
+    const float lineThickness = PassSrg::m_lineThickness;
     const float2 outlines = Outliner(IN.m_texCoord, lineThickness) * (1.0 - mask);
 
     float outline = 0.0;

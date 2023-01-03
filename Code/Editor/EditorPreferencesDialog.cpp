@@ -100,6 +100,11 @@ EditorPreferencesDialog::~EditorPreferencesDialog()
 {
 }
 
+void EditorPreferencesDialog::SetFilterText(const QString& filter)
+{
+    ui->filter->SetTextFilter(filter);
+}
+
 void EditorPreferencesDialog::showEvent(QShowEvent* event)
 {
     origAutoBackup.bEnabled = gSettings.autoBackupEnabled;
@@ -185,7 +190,8 @@ void EditorPreferencesDialog::OnAccept()
             origAutoBackup.nTime != gSettings.autoBackupTime ||
             origAutoBackup.nRemindTime != gSettings.autoRemindTime))
     {
-        MainWindow::instance()->ResetAutoSaveTimers(true);
+        // Ensure timers restart with the correct interval.
+        MainWindow::instance()->ResetAutoSaveTimers();
     }
 
     AzToolsFramework::EditorPreferencesNotificationBus::Broadcast(&AzToolsFramework::EditorPreferencesNotifications::OnEditorPreferencesChanged);

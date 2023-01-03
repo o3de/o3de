@@ -38,11 +38,12 @@ namespace AZ
             void WaitForIdleInternal() override {}
             AZStd::chrono::microseconds GpuTimestampToMicroseconds([[maybe_unused]] uint64_t gpuTimestamp, [[maybe_unused]] RHI::HardwareQueueClass queueClass) const override { return AZStd::chrono::microseconds();}
             void FillFormatsCapabilitiesInternal([[maybe_unused]] FormatCapabilitiesList& formatsCapabilities) override;
-            RHI::ResultCode InitializeLimits() override { return RHI::ResultCode::Success; }
+            RHI::ResultCode InitializeLimits() override;
             void PreShutdown() override {}
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const RHI::ImageDescriptor& descriptor) override { return RHI::ResourceMemoryRequirements();}
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const RHI::BufferDescriptor& descriptor) override { return RHI::ResourceMemoryRequirements();}
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
+            RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) override;
             //////////////////////////////////////////////////////////////////////////
         };
     }

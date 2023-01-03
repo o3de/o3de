@@ -1586,7 +1586,7 @@ namespace UnitTest
     void* ScriptClassAllocate(void* userData)
     {
         (void)userData;
-        return azmalloc(sizeof(ScriptClass),AZStd::alignment_of<ScriptClass>::value,AZ::SystemAllocator,"ScriptClass");
+        return azmalloc(sizeof(ScriptClass),AZStd::alignment_of<ScriptClass>::value,AZ::SystemAllocator);
     }
 
     void ScriptClassFree(void* obj, void* userData)
@@ -2739,7 +2739,7 @@ namespace UnitTest
     }
 
     class ScriptContextTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -3117,7 +3117,7 @@ namespace UnitTest
     }
 
     class ScriptDebugTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
         int m_numBreakpointHits;
 
@@ -3436,8 +3436,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(values[2].m_elements.size() == valueCheck.m_elements.size());
 
             // set a table value with metatable
-            values[3].m_elements.push_back();
-            ScriptContextDebug::DebugValue& subValue = values[3].m_elements.back();
+            ScriptContextDebug::DebugValue& subValue = values[3].m_elements.emplace_back();
             subValue.m_name = "valueA";
             subValue.m_type = LUA_TNUMBER;
             subValue.m_value = "16";
@@ -3653,7 +3652,7 @@ namespace UnitTest
     //    );
 
     class ScriptedBusTest
-        : public AllocatorsFixture {
+        : public LeakDetectionFixture {
     public:
         void run()
         {
@@ -3873,7 +3872,7 @@ namespace UnitTest
     // RamenShopNotifications
 
     class ScriptBehaviorHandlerIsConnectedTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         static void TestAssert([[maybe_unused]] bool check)
@@ -3883,7 +3882,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_behaviorContext = aznew BehaviorContext();
             m_behaviorContext->Method("TestAssert", &ScriptBehaviorHandlerIsConnectedTest::TestAssert);
@@ -3906,7 +3905,7 @@ namespace UnitTest
             delete m_scriptContext;
             delete m_behaviorContext;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         ScriptContext* m_scriptContext;
@@ -3997,7 +3996,7 @@ ramenShop.handler:Connect(4);
     };
 
     class ScriptedIdBusTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -4090,7 +4089,7 @@ ramenShop.handler:Connect(4);
     }
 
     class AnyScriptBindTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         struct DataContainer
@@ -4115,7 +4114,7 @@ ramenShop.handler:Connect(4);
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             s_wasCalled = false;
 
@@ -4138,7 +4137,7 @@ ramenShop.handler:Connect(4);
             delete m_script;
             delete m_behavior;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         BehaviorContext* m_behavior;
@@ -4153,12 +4152,12 @@ ramenShop.handler:Connect(4);
     }
 
     class BaseScriptTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_behavior = aznew BehaviorContext();
             m_behavior->Method("AZTestAssert", &AZTestAssert);
@@ -4172,7 +4171,7 @@ ramenShop.handler:Connect(4);
         {
             delete m_script;
             delete m_behavior;
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         BehaviorContext* m_behavior;
@@ -4221,12 +4220,12 @@ ramenShop.handler:Connect(4);
     }
 
     class ScriptTypeidTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_behavior = aznew BehaviorContext();
 
@@ -4249,7 +4248,7 @@ ramenShop.handler:Connect(4);
             delete m_script;
             delete m_behavior;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         template <typename T>
@@ -4301,12 +4300,12 @@ ramenShop.handler:Connect(4);
     }
 
     class ScriptCacheTableTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_script = aznew ScriptContext();
             m_lua = m_script->NativeContext();
@@ -4317,7 +4316,7 @@ ramenShop.handler:Connect(4);
             m_lua = nullptr;
             delete m_script;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         ScriptContext* m_script = nullptr;

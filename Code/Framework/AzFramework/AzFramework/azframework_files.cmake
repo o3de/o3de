@@ -75,7 +75,6 @@ set(FILES
     Asset/Benchmark/BenchmarkCommands.h
     Asset/Benchmark/BenchmarkSettingsAsset.cpp
     Asset/Benchmark/BenchmarkSettingsAsset.h
-    AutoGen/AzFramework.AutoPackets.xml
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
     Viewport/ViewportBus.h
@@ -144,6 +143,8 @@ set(FILES
     DocumentPropertyEditor/DocumentAdapter.h
     DocumentPropertyEditor/DocumentSchema.cpp
     DocumentPropertyEditor/DocumentSchema.h
+    DocumentPropertyEditor/FilterAdapter.cpp
+    DocumentPropertyEditor/FilterAdapter.h
     DocumentPropertyEditor/PropertyEditorNodes.cpp
     DocumentPropertyEditor/PropertyEditorNodes.h
     DocumentPropertyEditor/PropertyEditorSystem.cpp
@@ -151,8 +152,16 @@ set(FILES
     DocumentPropertyEditor/PropertyEditorSystemInterface.h
     DocumentPropertyEditor/CvarAdapter.cpp
     DocumentPropertyEditor/CvarAdapter.h
+    DocumentPropertyEditor/MetaAdapter.cpp
+    DocumentPropertyEditor/MetaAdapter.h
     DocumentPropertyEditor/RoutingAdapter.cpp
     DocumentPropertyEditor/RoutingAdapter.h
+    DocumentPropertyEditor/SettingsRegistryAdapter.cpp
+    DocumentPropertyEditor/SettingsRegistryAdapter.h
+    DocumentPropertyEditor/SortAdapter.cpp
+    DocumentPropertyEditor/SortAdapter.h
+    DocumentPropertyEditor/ValueStringSort.cpp
+    DocumentPropertyEditor/ValueStringSort.h
     DocumentPropertyEditor/ReflectionAdapter.cpp
     DocumentPropertyEditor/ReflectionAdapter.h
     DocumentPropertyEditor/Reflection/Attribute.h
@@ -179,6 +188,8 @@ set(FILES
     Metrics/MetricsPlainTextNameRegistration.h
     Network/AssetProcessorConnection.cpp
     Network/AssetProcessorConnection.h
+    Network/IRemoteTools.h
+    Network/IRemoteTools.inl
     Network/SocketConnection.cpp
     Network/SocketConnection.h
     Logging/LogFile.cpp
@@ -203,10 +214,16 @@ set(FILES
     Script/ScriptDebugMsgReflection.h
     Script/ScriptRemoteDebugging.cpp
     Script/ScriptRemoteDebugging.h
+    Script/ScriptRemoteDebuggingConstants.h
     StreamingInstall/StreamingInstall.h
     StreamingInstall/StreamingInstall.cpp
     StreamingInstall/StreamingInstallRequests.h
     StreamingInstall/StreamingInstallNotifications.h
+    PaintBrush/PaintBrush.cpp
+    PaintBrush/PaintBrush.h
+    PaintBrush/PaintBrushNotificationBus.h
+    PaintBrush/PaintBrushSettings.cpp
+    PaintBrush/PaintBrushSettings.h
     Physics/Collision/CollisionEvents.h
     Physics/Collision/CollisionEvents.cpp
     Physics/Collision/CollisionLayers.h
@@ -430,10 +447,6 @@ set(FILES
     Input/Utils/AdjustAnalogInputForDeadZone.h
     Input/Utils/IsAnyKeyOrButton.h
     Input/Utils/ProcessRawInputEventQueues.h
-    TargetManagement/NeighborhoodAPI.h
-    TargetManagement/TargetManagementAPI.h
-    TargetManagement/TargetManagementComponent.cpp
-    TargetManagement/TargetManagementComponent.h
     FileTag/FileTag.h
     FileTag/FileTag.cpp
     FileTag/FileTagBus.h

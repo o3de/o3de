@@ -8,12 +8,14 @@
 
 #pragma once
 
+#include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
+        class PrefabFocusPublicInterface;
         class PrefabPublicInterface;
     };
 
@@ -32,15 +34,19 @@ namespace AzToolsFramework
         QString GenerateItemInfoString(AZ::EntityId entityId) const override;
         bool CanToggleLockVisibility(AZ::EntityId entityId) const override;
         bool CanRename(AZ::EntityId entityId) const override;
-        void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const override;
+        bool OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         bool OnOutlinerItemDoubleClick(const QModelIndex& index) const override;
 
     private:
+        Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
-        static constexpr int m_levelRootBorderThickness = 1;
-        static const QColor m_levelRootBorderColor;
-        static const QString m_levelRootIconPath;
+        QString m_levelRootIconPath = QString(":/Level/level.svg");
+        QColor m_levelRootBorderColor = QColor("#656565");
 
+        QColor m_prefabCapsuleColor = QColor("#1E252F");
+        QColor m_prefabCapsuleDisabledColor = QColor("#35383C");
+        QColor m_prefabCapsuleEditColor = QColor("#4A90E2");
     };
 } // namespace AzToolsFramework

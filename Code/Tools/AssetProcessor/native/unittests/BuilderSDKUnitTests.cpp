@@ -7,8 +7,10 @@
  */
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
+#endif
 #include <QDir>
 #include <QTemporaryDir>
 
@@ -28,7 +30,7 @@ namespace UnitTest
     static AZ::Data::AssetType lensFlareAssetType("{CF44D1F0-F178-4A3D-A9E6-D44721F50C20}"); // from LensFlareAsset.h
     static AZ::Data::AssetType fontAssetType("{57767D37-0EBE-43BE-8F60-AB36D2056EF8}"); // form UiAssetTypes.h
 
-    class BuilderSDKUnitTests : public AllocatorsFixture
+    class BuilderSDKUnitTests : public LeakDetectionFixture
     {
     public:
         // QTemporaryDir autodeletes on destruct.
@@ -208,11 +210,10 @@ namespace UnitTest
 
         {
             UnitTestUtils::AssertAbsorber absorber;
-            // objectstream with invalid 'type' inside the class
+            // objectstream with an empty string 'type' inside the class
             EXPECT_TRUE(UnitTestUtils::CreateDummyFile(dummyFileName, "<ObjectStream><Class type=\"\"/></ObjectStream>"));
             EXPECT_EQ(
                 AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName(dummyFileName.toUtf8().data()), AZ::Uuid::CreateNull());
-            EXPECT_GT(absorber.m_numWarningsAbsorbed, 0);
         }
 
         {

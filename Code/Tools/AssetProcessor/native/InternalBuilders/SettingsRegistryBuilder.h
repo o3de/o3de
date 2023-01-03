@@ -20,34 +20,6 @@ namespace AssetProcessor
         : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
     {
     public:
-        class SettingsExporter : public AZ::SettingsRegistryInterface::Visitor
-        {
-        public:
-            SettingsExporter(rapidjson::StringBuffer& buffer, const AZStd::vector<AZStd::string>& excludes);
-            ~SettingsExporter() override = default;
-
-            AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view path, AZStd::string_view valueName,
-                AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type type) override;
-            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override;
-            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
-            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::u64 value) override;
-            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, double value) override;
-            void Visit(AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
-
-            bool Finalize();
-            void Reset(rapidjson::StringBuffer& buffer);
-            
-        private:
-            rapidjson::Writer<rapidjson::StringBuffer> m_writer;
-
-            const AZStd::vector<AZStd::string>& m_excludes;
-            AZStd::stack<bool> m_includeNameStack;
-            bool m_includeName{ false };
-            bool m_result{ true };
-
-            void WriteName(AZStd::string_view name);
-        };
-
         SettingsRegistryBuilder();
         ~SettingsRegistryBuilder() override = default;
 

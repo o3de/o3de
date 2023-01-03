@@ -139,8 +139,8 @@ namespace EMotionFX
 
         //! Number of vertices per batch/job used for multi-threaded software skinning.
         static constexpr AZ::u32 s_numVerticesPerBatch = 10000;
-        AZ::TaskGraph m_taskGraph;
-        bool m_useTaskGraph = true;
+        AZ::TaskGraph m_taskGraph{ "DualQuatSkinDeformer" };
+        bool m_useTaskGraph = false;
 
         /**
          * Default constructor.

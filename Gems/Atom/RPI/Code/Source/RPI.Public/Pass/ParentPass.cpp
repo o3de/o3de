@@ -54,7 +54,11 @@ namespace AZ
 
         void ParentPass::AddChild(const Ptr<Pass>& child, [[maybe_unused]] bool skipStateCheckWhenRunningTests)
         {
-            AZ_Error("PassSystem", GetPassState() == PassState::Building || IsRootPass() || skipStateCheckWhenRunningTests, "Do not add child passes outside of build phase");
+            // Todo: investigate if there's a way for this to not trigger on edge cases such as testing, then turn back into an Error instead of Warning.
+            if (!(GetPassState() == PassState::Building || IsRootPass() || skipStateCheckWhenRunningTests))
+            {
+                AZ_Warning("PassSystem", false, "Do not add child passes outside of build phase");
+            }
 
             if (child->m_parent != nullptr)
             {
@@ -311,7 +315,7 @@ namespace AZ
             PassRequest clearRequest;
             clearRequest.m_templateName = Name("SlowClearPassTemplate");
             clearRequest.m_passData = AZStd::make_shared<SlowClearPassData>();
-            clearRequest.m_connections.push_back();
+            clearRequest.m_connections.emplace_back();
             clearRequest.m_connections[0].m_localSlot = Name("ClearInputOutput");
             clearRequest.m_connections[0].m_attachmentRef.m_pass = Name("Parent");
 

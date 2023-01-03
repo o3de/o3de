@@ -49,7 +49,7 @@ namespace AZ
                 heapAllocatorDesc.m_allocationParameters = descriptor.m_heapParameters;
 
                 RHI::Ptr<AliasedAttachmentAllocator> allocator = AliasedAttachmentAllocator::Create();
-                allocator->SetName(Name("TransientAttachmentPool [Shared]"));
+                allocator->SetName(Name("TransientAttachmentPool_[Shared]"));
                 allocator->Init(device, heapAllocatorDesc);
 
                 m_bufferAllocator = allocator.get();
@@ -88,7 +88,7 @@ namespace AZ
                     heapAllocatorDesc.m_allocationParameters = descriptor.m_heapParameters;
 
                     RHI::Ptr<AliasedAttachmentAllocator> allocator = AliasedAttachmentAllocator::Create();
-                    allocator->SetName(Name("TransientAttachmentPool [Buffers]"));
+                    allocator->SetName(Name("TransientAttachmentPool_[Buffers]"));
                     allocator->Init(device, heapAllocatorDesc);
 
                     m_bufferAllocator = allocator.get();
@@ -106,7 +106,7 @@ namespace AZ
                     heapAllocatorDesc.m_allocationParameters = descriptor.m_heapParameters;
 
                     RHI::Ptr<AliasedAttachmentAllocator> allocator = AliasedAttachmentAllocator::Create();
-                    allocator->SetName(Name("TransientAttachmentPool [Images]"));
+                    allocator->SetName(Name("TransientAttachmentPool_[Images]"));
                     allocator->Init(device, heapAllocatorDesc);
 
                     m_imageAllocator = allocator.get();
@@ -125,7 +125,7 @@ namespace AZ
                     heapAllocatorDesc.m_allocationParameters = descriptor.m_heapParameters;
 
                     RHI::Ptr<AliasedAttachmentAllocator> allocator = AliasedAttachmentAllocator::Create();
-                    allocator->SetName(Name("TransientAttachmentPool [Render Targets]"));
+                    allocator->SetName(Name("TransientAttachmentPool_[Render Targets]"));
                     allocator->Init(device, heapAllocatorDesc);
 
                     m_renderTargetAllocator = allocator.get();

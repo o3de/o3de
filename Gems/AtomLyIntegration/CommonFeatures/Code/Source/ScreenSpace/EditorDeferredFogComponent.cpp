@@ -27,7 +27,7 @@ namespace AZ
                     editContext->Class<EditorDeferredFogComponent>(
                         "Deferred Fog", "Controls the Deferred Fog")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->Attribute(Edit::Attributes::Category, "Atom")
+                        ->Attribute(Edit::Attributes::Category, "Graphics/Environment")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
@@ -129,8 +129,8 @@ namespace AZ
                             "Octaves Blend Factor", "The blend factor between the noise octaves")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.2f)
-                        ->Attribute(AZ::Edit::Attributes::SoftMax, 0.8f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ;
                 }

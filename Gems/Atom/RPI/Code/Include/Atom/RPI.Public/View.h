@@ -53,7 +53,8 @@ namespace AZ
                 UsageNone = 0u,
                 UsageCamera = (1u << 0),
                 UsageShadow = (1u << 1),
-                UsageReflectiveCubeMap = (1u << 2)
+                UsageReflectiveCubeMap = (1u << 2),
+                UsageXR = (1u << 3)
             };
             //! Only use this function to create a new view object. And force using smart pointer to manage view's life time
             static ViewPtr CreateView(const AZ::Name& name, UsageFlags usage);
@@ -78,6 +79,22 @@ namespace AZ
             //! Add a draw item to this view with its associated draw list tag
             void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties);
 
+            //! Applies some flags to the view that are reset each frame. The provided flags are combined with m_andFlags
+            //! using &, and are combined with m_orFlags using |.
+            void ApplyFlags(uint32_t flags);
+
+            //! Clears and resets the flag positions marked with flag. This means the 'and' flag is set to 1 and the 'or' flag is set to 0.
+            void ClearFlags(uint32_t flags);
+
+            //! Clears and resets all the flags. This effectively sets the and flags back to 0xFFFFFFFF and the or flags to 0x00000000;
+            void ClearAllFlags();
+
+            //! Returns the boolean & combination of all flags provided with ApplyFlags() since the last frame.
+            uint32_t GetAndFlags();
+
+            //! Returns the boolean | combination of all flags provided with ApplyFlags() since the last frame.
+            uint32_t GetOrFlags();
+
             //! Sets the worldToView matrix and recalculates the other matrices.
             void SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView);
 
@@ -86,6 +103,9 @@ namespace AZ
 
             //! Sets the viewToClip matrix and recalculates the other matrices
             void SetViewToClipMatrix(const AZ::Matrix4x4& viewToClip);
+
+            //! Sets the viewToClip matrix and recalculates the other matrices for stereoscopic projection
+            void SetStereoscopicViewToClipMatrix(const AZ::Matrix4x4& viewToClip, bool reverseDepth = true);
 
             //! Sets a pixel offset on the view, usually used for jittering the camera for anti-aliasing techniques.
             void SetClipSpaceOffset(float xOffset, float yOffset);
@@ -173,7 +193,7 @@ namespace AZ
             RHI::ShaderInputNameIndex m_projectionMatrixInverseConstantIndex = "m_projectionMatrixInverse";
             RHI::ShaderInputNameIndex m_clipToWorldMatrixConstantIndex = "m_viewProjectionInverseMatrix";
             RHI::ShaderInputNameIndex m_worldToClipPrevMatrixConstantIndex = "m_viewProjectionPrevMatrix";
-            RHI::ShaderInputNameIndex m_zConstantsConstantIndex = "m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ";
+            RHI::ShaderInputNameIndex m_zConstantsConstantIndex = "m_linearizeDepthConstants";
             RHI::ShaderInputNameIndex m_unprojectionConstantsIndex = "m_unprojectionConstants";
 
             // The context containing draw lists associated with the view.
@@ -183,13 +203,14 @@ namespace AZ
             Matrix4x4 m_worldToViewMatrix;
             Matrix4x4 m_viewToWorldMatrix;
             Matrix4x4 m_viewToClipMatrix;
+            Matrix4x4 m_clipToViewMatrix;
             Matrix4x4 m_clipToWorldMatrix;
 
             // View's position in world space
             Vector3 m_position;
 
             // Precached constants for linearZ process
-            Vector4 m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ;
+            Vector4 m_linearizeDepthConstants;
 
             // Constants used to unproject depth values and reconstruct the view-space position (Z-forward & Y-up)
             Vector4 m_unprojectionConstants;
@@ -208,6 +229,9 @@ namespace AZ
 
             // Masked Occlusion Culling interface
             MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
+
+            AZStd::atomic_uint32_t m_andFlags{ 0xFFFFFFFF };
+            AZStd::atomic_uint32_t m_orFlags { 0x00000000 };
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(View::UsageFlags);

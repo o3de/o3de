@@ -12,7 +12,7 @@ from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, 
                                                  VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, GRAPH_VARIABLES_QT,
                                                  ADD_BUTTON_QT, VARIABLE_TYPES)
 import azlmbr.legacy.general as general
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 
 
 class VariableManager_Default_CreateDeleteVars:

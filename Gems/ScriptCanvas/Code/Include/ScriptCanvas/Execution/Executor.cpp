@@ -17,6 +17,11 @@ namespace ScriptCanvas
         m_execution.Execute();
     }
 
+    const RuntimeDataOverrides& Executor::GetRuntimeOverrides() const
+    {
+        return m_runtimeOverrides;
+    }
+
     void Executor::Initialize()
     {
         m_execution.Initialize(m_runtimeOverrides, ExecutionUserData(m_userData));

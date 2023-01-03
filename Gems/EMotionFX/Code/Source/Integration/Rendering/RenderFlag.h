@@ -8,11 +8,12 @@
 #pragma once
 
 #include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/RTTI/TypeInfo.h>
 #include <Atom/RHI.Reflect/Bits.h>
 
 namespace EMotionFX
 {
-    // The index of the render flag which is 0, 1, 2, 3.. based. 
+    // The index of the render flag which is 0, 1, 2, 3.. based.
     // Do not confuse this with the actual ActorRenderFlags::Type which is 1, 2, 4, 8.. based.
     enum ActorRenderFlagIndex : AZ::u8
     {
@@ -40,7 +41,8 @@ namespace EMotionFX
         SIMULATEDOBJECT_COLLIDERS = 21,
         SIMULATEJOINTS = 22,
         EMFX_DEBUG = 23,
-        NUM_RENDERFLAGINDEXES = 24
+        ROOTMOTION = 24,
+        NUM_RENDERFLAGINDEXES = 25
     };
 
     //! A set of combinable flags which indicate which render option in turned on for the actor.
@@ -70,12 +72,13 @@ namespace EMotionFX
         (ClothColliders, AZ_BIT(ActorRenderFlagIndex::CLOTH_COLLIDERS)),
         (SimulatedObjectColliders, AZ_BIT(ActorRenderFlagIndex::SIMULATEDOBJECT_COLLIDERS)),
         (SimulatedJoints, AZ_BIT(ActorRenderFlagIndex::SIMULATEJOINTS)),
-        (EmfxDebug, AZ_BIT(ActorRenderFlagIndex::EMFX_DEBUG))
+        (EmfxDebug, AZ_BIT(ActorRenderFlagIndex::EMFX_DEBUG)),
+        (RootMotion, AZ_BIT(ActorRenderFlagIndex::ROOTMOTION))
     );
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(ActorRenderFlags);
 
-    static constexpr ActorRenderFlags s_requireUpdateTransforms = 
+    static constexpr ActorRenderFlags s_requireUpdateTransforms =
         ActorRenderFlags::Solid | ActorRenderFlags::Wireframe | ActorRenderFlags::AABB |
         ActorRenderFlags::FaceNormals |ActorRenderFlags::VertexNormals | ActorRenderFlags::Tangents |
         ActorRenderFlags::Skeleton | ActorRenderFlags::LineSkeleton | ActorRenderFlags::NodeOrientation | ActorRenderFlags::NodeNames |

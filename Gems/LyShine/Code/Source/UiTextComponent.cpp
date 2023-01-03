@@ -5122,7 +5122,7 @@ int UiTextComponent::GetLineNumberFromCharIndex(const DrawBatchLines& drawBatchL
         for (const DrawBatch& drawBatch : batchLine.drawBatchList)
         {
             Utf8::Unchecked::octet_iterator pChar(drawBatch.text.data());
-            while (uint32_t ch = *pChar)
+            while (*pChar)
             {
                 ++pChar;
                 if (indexIter == soughtIndex)

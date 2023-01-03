@@ -24,8 +24,22 @@
 #include <AzCore/Module/DynamicModuleHandle.h>
 #endif // defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
 
+namespace AZ { class JobCompletion; }
+
 namespace ImGui
 {
+    enum class ImGuiStateBroadcast
+    {
+        Broadcast,
+        NotBroadcast,
+    };
+
+    struct ImGuiBroadcastState
+    {
+        ImGuiStateBroadcast m_activationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
+        ImGuiStateBroadcast m_deactivationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
+    };
+
     class ImGuiManager
         : public AzFramework::InputChannelEventListener
         , public AzFramework::InputTextEventListener
@@ -62,6 +76,7 @@ namespace ImGui
         float GetDpiScalingFactor() const override;
         void Render() override;
         void ToggleThroughImGuiVisibleState() override;
+        void ToggleToImGuiVisibleState(DisplayState state) override;
         // -- ImGuiManagerBus Interface -------------------------------------------------------------------
 
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------
@@ -77,6 +92,8 @@ namespace ImGui
         void InitWindowSize();
 
     private:
+        void RenderJob();
+
         ImGuiContext* m_imguiContext = nullptr;
         DisplayState m_clientMenuBarState = DisplayState::Hidden;
         DisplayState m_editorWindowState = DisplayState::Hidden;
@@ -103,6 +120,10 @@ namespace ImGui
         float m_lastPrimaryTouchPosition[2] = { 0.0f, 0.0f };
         bool m_useLastPrimaryTouchPosition = false;
         bool m_simulateBackspaceKeyPressed = false;
+
+        ImGuiBroadcastState m_imGuiBroadcastState;
+
+        AZ::JobCompletion* m_renderJobCompletion = nullptr;
 
 #if defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
         AZStd::unique_ptr<AZ::DynamicModuleHandle>  m_imgSharedLib;

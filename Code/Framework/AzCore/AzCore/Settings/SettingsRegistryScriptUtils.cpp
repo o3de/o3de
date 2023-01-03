@@ -20,11 +20,12 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
     {
         if (settingsRegistry != nullptr)
         {
-            auto ForwardSettingsUpdateToProxyEvent = [notifyEventProxy](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+            auto ForwardSettingsUpdateToProxyEvent = [notifyEventProxy](
+                const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
             {
                 if (notifyEventProxy)
                 {
-                    notifyEventProxy->m_scriptNotifyEvent.Signal(path);
+                    notifyEventProxy->m_scriptNotifyEvent.Signal(notifyEventArgs.m_jsonKeyPath);
                 }
             };
             // Register the forwarding function with the BehaviorContext
@@ -33,6 +34,10 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
     }
 
     SettingsRegistryScriptProxy::SettingsRegistryScriptProxy() = default;
+    SettingsRegistryScriptProxy::SettingsRegistryScriptProxy(AZStd::nullptr_t)
+        : SettingsRegistryScriptProxy()
+    {}
+
     SettingsRegistryScriptProxy::SettingsRegistryScriptProxy(AZStd::shared_ptr<AZ::SettingsRegistryInterface> settingsRegistry)
         : m_settingsRegistry(AZStd::move(settingsRegistry))
         , m_notifyEventProxy(AZStd::make_shared<NotifyEventProxy>())

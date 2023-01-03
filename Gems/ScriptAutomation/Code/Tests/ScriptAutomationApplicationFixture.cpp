@@ -11,17 +11,13 @@
 #include <ScriptAutomation/ScriptAutomationBus.h>
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
 
 
 namespace UnitTest
 {
-    void ScriptAutomationApplicationFixture::SetUp()
-    {
-        AllocatorsFixture::SetUp();
-    }
-
     void ScriptAutomationApplicationFixture::TearDown()
     {
         if (m_application)
@@ -29,7 +25,7 @@ namespace UnitTest
             DestroyApplication();
         }
 
-        AllocatorsFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
     AzFramework::Application* ScriptAutomationApplicationFixture::CreateApplication(const char* scriptPath, bool exitOnFinish)
@@ -83,6 +79,8 @@ namespace UnitTest
         }
 
         m_application->Start(appDesc);
+
+        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
         return m_application;
     }

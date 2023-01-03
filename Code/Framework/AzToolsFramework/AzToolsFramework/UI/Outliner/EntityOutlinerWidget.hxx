@@ -17,6 +17,7 @@
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/ToolsMessaging/EntityHighlightBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
@@ -62,6 +63,7 @@ namespace AzToolsFramework
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
         , private ViewportEditorModeNotificationsBus::Handler
+        , private Prefab::PrefabFocusNotificationBus::Handler
         , private Prefab::PrefabPublicNotificationBus::Handler
         , private EditorWindowUIRequestBus::Handler
     {
@@ -109,7 +111,10 @@ namespace AzToolsFramework
         void OnEditorModeDeactivated(
             const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
-        // PrefabPublicNotificationBus
+        // PrefabFocusNotificationBus overrides ...
+        void OnPrefabEditScopeChanged() override;
+
+        // PrefabPublicNotificationBus  overrides ...
         void OnPrefabInstancePropagationBegin() override;
         void OnPrefabInstancePropagationEnd() override;
         void OnPrefabTemplateDirtyFlagUpdated(Prefab::TemplateId templateId, bool status) override;

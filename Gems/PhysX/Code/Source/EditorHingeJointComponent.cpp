@@ -55,7 +55,6 @@ namespace PhysX
     void EditorHingeJointComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
-        required.push_back(AZ_CRC_CE("PhysicsColliderService"));
         required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
@@ -101,19 +100,19 @@ namespace PhysX
 
     float EditorHingeJointComponent::GetLinearValue(const AZStd::string& parameterName)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxForce)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxForce)
         {
             return m_config.m_forceMax;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxTorque)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxTorque)
         {
             return m_config.m_torqueMax;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Damping)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Damping)
         {
             return m_angularLimit.m_standardLimitConfig.m_damping;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Stiffness)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Stiffness)
         {
             return m_angularLimit.m_standardLimitConfig.m_stiffness;
         }
@@ -123,7 +122,7 @@ namespace PhysX
 
     AngleLimitsFloatPair EditorHingeJointComponent::GetLinearValuePair(const AZStd::string& parameterName)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::TwistLimits)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::TwistLimits)
         {
             return AngleLimitsFloatPair(m_angularLimit.m_limitPositive, m_angularLimit.m_limitNegative);
         }
@@ -131,14 +130,14 @@ namespace PhysX
         return AngleLimitsFloatPair();
     }
 
-    AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> EditorHingeJointComponent::GetSubComponentModesState()
+    AZStd::vector<JointsComponentModeCommon::SubModeParameterState> EditorHingeJointComponent::GetSubComponentModesState()
     {
-        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> subModes;
-        subModes.emplace_back(JointsComponentModeCommon::SubModeParamaterState{
+        AZStd::vector<JointsComponentModeCommon::SubModeParameterState> subModes;
+        subModes.emplace_back(JointsComponentModeCommon::SubModeParameterState{
             JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition,
-            JointsComponentModeCommon::ParamaterNames::SnapPosition });
+            JointsComponentModeCommon::ParameterNames::SnapPosition });
 
-        if (AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> baseSubModes =
+        if (AZStd::vector<JointsComponentModeCommon::SubModeParameterState> baseSubModes =
                 EditorJointComponent::GetSubComponentModesState();
             !baseSubModes.empty())
         {
@@ -148,16 +147,16 @@ namespace PhysX
         if (m_angularLimit.m_standardLimitConfig.m_isLimited)
         {
             subModes.emplace_back(
-                JointsComponentModeCommon::SubModeParamaterState{ JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits,
-                                                                  JointsComponentModeCommon::ParamaterNames::TwistLimits });
+                JointsComponentModeCommon::SubModeParameterState{ JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits,
+                                                                  JointsComponentModeCommon::ParameterNames::TwistLimits });
 
             if (m_angularLimit.m_standardLimitConfig.m_isSoftLimit)
             {
-                subModes.emplace_back(JointsComponentModeCommon::SubModeParamaterState{
-                    JointsComponentModeCommon::SubComponentModes::ModeType::Damping, JointsComponentModeCommon::ParamaterNames::Damping });
+                subModes.emplace_back(JointsComponentModeCommon::SubModeParameterState{
+                    JointsComponentModeCommon::SubComponentModes::ModeType::Damping, JointsComponentModeCommon::ParameterNames::Damping });
                 subModes.emplace_back(
-                    JointsComponentModeCommon::SubModeParamaterState{ JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness,
-                                                                      JointsComponentModeCommon::ParamaterNames::Stiffness });
+                    JointsComponentModeCommon::SubModeParameterState{ JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness,
+                                                                      JointsComponentModeCommon::ParameterNames::Stiffness });
             }
         }
         return subModes;
@@ -165,7 +164,7 @@ namespace PhysX
 
     void EditorHingeJointComponent::SetBoolValue(const AZStd::string& parameterName, bool value)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::ComponentMode)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::ComponentMode)
         {
             m_angularLimit.m_standardLimitConfig.m_inComponentMode = value;
             m_config.m_inComponentMode = value;
@@ -174,23 +173,31 @@ namespace PhysX
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
                 , AzToolsFramework::Refresh_EntireTree);
         }
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::EnableLimits)
+        {
+            m_angularLimit.m_standardLimitConfig.m_isLimited = value;
+        }
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::EnableSoftLimits)
+        {
+            m_angularLimit.m_standardLimitConfig.m_isSoftLimit = value;
+        }
     }
 
     void EditorHingeJointComponent::SetLinearValue(const AZStd::string& parameterName, float value)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxForce)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxForce)
         {
             m_config.m_forceMax = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxTorque)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxTorque)
         {
             m_config.m_torqueMax = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Damping)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Damping)
         {
             m_angularLimit.m_standardLimitConfig.m_damping = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Stiffness)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Stiffness)
         {
             m_angularLimit.m_standardLimitConfig.m_stiffness = value;
         }
@@ -198,7 +205,7 @@ namespace PhysX
 
     void EditorHingeJointComponent::SetLinearValuePair(const AZStd::string& parameterName, const AngleLimitsFloatPair& valuePair)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::TwistLimits)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::TwistLimits)
         {
             m_angularLimit.m_limitPositive = valuePair.first;
             m_angularLimit.m_limitNegative = valuePair.second;
@@ -264,7 +271,7 @@ namespace PhysX
         EditorJointRequestBus::EventResult(localTransform, 
             AZ::EntityComponentIdPair(entityId, GetId()),
             &EditorJointRequests::GetTransformValue, 
-            PhysX::JointsComponentModeCommon::ParamaterNames::Transform);
+            PhysX::JointsComponentModeCommon::ParameterNames::Transform);
 
         debugDisplay.PushMatrix(worldTransform);
         debugDisplay.PushMatrix(localTransform);

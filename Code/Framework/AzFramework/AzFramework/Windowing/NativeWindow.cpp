@@ -103,9 +103,14 @@ namespace AzFramework
         return m_pimpl->GetClientAreaSize();
     }
 
-    void NativeWindow::ResizeClientArea(WindowSize clientAreaSize)
+    void NativeWindow::ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options)
     {
-        m_pimpl->ResizeClientArea(clientAreaSize);
+        m_pimpl->ResizeClientArea(clientAreaSize, options);
+    }
+
+    bool NativeWindow::SupportsClientAreaResize() const
+    {
+        return m_pimpl->SupportsClientAreaResize();
     }
 
     bool NativeWindow::GetFullScreenState() const
@@ -149,6 +154,21 @@ namespace AzFramework
         return true;
     }
 
+    /*static*/ bool NativeWindow::SupportsClientAreaResizeOfDefaultWindow()
+    {
+        NativeWindowHandle defaultWindowHandle = nullptr;
+        WindowSystemRequestBus::BroadcastResult(defaultWindowHandle,
+                                                &WindowSystemRequestBus::Events::GetDefaultWindowHandle);
+
+        bool supportsClientAreaResizeOfDefaultWindow = false;
+        if (defaultWindowHandle)
+        {
+            WindowRequestBus::EventResult(supportsClientAreaResizeOfDefaultWindow,
+                                          defaultWindowHandle,
+                                          &WindowRequestBus::Events::SupportsClientAreaResize);
+        }
+        return supportsClientAreaResizeOfDefaultWindow;
+    }
 
     /*static*/ bool NativeWindow::GetFullScreenStateOfDefaultWindow()
     {
@@ -241,8 +261,16 @@ namespace AzFramework
         return WindowSize(m_width, m_height);
     }
 
-    void NativeWindow::Implementation::ResizeClientArea([[maybe_unused]] WindowSize clientAreaSize)
+    void NativeWindow::Implementation::ResizeClientArea(
+        [[maybe_unused]] WindowSize clientAreaSize,
+        [[maybe_unused]] const WindowPosOptions& options)
     {
+    }
+
+    bool NativeWindow::Implementation::SupportsClientAreaResize() const
+    {
+        // Default to client area resize is unsupported, supported platforms will override this function
+        return false;
     }
 
     bool NativeWindow::Implementation::GetFullScreenState() const

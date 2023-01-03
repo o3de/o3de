@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 	<!-- rapidjson::GenericValue - basic support -->
-	<Type Name="rapidjson_ly::GenericValue&lt;*,*&gt;">
+	<Type Name="rapidjson::GenericValue&lt;*,*&gt;">
 		<DisplayString Condition="(data_.f.flags &amp; kTypeMask) == kNullType">null</DisplayString>
 		<DisplayString Condition="data_.f.flags == kTrueFlag">true</DisplayString>
 		<DisplayString Condition="data_.f.flags == kFalseFlag">false</DisplayString>
@@ -20,7 +20,7 @@
 			<ArrayItems Condition="data_.f.flags == kObjectType">
 				<Size>data_.o.size</Size>
 				<!-- NOTE: Rapidjson stores some extra data in the high bits of pointers, which is why the mask -->
-				<ValuePointer>(rapidjson_ly::GenericMember&lt;$T1,$T2&gt;*)(((size_t)data_.o.members) &amp; 0x0000FFFFFFFFFFFF)</ValuePointer>
+				<ValuePointer>(rapidjson::GenericMember&lt;$T1,$T2&gt;*)(((size_t)data_.o.members) &amp; 0x0000FFFFFFFFFFFF)</ValuePointer>
 			</ArrayItems>
 
 			<Item Condition="data_.f.flags == kArrayType" Name="[size]">data_.a.size</Item>
@@ -28,7 +28,7 @@
 			<ArrayItems Condition="data_.f.flags == kArrayType">
 				<Size>data_.a.size</Size>
 				<!-- NOTE: Rapidjson stores some extra data in the high bits of pointers, which is why the mask -->
-				<ValuePointer>(rapidjson_ly::GenericValue&lt;$T1,$T2&gt;*)(((size_t)data_.a.elements) &amp; 0x0000FFFFFFFFFFFF)</ValuePointer>
+				<ValuePointer>(rapidjson::GenericValue&lt;$T1,$T2&gt;*)(((size_t)data_.a.elements) &amp; 0x0000FFFFFFFFFFFF)</ValuePointer>
 			</ArrayItems>
 
 		</Expand>

@@ -22,6 +22,7 @@
 #include <Allocators.h>
 #include <Feature.h>
 #include <FeatureMatrixMinMaxScaler.h>
+#include <FeatureMatrixStandardScaler.h>
 #include <FeatureSchemaDefault.h>
 #include <FeatureTrajectory.h>
 #include <FrameDatabase.h>
@@ -84,7 +85,7 @@ namespace EMotionFX::MotionMatching
             const bool useTaskGraph = taskGraphActiveInterface && taskGraphActiveInterface->IsTaskGraphActive();
             if (useTaskGraph)
             {
-                AZ::TaskGraph m_taskGraph;
+                AZ::TaskGraph m_taskGraph{ "MotionMatching FeatureExtraction" };
 
                 // Split-up the motion database into batches of frames and extract the feature values for each batch simultaneously.
                 for (size_t batchIndex = 0; batchIndex < numBatches; ++batchIndex)
@@ -102,7 +103,7 @@ namespace EMotionFX::MotionMatching
                         });
                 }
 
-                AZ::TaskGraphEvent finishedEvent;
+                AZ::TaskGraphEvent finishedEvent{ "MotionMatching FeatureExtraction Wait" };
                 m_taskGraph.Submit(&finishedEvent);
                 finishedEvent.Wait();
             }
@@ -228,8 +229,25 @@ namespace EMotionFX::MotionMatching
             AZ::Debug::Timer transformFeatureTimer;
             transformFeatureTimer.Stamp();
 
-            MinMaxScaler* minMaxScaler = aznew MinMaxScaler();
-            m_featureTransformer.reset(minMaxScaler);
+            switch (settings.m_featureScalerType)
+            {
+            case FeatureScalerType::StandardScalerType:
+                {
+                    m_featureTransformer.reset(aznew StandardScaler());
+                    break;
+                }
+            case FeatureScalerType::MinMaxScalerType:
+                {
+                    m_featureTransformer.reset(aznew MinMaxScaler());
+                    break;
+                }
+            default:
+                {
+                    m_featureTransformer.reset();
+                    AZ_Error("Motion Matching", false, "Unknown feature scaler type.")
+                }
+            }
+
             m_featureTransformer->Fit(m_featureMatrix, settings.m_featureTansformerSettings);
             m_featureMatrix = m_featureTransformer->Transform(m_featureMatrix);
 

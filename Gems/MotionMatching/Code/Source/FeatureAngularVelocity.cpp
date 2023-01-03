@@ -16,8 +16,8 @@
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <FeatureAngularVelocity.h>
+#include <FeatureMatrixTransformer.h>
 #include <FrameDatabase.h>
-#include <MotionMatchingData.h>
 #include <MotionMatchingInstance.h>
 #include <PoseDataJointVelocities.h>
 
@@ -101,7 +101,7 @@ namespace EMotionFX::MotionMatching
 
     void FeatureAngularVelocity::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (!serializeContext)
         {
             return;

@@ -215,7 +215,7 @@ def get_availability_zone():
         error('No EC2 metadata! Check if you are running this script on an EC2 instance.')
 
 
-def kill_processes(workspace='/dev/'):
+def kill_processes(workspace='/data'):
     """
     Kills all processes that have open file paths associated with the workspace.
     Uses PSUtil for cross-platform compatibility
@@ -395,7 +395,7 @@ def unmount_volume_from_device():
         offline_drive()
     else:
         kill_processes(MOUNT_PATH)
-        subprocess.call(['umount', '-f', MOUNT_PATH])
+        subprocess.call(['umount', '-fl', MOUNT_PATH])
 
 
 def detach_volume_from_ec2_instance(volume, ec2_instance_id, force, timeout_duration=DEFAULT_TIMEOUT):

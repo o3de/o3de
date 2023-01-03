@@ -113,6 +113,9 @@ set(FILES
     Include/Atom/RHI/ObjectCollector.h
     Include/Atom/RHI/ObjectPool.h
     Source/RHI/Object.cpp
+    Include/Atom/RHI/PageTileAllocator.h
+    Include/Atom/RHI/PageTiles.h
+    Source/RHI/PageTileAllocator.cpp
     Include/Atom/RHI/PhysicalDevice.h
     Source/RHI/PhysicalDevice.cpp
     Include/Atom/RHI/PipelineLibrary.h
@@ -155,7 +158,7 @@ set(FILES
     Source/RHI/ImageScopeAttachment.cpp
     Source/RHI/ResolveScopeAttachment.cpp
     Source/RHI/ScopeAttachment.cpp
-    Include/Atom/RHI/ShaderResourceGroup.h
+    Include/Atom/RHI/ShaderResourceGroup.h    
     Include/Atom/RHI/ShaderResourceGroupData.h
     Include/Atom/RHI/ShaderResourceGroupDebug.h
     Include/Atom/RHI/ShaderResourceGroupInvalidateRegistry.h
@@ -181,6 +184,8 @@ set(FILES
     Include/Atom/RHI/AliasedAttachmentAllocator.h
     Include/Atom/RHI/AliasingBarrierTracker.h
     Source/RHI/AliasingBarrierTracker.cpp
+    Include/Atom/RHI/TileAllocator.h
+    Include/Atom/RHI/TileAllocator.inl
     Include/Atom/RHI/TransientAttachmentPool.h
     Source/RHI/TransientAttachmentPool.cpp
     Include/Atom/RHI/RHIUtils.h
@@ -197,6 +202,7 @@ set(FILES
     Include/Atom/RHI/interval_map.h
     Include/Atom/RHI/ImageProperty.h
     Include/Atom/RHI/BufferProperty.h
+    Include/Atom/RHI/TagBitRegistry.h
     Include/Atom/RHI/TagRegistry.h
     Include/Atom/RHI/XRRenderingInterface.h
 )

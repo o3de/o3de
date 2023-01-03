@@ -10,6 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <ProjectInfo.h>
 #include <ScreenWidget.h>
+#include <GemCatalog/GemInfo.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
@@ -23,13 +24,15 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(UpdateProjectSettingsScreen)
     QT_FORWARD_DECLARE_CLASS(ProjectGemCatalogScreen)
     QT_FORWARD_DECLARE_CLASS(GemRepoScreen)
+    QT_FORWARD_DECLARE_CLASS(DownloadController)
+    QT_FORWARD_DECLARE_CLASS(CreateGem)
 
     class UpdateProjectCtrl
         : public ScreenWidget
     {
         Q_OBJECT
     public:
-        explicit UpdateProjectCtrl(QWidget* parent = nullptr);
+        explicit UpdateProjectCtrl(DownloadController* downloadController, QWidget* parent = nullptr);
         ~UpdateProjectCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
 

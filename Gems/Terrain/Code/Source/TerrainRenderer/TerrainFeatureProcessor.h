@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
-#include <TerrainRenderer/BindlessImageArrayHandler.h>
 #include <TerrainRenderer/Passes/TerrainClipmapComputePass.h>
 #include <TerrainRenderer/TerrainDetailMaterialManager.h>
 #include <TerrainRenderer/TerrainMacroMaterialManager.h>
@@ -19,7 +19,6 @@
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 
 namespace AZ::RPI
 {
@@ -35,7 +34,7 @@ namespace Terrain
 {
     class TerrainFeatureProcessor final
         : public AZ::RPI::FeatureProcessor
-        , private AZ::RPI::MaterialReloadNotificationBus::Handler
+        , public AZ::Data::AssetBus::Handler
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
@@ -55,13 +54,13 @@ namespace Terrain
 
         void SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config);
         void SetMeshConfiguration(const MeshConfiguration& config);
+        void SetClipmapConfiguration(const ClipmapConfiguration& config);
 
         const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> GetTerrainShaderResourceGroup() const;
         const AZ::Data::Instance<AZ::RPI::Material> GetMaterial() const;
         const TerrainClipmapManager& GetClipmapManager() const;
     private:
 
-        static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
         using MaterialInstance = AZ::Data::Instance<AZ::RPI::Material>;
         
         struct WorldShaderData
@@ -72,54 +71,45 @@ namespace Terrain
             float m_padding;
         };
 
-        // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
-        void OnMaterialReinitialized(const MaterialInstance& material) override;
+        //! AZ::Data::AssetBus overrides...
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
         // AZ::RPI::SceneNotificationBus overrides...
-        void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
-        void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
+        void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override;
         
         // AZ::RPI::FeatureProcessor overrides...
-        void ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline) override;
+        void AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline) override;
 
         void Initialize();
 
         void PrepareMaterialData();
 
-        void TerrainHeightOrSettingsUpdated(const AZ::Aabb& dirtyRegion);
-
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
 
         void CachePasses();
-
-        bool ClipmapFeatureIsEnabled() const;
 
         TerrainMeshManager m_meshManager;
         TerrainMacroMaterialManager m_macroMaterialManager;
         TerrainDetailMaterialManager m_detailMaterialManager;
         TerrainClipmapManager m_clipmapManager;
 
-        AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_imageArrayHandler;
-
-        AZStd::unique_ptr<AZ::RPI::AssetUtils::AsyncAssetLoader> m_materialAssetLoader;
+        AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
         MaterialInstance m_materialInstance;
 
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_terrainSrg;
 
         AZ::RHI::ShaderInputNameIndex m_worldDataIndex = "m_terrainWorldData";
 
-        AZ::Vector2 m_zBounds{ AZ::Vector2::CreateZero() };
+        AzFramework::Terrain::FloatRange m_zBounds;
         AZ::Aabb m_dirtyRegion{ AZ::Aabb::CreateNull() };
         
-        float m_sampleSpacing{ 0.0f };
         bool m_terrainBoundsNeedUpdate{ false };
 
         AZStd::vector<AZ::RPI::RenderPass*> m_passes;
-        // Used to check whether we need to initialize the clipmap manager.
-        TerrainMacroClipmapGenerationPass* m_clipmapPass = nullptr;
     };
 }

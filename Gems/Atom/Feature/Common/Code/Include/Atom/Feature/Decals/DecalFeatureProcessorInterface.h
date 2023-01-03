@@ -50,7 +50,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::DecalFeatureProcessorInterface, "{4A64E427-7F9F-4AF7-B414-69EA91323827}", RPI::FeatureProcessor);
+            AZ_RTTI(AZ::Render::DecalFeatureProcessorInterface, "{4A64E427-7F9F-4AF7-B414-69EA91323827}", AZ::RPI::FeatureProcessor);
 
             using DecalHandle = RHI::Handle<uint16_t, class Decal>;
 

@@ -79,7 +79,7 @@ namespace Multiplayer
             }
 
             AZLOG(NET_AuthTracker, "AuthTracker: Removing networkEntityId %llu from %s", aznumeric_cast<AZ::u64>(entityHandle.GetNetEntityId()), previousOwner.GetString().c_str());
-            if (auto localEnt = entityHandle.GetEntity())
+            if (entityHandle.GetEntity())
             {
                 if (authorityStack.empty())
                 {
@@ -105,7 +105,7 @@ namespace Multiplayer
                                 {
                                     m_timedOutNetEntityIds.erase(timeoutData);
                                     ConstNetworkEntityHandle entityHandle = m_networkEntityManager.GetEntity(netEntityId);
-                                    if (auto entity = entityHandle.GetEntity())
+                                    if (entityHandle.GetEntity())
                                     {
                                         NetEntityRole networkRole = NetEntityRole::InvalidRole;
                                         NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
@@ -140,7 +140,7 @@ namespace Multiplayer
 
     HostId NetworkEntityAuthorityTracker::GetEntityAuthorityManager(ConstNetworkEntityHandle entityHandle) const
     {
-        if (auto localEnt = entityHandle.GetEntity())
+        if (entityHandle.GetEntity())
         {
             NetEntityRole networkRole = NetEntityRole::InvalidRole;
             NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();

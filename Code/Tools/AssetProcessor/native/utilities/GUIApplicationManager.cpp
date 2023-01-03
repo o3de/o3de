@@ -475,13 +475,13 @@ bool GUIApplicationManager::OnAssert(const char* message)
 
     // Asserts should be severe enough for data corruption,
     // so the process should quit to avoid that happening for users.
-    if (!AZ::Debug::Trace::IsDebuggerPresent())
+    if (!AZ::Debug::Trace::Instance().IsDebuggerPresent())
     {
         QuitRequested();
         return true;
     }
 
-    AZ::Debug::Trace::Break();
+    AZ::Debug::Trace::Instance().Break();
     return true;
 }
 
@@ -699,7 +699,7 @@ FileServer* GUIApplicationManager::GetFileServer() const
 
 void GUIApplicationManager::ShowTrayIconErrorMessage(QString msg)
 {
-    AZStd::chrono::system_clock::time_point currentTime = AZStd::chrono::system_clock::now();
+    AZStd::chrono::steady_clock::time_point currentTime = AZStd::chrono::steady_clock::now();
 
     if (m_trayIcon && m_mainWindow)
     {
@@ -747,9 +747,12 @@ bool GUIApplicationManager::Restart()
 
 void GUIApplicationManager::Reflect()
 {
+    ApplicationManagerBase::Reflect();
+
     AZ::SerializeContext* context;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialize context");
+
     AzToolsFramework::LogPanel::BaseLogPanel::Reflect(context);
     AssetProcessor::PlatformConfiguration::Reflect(context);
 }
@@ -805,7 +808,8 @@ ApplicationManager::RegistryCheckInstructions GUIApplicationManager::PopupRegist
 
 void GUIApplicationManager::InitSourceControl()
 {
-    QSettings settings;
+    // Look in the editor's settings for the Source Control value
+    QSettings settings(QApplication::organizationName(), QString("O3DE Editor"));
     settings.beginGroup("Settings");
     bool enableSourceControl = settings.value("EnableSourceControl", 1).toBool();
 

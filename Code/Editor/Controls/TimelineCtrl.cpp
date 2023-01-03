@@ -129,8 +129,6 @@ void TimelineWidget::DrawTicks(QPainter* painter)
     const QPen redpen(QColor(255, 0, 255));
 
     // Draw time ticks every tick step seconds.
-    Range timeRange = m_timeRange;
-
     painter->setPen(ltgray);
 
     switch (m_markerStyle)

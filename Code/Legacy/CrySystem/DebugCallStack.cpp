@@ -218,7 +218,7 @@ void UpdateFPExceptionsMaskForThreads()
 int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
 {
     AZ_TracePrintf("Exit", "Exception with exit code: 0x%x", exception_pointer->ExceptionRecord->ExceptionCode);
-    AZ::Debug::Trace::PrintCallstack("Exit");
+    AZ::Debug::Trace::Instance().PrintCallstack("Exit");
 
     if (gEnv == NULL)
     {
@@ -798,7 +798,7 @@ int DebugCallStack::SubmitBug(EXCEPTION_POINTERS* exception_pointer)
 
     RemoveOldFiles();
 
-    AZ::Debug::Trace::PrintCallstack("", 2);
+    AZ::Debug::Trace::Instance().PrintCallstack("", 2);
 
     LogExceptionInfo(exception_pointer);
 

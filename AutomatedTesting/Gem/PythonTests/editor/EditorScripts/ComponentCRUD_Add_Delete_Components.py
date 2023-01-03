@@ -31,7 +31,7 @@ class Tests:
 
 def ComponentCRUD_Add_Delete_Components():
 
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
 
     @pyside_utils.wrap_async
     async def run_test():
@@ -74,13 +74,22 @@ def ComponentCRUD_Add_Delete_Components():
 
         import editor_python_test_tools.hydra_editor_utils as hydra
         from editor_python_test_tools.utils import Report
-        from editor_python_test_tools.prefab_utils import wait_for_propagation
+        from editor_python_test_tools.wait_utils import PrefabWaiter
 
         async def add_component(component_name):
             pyside_utils.click_button_async(add_comp_btn)
             popup = await pyside_utils.wait_for_popup_widget()
             tree = popup.findChild(QtWidgets.QTreeView, "Tree")
             component_index = pyside_utils.find_child_by_pattern(tree, component_name)
+            # Handle Mesh component which has both a named section of components along with a named Mesh component
+            if component_name == "Mesh":
+                mesh_component_index = pyside_utils.find_child_by_pattern(component_index, component_name)
+                if mesh_component_index.isValid():
+                    Report.info(f"{component_name} found")
+                tree.expand(mesh_component_index)
+                tree.setCurrentIndex(mesh_component_index)
+                QtTest.QTest.keyClick(tree, Qt.Key_Enter, Qt.NoModifier)
+            # Handle other components
             if component_index.isValid():
                 Report.info(f"{component_name} found")
             tree.expand(component_index)
@@ -128,7 +137,7 @@ def ComponentCRUD_Add_Delete_Components():
         Report.result(Tests.mesh_component_deleted, success)
 
         # 7) Undo deletion of component after waiting for the deletion to register
-        wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
         QtTest.QTest.keyPress(entity_inspector, Qt.Key_Z, Qt.ControlModifier)
         success = await pyside_utils.wait_for_condition(lambda: hydra.has_components(entity_id, ['Mesh']), 5.0)
         Report.result(Tests.mesh_component_delete_undo, success)

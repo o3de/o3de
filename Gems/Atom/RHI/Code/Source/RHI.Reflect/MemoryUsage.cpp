@@ -31,8 +31,8 @@ namespace AZ
         HeapMemoryUsage& HeapMemoryUsage::operator=(const HeapMemoryUsage& rhs)
         {
             m_budgetInBytes = rhs.m_budgetInBytes;
-            m_reservedInBytes = rhs.m_reservedInBytes.load();
-            m_residentInBytes = rhs.m_residentInBytes.load();
+            m_totalResidentInBytes = rhs.m_totalResidentInBytes.load();
+            m_usedResidentInBytes = rhs.m_usedResidentInBytes.load();
             m_fragmentation = rhs.m_fragmentation;
             return *this;
         }

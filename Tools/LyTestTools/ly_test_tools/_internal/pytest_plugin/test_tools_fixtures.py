@@ -12,9 +12,7 @@ import getpass
 import logging
 import os
 import socket
-import time
 from datetime import datetime
-from warnings import warn
 
 import pytest
 
@@ -26,7 +24,7 @@ import ly_test_tools.environment.file_system
 import ly_test_tools.launchers.launcher_helper
 import ly_test_tools.launchers.platforms.base
 import ly_test_tools.environment.watchdog
-from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM, HOST_OS_DEDICATED_SERVER, HOST_OS_GENERIC_EXECUTABLE
+from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +45,7 @@ def pytest_addoption(parser):
                      help="An existing CMake binary output directory which contains the lumberyard executables,"
                           "such as: D:/ly/dev/windows_vs2017/bin/profile/")
 
+
 def pytest_configure(config):
     """
     Save custom CLI options during Pytest configuration, so they are later accessible without using fixtures
@@ -55,6 +54,7 @@ def pytest_configure(config):
     """
     ly_test_tools._internal.pytest_plugin.build_directory = _get_build_directory(config)
     ly_test_tools._internal.pytest_plugin.output_path = _get_output_path(config)
+
 
 def _get_build_directory(config):
     """
@@ -255,53 +255,6 @@ def _launcher(request, workspace, launcher_platform, level=""):
     return launcher
 
 
-@pytest.fixture(scope="function")
-def dedicated_launcher(request, workspace, crash_log_watchdog):
-    # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
-
-    warn("This method is deprecated and will be removed on 3/31/22. Please use create_game_launcher instead.",
-         DeprecationWarning, stacklevel=2)
-    return _dedicated_launcher(
-        request=request,
-        workspace=workspace,
-        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_DEDICATED_SERVER),
-        level=get_fixture_argument(request, 'level', ''))
-
-
-def _dedicated_launcher(request, workspace, launcher_platform, level=""):
-    """Separate implementation to call directly during unit tests"""
-
-    warn("This method is deprecated and will be removed on 3/31/22. Please use create_game_launcher instead.",
-         DeprecationWarning, stacklevel=2)
-    if not level:
-        launcher = ly_test_tools.launchers.launcher_helper.create_server_launcher(
-            workspace, launcher_platform)
-    else:
-        launcher = ly_test_tools.launchers.launcher_helper.create_server_launcher(
-            workspace, launcher_platform, ['+LoadLevel', level])
-
-    def teardown():
-        launcher.stop()
-
-    request.addfinalizer(teardown)
-
-    return launcher
-
-
-@pytest.fixture(scope="function")
-def generic_launcher(workspace, request, crash_log_watchdog):
-    # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
-    return _generic_launcher(
-        workspace=workspace,
-        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_GENERIC_EXECUTABLE),
-        exe_file_name=get_fixture_argument(request, 'exe_file_name', ''))
-
-
-def _generic_launcher(workspace, launcher_platform, exe_file_name):
-    """Separate implementation to call directly during unit tests"""
-    return ly_test_tools.launchers.launcher_helper.create_generic_launcher(workspace, launcher_platform, exe_file_name)
-
-
 @pytest.fixture
 def automatic_process_killer(request):
     # type: (_pytest.fixtures.SubRequest) -> ly_process_killer
@@ -396,7 +349,7 @@ def _workspace(request,  # type: _pytest.fixtures.SubRequest
 
         py_logging_util.terminate_logging()
 
-        workspace.artifact_manager.set_test_name()  # Reset log name for this test
+        workspace.artifact_manager.set_dest_path()  # Reset log name for this test
         helpers.teardown_builtin_workspace(workspace)
 
     request.addfinalizer(teardown)

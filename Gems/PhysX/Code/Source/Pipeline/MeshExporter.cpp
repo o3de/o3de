@@ -177,16 +177,16 @@ namespace PhysX
                 // Go through the previous slots and keep the same physics material
                 // association if the slot name is the same.
                 // Example:
-                // 
+                //
                 //     Previous Material Slots from MeshGroup:
                 //        Material_A: glass.physicsmaterial
                 //        Material_B: sand.physicsmaterial
                 //        Material_C: gold.physicsmaterial
-                // 
+                //
                 //     Materials now extracted from mesh nodes selected:
                 //        Material_C
                 //        Material_A
-                // 
+                //
                 //     New Material Slots have to keep the same physics materials association:
                 //        Material_C: gold.physicsmaterial
                 //        Material_A: glass.physicsmaterial
@@ -215,14 +215,14 @@ namespace PhysX
                 // material name from the mesh nodes. In order to cover this case, when the slot name is
                 // default or empty the physics materials assigned will still be used in the new slots.
                 // Example:
-                // 
+                //
                 //     Previous Material Slots from MeshGroup:
                 //        "": glass.physicsmaterial
-                // 
+                //
                 //     Materials now extracted from mesh nodes selected:
                 //        Material_C
                 //        Material_A
-                // 
+                //
                 //     New Material Slots will keep physics materials from empty slot names
                 //        Material_C: glass.physicsmaterial
                 //        Material_A:
@@ -544,7 +544,7 @@ namespace PhysX
             // Assign the materials into cooked data
             assetData.m_materialSlots = meshGroup.GetMaterialSlots();
 
-            // Updating materials lists from new materials gathered from the source scene file 
+            // Updating materials lists from new materials gathered from the source scene file
             // because this exporter runs when the source scene is being processed, which
             // could have a different content from when the mesh group info was
             // entered in Scene Settings Editor.
@@ -635,7 +635,7 @@ namespace PhysX
             if (PhysX::Utils::WriteCookedMeshToFile(filename, assetData))
             {
                 AZStd::string productUuidString = meshGroup.GetId().ToString<AZStd::string>();
-                AZ::Uuid productUuid = AZ::Uuid::CreateData(productUuidString.data(), productUuidString.size() * sizeof(productUuidString[0]));
+                AZ::Uuid productUuid = AZ::Uuid::CreateName(productUuidString);
 
                 context.GetProductList().AddProduct(AZStd::move(filename), productUuid, AZ::AzTypeInfo<MeshAsset>::Uuid(), AZStd::nullopt, AZStd::nullopt);
                 result = SceneEvents::ProcessingResult::Success;

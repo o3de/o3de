@@ -10,6 +10,16 @@
 #include <AzCore/PlatformDef.h>
 #include <AzCore/base.h>
 #include <AzCore/O3DEKernelConfiguration.h>
+#include <cstdarg>
+
+namespace AZStd
+{
+    template <class Element>
+    struct char_traits;
+
+    template <class Element, class Traits>
+    class basic_string_view;
+}
 
 namespace AZ
 {
@@ -17,11 +27,8 @@ namespace AZ
     {
         namespace Platform
         {
-            void OutputToDebugger(const char* window, const char* message);
+            void OutputToDebugger(AZStd::basic_string_view<char, AZStd::char_traits<char>> window, AZStd::basic_string_view<char, AZStd::char_traits<char>> message);
         }
-
-        /// Global instance to the tracer.
-        extern class Trace      g_tracer;
 
         enum LogLevel : int
         {
@@ -39,14 +46,104 @@ namespace AZ
             None
         };
 
-        class Trace
+        class O3DEKERNEL_API ITrace
         {
         public:
-            static Trace& Instance()    { return g_tracer; }
+            ITrace();
+            virtual ~ITrace();
+            ITrace(const ITrace&) = delete;
+            ITrace(ITrace&&) = default;
+            ITrace& operator=(const ITrace&) = delete;
+            ITrace& operator=(ITrace&&) = default;
 
+            static ITrace& Instance();
+
+            virtual void Init() {}
+            virtual void Destroy() {}
+            virtual bool IsDebuggerPresent() { return false; }
+            virtual void Break() {}
+            virtual void Crash() {}
+
+            /// Indicates if trace logging functions are enabled based on compile mode and cvar logging level
+            bool IsTraceLoggingEnabledForLevel(LogLevel level)
+            {
+                return m_logLevel >= level;
+            }
+            void SetLogLevel(LogLevel newLevel)
+            {
+                m_logLevel = newLevel;
+            }
+
+            bool GetAlwaysPrintCallstack() const
+            {
+                return m_printCallstack;
+            }
+            void SetAlwaysPrintCallstack(bool enable)
+            {
+                m_printCallstack = enable;
+            }
+
+            virtual void Assert(const char* fileName, int line, const char* funcName, const char* format, ...)
+            {
+                char message[s_maxMessageLength];
+                va_list mark;
+                va_start(mark, format);
+                azvsnprintf(message, s_maxMessageLength, format, mark);
+                va_end(mark);
+                fprintf(stderr, "Assert: %s:%d (%s): %s\n", fileName, line, funcName, message);
+            }
+            virtual void Error(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
+            {
+                char message[s_maxMessageLength];
+                va_list mark;
+                va_start(mark, format);
+                azvsnprintf(message, s_maxMessageLength, format, mark);
+                va_end(mark);
+                fprintf(stderr, "Error: %s:%d (%s): %s: %s\n", fileName, line, funcName, window, message);
+            }
+            virtual void Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
+            {
+                char message[s_maxMessageLength];
+                va_list mark;
+                va_start(mark, format);
+                azvsnprintf(message, s_maxMessageLength, format, mark);
+                va_end(mark);
+                fprintf(stderr, "Warning: %s:%d (%s): %s: %s\n", fileName, line, funcName, window, message);
+            }
+            virtual void Printf(const char* window, const char* format, ...)
+            {
+                char message[s_maxMessageLength];
+                va_list mark;
+                va_start(mark, format);
+                azvsnprintf(message, s_maxMessageLength, format, mark);
+                va_end(mark);
+                fprintf(stdout, "%s: %s\n", window, message);
+            }
+            virtual void Output(const char* window, const char* message)
+            {
+                fprintf(stdout, "%s: %s\n", window, message);
+            }
+            virtual void RawOutput(const char* window, const char* message)
+            {
+                fprintf(stdout, "%s: %s\n", window, message);
+            }
+            virtual void PrintCallstack(const char* /*window*/, unsigned int /*suppressCount*/ = 0, void* /*nativeContext*/ = nullptr) {}
+
+        private:
+            inline static constexpr size_t s_maxMessageLength = 4096;
+            inline static ITrace* s_tracer{};
+
+            LogLevel m_logLevel = LogLevel::Info;
+            bool m_printCallstack = false;
+        };
+
+        class Trace
+            : public ITrace
+        {
+        public:
             // Declare Trace init for assert tracking initializations, and get/setters for verbosity level
-            static void Init();
-            static void Destroy();
+            void Init() override;
+            void Destroy() override;
             static int GetAssertVerbosityLevel();
             static void SetAssertVerbosityLevel(int level);
 
@@ -56,7 +153,7 @@ namespace AZ
             * or to force a Trace message bus handler to do special processing by using a known, consistent char*
             */
             static const char* GetDefaultSystemWindow();
-            static bool IsDebuggerPresent();
+            bool IsDebuggerPresent() override;
             static bool AttachDebugger();
             static bool WaitForDebugger(float timeoutSeconds = -1.f);
 
@@ -64,28 +161,25 @@ namespace AZ
             static void HandleExceptions(bool isEnabled);
 
             /// Breaks program execution immediately.
-            static void Break();
+            void Break() override;
 
             /// Crash the application
-            static void Crash();
+            void Crash() override;
 
             /// Terminates the process with the specified exit code
             static void Terminate(int exitCode);
 
-            /// Indicates if trace logging functions are enabled based on compile mode and cvar logging level
-            static bool IsTraceLoggingEnabledForLevel(LogLevel level);
+            void Assert(const char* fileName, int line, const char* funcName, const char* format, ...) override;
+            void Error(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...) override;
+            void Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...) override;
+            void Printf(const char* window, const char* format, ...) override;
 
-            static void Assert(const char* fileName, int line, const char* funcName, const char* format, ...);
-            static void Error(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...);
-            static void Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...);
-            static void Printf(const char* window, const char* format, ...);
-
-            static void Output(const char* window, const char* message);
+            void Output(const char* window, const char* message) override;
 
             /// Called by output to handle the actual output, does not interact with ebus or allow interception
-            static void RawOutput(const char* window, const char* message);
+            void RawOutput(const char* window, const char* message) override;
 
-            static void PrintCallstack(const char* window, unsigned int suppressCount = 0, void* nativeContext = 0);
+            void PrintCallstack(const char* window, unsigned int suppressCount = 0, void* nativeContext = nullptr) override;
 
             /// PEXCEPTION_POINTERS on Windows, always NULL on other platforms
             static void* GetNativeExceptionInfo();
@@ -93,7 +187,7 @@ namespace AZ
     }
 }
 
-#if defined(AZ_ENABLE_TRACING) && !defined(O3DEKernel_EXPORTS)
+#if defined(AZ_ENABLE_TRACING)
 
 /**
 * AZ tracing macros provide debug information reporting for assert, errors, warnings, and informational messages.
@@ -235,7 +329,7 @@ namespace AZ
     AZ_POP_DISABLE_WARNING
 
     #define AZ_TracePrintf(window, ...)                                                                            \
-    if(AZ::Debug::Trace::IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Info))                                 \
+    if(AZ::Debug::Trace::Instance().IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Info))                                 \
     {                                                                                                              \
         AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);                                                  \
     }

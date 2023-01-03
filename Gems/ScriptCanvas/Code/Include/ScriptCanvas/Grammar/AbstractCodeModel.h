@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Outcome/Outcome.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Datum.h>
@@ -37,6 +37,7 @@ namespace ScriptCanvas
         namespace Core
         {
             class Start;
+            class FunctionCallNode;
             class FunctionDefinitionNode;
         }
     }
@@ -382,6 +383,8 @@ namespace ScriptCanvas
 
             bool ParseInputThisPointer(ExecutionTreePtr execution);
 
+            void ParseLocallyDefinedFunctionCalls();
+
             void ParseMetaData(ExecutionTreePtr execution);
 
             void ParseMultiExecutionPost(ExecutionTreePtr execution);
@@ -407,6 +410,8 @@ namespace ScriptCanvas
             void ParseReturnValue(ExecutionTreePtr execution, const Slot& returnValueSlot);
 
             void ParseReturnValue(ExecutionTreePtr execution, VariableConstPtr variable, const Slot* returnValueSlot);
+
+            void ParseSubgraphInterface(const Node& node);
 
             void ParseUserFunctionTopology();
 
@@ -534,7 +539,7 @@ namespace ScriptCanvas
             DebugSymbolMapReverse m_debugMapReverse;
 
             AZStd::sys_time_t m_parseDuration;
-            AZStd::chrono::system_clock::time_point m_parseStartTime;
+            AZStd::chrono::steady_clock::time_point m_parseStartTime;
             EBusHandlingByNode m_ebusHandlingByNode;
             EventHandlingByNode m_eventHandlingByNode;
             ImplicitVariablesByNode m_implicitVariablesByNode;
@@ -565,6 +570,8 @@ namespace ScriptCanvas
             AZStd::unordered_map<const Datum*, const GraphVariable*> m_sourceVariableByDatum;
             AZStd::unordered_set<const Node*> m_subgraphStartCalls;
             AZStd::unordered_set<const Node*> m_activeDefaultObject;
+
+            AZStd::vector<const Nodes::Core::FunctionCallNode*> m_locallyDefinedFunctionCallNodes;
 
             SubgraphInterface m_subgraphInterface;
 

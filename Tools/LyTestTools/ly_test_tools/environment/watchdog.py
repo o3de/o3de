@@ -112,7 +112,7 @@ class Watchdog(object):
         while True:
             # check to see if the thread is shut down
             if self._shutdown.wait(timeout=self._interval):
-                logger.info(f"Shutting down watchdog: {self.name}")
+                logger.debug(f"Shutting down watchdog: {self.name}")
                 return
             # call the target function and see if it returned True
             if self._bool_fn():

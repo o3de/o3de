@@ -84,16 +84,16 @@ QTreeView::indicator
     margin-left: -3px;
 }
 
-QTreeView::branch:open:has-children
-{
-    image: url(:/TreeView/open.svg);
-    padding: 10px 4px;
-}
-
-QTreeView::branch:closed:has-children
-{
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings {
     image: url(:/TreeView/closed.svg);
     padding: 8px 6px;
+}
+
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings  {
+    image: url(:/TreeView/open.svg);
+    padding: 10px 4px;
 }
 
 QTreeView::item:disabled 

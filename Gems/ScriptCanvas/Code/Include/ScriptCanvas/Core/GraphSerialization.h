@@ -29,24 +29,27 @@ namespace ScriptCanvas
     public:
         AZ_CLASS_ALLOCATOR(SourceTree, AZ::SystemAllocator, 0);
 
-        SourceTree* m_parent = nullptr;
         SourceHandle m_source;
         AZStd::vector<SourceTree> m_dependencies;
-
-        SourceTree* ModRoot();
-        void SetParent(SourceTree& parent);
         AZStd::string ToString(size_t depth = 0) const;
     };
-
+        
     enum class MakeInternalGraphEntitiesUnique
     {
         No,
         Yes,
     };
 
+    enum class LoadReferencedAssets
+    {
+        No,
+        Yes
+    };
+
     struct DeserializeResult
     {
         bool m_isSuccessful = false;
+        bool m_fromObjectStreamXML = false;
         AZStd::string m_jsonResults;
         AZStd::string m_errors;
         DataPtr m_graphDataPtr;
@@ -64,7 +67,8 @@ namespace ScriptCanvas
 
     DeserializeResult Deserialize
         ( AZStd::string_view source
-        , MakeInternalGraphEntitiesUnique makeUniqueEntities = MakeInternalGraphEntitiesUnique::Yes);
+        , MakeInternalGraphEntitiesUnique makeUniqueEntities = MakeInternalGraphEntitiesUnique::Yes
+        , LoadReferencedAssets loadReferencedAssets = LoadReferencedAssets::Yes);
 
     struct SerializationResult
     {

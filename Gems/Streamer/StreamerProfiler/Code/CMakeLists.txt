@@ -84,8 +84,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
 
         # Add StreamerProfiler.Tests to googletest
-        ly_add_googletest(
-            NAME Gem::StreamerProfiler.Tests
-        )
+        # Commented out as currently there are no StreamerProfiler tests
+        # ly_add_googletest(
+            # NAME Gem::StreamerProfiler.Tests
+        # )
     endif()
 endif()

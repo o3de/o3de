@@ -41,11 +41,8 @@ set(FILES
     AzCore/IO/SystemFile_Android.h
     AzCore/IO/SystemFile_Platform.h
     AzCore/IPC/SharedMemory_Platform.h
-    ../Common/Unimplemented/AzCore/Memory/OverrunDetectionAllocator_Unimplemented.h
     ../Common/UnixLike/AzCore/Memory/OSAllocator_UnixLike.h
-    AzCore/Memory/HeapSchema_Android.cpp
     AzCore/Memory/OSAllocator_Platform.h
-    AzCore/Memory/OverrunDetectionAllocator_Platform.h
     ../Common/Default/AzCore/Module/Internal/ModuleManagerSearchPathTool_Default.cpp
     AzCore/Math/Internal/MathTypes_Android.h
     AzCore/Math/Random_Platform.h
@@ -91,3 +88,12 @@ if (LY_TEST_PROJECT)
         VALUES LY_NO_ASSETS
     )
 endif()
+
+# Disabling -ffast-math for 'IntersectSegment.cpp' file only.
+# It has an implementation of the "Watertight Ray/Triangle Intersection"
+# algorithm, which gets broken by the fast-math optimizations.
+ly_add_source_properties(
+    SOURCES ${CMAKE_CURRENT_LIST_DIR}/../../AzCore/Math/IntersectSegment.cpp
+    PROPERTY COMPILE_FLAGS
+    VALUES -fno-fast-math
+)

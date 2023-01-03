@@ -21,7 +21,6 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.h>
-#include <PhysX/EditorColliderComponentRequestBus.h>
 #include <PhysX/EditorJointBus.h>
 #include <Source/Utils.h>
 
@@ -33,14 +32,12 @@ namespace PhysX
     {
         AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(idPair.GetEntityId());
 
-        const AZ::Quaternion worldRotation = worldTransform.GetRotation();
-
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParameterNames::Transform);
 
         EditorJointRequestBus::EventResult(
-            m_resetValue, idPair, &PhysX::EditorJointRequests::GetVector3Value, JointsComponentModeCommon::ParamaterNames::Rotation);
+            m_resetValue, idPair, &PhysX::EditorJointRequests::GetVector3Value, JointsComponentModeCommon::ParameterNames::Rotation);
 
         const AZStd::array<AZ::Vector3, 3> axes = { AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ() };
 
@@ -67,7 +64,7 @@ namespace PhysX
     {
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParameterNames::Transform);
 
         for (auto rotationManipulator : m_manipulators)
         {
@@ -87,7 +84,7 @@ namespace PhysX
     void JointsSubComponentModeRotation::ResetValues(const AZ::EntityComponentIdPair& idPair)
     {
         EditorJointRequestBus::Event(
-            idPair, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParamaterNames::Rotation, m_resetValue);
+            idPair, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParameterNames::Rotation, m_resetValue);
 
         const AZ::Quaternion reset = AZ::Quaternion::CreateFromEulerAnglesDegrees(m_resetValue);
         for (auto manipulator : m_manipulators)
@@ -108,7 +105,7 @@ namespace PhysX
             [sharedState, idPair]([[maybe_unused]] const AzToolsFramework::AngularManipulator::Action& action) mutable -> void
         {
             EditorJointRequestBus::EventResult(
-                sharedState->m_startTM, idPair, &PhysX::EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+                sharedState->m_startTM, idPair, &PhysX::EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParameterNames::Transform);
         };
 
         for (AZ::u32 index = 0; index < 3; ++index)
@@ -124,7 +121,7 @@ namespace PhysX
                     newTransform = sharedState->m_startTM * AZ::Transform::CreateFromQuaternion(action.m_current.m_delta);
 
                     EditorJointRequestBus::Event(
-                        idPair, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParamaterNames::Rotation,
+                        idPair, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParameterNames::Rotation,
                         newTransform.GetRotation().GetEulerDegrees());
 
                     m_manipulators[index]->SetLocalOrientation(manipulatorOrientation);
