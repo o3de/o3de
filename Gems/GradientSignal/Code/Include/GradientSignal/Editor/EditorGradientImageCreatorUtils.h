@@ -8,16 +8,14 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/containers/vector.h>
 
 #include <GradientSignal/Util.h>
 #include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
-
-AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
-#include <OpenImageIO/imageio.h>
-AZ_POP_DISABLE_WARNING
 
 namespace GradientSignal::ImageCreatorUtils
 {
@@ -46,4 +44,6 @@ namespace GradientSignal::ImageCreatorUtils
         const AZStd::span<const AZ::u8>& pixelBuffer,
         bool showProgressDialog);
 
-}
+    AZStd::string GetDefaultImageSourcePath(const AZ::Data::AssetId& imageAssetId, const AZStd::string& defaultFileName);
+
+} // namespace GradientSignal::ImageCreatorUtils

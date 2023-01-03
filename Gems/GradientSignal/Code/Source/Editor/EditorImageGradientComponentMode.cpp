@@ -18,7 +18,6 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <Editor/EditorImageGradientComponentMode.h>
-#include <Editor/EditorImageGradientRequestBus.h>
 
 #include <GradientSignal/Components/ImageGradientModification.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
@@ -101,13 +100,8 @@ namespace GradientSignal
     EditorImageGradientComponentMode::EditorImageGradientComponentMode(
         const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
-        , m_anyValuesChanged(false)
     {
         ImageGradientModificationNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
-
-        AZ::EntityComponentIdPair runtimeEntityComponentIdPair;
-        EditorImageGradientRequestBus::EventResult(
-            runtimeEntityComponentIdPair, GetEntityId(), &EditorImageGradientRequests::StartImageModification);
 
         // Set our paint brush min/max world size range. The minimum size should be large enough to paint at least one pixel, and
         // the max size is clamped so that we can't paint more than 256 x 256 pixels per brush stamp.
@@ -131,28 +125,18 @@ namespace GradientSignal
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
 
-        // Connect the PaintBrush to the runtime component, not the Editor component, so that we're able to
-        // modify the component successfully.
+        // Create the paintbrush manipulator with the appropriate color space.
         m_brushManipulator = AzToolsFramework::PaintBrushManipulator::MakeShared(
-            worldFromLocal, runtimeEntityComponentIdPair, AzFramework::PaintBrushColorMode::Greyscale);
+            worldFromLocal, entityComponentIdPair, AzToolsFramework::PaintBrushColorMode::Greyscale);
         m_brushManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
     }
 
     EditorImageGradientComponentMode::~EditorImageGradientComponentMode()
     {
-        m_brushManipulator->Unregister();
-        m_brushManipulator.reset();
-
         EndUndoBatch();
 
-        // It's possible that we're leaving component mode as the result of an "undo" action.
-        // If that's the case, don't prompt the user to save the changes.
-        if (!AzToolsFramework::UndoRedoOperationInProgress() && m_anyValuesChanged)
-        {
-            EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::SaveImage);
-        }
-
-        EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::EndImageModification);
+        m_brushManipulator->Unregister();
+        m_brushManipulator.reset();
 
         ImageGradientModificationNotificationBus::Handler::BusDisconnect();
     }
@@ -213,9 +197,6 @@ namespace GradientSignal
         AZStd::shared_ptr<ImageTileBuffer> changedDataBuffer, const AZ::Aabb& dirtyRegion)
     {
         AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
-
-        // Track if we've changed image values, so we know to prompt to save on exit.
-        m_anyValuesChanged = m_anyValuesChanged || !changedDataBuffer->Empty();
 
         // Hand over ownership of the paint stroke buffer to the undo/redo buffer.
         m_paintBrushUndoBuffer->SetUndoBufferAndDirtyArea(changedDataBuffer, dirtyRegion);

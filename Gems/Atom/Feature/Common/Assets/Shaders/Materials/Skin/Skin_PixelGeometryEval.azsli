@@ -28,8 +28,7 @@ PixelGeometryData EvaluatePixelGeometry_Skin(
     bool isFrontFace)
 {
     // Base PBR Geo Data
-    bool evaluateTangentFrame = o_normal_useTexture || o_detail_normal_useTexture;
-    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace, evaluateTangentFrame);
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace);
 
     // Skin specifics
     geoData.detailUv = detailUv;
