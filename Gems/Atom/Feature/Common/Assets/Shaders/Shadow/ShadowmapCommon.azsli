@@ -10,6 +10,7 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 struct VertexInput
 {
@@ -21,9 +22,9 @@ struct VertexOutput
     float4 m_position : SV_Position;
 };
 
-VertexOutput MainVS(VertexInput input)
+VertexOutput MainVS(VertexInput input, uint instanceId : SV_InstanceID)
 {
-    const float4x4 worldMatrix = ObjectSrg::GetWorldMatrix();
+    const float4x4 worldMatrix = DrawSrg::GetWorldMatrix(instanceId);
     VertexOutput output;
     
     const float3 worldPosition = mul(worldMatrix, float4(input.m_position, 1.0)).xyz;

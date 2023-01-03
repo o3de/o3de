@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_Skin(IN, isFrontFace)
+#define EvaluatePixelGeometry(IN, isFrontFace, instanceId)      EvaluatePixelGeometry_Skin(IN, isFrontFace)
 #endif
 
 #include "../BasePBR/BasePBR_PixelGeometryEval.azsli"

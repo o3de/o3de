@@ -5,8 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
+ 
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <DepthPassCommon.azsli>
 
 // Use the depth pass shader with the default object srg

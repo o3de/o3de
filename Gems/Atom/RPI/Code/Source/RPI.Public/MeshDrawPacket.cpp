@@ -299,7 +299,9 @@ namespace AZ
                         drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
                     }
 
-                    drawSrg->Compile();
+                    // TODO: The drawSrg must be compiled seperately. The MeshFeatureProcessor does this already, but other systems
+                    // using MeshDrawPacket might not. If we compile it here, then when the MeshFeatureProcessor tries to do it later,
+                    // it will be delayed by a frame because it will have already been compiled
                 }
 
                 parentScene.ConfigurePipelineState(drawListTag, pipelineStateDescriptor);

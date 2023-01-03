@@ -18,7 +18,11 @@
 
 // We are using the shader variant system to deal with different MSAA modes
 // The shader variant system needs a fallback, using DefaultDrawSrg for this.
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+ShaderResourceGroup UnusedFallbackDrawSrg : SRG_PerDraw
+{
+}
+
 #include <Atom/Features/LightCulling/LightCullingShared.azsli>
 
 

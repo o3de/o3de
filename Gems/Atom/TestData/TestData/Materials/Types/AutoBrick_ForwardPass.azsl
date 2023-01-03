@@ -6,6 +6,7 @@
  *
  */
 
+#include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include "AutoBrick_Common.azsli"

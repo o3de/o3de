@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_EnhancedPBR(IN, isFrontFace)
+#define EvaluatePixelGeometry(IN, isFrontFace, instanceId)      EvaluatePixelGeometry_EnhancedPBR(IN, isFrontFace, instanceId)
 #endif
 
 #include "../StandardPBR/StandardPBR_PixelGeometryEval.azsli"
@@ -27,7 +27,8 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
     float3 bitangent,
     float2 uvs[UvSetCount],
     float2 detailUvs[UvSetCount],
-    bool isFrontFace)
+    bool isFrontFace,
+    uint instanceId)
 {
     PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace);
 
@@ -42,16 +43,19 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
     if(ShouldHandleParallax())
     {
         SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
-                      geoData.uvs, geoData.detailUvs, isFrontFace, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
+                      geoData.uvs, geoData.detailUvs, isFrontFace, positionSV.z, positionSV.w, instanceId, geoData.isDisplacementClipped);
     }
 
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(inout VsOutput IN, bool isFrontFace)
+PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(inout VsOutput IN, bool isFrontFace, uint instanceId)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    // TODO: We're duplicating the work of getting the world matrix here and in the call to SetPixelDepth.
+    // We should add an overload of SetPixelDepth that takes the world transform as input, and use that instead of
+    // passing the instanceId all the way through
+    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(instanceId);
+    float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(instanceId);
 
     float3 vertexNormal, vertexTangent, vertexBitangent;
     ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
@@ -64,5 +68,6 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(inout VsOutput IN, bool isFr
         vertexBitangent,
         IN.uvs,
         IN.detailUvs,
-        isFrontFace);
+        isFrontFace,
+        instanceId);
 }

@@ -43,20 +43,20 @@ struct PSOutput
 // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
 option bool o_prevPosition_isBound;
 
-VSOutput MainVS(VSInput IN)
+VSOutput MainVS(VSInput IN, uint instanceId : SV_InstanceID)
 {
     VSOutput OUT;
  
-    OUT.m_worldPos = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    OUT.m_worldPos = mul(DrawSrg::GetWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPos, 1.0));
 
     if (o_prevPosition_isBound)
     {
-        OUT.m_worldPosPrev = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_optional_prevPosition, 1.0)).xyz;
+        OUT.m_worldPosPrev = mul(DrawSrg::GetWorldMatrix(instanceId), float4(IN.m_optional_prevPosition, 1.0)).xyz;
     }
     else
     {
-        OUT.m_worldPosPrev = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+        OUT.m_worldPosPrev = mul(DrawSrg::GetWorldMatrixPrev(instanceId), float4(IN.m_position, 1.0)).xyz;
     }
 
     return OUT;

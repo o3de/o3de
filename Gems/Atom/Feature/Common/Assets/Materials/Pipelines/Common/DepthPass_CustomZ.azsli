@@ -27,7 +27,8 @@ struct PsOutput
 
 PsOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
+    uint instanceId = IN.m_instanceId;
+    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace, instanceId);
 
     // Pixel clipping can be done here
     EvaluateSurface(geoData);

@@ -10,7 +10,7 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-rootconstant uint m_instanceDataOffset;
+//rootconstant uint m_instanceDataOffset;
 
 ShaderResourceGroup DrawSrg : SRG_PerDraw
 {
@@ -19,6 +19,24 @@ ShaderResourceGroup DrawSrg : SRG_PerDraw
 
     uint m_instanceDataOffset;
     
+    //! Returns the matrix for transforming points from Object Space to World Space.
+    float4x4 GetWorldMatrix(uint instanceId)
+    {
+        return SceneSrg::GetObjectToWorldMatrix(ViewSrg::m_instanceData[m_instanceDataOffset + instanceId]);
+    }
+
+    //! Returns the inverse-transpose of the world matrix.
+    //! Commonly used to transform normals while supporting non-uniform scale.
+    float3x3 GetWorldMatrixInverseTranspose(uint instanceId)
+    {
+        return SceneSrg::GetObjectToWorldInverseTransposeMatrix(ViewSrg::m_instanceData[m_instanceDataOffset + instanceId]);
+    }
+
+    float4x4 GetWorldMatrixPrev(uint instanceId)
+    {
+        return SceneSrg::GetObjectToWorldMatrixPrev(ViewSrg::m_instanceData[m_instanceDataOffset + instanceId]);
+    }
+
     uint GetTangentAtUv(uint uvIndex)
     {
         return (m_uvStreamTangentBitmask >> (4 * uvIndex)) & 0xF;

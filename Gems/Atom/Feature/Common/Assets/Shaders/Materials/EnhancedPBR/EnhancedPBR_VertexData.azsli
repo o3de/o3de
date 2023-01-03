@@ -37,6 +37,7 @@
         // Extended fields (only referenced in this azsl file)...
         float2 uvs[UvSetCount] : UV1;
         float2 detailUvs[UvSetCount] : UV3;
+        uint m_instanceId : SV_InstanceID;
     };
 
 #endif

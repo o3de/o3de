@@ -9,6 +9,7 @@
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/Features/Skin/SkinObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <DepthPassCommon.azsli>
 
 // Use the depth pass shader with the skin object srg

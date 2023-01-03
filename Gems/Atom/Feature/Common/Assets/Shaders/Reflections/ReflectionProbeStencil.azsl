@@ -48,7 +48,7 @@ struct VSOutput
     float4 m_position : SV_Position;
 };
 
-VSOutput MainVS(VSInput vsInput)
+VSOutput MainVS(VSInput vsInput, uint instanceId : SV_InstanceID)
 {
     VSOutput OUT;
 

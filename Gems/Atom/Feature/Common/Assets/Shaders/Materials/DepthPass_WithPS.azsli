@@ -43,6 +43,7 @@ struct VSDepthOutput
     float3 m_normal : NORMAL;
     float4 m_tangent : TANGENT;
     float3 m_worldPosition : UV0;
+    uint m_instanceId : SV_InstanceID;
 
 #if MULTILAYER
     float3 m_blendMask : UV3;
@@ -52,8 +53,9 @@ struct VSDepthOutput
 VSDepthOutput MainVS(VSInput IN, uint instanceId : SV_InstanceID)
 {
     VSDepthOutput OUT;
+    OUT.m_instanceId = instanceId;
  
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(instanceId);
     float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
 
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
@@ -92,8 +94,8 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     if(ShouldHandleParallaxInDepthShaders())
     {
-        float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-        float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+        float4x4 objectToWorld = DrawSrg::GetWorldMatrix(IN.m_instanceId);
+        float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(IN.m_instanceId);
 
         float3 vertexNormal, vertexTangent, vertexBitangent;
         ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
@@ -116,9 +118,9 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
         }
 
 #if MULTILAYER
-        MultilayerSetPixelDepth(IN.m_blendMask, IN.m_worldPosition, vertexNormal, tangents, bitangents, IN.m_uv, isFrontFace, OUT.m_depth);
+        MultilayerSetPixelDepth(IN.m_blendMask, IN.m_worldPosition, vertexNormal, tangents, bitangents, IN.m_uv, isFrontFace, IN.m_instanceId, OUT.m_depth);
 #else
-        SetPixelDepth(IN.m_worldPosition, vertexNormal, tangents, bitangents, IN.m_uv, isFrontFace, OUT.m_depth);
+        SetPixelDepth(IN.m_worldPosition, vertexNormal, tangents, bitangents, IN.m_uv, isFrontFace, IN.m_instanceId, OUT.m_depth);
 #endif
     }
     

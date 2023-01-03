@@ -88,13 +88,14 @@ struct VSOutput
     float2 m_uv[UvSetCount] : UV1;
     
     float3 m_blendMask : UV7;
+    uint m_instanceId : SV_InstanceID;
 };
 
-VSOutput VertexShader(VSInput IN)
+VSOutput VertexShader(VSInput IN, uint instanceId : SV_InstanceID)
 {
     VSOutput OUT;
- 
-    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    OUT.m_instanceId = instanceId;
+    float3 worldPosition = mul(DrawSrg::GetWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
 
     // By design, only UV0 is allowed to apply transforms.
     // Note there are additional UV transforms that happen for each layer, but we defer that step to the pixel shader to avoid bloating the vertex output buffer.
@@ -299,10 +300,10 @@ ProcessedMaterialInputs ProcessStandardMaterialInputs(StandardMaterialInputs inp
 
 // ---------- Pixel Shader ----------
 
-PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depthNDC)
+PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, uint instanceId, out float depthNDC)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(instanceId);
+    float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(instanceId);
 
     float3 vertexNormal, vertexTangent, vertexBitangent;
     ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
@@ -364,7 +365,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         float parallaxOverallOffset = MaterialSrg::m_displacementMax;
         float parallaxOverallFactor = MaterialSrg::m_displacementMax - MaterialSrg::m_displacementMin;
         GetParallaxInput(vertexNormal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], parallaxOverallFactor, parallaxOverallOffset, 
-                         ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
+                         DrawSrg::GetWorldMatrix(instanceId), uvMatrix, uvMatrixInverse,
                          IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depthNDC, IN.m_position.w, displacementIsClipped);
 
     }
@@ -535,7 +536,7 @@ ForwardPassOutput PixelShader(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
     ForwardPassOutput OUT;
     float depth;
 
-    PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
+    PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, IN.m_instanceId, depth);
 
     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
     OUT.m_specularColor = lightingOutput.m_specularColor;

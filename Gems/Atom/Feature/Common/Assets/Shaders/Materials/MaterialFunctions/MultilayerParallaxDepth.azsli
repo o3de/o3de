@@ -19,6 +19,7 @@
      float3 bitangents[UvSetCount],
      float2 uvs[UvSetCount],
      bool isFrontFace,
+     uint instanceId,
      out float depth)
 {
     s_blendMaskFromVertexStream = blendMask;
@@ -34,6 +35,6 @@
     GetParallaxInput(
         normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex],
         parallaxOverallFactor, parallaxOverallOffset, 
-        ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
+        DrawSrg::GetWorldMatrix(instanceId), uvMatrix, uvMatrixInverse,
         uvs[MaterialSrg::m_parallaxUvIndex], worldPosition, depth);
 }

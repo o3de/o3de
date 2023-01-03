@@ -45,4 +45,5 @@ struct VsOutput_BasePBR
 
     // Extended fields (only referenced in this azsl file)...
     float2 uvs[UvSetCount] : UV1;
+    uint m_instanceId : SV_InstanceID;
 };
