@@ -353,7 +353,8 @@ namespace AzFramework
                 Settings    = 0b00000001,
                 HeightData  = 0b00000010,
                 ColorData   = 0b00000100,
-                SurfaceData = 0b00001000
+                SurfaceData = 0b00001000,
+                All         = 0b00001111
             };
 
             virtual void OnTerrainDataCreateBegin() {}

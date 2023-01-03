@@ -85,10 +85,7 @@ void TerrainSystem::Activate()
         &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataCreateBegin);
 
     m_dirtyRegion = AZ::Aabb::CreateNull();
-    m_terrainDirtyMask = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings |
-        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData |
-        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData |
-        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData;
+    m_terrainDirtyMask = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All;
     m_requestedSettings.m_systemActive = true;
     m_cachedAreaBounds = AZ::Aabb::CreateNull();
 
@@ -139,10 +136,7 @@ void TerrainSystem::Deactivate()
     }
 
     m_dirtyRegion = AZ::Aabb::CreateNull();
-    m_terrainDirtyMask = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings |
-        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData |
-        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData |
-        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData;
+    m_terrainDirtyMask = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All;
     m_requestedSettings.m_systemActive = false;
 
     AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
