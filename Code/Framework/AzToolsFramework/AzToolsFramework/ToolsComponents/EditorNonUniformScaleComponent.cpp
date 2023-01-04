@@ -24,6 +24,8 @@ namespace AzToolsFramework
 
         void EditorNonUniformScaleComponent::Reflect(AZ::ReflectContext* context)
         {
+            NonUniformScaleComponentMode::Reflect(context);
+
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorNonUniformScaleComponent, EditorComponentBase>()
