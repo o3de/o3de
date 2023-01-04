@@ -7,8 +7,8 @@
  */
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+#include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
@@ -16,6 +16,9 @@
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Math/Matrix3x3.h>
+#include <AzCore/Math/Matrix3x4.h>
+#include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
@@ -112,13 +115,19 @@ namespace AtomToolsFramework
             ComparePropertyValues<int32_t>(valueA, valueB) ||
             ComparePropertyValues<uint32_t>(valueA, valueB) ||
             ComparePropertyValues<float>(valueA, valueB) ||
+            ComparePropertyValues<double>(valueA, valueB) ||
             ComparePropertyValues<AZ::Vector2>(valueA, valueB) ||
             ComparePropertyValues<AZ::Vector3>(valueA, valueB) ||
             ComparePropertyValues<AZ::Vector4>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Matrix3x3>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Matrix3x4>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Matrix4x4>(valueA, valueB) ||
             ComparePropertyValues<AZ::Color>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::AssetId>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::Data::AssetData>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::ImageAsset>>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::MaterialAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::MaterialTypeAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZStd::string>(valueA, valueB))
