@@ -222,6 +222,9 @@ set(FILES
     PaintBrush/PaintBrush.cpp
     PaintBrush/PaintBrush.h
     PaintBrush/PaintBrushNotificationBus.h
+    PaintBrush/PaintBrushSessionBus.h
+    PaintBrush/PaintBrushSystemComponent.cpp
+    PaintBrush/PaintBrushSystemComponent.h
     PaintBrush/PaintBrushSettings.cpp
     PaintBrush/PaintBrushSettings.h
     Physics/Collision/CollisionEvents.h

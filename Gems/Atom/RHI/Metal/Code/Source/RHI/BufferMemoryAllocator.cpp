@@ -108,7 +108,7 @@ namespace AZ
                 {
                     AZStd::lock_guard<AZStd::mutex> lock(m_allocatorMutex);
                     RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-                    heapMemoryUsage.m_usedResidentInBytes -= bufferMemoryView.GetSize();
+                    heapMemoryUsage.m_usedResidentInBytes -= memoryView.GetSize();
                     m_subAllocator.DeAllocate(memoryView.m_memoryAllocation);
                 }
                 break;

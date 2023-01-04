@@ -16,6 +16,11 @@ namespace AzToolsFramework
 {
     namespace Components
     {
+        void NonUniformScaleComponentMode::Reflect(AZ::ReflectContext* context)
+        {
+            AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<NonUniformScaleComponentMode>(context);
+        }
+
         NonUniformScaleComponentMode::NonUniformScaleComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
             : EditorBaseComponentMode(entityComponentIdPair, componentType)
