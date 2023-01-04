@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Transform2",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns a float2 transformed by a matrix2",
         "slotDataTypeGroups": [
             "inVector|outVector",
             "inMatrix"

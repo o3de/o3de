@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Step",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns 1 if the x parameter is greater than or equal to the y parameter; otherwise, 0 (per component)",
         "slotDataTypeGroups": [
             "inValue1|inValue2|outValue"
         ],
