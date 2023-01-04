@@ -182,7 +182,7 @@ namespace AZ::AtomBridge
         int estimatedNumLineSegments
         )
     {
-        m_points.reserve(estimatedNumLineSegments * 2);
+        m_points.reserve(AZStd::abs(estimatedNumLineSegments) * 2);
     }
 
     void SingleColorDynamicSizeLineHelper::AddLineSegment(

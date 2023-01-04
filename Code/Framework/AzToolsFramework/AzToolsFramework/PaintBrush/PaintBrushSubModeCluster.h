@@ -21,7 +21,7 @@ namespace AzToolsFramework
         ~PaintBrushSubModeCluster() override;
 
         // GlobalPaintBrushSettingsNotificationBus overrides...
-        void OnPaintBrushModeChanged(AzFramework::PaintBrushMode newBrushMode) override;
+        void OnPaintBrushModeChanged(PaintBrushMode newBrushMode) override;
 
     private:
         AZ::Event<ViewportUi::ButtonId>::Handler m_buttonSelectionHandler;
