@@ -37,8 +37,8 @@ namespace AzPhysics
 
         bool IsCcdEnabled() const;
         bool CcdReadOnly() const;
-        AZStd::string GetCcdTooltip() const;
-        AZStd::string GetKinematicTooltip() const;
+        AZStd::string_view GetCcdTooltip() const;
+        AZStd::string_view GetKinematicTooltip() const;
 
         // Basic initial settings.
         AZ::Vector3 m_initialLinearVelocity = AZ::Vector3::CreateZero();

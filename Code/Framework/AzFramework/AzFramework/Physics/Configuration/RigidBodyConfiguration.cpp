@@ -105,13 +105,23 @@ namespace AzPhysics
         }
     }
 
-    const AZStd::string kinematicDescription =
+    constexpr AZStd::string_view kinematicDescription =
         "When active, the rigid body is not affected by gravity or other forces and is moved by script. ";
 
-    const AZStd::string ccdDescription =
+    constexpr AZStd::string_view kinematicDescriptionReadOnly =
+        "When active, the rigid body is not affected by gravity or other forces and is moved by script. "
+        "<b>The rigid body cannot be set as Kinematic if CCD is enabled, disable CCD to allow changes to be made.</b>";
+
+    constexpr AZStd::string_view ccdDescription =
         "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
         "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX "
         "configuration. ";
+
+    constexpr AZStd::string_view ccdDescriptionReadOnly =
+        "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
+        "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX "
+        "configuration. <b>CCD cannot be enabled if the rigid body is kinematic, set the rigid body as non-kinematic"
+        "to allow changes to be made.</b>";
 
     AZ_CLASS_ALLOCATOR_IMPL(RigidBodyConfiguration, AZ::SystemAllocator, 0);
 
@@ -202,24 +212,14 @@ namespace AzPhysics
         return m_kinematic;
     }
 
-    AZStd::string RigidBodyConfiguration::GetCcdTooltip() const
+    AZStd::string_view RigidBodyConfiguration::GetCcdTooltip() const
     {
-        if (m_kinematic)
-        {
-            return ccdDescription +
-                "<b>CCD cannot be enabled if the rigid body is kinematic, set the rigid body as non-kinematic to allow changes to be made.</b>";
-        }
-        return ccdDescription;
+        return (m_kinematic) ? ccdDescriptionReadOnly : ccdDescription;
     }
 
-    AZStd::string RigidBodyConfiguration::GetKinematicTooltip() const
+    AZStd::string_view RigidBodyConfiguration::GetKinematicTooltip() const
     {
-        if (m_ccdEnabled)
-        {
-            return kinematicDescription +
-                "<b>The rigid body cannot be set as Kinematic if CCD is enabled, disable CCD to allow changes to be made.</b>";
-        }
-        return kinematicDescription;
+        return (m_ccdEnabled) ? kinematicDescriptionReadOnly : kinematicDescription;
     }
 
     AZ::Crc32 RigidBodyConfiguration::GetInitialVelocitiesVisibility() const
