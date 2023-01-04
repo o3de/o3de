@@ -508,7 +508,7 @@ namespace AZ
             EXPECT_TRUE(executeByFilenameCalled);
         }
 
-        TEST_F(SceneManifest_JSON, ScriptProcessorRule_EditorPythonEventsInterface_RunsWithWhenCleared)
+        TEST_F(SceneManifest_JSON, ScriptProcessorRule_EditorPythonEventsInterface_RunsWithEditorPythonEventsInterfaceCleared)
         {
             using namespace SceneAPI::Containers;
             using namespace SceneAPI::Events;
