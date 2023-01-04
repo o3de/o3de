@@ -51,9 +51,6 @@ namespace GradientSignal
         AzToolsFramework::UndoSystem::URSequencePoint* m_undoBatch = nullptr;
         PaintBrushUndoBuffer* m_paintBrushUndoBuffer = nullptr;
 
-        //! Track whether or not anything has changed while editing. If not, then don't prompt to save the image at the end.
-        bool m_anyValuesChanged = false;
-
         //! The paint brush cluster that manages switching between paint/smooth/eyedropper modes
         AzToolsFramework::PaintBrushSubModeCluster m_subModeCluster;
     };

@@ -189,11 +189,13 @@ namespace ImageProcessingAtom
             }
 
             AZ::Uuid sourceId = source->GetSourceUuid();
-
-            menu->addAction("Edit Texture Settings...", [sourceId, this]()
-                {
-                    OpenSourceTextureFile(sourceId);
-                });
+            if (!sourceId.IsNull())
+            {
+                menu->addAction("Edit Texture Settings...", [sourceId, this]()
+                    {
+                        OpenSourceTextureFile(sourceId);
+                    });
+            }
         }
         else if ((*entryIt)->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
         {

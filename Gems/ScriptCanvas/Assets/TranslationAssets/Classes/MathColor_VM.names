@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "One",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke One"
@@ -34,7 +33,6 @@
                 },
                 {
                     "base": "LinearToGamma",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke LinearToGamma"
@@ -66,7 +64,6 @@
                 },
                 {
                     "base": "FromVector3",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromVector3"
@@ -98,7 +95,6 @@
                 },
                 {
                     "base": "MultiplyByNumber",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByNumber"
@@ -136,7 +132,6 @@
                 },
                 {
                     "base": "Negate",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Negate"
@@ -168,7 +163,6 @@
                 },
                 {
                     "base": "Dot3",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Dot3"
@@ -206,7 +200,6 @@
                 },
                 {
                     "base": "Dot",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Dot"
@@ -244,7 +237,6 @@
                 },
                 {
                     "base": "FromValues",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromValues"
@@ -294,7 +286,6 @@
                 },
                 {
                     "base": "DivideByNumber",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DivideByNumber"
@@ -332,7 +323,6 @@
                 },
                 {
                     "base": "FromVector3AndNumber",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromVector3AndNumber"
@@ -370,7 +360,6 @@
                 },
                 {
                     "base": "GammaToLinear",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GammaToLinear"
@@ -402,7 +391,6 @@
                 },
                 {
                     "base": "IsClose",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsClose"
@@ -446,7 +434,6 @@
                 },
                 {
                     "base": "IsZero",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsZero"
@@ -484,7 +471,6 @@
                 },
                 {
                     "base": "MultiplyByColor",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByColor"
@@ -522,7 +508,6 @@
                 },
                 {
                     "base": "Add",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add"
@@ -560,7 +545,6 @@
                 },
                 {
                     "base": "Subtract",
-                    "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Subtract"

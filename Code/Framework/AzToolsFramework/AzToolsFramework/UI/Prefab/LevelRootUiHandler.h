@@ -42,8 +42,11 @@ namespace AzToolsFramework
         Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
-        static constexpr int s_levelRootBorderThickness = 1;
-        static const QColor s_levelRootBorderColor;
-        static const QString s_levelRootIconPath;
+        QString m_levelRootIconPath = QString(":/Level/level.svg");
+        QColor m_levelRootBorderColor = QColor("#656565");
+
+        QColor m_prefabCapsuleColor = QColor("#1E252F");
+        QColor m_prefabCapsuleDisabledColor = QColor("#35383C");
+        QColor m_prefabCapsuleEditColor = QColor("#4A90E2");
     };
 } // namespace AzToolsFramework

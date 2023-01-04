@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "Equal",
-                    "context": "SliceInstantiationTicket",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Equal"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "ToString",
-                    "context": "SliceInstantiationTicket",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke To String"
@@ -65,7 +63,6 @@
                 },
                 {
                     "base": "IsValid",
-                    "context": "SliceInstantiationTicket",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Valid"
