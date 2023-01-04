@@ -275,6 +275,8 @@ set(FILES
     Components/Widgets/ColorPicker/ColorWarning.h
     Components/Widgets/ColorPicker/ColorWarning.cpp
     Images/resources.qrc
+    PropertyInput/PropertyInputWidgets.h
+    PropertyInput/PropertyInputWidgets.cpp
     Utilities/AutoSettingsGroup.h
     Utilities/ColorUtilities.cpp
     Utilities/ColorUtilities.h

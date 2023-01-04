@@ -30,7 +30,7 @@ namespace EMotionFX
     {
         Q_OBJECT // AUTOMOC
 
-            public : SkeletonModelJointWidget(QWidget* parent = nullptr);
+    public : SkeletonModelJointWidget(QWidget* parent = nullptr);
         ~SkeletonModelJointWidget() = default;
 
         virtual void CreateGUI();

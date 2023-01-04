@@ -36,8 +36,7 @@ namespace EMotionFX
     public:
         void SetUp() override
         {
-            UIFixture::SetUp();
-
+            //first setup expect_call, then run SetUp
             using ::testing::_;
 
             EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
@@ -56,13 +55,16 @@ namespace EMotionFX
 
             EXPECT_CALL(m_jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
                 .WillRepeatedly(
-                    []([[maybe_unused]] const AZ::TypeId& jointLimitTypeId, [[maybe_unused]] const AZ::Quaternion& parentWorldRotation,
-                       [[maybe_unused]] const AZ::Quaternion& childWorldRotation, [[maybe_unused]] const AZ::Vector3& axis,
+                    []([[maybe_unused]] const AZ::TypeId& jointLimitTypeId,
+                       [[maybe_unused]] const AZ::Quaternion& parentWorldRotation,
+                       [[maybe_unused]] const AZ::Quaternion& childWorldRotation,
+                       [[maybe_unused]] const AZ::Vector3& axis,
                        [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
                     {
                         return AZStd::make_unique<D6JointLimitConfiguration>();
                     });
 
+            UIFixture::SetUp();
         }
 
         void TearDown() override

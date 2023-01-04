@@ -108,10 +108,12 @@ namespace AZ
                 {
                     result += "PREDICATION|";
                 }
-                if (state & D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT)
+#ifdef O3DE_DX12_VRS_SUPPORT
+                if (state & D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE)
                 {
-                    result += "INDIRECT_ARGUMENT|";
+                    result += "SHADING RATE|";
                 }
+#endif
             }
 
             if (result.size())
@@ -325,7 +327,13 @@ namespace AZ
                     mergedResourceState |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_INDEX_BUFFER;
                     break;
                 }
-                
+#ifdef O3DE_DX12_VRS_SUPPORT
+                case RHI::ScopeAttachmentUsage::ShadingRate:
+                {
+                    mergedResourceState |= D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE;
+                    break;
+                }
+#endif
                 case RHI::ScopeAttachmentUsage::Uninitialized:
                 default:
                     AZ_Assert(false, "ScopeAttachmentUsage is Uninitialized or not supported");

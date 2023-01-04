@@ -43,12 +43,12 @@ namespace AZ
             namespace JSR = JsonSerializationResult;
             using namespace JsonMaterialPropertyConnectionSerializerInternal;
 
-            AZ_Assert(azrtti_typeid<MaterialTypeSourceData::PropertyConnection>() == outputValueTypeId,
+            AZ_Assert(azrtti_typeid<MaterialPropertySourceData::Connection>() == outputValueTypeId,
                 "Unable to deserialize material property connection to json because the provided type is %s",
                 outputValueTypeId.ToString<AZStd::string>().c_str());
             AZ_UNUSED(outputValueTypeId);
 
-            MaterialTypeSourceData::PropertyConnection* propertyConnection = reinterpret_cast<MaterialTypeSourceData::PropertyConnection*>(outputValue);
+            MaterialPropertySourceData::Connection* propertyConnection = reinterpret_cast<MaterialPropertySourceData::Connection*>(outputValue);
             AZ_Assert(propertyConnection, "Output value for JsonMaterialPropertyConnectionSerializer can't be null.");
 
             JSR::ResultCode result(JSR::Tasks::ReadField);
@@ -90,19 +90,19 @@ namespace AZ
             namespace JSR = JsonSerializationResult;
             using namespace JsonMaterialPropertyConnectionSerializerInternal;
 
-            AZ_Assert(azrtti_typeid<MaterialTypeSourceData::PropertyConnection>() == valueTypeId,
+            AZ_Assert(azrtti_typeid<MaterialPropertySourceData::Connection>() == valueTypeId,
                 "Unable to serialize material property connection to json because the provided type is %s",
                 valueTypeId.ToString<AZStd::string>().c_str());
             AZ_UNUSED(valueTypeId);
 
-            const MaterialTypeSourceData::PropertyConnection* propertyConnection = reinterpret_cast<const MaterialTypeSourceData::PropertyConnection*>(inputValue);
+            const MaterialPropertySourceData::Connection* propertyConnection = reinterpret_cast<const MaterialPropertySourceData::Connection*>(inputValue);
             AZ_Assert(propertyConnection, "Input value for JsonMaterialPropertyConnectionSerializer can't be null.");
             
             JSR::ResultCode result(JSR::Tasks::WriteValue);
 
             outputValue.SetObject();
 
-            MaterialTypeSourceData::PropertyConnection defaultConnection;
+            MaterialPropertySourceData::Connection defaultConnection;
 
             result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::type, &propertyConnection->m_type, &defaultConnection.m_type, azrtti_typeid<MaterialPropertyOutputType>(), context));
             result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::name, &propertyConnection->m_name, &defaultConnection.m_name, azrtti_typeid<AZStd::string>(), context));

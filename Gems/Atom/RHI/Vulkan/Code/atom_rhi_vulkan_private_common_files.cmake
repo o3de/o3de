@@ -139,6 +139,7 @@ set(FILES
     Source/RHI/AliasingBarrierTracker.cpp
     Source/RHI/TransientAttachmentPool.cpp
     Source/RHI/TransientAttachmentPool.h
+    Source/RHI/TileAllocator.h
     Source/RHI/SignalEvent.cpp
     Source/RHI/SignalEvent.h
     Source/RHI/NullDescriptorManager.cpp
@@ -163,4 +164,6 @@ set(FILES
     Source/RHI/RayTracingPipelineState.h
     Source/RHI/RayTracingShaderTable.cpp
     Source/RHI/RayTracingShaderTable.h
+    Source/RHI/Conversion.h
+    Source/RHI/Conversion.cpp
 )

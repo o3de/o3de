@@ -18,8 +18,10 @@
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Reflect/Material/MaterialAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
+#include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 
 namespace UnitTest
 {
@@ -213,6 +215,82 @@ namespace UnitTest
         {
             return materialAsset->m_propertyValues[materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyName).GetIndex()];
         }
+    };
+
+    //! Copies the value of a material property to an internal material pipelien property
+    class SetInternalPropertyFunctor final
+        : public AZ::RPI::MaterialFunctor
+    {
+        friend class SetInternalPropertyFunctorSourceData;
+    public:
+        using AZ::RPI::MaterialFunctor::Process;
+        void Process(AZ::RPI::MaterialFunctorAPI::RuntimeContext& context) override
+        {
+            const MaterialPropertyValue value = context.GetMaterialPropertyValue(m_inputPropertyIndex);
+            context.SetInternalMaterialPropertyValue(m_outputPropertyName, value);
+        }
+
+    private:
+        AZ::RPI::MaterialPropertyIndex m_inputPropertyIndex;
+        AZ::Name m_outputPropertyName;
+    };
+
+    class SetInternalPropertyFunctorSourceData final
+        : public AZ::RPI::MaterialFunctorSourceData
+    {
+    public:
+        using MaterialFunctorSourceData::CreateFunctor;
+        FunctorResult CreateFunctor(const RuntimeContext& context) const override
+        {
+            Ptr<SetInternalPropertyFunctor> functor = aznew SetInternalPropertyFunctor;
+
+            functor->m_inputPropertyIndex = context.FindMaterialPropertyIndex(Name{m_inputPropertyName});
+            functor->m_outputPropertyName = m_outputPropertyName;
+
+            AddMaterialPropertyDependency(functor, functor->m_inputPropertyIndex);
+
+            return Success(Ptr<MaterialFunctor>(functor));
+        }
+
+        AZ::Name m_inputPropertyName;
+        AZ::Name m_outputPropertyName;
+    };
+
+    //! Sets the shader enable state based on a bool material property
+    class ShaderEnablePipelineFunctor final
+        : public AZ::RPI::MaterialFunctor
+    {
+    public:
+        using AZ::RPI::MaterialFunctor::Process;
+        void Process(AZ::RPI::MaterialFunctorAPI::PipelineRuntimeContext& context) override
+        {
+            const bool enable = context.GetMaterialPropertyValue(m_enablePropertyIndex).GetValue<bool>();
+            context.SetShaderEnabled(m_shaderTag, enable);
+        }
+
+        AZ::RPI::MaterialPropertyIndex m_enablePropertyIndex;
+        AZ::Name m_shaderTag;
+    };
+
+    class ShaderEnablePipelineFunctorSourceData final
+        : public AZ::RPI::MaterialFunctorSourceData
+    {
+    public:
+        using MaterialFunctorSourceData::CreateFunctor;
+        FunctorResult CreateFunctor(const RuntimeContext& context) const override
+        {
+            Ptr<ShaderEnablePipelineFunctor> functor = aznew ShaderEnablePipelineFunctor;
+
+            functor->m_enablePropertyIndex = context.FindMaterialPropertyIndex(Name{m_enablePropertyName});
+            functor->m_shaderTag = m_shaderTag;
+
+            AddMaterialPropertyDependency(functor, functor->m_enablePropertyIndex);
+
+            return Success(Ptr<MaterialFunctor>(functor));
+        }
+
+        AZ::Name m_enablePropertyName;
+        AZ::Name m_shaderTag;
     };
 
     TEST_F(MaterialTests, TestCreateVsFindOrCreate)
@@ -484,7 +562,7 @@ namespace UnitTest
         EXPECT_EQ(material->GetPropertyValue<uint32_t>(material->FindPropertyIndex(Name{"RangeB"})), 10u);
 
         // Check the values on the underlying ShaderCollection::Item
-        ShaderOptionGroup options{optionsLayout, material->GetShaderCollection()[0].GetShaderVariantId()};
+        ShaderOptionGroup options{optionsLayout, material->GetGeneralShaderCollection()[0].GetShaderVariantId()};
         EXPECT_EQ(optionEnumA.Get(options).GetIndex(), optionEnumA.FindValue(Name{"High"}).GetIndex());
         EXPECT_EQ(optionEnumB.Get(options).GetIndex(), optionEnumB.FindValue(Name{"Med"}).GetIndex());
         EXPECT_EQ(optionBoolA.Get(options).GetIndex(), optionBoolA.FindValue(Name{"True"}).GetIndex());
@@ -505,8 +583,11 @@ namespace UnitTest
         EXPECT_EQ(material->GetPropertyValue<int32_t>(material->FindPropertyIndex(Name{"RangeA"})), 3);
         EXPECT_EQ(material->GetPropertyValue<uint32_t>(material->FindPropertyIndex(Name{"RangeB"})), 7u);
 
+        ProcessQueuedSrgCompilations(shaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
         // Check the values on the underlying ShaderCollection::Item
-        ShaderOptionGroup options2{optionsLayout, material->GetShaderCollection()[0].GetShaderVariantId()};
+        ShaderOptionGroup options2{optionsLayout, material->GetGeneralShaderCollection()[0].GetShaderVariantId()};
         EXPECT_EQ(optionEnumA.Get(options2).GetIndex(), optionEnumA.FindValue(Name{"Med"}).GetIndex());
         EXPECT_EQ(optionEnumB.Get(options2).GetIndex(), optionEnumB.FindValue(Name{"Low"}).GetIndex());
         EXPECT_EQ(optionBoolA.Get(options2).GetIndex(), optionBoolA.FindValue(Name{"False"}).GetIndex());
@@ -541,11 +622,13 @@ namespace UnitTest
 
         auto& optionRangeB = optionsLayout->GetShaderOption(optionsLayout->FindShaderOptionIndex(Name{"o_rangeB"}));
 
+        const ShaderCollection& shaderCollection = material->GetGeneralShaderCollection();
+
         // Check the values on the underlying ShaderVariantReferences
         {
-            ShaderOptionGroup options0{optionsLayout, material->GetShaderCollection()[0].GetShaderVariantId()};
-            ShaderOptionGroup options1{optionsLayout, material->GetShaderCollection()[1].GetShaderVariantId()};
-            ShaderOptionGroup options2{optionsLayout, material->GetShaderCollection()[2].GetShaderVariantId()};
+            ShaderOptionGroup options0{optionsLayout, shaderCollection[0].GetShaderVariantId()};
+            ShaderOptionGroup options1{optionsLayout, shaderCollection[1].GetShaderVariantId()};
+            ShaderOptionGroup options2{optionsLayout, shaderCollection[2].GetShaderVariantId()};
             EXPECT_EQ(optionRangeB.Get(options0).GetIndex(),  2);
             EXPECT_EQ(optionRangeB.Get(options1).GetIndex(),  2);
             EXPECT_EQ(optionRangeB.Get(options2).GetIndex(),  2);
@@ -554,11 +637,14 @@ namespace UnitTest
         // Now call SetPropertyValue to change the values, and check again
         EXPECT_TRUE(material->SetPropertyValue<int32_t>(material->FindPropertyIndex(Name{"Value"}), 5));
 
+        ProcessQueuedSrgCompilations(shaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
         // Check the values on the underlying ShaderVariantReferences
         {
-            ShaderOptionGroup options0{optionsLayout, material->GetShaderCollection()[0].GetShaderVariantId()};
-            ShaderOptionGroup options1{optionsLayout, material->GetShaderCollection()[1].GetShaderVariantId()};
-            ShaderOptionGroup options2{optionsLayout, material->GetShaderCollection()[2].GetShaderVariantId()};
+            ShaderOptionGroup options0{optionsLayout, shaderCollection[0].GetShaderVariantId()};
+            ShaderOptionGroup options1{optionsLayout, shaderCollection[1].GetShaderVariantId()};
+            ShaderOptionGroup options2{optionsLayout, shaderCollection[2].GetShaderVariantId()};
             EXPECT_EQ(optionRangeB.Get(options0).GetIndex(),  5);
             EXPECT_EQ(optionRangeB.Get(options1).GetIndex(),  5);
             EXPECT_EQ(optionRangeB.Get(options2).GetIndex(),  5);
@@ -569,9 +655,9 @@ namespace UnitTest
     {
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(Uuid::CreateRandom());
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"one"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"two"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"three"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"one"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"two"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"three"});
         materialTypeCreator.BeginMaterialProperty(Name{"EnableSecondShader"}, MaterialPropertyDataType::Bool);
         materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"two"});
         materialTypeCreator.EndMaterialProperty();
@@ -585,23 +671,476 @@ namespace UnitTest
 
         MaterialPropertyIndex enableShader = material->FindPropertyIndex(Name{"EnableSecondShader"});
 
-        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
-        EXPECT_FALSE(material->GetShaderCollection()[1].IsEnabled());
-        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+        const ShaderCollection& shaderCollection = material->GetGeneralShaderCollection();
+
+        EXPECT_TRUE(shaderCollection[0].IsEnabled());
+        EXPECT_FALSE(shaderCollection[1].IsEnabled());
+        EXPECT_TRUE(shaderCollection[2].IsEnabled());
 
         material->SetPropertyValue(enableShader, true);
 
-        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
-        EXPECT_TRUE(material->GetShaderCollection()[1].IsEnabled());
-        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
+        EXPECT_TRUE(shaderCollection[0].IsEnabled());
+        EXPECT_TRUE(shaderCollection[1].IsEnabled());
+        EXPECT_TRUE(shaderCollection[2].IsEnabled());
 
         material->SetPropertyValue(enableShader, false);
 
-        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
-        EXPECT_FALSE(material->GetShaderCollection()[1].IsEnabled());
-        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
+        EXPECT_TRUE(shaderCollection[0].IsEnabled());
+        EXPECT_FALSE(shaderCollection[1].IsEnabled());
+        EXPECT_TRUE(shaderCollection[2].IsEnabled());
     }
 
+    TEST_F(MaterialTests, TestSetPropertyValue_ConnectedToInternalProperty_ConnectedToShaderEnabled)
+    {
+        // This tests the concept of internal properties used to pass data from the material to a MaterialPipelinePayload.
+
+        // The test will set up a structure like this:
+        //   Properties
+        //       "general.useSpecialFeature" connects to "EnableSpecialFeature" in each pipeline
+        //   Material pipelines
+        //       "PipalineA"
+        //           Properties
+        //               "EnableSpecialFeature" connects to enable the local "special" shader
+        //           Shaders
+        //               "shader1"
+        //               "shader2"
+        //               "special"
+        //       "PipalineB"
+        //           Properties
+        //               "EnableSpecialFeature" connects to enable the local "peculiar" shader
+        //           Shaders
+        //               "shaderA"
+        //               "peculiar"
+        //               "shaderB"
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader1"}, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader2"}, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"special"}, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderA"}, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"peculiar"}, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderB"}, Name{"PipalineB"});
+
+        // PipalineA's EnableSpecialFeature connects to its "special" shader
+        materialTypeCreator.BeginMaterialProperty(Name{"EnableSpecialFeature"}, MaterialPropertyDataType::Bool, Name{"PipalineA"});
+        materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"special"});
+        materialTypeCreator.EndMaterialProperty();
+
+        // PipalineB's EnableSpecialFeature connects to its "peculiar" shader
+        materialTypeCreator.BeginMaterialProperty(Name{"EnableSpecialFeature"}, MaterialPropertyDataType::Bool, Name{"PipalineB"});
+        materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"peculiar"});
+        materialTypeCreator.EndMaterialProperty();
+
+        // The main property connects to EnableSpecialFeature
+        materialTypeCreator.BeginMaterialProperty(Name{"general.useSpecialFeature"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
+        materialTypeCreator.ConnectMaterialPropertyToInternalProperty(Name{"EnableSpecialFeature"});
+        materialTypeCreator.EndMaterialProperty();
+
+        materialTypeCreator.End(m_testMaterialTypeAsset);
+
+        MaterialAssetCreator materialAssetCreator;
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.End(m_testMaterialAsset);
+
+        Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
+
+        MaterialPropertyIndex enableShader = material->FindPropertyIndex(Name{"general.useSpecialFeature"});
+
+        const ShaderCollection& shaderCollectionA = material->GetShaderCollection(Name{"PipalineA"});
+        const ShaderCollection& shaderCollectionB = material->GetShaderCollection(Name{"PipalineB"});
+
+        EXPECT_TRUE(shaderCollectionA[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[1].IsEnabled());
+        EXPECT_FALSE(shaderCollectionA[2].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[0].IsEnabled());
+        EXPECT_FALSE(shaderCollectionB[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, true);
+
+        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
+        EXPECT_TRUE(shaderCollectionA[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[2].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, false);
+
+        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
+        EXPECT_TRUE(shaderCollectionA[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[1].IsEnabled());
+        EXPECT_FALSE(shaderCollectionA[2].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[0].IsEnabled());
+        EXPECT_FALSE(shaderCollectionB[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[2].IsEnabled());
+    }
+
+    TEST_F(MaterialTests, TestSetPropertyValue_ConnectedToMaterialFunctor_ConnectedToShaderEnabled)
+    {
+        using namespace AZ::RPI;
+
+        // This is the same as TestSetPropertyValue_ConnectedToInternalProperty_ConnectedToShaderEnabled, except
+        // a functor is used for the first connection instead of a direct connection.
+
+        // The test will set up a structure like this:
+        //   Properties
+        //       "general.useSpecialFeature" doesn't connect to anything directly
+        //   Functors
+        //       SetInternalPropertyFunctor connects "general.useSpecialFeature" to "EnableSpecialFeature", which propagates to each pipeline
+        //   Material pipelines (This is the same as TestSetPropertyValue_ConnectedToInternalProperty_ConnectedToShaderEnabled)
+        //       "PipalineA"
+        //           Properties
+        //               "EnableSpecialFeature" connects to enable the local "special" shader
+        //           Shaders
+        //               "shader1"
+        //               "shader2"
+        //               "special"
+        //       "PipalineB"
+        //           Properties
+        //               "EnableSpecialFeature" connects to enable the local "peculiar" shader
+        //           Shaders
+        //               "shaderA"
+        //               "peculiar"
+        //               "shaderB"
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"shader1"}, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"shader2"}, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"special"}, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"shaderA"}, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"peculiar"}, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"shaderB"}, Name{"PipalineB"});
+
+        // PipalineA's EnableSpecialFeature connects to its "special" shader
+        materialTypeCreator.BeginMaterialProperty(Name{"EnableSpecialFeature"}, MaterialPropertyDataType::Bool, Name{"PipalineA"});
+        materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"special"});
+        materialTypeCreator.EndMaterialProperty();
+
+        // PipalineB's EnableSpecialFeature connects to its "peculiar" shader
+        materialTypeCreator.BeginMaterialProperty(Name{"EnableSpecialFeature"}, MaterialPropertyDataType::Bool, Name{"PipalineB"});
+        materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"peculiar"});
+        materialTypeCreator.EndMaterialProperty();
+
+        // The main property doesn't connect directly, because a functor is used
+        materialTypeCreator.BeginMaterialProperty(Name{"general.useSpecialFeature"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
+        materialTypeCreator.EndMaterialProperty();
+
+        // This functor makes the connection between general.useSpecialFeature and EnableSpecialFeature
+        SetInternalPropertyFunctorSourceData functorCreator;
+        functorCreator.m_inputPropertyName = Name{"general.useSpecialFeature"};
+        functorCreator.m_outputPropertyName = Name{"EnableSpecialFeature"};
+        MaterialNameContext nameContext;
+        MaterialFunctorSourceData::FunctorResult result = functorCreator.CreateFunctor(MaterialFunctorSourceData::RuntimeContext{
+            "",
+            materialTypeCreator.GetMaterialPropertiesLayout(),
+            nullptr,
+            &nameContext});
+        materialTypeCreator.AddMaterialFunctor(result.GetValue(), MaterialPipelineNone);
+
+        materialTypeCreator.End(m_testMaterialTypeAsset);
+
+        MaterialAssetCreator materialAssetCreator;
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.End(m_testMaterialAsset);
+
+        Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
+
+        MaterialPropertyIndex enableShader = material->FindPropertyIndex(Name{"general.useSpecialFeature"});
+
+        const ShaderCollection& shaderCollectionA = material->GetShaderCollection(Name{"PipalineA"});
+        const ShaderCollection& shaderCollectionB = material->GetShaderCollection(Name{"PipalineB"});
+
+        EXPECT_TRUE(shaderCollectionA[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[1].IsEnabled());
+        EXPECT_FALSE(shaderCollectionA[2].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[0].IsEnabled());
+        EXPECT_FALSE(shaderCollectionB[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, true);
+
+        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
+        EXPECT_TRUE(shaderCollectionA[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[2].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, false);
+
+        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
+        EXPECT_TRUE(shaderCollectionA[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[1].IsEnabled());
+        EXPECT_FALSE(shaderCollectionA[2].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[0].IsEnabled());
+        EXPECT_FALSE(shaderCollectionB[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[2].IsEnabled());
+    }
+
+    TEST_F(MaterialTests, TestSetPropertyValue_ConnectedToInternalProperty_ConnectedToMaterialPipelineFunctor)
+    {
+        // This is the same as TestSetPropertyValue_ConnectedToInternalProperty_ConnectedToShaderEnabled, except
+        // a functor is used for the final ShaderEnable connection instead of a direct connection.
+
+        // The test will set up a structure like this:
+        //   Properties
+        //       "general.useSpecialFeature" connects to "EnableSpecialFeature" in each pipeline
+        //   Material pipelines
+        //       "PipalineA"
+        //           Properties
+        //               "EnableSpecialFeature" doesn't connect to anything directly
+        //           Shaders
+        //               "shader1"
+        //               "shader2"
+        //               "special"
+        //           Functors
+        //               ShaderEnablePipelineFunctor uses "EnableSpecialFeature" to enable/disable the "special" shader
+        //       "PipalineB"
+        //           Properties
+        //               "EnableSpecialFeature" doesn't connect to anything directly
+        //           Shaders
+        //               "shaderA"
+        //               "peculiar"
+        //               "shaderB"
+        //           Functors
+        //               ShaderEnablePipelineFunctor uses "EnableSpecialFeature" to enable/disable the "peculiar" shader
+        
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader1"}, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader2"}, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"special"}, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderA"}, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"peculiar"}, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderB"}, Name{"PipalineB"});
+
+        // PipalineA's EnableSpecialFeature connects to its "special" shader
+        materialTypeCreator.BeginMaterialProperty(Name{"EnableSpecialFeature"}, MaterialPropertyDataType::Bool, Name{"PipalineA"});
+        materialTypeCreator.EndMaterialProperty();
+
+        // This functor makes the connection between EnableSpecialFeature and PipelineA's "special" shader
+        ShaderEnablePipelineFunctorSourceData shaderEnableFunctorCreator;
+        shaderEnableFunctorCreator.m_enablePropertyName = Name{"EnableSpecialFeature"};
+        shaderEnableFunctorCreator.m_shaderTag = Name{"special"};
+        MaterialNameContext defaultNameContext;
+        MaterialFunctorSourceData::FunctorResult createFunctorResult = shaderEnableFunctorCreator.CreateFunctor(MaterialFunctorSourceData::RuntimeContext{
+            "",
+            materialTypeCreator.GetMaterialPropertiesLayout(Name{"PipalineA"}),
+            nullptr,
+            & defaultNameContext});
+        materialTypeCreator.AddMaterialFunctor(createFunctorResult.GetValue(), Name{"PipalineA"});
+
+        // PipalineB's EnableSpecialFeature connects to its "peculiar" shader
+        materialTypeCreator.BeginMaterialProperty(Name{"EnableSpecialFeature"}, MaterialPropertyDataType::Bool, Name{"PipalineB"});
+        materialTypeCreator.EndMaterialProperty();
+
+        // This functor makes the connection between EnableSpecialFeature and PipelineB's "peculiar" shader
+        shaderEnableFunctorCreator.m_enablePropertyName = Name{"EnableSpecialFeature"};
+        shaderEnableFunctorCreator.m_shaderTag = Name{"peculiar"};
+        createFunctorResult = shaderEnableFunctorCreator.CreateFunctor(MaterialFunctorSourceData::RuntimeContext{
+            "",
+            materialTypeCreator.GetMaterialPropertiesLayout(Name{"PipalineB"}),
+            nullptr,
+            & defaultNameContext});
+        materialTypeCreator.AddMaterialFunctor(createFunctorResult.GetValue(), Name{"PipalineB"});
+
+        // The main property connects to EnableSpecialFeature
+        materialTypeCreator.BeginMaterialProperty(Name{"general.useSpecialFeature"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
+        materialTypeCreator.ConnectMaterialPropertyToInternalProperty(Name{"EnableSpecialFeature"});
+        materialTypeCreator.EndMaterialProperty();
+
+        materialTypeCreator.End(m_testMaterialTypeAsset);
+
+        MaterialAssetCreator materialAssetCreator;
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.End(m_testMaterialAsset);
+
+        Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
+
+        MaterialPropertyIndex enableShader = material->FindPropertyIndex(Name{"general.useSpecialFeature"});
+
+        const ShaderCollection& shaderCollectionA = material->GetShaderCollection(Name{"PipalineA"});
+        const ShaderCollection& shaderCollectionB = material->GetShaderCollection(Name{"PipalineB"});
+
+        EXPECT_TRUE(shaderCollectionA[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[1].IsEnabled());
+        EXPECT_FALSE(shaderCollectionA[2].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[0].IsEnabled());
+        EXPECT_FALSE(shaderCollectionB[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, true);
+
+        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
+        EXPECT_TRUE(shaderCollectionA[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[2].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, false);
+
+        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
+        EXPECT_TRUE(shaderCollectionA[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[1].IsEnabled());
+        EXPECT_FALSE(shaderCollectionA[2].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[0].IsEnabled());
+        EXPECT_FALSE(shaderCollectionB[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[2].IsEnabled());
+    }
+
+    TEST_F(MaterialTests, TestSetPropertyValue_ConnectedToMaterialFunctor_ConnectedToMaterialPipelineFunctor)
+    {
+        // This is the same as TestSetPropertyValue_ConnectedToInternalProperty_ConnectedToShaderEnabled, except
+        // functors are used to connect everything instead of direct connections.
+
+        // The test will set up a structure like this:
+        //   Properties
+        //       "general.useSpecialFeature" doesn't connect to anything directly
+        //   Functors
+        //       SetInternalPropertyFunctor connects "general.useSpecialFeature" to "EnableSpecialFeature", which propagates to each pipeline
+        //   Material pipelines
+        //       "PipalineA"
+        //           Properties
+        //               "EnableSpecialFeature" doesn't connect to anything directly
+        //           Shaders
+        //               "shader1"
+        //               "shader2"
+        //               "special"
+        //           Functors
+        //               ShaderEnablePipelineFunctor uses "EnableSpecialFeature" to enable/disable the "special" shader
+        //       "PipalineB"
+        //           Properties
+        //               "EnableSpecialFeature" doesn't connect to anything directly
+        //           Shaders
+        //               "shaderA"
+        //               "peculiar"
+        //               "shaderB"
+        //           Functors
+        //               ShaderEnablePipelineFunctor uses "EnableSpecialFeature" to enable/disable the "peculiar" shader
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader1"}, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader2"}, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"special"}, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderA"}, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"peculiar"}, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderB"}, Name{"PipalineB"});
+
+        // PipalineA's EnableSpecialFeature connects to its "special" shader
+        materialTypeCreator.BeginMaterialProperty(Name{"EnableSpecialFeature"}, MaterialPropertyDataType::Bool, Name{"PipalineA"});
+        materialTypeCreator.EndMaterialProperty();
+
+        // This functor makes the connection between EnableSpecialFeature and PipelineA's "special" shader
+        ShaderEnablePipelineFunctorSourceData shaderEnableFunctorCreator;
+        shaderEnableFunctorCreator.m_enablePropertyName = Name{"EnableSpecialFeature"};
+        shaderEnableFunctorCreator.m_shaderTag = Name{"special"};
+        MaterialNameContext defaultNameContext;
+        MaterialFunctorSourceData::FunctorResult createFunctorResult = shaderEnableFunctorCreator.CreateFunctor(MaterialFunctorSourceData::RuntimeContext{
+            "",
+            materialTypeCreator.GetMaterialPropertiesLayout(Name{"PipalineA"}),
+            nullptr,
+            &defaultNameContext});
+        materialTypeCreator.AddMaterialFunctor(createFunctorResult.GetValue(), Name{"PipalineA"});
+
+        // PipalineB's EnableSpecialFeature connects to its "peculiar" shader
+        materialTypeCreator.BeginMaterialProperty(Name{"EnableSpecialFeature"}, MaterialPropertyDataType::Bool, Name{"PipalineB"});
+        materialTypeCreator.EndMaterialProperty();
+
+        // This functor makes the connection between EnableSpecialFeature and PipelineB's "peculiar" shader
+        shaderEnableFunctorCreator.m_enablePropertyName = Name{"EnableSpecialFeature"};
+        shaderEnableFunctorCreator.m_shaderTag = Name{"peculiar"};
+        createFunctorResult = shaderEnableFunctorCreator.CreateFunctor(MaterialFunctorSourceData::RuntimeContext{
+            "",
+            materialTypeCreator.GetMaterialPropertiesLayout(Name{"PipalineB"}),
+            nullptr,
+            &defaultNameContext});
+        materialTypeCreator.AddMaterialFunctor(createFunctorResult.GetValue(), Name{"PipalineB"});
+
+        // The main property doesn't connect directly, because a functor is used
+        materialTypeCreator.BeginMaterialProperty(Name{"general.useSpecialFeature"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
+        materialTypeCreator.EndMaterialProperty();
+
+        // This functor makes the connection between general.useSpecialFeature and EnableSpecialFeature
+        SetInternalPropertyFunctorSourceData setInternalPropertyFunctorCreator;
+        setInternalPropertyFunctorCreator.m_inputPropertyName = Name{"general.useSpecialFeature"};
+        setInternalPropertyFunctorCreator.m_outputPropertyName = Name{"EnableSpecialFeature"};
+        MaterialFunctorSourceData::FunctorResult result = setInternalPropertyFunctorCreator.CreateFunctor(MaterialFunctorSourceData::RuntimeContext{
+            "",
+            materialTypeCreator.GetMaterialPropertiesLayout(),
+            nullptr,
+            &defaultNameContext});
+        materialTypeCreator.AddMaterialFunctor(result.GetValue(), MaterialPipelineNone);
+
+        materialTypeCreator.End(m_testMaterialTypeAsset);
+
+        MaterialAssetCreator materialAssetCreator;
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.End(m_testMaterialAsset);
+
+        Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
+
+        MaterialPropertyIndex enableShader = material->FindPropertyIndex(Name{"general.useSpecialFeature"});
+
+        const ShaderCollection& shaderCollectionA = material->GetShaderCollection(Name{"PipalineA"});
+        const ShaderCollection& shaderCollectionB = material->GetShaderCollection(Name{"PipalineB"});
+
+        EXPECT_TRUE(shaderCollectionA[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[1].IsEnabled());
+        EXPECT_FALSE(shaderCollectionA[2].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[0].IsEnabled());
+        EXPECT_FALSE(shaderCollectionB[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, true);
+
+        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
+        EXPECT_TRUE(shaderCollectionA[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[2].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, false);
+
+        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
+        EXPECT_TRUE(shaderCollectionA[0].IsEnabled());
+        EXPECT_TRUE(shaderCollectionA[1].IsEnabled());
+        EXPECT_FALSE(shaderCollectionA[2].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[0].IsEnabled());
+        EXPECT_FALSE(shaderCollectionB[1].IsEnabled());
+        EXPECT_TRUE(shaderCollectionB[2].IsEnabled());
+    }
 
     TEST_F(MaterialTests, TestSetSystemShaderOption)
     {
@@ -642,9 +1181,9 @@ namespace UnitTest
         EXPECT_TRUE(result.IsSuccess());
         EXPECT_EQ(0, result.GetValue());
 
-        for (size_t i = 0; i < material->GetShaderCollection().size(); ++i)
+        for (size_t i = 0; i < material->GetGeneralShaderCollection().size(); ++i)
         {
-            auto& shaderItem = material->GetShaderCollection()[i];
+            auto& shaderItem = material->GetGeneralShaderCollection()[i];
 
             EXPECT_EQ(0, shaderItem.GetShaderOptions()->GetValue(Name{"o_enumA"}).GetIndex());
             EXPECT_EQ(1, shaderItem.GetShaderOptions()->GetValue(Name{"o_enumB"}).GetIndex());
@@ -691,9 +1230,20 @@ namespace UnitTest
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
 
-        AZ_TEST_START_ASSERTTEST;
-        EXPECT_FALSE(material->SetPropertyValue<int32_t>(material->FindPropertyIndex(Name{"Value"}), 100));
-        AZ_TEST_STOP_ASSERTTEST(1);
+        ErrorMessageFinder errorMessageFinder("ShaderOption value [100] is out of range");
+
+        // Depending on implementation, the error message might not actually be reported until Compile() is called.
+        // In that case, SetPropertyValue won't know about any issue and just return true after setting the property value.
+        // If we want SetPropertyValue to return false, then we would have to change the implementation to process
+        // property connections immediately instead of in Compile(), but there's little point to that as lua functors
+        // can't be processed immediately, they have to wait for Compile(). So we might as well keep all our back-end
+        // error checking in Compile().
+
+        material->SetPropertyValue<int32_t>(material->FindPropertyIndex(Name{"Value"}), 100); // 100 is out of range, max is 10
+        ProcessQueuedSrgCompilations(shaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
+        errorMessageFinder.CheckExpectedErrorsFound();
     }
 
     TEST_F(MaterialTests, Error_ImageNotFound)

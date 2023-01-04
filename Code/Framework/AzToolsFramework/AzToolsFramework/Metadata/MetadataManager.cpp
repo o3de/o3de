@@ -92,7 +92,7 @@ namespace AzToolsFramework
         }
 
         outValue = rapidjson_ly::Document(); // Make sure to release any existing memory if the document happens to be non-empty
-        outValue.CopyFrom(*value, document.GetAllocator());
+        outValue.CopyFrom(*value, outValue.GetAllocator());
         return true;
     }
 
@@ -258,10 +258,8 @@ namespace AzToolsFramework
         return false;
     }
 
-    AZ::IO::Path MetadataManager::ToMetadataPath(AZ::IO::PathView file)
+    AZ::IO::Path MetadataManager::ToMetadataPath(AZ::IO::Path path)
     {
-        AZ::IO::Path path = file;
-
         if (path.Extension() != MetadataFileExtension)
         {
             path.ReplaceExtension(AZ::IO::PathView(AZStd::string(path.Extension().Native()) + AZStd::string(MetadataFileExtension)));

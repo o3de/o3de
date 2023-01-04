@@ -742,16 +742,6 @@ namespace AZ
             AZ_PROFILE_SCOPE(RPI, "AddLodDataToView");
 #endif
 
-            const Matrix4x4& viewToClip = view.GetViewToClipMatrix();
-            //the [1][1] element of a perspective projection matrix stores cot(FovY/2) (equal to 2*nearPlaneDistance/nearPlaneHeight),
-            //which is used to determine the (vertical) projected size in screen space
-            const float yScale = viewToClip.GetElement(1, 1);
-            const bool isPerspective = viewToClip.GetElement(3, 3) == 0.f;
-            const Vector3 cameraPos = view.GetViewToWorldMatrix().GetTranslation();
-
-            const float approxScreenPercentage = ModelLodUtils::ApproxScreenPercentage(
-                pos, lodData.m_lodSelectionRadius, cameraPos, yScale, isPerspective);
-
             uint32_t numVisibleDrawPackets = 0;
 
             auto addLodToDrawPacket = [&](const Cullable::LodData::Lod& lod)
@@ -776,6 +766,17 @@ namespace AZ
                     break;
                 case Cullable::LodType::ScreenCoverage:
                 default:
+                {
+                    const Matrix4x4& viewToClip = view.GetViewToClipMatrix();
+                    // the [1][1] element of a perspective projection matrix stores cot(FovY/2) (equal to
+                    // 2*nearPlaneDistance/nearPlaneHeight), which is used to determine the (vertical) projected size in screen space
+                    const float yScale = viewToClip.GetElement(1, 1);
+                    const bool isPerspective = viewToClip.GetElement(3, 3) == 0.f;
+                    const Vector3 cameraPos = view.GetViewToWorldMatrix().GetTranslation();
+
+                    const float approxScreenPercentage =
+                        ModelLodUtils::ApproxScreenPercentage(pos, lodData.m_lodSelectionRadius, cameraPos, yScale, isPerspective);
+
                     for (const Cullable::LodData::Lod& lod : lodData.m_lods)
                     {
                         // Note that this supports overlapping lod ranges (to suport cross-fading lods, for example)
@@ -785,6 +786,7 @@ namespace AZ
                         }
                     }
                     break;
+                }
             }
 
             return numVisibleDrawPackets;

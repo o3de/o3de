@@ -7,6 +7,7 @@
         "category": "Object",
         "title": "Position",
         "titlePaletteName": "ObjectNodeTitlePalette",
+        "description": "The local position of the current vertex or fragment",
         "slotDataTypeGroups": [
             "outPosition",
             "outX|outY|outZ"

@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetEntityId",
-                    "context": "EntityComponentIdPair",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEntityId"
@@ -43,7 +42,6 @@
                 },
                 {
                     "base": "Equal",
-                    "context": "EntityComponentIdPair",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Equal"
@@ -81,7 +79,6 @@
                 },
                 {
                     "base": "ToString",
-                    "context": "EntityComponentIdPair",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToString"

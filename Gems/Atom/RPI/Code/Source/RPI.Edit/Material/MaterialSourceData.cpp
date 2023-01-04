@@ -130,7 +130,7 @@ namespace AZ
                 return Failure();
             }
 
-            Outcome<Data::AssetId> materialTypeAssetId = AssetUtils::MakeAssetId(materialSourceFilePath, m_materialType, 0);
+            Outcome<Data::AssetId> materialTypeAssetId = MaterialUtils::GetFinalMaterialTypeAssetId(materialSourceFilePath, m_materialType);
             if (!materialTypeAssetId)
             {
                 return Failure();
@@ -165,7 +165,7 @@ namespace AZ
                 {
                     // In this case we need to load the material type data in preparation for the material->Finalize() step below.
                     auto materialTypeAssetOutcome = AssetUtils::LoadAsset<MaterialTypeAsset>(
-                        materialTypeAssetId.GetValue(), materialSourceFilePath.c_str(), AssetUtils::TraceLevel::Error, dontLoadImageAssets);
+                        materialTypeAssetId.GetValue(), m_materialType.c_str(), AssetUtils::TraceLevel::Error, dontLoadImageAssets);
                     if (!materialTypeAssetOutcome)
                     {
                         return Failure();
@@ -270,11 +270,12 @@ namespace AZ
                 return Failure();
             }
 
-            const auto materialTypeSourcePath = AssetUtils::ResolvePathReference(materialSourceFilePath, m_materialType);
-            const auto materialTypeAssetId = AssetUtils::MakeAssetId(materialTypeSourcePath, 0);
-            if (!materialTypeAssetId.IsSuccess())
+            const AZStd::string materialTypeSourcePath = MaterialUtils::GetFinalMaterialTypeSourcePath(materialSourceFilePath, m_materialType);
+            const auto materialTypeAssetId = MaterialUtils::GetFinalMaterialTypeAssetId(materialSourceFilePath, m_materialType);
+
+            if (!materialTypeAssetId.IsSuccess() || materialTypeSourcePath.empty())
             {
-                AZ_Error("MaterialSourceData", false, "Failed to create material type asset ID: '%s'.", materialTypeSourcePath.c_str());
+                AZ_Error("MaterialSourceData", false, "Could not find material type file: '%s'.", m_materialType.c_str());
                 return Failure();
             }
 
@@ -325,7 +326,7 @@ namespace AZ
                 MaterialSourceData parentSourceData = loadParentResult.TakeValue();
 
                 // Make sure that all materials in the hierarchy share the same material type
-                const auto parentTypeAssetId = AssetUtils::MakeAssetId(parentSourceAbsPath, parentSourceData.m_materialType, 0);
+                const auto parentTypeAssetId = MaterialUtils::GetFinalMaterialTypeAssetId(parentSourceAbsPath, parentSourceData.m_materialType);
                 if (!parentTypeAssetId)
                 {
                     AZ_Error("MaterialSourceData", false, "Parent material asset ID wasn't found: '%s'.", parentSourceAbsPath.c_str());

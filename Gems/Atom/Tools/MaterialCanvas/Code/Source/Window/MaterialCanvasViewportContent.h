@@ -11,7 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
-#include <Document/MaterialGraphCompilerNotificationBus.h>
+#include <AtomToolsFramework/Graph/GraphCompilerNotificationBus.h>
 #endif
 
 namespace MaterialCanvas
@@ -19,7 +19,7 @@ namespace MaterialCanvas
     class MaterialCanvasViewportContent final
         : public AtomToolsFramework::EntityPreviewViewportContent
         , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
-        , public MaterialGraphCompilerNotificationBus::Handler
+        , public AtomToolsFramework::GraphCompilerNotificationBus::Handler
     {
     public:
         MaterialCanvasViewportContent(
@@ -39,7 +39,7 @@ namespace MaterialCanvas
         void OnDocumentClosed(const AZ::Uuid& documentId) override;
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
-        // MaterialGraphCompilerNotificationBus::Handler overrides...
+        // AtomToolsFramework::GraphCompilerNotificationBus::Handler overrides...
         void OnCompileGraphStarted(const AZ::Uuid& documentId) override;
         void OnCompileGraphCompleted(const AZ::Uuid& documentId) override;
         void OnCompileGraphFailed(const AZ::Uuid& documentId) override;
