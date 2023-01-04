@@ -76,7 +76,7 @@ namespace Terrain
         }
 
         OnTerrainDataChanged(
-            AZ::Aabb::CreateNull(), TerrainDataChangedMask(TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings));
+            AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings);
         m_meshManager.Initialize(*GetParentScene());
     }
 
@@ -132,7 +132,7 @@ namespace Terrain
     
     void TerrainFeatureProcessor::OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        if ((dataChangedMask & TerrainDataChangedMask::Settings) != 0)
+        if ((dataChangedMask & TerrainDataChangedMask::Settings) == TerrainDataChangedMask::Settings)
         {
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                 m_zBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightBounds);

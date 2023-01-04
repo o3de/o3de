@@ -36,8 +36,8 @@ namespace UnitTest
             AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
             ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
-            EXPECT_CALL(mockHandler, OnPaint(::testing::_, ::testing::_, ::testing::_)).Times(0);
-            EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(0);
+            EXPECT_CALL(mockHandler, OnPaint(::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(0);
+            EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(0);
 
             paintBrush.BeginPaintMode();
 
@@ -72,10 +72,11 @@ namespace UnitTest
             paintBrush.BeginBrushStroke(m_settings);
             for (size_t index = 0; index < locations.size(); index++)
             {
-                EXPECT_CALL(mockHandler, OnPaint(::testing::_, ::testing::_, ::testing::_)).Times(1);
+                EXPECT_CALL(mockHandler, OnPaint(::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
                 ON_CALL(mockHandler, OnPaint)
                     .WillByDefault(
-                        [=](const AZ::Aabb& dirtyArea,
+                        [=]([[maybe_unused]] const AZ::Color& color,
+                            const AZ::Aabb& dirtyArea,
                             AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                             [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                         {
@@ -90,10 +91,11 @@ namespace UnitTest
             paintBrush.BeginBrushStroke(m_settings);
             for (size_t index = 0; index < locations.size(); index++)
             {
-                EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
+                EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
                 ON_CALL(mockHandler, OnSmooth)
                     .WillByDefault(
-                        [=](const AZ::Aabb& dirtyArea,
+                        [=]([[maybe_unused]] const AZ::Color& color,
+                            const AZ::Aabb& dirtyArea,
                             AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                             [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
                             [[maybe_unused]] AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
@@ -127,10 +129,11 @@ namespace UnitTest
 
             // Test the blend mode with PaintToLocation()
 
-            EXPECT_CALL(mockHandler, OnPaint(::testing::_, ::testing::_, ::testing::_)).Times(1);
+            EXPECT_CALL(mockHandler, OnPaint(::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
             ON_CALL(mockHandler, OnPaint)
                 .WillByDefault(
-                    [=]([[maybe_unused]] const AZ::Aabb& dirtyArea,
+                    [=]([[maybe_unused]] const AZ::Color& color,
+                        [[maybe_unused]] const AZ::Aabb& dirtyArea,
                         [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                         AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                     {
@@ -153,10 +156,11 @@ namespace UnitTest
 
             // Test the blend mode with SmoothToLocation()
 
-            EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
+            EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
             ON_CALL(mockHandler, OnSmooth)
                 .WillByDefault(
-                    [=]([[maybe_unused]] const AZ::Aabb& dirtyArea,
+                    [=]([[maybe_unused]] const AZ::Color& color,
+                        [[maybe_unused]] const AZ::Aabb& dirtyArea,
                         [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                         [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
                         AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
@@ -663,10 +667,11 @@ namespace UnitTest
         {
             m_settings.SetSmoothingRadius(radius);
 
-            EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
+            EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
             ON_CALL(mockHandler, OnSmooth)
                 .WillByDefault(
-                    [=]([[maybe_unused]] const AZ::Aabb& dirtyArea,
+                    [=]([[maybe_unused]] const AZ::Color& color,
+                        [[maybe_unused]] const AZ::Aabb& dirtyArea,
                         [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                         AZStd::span<const AZ::Vector3> valuePointOffsets,
                         AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
@@ -721,10 +726,11 @@ namespace UnitTest
 
         paintBrush.BeginPaintMode();
 
-        EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
+        EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
-                [=]([[maybe_unused]] const AZ::Aabb& dirtyArea,
+                [=]([[maybe_unused]] const AZ::Color& color,
+                    [[maybe_unused]] const AZ::Aabb& dirtyArea,
                     [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
                     AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
@@ -769,10 +775,11 @@ namespace UnitTest
 
         paintBrush.BeginPaintMode();
 
-        EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
+        EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
-                [=]([[maybe_unused]] const AZ::Aabb& dirtyArea,
+                [=]([[maybe_unused]] const AZ::Color& color,
+                    [[maybe_unused]] const AZ::Aabb& dirtyArea,
                     [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
                     AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
@@ -811,10 +818,10 @@ namespace UnitTest
 
         paintBrush.BeginPaintMode();
 
-        EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
+        EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
-                [=]([[maybe_unused]] const AZ::Aabb& dirtyArea,
+                [=]([[maybe_unused]] const AZ::Color& color, [[maybe_unused]] const AZ::Aabb& dirtyArea,
                     [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
                     AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
