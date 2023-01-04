@@ -106,7 +106,8 @@ namespace AZ
             {
                 if (m_objects.size() >= m_capSize)
                 {
-                    ui->m_addButton->setToolTip(tr("This group container reached its cap of %1 entries.").arg(m_capSize));
+                    QString entryString(tr(m_capSize == 1 ? "entry" : "entries"));
+                    ui->m_addButton->setToolTip(tr("Maximum number of entries reached. This page can contain up to %1 %2.").arg(m_capSize).arg(entryString));
                     ui->m_addButton->setEnabled(false);
                 }
                 else
@@ -297,7 +298,6 @@ namespace AZ
                             if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<int>*>(categoryAttribute))
                             {
                                 m_capSize = categoryAttributeData->Get(nullptr);
-
                             }
                         }
                     }

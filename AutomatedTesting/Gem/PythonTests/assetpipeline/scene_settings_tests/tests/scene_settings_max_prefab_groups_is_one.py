@@ -42,12 +42,13 @@ def Scene_Settings_Tests_Max_Prefab_Groups_Is_One():
                 break
 
         # Briefly pause so all events get posted
-        general.idle_wait_frames(30)
+        PREFAB_BUTTON_WAIT_TIMEOUT = 30
+        await pyside_utils.wait_for_condition(lambda: add_button.isEnabled(), timeout=PREFAB_BUTTON_WAIT_TIMEOUT)
         Report.critical_result(tm.Test_Messages.scene_settings_add_button_enabled, add_button.isEnabled() == True)
 
         add_button.click()
         # Briefly pause so all events get posted
-        general.idle_wait_frames(30)
+        await pyside_utils.wait_for_condition(lambda: add_button.isEnabled() == False, timeout=PREFAB_BUTTON_WAIT_TIMEOUT)
         Report.critical_result(tm.Test_Messages.scene_settings_add_button_disabled_after_adding, add_button.isEnabled() == False)
         
         scene_test_helpers.save_and_verify_manifest(path_to_manifest, widget_main_window)
