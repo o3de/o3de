@@ -6,7 +6,6 @@
  *
  */
 #pragma once
-
 #include <AzCore/RTTI/RTTI.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IRule.h>
 
@@ -16,18 +15,14 @@ namespace AZ
     {
         namespace DataTypes
         {
-            class IMaterialRule
-                : public IRule
+            // Disables UI interaction for the node and children of the node with this rule.
+            class IUnmodifiableRule : public IRule
             {
             public:
-                AZ_RTTI(IMaterialRule, "{428C9752-6EDF-4FA2-9BDF-DBDFCEB4CC0F}", IRule);
+                AZ_RTTI(IUnmodifiableRule, "{071A7F4A-70A5-4D32-AC9C-1D49AFCB1480}", IRule);
 
-                ~IMaterialRule() override = default;
-
-                virtual bool RemoveUnusedMaterials() const = 0;
-                virtual bool UpdateMaterials() const = 0;
-
+                virtual ~IUnmodifiableRule() override = default;
             };
-        }  // DataTypes
-    }  // SceneAPI
-}  // AZ
+        } // namespace DataTypes
+    } // namespace SceneAPI
+} // namespace AZ
