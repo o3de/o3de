@@ -22,8 +22,8 @@ namespace AZ::DocumentPropertyEditor
 
         struct StringSortNode : public RowSortAdapter::SortInfoNode
         {
-            StringSortNode(SortInfoNode::AdapterSortType sortFunction)
-                : SortInfoNode(sortFunction)
+            StringSortNode(const RowSortAdapter* owningAdapter)
+                : SortInfoNode(owningAdapter)
             {
             }
             AZStd::string m_string;

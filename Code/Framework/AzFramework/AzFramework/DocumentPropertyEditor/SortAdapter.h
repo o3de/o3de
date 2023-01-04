@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <AzFramework/DocumentPropertyEditor/MetaAdapter.h>
 #include <AzCore/std/containers/set.h>
+#include <AzFramework/DocumentPropertyEditor/MetaAdapter.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -44,18 +44,22 @@ namespace AZ::DocumentPropertyEditor
 
             //! holds the row childNodes in DOM order
             AZStd::multiset<AZStd::unique_ptr<SortInfoNode>, IndexSortType> m_indexSortedChildren;
-            
+
             //! holds a sorted list of the above children as defined by their RowSortAdapter::lessThan
             AZStd::multiset<SortInfoNode*, AdapterSortType> m_adapterSortedChildren;
 
-            protected:
-                SortInfoNode(AdapterSortType adapterSortFunc)
+        protected:
+            SortInfoNode(const RowSortAdapter* owningAdapter)
                 : m_indexSortedChildren(&indexLessThan)
-                , m_adapterSortedChildren(adapterSortFunc)
+                , m_adapterSortedChildren(
+                      [owningAdapter](SortInfoNode* lhs, SortInfoNode* rhs)
+                      {
+                          return owningAdapter->LessThan(lhs, rhs);
+                      })
             {
             }
 
-            // when children get inserted, ++index of all subsequent entries in m_childSortInfo, 
+            // when children get inserted, ++index of all subsequent entries in m_childSortInfo,
             // as returned from the iterator returned during insert!
         };
         AZStd::unique_ptr<SortInfoNode> m_rootNode;
@@ -78,4 +82,4 @@ namespace AZ::DocumentPropertyEditor
         bool m_reverseSort = false;
     };
 
-} // AZ::DocumentPropertyEditor
+} // namespace AZ::DocumentPropertyEditor
