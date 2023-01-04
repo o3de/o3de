@@ -131,14 +131,25 @@
     #endif
 #endif
 
+// Push all of rapidjson into a different namespace (rapidjson_ly for backward compatibility, as this is what
+// it used to be at some point).  
+// The risk of using the default namespace is that during library search, the linker might find other versions
+// of rapidjson from other 3rd party libraries that have the same mangled function names and use those when 
+// linking the code in.  The problem with that is different versions of rapidjson have different struct layouts
+// and thus even though the signature of the function is the same, the actual implementation is not compatible,
+// leading to mystery crashes.
+
+#define RAPIDJSON_NAMESPACE rapidjson_ly
+
 // Now that all of the above is declared, bring the RapidJSON headers in.
 // If you add additional definitions or configuration options, add them above.
 #include <rapidjson/rapidjson.h>
 
+// After using this header file, any use of 'rapidjson' points at O3DE's rapidjson.  This will also cause
+// compiler errors and warnings about redefinition if you happen to ever use this file and another rapidjson
+// in the same compile unit somehow.
+namespace rapidjson = rapidjson_ly;
+
 #if AZ_TRAIT_JSON_CLANG_IGNORE_UNKNOWN_WARNING && defined(AZ_COMPILER_CLANG)
 #pragma clang diagnostic pop
 #endif
-
-// retain backward compatibility by aliasing rapidjson_ly to rapidjson
-namespace rapidjson_ly = rapidjson;
-
