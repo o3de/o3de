@@ -79,7 +79,7 @@ namespace AzToolsFramework
             explicit AssetEditorWidget(QWidget* parent = nullptr);
             ~AssetEditorWidget() override;
 
-            void CreateAsset(AZ::Data::AssetType assetType, const AZ::Uuid& observerId);
+            void CreateAsset(AZ::Data::AssetType assetType, const AZ::Uuid& observerToken);
             void OpenAsset(const AZ::Data::Asset<AZ::Data::AssetData> asset);
             void SetAsset(const AZ::Data::Asset<AZ::Data::AssetData> asset);
 

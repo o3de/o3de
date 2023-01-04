@@ -190,7 +190,7 @@ namespace AzToolsFramework
             AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
             AZ_Assert(m_serializeContext, "Failed to retrieve serialize context.");
 
-            m_observerId = AZ::Uuid::CreateNull();
+            m_assetObserverToken = AZ::Uuid::CreateNull();
 
             setObjectName("AssetEditorWidget");
 
@@ -308,9 +308,9 @@ namespace AzToolsFramework
             AZ::SystemTickBus::Handler::BusDisconnect();
         }
 
-        void AssetEditorWidget::CreateAsset(AZ::Data::AssetType assetType, const AZ::Uuid& observerId)
+        void AssetEditorWidget::CreateAsset(AZ::Data::AssetType assetType, const AZ::Uuid& observerToken)
         {
-            m_observerId = observerId;
+            m_assetObserverToken = observerToken;
 
             auto typeIter = AZStd::find_if(
                 m_genericAssetTypes.begin(),
@@ -859,7 +859,7 @@ namespace AzToolsFramework
 
                 LoadAsset(assetId, assetInfo.m_assetType);
 
-                AssetEditorNotificationsBus::Event(m_observerId, &AssetEditorNotifications::OnAssetCreated, assetId);
+                AssetEditorNotificationsBus::Event(m_assetObserverToken, &AssetEditorNotifications::OnAssetCreated, assetId);
 
                 m_sourceAssetId = assetId;
             }
