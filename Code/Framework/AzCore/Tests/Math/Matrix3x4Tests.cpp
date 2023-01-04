@@ -739,6 +739,21 @@ namespace UnitTest
         EXPECT_THAT(inverse.GetTranslation(), IsClose(AZ::Vector3(-1.4f)));
     }
 
+    TEST(MATH_Matrix3x4, GetInverseFullSmallDeterminant)
+    {
+        // This is a regression test for a specific case that was broken by some changes to Matrix3x4::GetInverseFull()
+
+        const AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateFromRows(
+            AZ::Vector4(-0.0162572227f, 6.21248771e-17f, 1.42125156e-09f, 0.0f),
+            AZ::Vector4(1.42125156e-09f, 7.10625780e-10f, 0.0162572227f, 0.0f),
+            AZ::Vector4(0.0f, 0.0162572227f, -7.10625780e-10f, 0.0f)
+        );
+        const AZ::Matrix3x4 inverse = matrix.GetInverseFull();
+        EXPECT_THAT(inverse.GetRow(0), IsClose(AZ::Vector4(-61.5111237f, 5.37747292e-06f, 0.0f, 0.0f)));
+        EXPECT_THAT(inverse.GetRow(1), IsClose(AZ::Vector4(2.35056820e-13f, 2.68873646e-06f, 61.5111237f, 0.0f)));
+        EXPECT_THAT(inverse.GetRow(2), IsClose(AZ::Vector4(5.37747292e-06f, 61.5111237f, -2.68873646e-06f, 0.0f)));
+    }
+
     using Matrix3x4InvertFastFixture = ::testing::TestWithParam<AZ::Matrix3x4>;
 
     TEST_P(Matrix3x4InvertFastFixture, GetInverseFast)

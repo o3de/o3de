@@ -91,7 +91,7 @@ namespace PhysX
         gameEntity->CreateComponent<FixedJointComponent>(m_config.ToGameTimeConfig(), m_config.ToGenericProperties());
     }
 
-    AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> EditorFixedJointComponent::GetSubComponentModesState()
+    AZStd::vector<JointsComponentModeCommon::SubModeParameterState> EditorFixedJointComponent::GetSubComponentModesState()
     {
         return EditorJointComponent::GetSubComponentModesState();
     }

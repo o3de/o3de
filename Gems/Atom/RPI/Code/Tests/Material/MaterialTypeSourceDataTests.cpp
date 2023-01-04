@@ -2509,21 +2509,46 @@ namespace UnitTest
 
         auto saveNameContextFunctor = azrtti_cast<SaveNameContextTestFunctor*>(materialTypeAsset->GetMaterialFunctors()[0].get());
         const MaterialNameContext& nameContext = saveNameContextFunctor->m_nameContext;
-        
-        Name textureMapProperty{"textureMap"};
-        Name textureMapShaderInput{"m_texture"};
-        Name useTextureMapProperty{"useTextureMap"};
-        Name useTextureShaderOption{"o_useTexture"};
-        
-        nameContext.ContextualizeProperty(textureMapProperty);
-        nameContext.ContextualizeProperty(useTextureMapProperty);
-        nameContext.ContextualizeSrgInput(textureMapShaderInput);
-        nameContext.ContextualizeShaderOption(useTextureShaderOption);
 
-        EXPECT_EQ("groupA.groupB.groupC.useTextureMap", useTextureMapProperty.GetStringView());
-        EXPECT_EQ("o_groupA_o_groupB_o_useTexture", useTextureShaderOption.GetStringView());
-        EXPECT_EQ("groupA.groupB.groupC.textureMap", textureMapProperty.GetStringView());
-        EXPECT_EQ("m_groupA_m_groupB_m_texture", textureMapShaderInput.GetStringView());
+        AZStd::string string_textureMapProperty{"textureMap"};
+        AZStd::string string_textureMapShaderInput{"m_texture"};
+        AZStd::string string_useTextureMapProperty{"useTextureMap"};
+        AZStd::string string_useTextureShaderOption{"o_useTexture"};
+
+        EXPECT_EQ("groupA.groupB.groupC.useTextureMap", nameContext.GetContextualizedProperty(string_useTextureMapProperty));
+        EXPECT_EQ("o_groupA_o_groupB_o_useTexture", nameContext.GetContextualizedShaderOption(string_useTextureShaderOption));
+        EXPECT_EQ("groupA.groupB.groupC.textureMap", nameContext.GetContextualizedProperty(string_textureMapProperty));
+        EXPECT_EQ("m_groupA_m_groupB_m_texture", nameContext.GetContextualizedSrgInput(string_textureMapShaderInput));
+
+        nameContext.ContextualizeProperty(string_textureMapProperty);
+        nameContext.ContextualizeProperty(string_useTextureMapProperty);
+        nameContext.ContextualizeSrgInput(string_textureMapShaderInput);
+        nameContext.ContextualizeShaderOption(string_useTextureShaderOption);
+
+        EXPECT_EQ("groupA.groupB.groupC.useTextureMap", string_useTextureMapProperty);
+        EXPECT_EQ("o_groupA_o_groupB_o_useTexture", string_useTextureShaderOption);
+        EXPECT_EQ("groupA.groupB.groupC.textureMap", string_textureMapProperty);
+        EXPECT_EQ("m_groupA_m_groupB_m_texture", string_textureMapShaderInput);
+
+        Name name_textureMapProperty{"textureMap"};
+        Name name_textureMapShaderInput{"m_texture"};
+        Name name_useTextureMapProperty{"useTextureMap"};
+        Name name_useTextureShaderOption{"o_useTexture"};
+
+        EXPECT_EQ("groupA.groupB.groupC.useTextureMap", nameContext.GetContextualizedProperty(name_useTextureMapProperty).GetStringView());
+        EXPECT_EQ("o_groupA_o_groupB_o_useTexture", nameContext.GetContextualizedShaderOption(name_useTextureShaderOption).GetStringView());
+        EXPECT_EQ("groupA.groupB.groupC.textureMap", nameContext.GetContextualizedProperty(name_textureMapProperty).GetStringView());
+        EXPECT_EQ("m_groupA_m_groupB_m_texture", nameContext.GetContextualizedSrgInput(name_textureMapShaderInput).GetStringView());
+
+        nameContext.ContextualizeProperty(name_textureMapProperty);
+        nameContext.ContextualizeProperty(name_useTextureMapProperty);
+        nameContext.ContextualizeSrgInput(name_textureMapShaderInput);
+        nameContext.ContextualizeShaderOption(name_useTextureShaderOption);
+
+        EXPECT_EQ("groupA.groupB.groupC.useTextureMap", name_useTextureMapProperty.GetStringView());
+        EXPECT_EQ("o_groupA_o_groupB_o_useTexture", name_useTextureShaderOption.GetStringView());
+        EXPECT_EQ("groupA.groupB.groupC.textureMap", name_textureMapProperty.GetStringView());
+        EXPECT_EQ("m_groupA_m_groupB_m_texture", name_textureMapShaderInput.GetStringView());
     }
 
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_InternalMaterialPipelineProperties)

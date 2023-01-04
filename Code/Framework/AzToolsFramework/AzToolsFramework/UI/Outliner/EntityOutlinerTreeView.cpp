@@ -31,7 +31,7 @@ namespace AzToolsFramework
         : AzQtComponents::StyledTreeView(pParent)
         , m_queuedMouseEvent(nullptr)
     {
-        setUniformRowHeights(true);
+        setUniformRowHeights(false);
         setHeaderHidden(true);
 
         m_editorEntityFrameworkInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();

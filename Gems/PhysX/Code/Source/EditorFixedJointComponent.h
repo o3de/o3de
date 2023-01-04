@@ -38,7 +38,7 @@ namespace PhysX
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
         // EditorJointComponent
-        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> GetSubComponentModesState() override;
+        AZStd::vector<JointsComponentModeCommon::SubModeParameterState> GetSubComponentModesState() override;
 
     private:
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
