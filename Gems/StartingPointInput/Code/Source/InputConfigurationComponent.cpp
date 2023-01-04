@@ -23,8 +23,8 @@ namespace StartingPointInput
     };
 
     InputConfigurationComponent::InputConfigurationComponent()
+        : m_uuid{ AZ::Uuid::CreateRandom() }
     {
-        m_uuid = AZ::Uuid::CreateRandom();
     }
 
     InputConfigurationComponent::~InputConfigurationComponent()

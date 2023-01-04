@@ -859,10 +859,10 @@ namespace AzToolsFramework
 
                 LoadAsset(assetId, assetInfo.m_assetType);
 
+                AssetEditorNotificationsBus::Event(m_observerId, &AssetEditorNotifications::OnAssetCreated, assetId);
+
                 m_sourceAssetId = assetId;
             }
-
-            AssetEditorNotificationsBus::Event(m_observerId, &AssetEditorNotifications::OnAssetCreated, assetId);
         }
 
         void AssetEditorWidget::OnCatalogAssetRemoved(const AZ::Data::AssetId& /*assetId*/, const AZ::Data::AssetInfo& assetInfo)
