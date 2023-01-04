@@ -1132,8 +1132,8 @@ namespace AZ
                 AZStd::sort(m_poolTableRows.begin(), m_poolTableRows.end(),
                     [ascending](const PoolTableRow& lhs, const PoolTableRow& rhs)
                     {
-                        const float lhsReservation = static_cast<float>(lhs.m_reservedBytes);
-                        const float rhsReservation = static_cast<float>(rhs.m_reservedBytes);
+                        const float lhsReservation = static_cast<float>(lhs.m_allocatedBytes);
+                        const float rhsReservation = static_cast<float>(rhs.m_allocatedBytes);
                         return ascending ? lhsReservation < rhsReservation : lhsReservation > rhsReservation;
                     });
                 break;
@@ -1141,8 +1141,8 @@ namespace AZ
                 AZStd::sort(m_poolTableRows.begin(), m_poolTableRows.end(),
                     [ascending](const PoolTableRow& lhs, const PoolTableRow& rhs)
                     {
-                        const float lhsResidency = static_cast<float>(lhs.m_residentBytes);
-                        const float rhsResidency = static_cast<float>(rhs.m_residentBytes);
+                        const float lhsResidency = static_cast<float>(lhs.m_usedBytes);
+                        const float rhsResidency = static_cast<float>(rhs.m_usedBytes);
                         return ascending ? lhsResidency < rhsResidency : lhsResidency > rhsResidency;
                     });
                 break;
@@ -1219,8 +1219,8 @@ namespace AZ
                 ImGui::TableSetupColumn("Pool");
                 ImGui::TableSetupColumn("Heap Type");
                 ImGui::TableSetupColumn("Budget (MB)");
-                ImGui::TableSetupColumn("Reserved (MB)");
-                ImGui::TableSetupColumn("Resident (MB)");
+                ImGui::TableSetupColumn("Allocated (MB)");
+                ImGui::TableSetupColumn("Used (MB)");
                 ImGui::TableSetupColumn("Fragmentation (%)");
                 ImGui::TableHeadersRow();
                 ImGui::TableNextColumn();
@@ -1239,9 +1239,9 @@ namespace AZ
                     ImGui::TableNextColumn();
                     ImGui::Text("%.4f", 1.0f * tableRow.m_budgetBytes / GpuProfilerImGuiHelper::MB);
                     ImGui::TableNextColumn();
-                    ImGui::Text("%.4f", 1.0f * tableRow.m_reservedBytes / GpuProfilerImGuiHelper::MB);
+                    ImGui::Text("%.4f", 1.0f * tableRow.m_allocatedBytes / GpuProfilerImGuiHelper::MB);
                     ImGui::TableNextColumn();
-                    ImGui::Text("%.4f", 1.0f * tableRow.m_residentBytes / GpuProfilerImGuiHelper::MB);
+                    ImGui::Text("%.4f", 1.0f * tableRow.m_usedBytes / GpuProfilerImGuiHelper::MB);
                     ImGui::TableNextColumn();
                     ImGui::Text("%.4f", tableRow.m_fragmentation);
                     ImGui::TableNextColumn();
@@ -1302,15 +1302,15 @@ namespace AZ
                 auto& deviceHeapUsage = pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Device);
                 auto& hostHeapUsage = pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Host);
 
-                if (deviceHeapUsage.m_residentInBytes > 0 && deviceHeapUsage.m_residentInBytes < static_cast<size_t>(-1))
+                if (deviceHeapUsage.m_totalResidentInBytes > 0 && deviceHeapUsage.m_totalResidentInBytes < static_cast<size_t>(-1))
                 {
-                    m_poolTableRows.push_back({ poolName, true, deviceHeapUsage.m_budgetInBytes, deviceHeapUsage.m_reservedInBytes,
-                                                deviceHeapUsage.m_residentInBytes, deviceHeapUsage.m_fragmentation });
+                    m_poolTableRows.push_back({ poolName, true, deviceHeapUsage.m_budgetInBytes, deviceHeapUsage.m_totalResidentInBytes,
+                                                deviceHeapUsage.m_usedResidentInBytes, deviceHeapUsage.m_fragmentation });
                 }
-                if (hostHeapUsage.m_residentInBytes > 0 && hostHeapUsage.m_residentInBytes < static_cast<size_t>(-1))
+                if (hostHeapUsage.m_totalResidentInBytes > 0 && hostHeapUsage.m_totalResidentInBytes < static_cast<size_t>(-1))
                 {
-                    m_poolTableRows.push_back({ poolName, false, hostHeapUsage.m_budgetInBytes, hostHeapUsage.m_reservedInBytes,
-                                                hostHeapUsage.m_residentInBytes, hostHeapUsage.m_fragmentation });
+                    m_poolTableRows.push_back({ poolName, false, hostHeapUsage.m_budgetInBytes, hostHeapUsage.m_totalResidentInBytes,
+                                                hostHeapUsage.m_usedResidentInBytes, hostHeapUsage.m_fragmentation });
                 }
 
                 // Ignore transient pools
@@ -1353,7 +1353,7 @@ namespace AZ
 
                 // Draw the pie chart
                 drawList->AddCircleFilled(center, radius, ImGui::GetColorU32({.3, .3, .3, 1}));
-                const float usagePercent = 1.0f * heap.m_memoryUsage.m_residentInBytes / heap.m_memoryUsage.m_budgetInBytes;
+                const float usagePercent = 1.0f * heap.m_memoryUsage.m_totalResidentInBytes / heap.m_memoryUsage.m_budgetInBytes;
                 drawList->PathArcTo(center, radius, 0, AZ::Constants::TwoPi * usagePercent); // Clockwise starting from rightmost point
                 drawList->PathArcTo(center, 0, 0, 0); // To center
                 drawList->PathArcTo(center, radius, 0, 0); // Back to starting position
@@ -1549,6 +1549,8 @@ namespace AZ
                 }
 
                 ImGui::Text("Overall heap usage:");
+                const float columnOffset = ImGui::GetWindowWidth() / m_savedHeaps.size();
+                float currentX = columnOffset;
                 for (const auto& savedHeap : m_savedHeaps)
                 {
                     if (ImGui::BeginChild(savedHeap.m_name.GetCStr(), { ImGui::GetWindowWidth() / m_savedHeaps.size(), 250 }), ImGuiWindowFlags_NoScrollbar)
@@ -1556,14 +1558,14 @@ namespace AZ
                         ImGui::Text("%s", savedHeap.m_name.GetCStr());
                         ImGui::Columns(2, "HeapData", true);
 
-                        ImGui::Text("%s", "Resident (MB): ");
+                        ImGui::Text("%s", "Used (MB): ");
                         ImGui::NextColumn();
-                        ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_residentInBytes.load() / GpuProfilerImGuiHelper::MB);
+                        ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_usedResidentInBytes.load() / GpuProfilerImGuiHelper::MB);
                         ImGui::NextColumn();
 
-                        ImGui::Text("%s", "Reserved (MB): ");
+                        ImGui::Text("%s", "Allocated (MB): ");
                         ImGui::NextColumn();
-                        ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_reservedInBytes.load() / GpuProfilerImGuiHelper::MB);
+                        ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_totalResidentInBytes.load() / GpuProfilerImGuiHelper::MB);
                         ImGui::NextColumn();
 
                         ImGui::Text("%s", "Budget (MB): ");
@@ -1574,7 +1576,8 @@ namespace AZ
                         DrawPieChart(savedHeap);
                     }
                     ImGui::EndChild();
-                    ImGui::SameLine(ImGui::GetWindowWidth() / m_savedHeaps.size());
+                    ImGui::SameLine(currentX);
+                    currentX += columnOffset;
                 }
                 ImGui::NewLine();
                 ImGui::Separator();
@@ -1606,10 +1609,10 @@ namespace AZ
 
                 for (auto& pool : m_savedPools)
                 {
-                    size_t hostBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_reservedInBytes;
-                    size_t hostResidentBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_residentInBytes;
-                    size_t deviceBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_reservedInBytes;
-                    size_t deviceResidentBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_residentInBytes;
+                    size_t hostBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_totalResidentInBytes;
+                    size_t hostResidentBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_usedResidentInBytes;
+                    size_t deviceBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes;
+                    size_t deviceResidentBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_usedResidentInBytes;
 
                     TreemapNode* poolNode = nullptr;
 
@@ -1711,11 +1714,11 @@ namespace AZ
             for (const auto& pool : m_savedPools)
             {
                 int memoryType = 0;
-                if (pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_residentInBytes > 0)
+                if (pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_totalResidentInBytes > 0)
                 {
                     memoryType = 0;
                 }
-                else if (pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_residentInBytes > 0)
+                else if (pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes > 0)
                 {
                     memoryType = 1;
                 }
@@ -1896,13 +1899,13 @@ namespace AZ
                         pool->m_images.push_back(AZStd::move(image));
                     }
 
-                    pool->m_memoryUsage.m_memoryUsagePerLevel[memoryType].m_residentInBytes += byteSize;
-                    pool->m_memoryUsage.m_memoryUsagePerLevel[memoryType].m_reservedInBytes += byteSize;
+                    pool->m_memoryUsage.m_memoryUsagePerLevel[memoryType].m_usedResidentInBytes += byteSize;
+                    pool->m_memoryUsage.m_memoryUsagePerLevel[memoryType].m_totalResidentInBytes += byteSize;
 
                     // NOTE: This information isn't strictly accurate because we're reconstructing data from a list of
                     // allocations.
-                    m_savedHeaps[memoryType].m_memoryUsage.m_reservedInBytes += byteSize;
-                    m_savedHeaps[memoryType].m_memoryUsage.m_residentInBytes += byteSize;
+                    m_savedHeaps[memoryType].m_memoryUsage.m_totalResidentInBytes += byteSize;
+                    m_savedHeaps[memoryType].m_memoryUsage.m_usedResidentInBytes += byteSize;
                 }
                 else
                 {

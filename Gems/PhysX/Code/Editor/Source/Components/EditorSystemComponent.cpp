@@ -17,6 +17,7 @@
 
 #include <IEditor.h>
 
+#include <Editor/ColliderComponentMode.h>
 #include <Editor/EditorJointConfiguration.h>
 #include <Editor/EditorWindow.h>
 #include <Editor/PropertyTypes.h>
@@ -28,6 +29,7 @@ namespace PhysX
 {
     void EditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        ColliderComponentMode::Reflect(context);
         EditorJointLimitConfig::Reflect(context);
         EditorJointLimitPairConfig::Reflect(context);
         EditorJointLimitLinearPairConfig::Reflect(context);
@@ -106,10 +108,12 @@ namespace PhysX
 
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void EditorSystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
@@ -129,6 +133,21 @@ namespace PhysX
     AzPhysics::SceneHandle EditorSystemComponent::GetEditorSceneHandle() const
     {
         return m_editorWorldSceneHandle;
+    }
+
+    void EditorSystemComponent::OnActionRegistrationHook()
+    {
+        ColliderComponentMode::RegisterActions();
+    }
+
+    void EditorSystemComponent::OnActionContextModeBindingHook()
+    {
+        ColliderComponentMode::BindActionsToModes();
+    }
+
+    void EditorSystemComponent::OnMenuBindingHook()
+    {
+        ColliderComponentMode::BindActionsToMenus();
     }
 
     void EditorSystemComponent::OnStartPlayInEditorBegin()

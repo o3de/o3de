@@ -10,10 +10,10 @@
 
 #include <Source/Translation/TranslationBus.h>
 
-#include <AzCore/JSON/rapidjson.h>
-#include <AzCore/JSON/document.h>
-#include <AzCore/JSON/stringbuffer.h>
-#include <AzCore/JSON/prettywriter.h>
+#include <rapidjson/rapidjson.h>
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/prettywriter.h>
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
@@ -1082,15 +1082,15 @@ namespace ScriptCanvasEditorTools
 
     void TranslationGeneration::SaveJSONData(const AZStd::string& filename, TranslationFormat& translationRoot)
     {
-        rapidjson::Document document;
+        rapidjson_ly::Document document;
         document.SetObject();
-        rapidjson::Value entries(rapidjson::kArrayType);
+        rapidjson_ly::Value entries(rapidjson_ly::kArrayType);
 
         // Here I'll need to parse translationRoot myself and produce the JSON
         for (const auto& entrySource : translationRoot.m_entries)
         {
-            rapidjson::Value entry(rapidjson::kObjectType);
-            rapidjson::Value value(rapidjson::kStringType);
+            rapidjson_ly::Value entry(rapidjson_ly::kObjectType);
+            rapidjson_ly::Value value(rapidjson_ly::kStringType);
 
             value.SetString(entrySource.m_key.c_str(), document.GetAllocator());
             entry.AddMember(GraphCanvas::Schema::Field::key, value, document.GetAllocator());
@@ -1101,7 +1101,7 @@ namespace ScriptCanvasEditorTools
             value.SetString(entrySource.m_variant.c_str(), document.GetAllocator());
             entry.AddMember(GraphCanvas::Schema::Field::variant, value, document.GetAllocator());
 
-            rapidjson::Value details(rapidjson::kObjectType);
+            rapidjson_ly::Value details(rapidjson_ly::kObjectType);
             value.SetString(entrySource.m_details.m_name.c_str(), document.GetAllocator());
             details.AddMember("name", value, document.GetAllocator());
 
@@ -1113,11 +1113,11 @@ namespace ScriptCanvasEditorTools
 
             if (!entrySource.m_methods.empty())
             {
-                rapidjson::Value methods(rapidjson::kArrayType);
+                rapidjson_ly::Value methods(rapidjson_ly::kArrayType);
 
                 for (const auto& methodSource : entrySource.m_methods)
                 {
-                    rapidjson::Value theMethod(rapidjson::kObjectType);
+                    rapidjson_ly::Value theMethod(rapidjson_ly::kObjectType);
 
                     value.SetString(methodSource.m_key.c_str(), document.GetAllocator());
                     theMethod.AddMember(GraphCanvas::Schema::Field::key, value, document.GetAllocator());
@@ -1125,12 +1125,15 @@ namespace ScriptCanvasEditorTools
                     if (!methodSource.m_context.empty())
                     {
                         value.SetString(methodSource.m_context.c_str(), document.GetAllocator());
-                        theMethod.AddMember(GraphCanvas::Schema::Field::context, value, document.GetAllocator());
+                        if (value == "Getter" || value == "Setter")
+                        {
+                            theMethod.AddMember(GraphCanvas::Schema::Field::context, value, document.GetAllocator());
+                        }
                     }
 
                     if (!methodSource.m_entry.m_name.empty())
                     {
-                        rapidjson::Value entrySlot(rapidjson::kObjectType);
+                        rapidjson_ly::Value entrySlot(rapidjson_ly::kObjectType);
                         value.SetString(methodSource.m_entry.m_name.c_str(), document.GetAllocator());
                         entrySlot.AddMember("name", value, document.GetAllocator());
 
@@ -1141,7 +1144,7 @@ namespace ScriptCanvasEditorTools
 
                     if (!methodSource.m_exit.m_name.empty())
                     {
-                        rapidjson::Value exitSlot(rapidjson::kObjectType);
+                        rapidjson_ly::Value exitSlot(rapidjson_ly::kObjectType);
                         value.SetString(methodSource.m_exit.m_name.c_str(), document.GetAllocator());
                         exitSlot.AddMember("name", value, document.GetAllocator());
 
@@ -1150,7 +1153,7 @@ namespace ScriptCanvasEditorTools
                         theMethod.AddMember("exit", exitSlot, document.GetAllocator());
                     }
 
-                    rapidjson::Value methodDetails(rapidjson::kObjectType);
+                    rapidjson_ly::Value methodDetails(rapidjson_ly::kObjectType);
 
                     value.SetString(methodSource.m_details.m_name.c_str(), document.GetAllocator());
                     methodDetails.AddMember("name", value, document.GetAllocator());
@@ -1162,13 +1165,13 @@ namespace ScriptCanvasEditorTools
 
                     if (!methodSource.m_arguments.empty())
                     {
-                        rapidjson::Value methodArguments(rapidjson::kArrayType);
+                        rapidjson_ly::Value methodArguments(rapidjson_ly::kArrayType);
 
                         [[maybe_unused]] size_t index = 0;
                         for (const auto& argSource : methodSource.m_arguments)
                         {
-                            rapidjson::Value argument(rapidjson::kObjectType);
-                            rapidjson::Value argumentDetails(rapidjson::kObjectType);
+                            rapidjson_ly::Value argument(rapidjson_ly::kObjectType);
+                            rapidjson_ly::Value argumentDetails(rapidjson_ly::kObjectType);
 
                             value.SetString(argSource.m_typeId.c_str(), document.GetAllocator());
                             argument.AddMember("typeid", value, document.GetAllocator());
@@ -1192,12 +1195,12 @@ namespace ScriptCanvasEditorTools
 
                     if (!methodSource.m_results.empty())
                     {
-                        rapidjson::Value methodArguments(rapidjson::kArrayType);
+                        rapidjson_ly::Value methodArguments(rapidjson_ly::kArrayType);
 
                         for (const auto& argSource : methodSource.m_results)
                         {
-                            rapidjson::Value argument(rapidjson::kObjectType);
-                            rapidjson::Value argumentDetails(rapidjson::kObjectType);
+                            rapidjson_ly::Value argument(rapidjson_ly::kObjectType);
+                            rapidjson_ly::Value argumentDetails(rapidjson_ly::kObjectType);
 
                             value.SetString(argSource.m_typeId.c_str(), document.GetAllocator());
                             argument.AddMember("typeid", value, document.GetAllocator());
@@ -1226,16 +1229,16 @@ namespace ScriptCanvasEditorTools
 
             if (!entrySource.m_slots.empty())
             {
-                rapidjson::Value slotsArray(rapidjson::kArrayType);
+                rapidjson_ly::Value slotsArray(rapidjson_ly::kArrayType);
 
                 for (const auto& slotSource : entrySource.m_slots)
                 {
-                    rapidjson::Value theSlot(rapidjson::kObjectType);
+                    rapidjson_ly::Value theSlot(rapidjson_ly::kObjectType);
 
                     value.SetString(slotSource.m_key.c_str(), document.GetAllocator());
                     theSlot.AddMember(GraphCanvas::Schema::Field::key, value, document.GetAllocator());
 
-                    rapidjson::Value sloDetails(rapidjson::kObjectType);
+                    rapidjson_ly::Value sloDetails(rapidjson_ly::kObjectType);
                     if (!slotSource.m_details.m_name.empty())
                     {
                         Helpers::WriteString(sloDetails, "name", slotSource.m_details.m_name, document);
@@ -1245,7 +1248,7 @@ namespace ScriptCanvasEditorTools
 
                     if (!slotSource.m_data.m_details.m_name.empty())
                     {
-                        rapidjson::Value slotDataDetails(rapidjson::kObjectType);
+                        rapidjson_ly::Value slotDataDetails(rapidjson_ly::kObjectType);
                         Helpers::WriteString(slotDataDetails, "name", slotSource.m_data.m_details.m_name, document);
                         theSlot.AddMember("details", slotDataDetails, document.GetAllocator());
                     }
@@ -1293,9 +1296,9 @@ namespace ScriptCanvasEditorTools
             return;
         }
 
-        rapidjson::StringBuffer scratchBuffer;
+        rapidjson_ly::StringBuffer scratchBuffer;
 
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(scratchBuffer);
+        rapidjson_ly::PrettyWriter<rapidjson_ly::StringBuffer> writer(scratchBuffer);
         document.Accept(writer);
 
         outputFile.Write(scratchBuffer.GetString(), scratchBuffer.GetSize());
@@ -1400,17 +1403,17 @@ namespace ScriptCanvasEditorTools
             return { typeID };
         }
 
-        void WriteString(rapidjson::Value& owner, const AZStd::string& key, const AZStd::string& value, rapidjson::Document& document)
+        void WriteString(rapidjson_ly::Value& owner, const AZStd::string& key, const AZStd::string& value, rapidjson_ly::Document& document)
         {
             if (key.empty() || value.empty())
             {
                 return;
             }
 
-            rapidjson::Value item(rapidjson::kStringType);
+            rapidjson_ly::Value item(rapidjson_ly::kStringType);
             item.SetString(value.c_str(), document.GetAllocator());
 
-            rapidjson::Value keyVal(rapidjson::kStringType);
+            rapidjson_ly::Value keyVal(rapidjson_ly::kStringType);
             keyVal.SetString(key.c_str(), document.GetAllocator());
 
             owner.AddMember(keyVal, item, document.GetAllocator());

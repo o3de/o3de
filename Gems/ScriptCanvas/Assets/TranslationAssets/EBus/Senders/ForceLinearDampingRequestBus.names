@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Force Linear Damping"
+                "name": "Force Region (Linear Damping)"
             },
             "methods": [
                 {
@@ -19,13 +19,15 @@
                         "tooltip": "Signaled after Set Damping is invoked"
                     },
                     "details": {
-                        "name": "Set Damping"
+                        "name": "Set Damping",
+                        "tooltip": "Set the coefficient determining the strength of force applied to oppose velocity"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Damping"
+                                "name": "Damping",
+                                "tooltip": "Coefficient determining the strength of force applied to oppose velocity"
                             }
                         }
                     ]
@@ -41,13 +43,24 @@
                         "tooltip": "Signaled after Get Damping is invoked"
                     },
                     "details": {
-                        "name": "Get Damping"
+                        "name": "Get Damping",
+                        "tooltip": "Get the coefficient determining the strength of force applied to oppose velocity"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the force region entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Damping"
+                                "name": "Damping",
+                                "tooltip": "Coefficient determining the strength of force applied to oppose velocity"
                             }
                         }
                     ]

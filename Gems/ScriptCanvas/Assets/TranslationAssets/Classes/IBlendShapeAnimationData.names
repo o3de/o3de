@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetBlendShapeName",
-                    "context": "IBlendShapeAnimationData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Blend Shape Name"
@@ -34,7 +33,6 @@
                 },
                 {
                     "base": "GetKeyFrameCount",
-                    "context": "IBlendShapeAnimationData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Key Frame Count"
@@ -57,7 +55,6 @@
                 },
                 {
                     "base": "GetKeyFrame",
-                    "context": "IBlendShapeAnimationData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Key Frame"
@@ -88,7 +85,6 @@
                 },
                 {
                     "base": "GetTimeStepBetweenFrames",
-                    "context": "IBlendShapeAnimationData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Time Step Between Frames"

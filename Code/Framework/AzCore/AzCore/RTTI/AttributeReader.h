@@ -19,7 +19,6 @@ namespace AZ
         bool AttributeRead(DestType& value, Attribute* attr, InstType&& instance, Args&& ... args)
         {
             // try a value
-            
             if (auto data = azdynamic_cast<AttributeData<AttrType>*>(attr); data != nullptr)
             {
                 value = static_cast<DestType>(data->Get(instance));
