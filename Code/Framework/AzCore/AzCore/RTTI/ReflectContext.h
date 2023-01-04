@@ -134,6 +134,10 @@ namespace AZ
     };
 
     // Attributes to be used by reflection contexts
+    // Forward declare UnsafeAttributeInvoker here so that it can be used as return value for
+    // GetUnsafeAttributeInvoker function below, but it is implemented in AttributeReader.h to avoid
+    // a circular include
+    struct UnsafeAttributeInvoker;
 
     /**
     * Base abstract class for all attributes. Use azrtti to get the
@@ -170,6 +174,8 @@ namespace AZ
         {
             return false;
         }
+
+        virtual UnsafeAttributeInvoker GetUnsafeAttributeReader(void* instance);
 
         /// Returns true if this attribute is invokable, given a set of arguments.
         /// @param arguments A Dom::Value that must contain an Array of arguments for this invokable attribute.
@@ -437,9 +443,9 @@ namespace AZ
         FunctionPtr m_function;
     };
 
-    // Wraps a type that implements the C++ callable concept(i.e has either an overloaded operator() or a function pointer,
-    // pointer to member data or pointer to member function)
-    // If the type doesn't implement the callable concept stores the type as is
+    // Wraps a type that implements the C++ callable concept[i.e has either an overloaded operator() or a function pointer,
+    // pointer to member data or pointer to member function]
+    // If the type doesn't implement the callable concept stores the raw value type
     template<typename Invocable>
     class AttributeInvocable
         : public Attribute
@@ -453,6 +459,8 @@ namespace AZ
             : m_callable(AZStd::forward<CallableType>(invocable))
         {
         }
+
+        UnsafeAttributeInvoker GetUnsafeAttributeReader(void* instance) override;
 
         template<typename... FuncArgs>
         decltype(auto) operator()(FuncArgs&&... args)

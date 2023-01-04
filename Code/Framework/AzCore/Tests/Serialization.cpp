@@ -5712,6 +5712,39 @@ namespace UnitTest
         EXPECT_FLOAT_EQ(4.0f, value);
     }
 
+    TEST_F(Serialization, AttributeInvocable_UsingVoidPointerInstance_Succeeds)
+    {
+        constexpr AZ::Crc32 invokableCrc = AZ_CRC_CE("Invokable");
+        auto ReadFloat = [](SerializeTestClasses::BaseNoRtti* instance) -> float
+        {
+            auto noRttiInstance = instance;
+            if (!noRttiInstance)
+            {
+                ADD_FAILURE() << "BaseNoRtti instance object should not be nullptr";
+                return 0.0f;
+            }
+            EXPECT_FALSE(noRttiInstance->m_data);
+            return 2.0f;
+        };
+
+        m_serializeContext->Class<SerializeTestClasses::BaseNoRtti>()
+            ->Attribute(invokableCrc, ReadFloat)
+            ;
+
+        SerializeTestClasses::BaseNoRtti baseNoRttiInstance;
+        baseNoRttiInstance.Set();
+        auto classData = m_serializeContext->FindClassData(azrtti_typeid<SerializeTestClasses::BaseNoRtti>());
+        ASSERT_NE(nullptr, classData);
+        AZ::Attribute* attribute = AZ::FindAttribute(invokableCrc, classData->m_attributes);
+        ASSERT_NE(nullptr, attribute);
+        void* instance = &baseNoRttiInstance;
+        AZ::UnsafeAttributeInvoker unsafeAttributeInvoker = attribute->GetUnsafeAttributeReader(instance);
+
+        AZ::AttributeReader reader = unsafeAttributeInvoker.GetAttributeReader();
+        float value = 0;
+        EXPECT_TRUE(reader.Read<float>(value));
+        EXPECT_FLOAT_EQ(2.0f, value);
+    }
 
     class ObjectStreamSerialization
         : public LeakDetectionFixture
