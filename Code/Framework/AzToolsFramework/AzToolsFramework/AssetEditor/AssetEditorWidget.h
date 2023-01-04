@@ -155,7 +155,7 @@ namespace AzToolsFramework
             FilteredDPE* m_filteredWidget = nullptr;
             DocumentPropertyEditor* m_dpe = nullptr;
             AZ::SerializeContext* m_serializeContext = nullptr;
-            AZ::Uuid m_observerId; // Id of the component that requested a new asset be created, if relevant. Used as a bus id to send OnAssetCreated event. 
+            AZ::Uuid m_assetObserverToken; // Token that can be used to register for specific request for a new asset to be created via the AssetEditor::CreateAsset function. 
 
             // Ids can change when an asset goes from in-memory to saved on disk.
             // If there is a failure, the asset will be removed from the catalog.
