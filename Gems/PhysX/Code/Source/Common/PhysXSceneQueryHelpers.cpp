@@ -314,7 +314,7 @@ namespace PhysX
             return physx::PxQueryHitType::eNONE;
         }
 
-        // @deprecated Unused, we're only pre-filtering at this time
+        // Unused, we're only pre-filtering at this time
         physx::PxQueryHitType::Enum PhysXQueryFilterCallback::postFilter(
             [[maybe_unused]] const physx::PxFilterData& filterData, 
             [[maybe_unused]] const physx::PxQueryHit& hit)
