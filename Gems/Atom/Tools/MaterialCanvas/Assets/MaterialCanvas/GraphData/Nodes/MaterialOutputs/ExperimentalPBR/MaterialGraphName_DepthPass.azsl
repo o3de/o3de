@@ -6,21 +6,39 @@
  *
  */
 
-#pragma once
+#include <viewsrg.srgi>
+
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Lights/IblForward.azsli>
+#include <Atom/Features/PBR/Decals.azsli>
 
 #include <MaterialGraphName_Common.azsli>
 
-struct VSOutput
+CommonVSOutput MainVS(CommonVSInput IN)
 {
-    precise float4 m_position : SV_Position;
+    return Evaluate_CommonVertexData(IN);
+}
+
+struct PSOutput
+{
+    precise float m_depth : SV_Depth;
 };
 
-VSOutput MainVS(CommonVSInput IN)
+PSOutput MainPS(CommonVSOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-    CommonVSOutput commonVSOut = (CommonVSOutput)0;
-    Evaluate_CommonVSInput(IN, commonVSOut);
+    CommonPSOutput commonPSOutput = Evaluate_CommonPixelData(IN);
 
-    VSOutput OUT;
-    OUT.m_position = commonVSOut.m_position;
+    CheckClipping(commonPSOutput.m_alpha, 0.5);
+
+    PSOutput OUT;
+    OUT.m_depth = IN.m_position.z;
     return OUT;
 }

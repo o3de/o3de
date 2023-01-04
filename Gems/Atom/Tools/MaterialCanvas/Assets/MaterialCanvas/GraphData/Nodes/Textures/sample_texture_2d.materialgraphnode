@@ -48,7 +48,10 @@
                 "visibleOnNode": false,
                 "editableOnNode": false,
                 "settings": {
-                    "materialInputs": [
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
                         "SLOTSTANDARDSRGMEMBER"
                     ]
                 }
@@ -62,7 +65,10 @@
                 "visibleOnNode": false,
                 "editableOnNode": false,
                 "settings": {
-                    "materialInputs": [
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
                         "SLOTSTANDARDSRGMEMBER"
                     ]
                 }

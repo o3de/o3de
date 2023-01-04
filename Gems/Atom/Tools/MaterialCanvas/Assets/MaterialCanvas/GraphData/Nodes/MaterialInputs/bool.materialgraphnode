@@ -44,7 +44,10 @@
                 "supportedDataTypeRegex": "bool",
                 "defaultDataType": "bool",
                 "settings": {
-                    "materialInputs": [
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
                         "SLOTSTANDARDSRGMEMBER"
                     ]
                 }

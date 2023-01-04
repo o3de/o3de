@@ -3,15 +3,36 @@
     "version": 1,
     "shaders": [
         {
-            "file": "./MaterialGraphName_ForwardPass.shader"
+            "file": "./MaterialGraphName_ForwardPass.shader",
+            "tag": "ForwardPass"
         },
         {
-            "file": "./MaterialGraphName_ShadowPass.shader"
+            "file": "./MaterialGraphName_ShadowPass.shader",
+            "tag": "ShadowPass"
         },
         {
-            "file": "./MaterialGraphName_DepthPass.shader"
+            "file": "./MaterialGraphName_DepthPass.shader",
+            "tag": "DepthPass"
         }
     ],
     "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "./MaterialGraphName_HandleCastShadows.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "./MaterialGraphName_HandleOpacityDoubleSided.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "./MaterialGraphName_HandleOpacityMode.lua"
+            }
+        }
     ]
 }

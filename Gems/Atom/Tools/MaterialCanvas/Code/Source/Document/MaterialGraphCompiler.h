@@ -100,6 +100,9 @@ namespace MaterialCanvas
             const AZStd::vector<AZStd::string>& inputSlotNames,
             AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const;
 
+        // Get the value from a slot as a string
+        AZStd::string GetStringValueFromSlot(GraphModel::ConstSlotPtr slot, const AZStd::string& defaultValue = {}) const;
+
         // Create a unique string identifier, from a node title and ID, that can be used for a file name or symbol in code
         AZStd::string GetSymbolNameFromNode(GraphModel::ConstNodePtr node) const;
 
@@ -107,13 +110,13 @@ namespace MaterialCanvas
         AZStd::string GetSymbolNameFromSlot(GraphModel::ConstSlotPtr slot) const;
 
         // Convert a material input node into AZSL lines of variables that can be injected into the material SRG
-        AZStd::vector<AZStd::string> GetMaterialInputsFromSlot(
+        AZStd::vector<AZStd::string> GetMaterialPropertySrgMemberFromSlot(
             GraphModel::ConstNodePtr node,
             const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig,
             const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols) const;
 
         // Convert all material input nodes into AZSL lines of variables that can be injected into the material SRG
-        AZStd::vector<AZStd::string> GetMaterialInputsFromNodes(const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const;
+        AZStd::vector<AZStd::string> GetMaterialPropertySrgMemberFromNodes(const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const;
 
         // Creates and exports a material type source file by loading an existing template, replacing special tokens, and injecting
         // properties defined in material input nodes

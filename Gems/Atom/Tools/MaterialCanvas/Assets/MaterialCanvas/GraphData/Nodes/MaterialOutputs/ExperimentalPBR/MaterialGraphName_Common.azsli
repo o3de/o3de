@@ -40,23 +40,28 @@ struct CommonVSInput
 
 struct CommonVSOutput
 {
-    float4 m_position;
-    float3 m_normal;
-    float4 m_tangent;
-    float2 m_uv0;
-    float2 m_uv1;
-    float3 m_worldPosition;
+    precise linear centroid float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float4 m_tangent : TANGENT;
+    float2 m_uv0 : UV0;
+    float2 m_uv1 : UV1;
+    float3 m_worldPosition : UV3;
 };
 
-void Evaluate_CommonVSInput(in CommonVSInput IN, out CommonVSOutput OUT)
+CommonVSOutput Evaluate_CommonVertexData(CommonVSInput IN)
 {
     float3 worldPosition = (float3)mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0));
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
 
     #define O3DE_MC_POSITION IN.m_position
     #define O3DE_MC_UV(index) (index == 0 ? IN.m_uv0 : IN.m_uv1);
-    #define O3DE_MC_NORMAL IN.m_normal
-    #define O3DE_MC_TANGENT IN.m_tangent
-    #define O3DE_MC_BITANGENT IN.m_bitangent
+    #define O3DE_MC_NORMAL vertexNormal
+    #define O3DE_MC_TANGENT vertexTangent
+    #define O3DE_MC_BITANGENT vertexBitangent
     #define O3DE_MC_WORLD_POSITION worldPosition
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
@@ -70,10 +75,69 @@ void Evaluate_CommonVSInput(in CommonVSInput IN, out CommonVSOutput OUT)
     #undef O3DE_MC_BITANGENT
     #undef O3DE_MC_WORLD_POSITION
 
+    CommonVSOutput OUT = (CommonVSOutput)0;
     OUT.m_worldPosition = worldPosition + (float3)inPositionOffset;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
-    OUT.m_normal = IN.m_normal;
-    OUT.m_tangent = IN.m_tangent;
+    OUT.m_normal = vertexNormal;
+    OUT.m_tangent = float4(vertexTangent, 1.0);
     OUT.m_uv1 = IN.m_uv0;
     OUT.m_uv1 = IN.m_uv1;
+    return OUT;
+}
+
+struct CommonPSOutput
+{
+    float3 m_baseColor;
+    float3 m_emissive;
+    float m_metallic;
+    float m_roughness;
+    float m_specularF0Factor;
+    float m_alpha;
+    float3 m_normal;
+    float3 m_tangent;
+    float3 m_bitangent;
+};
+
+CommonPSOutput Evaluate_CommonPixelData(CommonVSOutput IN)
+{
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+
+    #define O3DE_MC_POSITION IN.m_position
+    #define O3DE_MC_UV(index) (index == 0 ? IN.m_uv0 : IN.m_uv1);
+    #define O3DE_MC_NORMAL vertexNormal
+    #define O3DE_MC_TANGENT vertexTangent
+    #define O3DE_MC_BITANGENT vertexBitangent
+    #define O3DE_MC_WORLD_POSITION IN.m_worldPosition
+
+    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inBaseColor, inEmissive, inMetallic, inRoughness, inSpecularF0Factor, inAlpha
+    float3 inBaseColor = {1.0, 1.0, 1.0};
+    float3 inEmissive = {0.0, 0.0, 0.0};
+    float inMetallic = 0.0;
+    float inRoughness = 0.0;
+    float inSpecularF0Factor = 0.0;
+    float inAlpha = 1.0;
+    // O3DE_GENERATED_INSTRUCTIONS_END
+
+    #undef O3DE_MC_POSITION
+    #undef O3DE_MC_UV
+    #undef O3DE_MC_NORMAL
+    #undef O3DE_MC_TANGENT
+    #undef O3DE_MC_BITANGENT
+    #undef O3DE_MC_WORLD_POSITION
+
+    CommonPSOutput OUT = (CommonPSOutput)0;
+    OUT.m_baseColor = inBaseColor;
+    OUT.m_emissive = inEmissive;
+    OUT.m_metallic = inMetallic;
+    OUT.m_roughness = inRoughness;
+    OUT.m_specularF0Factor = inSpecularF0Factor;
+    OUT.m_alpha = inAlpha;
+    OUT.m_normal = vertexNormal;
+    OUT.m_tangent = vertexTangent;
+    OUT.m_bitangent = vertexBitangent;
+    return OUT;
 }

@@ -44,7 +44,10 @@
                 "supportedDataTypeRegex": "int",
                 "defaultDataType": "int",
                 "settings": {
-                    "materialInputs": [
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
                         "SLOTSTANDARDSRGMEMBER"
                     ]
                 }

@@ -45,7 +45,10 @@
                 "supportedDataTypeRegex": "color",
                 "defaultDataType": "color",
                 "settings": {
-                    "materialInputs": [
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
                         "SLOTSTANDARDSRGMEMBER"
                     ]
                 }

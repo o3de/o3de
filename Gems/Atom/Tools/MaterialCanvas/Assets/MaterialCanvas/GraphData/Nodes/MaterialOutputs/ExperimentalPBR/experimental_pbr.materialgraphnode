@@ -17,7 +17,10 @@
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_ShadowPass.azsl",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_ShadowPass.shader",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName.materialtype",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName.material"
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName.material",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_HandleCastShadows.lua",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_HandleOpacityDoubleSided.lua",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_HandleOpacityMode.lua"
             ]
         },
         "propertySlots": [
@@ -29,6 +32,248 @@
                 "defaultDataType": "string",
                 "visibleOnNode": false,
                 "editableOnNode": false
+            },
+            {
+                "name": "inDoubleSided",
+                "displayName": "Double Sided",
+                "description": "Whether to render back-faces or just front-faces.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "doubleSided"
+                    ],
+                    "materialPropertyConnectionType": {},
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
+                "name": "inApplySpecularAA",
+                "displayName": "Apply Specular AA",
+                "description": "Whether to apply specular anti-aliasing in the shader.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_applySpecularAA"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
+                "name": "inEnableShadows",
+                "displayName": "Receive Shadows",
+                "description": "Whether to use the shadow maps during lighting.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_enableShadows"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
+                "name": "inCastShadows",
+                "displayName": "Cast Shadows",
+                "description": "Whether to cast shadows onto other objects.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "castShadows"
+                    ],
+                    "materialPropertyConnectionType": {},
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
+                "name": "inEnableDirectionalLights",
+                "displayName": "Enable Directional Lights",
+                "description": "Whether to use directional lights.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_enableDirectionalLights"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
+                "name": "inEnablePunctualLights",
+                "displayName": "Enable Punctual Lights",
+                "description": "Whether to use punctual lights.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_enablePunctualLights"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
+                "name": "inEnableAreaLights",
+                "displayName": "Enable Area Lights",
+                "description": "Whether to use area lights.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_enableAreaLights"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
+                "name": "inEnableIBL",
+                "displayName": "Enable IBL",
+                "description": "Whether to use Image Based Lighting (IBL).",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_enableIBL"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
+                "name": "inUseForwardPassIBLSpecular",
+                "displayName": "Forward Pass IBL Specular",
+                "description": "Whether to apply IBL specular in the forward pass.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_materialUseForwardPassIBLSpecular"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
+                "name": "inOpacityMode",
+                "displayName": "Opacity Mode",
+                "description": "Indicates the general approach how transparency is to be applied.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "enumValues": [
+                    "Opaque",
+                    "Cutout",
+                    "Blended",
+                    "TintedTransparent"
+                ],
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_opacity_mode"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
             }
         ],
         "inputSlots": [

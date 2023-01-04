@@ -1,27 +1,49 @@
 {
     "Source": "./MaterialGraphName_ForwardPass.azsl",
-    "DrawList": "forward",
-    "DepthStencilState": {
-        "depth": {
-            "compareFunc": "GreaterEqual"
+
+    "DepthStencilState" :
+    {
+        "Depth" :
+        {
+            "Enable" : true,
+            "CompareFunc" : "GreaterEqual"
         },
-        "stencil": {
-            "enable": 1,
-            "readMask": 0,
-            "frontFace": {
-                "passOp": "Replace"
+        "Stencil" :
+        {
+            "Enable" : true,
+            "ReadMask" : "0x00",
+            "WriteMask" : "0xFF",
+            "FrontFace" :
+            {
+                "Func" : "Always",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Replace"
+            },
+            "BackFace" :
+            {
+                "Func" : "Always",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Replace"
             }
         }
     },
-    "ProgramSettings": {
-        "EntryPoints": [
+
+    "ProgramSettings":
+    {
+        "EntryPoints":
+        [
             {
-                "Name": "MainVS"
+                "name": "MainVS",
+                "type": "Vertex"
             },
             {
-                "Name": "MainPS",
-                "Type": "Fragment"
+                "name": "MainPS",
+                "type": "Fragment"
             }
         ]
-    }
+    },
+
+    "DrawList" : "forward"
 }

@@ -245,7 +245,7 @@ namespace MaterialCanvas
                     "O3DE_GENERATED_MATERIAL_SRG_END",
                     [&]([[maybe_unused]] const AZStd::string& blockHeader)
                     {
-                        return GetMaterialInputsFromNodes(instructionNodesForAllBlocks);
+                        return GetMaterialPropertySrgMemberFromNodes(instructionNodesForAllBlocks);
                     });
             }
 
@@ -271,7 +271,9 @@ namespace MaterialCanvas
 
             // Save all of the generated files except for materials and material types. Generated material type files must be saved after
             // generated shader files to prevent AP errors because of missing dependencies.
-            if (!exportTemplatesMatchingRegex(".*\\.azsli\\b") || !exportTemplatesMatchingRegex(".*\\.azsl\\b") ||
+            if (!exportTemplatesMatchingRegex(".*\\.lua\\b") ||
+                !exportTemplatesMatchingRegex(".*\\.azsli\\b") ||
+                !exportTemplatesMatchingRegex(".*\\.azsl\\b") ||
                 !exportTemplatesMatchingRegex(".*\\.shader\\b"))
             {
                 CompileGraphFailed();
@@ -814,6 +816,12 @@ namespace MaterialCanvas
         return instructions;
     }
 
+    AZStd::string MaterialGraphCompiler::GetStringValueFromSlot(GraphModel::ConstSlotPtr slot, const AZStd::string& defaultValue) const
+    {
+        const auto& value = slot ? slot->GetValue<AZStd::string>() : "";
+        return !value.empty() ? value : defaultValue;
+    }
+
     AZStd::string MaterialGraphCompiler::GetSymbolNameFromNode(GraphModel::ConstNodePtr node) const
     {
         return AtomToolsFramework::GetSymbolNameFromText(AZStd::string::format("node%u_%s", node->GetId(), node->GetTitle()));
@@ -850,28 +858,28 @@ namespace MaterialCanvas
         return AZStd::string::format("%s_%s", GetSymbolNameFromNode(slot->GetParentNode()).c_str(), slot->GetName().c_str());
     }
 
-    AZStd::vector<AZStd::string> MaterialGraphCompiler::GetMaterialInputsFromSlot(
+    AZStd::vector<AZStd::string> MaterialGraphCompiler::GetMaterialPropertySrgMemberFromSlot(
         GraphModel::ConstNodePtr node,
         const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig,
         const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols) const
     {
-        AZStd::vector<AZStd::string> materialInputsForSlot;
+        AZStd::vector<AZStd::string> materialPropertySrgMemberForSlot;
 
         if (auto slot = node->GetSlot(slotConfig.m_name))
         {
-            AtomToolsFramework::CollectDynamicNodeSettings(slotConfig.m_settings, "materialInputs", materialInputsForSlot);
+            AtomToolsFramework::CollectDynamicNodeSettings(slotConfig.m_settings, "materialPropertySrgMember", materialPropertySrgMemberForSlot);
 
-            ReplaceSymbolsInContainer(substitutionSymbols, materialInputsForSlot);
-            ReplaceSymbolsInContainer("SLOTSTANDARDSRGMEMBER", GetAzslSrgMemberFromSlot(node, slotConfig), materialInputsForSlot);
-            ReplaceSymbolsInContainer("SLOTNAME", GetSymbolNameFromSlot(slot), materialInputsForSlot);
-            ReplaceSymbolsInContainer("SLOTTYPE", GetAzslTypeFromSlot(slot), materialInputsForSlot);
-            ReplaceSymbolsInContainer("SLOTVALUE", GetAzslValueFromSlot(slot), materialInputsForSlot);
+            ReplaceSymbolsInContainer(substitutionSymbols, materialPropertySrgMemberForSlot);
+            ReplaceSymbolsInContainer("SLOTSTANDARDSRGMEMBER", GetAzslSrgMemberFromSlot(node, slotConfig), materialPropertySrgMemberForSlot);
+            ReplaceSymbolsInContainer("SLOTNAME", GetSymbolNameFromSlot(slot), materialPropertySrgMemberForSlot);
+            ReplaceSymbolsInContainer("SLOTTYPE", GetAzslTypeFromSlot(slot), materialPropertySrgMemberForSlot);
+            ReplaceSymbolsInContainer("SLOTVALUE", GetAzslValueFromSlot(slot), materialPropertySrgMemberForSlot);
         }
 
-        return materialInputsForSlot;
+        return materialPropertySrgMemberForSlot;
     }
 
-    AZStd::vector<AZStd::string> MaterialGraphCompiler::GetMaterialInputsFromNodes(
+    AZStd::vector<AZStd::string> MaterialGraphCompiler::GetMaterialPropertySrgMemberFromNodes(
         const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const
     {
         GraphModel::GraphPtr graph;
@@ -884,7 +892,7 @@ namespace MaterialCanvas
             return {};
         }
 
-        AZStd::vector<AZStd::string> materialInputs;
+        AZStd::vector<AZStd::string> materialPropertySrgMember;
 
         for (const auto& inputNode : instructionNodes)
         {
@@ -894,23 +902,29 @@ namespace MaterialCanvas
                 const auto& nodeConfig = dynamicNode->GetConfig();
                 const auto& substitutionSymbols = GetSubstitutionSymbolsFromNode(inputNode);
 
-                AZStd::vector<AZStd::string> materialInputsForNode;
-                AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "materialInputs", materialInputsForNode);
-                ReplaceSymbolsInContainer(substitutionSymbols, materialInputsForNode);
+                AZStd::vector<AZStd::string> materialPropertySrgMembersForNode;
+                AtomToolsFramework::CollectDynamicNodeSettings(
+                    nodeConfig.m_settings, "materialPropertySrgMember", materialPropertySrgMembersForNode);
+                ReplaceSymbolsInContainer(substitutionSymbols, materialPropertySrgMembersForNode);
 
                 AtomToolsFramework::VisitDynamicNodeSlotConfigs(
                     nodeConfig,
                     [&](const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig)
                     {
-                        const auto& materialInputsForSlot = GetMaterialInputsFromSlot(inputNode, slotConfig, substitutionSymbols);
-                        materialInputsForNode.insert(materialInputsForNode.end(), materialInputsForSlot.begin(), materialInputsForSlot.end());
+                        const auto& materialPropertySrgMemberForSlot =
+                            GetMaterialPropertySrgMemberFromSlot(inputNode, slotConfig, substitutionSymbols);
+                        materialPropertySrgMembersForNode.insert(
+                            materialPropertySrgMembersForNode.end(),
+                            materialPropertySrgMemberForSlot.begin(),
+                            materialPropertySrgMemberForSlot.end());
                     });
 
-                materialInputs.insert(materialInputs.end(), materialInputsForNode.begin(), materialInputsForNode.end());
+                materialPropertySrgMember.insert(
+                    materialPropertySrgMember.end(), materialPropertySrgMembersForNode.begin(), materialPropertySrgMembersForNode.end());
             }
         }
 
-        return materialInputs;
+        return materialPropertySrgMember;
     }
 
     bool MaterialGraphCompiler::BuildMaterialTypeFromTemplate(
@@ -951,94 +965,134 @@ namespace MaterialCanvas
         AZ::RPI::MaterialTypeSourceData materialTypeSourceData = materialTypeOutcome.TakeValue();
 
         // If the node providing all the template information has a description then assign it to the material type source data.
-        const auto templateDescriptionSlot = templateNode->GetSlot("inDescription");
-        if (templateDescriptionSlot)
-        {
-            materialTypeSourceData.m_description = templateDescriptionSlot->GetValue<AZStd::string>();
-        }
+        materialTypeSourceData.m_description = GetStringValueFromSlot(templateNode->GetSlot("inDescription"));
 
         // Search the graph for nodes defining material input properties that should be added to the material type and material SRG
         for (const auto& inputNode : instructionNodes)
         {
-            // Gather a list of all of the slots with data that needs to be added to the material type. 
-            AZStd::vector<GraphModel::ConstSlotPtr> materialInputValueSlots;
+            // Gather a list of all of the slots with data that needs to be added to the material type.
+            AZStd::vector<AZStd::pair<GraphModel::ConstSlotPtr, AtomToolsFramework::DynamicNodeSlotConfig>> materialPropertyValueSlots;
             if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(inputNode.get()))
             {
                 AtomToolsFramework::VisitDynamicNodeSlotConfigs(
                     dynamicNode->GetConfig(),
                     [&](const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig)
                     {
-                        if (slotConfig.m_settings.contains("materialInputs"))
+                        if (slotConfig.m_settings.contains("materialPropertyConnectionType") ||
+                            slotConfig.m_settings.contains("materialPropertyConnectionName") ||
+                            slotConfig.m_settings.contains("materialPropertyGroup"))
                         {
-                            // Gathering all material input values that need to be added to the material type. Sampler states are never
-                            // added to the material type, just the material SRG.
-                            const auto& materialInputValueSlot = inputNode->GetSlot(slotConfig.m_name);
-                            if (materialInputValueSlot &&
-                                !materialInputValueSlot->GetValue().empty() &&
-                                !materialInputValueSlot->GetValue().is<AZ::RHI::SamplerState>())
-                            {
-                                materialInputValueSlots.push_back(materialInputValueSlot);
-                            }
+                            const auto& materialPropertyValueSlot = inputNode->GetSlot(slotConfig.m_name);
+                            materialPropertyValueSlots.emplace_back(materialPropertyValueSlot, slotConfig);
                         }
                     });
             }
 
-            if (materialInputValueSlots.empty())
+            auto GetSettingValueByName = [](const AtomToolsFramework::DynamicNodeSettingsMap& settings,
+                                            const AZStd::string& settingName,
+                                            const AZStd::string& defaultValue)
             {
-                continue;
-            }
+                for (const auto& settingsPair : settings)
+                {
+                    if (AZ::StringFunc::Equal(settingsPair.first, settingName))
+                    {
+                        for (const auto& value : settingsPair.second)
+                        {
+                            if (!value.empty())
+                            {
+                                return value;
+                            }
+                        }
+                    }
+                }
+                return defaultValue;
+            };
 
-            // Each node contains property and input slots corresponding to MaterialTypeSourceData::PropertyDefinition members
-            const auto materialInputNameSlot = inputNode->GetSlot("inName");
-            const auto materialInputGroupSlot = inputNode->GetSlot("inGroup");
-            const auto materialInputDescriptionSlot = inputNode->GetSlot("inDescription");
-            if (!materialInputGroupSlot || !materialInputNameSlot || !materialInputDescriptionSlot)
+            auto GetSettingFlagByName =
+                [](const AtomToolsFramework::DynamicNodeSettingsMap& settings, const AZStd::string& settingName, const AZStd::string& flag)
             {
-                continue;
-            }
+                for (const auto& settingsPair : settings)
+                {
+                    if (AZ::StringFunc::Equal(settingsPair.first, settingName))
+                    {
+                        for (const auto& value : settingsPair.second)
+                        {
+                            if (AZ::StringFunc::Equal(value, flag))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            };
 
-            // Because users can specify any value for property and group names, and attempt will be made to convert them into valid,
-            // usable names by sanitizing, removing unsupported characters, and changing case
-            AZStd::string propertyGroupName = AtomToolsFramework::GetSymbolNameFromText(materialInputGroupSlot->GetValue<AZStd::string>());
-            if (propertyGroupName.empty())
+            // Register all the properties that were parsed out of the slots with the material type.
+            for (const auto& [materialPropertyValueSlot, materialPropertyValueSlotConfig] : materialPropertyValueSlots)
             {
-                // If no group name was specified, general will be used by default
-                propertyGroupName = "general";
-            }
+                // Sampler states are never added to the material type, just the material SRG.
+                if (!materialPropertyValueSlot || materialPropertyValueSlot->GetValue().empty() ||
+                    materialPropertyValueSlot->GetValue().is<AZ::RHI::SamplerState>())
+                {
+                    continue;
+                }
 
-            // Find or create a property group with the specified name
-            auto propertyGroup = materialTypeSourceData.FindPropertyGroup(propertyGroupName);
-            if (!propertyGroup)
-            {
-                // Add the property group to the material type if it was not already registered
-                propertyGroup = materialTypeSourceData.AddPropertyGroup(propertyGroupName);
+                // Each node contains property and input slots corresponding to MaterialTypeSourceData::PropertyDefinition members
+                const auto& materialPropertyUseSlotConfig =
+                    GetSettingFlagByName(materialPropertyValueSlotConfig.m_settings, "materialPropertyFlags", "UseSlotConfig");
+                const auto& materialPropertyName = GetSettingValueByName(
+                    materialPropertyValueSlotConfig.m_settings,
+                    "materialPropertyName",
+                    materialPropertyUseSlotConfig ? materialPropertyValueSlotConfig.m_displayName
+                                                  : GetSymbolNameFromSlot(materialPropertyValueSlot));
+                const auto& materialPropertyGroupName = GetSettingValueByName(
+                    materialPropertyValueSlotConfig.m_settings,
+                    "materialPropertyGroupName",
+                    GetStringValueFromSlot(inputNode->GetSlot("inGroup"), "general"));
+                const auto& materialPropertyDescription = GetSettingValueByName(
+                    materialPropertyValueSlotConfig.m_settings,
+                    "materialPropertyDescription",
+                    materialPropertyUseSlotConfig ? materialPropertyValueSlotConfig.m_description
+                                                  : GetStringValueFromSlot(inputNode->GetSlot("inDescription"), ""));
 
-                // The unmodified text value will be used as the display name and description for now
-                propertyGroup->SetDisplayName(AtomToolsFramework::GetDisplayNameFromText(propertyGroupName));
-                propertyGroup->SetDescription(AtomToolsFramework::GetDisplayNameFromText(propertyGroupName));
-            }
-
-            // Register all the properties that were parsed out of the slots with the material type. 
-            for (const auto& materialInputValueSlot : materialInputValueSlots)
-            {
                 // The variable name is generated from the node ID and the slot name.
-                const auto& variableName = GetSymbolNameFromSlot(materialInputValueSlot);
+                const auto& materialPropertyConnectionName = GetSettingValueByName(
+                    materialPropertyValueSlotConfig.m_settings, "materialPropertyConnectionName", materialPropertyName);
+                const auto& materialPropertyConnectionType =
+                    GetSettingValueByName(materialPropertyValueSlotConfig.m_settings, "materialPropertyConnectionType", "");
+                const auto& materialPropertyValue = GetValueFromSlot(materialPropertyValueSlot);
+
+                // Because users can specify any value for property and group names, and attempt will be made to convert them into valid,
+                // usable names by sanitizing, removing unsupported characters, and changing case. If no group name was specified, general
+                // will be used by default.
+                const auto& groupSymbolName = AtomToolsFramework::GetSymbolNameFromText(materialPropertyGroupName);
+                const auto& groupDisplayName = AtomToolsFramework::GetDisplayNameFromText(materialPropertyGroupName);
 
                 // The display name is optional but an attempt will be made to read it from the display name slot.
-                const auto& displayName = AtomToolsFramework::GetDisplayNameFromText(materialInputNameSlot->GetValue<AZStd::string>());
-
-                // The property name exposed for scripting and assigning material values will be derived from the display name, if
-                // specified. Otherwise it will be the same as the variable name.
-                const auto& propertyName = !displayName.empty() ? AtomToolsFramework::GetSymbolNameFromText(displayName) : variableName;
+                const auto& propertySymbolName = AtomToolsFramework::GetSymbolNameFromText(materialPropertyName);
+                const auto& propertyDisplayName = AtomToolsFramework::GetDisplayNameFromText(materialPropertyName);
 
                 // The property ID is composed of a combination of the group name and the property name. This is the full address of a
                 // material property and what will appear in the material type and material files.
-                const AZ::Name propertyId(propertyGroupName + "." + propertyName);
+                const AZ::Name propertyId(groupSymbolName + "." + propertySymbolName);
 
-                auto property = propertyGroup->AddProperty(propertyName);
-                property->m_displayName = displayName;
-                property->m_description = materialInputDescriptionSlot->GetValue<AZStd::string>();
-                property->m_value = AZ::RPI::MaterialPropertyValue::FromAny(GetValueFromSlot(materialInputValueSlot));
+                // Find or create a property group with the specified name
+                auto propertyGroup = materialTypeSourceData.FindPropertyGroup(groupSymbolName);
+                if (!propertyGroup)
+                {
+                    // Add the property group to the material type if it was not already registered
+                    propertyGroup = materialTypeSourceData.AddPropertyGroup(groupSymbolName);
+
+                    // The unmodified text value will be used as the display name and description for now
+                    propertyGroup->SetDisplayName(groupDisplayName);
+                    propertyGroup->SetDescription(groupDisplayName);
+                }
+
+                auto property = propertyGroup->AddProperty(propertySymbolName);
+                property->m_displayName = propertyDisplayName;
+                property->m_description = materialPropertyDescription;
+                property->m_enumValues = materialPropertyValueSlotConfig.m_enumValues;
+                property->m_value = AZ::RPI::MaterialPropertyValue::FromAny(materialPropertyValue);
 
                 // The property definition requires an explicit type enum that's converted from the actual data type.
                 property->m_dataType =
@@ -1048,7 +1102,19 @@ namespace MaterialCanvas
                 AtomToolsFramework::ConvertToExportFormat(templateOutputPath, propertyId, *property, property->m_value);
 
                 // This property connects to the material SRG member with the same name. Shader options are not yet supported.
-                property->m_outputConnections.emplace_back(AZ::RPI::MaterialPropertyOutputType::ShaderInput, variableName);
+                if (!materialPropertyConnectionName.empty())
+                {
+                    if (AZ::StringFunc::Equal(materialPropertyConnectionType, "ShaderInput"))
+                    {
+                        property->m_outputConnections.emplace_back(
+                            AZ::RPI::MaterialPropertyOutputType::ShaderInput, materialPropertyConnectionName);
+                    }
+                    if (AZ::StringFunc::Equal(materialPropertyConnectionType, "ShaderOption"))
+                    {
+                        property->m_outputConnections.emplace_back(
+                            AZ::RPI::MaterialPropertyOutputType::ShaderOption, materialPropertyConnectionName);
+                    }
+                }
             }
         }
 

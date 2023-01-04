@@ -45,7 +45,10 @@
                 "supportedDataTypeRegex": "float2",
                 "defaultDataType": "float2",
                 "settings": {
-                    "materialInputs": [
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
                         "SLOTSTANDARDSRGMEMBER"
                     ]
                 }

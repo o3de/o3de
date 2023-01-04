@@ -204,7 +204,7 @@ namespace MaterialCanvas
         AZ::Edit::ElementData editData;
         editData.m_elementId = AZ_CRC_CE("MultilineStringDialog");
         m_dynamicNodeManager->RegisterEditDataForSetting("instructions", editData);
-        m_dynamicNodeManager->RegisterEditDataForSetting("materialInputs", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertySrgMember", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("classDefinitions", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("functionDefinitions", editData);
 

@@ -44,7 +44,7 @@
                 "supportedDataTypeRegex": "image",
                 "defaultDataType": "image",
                 "settings": {
-                    "materialInputs": {}
+                    "materialPropertySrgMember": {}
                 }
             }
         ],
