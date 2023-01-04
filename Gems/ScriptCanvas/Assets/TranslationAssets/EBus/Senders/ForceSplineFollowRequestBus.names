@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Force Spline Follow"
+                "name": "Force Region (Spline Follow Force)"
             },
             "methods": [
                 {
@@ -19,13 +19,24 @@
                         "tooltip": "Signaled after Get Look Ahead is invoked"
                     },
                     "details": {
-                        "name": "Get Look Ahead"
+                        "name": "Get Look Ahead",
+                        "tooltip": "Get how far ahead (in seconds) to extrapolate an entity's position when computing the follow force" 
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the force region entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Look Ahead"
+                                "name": "Look Ahead",
+                                "tooltip": "How far ahead (in seconds) to extrapolate an entity's position when computing the follow force"
                             }
                         }
                     ]
@@ -41,13 +52,15 @@
                         "tooltip": "Signaled after Set Look Ahead is invoked"
                     },
                     "details": {
-                        "name": "Set Look Ahead"
+                        "name": "Set Look Ahead",
+                        "tooltip": "Set how far ahead (in seconds) to extrapolate an entity's position when computing the follow force"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Look Ahead"
+                                "name": "Look Ahead",
+                                "tooltip": "How far ahead (in seconds) to extrapolate an entity's position when computing the follow force"
                             }
                         }
                     ]
@@ -63,13 +76,15 @@
                         "tooltip": "Signaled after Set Target Speed is invoked"
                     },
                     "details": {
-                        "name": "Set Target Speed"
+                        "name": "Set Target Speed",
+                        "tooltip": "Set the desired speed (in metres per second) for an entity following the spline"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Target Speed"
+                                "name": "Target Speed",
+                                "tooltip": "The desired speed (in metres per second) for an entity following the spline"
                             }
                         }
                     ]
@@ -85,13 +100,24 @@
                         "tooltip": "Signaled after Get Frequency is invoked"
                     },
                     "details": {
-                        "name": "Get Frequency"
+                        "name": "Get Frequency",
+                        "tooltip": "Get the frequency (in Hz), which affects how quickly the force will respond to changes in the spline direction"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the force region entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Frequency"
+                                "name": "Frequency",
+                                "tooltip": "Frequency (in Hz), which affects how quickly the force will respond to changes in the spline direction"
                             }
                         }
                     ]
@@ -107,13 +133,24 @@
                         "tooltip": "Signaled after Get Damping Ratio is invoked"
                     },
                     "details": {
-                        "name": "Get Damping Ratio"
+                        "name": "Get Damping Ratio",
+                        "tooltip": "Get the damping ratio, a dimensionless value which affects whether objects will lag behind when the spline direction changes (values less than 1), follow the direction as quickly as possible for the current frequency (1) or overshoot and oscillate (values greater than 1)"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the force region entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Damping Ratio"
+                                "name": "Damping Ratio",
+                                "tooltip": "Damping ratio, a dimensionless value which affects whether objects will lag behind when the spline direction changes (values less than 1), follow the direction as quickly as possible for the current frequency (1) or overshoot and oscillate (values greater than 1)"
                             }
                         }
                     ]
@@ -129,13 +166,15 @@
                         "tooltip": "Signaled after Set Frequency is invoked"
                     },
                     "details": {
-                        "name": "Set Frequency"
+                        "name": "Set Frequency",
+                        "tooltip": "Set the frequency (in Hz), which affects how quickly the force will respond to changes in the spline direction"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Frequency"
+                                "name": "Frequency",
+                                "tooltip": "Frequency (in Hz), which affects how quickly the force will respond to changes in the spline direction"
                             }
                         }
                     ]
@@ -151,13 +190,24 @@
                         "tooltip": "Signaled after Get Target Speed is invoked"
                     },
                     "details": {
-                        "name": "Get Target Speed"
+                        "name": "Get Target Speed",
+                        "tooltip": "Get the desired speed (in metres per second) for an entity following the spline"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the force region entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Target Speed"
+                                "name": "Target Speed",
+                                "tooltip": "The desired speed (in metres per second) for an entity following the spline"
                             }
                         }
                     ]
@@ -173,13 +223,15 @@
                         "tooltip": "Signaled after Set Damping Ratio is invoked"
                     },
                     "details": {
-                        "name": "Set Damping Ratio"
+                        "name": "Set Damping Ratio",
+                        "tooltip": "Set the damping ratio, a dimensionless value which affects whether objects will lag behind when the spline direction changes (values less than 1), follow the direction as quickly as possible for the current frequency (1) or overshoot and oscillate (values greater than 1)"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Damping Ratio"
+                                "name": "Damping Ratio",
+                                "tooltip": "Damping ratio, a dimensionless value which affects whether objects will lag behind when the spline direction changes (values less than 1), follow the direction as quickly as possible for the current frequency (1) or overshoot and oscillate (values greater than 1)"
                             }
                         }
                     ]

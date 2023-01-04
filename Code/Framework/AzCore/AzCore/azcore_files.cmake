@@ -252,8 +252,6 @@ set(FILES
     JSON/pointer.h
     JSON/prettywriter.h
     JSON/rapidjson.h
-    JSON/rapidjson.cpp
-    JSON/RapidJsonAllocator.h
     JSON/RapidjsonAllocatorAdapter.h
     JSON/reader.h
     JSON/schema.h
