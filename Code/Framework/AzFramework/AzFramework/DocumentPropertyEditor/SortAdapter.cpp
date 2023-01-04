@@ -21,7 +21,7 @@ namespace AZ::DocumentPropertyEditor
             m_sortActive = active;
             if (active)
             {
-                // TODO: This method should genenerate patches to/from source once custom patching is implemented
+                // TODO: This method should generate patches to/from source once custom patching is implemented
                 HandleReset();
 
                 // we can use the currently cached tree, if it still exists. NB it will be cleared by DOM changes
@@ -63,13 +63,40 @@ namespace AZ::DocumentPropertyEditor
         NotifyResetDocument();
     }
 
-    void RowSortAdapter::HandleDomChange([[maybe_unused]] const Dom::Patch& patch)
+    void RowSortAdapter::HandleDomChange(const Dom::Patch& patch)
     {
         if (m_sortActive)
         {
-            // TODO: handle changes upstream by making  custom patches. This is not currently
-            // possible, because a sort change is mostly move operations, and the DPE doesn't handle moves yet.
-            HandleReset();
+            bool needsReset = false;
+            //const auto& sourceContents = m_sourceAdapter->GetContents();
+            for (auto operationIterator = patch.begin(), endIterator = patch.end(); !needsReset && operationIterator != endIterator;
+                 ++operationIterator)
+            {
+                //const auto& patchPath = operationIterator->GetDestinationPath();
+                if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
+                {
+                    needsReset = true;
+                }
+                else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
+                {
+
+                }
+                else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
+                {
+                    needsReset = true;
+                }
+                else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Move)
+                {
+                    needsReset = true;
+                }
+            }
+
+            if (needsReset)
+            {
+                // TODO: handle other patch types here. Some of this is not currently possible, 
+                // because a sort change is mostly move operations, and the DPE doesn't handle moves yet.
+                HandleReset();
+            }
         }
         else
         {
@@ -117,11 +144,12 @@ namespace AZ::DocumentPropertyEditor
 
     Dom::Value RowSortAdapter::GetSortedValue(const Dom::Value& sourceValue, SortInfoNode* sortInfo)
     {
-        // copy the entire Dom::Value, but this is cheap, thanks to its copy-on-write semantics
+        // copy the entire Dom::Value and sort in place. Note that this is cheap, thanks to its copy-on-write semantics
         auto sortedValue = sourceValue;
 
         AZ_Assert(sortInfo->m_indexSortedChildren.size() == sortInfo->m_adapterSortedChildren.size(), "child lists must be the same size!");
 
+        // iterate children in model index order, copying from the adapter sorted value into the current position
         auto nextSortedIter = sortInfo->m_adapterSortedChildren.begin();
         for (auto nextIndexIter = sortInfo->m_indexSortedChildren.begin(), endIter = sortInfo->m_indexSortedChildren.end();
              nextIndexIter != endIter;
@@ -132,6 +160,8 @@ namespace AZ::DocumentPropertyEditor
 
             // sort the source child before copying it
             auto sortedChild = GetSortedValue(sourceValue[nextInSort], *nextSortedIter);
+            
+            // do the actual copy into the current position
             sortedValue[nextIndex] = sortedChild;
         }
 

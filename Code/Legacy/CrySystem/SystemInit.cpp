@@ -622,7 +622,7 @@ public:
         gEnv->pConsole->RemoveCommand(functor->GetName());
 
         // only add CVar versions if they are not already present
-        if (!gEnv->pConsole->GetCVar(functor->GetName()))
+        //if (!gEnv->pConsole->GetCVar(functor->GetName()))
         {
             if (functor->GetTypeId() != AZ::TypeId::CreateNull())
             {
