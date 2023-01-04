@@ -93,7 +93,7 @@ namespace PhysX
         JointMotorProperties() = default;
 
         bool m_useMotor = false; ///< Enables joint actuation.
-        float m_driveForceLimit = 1.0f; ///< Force/ torque limit applied by motor.
+        float m_driveForceLimit = 1.0f; ///< Force/torque limit applied by motor.
     };
 
     struct FixedJointConfiguration : public AzPhysics::JointConfiguration 

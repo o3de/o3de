@@ -23,8 +23,6 @@ namespace PhysX
         static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityComponentIdPair;
 
-        virtual ~JointRequests() = default;
-
         //! Returns current position from joint.
         //! It is a relative position of the entity in the direction of the free axis of the joint.
         //! For a hinge joint it is a twist angle (in radians), for the prismatic joint it is travel (in meters).
@@ -51,5 +49,5 @@ namespace PhysX
         virtual void SetMaximumForce(float force) = 0;
     };
 
-    using JointInterfaceRequestBus = AZ::EBus<JointRequests>;
+    using JointRequestBus = AZ::EBus<JointRequests>;
 } // namespace PhysX

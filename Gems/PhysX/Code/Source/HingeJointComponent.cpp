@@ -87,22 +87,23 @@ namespace PhysX
                 leadFollowerInfo.m_followerBody->m_bodyHandle);
             m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
         }
+        m_nativeJoint = GetPhysXNativeRevoluteJoint();
     }
 
     void HingeJointComponent::Activate()
     {
-        const AZ::EntityComponentIdPair id(GetEntityId(), GetId());
-        PhysX::JointInterfaceRequestBus::Handler::BusConnect(id);
         JointComponent::Activate();
+        const AZ::EntityComponentIdPair id(GetEntityId(), GetId());
+        PhysX::JointRequestBus::Handler::BusConnect(id);
     }
 
     void HingeJointComponent::Deactivate()
     {
-        PhysX::JointInterfaceRequestBus::Handler::BusDisconnect();
+        PhysX::JointRequestBus::Handler::BusDisconnect();
         JointComponent::Deactivate();
     }
 
-    physx::PxRevoluteJoint* HingeJointComponent::GetPhysXNativeRevoluteJoint() const
+    physx::PxRevoluteJoint* HingeJointComponent::GetPhysXNativeRevoluteJoint()
     {
         if (m_nativeJoint)
         {
@@ -122,38 +123,33 @@ namespace PhysX
 
     float HingeJointComponent::GetPosition() const
     {
-        return GetPhysXNativeRevoluteJoint()->getAngle();
+        return m_nativeJoint->getAngle();
     }
 
     float HingeJointComponent::GetVelocity() const
     {
-        return GetPhysXNativeRevoluteJoint()->getVelocity();
+        return m_nativeJoint->getVelocity();
     }
 
     AZStd::pair<float, float> HingeJointComponent::GetLimits() const
     {
-        auto limit = GetPhysXNativeRevoluteJoint()->getLimit();
+        auto limit = m_nativeJoint->getLimit();
         return AZStd::pair<float, float>(limit.lower, limit.upper);
     }
 
     AZ::Transform HingeJointComponent::GetTransform() const
     {
-        const auto worldFromLocal = GetPhysXNativeRevoluteJoint()->getRelativeTransform();
-        return AZ::Transform(
-            AZ::Vector3{ worldFromLocal.p.x, worldFromLocal.p.y, worldFromLocal.p.z },
-            AZ::Quaternion{ worldFromLocal.q.x, worldFromLocal.q.y, worldFromLocal.q.z, worldFromLocal.q.w },
-            1.f);
+        const auto worldFromLocal = m_nativeJoint->getRelativeTransform();
+        return PxMathConvert(worldFromLocal);
     }
 
     void HingeJointComponent::SetVelocity(float velocity)
     {
-        physx::PxRevoluteJoint* native = GetPhysXNativeRevoluteJoint();
-        native->setDriveVelocity(velocity, true);
+        m_nativeJoint->setDriveVelocity(velocity, true);
     }
 
     void HingeJointComponent::SetMaximumForce(float force)
     {
-        physx::PxRevoluteJoint* native = GetPhysXNativeRevoluteJoint();
-        native->setDriveForceLimit(force);
+        m_nativeJoint->setDriveForceLimit(force);
     }
 } // namespace PhysX

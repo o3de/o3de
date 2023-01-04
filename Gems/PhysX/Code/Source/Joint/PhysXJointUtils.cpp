@@ -198,9 +198,8 @@ namespace PhysX::Utils
             return;
         }
 
-        const float limitLower = AZ::GetMin(properties.m_limitFirst, properties.m_limitSecond);
-        const float limitUpper = AZ::GetMax(properties.m_limitFirst, properties.m_limitSecond);
 
+        const auto[limitLower, limitUpper] = AZStd::minmax(properties.m_limitFirst, properties.m_limitSecond);
         physx::PxJointLinearLimitPair limitPair(physx::PxTolerancesScale(), limitLower, limitUpper, properties.m_tolerance);
 
         if (properties.m_isSoftLimit)
@@ -421,8 +420,8 @@ namespace PhysX::Utils
             if (configuration.m_motorProperties.m_useMotor)
             {
                 joint->setRevoluteJointFlag(physx::PxRevoluteJointFlag::eDRIVE_ENABLED, true);
-                joint->setDriveVelocity(0);
-                joint->setDriveGearRatio(1.f);
+                joint->setDriveVelocity(0.0f);
+                joint->setDriveGearRatio(1.0f);
                 joint->setDriveForceLimit(configuration.m_motorProperties.m_driveForceLimit);
             }
             return Utils::PxJointUniquePtr(joint, ReleasePxJoint);
@@ -462,9 +461,9 @@ namespace PhysX::Utils
                         PxMathConvert(childLocalTM));
                 }
                 InitializePrismaticLimitD6Properties(configuration.m_limitProperties, joint_d6);
-                physx::PxD6JointDrive drive(0, PX_MAX_F32, configuration.m_motorProperties.m_driveForceLimit, true);
+                physx::PxD6JointDrive drive(0.0f , PX_MAX_F32, configuration.m_motorProperties.m_driveForceLimit, true);
                 joint_d6->setDrive(physx::PxD6Drive::eX, drive);
-                joint_d6->setDriveVelocity({ 0, 0, 0 }, { 0, 0, 0 }, true);
+                joint_d6->setDriveVelocity({ 0.0f, 0.0f, 0.0f }, physx::PxVec3(0.0f), true);
                 joint = static_cast<physx::PxJoint*>(joint_d6);
             }
             else

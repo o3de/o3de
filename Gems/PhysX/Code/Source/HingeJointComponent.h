@@ -15,7 +15,7 @@ namespace PhysX
 {
     class HingeJointComponent
         : public JointComponent
-        , public JointInterfaceRequestBus::Handler
+        , public JointRequestBus::Handler
     {
     public:
         AZ_COMPONENT(HingeJointComponent, "{A5CA0031-72E4-4908-B764-EDECD3091882}", JointComponent);
@@ -30,28 +30,24 @@ namespace PhysX
             const JointMotorProperties& motorProperties = JointMotorProperties());
         ~HingeJointComponent() = default;
 
-        ///////////////////////////////////////////////////////////////////////////////////
-        // JointInterfaceRequestBus::Handler overrides
+        // JointRequestBus::Handler overrides
         float GetPosition() const override;
         float GetVelocity() const override;
         AZ::Transform GetTransform() const override;
         void SetVelocity(float velocity) override;
         void SetMaximumForce(float force) override;
         AZStd::pair<float, float> GetLimits() const override;
-        ///////////////////////////////////////////////////////////////////////////////////
 
-        ///////////////////////////////////////////////////////////////////////////////////
         // AZ::Component overrides
         void Activate() override;
         void Deactivate() override;
-        ///////////////////////////////////////////////////////////////////////////////////
 
     protected:
         // JointComponent
         void InitNativeJoint() override;
-        physx::PxRevoluteJoint* GetPhysXNativeRevoluteJoint() const;
 
     private:
-        mutable physx::PxRevoluteJoint* m_nativeJoint{ nullptr };
+       physx::PxRevoluteJoint* GetPhysXNativeRevoluteJoint();
+       physx::PxRevoluteJoint* m_nativeJoint{ nullptr };
     };
 } // namespace PhysX
