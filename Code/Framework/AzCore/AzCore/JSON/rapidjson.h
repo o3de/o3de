@@ -11,7 +11,7 @@
 #include <AzCore/base.h>
 
 #if defined(RAPIDJSON_RAPIDJSON_H_)
-// if this happens, someone has alrady included the default rapidjson.h already, which is a bad idea as it won't
+// if this happens, someone has already included the default rapidjson.h already, which is a bad idea as it won't
 // include any customizations such as memory management.
 #error vanilla rapidjson was included before including <AzCore/JSON/rapidjson.h>
 #endif
@@ -49,7 +49,7 @@
 // on allocator type - for example, implement your own allocator and do
 // using MyDocument = rapidjson::GenericDocument<rapidjson::UTF8<char>, MyAllocator, MyAllocator> and then use MyDocument in your code
 // instead of RapidJSON::Document.  Note GenericDocument<> customized must use customized GenericValue<> and GenericPointer<>
-// or else you haven't acutally plugged into all the places where memory is allocated and will lose some.
+// or else you haven't actually plugged into all the places where memory is allocated and will lose some.
 // 
 // Unfortunately, rapidjson::Pointer can't deal with these customized values or documents due to a bug in the code where functions
 // like Set/Get/Create use the default template parameter instead of deducing it:
@@ -59,7 +59,7 @@
 
 // this leaves just one avenue for customization of memory of Rapidjson - overriding the macros RAPIDJSON_xxxx (new,delete, malloc, realloc..)
 
-// forward all allocations to our own allocators.  But preferrably without acutally having to drag our allocators into this header:
+// forward all allocations to our own allocators.  But preferably without actually having to drag our allocators into this header:
 
 // note that we cannot partially define allocation forwarding - for example, it is not okay to just override new, but not delete.
 // So either we define them all, or we define none.  If a user has defined any of them, we don't define any of them:
