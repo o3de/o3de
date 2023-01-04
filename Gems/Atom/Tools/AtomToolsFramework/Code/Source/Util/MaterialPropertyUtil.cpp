@@ -144,17 +144,54 @@ namespace AtomToolsFramework
         const AZ::RPI::MaterialPropertySourceData& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue)
     {
-        if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Enum && propertyValue.Is<uint32_t>())
+        if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Enum)
         {
-            const uint32_t index = propertyValue.GetValue<uint32_t>();
-            if (index >= propertyDefinition.m_enumValues.size())
+            if (propertyDefinition.m_enumValues.empty())
             {
-                AZ_Error("AtomToolsFramework", false, "Invalid value for material enum property: '%s'.", propertyId.GetCStr());
+                AZ_Error("AtomToolsFramework", false, "No enum values are specified for property: '%s'.", propertyId.GetCStr());
                 return false;
             }
 
-            propertyValue = propertyDefinition.m_enumValues[index];
-            return true;
+            if (propertyValue.Is<uint32_t>())
+            {
+                const uint32_t index = propertyValue.GetValue<uint32_t>();
+                if (index >= propertyDefinition.m_enumValues.size())
+                {
+                    AZ_Warning(
+                        "AtomToolsFramework",
+                        false,
+                        "Invalid value for material enough property, using default: '%s'.",
+                        propertyId.GetCStr());
+                    propertyValue = propertyDefinition.m_enumValues[0];
+                    return true;
+                }
+
+                propertyValue = propertyDefinition.m_enumValues[index];
+                return true;
+            }
+
+            if (propertyValue.Is<AZStd::string>())
+            {
+                const AZStd::string value = propertyValue.GetValue<AZStd::string>();
+                if (AZStd::find(propertyDefinition.m_enumValues.begin(), propertyDefinition.m_enumValues.end(), value) ==
+                    propertyDefinition.m_enumValues.end())
+                {
+                    AZ_Warning(
+                        "AtomToolsFramework",
+                        false,
+                        "Invalid value for material enough property, using default: '%s'.",
+                        propertyId.GetCStr());
+                    propertyValue = propertyDefinition.m_enumValues[0];
+                    return true;
+                }
+
+                propertyValue = value;
+                return true;
+            }
+
+            AZ_Error(
+                "AtomToolsFramework", false, "Property is of data type enum but value data type is not supported: '%s'.", propertyId.GetCStr());
+            return false;
         }
 
         // Image asset references must be converted from asset IDs to a relative source file path

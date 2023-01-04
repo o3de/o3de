@@ -34,11 +34,49 @@
                 "editableOnNode": false
             },
             {
+                "name": "inOpacityMode",
+                "displayName": "Opacity Mode",
+                "description": "Indicates the general approach how transparency is to be applied.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "Opaque"
+                },
+                "enumValues": [
+                    "Opaque",
+                    "Cutout",
+                    "Blended",
+                    "TintedTransparent"
+                ],
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_opacity_mode"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
                 "name": "inDoubleSided",
                 "displayName": "Double Sided",
                 "description": "Whether to render back-faces or just front-faces.",
                 "supportedDataTypeRegex": "bool",
                 "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                },
                 "visibleOnNode": false,
                 "editableOnNode": false,
                 "allowNameSubstitution": false,
@@ -61,6 +99,10 @@
                 "description": "Whether to apply specular anti-aliasing in the shader.",
                 "supportedDataTypeRegex": "bool",
                 "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
                 "visibleOnNode": false,
                 "editableOnNode": false,
                 "allowNameSubstitution": false,
@@ -85,6 +127,10 @@
                 "description": "Whether to use the shadow maps during lighting.",
                 "supportedDataTypeRegex": "bool",
                 "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
                 "visibleOnNode": false,
                 "editableOnNode": false,
                 "allowNameSubstitution": false,
@@ -109,6 +155,10 @@
                 "description": "Whether to cast shadows onto other objects.",
                 "supportedDataTypeRegex": "bool",
                 "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
                 "visibleOnNode": false,
                 "editableOnNode": false,
                 "allowNameSubstitution": false,
@@ -131,6 +181,10 @@
                 "description": "Whether to use directional lights.",
                 "supportedDataTypeRegex": "bool",
                 "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
                 "visibleOnNode": false,
                 "editableOnNode": false,
                 "allowNameSubstitution": false,
@@ -155,6 +209,10 @@
                 "description": "Whether to use punctual lights.",
                 "supportedDataTypeRegex": "bool",
                 "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
                 "visibleOnNode": false,
                 "editableOnNode": false,
                 "allowNameSubstitution": false,
@@ -179,6 +237,10 @@
                 "description": "Whether to use area lights.",
                 "supportedDataTypeRegex": "bool",
                 "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
                 "visibleOnNode": false,
                 "editableOnNode": false,
                 "allowNameSubstitution": false,
@@ -203,6 +265,10 @@
                 "description": "Whether to use Image Based Lighting (IBL).",
                 "supportedDataTypeRegex": "bool",
                 "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
                 "visibleOnNode": false,
                 "editableOnNode": false,
                 "allowNameSubstitution": false,
@@ -227,42 +293,16 @@
                 "description": "Whether to apply IBL specular in the forward pass.",
                 "supportedDataTypeRegex": "bool",
                 "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                },
                 "visibleOnNode": false,
                 "editableOnNode": false,
                 "allowNameSubstitution": false,
                 "settings": {
                     "materialPropertyConnectionName": [
                         "o_materialUseForwardPassIBLSpecular"
-                    ],
-                    "materialPropertyConnectionType": [
-                        "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
-                    ]
-                }
-            },
-            {
-                "name": "inOpacityMode",
-                "displayName": "Opacity Mode",
-                "description": "Indicates the general approach how transparency is to be applied.",
-                "supportedDataTypeRegex": "string",
-                "defaultDataType": "string",
-                "enumValues": [
-                    "Opaque",
-                    "Cutout",
-                    "Blended",
-                    "TintedTransparent"
-                ],
-                "visibleOnNode": false,
-                "editableOnNode": false,
-                "allowNameSubstitution": false,
-                "settings": {
-                    "materialPropertyConnectionName": [
-                        "o_opacity_mode"
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
