@@ -38,7 +38,7 @@ namespace AzToolsFramework
             AZStd::string m_iconPath; //!< Path of component icon.
             ViewportUi::ButtonId m_buttonId; //!< Button Id of switcher component.
 
-            AZ::Component* GetComponent() const;
+            AZ::Component* FindComponent() const;
         };
 
         //! Handles all aspects of the ViewportUi Switcher related to Component Mode.
