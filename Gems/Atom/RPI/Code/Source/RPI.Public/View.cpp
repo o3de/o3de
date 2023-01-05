@@ -120,6 +120,19 @@ namespace AZ
             AddDrawPacket(drawPacket, depth);
         }
 
+        void View::AddVisibilityEntry(const void* userData, float depth)
+        {
+            // This function is thread safe since VisiblityEntryContext has storage per thread for draw item data.
+            m_visibilityEntryContext.AddVisibilityEntry(userData, depth);
+        }
+
+        void View::AddVisibilityEntry(const void* userData, Vector3 worldPosition)
+        {
+            Vector3 cameraToObject = worldPosition - m_position;
+            float depth = cameraToObject.Dot(-m_viewToWorldMatrix.GetBasisZAsVector3());
+            AddVisibilityEntry(userData, depth);
+        }
+
         void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties)
         {
             m_drawListContext.AddDrawItem(drawListTag, drawItemProperties);
@@ -354,6 +367,16 @@ namespace AZ
         RHI::DrawListView View::GetDrawList(RHI::DrawListTag drawListTag)
         {
             return m_drawListContext.GetList(drawListTag);
+        }
+
+        VisibilityListView View::GetVisibilityList()
+        {
+            return m_visibilityEntryContext.GetList();
+        }
+
+        void View::FinalizeVisibilityList()
+        {
+            m_visibilityEntryContext.FinalizeLists();
         }
 
         void View::FinalizeDrawListsTG(AZ::TaskGraphEvent& finalizeDrawListsTGEvent)

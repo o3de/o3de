@@ -10,6 +10,7 @@
 
 #include <Atom/Feature/Utils/PagedDataVector.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
+#include <Atom/RPI.Public/View.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/vector.h>
@@ -26,7 +27,7 @@ namespace AZ::Render
         RPI::MeshDrawPacket m_drawPacket;
 
         // We modify the original draw packet each frame with a new instance count and a new root constant
-        RHI::Ptr<RHI::DrawPacket> m_clonedDrawPacket;
+        AZStd::unordered_map<const RPI::View*, RHI::Ptr<RHI::DrawPacket>> m_perViewDrawPackets;
 
         // We store the shaderIntputConstantIndex for m_instanceData here, so we don't have to look it up every frame
         AZStd::vector<RHI::ShaderInputConstantIndex> m_drawSrgInstanceDataIndices;

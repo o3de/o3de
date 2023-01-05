@@ -299,9 +299,7 @@ namespace AZ
                         drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
                     }
 
-                    // TODO: The drawSrg must be compiled seperately. The MeshFeatureProcessor does this already, but other systems
-                    // using MeshDrawPacket might not. If we compile it here, then when the MeshFeatureProcessor tries to do it later,
-                    // it will be delayed by a frame because it will have already been compiled
+                    drawSrg->Compile();
                 }
 
                 parentScene.ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
@@ -314,7 +312,9 @@ namespace AZ
                 }
 
                 m_rootConstantsLayouts.push_back(pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout());
-
+                // TODO: This assumes all draw items will have the same root constant layout
+                AZStd::vector<uint8_t> constants(m_rootConstantsLayouts.back()->GetDataSize());
+                drawPacketBuilder.SetRootConstants(constants);
                 RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 drawRequest.m_listTag = drawListTag;
                 drawRequest.m_pipelineState = pipelineState;

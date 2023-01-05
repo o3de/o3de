@@ -107,6 +107,17 @@ namespace AZ
             clone->m_rootConstants = (uint8_t*)(cloneStart + ((intptr_t)m_rootConstants - originalStart));
             memcpy((void*)clone->m_rootConstants, m_rootConstants, m_rootConstantSize * sizeof(uint8_t));
 
+            
+            // We did a memcpy above to make the draw items identical to the original. But for unique data such as draw items
+            // and per-draw srgs, we actually want to refer to the data in the new drawPacket
+            for (size_t drawItemIndex = 0; drawItemIndex < clone->m_drawItemCount; ++drawItemIndex)
+            {
+                const DrawItem* drawItemConst = clone->m_drawItems + drawItemIndex;
+                DrawItem* drawItem = const_cast<DrawItem*>(drawItemConst);
+                drawItem->m_rootConstants = clone->m_rootConstants;
+                //drawItem->m_uniqueShaderResourceGroup = (clone->m_uniqueShaderResourceGroups + drawItemIndex;
+            }
+
             clone->m_streamBufferViews = (StreamBufferView*)(cloneStart + ((intptr_t)m_streamBufferViews - originalStart));
             memcpy((void*)clone->m_streamBufferViews, m_streamBufferViews, m_streamBufferViewCount * sizeof(StreamBufferView));
 
@@ -124,10 +135,10 @@ namespace AZ
         {
             const DrawItem* drawItem = m_drawItems + drawItemIndex;
             AZ_Assert(
-                drawItem->m_rootConstantSize > interval.m_min + data.size(),
+                drawItem->m_rootConstantSize >= interval.m_min + data.size(),
                 "Attempting to set root constants that don't match the size of the DrawItem's root constant size.");
             memcpy(
-                (void*)(drawItem->m_rootConstants + interval.m_min),
+                (void*)(m_rootConstants + interval.m_min),
                 data.data(),
                 data.size());
         }

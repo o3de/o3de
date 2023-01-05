@@ -34,7 +34,8 @@ namespace AZ::Render::MeshCommon
                 bool nodeIsContainedInBounds = ShapeIntersection::Contains(boundsRef, nodeData.m_bounds);
                 for (auto* visibleEntry : nodeData.m_entries)
                 {
-                    if (visibleEntry->m_typeFlags == AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
+                    if (visibleEntry->m_typeFlags == AzFramework::VisibilityEntry::TYPE_RPI_Cullable ||
+                        visibleEntry->m_typeFlags == AzFramework::VisibilityEntry::TYPE_RPI_Visibility_List)
                     {
                         RPI::Cullable* cullable = static_cast<RPI::Cullable*>(visibleEntry->m_userData);
 

@@ -79,6 +79,8 @@ namespace AZ
             AZ::Name::FromStringLiteral("irradiance.factor", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_opacity_mode_Name = AZ::Name::FromStringLiteral("opacity.mode", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_opacity_factor_Name = AZ::Name::FromStringLiteral("opacity.factor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_m_rootConstantInstanceDataOffset_Name =
+            AZ::Name::FromStringLiteral("m_rootConstantInstanceDataOffset", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_m_instanceDataOffset_Name =
             AZ::Name::FromStringLiteral("m_instanceDataOffset", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_m_instanceData_Name =
@@ -132,18 +134,17 @@ namespace AZ
             }
 
             
-            GpuBufferHandler::Descriptor desc;
-            desc.m_bufferName = "MeshInstanceDataBuffer";
-            desc.m_bufferSrgName = "m_instanceData";
-            desc.m_elementSize = sizeof(uint32_t);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
-
-            m_instanceDataBufferHandler = GpuBufferHandler(desc);
         }
 
         void MeshFeatureProcessor::Deactivate()
         {
-            m_instanceDataBufferHandler.Release();
+            for (auto&[view, bufferHandler] : m_perViewInstanceDataBufferHandlers)
+            {
+                bufferHandler.Release();
+            }
+            m_perViewInstanceDataBufferHandlers.clear();
+            m_perViewInstanceData.clear();
+
             m_flagRegistry.reset();
 
             m_handleGlobalShaderOptionUpdate.Disconnect();
@@ -252,109 +253,132 @@ namespace AZ
                 }
             }
 
-            
+            m_forceRebuildDrawPackets = false;
+        }
+
+        
+        void MeshFeatureProcessor::OnEndCulling(const MeshFeatureProcessor::RenderPacket& packet)
+        {
             if (r_enableHardwareInstancing)
             {
-                // Update the buffer that stores the instance data for this frames visible instances
-                // This needs to happen after the mesh handles have been updated, but before culling, since we have to update the cullables
-                // to use the new draw packets
-                // 
-                // Eventually there will be a unique buffer for each view storing just the instance data for
-                // the instances that are visible in that view, so things that are culled on the CPU side can be skipped
-                // For now, we're assuming that there is only one instance for any given object, so we'll create just one
-                // buffer and share it between all of the views. For culling, that draw call will just be omitted entirely for now,
-                // but objects will eventually be culled by omitting their instance data from the view's instance data buffer
-                size_t instanceBufferCount = m_meshInstanceManager.GetItemCount();
-                if (instanceBufferCount > 0)
-                {
-                    AZStd::vector<uint32_t> visibleInstanceCounts;
-                    visibleInstanceCounts.reserve(instanceBufferCount);
+                AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: OnEndCulling");
 
-                    // Normally we'll do a pass to count all the visible instances for each view,
-                    // but for now, we know it's always 1
-                    for (size_t i = 0; i < instanceBufferCount; ++i)
+                for (const RPI::ViewPtr& view : packet.m_views)
+                {
+                    // Update the buffer that stores the instance data for this frames visible instances
+                    // This needs to happen after the mesh handles have been updated, but before culling, since we have to update the
+                    // cullables to use the new draw packets
+                    //
+                    // Eventually there will be a unique buffer for each view storing just the instance data for
+                    // the instances that are visible in that view, so things that are culled on the CPU side can be skipped
+                    // For now, we're assuming that there is only one instance for any given object, so we'll create just one
+                    // buffer and share it between all of the views. For culling, that draw call will just be omitted entirely for now,
+                    // but objects will eventually be culled by omitting their instance data from the view's instance data buffer
+                    RPI::VisibilityListView visibilityList = view->GetVisibilityList();
+                    size_t instanceBufferCount = visibilityList.size();
+
+                    AZStd::vector<uint32_t>& perViewInstanceData = m_perViewInstanceData[view.get()];
+
+                    // Initialize the buffer handler if it hasn't been created yet
+                    const auto& bufferHandlerIter = m_perViewInstanceDataBufferHandlers.find(view.get());
+                    if (bufferHandlerIter == m_perViewInstanceDataBufferHandlers.end())
                     {
-                        // Always assume there is only one instance
-                        constexpr uint32_t instanceCount = 1;
-                        visibleInstanceCounts.push_back(instanceCount);
+                        GpuBufferHandler::Descriptor desc;
+                        desc.m_bufferName = "MeshInstanceDataBuffer";
+                        desc.m_bufferSrgName = "m_instanceData";
+                        desc.m_elementSize = sizeof(uint32_t);
+                        desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
+
+                        m_perViewInstanceDataBufferHandlers[view.get()] = GpuBufferHandler(desc);
                     }
 
-                    m_instanceData.reserve(instanceBufferCount);
-                    m_instanceData.clear();
-                    //RHI::DrawPacketBuilder drawPacketBuilder;
-                    for (ModelDataInstance& modelData : m_modelData)
+                    // TODO: don't do this map lookup a second time
+                    GpuBufferHandler& instanceDataBufferHandler = m_perViewInstanceDataBufferHandlers[view.get()];
+
+                    if (instanceBufferCount > 0)
                     {
-                        for (auto& instanceIndicesForLod : modelData.m_instanceIndicesByLod)
+                        AZStd::vector<uint32_t> visibleInstanceCounts;
+                        visibleInstanceCounts.reserve(instanceBufferCount);
+
+                        // Normally we'll do a pass to count all the visible instances for each view,
+                        // but for now, we know it's always 1
+                        for (size_t i = 0; i < instanceBufferCount; ++i)
                         {
+                            // Always assume there is only one instance
+                            constexpr uint32_t instanceCount = 1;
+                            visibleInstanceCounts.push_back(instanceCount);
+                        }
+
+                        perViewInstanceData.reserve(instanceBufferCount);
+                        perViewInstanceData.clear();
+                    }
+
+                    for (const RPI::VisiblityEntryProperties& visibilityEntry : visibilityList)
+                    {
+                        const ModelDataInstance* modelData = reinterpret_cast<const ModelDataInstance*>(visibilityEntry.m_userData);
+                        [[maybe_unused]] uint32_t modelLodIndex = 0;
+                        for (auto& instanceIndicesForLod : modelData->m_instanceIndicesByLod)
+                        {
+                            [[maybe_unused]] uint32_t meshIndex = 0;
                             for (uint32_t instanceIndex : instanceIndicesForLod)
                             {
                                 // The per-instance data is just the objectId, which is used to look up the object transform
-                                m_instanceData.push_back(modelData.m_objectId.GetIndex());
+                                perViewInstanceData.push_back(modelData->m_objectId.GetIndex());
 
                                 // The offset into the per-instance data is part of the instanced draw call. This can change every frame,
                                 // and will eventually differ between views
-                                [[maybe_unused]]uint32_t instanceDataOffset = static_cast<uint32_t>(m_instanceData.size() - 1);
+                                [[maybe_unused]] uint32_t instanceDataOffset = static_cast<uint32_t>(perViewInstanceData.size() - 1);
 
                                 MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
-                                /*
-                                *
-                                * TODO: The MeshDrawPacketBuilder currently does not handle root constants, so the approach of using root
-                                * constants won't work until that is fixed. Going to use DrawSrgs for now, even though they are currently slow
-                                * It's possible we can speed those up (ShaderResourceGroup::Compile) by making it so we don't have to copy
-                                * the ShaderResourceGroupData from the RPI to the RHI, and instead keep only one copy, since most of the
-                                * cost is in that copy
-                                * 
-                                //instanceData.m_clonedDrawPacket = drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket());
-                                instanceData.m_clonedDrawPacket = instanceData.m_drawPacket.GetRHIDrawPacket()->Clone();
+
+                                RHI::DrawPacketBuilder drawPacketBuilder;
+                                RHI::Ptr<RHI::DrawPacket> clonedDrawPacket =
+                                    const_cast<RHI::DrawPacket*>(drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
+                                // Keep the refcount alive
+                                instanceData.m_perViewDrawPackets[view.get()] = clonedDrawPacket;
+                                
+
                                 const RPI::MeshDrawPacket::RootConstantsLayoutList& rootConstantsLayouts =
                                     instanceData.m_drawPacket.GetRootConstantsLayouts();
-                                AZ_Assert(rootConstantsLayouts.size() == instanceData.m_clonedDrawPacket->GetDrawItemCount(), "MeshFeatureProcessor: Mismatch in RootConstantsLayout count and DrawItem count.");
-                                for (size_t i = 0; i < instanceData.m_clonedDrawPacket->GetDrawItemCount(); ++i)
+
+                                for (size_t i = 0; i < clonedDrawPacket->GetDrawItemCount(); ++i)
                                 {
                                     // Get the root constant layout
                                     RHI::ShaderInputConstantIndex shaderInputIndex =
-                                        rootConstantsLayouts[i]->FindShaderInputIndex(s_m_instanceDataOffset_Name);
+                                        rootConstantsLayouts[i]->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
                                     if (shaderInputIndex.IsValid())
                                     {
                                         RHI::Interval interval = rootConstantsLayouts[i]->GetInterval(shaderInputIndex);
                                         AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
-                                        instanceData.m_clonedDrawPacket->SetRootConstant(i, interval, data);
+                                        clonedDrawPacket->SetRootConstant(i, interval, data);
                                     }
                                     else
                                     {
                                         AZ_Error(
-                                            "MeshFeatureProcessor", false,
-                                            "Trying to instance something that is missing m_instanceDataOffset from its root constant layout.");
-                                    }
-                                }*/
-                                // Update the drawSrg with the new offset
-                                auto& drawSrgs = instanceData.m_drawPacket.GetDrawSrgs();
-                                AZ_Assert(instanceData.m_drawSrgInstanceDataIndices.size() == drawSrgs.size(), "MeshFeatureProcessor: Mismatch between drawSrg count and ShaderInputConstantIndex count.");
-                                for (size_t i = 0; i < drawSrgs.size(); ++i)
-                                {
-                                    if (instanceData.m_drawSrgInstanceDataIndices[i].IsValid())
-                                    {
-                                        drawSrgs[i]->SetConstant(instanceData.m_drawSrgInstanceDataIndices[i], instanceDataOffset);
-
-                                        // Note: we'll get a warning here for compiling twice in the same frame if this draw packet was just
-                                        // initialized this frame That will go away when we create new, unique draw items for each view
-                                        // every frame instead of re-using the original one
-                                        drawSrgs[i]->Compile();
+                                            "MeshFeatureProcessor",
+                                            false,
+                                            "Trying to instance something that is missing s_m_rootConstantInstanceDataOffset_Name from its "
+                                            "root constant layout.");
                                     }
                                 }
+
+                                view->AddDrawPacket(clonedDrawPacket.get(), visibilityEntry.m_depth);
+                                meshIndex++;
                             }
+                            modelLodIndex++;
                         }
                     }
+
+                    // Use the correct srg for the view
+                    instanceDataBufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
 
                     // Now that we have all of our instance data, we need to create the buffer and bind it to the view srgs
                     // Eventually, this could be a transient buffer
 
                     // create output buffer descriptors
-                    m_instanceDataBufferHandler.UpdateBuffer(m_instanceData);
+                    instanceDataBufferHandler.UpdateBuffer(perViewInstanceData);
                 }
             }
-
-            m_forceRebuildDrawPackets = false;
         }
 
         void MeshFeatureProcessor::OnBeginPrepareRender()
@@ -448,15 +472,6 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::Render(const MeshFeatureProcessor::RenderPacket& packet)
-        {
-            AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Render");
-
-            for (const RPI::ViewPtr& view : packet.m_views)
-            {
-                m_instanceDataBufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
-            }
-        }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
             const MeshHandleDescriptor& descriptor,
@@ -1920,7 +1935,17 @@ namespace AZ
             m_cullable.m_cullData.m_boundingObb = localAabb.GetTransformedObb(localToWorld);
             m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = localAabb.GetTransformedAabb(localToWorld);
             m_cullable.m_cullData.m_visibilityEntry.m_userData = &m_cullable;
-            m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
+            if (!r_enableHardwareInstancing)
+            {
+                // Let the culling system submit the work
+                m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
+            }
+            else
+            {
+                // Let the MeshFeatureProcessor submit the work
+                m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Visibility_List;
+                m_cullable.m_cullData.m_optionalMeshFeatureProcessorData = this;
+            }
             m_scene->GetCullingScene()->RegisterOrUpdateCullable(m_cullable);
 
             m_cullBoundsNeedsUpdate = false;
