@@ -163,6 +163,15 @@ namespace LmbrCentral
         return m_boxShape.SetBoxDimensions(dimensions);
     }
 
+    AZ::Vector3 EditorBoxShapeComponent::GetTranslationOffset()
+    {
+        return AZ::Vector3::CreateZero();
+    }
+
+    void EditorBoxShapeComponent::SetTranslationOffset([[maybe_unused]] const AZ::Vector3& translationOffset)
+    {
+    }
+
     AZ::Transform EditorBoxShapeComponent::GetCurrentLocalTransform()
     {
         return AZ::Transform::CreateIdentity();
