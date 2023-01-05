@@ -6,9 +6,6 @@
 #
 #
 
-# Path to test instrumentation binary
-set(LY_TEST_IMPACT_INSTRUMENTATION_BIN "" CACHE PATH "Path to test impact framework instrumentation binary")
-
 # Name of test impact framework console static library target
 set(LY_TEST_IMPACT_CONSOLE_NATIVE_STATIC_TARGET "TestImpact.Frontend.Console.Native.Static")
 
@@ -68,15 +65,6 @@ set(LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR "${GTEST_XML_OUTPUT_DIR}")
 
 # Path to the directory that the result of python runs will be stored in.
 set(LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR "${PYTEST_XML_OUTPUT_DIR}")
-
-# If we are not provided a path to the Instrumentation bin,
-# set LY_TEST_IMPACT to false so that our tests don't get added
-# and TIAF doesn't get built.
-if(LY_TEST_IMPACT_INSTRUMENTATION_BIN)
-    set(LY_TEST_IMPACT_ACTIVE true)
-else()
-    set(LY_TEST_IMPACT_ACTIVE false)
-endif()
 
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
@@ -283,7 +271,7 @@ function(ly_test_impact_write_test_enumeration_file TEST_ENUMERATION_TEMPLATE_FI
             ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
             list(APPEND python_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
         elseif("${test_type}" STREQUAL "pytest_editor")
-            # Python editor tests            
+            # Python editor tests
             ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
             list(APPEND python_editor_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
         elseif("${test_type}" STREQUAL "googletest")
@@ -334,9 +322,9 @@ function(ly_test_impact_write_gem_target_enumeration_file GEM_TARGET_TEMPLATE_FI
         endif()
     endforeach()
     string (REPLACE ";" ",\n" enumerated_gem_targets "${enumerated_gem_targets}")
-     # Write out source to target mapping file
-     set(mapping_path "${LY_TEST_IMPACT_GEM_TARGET_FILE}")
-     configure_file(${GEM_TARGET_TEMPLATE_FILE} ${mapping_path})
+    # Write out source to target mapping file
+    set(mapping_path "${LY_TEST_IMPACT_GEM_TARGET_FILE}")
+    configure_file(${GEM_TARGET_TEMPLATE_FILE} ${mapping_path})
 endfunction()
 
 #! ly_extract_aliased_target_dependencies: recursively extracts the aliases of a target to retrieve the true de-aliased target.
@@ -513,14 +501,26 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     set(build_config "$<CONFIG>")
 
     # Instrumentation binary
-    if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN)
+    if(NOT O3DE_TEST_IMPACT_INSTRUMENTATION_BIN)
         # No binary specified is not an error, it just means that the test impact analysis part of the framework is disabled
         message("No test impact framework instrumentation binary was specified, test impact analysis framework will fall back to regular test sequences instead")
         set(use_tiaf false)
         set(instrumentation_bin "")
     else()
         set(use_tiaf true)
-        file(TO_CMAKE_PATH ${LY_TEST_IMPACT_INSTRUMENTATION_BIN} instrumentation_bin)
+        file(TO_CMAKE_PATH ${O3DE_TEST_IMPACT_INSTRUMENTATION_BIN} instrumentation_bin)
+    endif()
+
+    if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED)
+        set(native_jenkins_enabled true)
+    else()
+        set(native_jenkins_enabled false)
+    endif()
+
+    if(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
+        set(python_jenkins_enabled true)
+    else()
+        set(python_jenkins_enabled false)
     endif()
 
     # Testrunner binary
@@ -595,7 +595,7 @@ function(ly_test_impact_write_pytest_file CONFIGURATION_FILE)
         set(config_path "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_PERSISTENT_DIR}/${LY_TEST_IMPACT_CONFIG_FILE_NAME}")
         list(APPEND build_configs "\"${config_type}\" : { \"config\" : \"${config_path}\"}")
     endforeach()
- 
+
     # Configure our list of entries
     string(REPLACE ";" ",\n" build_configs "${build_configs}")
     
@@ -604,7 +604,8 @@ function(ly_test_impact_write_pytest_file CONFIGURATION_FILE)
     string(CONFIGURE ${test_file} test_file)
     file(GENERATE
         OUTPUT "${LY_TEST_IMPACT_PYTEST_FILE_PATH}/ly_test_impact_test_data.json"
-        CONTENT "${test_file}")
+        CONTENT "${test_file}"
+    )
 
 endfunction()
 
@@ -630,7 +631,8 @@ endfunction()
 
 #! ly_test_impact_post_step: runs the post steps to be executed after all other cmake scripts have been executed.
 function(ly_test_impact_post_step)
-    if(NOT LY_TEST_IMPACT_ACTIVE)
+    if(NOT O3DE_TEST_IMPACT_ACTIVE)
+        message("TIAF is disabled, no post step will be performed.")
         return()
     endif()
 
