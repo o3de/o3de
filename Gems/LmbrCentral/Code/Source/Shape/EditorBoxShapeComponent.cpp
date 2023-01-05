@@ -74,9 +74,10 @@ namespace LmbrCentral
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
 
         // ComponentMode
+        const bool allowAsymmetricalEditing = IsShapeComponentTranslationEnabled();
         m_componentModeDelegate.ConnectWithSingleComponentMode<
             EditorBoxShapeComponent, AzToolsFramework::BoxComponentMode>(
-                AZ::EntityComponentIdPair(GetEntityId(), GetId()), this);
+                AZ::EntityComponentIdPair(GetEntityId(), GetId()), this, allowAsymmetricalEditing);
     }
 
     void EditorBoxShapeComponent::Deactivate()

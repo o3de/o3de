@@ -67,9 +67,10 @@ namespace AzToolsFramework
         }
     }
 
-    void BoxViewportEdit::Setup(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    void BoxViewportEdit::Setup(const AZ::EntityComponentIdPair& entityComponentIdPair, bool allowAsymmetricalEditing)
     {
         m_entityComponentIdPair = entityComponentIdPair;
+        m_allowAsymmetricalEditing = allowAsymmetricalEditing;
 
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(
