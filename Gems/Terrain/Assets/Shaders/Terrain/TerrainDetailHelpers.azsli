@@ -132,7 +132,7 @@ uint GetDetailHeightIndex(TerrainSrg::DetailMaterialData materialData)
 
 float4 SampleTexture(uint index, in MaterialContext materialContext)
 {
-    return TerrainSrg::m_textures[index].SampleGrad(TerrainMaterialSrg::m_sampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy);
+    return TerrainSrg::m_textures[index].SampleGrad(TerrainMaterialSrg::m_detailSampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy);
 }
 
 float3 GetDetailColor(in MaterialContext materialContext, in float3 macroColor)
