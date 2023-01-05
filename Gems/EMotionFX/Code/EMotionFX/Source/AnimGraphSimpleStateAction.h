@@ -8,15 +8,12 @@
 
 #pragma once
 
-#include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/AnimGraphTriggerAction.h>
-#include <EMotionFX/Source/ObjectAffectedByParameterChanges.h>
 
 namespace EMotionFX
 {
     // forward declarations
     class AnimGraphInstance;
-    class ValueParameter;
 
     /**
      * AnimGraphSimpleStateAction is a specific type of trigger action that modifies the parameter.
@@ -28,11 +25,10 @@ namespace EMotionFX
         AZ_RTTI(AnimGraphSimpleStateAction, "{CF719974-AF5D-418C-8F1F-672AB862AFAD}", AnimGraphTriggerAction)
         AZ_CLASS_ALLOCATOR_DECL
 
-        AnimGraphSimpleStateAction();
+        AnimGraphSimpleStateAction() = default;
         AnimGraphSimpleStateAction(AnimGraph* animGraph);
-        ~AnimGraphSimpleStateAction();
+        ~AnimGraphSimpleStateAction() = default;
 
-        void Reinit() override;
         bool InitAfterLoading(AnimGraph* animGraph) override;
 
         void GetSummary(AZStd::string* outResult) const override;
@@ -41,8 +37,8 @@ namespace EMotionFX
 
         void TriggerAction(AnimGraphInstance* animGraphInstance) const override;
 
-        void SetSimpleStateNameName(const AZStd::string& parameterName);
-        const AZStd::string& GetSimpleStateName() const;
+        void SetSimpleStateName(const AZStd::string& simpleStateName);
+        const AZStd::string& GetSimpleStateName() const { return m_simpleStateName; }
 
         static void Reflect(AZ::ReflectContext* context);
 

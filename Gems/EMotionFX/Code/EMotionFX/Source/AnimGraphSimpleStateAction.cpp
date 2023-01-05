@@ -9,41 +9,20 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <EMotionFX/Source/AnimGraph.h>
-#include <EMotionFX/Source/AnimGraphBus.h>
 #include <EMotionFX/Source/AnimGraphInstance.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/AnimGraphSimpleStateAction.h>
-#include <EMotionFX/Source/EMotionFXConfig.h>
 #include <LmbrCentral/Scripting/SimpleStateComponentBus.h>
 
 namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(AnimGraphSimpleStateAction, AnimGraphAllocator, 0)
 
-    AnimGraphSimpleStateAction::AnimGraphSimpleStateAction()
-        : AnimGraphTriggerAction()
-    {
-    }
-
-
     AnimGraphSimpleStateAction::AnimGraphSimpleStateAction(AnimGraph* animGraph)
         : AnimGraphSimpleStateAction()
     {
         InitAfterLoading(animGraph);
     }
-
-
-    AnimGraphSimpleStateAction::~AnimGraphSimpleStateAction()
-    {
-
-    }
-
-
-    void AnimGraphSimpleStateAction::Reinit()
-    {
-        
-    }
-
 
     bool AnimGraphSimpleStateAction::InitAfterLoading(AnimGraph* animGraph)
     {
@@ -53,7 +32,6 @@ namespace EMotionFX
         }
 
         InitInternalAttributesForAllInstances();
-
         Reinit();
         return true;
     }
@@ -92,9 +70,14 @@ namespace EMotionFX
         columnValue = RTTI_GetTypeName();
         *outResult = AZStd::string::format("<table border=\"0\"><tr><td width=\"120\"><b>%s</b></td><td><nobr>%s</nobr></td>", columnName.c_str(), columnValue.c_str());
 
-        // add the parameter
-        columnName = "Parameter Name: ";
+        // add the simple state name
+        columnName = "Simple State Name: ";
         *outResult += AZStd::string::format("</tr><tr><td><b><nobr>%s</nobr></b></td><td><nobr>%s</nobr></td>", columnName.c_str(), m_simpleStateName.c_str());
+    }
+
+    void AnimGraphSimpleStateAction::SetSimpleStateName(const AZStd::string& simpleStateName)
+    {
+        m_simpleStateName = simpleStateName;
     }
 
     void AnimGraphSimpleStateAction::Reflect(AZ::ReflectContext* context)
@@ -116,7 +99,7 @@ namespace EMotionFX
             return;
         }
 
-        editContext->Class<AnimGraphSimpleStateAction>("Simple State Action", "Parameter action attributes")
+        editContext->Class<AnimGraphSimpleStateAction>("Simple State Action", "Simple state action attributes")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
