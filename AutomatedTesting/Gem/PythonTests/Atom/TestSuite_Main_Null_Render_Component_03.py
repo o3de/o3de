@@ -4,6 +4,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+import sys
+
 import pytest
 
 from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
@@ -11,6 +13,7 @@ from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.skipif(sys.platform.startswith("linux"), reason="https://github.com/o3de/o3de/issues/13930")
 class TestAutomation(EditorTestSuite):
 
     @pytest.mark.test_case_id("C32078125")
