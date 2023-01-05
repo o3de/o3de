@@ -34,11 +34,13 @@ namespace AzToolsFramework
 
             // Member variables
             AZ::EntityComponentIdPair m_pairId; //!< Id of entity component pair.
-            AZ::Entity* m_entity = nullptr; //!< Pointer to entity associated with pairId.
-            AZ::Component* m_component = nullptr; //!< Pointer to component associated with pairId.
+            //AZ::Entity* m_entity = nullptr; //!< Pointer to entity associated with pairId.
+            //AZ::Component* m_component = nullptr; //!< Pointer to component associated with pairId.
             AZStd::string m_componentName; //!< Friendly name of component.
             AZStd::string m_iconPath; //!< Path of component icon.
             ViewportUi::ButtonId m_buttonId; //!< Button Id of switcher component.
+
+            AZ::Component* GetComponent() const;
         };
 
         //! Handles all aspects of the ViewportUi Switcher related to Component Mode.

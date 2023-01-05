@@ -22,17 +22,22 @@ namespace AzToolsFramework::ComponentModeFramework
     ComponentData::ComponentData(AZ::EntityComponentIdPair pairId)
         : m_pairId(pairId)
     {
-        AZ::ComponentApplicationBus::BroadcastResult(
-            m_entity, &AZ::ComponentApplicationBus::Events::FindEntity, AZ::EntityId(pairId.GetEntityId()));
+        AZ::Entity* entity = AzToolsFramework::GetEntityById(pairId.GetEntityId());
 
-        m_component = m_entity->FindComponent(pairId.GetComponentId());
-        m_componentName = AzToolsFramework::GetFriendlyComponentName(m_component);
+        AZ::Component* component = entity->FindComponent(pairId.GetComponentId());
+        m_componentName = AzToolsFramework::GetFriendlyComponentName(component);
 
         AzToolsFramework::EditorRequestBus::BroadcastResult(
             m_iconPath,
             &AzToolsFramework::EditorRequestBus::Events::GetComponentEditorIcon,
-            m_component->GetUnderlyingComponentType(),
-            m_component);
+            component->GetUnderlyingComponentType(),
+            component);
+    }
+
+    AZ::Component* ComponentData::GetComponent() const
+    {
+        AZ::Entity* entity = AzToolsFramework::GetEntityById(m_pairId.GetEntityId());
+        return entity->FindComponent(m_pairId.GetComponentId());
     }
 
     ComponentModeSwitcher::ComponentModeSwitcher()
@@ -135,7 +140,7 @@ namespace AzToolsFramework::ComponentModeFramework
                 {
                     // if two or more entities are selected, ensure the only components
                     // that remain on the switcher are common to all entities
-                    if (selectedEntityIds.size() > 1 && !m_addedComponents.empty())
+                    if (selectedEntityIds.size() > 1)
                     {
                         RemoveNonCommonComponents(*entity);
                         // if components have been removed from the switcher and there is nothing left on the switcher
@@ -180,7 +185,7 @@ namespace AzToolsFramework::ComponentModeFramework
                 m_addedComponents,
                 [newComponentData](const ComponentData& componentInfo)
                 {
-                    return componentInfo.m_component->RTTI_GetType() == newComponentData.m_component->RTTI_GetType();
+                    return componentInfo.GetComponent()->RTTI_GetType() == newComponentData.GetComponent()->RTTI_GetType();
                 });
             componentDataIt == m_addedComponents.end())
         {
@@ -262,12 +267,12 @@ namespace AzToolsFramework::ComponentModeFramework
         if (InComponentMode())
         {
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
-                &ComponentModeSystemRequests::ChangeComponentMode, componentData->m_component->GetUnderlyingComponentType());
+                &ComponentModeSystemRequests::ChangeComponentMode, componentData->GetComponent()->GetUnderlyingComponentType());
         }
         else
         {
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
-                &ComponentModeSystemRequests::AddSelectedComponentModesOfType, componentData->m_component->GetUnderlyingComponentType());
+                &ComponentModeSystemRequests::AddSelectedComponentModesOfType, componentData->GetComponent()->GetUnderlyingComponentType());
         }
     }
 
@@ -309,7 +314,7 @@ namespace AzToolsFramework::ComponentModeFramework
                             isComponentActive,
                             &ComponentModeSystemRequestBus::Events::AddedToComponentMode,
                             componentData.m_pairId,
-                            componentData.m_component->GetUnderlyingComponentType());
+                            componentData.GetComponent()->GetUnderlyingComponentType());
                         return isComponentActive;
                     });
                 componentDataIt != m_addedComponents.end())
@@ -320,7 +325,7 @@ namespace AzToolsFramework::ComponentModeFramework
                     m_switcherId,
                     componentDataIt->m_buttonId);
 
-                m_activeSwitcherComponent = componentDataIt->m_component;
+                m_activeSwitcherComponent = componentDataIt->GetComponent();
             }
         }
     }
@@ -336,10 +341,10 @@ namespace AzToolsFramework::ComponentModeFramework
 
         for (AZStd::vector<ComponentData>::reverse_iterator it = m_addedComponents.rbegin(); it != m_addedComponents.rend(); ++it)
         {
-            if (!componentIds.contains(it->m_component->RTTI_GetType()))
-            {
-                RemoveComponentButton(it->m_pairId);
-            }
+            if (!componentIds.contains(it->GetComponent()->RTTI_GetType()))
+                {
+                    RemoveComponentButton(it->m_pairId);
+                }
         }
     }
 
@@ -432,7 +437,7 @@ namespace AzToolsFramework::ComponentModeFramework
                 m_addedComponents,
                 [componentType](const ComponentData& componentInfo)
                 {
-                    return componentInfo.m_component->RTTI_GetType() == componentType;
+                    return componentInfo.GetComponent()->RTTI_GetType() == componentType;
                 });
             componentDataIt != m_addedComponents.end())
         {
@@ -442,7 +447,7 @@ namespace AzToolsFramework::ComponentModeFramework
                 m_switcherId,
                 componentDataIt->m_buttonId);
 
-            m_activeSwitcherComponent = componentDataIt->m_component;
+            m_activeSwitcherComponent = componentDataIt->GetComponent();
         }
     }
 } // namespace AzToolsFramework::ComponentModeFramework
