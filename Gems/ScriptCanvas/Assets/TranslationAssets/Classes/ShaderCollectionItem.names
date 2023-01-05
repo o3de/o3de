@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetShaderAsset",
-                    "context": "ShaderCollectionItem",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetShaderAsset"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "GetShaderAssetId",
-                    "context": "ShaderCollectionItem",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetShaderAssetId"
@@ -74,7 +72,6 @@
                 },
                 {
                     "base": "GetShaderVariantId",
-                    "context": "ShaderCollectionItem",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetShaderVariantId"
@@ -106,7 +103,6 @@
                 },
                 {
                     "base": "GetShaderOptionGroup",
-                    "context": "ShaderCollectionItem",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetShaderOptionGroup"

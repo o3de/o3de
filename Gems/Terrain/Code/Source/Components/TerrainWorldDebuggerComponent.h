@@ -181,5 +181,7 @@ namespace Terrain
         int32_t m_sectorGridSize{ 0 };
 
         AZ::Aabb m_lastDirtyRegion{ AZ::Aabb::CreateNull() };
+        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask m_lastDirtyData =
+            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::None;
     };
 }
