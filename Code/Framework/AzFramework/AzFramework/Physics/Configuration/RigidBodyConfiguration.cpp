@@ -105,19 +105,19 @@ namespace AzPhysics
         }
     }
 
-    constexpr AZStd::string_view kinematicDescription =
+    constexpr AZStd::string_view KinematicDescription =
         "When active, the rigid body is not affected by gravity or other forces and is moved by script. ";
 
-    constexpr AZStd::string_view kinematicDescriptionReadOnly =
+    constexpr AZStd::string_view KinematicDescriptionReadOnly =
         "When active, the rigid body is not affected by gravity or other forces and is moved by script. "
         "<b>The rigid body cannot be set as Kinematic if CCD is enabled, disable CCD to allow changes to be made.</b>";
 
-    constexpr AZStd::string_view ccdDescription =
+    constexpr AZStd::string_view CcdDescription =
         "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
         "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX "
         "configuration. ";
 
-    constexpr AZStd::string_view ccdDescriptionReadOnly =
+    constexpr AZStd::string_view CcdDescriptionReadOnly =
         "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
         "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX "
         "configuration. <b>CCD cannot be enabled if the rigid body is kinematic, set the rigid body as non-kinematic"
@@ -214,12 +214,12 @@ namespace AzPhysics
 
     AZStd::string_view RigidBodyConfiguration::GetCcdTooltip() const
     {
-        return (m_kinematic) ? ccdDescriptionReadOnly : ccdDescription;
+        return m_kinematic ? CcdDescriptionReadOnly : CcdDescription;
     }
 
     AZStd::string_view RigidBodyConfiguration::GetKinematicTooltip() const
     {
-        return (m_ccdEnabled) ? kinematicDescriptionReadOnly : kinematicDescription;
+        return m_ccdEnabled ? KinematicDescriptionReadOnly : KinematicDescription;
     }
 
     AZ::Crc32 RigidBodyConfiguration::GetInitialVelocitiesVisibility() const
