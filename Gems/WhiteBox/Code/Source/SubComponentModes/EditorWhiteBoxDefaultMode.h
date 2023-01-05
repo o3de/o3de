@@ -64,6 +64,11 @@ namespace WhiteBox
         DefaultMode& operator=(DefaultMode&&) = default;
         ~DefaultMode();
 
+        static void RegisterActionUpdaters();
+        static void RegisterActions();
+        static void BindActionsToModes(const AZStd::string& modeIdentifier);
+        static void BindActionsToMenus();
+
         // Interface
         void Refresh();
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActions(
@@ -97,6 +102,8 @@ namespace WhiteBox
         Api::VertexHandle HoveredVertexHandle() const override;
         Api::EdgeHandle HoveredEdgeHandle() const override;
         Api::PolygonHandle HoveredPolygonHandle() const override;
+        void HideSelectedEdge() const override;
+        void HideSelectedVertex() const override;
 
         // EditorWhiteBoxPolygonModifierNotificationBus ...
         void OnPolygonModifierUpdatedPolygonHandle(

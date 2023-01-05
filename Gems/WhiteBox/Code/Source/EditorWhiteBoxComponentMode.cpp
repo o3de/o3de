@@ -16,6 +16,9 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/sort.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
@@ -26,6 +29,8 @@
 
 namespace WhiteBox
 {
+    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
+    static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
     constexpr AZStd::string_view WhiteBoxTransformFeature = "/O3DE/Preferences/WhiteBox/TransformFeature";
 
     AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxComponentMode, AZ::SystemAllocator, 0)
@@ -83,6 +88,37 @@ namespace WhiteBox
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         EditorWhiteBoxComponentModeRequestBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
+    }
+
+    void EditorWhiteBoxComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<EditorWhiteBoxComponentMode>(context);
+    }
+
+    void EditorWhiteBoxComponentMode::RegisterActionUpdaters()
+    {
+        DefaultMode::RegisterActionUpdaters();
+    }
+
+    void EditorWhiteBoxComponentMode::RegisterActions()
+    {
+        DefaultMode::RegisterActions();
+    }
+
+    void EditorWhiteBoxComponentMode::BindActionsToModes()
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        AZStd::string modeIdentifier = AZStd::string::format(
+            "o3de.context.mode.%s", serializeContext->FindClassData(azrtti_typeid<EditorWhiteBoxComponentMode>())->m_name);
+
+        DefaultMode::BindActionsToModes(modeIdentifier);
+    }
+
+    void EditorWhiteBoxComponentMode::BindActionsToMenus()
+    {
+        DefaultMode::BindActionsToMenus();
     }
 
     void EditorWhiteBoxComponentMode::Refresh()

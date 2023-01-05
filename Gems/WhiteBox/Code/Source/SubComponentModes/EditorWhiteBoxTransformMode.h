@@ -59,6 +59,8 @@ namespace WhiteBox
         TransformMode(const AZ::EntityComponentIdPair& entityComponentIdPair);
         ~TransformMode();
 
+        static void RegisterActions();
+
         enum class TransformType
         {
             Translation,

@@ -33,6 +33,10 @@ namespace WhiteBox
         // noop
     }
 
+    void EdgeRestoreMode::RegisterActions()
+    {
+    }
+
     AZStd::vector<AzToolsFramework::ActionOverride> EdgeRestoreMode::PopulateActions(
         [[maybe_unused]] const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
