@@ -36,6 +36,8 @@ namespace EMotionFX
         virtual void UpdateActorExternal(float deltatime) = 0;
         virtual void SetNetworkRandomSeed(AZ::u64 seed) = 0;
         virtual AZ::u64 GetNetworkRandomSeed() const = 0;
+        virtual void SetActorThreadIndex(AZ::u32 threadIndex) = 0;
+        virtual AZ::u32 GetActorThreadIndex() const = 0;
     };
 
     using AnimGraphComponentNetworkRequestBus = AZ::EBus<AnimGraphComponentNetworkRequests>;

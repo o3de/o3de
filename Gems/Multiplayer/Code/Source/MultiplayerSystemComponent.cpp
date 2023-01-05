@@ -42,6 +42,9 @@
 #include <cmath>
 #include <System/PhysXSystem.h>
 
+#include <AzCore/Jobs/JobCompletion.h>
+#include <AzCore/Jobs/JobFunction.h>
+
 AZ_DEFINE_BUDGET(MULTIPLAYER);
 
 namespace AZ
@@ -113,6 +116,9 @@ namespace Multiplayer
         "Capture either UDP or TCP transport metrics.");
     AZ_CVAR(AZ::TimeMs, bg_captureTransportPeriod, AZ::TimeMs{1000}, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "How often in milliseconds to record transport metrics.");
+
+    AZ_CVAR(bool, bg_parallelNotifyPreRender, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "bg_useJobsNotifyPreRender");
+    
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -1485,9 +1491,29 @@ namespace Multiplayer
                 }
             });
 
-            for (NetBindComponent* netBindComponent : gatheredEntities)
+            if (bg_parallelNotifyPreRender)
             {
-                netBindComponent->NotifyPreRender(deltaTime);
+                AZ::JobCompletion jobCompletion;
+                for (NetBindComponent* netBindComponent : gatheredEntities)
+                {
+                    AZ::Job* job = AZ::CreateJobFunction([netBindComponent = netBindComponent, deltaTime]()
+                        {
+                            AZ_PROFILE_SCOPE(AzCore, "OnPreRenderJob");
+                            netBindComponent->NotifyPreRender(deltaTime);
+                        }, true, nullptr);
+
+                    job->SetDependent(&jobCompletion);
+                    job->Start();
+                }
+
+                jobCompletion.StartAndWaitForCompletion();
+            }
+            else
+            {
+                for (NetBindComponent* netBindComponent : gatheredEntities)
+                {
+                    netBindComponent->NotifyPreRender(deltaTime);
+                }
             }
         }
         else
