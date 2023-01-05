@@ -22,9 +22,7 @@ namespace AzToolsFramework::ComponentModeFramework
     ComponentData::ComponentData(AZ::EntityComponentIdPair pairId)
         : m_pairId(pairId)
     {
-        AZ::Entity* entity = AzToolsFramework::GetEntityById(pairId.GetEntityId());
-
-        AZ::Component* component = entity->FindComponent(pairId.GetComponentId());
+        AZ::Component* component = GetComponent();
         m_componentName = AzToolsFramework::GetFriendlyComponentName(component);
 
         AzToolsFramework::EditorRequestBus::BroadcastResult(
