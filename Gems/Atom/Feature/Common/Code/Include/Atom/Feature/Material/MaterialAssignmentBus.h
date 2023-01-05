@@ -21,6 +21,7 @@ namespace AZ
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
             static const AZ::EBusAddressPolicy AddressPolicy = EBusAddressPolicy::ById;
             using BusIdType = AZ::Data::AssetId;
+            using MutexType = AZStd::mutex;
 
             virtual void OnRebuildMaterialInstance() = 0;
         };
