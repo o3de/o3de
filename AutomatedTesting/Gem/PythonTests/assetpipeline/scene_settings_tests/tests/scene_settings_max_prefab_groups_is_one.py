@@ -20,7 +20,7 @@ def Scene_Settings_Tests_Max_Prefab_Groups_Is_One():
         import scene_settings_test_helpers as scene_test_helpers
         
         path_to_manifest, widget_main_window, reflected_property_root = \
-            scene_test_helpers.prepare_scene_ui_for_test(test_file_name="auto_test_fbx.fbx", manifest_should_exist=False)
+            scene_test_helpers.prepare_scene_ui_for_test(test_file_name="auto_test_fbx.fbx", manifest_should_exist=False, should_create_manifest=False)
             
         tab_bar = widget_main_window.findChild(QtWidgets.QTabBar,"")
         PREFAB_TAB_INDEX = 3

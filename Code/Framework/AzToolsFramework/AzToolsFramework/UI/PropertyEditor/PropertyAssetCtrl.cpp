@@ -49,6 +49,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/Logging/GenericLogPanel.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailWidget.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
@@ -641,6 +642,23 @@ namespace AzToolsFramework
         }
     }
 
+    void PropertyAssetCtrl::OnAssetCreated(const AZ::Data::AssetId& assetId)
+    {
+        AZ::Data::AssetInfo assetInfo;
+
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            [&assetInfo, assetId](AZ::Data::AssetCatalogRequestBus::Events* interface)
+            {
+                assetInfo = interface->GetAssetInfoById(assetId);
+            }
+        );
+
+        if (assetInfo.m_assetType == GetCurrentAssetType())
+        {
+            SetSelectedAssetID(assetId);
+        }
+    }
+
     void PropertyAssetCtrl::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
     {
         if (GetCurrentAssetID() == assetId)
@@ -746,8 +764,9 @@ namespace AzToolsFramework
 
     PropertyAssetCtrl::~PropertyAssetCtrl()
     {
-        AssetSystemBus::Handler::BusDisconnect();
+        AssetEditor::AssetEditorNotificationsBus::Handler::BusDisconnect();
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+        AssetSystemBus::Handler::BusDisconnect();
     }
 
     void PropertyAssetCtrl::OnEditButtonClicked()
@@ -772,7 +791,7 @@ namespace AzToolsFramework
                     if (!assetID.IsValid())
                     {
                         // No Asset Id selected - Open editor and create new asset for them
-                        AssetEditor::AssetEditorRequestsBus::Broadcast(&AssetEditor::AssetEditorRequests::CreateNewAsset, GetCurrentAssetType());
+                        AssetEditor::AssetEditorRequestsBus::Broadcast(&AssetEditor::AssetEditorRequests::CreateNewAsset, GetCurrentAssetType(), m_componentUuid);
                     }
                     else
                     {
@@ -1181,6 +1200,12 @@ namespace AzToolsFramework
         m_editButton->setToolTip(tooltip);
     }
 
+    void PropertyAssetCtrl::SetComponentId(const AZ::Uuid& uuid)
+    {
+        m_componentUuid = uuid;
+        AssetEditor::AssetEditorNotificationsBus::Handler::BusConnect(m_componentUuid);
+    }
+
     void PropertyAssetCtrl::SetBrowseButtonIcon(const QIcon& icon)
     {
         m_browseEdit->setAttachedButtonIcon(icon);
@@ -1423,6 +1448,14 @@ namespace AzToolsFramework
                 GUI->SetEditButtonTooltip(QObject::tr(buttonTooltip.c_str()));
             }
         }
+        else if (attrib == AZ_CRC_CE("ComponentIdentifier"))
+        {
+            AZ::Uuid uuid;
+            if (attrValue->Read<AZ::Uuid>(uuid))
+            {
+                GUI->SetComponentId(uuid);
+            }
+        }
         else if (attrib == AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"))
         {
             bool disableEditButtonWhenNoAssetSelected = false;
@@ -1617,6 +1650,7 @@ namespace AzToolsFramework
         GUI->SetEditNotifyTarget(node->GetParent()->GetInstance(0));
 
         GUI->blockSignals(false);
+
         return false;
     }
 
