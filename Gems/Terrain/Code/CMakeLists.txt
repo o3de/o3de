@@ -68,6 +68,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 Include
         BUILD_DEPENDENCIES
+            PRIVATE
+                Gem::Atom_RPI.Edit
+                Gem::GradientSignal.Editor.Static
             PUBLIC
                 AZ::AzToolsFramework
                 Gem::GradientSignal

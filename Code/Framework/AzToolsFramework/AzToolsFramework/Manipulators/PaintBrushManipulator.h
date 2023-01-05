@@ -71,6 +71,8 @@ namespace AzToolsFramework
         void AdjustHardnessPercent(float hardnessPercentDelta);
 
     private:
+        void InvalidateImpl() override;
+
         //! Create the manipulator view(s) for the paintbrush.
         void SetView(
             AZStd::shared_ptr<ManipulatorViewProjectedCircle> innerCircle, AZStd::shared_ptr<ManipulatorViewProjectedCircle> outerCircle);
