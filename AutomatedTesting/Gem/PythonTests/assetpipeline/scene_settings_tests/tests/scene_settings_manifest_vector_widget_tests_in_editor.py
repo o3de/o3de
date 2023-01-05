@@ -22,7 +22,7 @@ def Scene_Settings_Tests_In_Editor_Change_Manifest_Vector_Widget_Child_Marks_Fil
         path_to_manifest, widget_main_window, reflected_property_root = \
             scene_test_helpers.prepare_scene_ui_for_test( \
                 test_file_name="Jack_Death_Fall_Back_ZUp.fbx", \
-                manifest_should_exist=True)
+                manifest_should_exist=True, should_create_manifest=True)
         
         # Find a toggle that used to not properly mark the UI as dirty because it was parented to a manifest vector widget.
         y_axis = reflected_property_root.findChild(QtWidgets.QWidget,"Ignore Y-Axis transition")
