@@ -193,7 +193,7 @@ namespace EMotionFX
             virtual void DesyncAnimGraph(AZ::EntityId leaderEntityId) = 0;
 
             /// Set the name of the active motion set.
-            virtual void SetActiveMotionSet(const char* activeMotionsetName) = 0;
+            virtual void SetActiveMotionSet(const char* activeMotionSetName) = 0;
         };
 
         using AnimGraphComponentRequestBus = AZ::EBus<AnimGraphComponentRequests>;
