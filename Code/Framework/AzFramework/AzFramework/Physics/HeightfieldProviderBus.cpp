@@ -20,7 +20,7 @@ namespace Physics
             behaviorContext->EBus<Physics::HeightfieldProviderRequestsBus>("HeightfieldProviderRequestsBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
-                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Event("GetHeightfieldGridSpacing", &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSpacing)
                 ->Event("GetHeightfieldAabb", &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldAabb)
                 ->Event("GetHeightfieldTransform", &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldTransform)

@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <QWidget>
+#include <QMenu>
 #endif
 
 class QItemSelection;
@@ -29,6 +30,7 @@ namespace AzToolsFramework
         class AssetBrowserTableModel;
         class AssetBrowserModel;
         class AssetBrowserTableFilterModel;
+        class AssetBrowserTreeView;
 
         enum class AssetBrowserDisplayState : int
         {
@@ -54,6 +56,7 @@ public:
 
     static QObject* createListenerForShowAssetEditorEvent(QObject* parent);
 
+    bool TreeViewBelongsTo(AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView);
 
 Q_SIGNALS:
     void SizeChangedSignal(int newWidth);
@@ -86,6 +89,9 @@ private:
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
         AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::ListViewMode;
 
+    //! Updates the asset preview panel with data about the passed entry.
+    //! Clears the panel if nullptr is passed
+    void UpdatePreview(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const;
 
     //! Updates breadcrumbs with the selectedEntry relative path if it's a folder or with the
     //! relative path of the first folder parent of the passed entry.
