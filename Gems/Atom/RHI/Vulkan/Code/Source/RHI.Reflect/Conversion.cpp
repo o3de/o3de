@@ -160,8 +160,8 @@ namespace AZ
                 return VK_QUEUE_GRAPHICS_BIT;
             case RHI::HardwareQueueClass::Compute:
                 return VK_QUEUE_COMPUTE_BIT;
-            case RHI::HardwareQueueClass::Copy:                
-                return VK_QUEUE_TRANSFER_BIT;
+            case RHI::HardwareQueueClass::Copy:
+                return VK_QUEUE_TRANSFER_BIT|VK_QUEUE_SPARSE_BINDING_BIT;
             default:
                 AZ_Assert(false, "Hardware queue class is invalid.");
                 return VK_QUEUE_GRAPHICS_BIT;

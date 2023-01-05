@@ -35,8 +35,8 @@ namespace AZ
                     RHI::MemoryStatistics::Heap* heapStats = builder.AddHeap();
                     heapStats->m_name = Name("Device");
                     heapStats->m_memoryUsage.m_budgetInBytes = memoryInfo.Budget;
-                    heapStats->m_memoryUsage.m_reservedInBytes = memoryInfo.CurrentReservation;
-                    heapStats->m_memoryUsage.m_residentInBytes = memoryInfo.CurrentUsage;
+                    heapStats->m_memoryUsage.m_totalResidentInBytes = memoryInfo.CurrentReservation;
+                    heapStats->m_memoryUsage.m_usedResidentInBytes = memoryInfo.CurrentUsage;
                 }
 
                 if (S_OK == dxgiAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &memoryInfo))
@@ -44,8 +44,8 @@ namespace AZ
                     RHI::MemoryStatistics::Heap* heapStats = builder.AddHeap();
                     heapStats->m_name = Name("Host");
                     heapStats->m_memoryUsage.m_budgetInBytes = memoryInfo.Budget;
-                    heapStats->m_memoryUsage.m_reservedInBytes = memoryInfo.CurrentReservation;
-                    heapStats->m_memoryUsage.m_residentInBytes = memoryInfo.CurrentUsage;
+                    heapStats->m_memoryUsage.m_totalResidentInBytes = memoryInfo.CurrentReservation;
+                    heapStats->m_memoryUsage.m_usedResidentInBytes = memoryInfo.CurrentUsage;
                 }
             }
 

@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetCustomName",
-                    "context": "MeshVertexColorData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Custom Name"
@@ -34,7 +33,6 @@
                 },
                 {
                     "base": "GetCount",
-                    "context": "MeshVertexColorData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Count"
@@ -57,7 +55,6 @@
                 },
                 {
                     "base": "GetColor",
-                    "context": "MeshVertexColorData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Color"

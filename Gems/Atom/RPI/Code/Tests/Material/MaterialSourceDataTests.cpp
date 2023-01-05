@@ -721,6 +721,7 @@ namespace UnitTest
         
         errorMessageFinder.Reset();
         errorMessageFinder.AddExpectedErrorMessage("Could not find asset for source file [DoesNotExist.materialtype]");
+        errorMessageFinder.AddIgnoredErrorMessage("Could not find material type file", true);
         errorMessageFinder.AddIgnoredErrorMessage("Failed to create material type asset ID", true);
         result = material.CreateMaterialAssetFromSourceData(AZ::Uuid::CreateRandom(), "test.material", elevateWarnings);
         EXPECT_FALSE(result.IsSuccess());

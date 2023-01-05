@@ -15,11 +15,7 @@
 
 namespace UnitTest
 {
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_ShapeIntersection, DISABLED_Test)
-#else
     TEST(MATH_ShapeIntersection, Test)
-#endif
     {
         //Assumes +x runs to the 'right', +y runs 'out' and +z points 'up'
 

@@ -1,0 +1,27 @@
+{
+    "test_name": "Template_Name",
+    "asset_folder": "Template_Folder",
+    "override_asset_folder": null,
+    "scene_debug_file": "Template.dbgsg",
+    "override_scene_debug_file": null,
+    "assets": {
+        "source_file_name": "Template.scenefile_extension",
+        "uuid": "00000000000000000000000000000000",
+        "jobs": {
+            "job_key": "Template Job Key",
+            "builder_guid": "00000000000000000000000000000000",
+            "status": 0,
+            "error_count": 0,
+            "products": [
+                {
+                    "product_name": "Template_Folder/Template_Name.example_extension",
+                    "sub_id": 0000000000,
+                    "asset_type": "48a78be7b3f244b88aa6f0607e9a75a5"
+                }
+            ]
+        }
+    },
+    "override_assets": null,
+    "id": "00000000",
+    "marks": "pytest.mark.test_case_id('C00000000')"
+}
