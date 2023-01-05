@@ -33,7 +33,19 @@ namespace WhiteBox
         // noop
     }
 
+    void EdgeRestoreMode::RegisterActionUpdaters()
+    {
+    }
+
     void EdgeRestoreMode::RegisterActions()
+    {
+    }
+
+    void EdgeRestoreMode::BindActionsToModes(const AZStd::string& /*modeIdentifier*/)
+    {
+    }
+
+    void EdgeRestoreMode::BindActionsToMenus()
     {
     }
 

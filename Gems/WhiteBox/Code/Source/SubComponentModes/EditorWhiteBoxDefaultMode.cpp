@@ -644,7 +644,7 @@ namespace WhiteBox
             auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
             AZ_Assert(
                 actionManagerInterface,
-                "WhiteBoxDefaultMode - could not get ActionManagerInterface on AssignSelectedVertexSelectionModifier.");
+                "WhiteBoxDefaultMode - could not get ActionManagerInterface on AssignSelectedPolygonTranslationModifier.");
 
             actionManagerInterface->TriggerActionUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier);
 
@@ -674,7 +674,7 @@ namespace WhiteBox
             auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
             AZ_Assert(
                 actionManagerInterface,
-                "WhiteBoxDefaultMode - could not get ActionManagerInterface on AssignSelectedEdgeSelectionModifier.");
+                "WhiteBoxDefaultMode - could not get ActionManagerInterface on AssignSelectedEdgeTranslationModifier.");
 
             actionManagerInterface->TriggerActionUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier);
 
