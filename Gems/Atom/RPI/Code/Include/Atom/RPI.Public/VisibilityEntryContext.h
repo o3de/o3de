@@ -14,10 +14,15 @@ namespace AZ
 {
     namespace RPI
     {
+        // TODO: VisiblityEntry is overloaded terminoligy with the VisibilitySystem
+        // Should find something better to express "objects that are visible in the current frame"
         struct VisiblityEntryProperties
         {
             //! A pointer to the draw item
             const void* m_userData = nullptr;
+            // TODO: Possibly (proabably?) push lod calculation into the MeshFP.
+            // Though at present, this seems to perform well where it is in the culling system
+            uint32_t m_lodIndex = 0;
             //! A sorting key of this draw item which is used for sorting draw items in DrawList
             // Check RHI::SortDrawList() function for detail
             RHI::DrawItemSortKey m_sortKey = 0;
@@ -57,7 +62,7 @@ namespace AZ
 
             /// Filters the draw items in the draw packet into draw lists. Only draw lists specified at init time are appended.
             /// The depth value here is the depth of the object from the perspective of the view.
-            void AddVisibilityEntry(const void* userData, float depth = 0.0f);
+            void AddVisibilityEntry(const void* userData, uint32_t lodIndex, float depth = 0.0f);
 
             /// Coalesces the draw lists in preparation for access via GetList. This should
             /// be called from a single thread as a sync point between the append / consume phases.

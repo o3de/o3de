@@ -80,10 +80,10 @@ namespace AZ
             //! Similar to AddDrawPacket, but the view will not submit any draw items for rendering. It will just
             //! maintain a list of visible items for the current frame, and the caller must get that list, reinterpret the
             //! userData, and submit the draw calls.
-            void AddVisibilityEntry(const void* userData, float depth = 0.0f);
+            void AddVisibilityEntry(const void* userData, uint32_t lodIndex, float depth = 0.0f);
 
             //! Similar to previous AddVisibilityEntry() but calculates depth from object position
-            void AddVisibilityEntry(const void* userData, Vector3 worldPosition);
+            void AddVisibilityEntry(const void* userData, uint32_t lodIndex, Vector3 worldPosition);
 
             //! Add a draw item to this view with its associated draw list tag
             void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties);

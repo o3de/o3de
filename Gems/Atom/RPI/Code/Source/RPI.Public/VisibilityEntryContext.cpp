@@ -23,7 +23,7 @@ namespace AZ
             m_finalizedVisibilityList.clear();
         }
 
-        void VisibilityEntryContext::AddVisibilityEntry(const void* userData, float depth)
+        void VisibilityEntryContext::AddVisibilityEntry(const void* userData, uint32_t lodIndex, float depth)
         {
             if (Validation::IsEnabled())
             {
@@ -37,6 +37,7 @@ namespace AZ
             VisibilityList& visibilityList = m_visibilityListContext.GetStorage();
             VisiblityEntryProperties visibilityEntry;
             visibilityEntry.m_userData = userData;
+            visibilityEntry.m_lodIndex = lodIndex;
             visibilityEntry.m_depth = depth;
             // TODO: Should we store/set the sort key here?
             visibilityList.push_back(visibilityEntry);

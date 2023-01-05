@@ -120,17 +120,17 @@ namespace AZ
             AddDrawPacket(drawPacket, depth);
         }
 
-        void View::AddVisibilityEntry(const void* userData, float depth)
+        void View::AddVisibilityEntry(const void* userData, uint32_t lodIndex, float depth)
         {
             // This function is thread safe since VisiblityEntryContext has storage per thread for draw item data.
-            m_visibilityEntryContext.AddVisibilityEntry(userData, depth);
+            m_visibilityEntryContext.AddVisibilityEntry(userData, lodIndex, depth);
         }
 
-        void View::AddVisibilityEntry(const void* userData, Vector3 worldPosition)
+        void View::AddVisibilityEntry(const void* userData, uint32_t lodIndex, Vector3 worldPosition)
         {
             Vector3 cameraToObject = worldPosition - m_position;
             float depth = cameraToObject.Dot(-m_viewToWorldMatrix.GetBasisZAsVector3());
-            AddVisibilityEntry(userData, depth);
+            AddVisibilityEntry(userData, lodIndex, depth);
         }
 
         void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties)

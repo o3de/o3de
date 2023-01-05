@@ -318,20 +318,16 @@ namespace AZ
                     for (const RPI::VisiblityEntryProperties& visibilityEntry : visibilityList)
                     {
                         const ModelDataInstance* modelData = reinterpret_cast<const ModelDataInstance*>(visibilityEntry.m_userData);
-                        [[maybe_unused]] uint32_t modelLodIndex = 0;
-                        for (auto& instanceIndicesForLod : modelData->m_instanceIndicesByLod)
+                        uint32_t modelLodIndex = visibilityEntry.m_lodIndex;
+                        for (uint32_t instanceIndex : modelData->m_instanceIndicesByLod[modelLodIndex])
                         {
-                            [[maybe_unused]] uint32_t meshIndex = 0;
-                            for (uint32_t instanceIndex : instanceIndicesForLod)
-                            {
-                                MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
+                            MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
 
-                                // The per-instance data is just the objectId, which is used to look up the object transform
-                                // After this first pass, we will accumulate all the per-instance data into one buffer for the view,
-                                // sorted by the instance key so that all data for any objects instanced together is contiguous
-                                instanceData.m_perViewInstanceData[view.get()].push_back(modelData->m_objectId.GetIndex());
-                                visibleInstanceIndices.insert(instanceIndex);
-                            }
+                            // The per-instance data is just the objectId, which is used to look up the object transform
+                            // After this first pass, we will accumulate all the per-instance data into one buffer for the view,
+                            // sorted by the instance key so that all data for any objects instanced together is contiguous
+                            instanceData.m_perViewInstanceData[view.get()].push_back(modelData->m_objectId.GetIndex());
+                            visibleInstanceIndices.insert(instanceIndex);
                         }
                     }
 

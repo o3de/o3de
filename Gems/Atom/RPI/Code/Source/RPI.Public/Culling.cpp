@@ -747,7 +747,7 @@ namespace AZ
 
             uint32_t numVisibleDrawPackets = 0;
 
-            auto addLodToDrawPacket = [&](const Cullable::LodData::Lod& lod)
+            auto addLodToDrawPacket = [&](const Cullable::LodData::Lod& lod, uint32_t lodIndex)
             {
 #ifdef AZ_CULL_PROFILE_VERBOSE
                 AZ_PROFILE_SCOPE(RPI, "add draw packets: %zu", lod.m_drawPackets.size());
@@ -755,7 +755,7 @@ namespace AZ
                 numVisibleDrawPackets += static_cast<uint32_t>(lod.m_drawPackets.size());   //don't want to pay the cost of aznumeric_cast<> here so using static_cast<> instead
                 if (typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Visibility_List)
                 {
-                    view.AddVisibilityEntry(userData, pos);\
+                    view.AddVisibilityEntry(userData, lodIndex, pos);
                 }
                 else if (typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
                 {
@@ -775,7 +775,8 @@ namespace AZ
                 case Cullable::LodType::SpecificLod:
                     if (lodData.m_lodConfiguration.m_lodOverride < lodData.m_lods.size())
                     {
-                        addLodToDrawPacket(lodData.m_lods.at(lodData.m_lodConfiguration.m_lodOverride));
+                    addLodToDrawPacket(
+                        lodData.m_lods.at(lodData.m_lodConfiguration.m_lodOverride), lodData.m_lodConfiguration.m_lodOverride);
                     }
                     break;
                 case Cullable::LodType::ScreenCoverage:
@@ -791,12 +792,13 @@ namespace AZ
                     const float approxScreenPercentage =
                         ModelLodUtils::ApproxScreenPercentage(pos, lodData.m_lodSelectionRadius, cameraPos, yScale, isPerspective);
 
-                    for (const Cullable::LodData::Lod& lod : lodData.m_lods)
+                    for (uint32_t lodIndex = 0; lodIndex < static_cast<uint32_t>(lodData.m_lods.size()); ++lodIndex)
                     {
+                        const Cullable::LodData::Lod& lod = lodData.m_lods[lodIndex];
                         // Note that this supports overlapping lod ranges (to suport cross-fading lods, for example)
                         if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
                         {
-                            addLodToDrawPacket(lod);
+                            addLodToDrawPacket(lod, lodIndex);
                         }
                     }
                     break;
