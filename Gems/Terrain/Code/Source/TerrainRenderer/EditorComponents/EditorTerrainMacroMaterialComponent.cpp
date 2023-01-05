@@ -381,7 +381,7 @@ namespace Terrain
             smoothFn);
     }
 
-    AZ::Color EditorTerrainMacroMaterialComponent::OnGetColor(const AZ::Vector3& brushCenter)
+    AZ::Color EditorTerrainMacroMaterialComponent::OnGetColor(const AZ::Vector3& brushCenter) const
     {
         AZ::Color result;
 

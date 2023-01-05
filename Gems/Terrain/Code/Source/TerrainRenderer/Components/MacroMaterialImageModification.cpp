@@ -89,7 +89,6 @@ namespace Terrain
                 undo ? m_paintedImageTiles[tileIndex]->m_unmodifiedData : m_paintedImageTiles[tileIndex]->m_modifiedData);
         }
 
-
         TerrainMacroColorModificationBus::Event(
             m_modifiedEntityId, &TerrainMacroColorModificationBus::Events::EndMacroColorPixelModifications);
     }
@@ -307,7 +306,7 @@ namespace Terrain
         m_modifiedStrokeRegion = {};
     }
 
-    AZ::Color MacroMaterialImageModifier::OnGetColor(const AZ::Vector3& brushCenter)
+    AZ::Color MacroMaterialImageModifier::OnGetColor(const AZ::Vector3& brushCenter) const
     {
         AZ::EntityId entityId = m_ownerEntityComponentId.GetEntityId();
 
@@ -441,7 +440,8 @@ namespace Terrain
         auto combineFn = [color, blendFn](
             [[maybe_unused]] const AZ::Vector3& worldPosition, AZ::Color originalColor, float opacityValue) -> AZ::Color
         {
-            // TODO: improve how multi-channel blends work
+            // There's an optimization opportunity here by finding a way to rework the blendFn so that it can blend
+            // multiple channels at once, instead of blending each channel separately.
             float red = blendFn(originalColor.GetR(), color.GetR(), opacityValue * color.GetA());
             float green = blendFn(originalColor.GetG(), color.GetG(), opacityValue * color.GetA());
             float blue = blendFn(originalColor.GetB(), color.GetB(), opacityValue * color.GetA());

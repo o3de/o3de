@@ -111,7 +111,7 @@ namespace Terrain
         // These two notifications are caught here so that we can create and destroy the MacroMaterialImageModifier.
         void OnPaintModeBegin() override;
         void OnPaintModeEnd() override;
-        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) override;
+        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) const override;
 
         void CreateMacroColorImageModificationBuffer();
         void DestroyMacroColorImageModificationBuffer();

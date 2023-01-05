@@ -406,7 +406,7 @@ namespace Terrain
         EndMacroColorImageModification();
     }
 
-    AZ::Color TerrainMacroMaterialComponent::OnGetColor(const AZ::Vector3& brushCenter)
+    AZ::Color TerrainMacroMaterialComponent::OnGetColor(const AZ::Vector3& brushCenter) const
     {
         AZ::Color color(0.0f, 0.0f, 0.0f, 1.0f);
         GetMacroColorPixelValuesByPosition(AZStd::span<const AZ::Vector3>(&brushCenter, 1), AZStd::span<AZ::Color>(&color, 1));

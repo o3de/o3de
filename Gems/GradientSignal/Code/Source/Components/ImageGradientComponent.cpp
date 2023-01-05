@@ -744,7 +744,7 @@ namespace GradientSignal
         EndImageModification();
     }
 
-    AZ::Color ImageGradientComponent::OnGetColor(const AZ::Vector3& brushCenter)
+    AZ::Color ImageGradientComponent::OnGetColor(const AZ::Vector3& brushCenter) const
     {
         // Get the gradient value at the given point.
         // We use "GetPixelValuesByPosition" instead of "GetGradientValue" because we want to select unscaled, unsmoothed values.
