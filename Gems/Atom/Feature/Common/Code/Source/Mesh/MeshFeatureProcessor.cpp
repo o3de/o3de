@@ -37,7 +37,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Name/NameDictionary.h>
 
-
+#pragma optimize("", off)
 namespace AZ
 {
     namespace Render
@@ -313,6 +313,8 @@ namespace AZ
                         perViewInstanceData.clear();
                     }
 
+                    AZStd::unordered_set<uint32_t> visibleInstanceIndices;
+                    visibleInstanceIndices.reserve(instanceBufferCount);
                     for (const RPI::VisiblityEntryProperties& visibilityEntry : visibilityList)
                     {
                         const ModelDataInstance* modelData = reinterpret_cast<const ModelDataInstance*>(visibilityEntry.m_userData);
@@ -322,51 +324,75 @@ namespace AZ
                             [[maybe_unused]] uint32_t meshIndex = 0;
                             for (uint32_t instanceIndex : instanceIndicesForLod)
                             {
-                                // The per-instance data is just the objectId, which is used to look up the object transform
-                                perViewInstanceData.push_back(modelData->m_objectId.GetIndex());
-
-                                // The offset into the per-instance data is part of the instanced draw call. This can change every frame,
-                                // and will eventually differ between views
-                                [[maybe_unused]] uint32_t instanceDataOffset = static_cast<uint32_t>(perViewInstanceData.size() - 1);
-
                                 MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
 
-                                RHI::DrawPacketBuilder drawPacketBuilder;
-                                RHI::Ptr<RHI::DrawPacket> clonedDrawPacket =
-                                    const_cast<RHI::DrawPacket*>(drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
-                                // Keep the refcount alive
-                                instanceData.m_perViewDrawPackets[view.get()] = clonedDrawPacket;
-                                
-
-                                const RPI::MeshDrawPacket::RootConstantsLayoutList& rootConstantsLayouts =
-                                    instanceData.m_drawPacket.GetRootConstantsLayouts();
-
-                                for (size_t i = 0; i < clonedDrawPacket->GetDrawItemCount(); ++i)
-                                {
-                                    // Get the root constant layout
-                                    RHI::ShaderInputConstantIndex shaderInputIndex =
-                                        rootConstantsLayouts[i]->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
-                                    if (shaderInputIndex.IsValid())
-                                    {
-                                        RHI::Interval interval = rootConstantsLayouts[i]->GetInterval(shaderInputIndex);
-                                        AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
-                                        clonedDrawPacket->SetRootConstant(i, interval, data);
-                                    }
-                                    else
-                                    {
-                                        AZ_Error(
-                                            "MeshFeatureProcessor",
-                                            false,
-                                            "Trying to instance something that is missing s_m_rootConstantInstanceDataOffset_Name from its "
-                                            "root constant layout.");
-                                    }
-                                }
-
-                                view->AddDrawPacket(clonedDrawPacket.get(), visibilityEntry.m_depth);
-                                meshIndex++;
+                                // The per-instance data is just the objectId, which is used to look up the object transform
+                                // After this first pass, we will accumulate all the per-instance data into one buffer for the view,
+                                // sorted by the instance key so that all data for any objects instanced together is contiguous
+                                instanceData.m_perViewInstanceData[view.get()].push_back(modelData->m_objectId.GetIndex());
+                                visibleInstanceIndices.insert(instanceIndex);
                             }
-                            modelLodIndex++;
                         }
+                    }
+
+                    for (uint32_t instanceIndex : visibleInstanceIndices)
+                    {
+                        MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
+
+                        // Clone the draw packet
+                        RHI::DrawPacketBuilder drawPacketBuilder;
+                        RHI::Ptr<RHI::DrawPacket> clonedDrawPacket =
+                            const_cast<RHI::DrawPacket*>(drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
+
+                        // Keep the refcount alive
+                        instanceData.m_perViewDrawPackets[view.get()] = clonedDrawPacket;
+
+                        // Get the instanceData offset
+                        // The offset into the per-instance data is part of the instanced draw call. This can change every frame,
+                        // and will differ between views
+                        [[maybe_unused]] uint32_t instanceDataOffset = static_cast<uint32_t>(perViewInstanceData.size());
+
+                        // Set the instance data offset
+                        const RPI::MeshDrawPacket::RootConstantsLayoutList& rootConstantsLayouts =
+                            instanceData.m_drawPacket.GetRootConstantsLayouts();
+
+                        for (size_t i = 0; i < clonedDrawPacket->GetDrawItemCount(); ++i)
+                        {
+                            // Get the root constant layout
+                            RHI::ShaderInputConstantIndex shaderInputIndex =
+                                rootConstantsLayouts[i]->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
+                            if (shaderInputIndex.IsValid())
+                            {
+                                RHI::Interval interval = rootConstantsLayouts[i]->GetInterval(shaderInputIndex);
+                                AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
+                                clonedDrawPacket->SetRootConstant(i, interval, data);
+                            }
+                            else
+                            {
+                                AZ_Error(
+                                    "MeshFeatureProcessor",
+                                    false,
+                                    "Trying to instance something that is missing s_m_rootConstantInstanceDataOffset_Name from its "
+                                    "root constant layout.");
+                            }
+                        }
+
+                        // These are the object Id's (instance data) for all the instances visible by this view
+                        AZStd::vector<uint32_t>& instanceDataForCurrentIndexAndView = instanceData.m_perViewInstanceData[view.get()];
+                        // This is the number of visible instances for this view
+                        uint32_t instanceCount = static_cast<uint32_t>(instanceDataForCurrentIndexAndView.size());
+                        // Set the cloned draw packet instance count
+                        clonedDrawPacket->SetInstanceCount(instanceCount);
+
+                        // Add the actual instance data for this view
+                        perViewInstanceData.insert(
+                            perViewInstanceData.end(),
+                            instanceDataForCurrentIndexAndView.begin(),
+                            instanceDataForCurrentIndexAndView.end());
+                        instanceDataForCurrentIndexAndView.clear();
+
+                        // Submit the draw packet
+                        view->AddDrawPacket(clonedDrawPacket.get(), 0.0f);
                     }
 
                     // Use the correct srg for the view
@@ -1241,7 +1267,7 @@ namespace AZ
                     key.m_lodIndex = static_cast<uint32_t>(modelLodIndex);
                     key.m_meshIndex = static_cast<uint32_t>(meshIndex);
                     key.m_materialId = material->GetId();
-                    key.m_forceInstancingOff = Uuid::CreateRandom();
+                    key.m_forceInstancingOff = Uuid::CreateNull();
                     key.m_stencilRef = stencilRef;
                     key.m_sortKey = m_sortKey;
                     index = meshInstanceManager.AddInstance(key);
@@ -2114,3 +2140,5 @@ namespace AZ
         }
     } // namespace Render
 } // namespace AZ
+
+#pragma optimize("", on)

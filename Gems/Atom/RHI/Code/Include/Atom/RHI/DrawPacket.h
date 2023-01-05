@@ -67,6 +67,7 @@ namespace AZ
             DrawPacket* Clone(/* const DrawArguments& drawArguments, const AZ::RHI::ConstantsData& rootConstants*/) const;
 
             void SetRootConstant(size_t drawItemIndex, const Interval& interval, const AZStd::span<uint8_t>& data);
+            void SetInstanceCount(uint32_t instanceCount);
         private:
             /// Use DrawPacketBuilder to construct an instance.
             DrawPacket() = default;

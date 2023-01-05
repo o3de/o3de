@@ -28,6 +28,7 @@ namespace AZ::Render
 
         // We modify the original draw packet each frame with a new instance count and a new root constant
         AZStd::unordered_map<const RPI::View*, RHI::Ptr<RHI::DrawPacket>> m_perViewDrawPackets;
+        AZStd::unordered_map<const RPI::View*, AZStd::vector<uint32_t>> m_perViewInstanceData;
 
         // We store the shaderIntputConstantIndex for m_instanceData here, so we don't have to look it up every frame
         AZStd::vector<RHI::ShaderInputConstantIndex> m_drawSrgInstanceDataIndices;

@@ -142,5 +142,15 @@ namespace AZ
                 data.data(),
                 data.size());
         }
+
+        void DrawPacket::SetInstanceCount(uint32_t instanceCount)
+        {
+            for (size_t drawItemIndex = 0; drawItemIndex < m_drawItemCount; ++drawItemIndex)
+            {
+                const DrawItem* drawItemConst = m_drawItems + drawItemIndex;
+                DrawItem* drawItem = const_cast<DrawItem*>(drawItemConst);
+                drawItem->m_arguments.m_indexed.m_instanceCount = instanceCount;
+            }
+        }
     }
 }
