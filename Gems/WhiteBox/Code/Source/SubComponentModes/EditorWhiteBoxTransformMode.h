@@ -59,7 +59,10 @@ namespace WhiteBox
         TransformMode(const AZ::EntityComponentIdPair& entityComponentIdPair);
         ~TransformMode();
 
+        static void RegisterActionUpdaters();
         static void RegisterActions();
+        static void BindActionsToModes(const AZStd::string& modeIdentifier);
+        static void BindActionsToMenus();
 
         enum class TransformType
         {

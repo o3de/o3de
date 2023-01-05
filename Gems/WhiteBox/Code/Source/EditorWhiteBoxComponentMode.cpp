@@ -99,14 +99,28 @@ namespace WhiteBox
         AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<EditorWhiteBoxComponentMode>(context);
     }
 
+    void EditorWhiteBoxComponentMode::RegisterActionContextModes()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorWhiteBoxComponentMode - could not get ActionManagerInterface on RegisterActionContextModes.");
+
+        actionManagerInterface->RegisterActionContextMode(EditorMainWindowActionContextIdentifier, WhiteBoxDefaultSubModeIdentifier);
+        actionManagerInterface->RegisterActionContextMode(EditorMainWindowActionContextIdentifier, WhiteBoxEdgeRestoreSubModeIdentifier);
+        actionManagerInterface->RegisterActionContextMode(EditorMainWindowActionContextIdentifier, WhiteBoxTransformSubModeIdentifier);
+    }
+
     void EditorWhiteBoxComponentMode::RegisterActionUpdaters()
     {
         DefaultMode::RegisterActionUpdaters();
+        EdgeRestoreMode::RegisterActionUpdaters();
+        TransformMode::RegisterActionUpdaters();
     }
 
     void EditorWhiteBoxComponentMode::RegisterActions()
     {
         DefaultMode::RegisterActions();
+        EdgeRestoreMode::RegisterActions();
+        TransformMode::RegisterActions();
     }
 
     void EditorWhiteBoxComponentMode::BindActionsToModes()
@@ -119,6 +133,8 @@ namespace WhiteBox
     void EditorWhiteBoxComponentMode::BindActionsToMenus()
     {
         DefaultMode::BindActionsToMenus();
+        EdgeRestoreMode::BindActionsToMenus();
+        TransformMode::BindActionsToMenus();
     }
 
     void EditorWhiteBoxComponentMode::Refresh()

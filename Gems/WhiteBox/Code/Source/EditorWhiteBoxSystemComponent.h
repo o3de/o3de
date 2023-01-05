@@ -23,6 +23,7 @@ namespace WhiteBox
         static void Reflect(AZ::ReflectContext* context);
 
         // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionContextModeRegistrationHook() override;
         void OnActionUpdaterRegistrationHook() override;
         void OnActionRegistrationHook() override;
         void OnActionContextModeBindingHook() override;

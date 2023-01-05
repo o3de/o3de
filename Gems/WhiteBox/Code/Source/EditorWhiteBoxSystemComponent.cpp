@@ -38,6 +38,11 @@ namespace WhiteBox
         assetHandlers.emplace_back(AZStd::make_unique<AssetHandlerT>());
     }
 
+    void EditorWhiteBoxSystemComponent::OnActionContextModeRegistrationHook()
+    {
+        EditorWhiteBoxComponentMode::RegisterActionContextModes();
+    }
+
     void EditorWhiteBoxSystemComponent::OnActionUpdaterRegistrationHook()
     {
         EditorWhiteBoxComponentMode::RegisterActionUpdaters();

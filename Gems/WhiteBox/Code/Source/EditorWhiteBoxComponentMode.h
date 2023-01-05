@@ -53,6 +53,7 @@ namespace WhiteBox
 
         static void Reflect(AZ::ReflectContext* context);
 
+        static void RegisterActionContextModes();
         static void RegisterActionUpdaters();
         static void RegisterActions();
         static void BindActionsToModes();
