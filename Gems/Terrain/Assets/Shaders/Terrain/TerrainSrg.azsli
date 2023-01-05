@@ -33,6 +33,7 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float m_rcpClodDistance;
         float m_rcpGridSize;
         float m_gridToQuadScale;
+        [[pad_to(16)]]
     };
 
     struct DetailMaterialData
@@ -90,6 +91,7 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     {
         uint m_tileCount1D; // How many x/y tiles along edge of grid. Grid is always square, so total number of tiles is this value squared.
         float m_tileSize; // Size of a tile in meters.
+        [[pad_to(16)]]
     };
 
     struct MacroMaterialRefs
@@ -210,6 +212,7 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
             float2 m_padding;
         };
         ClipmapToWorldScale m_clipmapToWorldScale[SharedClipmapStackSizeMax];
+        [[pad_to(16)]]
     };
 
     MeshData m_meshData;
