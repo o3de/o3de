@@ -102,8 +102,8 @@ namespace SceneBuilder
             {
                 m_cachedFingerprint.append(element);
             }
-            // A general catch all version fingerprint. Update this to force all FBX files to recompile.
-            m_cachedFingerprint.append("Version 4");
+            // A general catch all version fingerprint. Update this to force all source scene (FBX, GLTF, STL) files to recompile.
+            m_cachedFingerprint.append("Version 5");
         }
 
         return m_cachedFingerprint.c_str();

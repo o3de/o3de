@@ -68,6 +68,7 @@ namespace AZ
             // This results in the loss of the offset matrix data for nodes without a mesh which is required for the Transform Importer.
             m_importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
             m_importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_OPTIMIZE_EMPTY_ANIMATION_CURVES, false);
+            m_importer->SetPropertyBool(AI_CONFIG_FBX_USE_SKELETON_BONE_CONTAINER, true);
             // The remove empty bones flag is on by default, but doesn't do anything internal to AssImp right now.
             // This is here as a bread crumb to save others times investigating issues with empty bones.
             // m_importer.SetPropertyBool(AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES, false);
