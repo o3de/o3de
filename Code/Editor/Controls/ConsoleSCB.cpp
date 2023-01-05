@@ -304,8 +304,6 @@ void ConsoleLineEdit::ResetHistoryIndex()
 
 Lines CConsoleSCB::s_pendingLines;
 
-QMenu* optionsMenu;
-
 CConsoleSCB::CConsoleSCB(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::Console())
@@ -406,7 +404,7 @@ void CConsoleSCB::SetupOptionsMenu()
 
     m_clearOnPlayAction = new QAction(tr("Clear On Play"), this);
     m_clearOnPlayAction->setCheckable(true);
-    connect(m_clearOnPlayAction, &QAction::triggered, this, [this] { ToggleClearOnPlay(); });
+    connect(m_clearOnPlayAction, &QAction::triggered, this, &CConsoleSCB::toggleClearOnPlay);
     m_optionsMenu->addAction(m_clearOnPlayAction);
 }
 
@@ -415,7 +413,7 @@ void CConsoleSCB::UpdateOptionsMenu()
     m_clearOnPlayAction->setChecked(gSettings.clearConsoleOnGameModeStart);
 }
 
-void CConsoleSCB::ToggleClearOnPlay()
+void CConsoleSCB::toggleClearOnPlay()
 {
     gSettings.clearConsoleOnGameModeStart = !gSettings.clearConsoleOnGameModeStart;
 }
