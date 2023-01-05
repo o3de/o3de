@@ -21,6 +21,9 @@ namespace AzToolsFramework
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
+        AZ_RTTI(BoxComponentMode, "{8E09B2C1-ED99-4945-A0B1-C4AFE6FE2FA9}", EditorBaseComponentMode)
+
+        static void Reflect(AZ::ReflectContext* context);
 
         BoxComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);

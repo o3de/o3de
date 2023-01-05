@@ -190,6 +190,8 @@ namespace AzToolsFramework
             AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
             AZ_Assert(m_serializeContext, "Failed to retrieve serialize context.");
 
+            m_assetObserverToken = AZ::Uuid::CreateNull();
+
             setObjectName("AssetEditorWidget");
 
             QVBoxLayout* mainLayout = new QVBoxLayout();
@@ -306,8 +308,10 @@ namespace AzToolsFramework
             AZ::SystemTickBus::Handler::BusDisconnect();
         }
 
-        void AssetEditorWidget::CreateAsset(AZ::Data::AssetType assetType)
+        void AssetEditorWidget::CreateAsset(AZ::Data::AssetType assetType, const AZ::Uuid& observerToken)
         {
+            m_assetObserverToken = observerToken;
+
             auto typeIter = AZStd::find_if(
                 m_genericAssetTypes.begin(),
                 m_genericAssetTypes.end(),
@@ -854,6 +858,8 @@ namespace AzToolsFramework
                 m_recentlyAddedAssetPath = assetInfo.m_relativePath;
 
                 LoadAsset(assetId, assetInfo.m_assetType);
+
+                AssetEditorNotificationsBus::Event(m_assetObserverToken, &AssetEditorNotifications::OnAssetCreated, assetId);
 
                 m_sourceAssetId = assetId;
             }

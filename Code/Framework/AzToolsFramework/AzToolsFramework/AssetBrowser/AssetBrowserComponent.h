@@ -36,7 +36,6 @@ namespace AzToolsFramework
         class FolderAssetBrowserEntry;
         class RootAssetBrowserEntry;
         class AssetEntryChangeset;
-        class AssetBrowserEntityInspectorWidget;
 
         //! AssetBrowserComponent caches database entries
         /*!
@@ -141,8 +140,6 @@ namespace AzToolsFramework
             // AssetBrowserFileCreationNotificationBus
             void HandleAssetCreatedInEditor(const AZStd::string_view assetPath, const AZ::Crc32& creatorBusId /*= AZ::Crc32()*/) override;
             //////////////////////////////////////////////////////////////////////////
-
-            AssetBrowserEntityInspectorWidget* m_inspectorWidget;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
