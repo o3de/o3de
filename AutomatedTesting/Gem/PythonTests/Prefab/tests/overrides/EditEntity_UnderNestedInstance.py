@@ -21,7 +21,7 @@ def EditEntity_UnderNestedInstance():
     - Level
     -- Motorcycle (first instance) <-- focus
     --- Wheel (nested instance)
-    ---- Wheel_Entity <-- change this entity's name to "Front_Wheel" edit its position, and add a "Comment" component.
+    ---- Wheel_Entity <-- change this entity's name to "Front_Wheel", edit its position, and add a "Comment" component.
     --- Wheel (nested instance)
     ---- Wheel_Entity <-- change this entity's name to "Back_Wheel"
     -- Motorcycle (second instance)
@@ -82,7 +82,7 @@ def EditEntity_UnderNestedInstance():
     back_wheel_entity = wheel_instance_1_2.get_children()[0]
     back_wheel_entity.set_name("Back_Wheel")
 
-    # Change the position of the focused motorcycle's front wheel entity, and add another component as an override.
+    # Change the position of the focused motorcycle's front wheel entity, and add another component as overrides.
     get_transform_component_outcome = editor.EditorComponentAPIBus(
         bus.Broadcast, "GetComponentOfType", front_wheel_entity.id, globals.property.EditorTransformComponentTypeId
     )

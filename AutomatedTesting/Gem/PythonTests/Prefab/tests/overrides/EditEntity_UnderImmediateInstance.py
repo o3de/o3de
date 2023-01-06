@@ -10,12 +10,12 @@ def EditEntity_UnderImmediateInstance():
     """
     Test description:
     - Creates a test prefab in the level, and instantiates it twice
-    - Edits the transform as an override on only the 2nd instance entity
+    - Edits the transform as an override on only the entity under the 2nd instance
     - Validates overrides/undo/redo/revert overrides all function properly
-    - Adds a new component to the main prefab
-    - Adds another component as an override only the 2nd instance entity
+    - Adds a new component to the test prefab
+    - Adds another component as an override only the entity under the 2nd instance
     - Validates overrides/undo/redo/revert overrides all function properly
-    - Removes a component as an override only from the 1st instance entity
+    - Removes a component as an override only from the entity under the 1st instance
     - Validates overrides/undo/redo/revert overrides all function properly
     """
 
