@@ -75,7 +75,6 @@ namespace AzToolsFramework
                 const AZStd::string entityPathFromTopInstance = overridePatchPathToOwningInstance + entityAliasPath;
                 PrefabDomPath entityDomPathFromTopInstance(entityPathFromTopInstance.c_str());
 
-                // Get the after-state entity DOM.
                 PrefabDom entityDomAfterUpdate;
                 m_instanceToTemplateInterface->GenerateDomForEntity(entityDomAfterUpdate, *entity);
 
@@ -83,7 +82,7 @@ namespace AzToolsFramework
                 const TemplateId topTemplateId = link->get().GetSourceTemplateId();
                 const PrefabDom& topTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(topTemplateId);
 
-                PrefabDom overridePatches;
+                PrefabDom overridePatchesWithSubpaths; // subpath is path pointing from entity to component value
                 {
                     // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
                     // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
@@ -91,20 +90,26 @@ namespace AzToolsFramework
 
                     if (entityDomInTopTemplate)
                     {
-                        m_instanceToTemplateInterface->GeneratePatch(overridePatches, *entityDomInTopTemplate, entityDomAfterUpdate);
+                        m_instanceToTemplateInterface->GeneratePatch(
+                            overridePatchesWithSubpaths, *entityDomInTopTemplate, entityDomAfterUpdate);
                     }
                     else
                     {
-                        // Merge patches to an entity DOM as add-entity override.
-                        // Path is empty because there is no subpath for add-entity override patch like "/Components/Component_[123]".
-                        overridePatches.SetArray();
-                        PrefabUndoUtils::AppendAddEntityPatch(overridePatches, entityDomAfterUpdate, "");
+                        // If entity DOM is not present in template, it indicates that the entity itself was added as an override.
+                        // In this case, additional override patches on this entity would be merged into the entity DOM value that is
+                        // stored in the existing add-entity override patch.
+
+                        overridePatchesWithSubpaths.SetArray();
+                        // Note that for add-entity patch, there is no subpath that points from entity to component value.
+                        // Entity path passing to the util function is empty such that the generated JSON patch won't contain any path.
+                        // The path inside JSON patch will be set correctly below when generating the override subtree.
+                        PrefabUndoUtils::AppendAddEntityPatch(overridePatchesWithSubpaths, entityDomAfterUpdate, "");
                     }
                 }
 
                 // Subtrees in map are initialized as after-state subtrees for next redo.
                 PrefabOverridePrefixTree redoSubtree = link->get().GenerateOverrideSubTreeForEntity(
-                    overridePatches, entityPathFromTopInstance);
+                    overridePatchesWithSubpaths, entityPathFromTopInstance);
                 m_subtreeStates[AZ::Dom::Path(entityPathFromTopInstance)] = AZStd::move(redoSubtree);
 
                 // Preemptively updates the cached DOM to prevent reloading instance DOM.

@@ -15,7 +15,7 @@ namespace AzToolsFramework::Prefab
     class PrefabSystemComponentInterface;
     class InstanceToTemplateInterface;
 
-    //! Undo class for handling updating entity list to an instance as override of focused instance.
+    //! Undo class for handling updating entities to an instance as override of focused instance.
     class PrefabUndoEntityOverrides
         : public UndoSystem::URSequencePoint
     {
