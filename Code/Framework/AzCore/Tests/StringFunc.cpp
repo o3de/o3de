@@ -16,7 +16,7 @@ namespace AZ
 {
     using namespace UnitTest;
 
-    using StringFuncTest = AllocatorsFixture;
+    using StringFuncTest = LeakDetectionFixture;
 
     TEST_F(StringFuncTest, Equal_CaseSensitive_OnNonNullTerminatedStringView_Success)
     {
@@ -884,7 +884,7 @@ namespace AZ
     }
 
 
-    using StringFuncPathTest = AllocatorsFixture;
+    using StringFuncPathTest = LeakDetectionFixture;
 
     TEST_F(StringFuncPathTest, GetParentDir_InvokedOnAbsoluteDirectory_ReturnsSameDirectory)
     {

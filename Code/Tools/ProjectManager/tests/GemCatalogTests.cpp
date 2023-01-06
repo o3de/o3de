@@ -14,7 +14,7 @@
 namespace O3DE::ProjectManager
 {
     class GemCatalogTests 
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override

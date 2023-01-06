@@ -96,7 +96,7 @@ namespace UnitTest
 
     // Fixture for testing the viewport editor mode state tracker
     class ViewportEditorModeTrackerTestFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
     public:
         ViewportEditorModeTracker m_viewportEditorModeTracker;
@@ -179,7 +179,7 @@ namespace UnitTest
 
     // Fixture for testing the integration of viewport editor mode state tracker
     class ViewportEditorModeTrackerIntegrationTestFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override

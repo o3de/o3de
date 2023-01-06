@@ -9,6 +9,7 @@
 
 #include "EditorDefs.h"
 
+#include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AzAssetBrowserRequestHandler.h"
 
 // Qt
@@ -427,6 +428,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 
     AZStd::string fullFilePath;
     AZStd::string extension;
+    bool selectionIsSource{ true };
 
     switch (entry->GetEntryType())
     {
@@ -439,6 +441,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             AZ_Assert(false, "Asset Browser entry product has a non-source parent?");
             break;     // no valid parent.
         }
+        selectionIsSource = false;
     // the fall through to the next case is intentional here.
     case AssetBrowserEntry::AssetEntryType::Source:
     {
@@ -507,6 +510,17 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     });
             }
 
+            menu->addAction(QObject::tr("Open in another Asset Browser"), [fullFilePath, treeView](){
+                auto* browser1 = qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetBrowser)->Widget());
+                const QString name2 = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
+                auto* browser2 = qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(name2)->Widget());
+                if (browser1->TreeViewBelongsTo(treeView)) {
+                    browser2->SelectAsset(fullFilePath.c_str());
+                } else {
+                    browser1->SelectAsset(fullFilePath.c_str());
+                }
+            });
+
             AZStd::vector<const ProductAssetBrowserEntry*> products;
             entry->GetChildrenRecursively<ProductAssetBrowserEntry>(products);
 
@@ -543,7 +557,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             {
                 CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
             }
-            if (calledFromAssetBrowser)
+            if (calledFromAssetBrowser && selectionIsSource)
             {
                 // Add Rename option
                 QAction* action = menu->addAction(
@@ -557,7 +571,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             }
         }
 
-        if (calledFromAssetBrowser)
+        if (calledFromAssetBrowser && selectionIsSource)
         {
             // Add Delete option
             QAction* action = menu->addAction(

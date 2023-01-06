@@ -72,6 +72,7 @@ namespace AzToolsFramework
             AddedStatsTable,
             ChangedSourceDependencySourceColumn,
             SplitMaterialBuilderAndMaterialAssetBuilder,
+            NewMaterialTypeBuildPipeline,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1
@@ -214,7 +215,7 @@ namespace AzToolsFramework
             };
 
             SourceFileDependencyEntry() = default;
-            SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, PathOrUuid dependsOnSource, TypeOfDependency dependencyType, AZ::u32 fromAssetId, const char* subIds);
+            SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, PathOrUuid dependsOnSource, TypeOfDependency dependencyType, bool fromAssetId, const char* subIds);
 
             AZStd::string ToString() const;
             auto GetColumns();
@@ -584,6 +585,7 @@ namespace AzToolsFramework
             bool QueryProductLikeProductName(const char* likeProductName, LikeType likeType, productHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
 
             bool QueryProductBySourceName(const char* exactSourceName, productHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+            bool QueryProductBySourceNameScanFolderID(const char* exactSourceName, AZ::s64 scanFolderID, productHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
             bool QueryProductLikeSourceName(const char* likeSourceName, LikeType likeType, productHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
             bool QueryProductByJobIDSubID(AZ::s64 jobID, AZ::u32 subId, productHandler handler);
 
@@ -607,7 +609,8 @@ namespace AzToolsFramework
             bool QueryJobInfoByJobID(AZ::s64 jobID, jobInfoHandler handler);
             bool QueryJobInfoByJobRunKey(AZ::u64 jobRunKey, jobInfoHandler handler);
             bool QueryJobInfoByJobKey(AZStd::string jobKey, jobInfoHandler handler);
-            bool QueryJobInfoBySourceName(const char* sourceName, jobInfoHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+            bool QueryJobInfoBySourceNameScanFolderId(const char* sourceName, AZ::s64 scanfolderId, jobInfoHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+
 
             //SourceDependency
             /// direct query - look up table row by row ID

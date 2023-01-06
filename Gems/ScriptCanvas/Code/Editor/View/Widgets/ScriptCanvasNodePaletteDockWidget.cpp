@@ -61,7 +61,7 @@
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Core/Attributes.h>
 #include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
@@ -745,7 +745,7 @@ namespace ScriptCanvasEditor
 
         void NodePaletteDockWidget::OnNewCustomEvent()
         {
-            AzToolsFramework::AssetEditor::AssetEditorRequestsBus::Broadcast(&AzToolsFramework::AssetEditor::AssetEditorRequests::CreateNewAsset, azrtti_typeid<ScriptEvents::ScriptEventsAsset>());
+            AzToolsFramework::AssetEditor::AssetEditorRequestsBus::Broadcast(&AzToolsFramework::AssetEditor::AssetEditorRequests::CreateNewAsset, azrtti_typeid<ScriptEvents::ScriptEventsAsset>(), AZ::Uuid::CreateNull());
         }
 
         void NodePaletteDockWidget::OnActiveGraphChanged(const GraphCanvas::GraphId& graphCanvasGraphId)

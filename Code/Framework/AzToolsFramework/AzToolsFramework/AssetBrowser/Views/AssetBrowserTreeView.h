@@ -94,6 +94,8 @@ namespace AzToolsFramework
             template <class TEntryType>
             const TEntryType* GetEntryFromIndex(const QModelIndex& index) const;
 
+            const AssetBrowserEntry* GetEntryByPath(QStringView path);
+
             bool IsIndexExpandedByDefault(const QModelIndex& index) const override;
 
         Q_SIGNALS:
@@ -150,5 +152,8 @@ namespace AzToolsFramework
             }
             return nullptr;
         }
+
+        void MoveEntry(AZStd::string_view fromPath, AZStd::string_view toPath, bool isFolder, QWidget* parent = nullptr);
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

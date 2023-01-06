@@ -52,11 +52,22 @@ namespace AZ
 #endif
 
             // Vulkan BufferViews are used to enable shaders to access buffer contents interpreted as formatted data.
-            if (viewDescriptor.m_elementFormat != RHI::Format::Unknown &&
-                (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderRead) ||
-                 RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite)))
+            bool shaderRead = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderRead);
+            bool shaderReadWrite = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite);
+            if (viewDescriptor.m_elementFormat != RHI::Format::Unknown && (shaderRead || shaderReadWrite))
             {
                 auto result = BuildNativeBufferView(device, buffer, viewDescriptor);
+
+                if (shaderRead)
+                {
+                    m_readIndex = device.GetBindlessDescriptorPool().AttachReadBuffer(this);
+                }
+
+                if (shaderReadWrite)
+                {
+                    m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteBuffer(this);
+                }
+
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
             else if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure))
@@ -76,6 +87,16 @@ namespace AZ
                 device.QueueForRelease(new ReleaseContainer<VkBufferView>(
                     device.GetNativeDevice(), m_nativeBufferView, device.GetContext().DestroyBufferView));
                 m_nativeBufferView = VK_NULL_HANDLE;
+
+                if (m_readIndex != ~0u)
+                {
+                    device.GetBindlessDescriptorPool().DetachReadBuffer(m_readIndex);
+                }
+
+                if (m_readWriteIndex != ~0u)
+                {
+                    device.GetBindlessDescriptorPool().DetachReadWriteBuffer(m_readWriteIndex);
+                }
             }
             return RHI::ResultCode::Success;
         }
@@ -118,5 +139,15 @@ namespace AZ
             return m_nativeAccelerationStructure;
         }
 
-    }
-}
+        uint32_t BufferView::GetBindlessReadIndex() const
+        {
+            return m_readIndex;
+        }
+
+        uint32_t BufferView::GetBindlessReadWriteIndex() const
+        {
+            return m_readWriteIndex;
+        }
+
+    } // namespace Vulkan
+} // namespace AZ

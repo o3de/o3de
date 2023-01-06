@@ -33,7 +33,7 @@
 namespace UnitTest
 {
     class Containers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
     
@@ -216,8 +216,8 @@ namespace UnitTest
         static_buffer_16KB_type myMemoryManager1;
         static_buffer_16KB_type myMemoryManager2;
         using static_allocator_ref_type = AZStd::allocator_ref<static_buffer_16KB_type>;
-        static_allocator_ref_type allocator1(myMemoryManager1, "Mystack allocator 1");
-        static_allocator_ref_type allocator2(myMemoryManager2, "Mystack allocator 2");
+        static_allocator_ref_type allocator1(myMemoryManager1);
+        static_allocator_ref_type allocator2(myMemoryManager2);
 
         using int_deque_myalloc_type = AZStd::deque<int, static_allocator_ref_type>;
         int_deque_myalloc_type int_deque10(100, 13, allocator1); /// Allocate 100 elements using memory manager 1
@@ -233,10 +233,12 @@ namespace UnitTest
         // allocate again from myMemoryManager1
         int_deque10.resize(100, 15);
 
+        const size_t allocator1AllocatedSize = myMemoryManager1.get_allocated_size();
         int_deque10.set_allocator(allocator2);
         AZ_TEST_VALIDATE_DEQUE(int_deque10, 100);
-        // now we move the allocated size from menager1 to manager2 (without freeing menager1)
-        AZ_TEST_ASSERT(myMemoryManager1.get_allocated_size() == myMemoryManager2.get_allocated_size());
+        // now we move the allocated size from manager1 to manager2
+        EXPECT_LE(myMemoryManager1.get_allocated_size(), allocator1AllocatedSize);
+        EXPECT_GE(myMemoryManager2.get_allocated_size(), 100 * sizeof(int));
 
         myMemoryManager1.reset(); // flush manager 1 again (int_vector10 is stored in manager 2)
 
@@ -673,7 +675,7 @@ namespace UnitTest
         }
     }
 
-    using StackContainerTestFixture = ScopedAllocatorSetupFixture;
+    using StackContainerTestFixture = LeakDetectionFixture;
 
     TEST_F(StackContainerTestFixture, StackEmplaceOperator_SupportsZeroOrMoreArguments)
     {
@@ -689,7 +691,7 @@ namespace UnitTest
     }
 
 
-    using DequeTestFixture = ScopedAllocatorSetupFixture;
+    using DequeTestFixture = LeakDetectionFixture;
 
     TEST_F(DequeTestFixture, RangeConstructors_Succeeds)
     {

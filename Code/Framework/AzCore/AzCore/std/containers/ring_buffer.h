@@ -278,7 +278,7 @@ namespace AZStd
             {
                 Internal::destroy<pointer>::single(m_first);
             }
-            deallocate_memory(typename allocator_type::allow_memory_leaks());
+            deallocate_memory();
         }
 
         AZ_FORCE_INLINE this_type& operator = (const this_type& rhs)
@@ -288,7 +288,7 @@ namespace AZStd
                 return *this;
             }
             clear();
-            deallocate_memory(typename allocator_type::allow_memory_leaks());
+            deallocate_memory();
             m_buff = reinterpret_cast<pointer>(m_allocator.allocate(rhs.capacity() * sizeof(node_type), alignment_of<node_type>::value));
             m_end = m_buff + rhs.capacity();
             m_first = m_buff;
@@ -698,7 +698,7 @@ namespace AZStd
             pointer last = AZStd::uninitialized_copy(b, b + AZStd::GetMin(new_capacity, m_size), buff, Internal::is_fast_copy<iterator, pointer>());
 
             clear();
-            deallocate_memory(typename allocator_type::allow_memory_leaks());
+            deallocate_memory();
 
             m_size = last - buff;
             m_buff = m_first = buff;
@@ -717,7 +717,7 @@ namespace AZStd
             pointer last = AZStd::uninitialized_copy(e - AZStd::GetMin(new_capacity, m_size), e, buff, Internal::is_fast_copy<iterator, pointer>());
 
             clear();
-            deallocate_memory(typename allocator_type::allow_memory_leaks());
+            deallocate_memory();
 
             m_size = last - buff;
             m_buff = m_first = buff;
@@ -810,9 +810,7 @@ namespace AZStd
         }
 
     private:
-        AZ_FORCE_INLINE void    deallocate_memory(const true_type& /* allocator::allow_memory_leaks */)     {}
-
-        AZ_FORCE_INLINE void    deallocate_memory(const false_type& /* !allocator::allow_memory_leaks */)
+        AZ_FORCE_INLINE void    deallocate_memory()
         {
             if (m_buff)
             {

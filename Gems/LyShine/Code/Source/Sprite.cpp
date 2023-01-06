@@ -197,7 +197,10 @@ CSprite::CSprite()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CSprite::~CSprite()
 {
-    s_loadedSprites->erase(m_pathname);
+    if (s_loadedSprites)
+    {
+        s_loadedSprites->erase(m_pathname);
+    }
     TextureAtlasNamespace::TextureAtlasNotificationBus::Handler::BusDisconnect();
 }
 

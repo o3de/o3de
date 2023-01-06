@@ -7,7 +7,7 @@
  */
 
 #include <native/utilities/PlatformConfiguration.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 #include <native/unittests/AssetProcessorUnitTests.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 
@@ -24,42 +24,54 @@ public:
 
         m_assetRootPath = QDir(m_assetDatabaseRequestsHandler->GetAssetRootDir().c_str());
 
-        m_config.EnablePlatform({ "pc",{ "desktop", "host" } }, true);
-        m_config.EnablePlatform({ "android",{ "mobile", "android" } }, true);
+        for (const AssetBuilderSDK::PlatformInfo& enabledPlatform : m_enabledPlatforms)
+        {
+            m_config.EnablePlatform(enabledPlatform, true);
+        }
         m_config.EnablePlatform({ "fandago",{ "console" } }, false);
+
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         m_config.PopulatePlatformsForScanFolder(platforms);
 
-        //                                         PATH               DisplayName  PortKey root   recurse  platforms,      isunittesting
-        m_config.AddScanFolder(ScanFolderInfo(m_assetRootPath.filePath("subfolder3"),   "", "sf3",  false, false,   platforms), true); // subfolder 3 overrides subfolder2
-        m_config.AddScanFolder(ScanFolderInfo(m_assetRootPath.filePath("subfolder2"),   "", "sf4",  false, true,    platforms), true); // subfolder 2 overrides subfolder1
-        m_config.AddScanFolder(ScanFolderInfo(m_assetRootPath.filePath("subfolder1"),   "", "sf1",  false, true,    platforms), true); // subfolder1 overrides root
-        m_config.AddScanFolder(ScanFolderInfo(m_assetRootPath.filePath("subfolder4"),   "", "sf4",  false, true,    platforms), true); // subfolder4 overrides subfolder5
-        m_config.AddScanFolder(ScanFolderInfo(m_assetRootPath.filePath("subfolder5"),   "", "sf5",  false, true,    platforms), true); // subfolder5 overrides subfolder6
-        m_config.AddScanFolder(ScanFolderInfo(m_assetRootPath.filePath("subfolder6"), "", "sf6", false, true,    platforms), true); // subfolder6 overrides subfolder7
-        m_config.AddScanFolder(ScanFolderInfo(m_assetRootPath.filePath("subfolder7"), "", "sf7", false, true,    platforms), true); // subfolder7 overrides subfolder8
-        m_config.AddScanFolder(ScanFolderInfo(m_assetRootPath.filePath("subfolder8/x"), "", "sf8", false, true,    platforms), true); // subfolder8 overrides root
-        m_config.AddScanFolder(ScanFolderInfo(m_assetRootPath.absolutePath(),       "temp", "temp", true, false,    platforms), true); // add the root
+        //                                                       PATH             DisplayName PortKey root recurse platforms
+        m_scanFolders.emplace_back(ScanFolderInfo(m_assetRootPath.filePath("subfolder3"), "", "sf3", false, false, platforms)); // subfolder 3 is expected to override subfolder2
+        m_scanFolders.emplace_back(ScanFolderInfo(m_assetRootPath.filePath("subfolder2"),   "", "sf4",  false, true,    platforms)); // subfolder 2 is expected to override subfolder1
+        m_scanFolders.emplace_back(ScanFolderInfo(m_assetRootPath.filePath("subfolder1"),   "", "sf1",  false, true,    platforms)); // subfolder1 is expected to override root
+        m_scanFolders.emplace_back(ScanFolderInfo(m_assetRootPath.filePath("subfolder4"),   "", "sf4",  false, true,    platforms)); // subfolder4 is expected to override subfolder5
+        m_scanFolders.emplace_back(ScanFolderInfo(m_assetRootPath.filePath("subfolder5"),   "", "sf5",  false, true,    platforms)); // subfolder5 is expected to override subfolder6
+        m_scanFolders.emplace_back(ScanFolderInfo(m_assetRootPath.filePath("subfolder6"), "", "sf6", false, true,    platforms)); // subfolder6 is expected to override subfolder7
+        m_scanFolders.emplace_back(ScanFolderInfo(m_assetRootPath.filePath("subfolder7"), "", "sf7", false, true,    platforms)); // subfolder7 is expected to override subfolder8
+        m_scanFolders.emplace_back(ScanFolderInfo(m_assetRootPath.filePath("subfolder8/x"), "", "sf8", false, true,    platforms)); // subfolder8 is expected to override root
+        m_scanFolders.emplace_back(ScanFolderInfo(m_assetRootPath.absolutePath(),       "temp", "temp", true, false,    platforms)); // add the root
 
-                                                                                                                                     // these are checked for later.
-        m_config.AddScanFolder(ScanFolderInfo(m_assetRootPath.filePath("GameName"),             "gn",    "", false, true, platforms), true);
-        m_config.AddScanFolder(ScanFolderInfo(m_assetRootPath.filePath("GameNameButWithExtra"), "gnbwe", "", false, true, platforms), true);
+        m_scanFolders.emplace_back(ScanFolderInfo(m_assetRootPath.filePath("GameName"),  "gn",    "",   false, true, platforms));
+        m_scanFolders.emplace_back(ScanFolderInfo(m_assetRootPath.filePath("GameNameButWithExtra"), "gnbwe", "", false, true, platforms));
 
-        AssetRecognizer rec;
+        for (const ScanFolderInfo& scanFolder : m_scanFolders)
+        {
+            m_config.AddScanFolder(scanFolder, true);
+        }
 
-        rec.m_name = "txt files";
-        rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
-        rec.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
-        rec.m_platformSpecs.insert({"fandago", AssetInternalSpec::Copy});
-        m_config.AddRecognizer(rec);
+        AssetRecognizer txtRecognizer;
+        txtRecognizer.m_name = "txt files";
+        txtRecognizer.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
+        txtRecognizer.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+        txtRecognizer.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
+        txtRecognizer.m_platformSpecs.insert({"fandago", AssetInternalSpec::Copy});
+        m_txtRecognizerContainer[txtRecognizer.m_name] = txtRecognizer;
 
         // test dual-recognisers - two recognisers for the same pattern.
-        rec.m_name = "txt files 2";
-        m_config.AddRecognizer(rec);
-        rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(".*\\/test\\/.*\\.format", AssetBuilderSDK::AssetBuilderPattern::Regex);
-        rec.m_name = "format files that live in a folder called test";
-        m_config.AddRecognizer(rec);
+        txtRecognizer.m_name = "txt files 2";
+        m_txtRecognizerContainer[txtRecognizer.m_name] = txtRecognizer;
+
+        for (const auto& recognizerKeyPair : m_txtRecognizerContainer)
+        {
+            m_config.AddRecognizer(recognizerKeyPair.second);
+        }
+
+        m_formatRecognizer.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(".*\\/test\\/.*\\.format", AssetBuilderSDK::AssetBuilderPattern::Regex);
+        m_formatRecognizer.m_name = "format files that live in a folder called test";
+        m_config.AddRecognizer(m_formatRecognizer);
     }
 
 protected:
@@ -109,21 +121,29 @@ protected:
     FileStatePassthrough m_fileStateCache;
     QDir m_assetRootPath;
     PlatformConfiguration m_config;
+    AZStd::vector<ScanFolderInfo> m_scanFolders;
+    AZStd::vector<AssetBuilderSDK::PlatformInfo> m_enabledPlatforms = {
+        { "pc",{ "desktop", "host" }},
+        { "android",{ "mobile", "android" }}
+    };
+    RecognizerContainer m_txtRecognizerContainer;
+    AssetRecognizer m_formatRecognizer;
 };
 
 TEST_F(PlatformConfigurationTests, TestPlatformsAndScanFolders_FeedPlatformConfiguration_Succeeds)
 {
-    EXPECT_EQ(m_config.GetEnabledPlatforms().size(), 2);
-    EXPECT_EQ(m_config.GetEnabledPlatforms()[0].m_identifier, "pc");
-    EXPECT_EQ(m_config.GetEnabledPlatforms()[1].m_identifier, "android");
+    EXPECT_EQ(m_config.GetEnabledPlatforms().size(), m_enabledPlatforms.size());
+    for (int index = 0; index < m_enabledPlatforms.size(); ++index)
+    {
+        EXPECT_EQ(m_config.GetEnabledPlatforms()[index].m_identifier, m_enabledPlatforms[index].m_identifier);
+    }
 
-    EXPECT_EQ(m_config.GetScanFolderCount(), 11);
-    EXPECT_FALSE(m_config.GetScanFolderAt(0).IsRoot());
-    EXPECT_TRUE(m_config.GetScanFolderAt(8).IsRoot());
-    EXPECT_FALSE(m_config.GetScanFolderAt(0).RecurseSubFolders());
-    EXPECT_TRUE(m_config.GetScanFolderAt(1).RecurseSubFolders());
-    EXPECT_TRUE(m_config.GetScanFolderAt(2).RecurseSubFolders());
-    EXPECT_FALSE(m_config.GetScanFolderAt(8).RecurseSubFolders());
+    EXPECT_EQ(m_config.GetScanFolderCount(), m_scanFolders.size());
+    for (int index = 0; index < m_scanFolders.size(); ++index)
+    {
+        EXPECT_EQ(m_config.GetScanFolderAt(index).IsRoot(), m_scanFolders[index].IsRoot());
+        EXPECT_EQ(m_config.GetScanFolderAt(index).RecurseSubFolders(), m_scanFolders[index].RecurseSubFolders());
+    }
 }
 
 TEST_F(PlatformConfigurationTests, TestRecogonizer_FeedPlatformConfiguration_Succeeds)
@@ -132,18 +152,18 @@ TEST_F(PlatformConfigurationTests, TestRecogonizer_FeedPlatformConfiguration_Suc
 
     RecognizerPointerContainer results;
     EXPECT_TRUE(m_config.GetMatchingRecognizers(m_assetRootPath.absoluteFilePath("subfolder1/rootfile1.txt"), results));
-    EXPECT_EQ(results.size(), 2);
-    EXPECT_TRUE(results[0]);
-    EXPECT_TRUE(results[1]);
-    EXPECT_NE(results[0]->m_name, results[1]->m_name);
-    EXPECT_TRUE(results[0]->m_name == "txt files" || results[1]->m_name == "txt files");
-    EXPECT_TRUE(results[0]->m_name == "txt files 2" || results[1]->m_name == "txt files 2");
+    EXPECT_EQ(results.size(), m_txtRecognizerContainer.size());
+    for (int index = 0; index < results.size(); ++index)
+    {
+        EXPECT_TRUE(results[index]);
+        EXPECT_NE(m_txtRecognizerContainer.find(results[index]->m_name), m_txtRecognizerContainer.end());
+    }
 
     results.clear();
     EXPECT_FALSE(m_config.GetMatchingRecognizers(m_assetRootPath.absoluteFilePath("test.format"), results));
     EXPECT_TRUE(m_config.GetMatchingRecognizers(m_assetRootPath.absoluteFilePath("subfolder1/test/test.format"), results));
     EXPECT_EQ(results.size(), 1);
-    EXPECT_EQ(results[0]->m_name, "format files that live in a folder called test");
+    EXPECT_EQ(results[0]->m_name, m_formatRecognizer.m_name);
 
     // double call:
     EXPECT_FALSE(m_config.GetMatchingRecognizers(m_assetRootPath.absoluteFilePath("unrecognised.file"), results));

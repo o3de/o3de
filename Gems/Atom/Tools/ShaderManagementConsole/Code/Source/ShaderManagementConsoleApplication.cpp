@@ -69,7 +69,10 @@ namespace ShaderManagementConsole
                 ->Attribute(AZ::Script::Attributes::Module, "shadermanagementconsole")
                 ->Event("GetSourceAssetInfo", &ShaderManagementConsoleRequestBus::Events::GetSourceAssetInfo)
                 ->Event("FindMaterialAssetsUsingShader", &ShaderManagementConsoleRequestBus::Events::FindMaterialAssetsUsingShader)
-                ->Event("GetMaterialInstanceShaderItems", &ShaderManagementConsoleRequestBus::Events::GetMaterialInstanceShaderItems);
+                ->Event("GetMaterialInstanceShaderItems", &ShaderManagementConsoleRequestBus::Events::GetMaterialInstanceShaderItems)
+                ->Event("GetAllMaterialAssetIds", &ShaderManagementConsoleRequestBus::Events::GetAllMaterialAssetIds)
+                ->Event("GetFullSourcePathFromRelativeProductPath", &ShaderManagementConsoleRequestBus::Events::GetFullSourcePathFromRelativeProductPath)
+                ->Event("GenerateRelativeSourcePath", &ShaderManagementConsoleRequestBus::Events::GenerateRelativeSourcePath);
         }
     }
 
@@ -239,7 +242,82 @@ namespace ShaderManagementConsole
             return AZStd::vector<AZ::RPI::ShaderCollection::Item>();
         }
 
-        return AZStd::vector<AZ::RPI::ShaderCollection::Item>(
-            materialInstance->GetShaderCollection().begin(), materialInstance->GetShaderCollection().end());
+        AZStd::vector<AZ::RPI::ShaderCollection::Item> shaderItems;
+
+        materialInstance->ForAllShaderItems(
+            [&](const AZ::Name&, const AZ::RPI::ShaderCollection::Item& shaderItem)
+            {
+                shaderItems.push_back(shaderItem);
+                return true;
+            });
+
+        return shaderItems;
+    }
+
+    AZStd::vector<AZ::Data::AssetId> ShaderManagementConsoleApplication::GetAllMaterialAssetIds()
+    {
+        AZStd::vector<AZ::Data::AssetId> assetIds;
+
+        AZ::Data::AssetCatalogRequests::AssetEnumerationCB collectAssetsCb =
+            [&]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& info)
+        {
+            if (info.m_assetType == AZ::RPI::MaterialAsset::RTTI_Type())
+            {
+                assetIds.push_back(id);
+            }
+        };
+
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, collectAssetsCb, nullptr);
+
+        return assetIds;
+    }
+
+    AZStd::string ShaderManagementConsoleApplication::GetFullSourcePathFromRelativeProductPath(const AZStd::string& relativeProductPath)
+    {
+        AZStd::string fullSourcePath;
+        bool fullPathFound = false;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            fullPathFound,
+            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetFullSourcePathFromRelativeProductPath,
+            relativeProductPath,
+            fullSourcePath);
+
+        if (fullPathFound)
+        {
+            return fullSourcePath;
+        }
+        else
+        {
+            AZ_Error(
+                "GetFullSourcePathFromRelativeProductPath",
+                false,
+                "Failed to get full sorece path for relative product path %s.",
+                relativeProductPath.c_str());
+        }
+
+        return "";
+    }
+
+    AZStd::string ShaderManagementConsoleApplication::GenerateRelativeSourcePath(const AZStd::string& fullShaderPath)
+    {
+        bool pathFound = false;
+        AZStd::string relativePath, rootFolder;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            pathFound,
+            &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
+            fullShaderPath,
+            relativePath,
+            rootFolder);
+
+        if (pathFound)
+        {
+            return relativePath;
+        }
+        else
+        {
+            AZ_Error("GenerateRelativeSourcePath", false, "Can not find a relative path from the shader: '%s'.", fullShaderPath.c_str());
+            return "";
+        }
     }
 } // namespace ShaderManagementConsole

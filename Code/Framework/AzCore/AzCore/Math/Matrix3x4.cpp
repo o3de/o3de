@@ -433,7 +433,7 @@ namespace AZ
         // calculate the determinant
         const float determinant = result.m_rows[0].Dot3(GetColumn(0));
 
-        if (determinant != 0.0f)
+        if (!AZ::IsClose(determinant, 0.0f, Constants::FloatEpsilon))
         {
             float determinantInv = 1.0f / determinant;
             result.m_rows[0] *= determinantInv;

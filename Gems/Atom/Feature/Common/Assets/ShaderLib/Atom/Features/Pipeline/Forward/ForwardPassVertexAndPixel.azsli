@@ -20,6 +20,16 @@ VsOutput VertexShader(VsInput IN)
 }
 
 
+#if OUTPUT_SUBSURFACE
+float GetSubsurfaceScatteringFactorAndQuality(Surface surface)
+{
+    // Pack factor and quality, drawback: because of precision limit of float16 cannot represent exact 1, maximum representable value is 0.9961
+    uint factorAndQuality = dot(round(float2(saturate(surface.subsurfaceScatteringFactor), surface.subsurfaceScatteringQuality) * 255), float2(256, 1));
+    return factorAndQuality * (o_enableSubsurfaceScattering ? 1.0 : -1.0);
+}
+#endif
+
+
 // --- Pixel Shader ---
 
 #if !OUTPUT_DEPTH
@@ -45,7 +55,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     OUT.m_diffuseColor.rgb = lightingData.diffuseLighting;
     OUT.m_diffuseColor.a = -1;  // Disable Subsurface Scattering
 
-#ifndef FORCE_OPAQUE
+#if !FORCE_OPAQUE
     
     if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
     {
@@ -78,13 +88,13 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 #if OUTPUT_SUBSURFACE
     bool applySubsurfaceScattering = o_enableSubsurfaceScattering;
 
-#ifndef FORCE_OPAQUE
+#if !FORCE_OPAQUE
     applySubsurfaceScattering = applySubsurfaceScattering && o_opacity_mode != OpacityMode::Blended && o_opacity_mode != OpacityMode::TintedTransparent;
 #endif
 
     if(applySubsurfaceScattering)
     {
-        OUT.m_diffuseColor.a = surface.GetSubsurfaceScatteringFactorAndQuality();
+        OUT.m_diffuseColor.a = GetSubsurfaceScatteringFactorAndQuality(surface);
         OUT.m_scatterDistance = surface.scatterDistance;
     }
     else

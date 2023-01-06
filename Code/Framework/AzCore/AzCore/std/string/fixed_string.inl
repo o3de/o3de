@@ -655,9 +655,9 @@ namespace AZStd
     {   // insert count * elem at insertPos
         const_pointer insertPosPtr = insertPos;
 
-        pointer data = m_buffer;
         size_type offset = insertPosPtr - data();
-        return insert(offset, count, ch);
+        insert(offset, count, ch);
+        return data() + offset;
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
@@ -1578,7 +1578,7 @@ namespace AZStd
     {
         va_list mark;
         va_start(mark, format);
-        basic_fixed_string<char, MaxElementCount, char_traits<char>> result = format_arg(format, mark);
+        auto result = format_arg(format, mark);
         va_end(mark);
         return result;
     }
@@ -1588,7 +1588,7 @@ namespace AZStd
     {
         va_list mark;
         va_start(mark, format);
-        basic_fixed_string<wchar_t, MaxElementCount, char_traits<wchar_t>> result = format_arg(format, mark);
+        auto result = format_arg(format, mark);
         va_end(mark);
         return result;
     }

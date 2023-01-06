@@ -23,7 +23,7 @@ namespace AZ
         RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::Resource& resourceBase)
         {
             const Image& image = static_cast<const Image&>(resourceBase);
-            
+            auto& device = static_cast<Device&>(deviceBase);
             RHI::ImageViewDescriptor viewDescriptor = GetDescriptor();
             const RHI::ImageDescriptor& imgDesc = image.GetDescriptor();
             
@@ -46,7 +46,7 @@ namespace AZ
                        
             //Since we divide the array length of a cubemap by NumCubeMapSlices when creating the base texture
             //we have to do reverse of that here
-            uint32_t textureLength = mtlTexture.arrayLength;
+            uint32_t textureLength = static_cast<uint32_t>(mtlTexture.arrayLength);
             if(imgDesc.m_isCubemap)
             {
                 textureLength = textureLength * RHI::ImageDescriptor::NumCubeMapSlices;
@@ -91,6 +91,26 @@ namespace AZ
                 AZ_Assert(m_format != MTLPixelFormatInvalid, "Invalid pixel format");
             }
 
+            // If a depth stencil image does not have depth or aspect flag set it is probably going to be used as
+            // a render target and do not need to be added to the bindless heap
+            bool isDSRendertarget = RHI::CheckBitsAny(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::DepthStencil) &&
+                                    viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Depth &&
+                                    viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
+                        
+            // Cache the read and readwrite index of the view withn the global Bindless Argument buffer
+            if (!viewDescriptor.m_isArray && !viewDescriptor.m_isCubemap && !isDSRendertarget)
+            {
+                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                {
+                    m_readIndex = device.GetBindlessArgumentBuffer().AttachReadImage(m_memoryView.GetGpuAddress<id<MTLTexture>>());
+                }
+
+                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                {
+                    m_readWriteIndex = device.GetBindlessArgumentBuffer().AttachReadWriteImage(m_memoryView.GetGpuAddress<id<MTLTexture>>());
+               }
+            }
+            
             m_hash = TypeHash64(m_imageSubresourceRange.GetHash(), m_hash);
             m_hash = TypeHash64(m_format, m_hash);
             return RHI::ResultCode::Success;
@@ -112,7 +132,17 @@ namespace AZ
             
             if(m_memoryView.GetMemory())
             {
-                device.QueueForRelease(m_memoryView.GetMemory());
+                device.QueueForRelease(m_memoryView);
+                m_memoryView = {};
+                if (m_readIndex != ~0u)
+                {
+                    device.GetBindlessArgumentBuffer().DetachReadImage(m_readIndex);
+                }
+
+                if (m_readWriteIndex != ~0u)
+                {
+                    device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
+                }
             }
             else
             {
@@ -156,6 +186,16 @@ namespace AZ
         const Image& ImageView::GetImage() const
         {
             return static_cast<const Image&>(Base::GetImage());
+        }
+    
+        uint32_t ImageView::GetBindlessReadIndex() const
+        {
+            return m_readIndex;
+        }
+
+        uint32_t ImageView::GetBindlessReadWriteIndex() const
+        {
+            return m_readWriteIndex;
         }
     }
 }

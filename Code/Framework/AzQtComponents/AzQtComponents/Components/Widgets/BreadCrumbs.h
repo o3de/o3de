@@ -15,13 +15,15 @@
 #include <QString>
 #include <QStyle>
 #include <QVector>
-#include <QWidget>
+#include <QFrame>
 
 #endif
 
 class QSettings;
 class QToolButton;
 class QLabel;
+class QLineEdit;
+class QStackedWidget;
 
 namespace AzQtComponents
 {
@@ -50,17 +52,18 @@ namespace AzQtComponents
     //! Can be styled by modifying BreadCrumbs.qss and BreadCrumbsConfig.ini.
     //! Note that Qt doesn't handle HTML embedded in QLabel widgets gracefully - stylesheets are not shared between those
     //! and Qt objects. As a result, the color of the HTML styled links in the BreadCrumbs is specified in BreadCrumbsConfig.ini.
+
     class AZ_QT_COMPONENTS_API BreadCrumbs
-        : public QWidget
+        : public QFrame
     {
         Q_OBJECT
+        Q_PROPERTY(bool editable READ isEditable WRITE setEditable)
 
     public:
         //! Style configuration for the Breadcrumbs class.
         struct Config
         {
             QString linkColor;      //!< Color for links. Must be a string using the hex format #rrggbb.
-            float optimalPathWidth; //!< The portion of the total width used to display the path. Must be a value between 0.0 and 1.0.
         };
 
         explicit BreadCrumbs(QWidget* parent = nullptr);
@@ -85,6 +88,9 @@ namespace AzQtComponents
         //! Gets the icon for the path element at index.
         QIcon iconAt(int index);
 
+        bool isEditable() const;
+        void setEditable(bool editable);
+
         //! Returns true if activating a link should automatically push a new path to the navigation stack.
         bool getPushPathOnLinkActivation() const;
         //! Sets whether activating a link should automatically push a new path to the navigation stack.
@@ -104,6 +110,10 @@ namespace AzQtComponents
         //! Note: the separator will need to be added to a layout manually.
         QWidget* createSeparator();
 
+        //! Size hint reports the space that would be taken if the whole
+        //! path would be shown.
+        QSize sizeHint() const override;
+
         //! Sets the Breadcrumbs style configuration.
         //! @param settings The settings object to load the configuration from.
         //! @return The new configuration of the Breadcrumbs.
@@ -118,11 +128,23 @@ namespace AzQtComponents
         bool back();
         //! Restores the next breadcrumb path from the navigation stack if it exists.
         bool forward();
+        //! Initiate editing of the path in BreadCrumbs.
+        //!
+        //! This could be called when e.g. user presses some combination like Ctrl+L in
+        //! an appropriate context.
+        //! It will work only for editable instances (@see isEditable()).
+        //! Calling this on BreadCrumbs that are already edited is a no-op.
+        void startEditing();
 
     Q_SIGNALS:
         //! Triggered when the currently displayed path changes via any of the slots.
         //! @return fullPath The new path after the change.
         void pathChanged(const QString& fullPath);
+        //! Triggered after user changes the path in editable BreadCrumbs.
+        //!
+        //! @warning the actual path won't be pushed and the BreadCrumbs won't change. It's up to the user of this class to first check
+        //! the validity of the path provided by the user and call e.g. pushPath() to actually change what is stored in the breadcrumbs
+        void pathEdited(const QString& requestedPath);
         //! Triggered when a link is clicked.
         //! @param linkPath The path of the clicked link.
         //! @param linkIndex The index of the link.
@@ -136,9 +158,12 @@ namespace AzQtComponents
 
     protected:
         void resizeEvent(QResizeEvent* event) override;
+        bool eventFilter(QObject* obj, QEvent* ev) override;
 
     private Q_SLOTS:
         void onLinkActivated(const QString& link);
+        void confirmEdit();
+        void cancelEdit();
 
     private:
         QString generateIconHtml(int index);
@@ -149,11 +174,15 @@ namespace AzQtComponents
         void emitButtonSignals(BreadCrumbButtonStates previousButtonStates);
 
         void showTruncatedPathsMenu();
+        bool isEditing() const;
 
         static QString buildPathFromList(const QStringList& fullPath, int pos);
 
+
         QLabel* m_label = nullptr;
+        QLineEdit* m_lineEdit = nullptr;
         QToolButton* m_menuButton = nullptr;
+        QStackedWidget* m_labelEditStack = nullptr;
 
         QString m_currentPath;
         AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::BreadCrumbs::m_backPaths': class 'QStack<QString>' needs to have dll-interface to be used by clients of class 'AzQtComponents::BreadCrumbs'
@@ -163,6 +192,7 @@ namespace AzQtComponents
         QStringList m_truncatedPaths;
         AZ_POP_DISABLE_WARNING
         bool m_pushPathOnLinkActivation = true;
+        bool m_editable = false;
         int m_currentPathSize = 0;
 
         QString m_defaultIcon;

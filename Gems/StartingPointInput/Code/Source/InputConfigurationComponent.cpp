@@ -22,6 +22,11 @@ namespace StartingPointInput
         return static_cast<AZ::s32>(value);
     };
 
+    InputConfigurationComponent::InputConfigurationComponent()
+        : m_uuid{ AZ::Uuid::CreateRandom() }
+    {
+    }
+
     InputConfigurationComponent::~InputConfigurationComponent()
     {
         m_inputEventBindings.Cleanup();
@@ -64,6 +69,7 @@ namespace StartingPointInput
                         ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
                         ->Attribute("EditButton", "")
                         ->Attribute("EditDescription", "Open in Asset Editor")
+                        ->Attribute("ComponentIdentifier", &InputConfigurationComponent::m_uuid)
                     ->DataElement(AZ::Edit::UIHandlers::SpinBox, &InputConfigurationComponent::m_localPlayerIndex, "Local player index",
                             "The player index that this component will receive input from (0 based, -1 means all controllers).\n"
                             "Will only work on platforms such as PC where the local user id corresponds to the local player index.\n"
@@ -91,7 +97,6 @@ namespace StartingPointInput
             // an aggregate type for m_localUserId and only have the pertinent constructors/operators for u32
             m_localUserId = aznumeric_cast<AZ::u32>(m_localPlayerIndex);
         }
-        
     }
 
     void InputConfigurationComponent::Activate()

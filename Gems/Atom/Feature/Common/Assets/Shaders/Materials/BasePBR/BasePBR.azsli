@@ -21,7 +21,6 @@
 
 // ------- Shader Resource Groups -------
 
-#include <Atom/Features/SrgSemantics.azsli>
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include "BasePBR_MaterialSrg.azsli"
@@ -39,6 +38,11 @@ COMMON_OPTIONS_NORMAL()
 
 
 // ------- Shader Stitching -------
+
+bool NeedsTangentFrame()
+{
+    return o_normal_useTexture;
+}
 
 #include "BasePBR_VertexData.azsli"
 #include "BasePBR_VertexEval.azsli"

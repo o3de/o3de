@@ -11,6 +11,7 @@
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RHI/DrawFilterTagRegistry.h>
+#include <Atom/RHI/TagBitRegistry.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Reflect/System/SceneDescriptor.h>
@@ -34,6 +35,11 @@
 
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
+
+namespace AzFramework
+{
+    class IVisibilityScene;
+}
 
 namespace AZ
 {
@@ -159,10 +165,9 @@ namespace AZ
 
             bool HasOutputForPipelineState(RHI::DrawListTag drawListTag) const;
 
-            AZ::RPI::CullingScene* GetCullingScene()
-            {
-                return m_cullingScene;
-            }
+            AzFramework::IVisibilityScene* GetVisibilityScene() const { return m_visibilityScene; }
+
+            AZ::RPI::CullingScene* GetCullingScene() const { return m_cullingScene; }
 
             RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle, ViewType viewType = ViewType::Default);
 
@@ -178,6 +183,13 @@ namespace AZ
                         
             //! Try apply render pipeline changes from each feature processors if the pipeline allows modification and wasn't modified.
             void TryApplyRenderPipelineChanges(RenderPipeline* pipeline);
+
+            RHI::TagBitRegistry<uint32_t>& GetViewTagBitRegistry();
+            
+            RHI::Ptr<RHI::DrawFilterTagRegistry> GetDrawFilterTagRegistry() const
+            {
+                return m_drawFilterTagRegistry;
+            }
 
         protected:
             // SceneFinder overrides...
@@ -246,6 +258,7 @@ namespace AZ
             // CPU simulation job completion for track all feature processors' simulation jobs
             AZ::JobCompletion* m_simulationCompletion = nullptr;
 
+            AzFramework::IVisibilityScene* m_visibilityScene;
             AZ::RPI::CullingScene* m_cullingScene;
 
             // Cached views for current rendering frame. It gets re-built every frame.
@@ -276,6 +289,9 @@ namespace AZ
 
             // reference of dynamic draw system (from RPISystem)
             DynamicDrawSystem* m_dynamicDrawSystem = nullptr;
+
+            // Bit tag registry that allows all views in the scene to sync on the position of flag bits by tag.
+            RHI::Ptr <RHI::TagBitRegistry<uint32_t>> m_viewTagBitRegistry = nullptr;
 
             // Registry which allocates draw filter tag for RenderPipeline
             RHI::Ptr<RHI::DrawFilterTagRegistry> m_drawFilterTagRegistry;

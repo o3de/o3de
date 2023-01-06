@@ -13,8 +13,14 @@
 #include <EditorRigidBodyComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <PhysX/EditorColliderComponentRequestBus.h>
+#include <PhysX/PhysXLocks.h>
 #include <Tests/EditorTestUtilities.h>
 #include <Tests/PhysXTestCommon.h>
+
+namespace PhysX
+{
+    bool IsDefaultSceneCcdEnabled();
+}
 
 namespace PhysXEditorTests
 {
@@ -136,8 +142,10 @@ namespace PhysXEditorTests
         EXPECT_TRUE(AZ::IsClose(bodyAabb.GetZExtent(), cylinderHeight));
 
         AZStd::shared_ptr<const Physics::Shape> shape = rigidBody->GetShape(0);
+        const physx::PxRigidBody* pxRigidBody = static_cast<const physx::PxRigidBody*>(rigidBody->GetNativePointer());
         const physx::PxShape* pxShape = static_cast<const physx::PxShape*>(shape->GetNativePointer());
         // Check the geometry is a type of Convex
+        PHYSX_SCENE_READ_LOCK(pxRigidBody->getScene());
         EXPECT_EQ(pxShape->getGeometryType(), physx::PxGeometryType::eCONVEXMESH);
     }
 
@@ -222,10 +230,30 @@ namespace PhysXEditorTests
         // Set collider subdivision values outside the allowed range
         const AZ::u8 subdivisionsTooSmall = PhysX::Utils::MinFrustumSubdivisions - 1;
         PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooSmall);
-        EXPECT_EQ(expectedError.GetWarningCount(), 1);
+        EXPECT_EQ(expectedError.GetExpectedWarningCount(), 1);
 
         const AZ::u8 subdivisionsTooLarge = PhysX::Utils::MaxFrustumSubdivisions + 1;
         PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooLarge);
-        EXPECT_EQ(expectedError.GetWarningCount(), 2);
+        EXPECT_EQ(expectedError.GetExpectedWarningCount(), 2);
+    }
+
+    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_PhysXConfigButtonVisibilityFunctionUpdatesOnSceneConfigurationChange)
+    {
+        // Given a scene configuration
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        auto config = physicsSystem->GetDefaultSceneConfiguration();
+
+        // When the scene CCD is disabled the component CCD button is disabled
+        // (the buttons read-only attribute is linked to IsDefaultSceneCcdEnabled)
+        config.m_enableCcd = false;
+        physicsSystem->UpdateDefaultSceneConfiguration(config);
+
+        EXPECT_FALSE(PhysX::IsDefaultSceneCcdEnabled());
+
+        // Then when CCD is enabled the opposite is true
+        config.m_enableCcd = true;
+        physicsSystem->UpdateDefaultSceneConfiguration(config);
+
+        EXPECT_TRUE(PhysX::IsDefaultSceneCcdEnabled());
     }
 } // namespace PhysXEditorTests

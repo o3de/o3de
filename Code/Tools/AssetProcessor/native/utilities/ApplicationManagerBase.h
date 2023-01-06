@@ -14,10 +14,11 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
-#include <native/FileWatcher/FileWatcher.h>
+#include <native/FileWatcher/FileWatcherBase.h>
 #include <native/utilities/ApplicationManager.h>
 #include <native/utilities/AssetBuilderInfo.h>
 #include <native/utilities/BuilderManager.h>
+#include <native/utilities/UuidManager.h>
 #endif
 
 namespace AzToolsFramework
@@ -70,6 +71,7 @@ public:
     void HandleFileRelocation() const;
     bool Activate() override;
     bool PostActivate() override;
+    void Reflect() override;
 
     AssetProcessor::PlatformConfiguration* GetPlatformConfiguration() const;
 
@@ -117,6 +119,8 @@ public:
 
     void Rescan();
 
+    void FastScan();
+
     bool IsAssetProcessorManagerIdle() const override;
     bool CheckFullIdle();
 
@@ -152,7 +156,7 @@ protected:
     virtual void DestroyAssetScanner();
     virtual bool InitPlatformConfiguration();
     virtual void DestroyPlatformConfiguration();
-    virtual void InitFileMonitor(AZStd::unique_ptr<FileWatcher> fileWatcher);
+    virtual void InitFileMonitor(AZStd::unique_ptr<FileWatcherBase> fileWatcher);
     virtual void DestroyFileMonitor();
     virtual bool InitBuilderConfiguration();
     virtual void InitControlRequestHandler();
@@ -162,7 +166,8 @@ protected:
     virtual void InitConnectionManager();
     void DestroyConnectionManager();
     void InitAssetRequestHandler(AssetProcessor::AssetRequestHandler* assetRequestHandler);
-    void InitFileStateCache();
+    virtual void InitFileStateCache();
+    virtual void InitUuidManager();
     void CreateQtApplication() override;
 
     bool InitializeInternalBuilders();
@@ -208,12 +213,13 @@ protected:
     int m_processedAssetCount = 0;
     int m_warningCount = 0;
     int m_errorCount = 0;
+    int m_remainingAssetsToFinalize = 0;
     AZStd::set<AZStd::string> m_failedAssets;
     bool m_AssetProcessorManagerIdleState = false;
     bool m_sourceControlReady = false;
     bool m_fullIdle = false;
 
-    AZStd::unique_ptr<FileWatcher> m_fileWatcher;
+    AZStd::unique_ptr<FileWatcherBase> m_fileWatcher;
     AssetProcessor::PlatformConfiguration* m_platformConfiguration = nullptr;
     AssetProcessor::AssetProcessorManager* m_assetProcessorManager = nullptr;
     AssetProcessor::AssetCatalog* m_assetCatalog = nullptr;
@@ -225,10 +231,9 @@ protected:
     ControlRequestHandler* m_controlRequestHandler = nullptr;
 
     AZStd::unique_ptr<AssetProcessor::FileStateBase> m_fileStateCache;
-
     AZStd::unique_ptr<AssetProcessor::FileProcessor> m_fileProcessor;
-
     AZStd::unique_ptr<AssetProcessor::BuilderConfigurationManager> m_builderConfig;
+    AZStd::unique_ptr<AssetProcessor::UuidManager> m_uuidManager;
 
     // The internal builders
     AZStd::shared_ptr<AssetProcessor::InternalRecognizerBasedBuilder> m_internalBuilder;

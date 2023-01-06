@@ -86,6 +86,11 @@ namespace AZ
             createInfo.poolSizeCount = static_cast<uint32_t>(m_descriptor.m_descriptorPoolSizes.size());
             createInfo.pPoolSizes = m_descriptor.m_descriptorPoolSizes.empty() ? nullptr : m_descriptor.m_descriptorPoolSizes.data();
 
+            if (m_descriptor.m_updateAfterBind)
+            {
+                createInfo.flags |= VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+            }
+
             auto& device = static_cast<Device&>(GetDevice());
             const VkResult result =
                 device.GetContext().CreateDescriptorPool(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeDescriptorPool);

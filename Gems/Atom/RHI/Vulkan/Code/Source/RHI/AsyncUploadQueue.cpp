@@ -18,7 +18,7 @@
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/CommandQueueContext.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
 #include <RHI/Image.h>
@@ -43,7 +43,7 @@ namespace AZ
 
             m_queue = &device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Copy);
 
-            result = BuilidFramePackets();
+            result = BuildFramePackets();
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             m_asyncWaitQueue.Init();
@@ -169,6 +169,11 @@ namespace AZ
         // [GFX TODO][ATOM-4205] Stage/Upload 3D streaming images more efficiently.
         RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip)
         {
+            if (residentMip < request.m_mipSlices.size() || residentMip < 1)
+            {
+                AZ_Assert(false, "Wrong input parameter");
+            }
+
             auto* image = static_cast<Image*>(request.m_image);
             auto& device = static_cast<Device&>(GetDevice());
 
@@ -430,7 +435,22 @@ namespace AZ
             ProcessCallback(workHandle);
         }
 
-        RHI::ResultCode AsyncUploadQueue::BuilidFramePackets()
+        void AsyncUploadQueue::QueueBindSparse(const VkBindSparseInfo& bindInfo)
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+
+            VkBindSparseInfo bindInfoCache = bindInfo;
+
+            CommandQueue::Command command = [=, &device](void* queue)
+            {            
+                Queue* vulkanQueue = static_cast<Queue*>(queue);
+                device.GetContext().QueueBindSparse(vulkanQueue->GetNativeQueue(), 1, &bindInfoCache, VK_NULL_HANDLE);
+            };
+            
+            m_queue->QueueCommand(AZStd::move(command));
+        }
+
+        RHI::ResultCode AsyncUploadQueue::BuildFramePackets()
         {
             auto& device = static_cast<Device&>(GetDevice());
             m_framePackets.resize(m_descriptor.m_frameCount);

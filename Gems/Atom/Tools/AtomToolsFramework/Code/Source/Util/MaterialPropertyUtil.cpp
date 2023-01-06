@@ -32,7 +32,7 @@ namespace AtomToolsFramework
         return AZ::RPI::MaterialPropertyValue::ToAny(value);
     }
 
-    void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition)
+    void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialPropertySourceData& propertyDefinition)
     {
         propertyConfig.m_name = propertyDefinition.GetName();
         propertyConfig.m_displayName = propertyDefinition.m_displayName;
@@ -132,7 +132,7 @@ namespace AtomToolsFramework
     bool ConvertToExportFormat(
         const AZStd::string& exportPath,
         [[maybe_unused]] const AZ::Name& propertyId,
-        const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
+        const AZ::RPI::MaterialPropertySourceData& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue)
     {
         if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Enum && propertyValue.Is<uint32_t>())

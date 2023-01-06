@@ -50,10 +50,13 @@ set(FILES
     Include/Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h
     Include/Atom/RPI.Reflect/Image/StreamingImagePoolAssetCreator.h
     Include/Atom/RPI.Reflect/Material/LuaMaterialFunctor.h
+    Include/Atom/RPI.Reflect/Material/LuaScriptUtilities.h
     Include/Atom/RPI.Reflect/Material/MaterialAsset.h
     Include/Atom/RPI.Reflect/Material/MaterialAssetCreator.h
     Include/Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h
     Include/Atom/RPI.Reflect/Material/MaterialNameContext.h
+    Include/Atom/RPI.Reflect/Material/MaterialPipelineState.h
+    Include/Atom/RPI.Reflect/Material/MaterialPropertyCollection.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyValue.h
@@ -136,7 +139,9 @@ set(FILES
     Source/RPI.Reflect/Material/MaterialAssetCreator.cpp
     Source/RPI.Reflect/Material/MaterialNameContext.cpp
     Source/RPI.Reflect/Material/LuaMaterialFunctor.cpp
+    Source/RPI.Reflect/Material/LuaScriptUtilities.cpp
     Source/RPI.Reflect/Material/MaterialDynamicMetadata.cpp
+    Source/RPI.Reflect/Material/MaterialPropertyCollection.cpp
     Source/RPI.Reflect/Material/MaterialPropertyDescriptor.cpp
     Source/RPI.Reflect/Material/MaterialPropertiesLayout.cpp
     Source/RPI.Reflect/Material/MaterialTypeAsset.cpp

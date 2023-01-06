@@ -53,10 +53,12 @@ namespace AzToolsFramework
             QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
             //! Set whether to show source control icons, this is still temporary mainly to support existing functionality of material browser
             void SetShowSourceControlIcons(bool showSourceControl);
+        
+        signals:
+            void RenameEntry(const QString& value) const;
 
         protected:
             int m_iconSize;
-            AssetBrowserTreeView* m_treeView;
             bool m_showSourceControl = false;
             //! Draw a thumbnail and return its width
             int DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, Thumbnailer::SharedThumbnailKey thumbnailKey) const;

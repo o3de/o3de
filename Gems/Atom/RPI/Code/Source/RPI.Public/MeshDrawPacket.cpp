@@ -59,47 +59,74 @@ namespace AZ
             return m_modelLod->GetMeshes()[m_modelLodMeshIndex];
         }
 
-        bool MeshDrawPacket::SetShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value)
+        void MeshDrawPacket::ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback)
+        {
+            m_material->ForAllShaderItems(
+                [&](const Name&, const ShaderCollection::Item& shaderItem)
+                {
+                    const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
+                    ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
+                    if (index.IsValid())
+                    {
+                        bool shouldContinue = callback(shaderItem, index);
+                        if (!shouldContinue)
+                        {
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+        }
+
+        bool MeshDrawPacket::SetShaderOption(const Name& shaderOptionName, ShaderOptionValue value)
         {
             // check if the material owns this option in any of its shaders, if so it can't be set externally
-            for (auto& shaderItem : m_material->GetShaderCollection())
+            if (m_material->MaterialOwnsShaderOption(shaderOptionName))
             {
-                const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
-                ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
-                if (index.IsValid())
+                return false;
+            }
+
+            // Try to find an existing option entry in the list
+            for (ShaderOptionPair& shaderOptionPair : m_shaderOptions)
+            {
+                if (shaderOptionPair.first == shaderOptionName)
                 {
-                    if (shaderItem.MaterialOwnsShaderOption(index))
-                    {
-                        return false;
-                    }
+                    shaderOptionPair.second = value;
+                    return true;
                 }
             }
 
-            for (auto& shaderItem : m_material->GetShaderCollection())
-            {
-                const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
-                ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
-                if (index.IsValid())
+            // Shader option isn't on the list, look to see if it's even valid for at least one shader item, and if so, add it.
+            ForValidShaderOptionName(shaderOptionName,
+                [&]([[maybe_unused]] const ShaderCollection::Item& shaderItem, [[maybe_unused]] ShaderOptionIndex index)
                 {
-                    // try to find an existing option entry in the list
-                    auto itEntry = AZStd::find_if(m_shaderOptions.begin(), m_shaderOptions.end(), [&shaderOptionName](const ShaderOptionPair& entry)
-                    {
-                        return entry.first == shaderOptionName;
-                    });
-
-                    // store the option name and value, they will be used in DoUpdate() to select the appropriate shader variant
-                    if (itEntry == m_shaderOptions.end())
-                    {
-                        m_shaderOptions.push_back({ shaderOptionName, value });
-                    }
-                    else
-                    {
-                        itEntry->second = value;
-                    }
+                    // Store the option name and value, they will be used in DoUpdate() to select the appropriate shader variant
+                    m_shaderOptions.push_back({ shaderOptionName, value });
+                    return false; // stop checking other shader items.
                 }
-            }
+            );
 
             return true;
+        }
+
+        bool MeshDrawPacket::UnsetShaderOption(const Name& shaderOptionName)
+        {
+            // try to find an existing option entry in the list, then remove it by swapping it with the back.
+            for (ShaderOptionPair& shaderOptionPair : m_shaderOptions)
+            {
+                if (shaderOptionPair.first == shaderOptionName)
+                {
+                    shaderOptionPair = m_shaderOptions.back();
+                    m_shaderOptions.pop_back();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        void MeshDrawPacket::ClearShaderOptions()
+        {
+            m_shaderOptions.clear();
         }
 
         bool MeshDrawPacket::Update(const Scene& parentScene, bool forceUpdate /*= false*/)
@@ -160,7 +187,7 @@ namespace AZ
 
             m_perDrawSrgs.clear();
 
-            auto appendShader = [&](const ShaderCollection::Item& shaderItem)
+            auto appendShader = [&](const ShaderCollection::Item& shaderItem, const Name& materialPipelineName)
             {
                 // Skip the shader item without creating the shader instance
                 // if the mesh is not going to be rendered based on the draw tag
@@ -294,10 +321,19 @@ namespace AZ
                     drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
                     m_perDrawSrgs.push_back(drawSrg);
                 }
+
+                if (materialPipelineName != MaterialPipelineNone)
+                {
+                    RHI::DrawFilterTag pipelineTag = parentScene.GetDrawFilterTagRegistry()->AcquireTag(materialPipelineName);
+                    AZ_Assert(pipelineTag.IsValid(), "Could not acquire pipeline filter tag '%s'.", materialPipelineName.GetCStr());
+                    drawRequest.m_drawFilterMask = 1 << pipelineTag.GetIndex();
+                }
+
                 drawPacketBuilder.AddDrawItem(drawRequest);
                 
                 ShaderData shaderData;
                 shaderData.m_shader = AZStd::move(shader);
+                shaderData.m_materialPipelineName = materialPipelineName;
                 shaderData.m_shaderTag = shaderItem.GetShaderTag();
                 shaderData.m_requestedShaderVariantId = requestedVariantId;
                 shaderData.m_activeShaderVariantId = variant.GetShaderVariantId();
@@ -309,19 +345,23 @@ namespace AZ
 
             m_material->ApplyGlobalShaderOptions();
 
-            for (auto& shaderItem : m_material->GetShaderCollection())
-            {
-                if (shaderItem.IsEnabled())
+            // TODO(MaterialPipeline): We might want to detect duplicate ShaderItem objects here, and merge them to avoid redundant RHI DrawItems.
+            m_material->ForAllShaderItems(
+                [&](const Name& materialPipelineName, const ShaderCollection::Item& shaderItem)
                 {
-                    if (shaderList.size() == RHI::DrawPacketBuilder::DrawItemCountMax)
+                    if (shaderItem.IsEnabled())
                     {
-                        AZ_Error("MeshDrawPacket", false, "Material has more than the limit of %d active shader items.", RHI::DrawPacketBuilder::DrawItemCountMax);
-                        return false;
+                        if (shaderList.size() == RHI::DrawPacketBuilder::DrawItemCountMax)
+                        {
+                            AZ_Error("MeshDrawPacket", false, "Material has more than the limit of %d active shader items.", RHI::DrawPacketBuilder::DrawItemCountMax);
+                            return false;
+                        }
+
+                        appendShader(shaderItem, materialPipelineName);
                     }
 
-                    appendShader(shaderItem);
-                }
-            }
+                    return true;
+                });
 
             m_drawPacket = drawPacketBuilder.End();
 

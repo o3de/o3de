@@ -1519,15 +1519,24 @@ struct IMovieSystem
 
 inline void CAnimParamType::SaveToXml(XmlNodeRef& xmlNode) const
 {
-    gEnv->pMovieSystem->SaveParamTypeToXml(*this, xmlNode);
+    if (gEnv->pMovieSystem)
+    {
+        gEnv->pMovieSystem->SaveParamTypeToXml(*this, xmlNode);
+    }
 }
 
 inline void CAnimParamType::LoadFromXml(const XmlNodeRef& xmlNode, const uint version)
 {
-    gEnv->pMovieSystem->LoadParamTypeFromXml(*this, xmlNode, version);
+    if (gEnv->pMovieSystem)
+    {
+        gEnv->pMovieSystem->LoadParamTypeFromXml(*this, xmlNode, version);
+    }
 }
 
 inline void CAnimParamType::Serialize(XmlNodeRef& xmlNode, bool bLoading, const uint version)
 {
-    gEnv->pMovieSystem->SerializeParamType(*this, xmlNode, bLoading, version);
+    if (gEnv->pMovieSystem)
+    {
+        gEnv->pMovieSystem->SerializeParamType(*this, xmlNode, bLoading, version);
+    }
 }

@@ -66,7 +66,7 @@ CPythonScriptsDialog::CPythonScriptsDialog(QWidget* parent)
 
     AzQtComponents::LineEdit::applySearchStyle(ui->searchField);
 
-    QStringList scriptFolders;
+    AZStd::vector<QString> scriptFolders;
     auto engineScriptPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Assets" / "Editor" / "Scripts";
     scriptFolders.push_back(engineScriptPath.c_str());
 
@@ -90,14 +90,21 @@ CPythonScriptsDialog::CPythonScriptsDialog(QWidget* parent)
         }
     }
 
-    ui->treeView->init(scriptFolders, s_kPythonFileNameSpec, s_kRootElementName, false, false);
+    ui->treeView->Configure(scriptFolders, s_kPythonFileNameSpec, s_kRootElementName, false, false);
+    ui->treeView->expandAll();
     QObject::connect(ui->treeView, &CFolderTreeCtrl::ItemDoubleClicked, this, &CPythonScriptsDialog::OnExecute);
     QObject::connect(ui->executeButton, &QPushButton::clicked, this, &CPythonScriptsDialog::OnExecute);
-    QObject::connect(ui->searchField, &QLineEdit::textChanged, ui->treeView, &CFolderTreeCtrl::SetSearchFilter);
+    QObject::connect(ui->searchField, &QLineEdit::textChanged, this, [&](QString searchText){
+        ui->treeView->SetSearchFilter(searchText);
+        if(searchText.trimmed().isEmpty()) 
+        {
+            ui->treeView->expandAll();
+        }
+    });
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CPythonScriptsDialog::ScanFolderForScripts(QString path, QStringList& scriptFolders) const
+void CPythonScriptsDialog::ScanFolderForScripts(QString path, AZStd::vector<QString>& scriptFolders) const
 {
     char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
     if (AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(path.toLocal8Bit().constData(), resolvedPath, AZ_MAX_PATH_LEN))
@@ -112,9 +119,6 @@ void CPythonScriptsDialog::ScanFolderForScripts(QString path, QStringList& scrip
 //////////////////////////////////////////////////////////////////////////
 CPythonScriptsDialog::~CPythonScriptsDialog()
 {
-    // Clear the filter before closing to workaround an issue with the QSortFilterProxyModel.
-    // It appears to delete any matching items itself, resulting in an attempt to delete an item twice.
-    ui->treeView->SetSearchFilter("");
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,32 @@
+{
+    "values": [
+        {
+            "$type": "{5B03C8E6-8CEE-4DA0-A7FA-CD88689DD45B} MeshGroup",
+            "id": "{A2C9B60B-5532-5D8B-8822-0E6CF19B4FBC}",
+            "name": "shaderball_simple",
+            "NodeSelectionList": {
+                "unselectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.ShaderBall",
+                    "RootNode.ShaderBall.Material_Prev",
+                    "RootNode.ShaderBall.inner_shaderball",
+                    "RootNode.ShaderBall.Material_Prev.Cushion",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBaseInside",
+                    "RootNode.ShaderBall.Material_Prev.GrayInlay",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBase",
+                    "RootNode.ShaderBall.Material_Prev.MaterialSphere",
+                    "RootNode.ShaderBall.inner_shaderball.sphere",
+                    "RootNode.ShaderBall.inner_shaderball.subsphere"
+                ]
+            },
+            "PhysicsMaterialSlots": {
+                "Slots": [
+                    {
+                        "Name": "Entire object"
+                    }
+                ]
+            }
+        }
+    ]
+}

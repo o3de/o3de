@@ -53,6 +53,8 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/IO/RemoteStorageDrive.h>
+#include <AzFramework/PaintBrush/PaintBrushSettings.h>
+#include <AzFramework/PaintBrush/PaintBrushSystemComponent.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
@@ -139,6 +141,12 @@ namespace AzFramework
         {
             m_nativeUI = AZStd::make_unique<AZ::NativeUI::NativeUISystem>();
             AZ::Interface<AZ::NativeUI::NativeUIRequests>::Register(m_nativeUI.get());
+        }
+
+        if (auto poolManager = AZ::Interface<AZ::InstancePoolManagerInterface>::Get(); poolManager == nullptr)
+        {
+            m_poolManager = AZStd::make_unique<AZ::InstancePoolManager>();
+            AZ::Interface<AZ::InstancePoolManagerInterface>::Register(m_poolManager.get());
         }
 
         ApplicationRequests::Bus::Handler::BusConnect();
@@ -318,6 +326,7 @@ namespace AzFramework
         AzFramework::BoundsRequests::Reflect(context);
         AzFramework::ScreenGeometryReflect(context);
         AzFramework::RemoteStorageDriveConfig::Reflect(context);
+        AzFramework::PaintBrushSettings::Reflect(context);
 
         Physics::ReflectionUtils::ReflectPhysicsApi(context);
         AzFramework::SurfaceData::SurfaceTagWeight::Reflect(context);
@@ -357,6 +366,7 @@ namespace AzFramework
             azrtti_typeid<AzFramework::RenderGeometry::GameIntersectorComponent>(),
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<AzFramework::InputSystemComponent>(),
+            azrtti_typeid<AzFramework::PaintBrushSystemComponent>(),
             azrtti_typeid<AzFramework::StreamingInstall::StreamingInstallSystemComponent>(),
             azrtti_typeid<AzFramework::SpawnableSystemComponent>(),
             azrtti_typeid<Physics::MaterialSystemComponent>(),

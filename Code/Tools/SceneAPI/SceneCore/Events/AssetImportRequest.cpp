@@ -234,8 +234,12 @@ namespace AZ
             {
             }
 
-            AZStd::shared_ptr<Containers::Scene> AssetImportRequest::LoadSceneFromVerifiedPath(const AZStd::string& assetFilePath, const Uuid& sourceGuid,
-                                                                                               RequestingApplication requester, const Uuid& loadingComponentUuid)
+            AZStd::shared_ptr<Containers::Scene> AssetImportRequest::LoadSceneFromVerifiedPath(
+                const AZStd::string& assetFilePath,
+                const Uuid& sourceGuid,
+                RequestingApplication requester,
+                const Uuid& loadingComponentUuid,
+                const AZStd::string& watchFolder)
             {
                 ImportScope importScope;
                 AZStd::string sceneName;
@@ -244,17 +248,19 @@ namespace AZ
                 AZ_Assert(scene, "Unable to create new scene for asset importing.");
 
                 Data::AssetInfo assetInfo;
-                AZStd::string watchFolder;
+                AZStd::string watchFolderFromDatabase;
                 bool result = false;
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, sourceGuid, assetInfo, watchFolder);
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, sourceGuid, assetInfo, watchFolderFromDatabase);
 
                 if (result)
                 {
-                    scene->SetWatchFolder(watchFolder);
+                    scene->SetWatchFolder(watchFolderFromDatabase);
                 }
                 else
                 {
-                    AZ_Error(
+                    scene->SetWatchFolder(watchFolder);
+
+                    AZ_Warning(
                         "AssetImportRequest", false, "Failed to get watch folder for source %s",
                         sourceGuid.ToString<AZStd::string>().c_str());
                 }

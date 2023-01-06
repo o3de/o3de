@@ -157,18 +157,17 @@ namespace LmbrCentral
         return m_aaboxShape.SetBoxDimensions(dimensions);
     }
 
-    AZ::Transform EditorAxisAlignedBoxShapeComponent::GetCurrentTransform()
-    {
-        return AzToolsFramework::TransformNormalizedScale(m_aaboxShape.GetCurrentTransform());
-    }
-
     AZ::Transform EditorAxisAlignedBoxShapeComponent::GetCurrentLocalTransform()
     {
         return AZ::Transform::CreateIdentity();
     }
 
-    AZ::Vector3 EditorAxisAlignedBoxShapeComponent::GetBoxScale()
+    AZ::Aabb EditorAxisAlignedBoxShapeComponent::GetLocalBounds()
     {
-        return AZ::Vector3(m_aaboxShape.GetCurrentTransform().GetUniformScale());
+        AZ::Transform transform = AZ::Transform::CreateIdentity();
+        AZ::Aabb aabb = AZ::Aabb::CreateNull();
+        m_aaboxShape.GetTransformAndLocalBounds(transform, aabb);
+        return aabb.GetTransformedAabb(AZ::Transform::CreateFromQuaternion(GetWorldTM().GetRotation().GetInverseFast()));
     }
 } // namespace LmbrCentral
+

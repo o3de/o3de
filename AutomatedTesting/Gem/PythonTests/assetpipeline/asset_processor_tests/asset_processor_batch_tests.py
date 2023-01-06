@@ -13,6 +13,7 @@ from os import listdir
 import pytest
 import logging
 import os
+from pprint import pformat
 import stat
 import shutil
 
@@ -196,6 +197,8 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "single_working_prefab"))
+        source_asset = os.listdir(asset_processor.project_test_source_folder())[0]
+        asset_path = os.path.join(asset_processor.project_test_source_folder(), source_asset)
 
         # Calling AP first time and checking whether desired assets were processed
         batch_success, output = asset_processor.batch_process(capture_output=True)
@@ -205,18 +208,19 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         assert not missing_assets, 'Following assets were not found in cache {}. AP Batch Output {}'.format(
             missing_assets, output)
 
-        # Appending a newline to source prefab
-        source_asset = os.listdir(asset_processor.project_test_source_folder())[0]
-        asset_path = os.path.join(asset_processor.project_test_source_folder(), source_asset)
-        os.chmod(asset_path, stat.S_IWRITE)
-        with open(asset_path, 'a') as source_file:
-            source_file.write('\n')
-            source_file.close()
+        # Copy a file with a slight change in it, so the asset will be re-processed.
+        shutil.copyfile(os.path.join(ap_setup_fixture["tests_dir"], "assets", "TestAssets", "single_working_prefab_override", "working_prefab.prefab"), asset_path)
 
         # Reprocessing and getting number of successfully processed assets from output
         batch_success, output = asset_processor.batch_process(capture_output=True)
         # Checking the number of jobs is equal to 1
         num_processed_assets = asset_processor_utils.get_num_processed_assets(output)
+
+        # Print the output if the test is going to fail, to make it easier to debug.        
+        if num_processed_assets != 1:
+            for output_line in output:
+                logger.info(f"{output_line}\n")
+
         assert num_processed_assets == 1, \
             f'Wrong number of successfully processed assets found in output. Expected: 1 Found: {num_processed_assets}'
 
@@ -309,13 +313,8 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id('C1612448')
-    @pytest.mark.SUITE_sandbox
     def test_TwoAssetsWithSameProductName_ShouldProcessAfterRename(self, asset_processor, ap_setup_fixture):
         """
-        Sandboxed: Race condition on AP batch shutdown can cause the failure to not yet be registered even though it's
-        recognized as failing in the logs.  There appears to be a window where the AutoFailJob doesn't complete
-        before the shutdown completes and the failure doesn't end up counting
-
         Tests processing of two assets with the same product name, then verifies that AP will successfully process after
         renaming one of the assets' outputs.
 
@@ -329,11 +328,19 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         7. Verify that expected product files are in the cache
         """
 
+        def run_ap_debug_skip_atom_output(asset_processor):
+            result, output = asset_processor.batch_process(capture_output=True, extra_params=["--debugOutput",
+                                                                                              "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
+            # If the test fails, it's helpful to have the output from asset processor in the logs, to track the failure down.
+            logger.info(f"Asset Processor Output: {pformat(output)}")
+            return result, output
+
         # Copying test assets to project folder
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename")
-        # Launching AP, making sure it is failing
-        result, output = asset_processor.batch_process(capture_output=True)
-        assert result == False, f'AssetProcessorBatch should have failed because the generated output products should share the same name, instead output was {output}'
+        # Launching AP, verify it is failing
+        result, output = run_ap_debug_skip_atom_output(asset_processor)
+        assert result == False, \
+            'AssetProcessorBatch should have failed because the generated output products should share the same name.'
 
         # Renaming output files so they won't collide in cache after second processing
         file_to_rename = os.path.join(asset_processor.temp_asset_root(), "AutomatedTesting", "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename", "a.fbx.assetinfo")
@@ -345,7 +352,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         shutil.copyfile(data_for_rename, file_to_rename)
 
         # Reprocessing files and making sure there are no failed jobs
-        result, output = asset_processor.batch_process(capture_output=True)
+        result, output = run_ap_debug_skip_atom_output(asset_processor)
         assert result, "AssetProcessorBatch failed when it should have succeeded after renaming output."
 
         num_failed_assets = asset_processor_utils.get_num_failed_processed_assets(output)

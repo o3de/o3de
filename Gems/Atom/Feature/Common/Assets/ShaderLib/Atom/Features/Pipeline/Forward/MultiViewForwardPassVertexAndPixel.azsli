@@ -1,0 +1,63 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#define OUTPUT_DEPTH 0 // Never use custom depth, the VR pipeline is too optimized to support PDO.
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+#include <Atom/Features/PostProcessing/Tonemap.azsli>
+
+// --- Vertex Shader ---
+
+VsOutput VertexShader(VsInput IN)
+{
+    VsOutput OUT = EvaluateVertexGeometry(IN);
+    return OUT;
+}
+
+// --- Pixel Shader ---
+
+#if FORCE_EARLY_DEPTH_STENCIL
+    [earlydepthstencil]
+#endif
+ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    // ------- Geometry -> Surface -> Lighting -------
+
+    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
+
+    Surface surface = EvaluateSurface(geoData);
+
+    LightingData lightingData = EvaluateLighting(surface, IN.position);
+
+    // ------- Output -------
+
+    ForwardPassOutput OUT;
+
+    float3 color = lightingData.diffuseLighting.rgb + lightingData.specularLighting.rgb + lightingData.emissiveLighting.rgb;
+
+#if ENABLE_MERGE_FILMIC_TONEMAP
+    // Apply manual exposure compensation
+    color = ApplyManualExposure(color, ViewSrg::GetExposureValueCompensation());
+    
+    // We could add Aces support here as well if perf allows.
+    color = ApplyFilmicTonemap(color);
+#endif
+
+    OUT.m_color.rgb = color;
+
+#if !FORCE_OPAQUE
+    if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
+    {
+        OUT.m_color.a = surface.alpha;
+    }
+#endif
+
+    return OUT;
+}
+

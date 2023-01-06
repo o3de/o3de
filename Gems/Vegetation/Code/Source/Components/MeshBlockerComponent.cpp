@@ -21,6 +21,10 @@
 #include <Vegetation/InstanceData.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
+#include <VegetationProfiler.h>
+
+AZ_DECLARE_BUDGET(Vegetation);
+
 namespace Vegetation
 {
     void MeshBlockerConfig::Reflect(AZ::ReflectContext* context)
@@ -198,7 +202,7 @@ namespace Vegetation
 
     bool MeshBlockerComponent::PrepareToClaim([[maybe_unused]] EntityIdStack& stackIds)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> cacheLock(m_cacheMutex);
 
@@ -218,7 +222,7 @@ namespace Vegetation
 
     bool MeshBlockerComponent::ClaimPosition(EntityIdStack& processedIds, const ClaimPoint& point, InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> cacheLock(m_cacheMutex);
 
@@ -284,7 +288,7 @@ namespace Vegetation
 
     void MeshBlockerComponent::ClaimPositions(EntityIdStack& stackIds, ClaimContext& context)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         //adding entity id to the stack of entity ids affecting vegetation
         EntityIdStack emptyIds;
@@ -376,7 +380,7 @@ namespace Vegetation
 
     void MeshBlockerComponent::UpdateMeshData()
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> cacheLock(m_cacheMutex);
 

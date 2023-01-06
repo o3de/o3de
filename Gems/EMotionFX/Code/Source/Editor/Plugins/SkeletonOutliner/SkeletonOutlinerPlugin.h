@@ -13,7 +13,7 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
-#include <Editor/Plugins/SkeletonOutliner/JointPropertyWidget.h>
+#include <Editor/Plugins/ColliderWidgets/JointPropertyWidget.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/SelectionProxyModel.h>
 #include <Editor/InspectorBus.h>
@@ -52,10 +52,12 @@ namespace EMotionFX
         // SkeletalOutlinerRequestBus overrides
         Node* GetSingleSelectedNode() override;
         QModelIndex GetSingleSelectedModelIndex() override;
-        AZ::Outcome<const QModelIndexList&> GetSelectedRowIndices() override;
+        AZ::Outcome<QModelIndexList> GetSelectedRowIndices() override;
         SkeletonModel* GetModel() override;
         void DataChanged(const QModelIndex& modelIndex) override;
         void DataListChanged(const QModelIndexList& modelIndexList) override;
+
+        JointPropertyWidget* m_propertyWidget = nullptr;
 
     private slots:
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
@@ -80,7 +82,6 @@ namespace EMotionFX
         SkeletonSortFilterProxyModel*           m_filterProxyModel;
         static constexpr int s_iconSize = 16;
 
-        JointPropertyWidget* m_propertyWidget = nullptr;
         // Callbacks
         // Works for all commands that use the actor id as well as the joint name mixins
         MCORE_DEFINECOMMANDCALLBACK(DataChangedCallback);
