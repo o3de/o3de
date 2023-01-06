@@ -137,9 +137,6 @@ namespace AzToolsFramework
                 Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch)
             {
-                AZ_Assert(&owningInstance != &focusedInstance,
-                    "DeleteEntitiesAndPrefabsAsOverride does not support source template editing.");
-
                 PrefabUndoDeleteAsOverride* deleteUndoAsOverrideState =
                     aznew PrefabUndoDeleteAsOverride("Undo Deleting Entities and Prefab Instances As Override");
                 deleteUndoAsOverrideState->SetParent(undoBatch);

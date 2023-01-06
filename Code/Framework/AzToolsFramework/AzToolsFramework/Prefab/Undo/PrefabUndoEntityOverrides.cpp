@@ -39,6 +39,10 @@ namespace AzToolsFramework
             Instance& owningInstance,
             const Instance& focusedInstance)
         {
+            AZ_Assert(
+                &owningInstance != &focusedInstance,
+                "PrefabUndoEntityOverrides::Capture - Owning instance could not be the focused instance for override edit node.");
+
             InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(owningInstance, &focusedInstance);
             AZ_Assert(climbUpResult.m_isTargetInstanceReached, "PrefabUndoEntityOverrides::Capture - "
                 "Owning prefab instance should be a descendant of the focused prefab instance.");
