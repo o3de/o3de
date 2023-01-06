@@ -41,25 +41,25 @@ else()
     message("TIAF disabled. Instrumentation bin not provided.")
 endif()
 
-#! o3de_test_impact_apply_test_properties: selectively disables a test target for running in CTest according to whether
-# or not their test library type is enabled for running in TIAF.
+#! o3de_test_impact_apply_test_labels: applies the the appropriate label to a test target for running in CTest according to whether
+#  or not their test framework type is enabled for running in TIAF.
 #
 # \arg:TEST_NAME The test target name
-# \arg:TEST_LIBRARY the test library type of the test target
-function(o3de_test_impact_apply_test_properties TEST_NAME TEST_LIBRARY)
-    if("${TEST_LIBRARY}" STREQUAL "pytest" OR "${TEST_LIBRARY}" STREQUAL "pytest_editor")
+# \arg:TEST_FRAMEWORK The test framework type of the test target
+# \arg:TEST_LABELS The existing test labels list that the TIAF label will be appended to
+function(o3de_test_impact_apply_test_labels TEST_NAME TEST_FRAMEWORK TEST_LABELS)
+    if("${TEST_FRAMEWORK}" STREQUAL "pytest" OR "${TEST_FRAMEWORK}" STREQUAL "pytest_editor")
         if(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
-            set_tests_properties(${TEST_NAME}
-                PROPERTIES
-                    DISABLED True
-            )
+            set(label REQUIRES_tiaf)
         endif()
-    elseif("${TEST_LIBRARY}" STREQUAL "googletest" OR "${TEST_LIBRARY}" STREQUAL "googlebenchmark")
+    elseif("${TEST_FRAMEWORK}" STREQUAL "googletest" OR "${TEST_FRAMEWORK}" STREQUAL "googlebenchmark")
         if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED)
-            set_tests_properties(${TEST_NAME}
-                PROPERTIES
-                    DISABLED True
-            )
+            set(label REQUIRES_tiaf)
         endif()
+    endif()
+    
+    if(DEFINED label)
+        list(APPEND ${TEST_LABELS} ${label})
+        set(${TEST_LABELS} ${${TEST_LABELS}} PARENT_SCOPE)
     endif()
 endfunction()
