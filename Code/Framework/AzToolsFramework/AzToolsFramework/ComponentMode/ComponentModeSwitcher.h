@@ -65,11 +65,6 @@ namespace AzToolsFramework
                 return m_activeSwitcherComponent;
             }
 
-            AZ::Component* GetActiveComponent()
-            {
-                return m_activeSwitcherComponent;
-            }
-
             ViewportUi::SwitcherId GetSwitcherId() const
             {
                 return m_switcherId;
