@@ -118,6 +118,11 @@ namespace AzToolsFramework
     #endif
             pHandler->RegisterDpeHandler();
 
+            auto propertyEditorSystemInterface = AZ::Interface<AZ::DocumentPropertyEditor::PropertyEditorSystemInterface>::Get();
+            AZ_Assert(propertyEditorSystemInterface,
+                "PropertyEditorSystemInterface was nullptr when attempting to register property handler adapter elements");
+            pHandler->RegisterWithPropertySystem(propertyEditorSystemInterface);
+
             m_Handlers.insert(AZStd::make_pair(pHandler->GetHandlerName(), pHandler));
 
             if (pHandler->IsDefaultHandler())

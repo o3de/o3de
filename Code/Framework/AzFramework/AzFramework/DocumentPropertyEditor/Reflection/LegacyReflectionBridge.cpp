@@ -571,8 +571,9 @@ namespace AZ::Reflection
                     AZ::Name name = propertyEditorSystem->LookupNameFromId(it->first);
                     if (!name.IsEmpty())
                     {
-                        // If a more specific attribute is already loaded, ignore the new value unless it is an
-                        // EnumValue attribute since those may come in multiples
+                        // If an attribute of the same name is already loaded then ignore the new value
+                        // unless it is an EnumValue attribute since each represents an individual value
+                        // in a particular enum and multiple are expected
                         if (visitedAttributes.find(name) != visitedAttributes.end() && name != enumValueName)
                         {
                             return;
@@ -587,7 +588,7 @@ namespace AZ::Reflection
                                              .value_or(visibility);
                         }
 
-                        // See if any registered attributes can read this attribute.
+                        // See if any registered attribute definitions can read this attribute
                         Dom::Value attributeValue;
                         propertyEditorSystem->EnumerateRegisteredAttributes(
                             name,
@@ -599,7 +600,7 @@ namespace AZ::Reflection
                                 }
                             });
 
-                        // Collect related EnumValue attributes for later
+                        // Collect related EnumValue attributes so they can be stored together
                         if (name == enumValueName && !attributeValue.IsNull())
                         {
                             enumValueCache.ArrayPushBack(attributeValue);

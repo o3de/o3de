@@ -23,6 +23,7 @@
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzFramework/DocumentPropertyEditor/PropertyEditorSystemInterface.h>
 
 class QWidget;
 class QColor;
@@ -105,6 +106,10 @@ namespace AzToolsFramework
     public:
         PropertyHandlerBase();
         virtual ~PropertyHandlerBase();
+
+        // This should be overriden by property handlers that need to register their own
+        // adapter elements (nodes, property editors, attributes)
+        virtual void RegisterWithPropertySystem(AZ::DocumentPropertyEditor::PropertyEditorSystemInterface* /*system*/) {}
 
         // you need to define this.
         virtual AZ::u32 GetHandlerName() const = 0;  // AZ_CRC("IntSlider")

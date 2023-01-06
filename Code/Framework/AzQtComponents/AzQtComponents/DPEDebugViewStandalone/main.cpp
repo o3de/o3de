@@ -44,6 +44,8 @@
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
+#include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
+
 namespace DPEDebugView
 {
     void Button1()
@@ -91,25 +93,51 @@ namespace DPEDebugView
 
         struct GenericValueTestType
         {
-            AZ_TYPE_INFO(GenericValueTestType, "{9EBA5A84-02A3-46EB-8C10-22246FD0EFDF}");
+            AZ_RTTI(GenericValueTestType, "{9EBA5A84-02A3-46EB-8C10-22246FD0EFDF}");
 
-            AZStd::string id;
+            GenericValueTestType() = default;
+            GenericValueTestType(AZStd::string_view id)
+            {
+                m_id = id;
+            }
+            virtual ~GenericValueTestType() = default;
+
+            static void Reflect(AZ::ReflectContext* context)
+            {
+                if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+                {
+                    serializeContext->Class<GenericValueTestType>()->Version(1)
+                        ->Field("m_id", &GenericValueTestType::m_id);
+                }
+            }
+
+            bool operator==(const GenericValueTestType& other) const
+            {
+                return this->m_id == other.m_id;
+            }
+
+            bool operator!=(const GenericValueTestType& other) const
+            {
+                return !operator==(other);
+            }
+
+            AZStd::string m_id;
         };
 
         using GenericValueListType = AZStd::vector<AZStd::pair<GenericValueTestType, AZStd::string>>;
 
         GenericValueListType GetGenericValueList()
         {
-            static GenericValueListType validReturnTypes;
+            static GenericValueListType genericValueList;
 
-            if (validReturnTypes.empty())
+            if (genericValueList.empty())
             {
-                validReturnTypes.push_back(AZStd::make_pair(GenericValueTestType{ "id1" }, "FirstId"));
-                validReturnTypes.push_back(AZStd::make_pair(GenericValueTestType{ "id2" }, "SecondId"));
-                validReturnTypes.push_back(AZStd::make_pair(GenericValueTestType{ "id3" }, "ThirdId"));
+                genericValueList.push_back(AZStd::make_pair(GenericValueTestType{ "id1" }, "FirstId"));
+                genericValueList.push_back(AZStd::make_pair(GenericValueTestType{ "id2" }, "SecondId"));
+                genericValueList.push_back(AZStd::make_pair(GenericValueTestType{ "id3" }, "ThirdId"));
             }
 
-            return validReturnTypes;
+            return genericValueList;
         }
 
         int m_simpleInt = 5;
@@ -128,7 +156,7 @@ namespace DPEDebugView
         AZStd::unordered_map<AZ::EntityId, int> m_entityIdMap;
         EnumType m_enumValue = EnumType::Value1;
         EnumValueType m_enumValueType = EnumValueType::BValue;
-        GenericValueListType m_genericValueList;
+        GenericValueTestType m_genericValueList = { "id3" };
         AZ::EntityId m_entityId;
 
         // For testing invocable ReadOnly attributes
@@ -200,10 +228,10 @@ namespace DPEDebugView
                             AZ::Edit::UIHandlers::Default, &TestContainer::m_nestedMap, "unordered_map<enum, unordered_map<int, int>>", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityIdMap, "unordered_map<EntityId, Number>", "")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "")
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TestContainer::m_enumValue, "enum (no multi-edit)", "")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TestContainer::m_enumValue, "EnumValues ComboBox", "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, &TestContainer::GetEnumValues)
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, false)
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TestContainer::m_enumValueType, "enum (multi-edit)", "")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TestContainer::m_enumValueType, "EnumValue ComboBox", "")
                         ->EnumAttribute(EnumValueType::AValue, "AValueDescription")
                         ->EnumAttribute(EnumValueType::BValue, "BValueDescription")
                         ->EnumAttribute(EnumValueType::CValue, "CValueDescription")
@@ -221,6 +249,8 @@ namespace DPEDebugView
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true);
                 }
+
+                GenericValueTestType::Reflect(context);
             }
         }
     };
@@ -306,6 +336,8 @@ int main(int argc, char** argv)
     testContainer.m_multiMap.insert({ 1, "also one" });
 
     QPointer<AzToolsFramework::DPEDebugWindow> debugViewer = new AzToolsFramework::DPEDebugWindow(nullptr);
+
+    AzToolsFramework::RegisterGenericComboBoxHandler<DPEDebugView::TestContainer::GenericValueTestType>();
 
     // create a real DPE to track the same adapter selected for the debug tool
     QPointer<AzToolsFramework::FilteredDPE> filteredDPE = new AzToolsFramework::FilteredDPE(nullptr);

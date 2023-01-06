@@ -312,6 +312,74 @@ namespace AZ::DocumentPropertyEditor
         AZStd::optional<EnumValuesContainer> DomToValue(const Dom::Value& value) const override;
     };
 
+    template<typename GenericValueType>
+    class GenericValueListAttributeDefinition final
+        : public AttributeDefinition<AZStd::vector<AZStd::pair<GenericValueType, AZStd::string>>>
+    {
+    public:
+        using GenericValueList = AZStd::vector<AZStd::pair<GenericValueType, AZStd::string>>;
+
+        static constexpr const char* EntryDescriptionKey = "description";
+        static constexpr const char* EntryValueKey = "value";
+
+        explicit constexpr GenericValueListAttributeDefinition(AZStd::string_view name)
+            : AttributeDefinition<GenericValueList>(name)
+        {
+        }
+
+        Dom::Value ValueToDom(const GenericValueList& attribute) const override
+        {
+            Dom::Value result(Dom::Type::Array);
+            for (const auto& entry : attribute)
+            {
+                Dom::Value entryDom(Dom::Type::Object);
+                entryDom[EntryValueKey] = Dom::Value::FromOpaqueValue(AZStd::make_any<GenericValueType>(entry.first));
+                entryDom[EntryDescriptionKey] = Dom::Value(entry.second, true);
+                result.ArrayPushBack(AZStd::move(entryDom));
+            }
+            return result;
+        }
+
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
+        {
+            if (attribute == nullptr)
+            {
+                return {};
+            }
+
+            AZ::AttributeReader reader(instance, attribute);
+            if (GenericValueList value; reader.Read<GenericValueList>(value))
+            {
+                return ValueToDom(value);
+            }
+
+            return {};
+        }
+
+        AZStd::optional<GenericValueList> DomToValue(const Dom::Value& value) const override
+        {
+            if (!value.IsArray())
+            {
+                return {};
+            }
+
+            GenericValueList result;
+            for (const Dom::Value& entryDom : value.GetArray())
+            {
+                if (!entryDom.IsObject() || !entryDom.HasMember(EntryValueKey) || !entryDom.HasMember(EntryDescriptionKey))
+                {
+                    continue;
+                }
+                result.emplace_back(
+                    AZStd::make_pair<GenericValueType, AZStd::string>(
+                        AZStd::any_cast<GenericValueType>(entryDom[EntryValueKey].GetOpaqueValue()),
+                        entryDom[EntryDescriptionKey].GetString()));
+            }
+
+            return result;
+        }
+    };
+
     //! Defines a callback applicable to a Node.
     //! Callbacks are stored as attributes and accept an AZStd::function<CallbackSignature> stored as an
     //! opaque value. Callbacks can be validated and invokved from DOM values using InvokeOnDomValue

@@ -142,6 +142,9 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto EnumValue = EnumValueAttributeDefinition<EnumValueType>("EnumValue");
         static constexpr auto EnumValues = EnumValuesAttributeDefinition("EnumValues");
 
+        template<typename GenericValueType>
+        static constexpr auto GenericValueList = GenericValueListAttributeDefinition<GenericValueType>("GenericValueList");
+
         static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
 
