@@ -202,7 +202,7 @@ namespace Terrain
         using RawVector4u = AZStd::array<uint32_t, 4>;
 
         //! Data to be passed to shaders
-        struct ClipmapData
+        struct alignas(16) ClipmapData
         {
             //! Current viewport size.
             RawVector2f m_viewportSize;

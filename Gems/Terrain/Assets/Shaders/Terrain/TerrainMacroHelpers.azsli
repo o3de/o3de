@@ -52,8 +52,8 @@ void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positio
         }
 
         float2 macroUvSize = macroMaterialData.m_boundsMax - macroMaterialData.m_boundsMin;
-        macroUvSize.x = -macroUvSize.x;
-        float2 macroUv = (macroMaterialData.m_boundsMin - worldPosition) / macroUvSize;
+        float2 macroUv = (worldPosition - macroMaterialData.m_boundsMin) / macroUvSize;
+        macroUv.y = 1.0 - macroUv.y;
 
         // The macro uv gradient can vary massively over the quad because different pixels may choose different macro materials with different UVs.
         // To fix, we use the world position scaled by the macro uv scale which should be fairly uniform across macro materials.
@@ -63,7 +63,7 @@ void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positio
 
         if (macroMaterialData.m_colorMapId != 0xFFFF)
         {
-            macroColor = TerrainSrg::m_textures[macroMaterialData.m_colorMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).rgb;
+            macroColor = TerrainSrg::m_textures[macroMaterialData.m_colorMapId].SampleGrad(TerrainMaterialSrg::m_macroSampler, macroUv, ddx_macroUv, ddy_macroUv).rgb;
             macroColor = TransformColor(macroColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         }
 
@@ -76,7 +76,7 @@ void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positio
 
             // Because of lacking derivatives in compute shader, manually sample and convert
             // Equivalent to SampleNormalXY in <../Materials/Types/MaterialInputs/NormalInput.azsli>
-            float2 sampledValue = TerrainSrg::m_textures[macroMaterialData.m_normalMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).xy;
+            float2 sampledValue = TerrainSrg::m_textures[macroMaterialData.m_normalMapId].SampleGrad(TerrainMaterialSrg::m_macroSampler, macroUv, ddx_macroUv, ddy_macroUv).xy;
 #if AZ_TRAIT_ASTC_COMPRESSION
             //Astc compression is unorm (0 to 1) so we need to accomodate for that. We are using BC5_SNORM (-1 - +1)for other platforms like pc
             //[GFX TODO][ATOM-13435] - Look into moving this offline as part of image processing.
