@@ -141,6 +141,7 @@ namespace AZ::SceneAPI::SceneData
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute("AutoExpand", true)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                        ->Attribute(AZ::Edit::Attributes::Max, 1)
                         ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
                     ->DataElement(0,
                         &PrefabGroup::m_createProceduralPrefab,

@@ -139,17 +139,18 @@ namespace AZ
                 m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
 
                 m_data.reset(new DataMembers);
+                m_data->m_settings = AZStd::make_unique<AZ::NiceSettingsRegistrySimpleMock>();
 
                 using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
 
-                ON_CALL(m_data->m_settings, Get(::testing::Matcher<FixedValueString&>(::testing::_), testing::_))
+                ON_CALL(*m_data->m_settings, Get(::testing::Matcher<FixedValueString&>(::testing::_), testing::_))
                     .WillByDefault([](FixedValueString& value, AZStd::string_view) -> bool
                     {
                         value = "mock_path";
                         return true;
                     });
 
-                AZ::SettingsRegistry::Register(&m_data->m_settings);
+                AZ::SettingsRegistry::Register(m_data->m_settings.get());
 
                 SetupFileBaseIO();
             }
@@ -171,7 +172,11 @@ namespace AZ
                 m_jsonRegistrationContext.reset();
                 m_jsonSystemComponent.reset();
 
-                AZ::SettingsRegistry::Unregister(&m_data->m_settings);
+                if (m_data->m_settings)
+                {
+                    AZ::SettingsRegistry::Unregister(m_data->m_settings.get());
+                    m_data->m_settings.reset();
+                }
                 m_data.reset();
 
                 CleanUpSceneCoreGenericClassInfo();
@@ -225,7 +230,7 @@ namespace AZ
             struct DataMembers
             {
                 NiceMockEditorPythonRunnerRequestBus m_niceMockEditorPythonRunnerRequestBus;
-                NiceSettingsRegistrySimpleMock m_settings;
+                AZStd::unique_ptr<NiceSettingsRegistrySimpleMock> m_settings;
                 NiceEditorPythonEventsInterfaceMock m_editorPythonEventsInterface;
                 bool m_editorPythonEventsInterfacePrepared = false;
                 AZStd::unique_ptr<NiceMockFileIOBase> m_fileIOMock;
@@ -501,6 +506,39 @@ namespace AZ
             scriptProcessorRuleBehavior.UpdateManifest(scene, AssetImportRequest::Update, AssetImportRequest::Generic);
             scriptProcessorRuleBehavior.Deactivate();
             EXPECT_TRUE(executeByFilenameCalled);
+        }
+
+        TEST_F(SceneManifest_JSON, ScriptProcessorRule_EditorPythonEventsInterface_RunsWithEditorPythonEventsInterfaceCleared)
+        {
+            using namespace SceneAPI::Containers;
+            using namespace SceneAPI::Events;
+
+            constexpr const char* jsonManifest = { R"JSON(
+            {
+                "values": [
+                    {
+                        "$type": "ScriptProcessorRule",
+                        "scriptFilename": ""
+                    }
+                ]
+            })JSON" };
+
+            PrepareMockPythonInterface();
+            EXPECT_CALL(m_data->m_editorPythonEventsInterface, IsPythonActive()).Times(1);
+            EXPECT_CALL(m_data->m_editorPythonEventsInterface, StartPython(testing::_)).Times(0);
+            EXPECT_CALL(m_data->m_editorPythonEventsInterface, StopPython(testing::_)).Times(1);
+
+            auto scene = AZ::SceneAPI::Containers::Scene("mock");
+            scene.SetManifestFilename("mock.fake.assetinfo");
+            scene.GetManifest().LoadFromString(jsonManifest, m_serializeContext.get(), m_jsonRegistrationContext.get());
+
+            auto scriptProcessorRuleBehavior = AZ::SceneAPI::Behaviors::ScriptProcessorRuleBehavior();
+            scriptProcessorRuleBehavior.Activate();
+            auto update = scriptProcessorRuleBehavior.UpdateManifest(scene, AssetImportRequest::Update, AssetImportRequest::Generic);
+            EXPECT_EQ(update, ProcessingResult::Ignored);
+            AZ::SettingsRegistry::Unregister(m_data->m_settings.get());
+            m_data->m_settings.reset();
+            scriptProcessorRuleBehavior.Deactivate();
         }
     }
 }
