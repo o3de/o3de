@@ -165,15 +165,16 @@ namespace LmbrCentral
 
     AZ::Vector3 EditorBoxShapeComponent::GetTranslationOffset()
     {
-        return AZ::Vector3::CreateZero();
+        return m_boxShape.GetTranslationOffset();
     }
 
-    void EditorBoxShapeComponent::SetTranslationOffset([[maybe_unused]] const AZ::Vector3& translationOffset)
+    void EditorBoxShapeComponent::SetTranslationOffset(const AZ::Vector3& translationOffset)
     {
+        m_boxShape.SetTranslationOffset(translationOffset);
     }
 
     AZ::Transform EditorBoxShapeComponent::GetCurrentLocalTransform()
     {
-        return AZ::Transform::CreateIdentity();
+        return AZ::Transform::CreateTranslation(m_boxShape.GetTranslationOffset());
     }
 } // namespace LmbrCentral
