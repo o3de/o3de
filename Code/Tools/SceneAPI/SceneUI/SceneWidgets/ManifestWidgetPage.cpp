@@ -427,6 +427,16 @@ namespace AZ
                 }
             }
 
+            void ManifestWidgetPage::AddObjects(AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>& objects)
+            {
+                // Skip checking if this page supports this object, because AddObject checks if the type matches.
+                for (auto& object : objects)
+                {
+                    AddObject(object);
+                }
+                RefreshPage();
+            }
+
             bool ManifestWidgetPage::SetNodeReadOnlyStatus(const AzToolsFramework::InstanceDataNode* node)
             {
                 if (AzToolsFramework::InstanceDataNode* parentNode = node ? node->GetRoot() : nullptr)
