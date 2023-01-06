@@ -38,22 +38,21 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
+    template <typename IteratorType>
+    void IncrementIterator(IteratorType iter, size_t distance)
+    {
+        for (size_t index = 0; index < distance; ++index)
+        {
+            ++iter;
+        }
+    }
+
     Dom::Path RowSortAdapter::MapFromSourcePath(const Dom::Path& sourcePath)
     {
         if (!m_sortActive)
         {
             return sourcePath;
         }
-
-        // quick dummy node type to find the actual SortInfoNode with the correct index in the lists
-        struct FinderNode : public SortInfoNode
-        {
-            FinderNode(size_t index)
-                : SortInfoNode(nullptr)
-            {
-                m_domIndex = index;
-            }
-        };
 
         Dom::Path sortPath;
         auto* currNode = m_rootNode.get();
@@ -67,8 +66,11 @@ namespace AZ::DocumentPropertyEditor
             // use a finder node to search for the actual node in the indexMap, and then use that position to reference into m_adapterSortedChildren
             if (pathEntry.IsIndex() && (indexIter = indexMap.find(AZStd::make_unique<FinderNode>(pathEntry.GetIndex()))) != indexMap.end())
             {
-                auto difference = std::distance(indexMap.begin(), indexIter);
-                sortPath.Push((*(currNode->m_adapterSortedChildren.begin() + difference))->m_domIndex);
+                auto difference = AZStd::distance(indexMap.begin(), indexIter);
+
+                auto sortedIter = currNode->m_adapterSortedChildren.begin();
+                IncrementIterator(sortedIter, difference);
+                sortPath.Push((*sortedIter)->m_domIndex);
             }
             else
             {
@@ -81,9 +83,36 @@ namespace AZ::DocumentPropertyEditor
 
     Dom::Path RowSortAdapter::MapToSourcePath(const Dom::Path& filterPath)
     {
-        // TODO
-        (void)filterPath;
-        return Dom::Path();
+        if (!m_sortActive)
+        {
+            return filterPath;
+        }
+
+        Dom::Path sourcePath;
+        auto* currNode = m_rootNode.get();
+
+        // go through each entry in the path, looking for a mapping to the sorted nodes
+        for (const auto& pathEntry : filterPath)
+        {
+            auto& sortedMap = currNode->m_adapterSortedChildren;
+            decltype(sortedMap.begin()) sortedIter;
+
+            // use a finder node to search for the actual node in the sortedMap, and then use that position to reference into
+            // m_adapterSortedChildren
+            if (pathEntry.IsIndex() && (sortedIter = sortedMap.find(AZStd::make_unique<FinderNode>(pathEntry.GetIndex()).get())) != sortedMap.end())
+            {
+                auto difference = std::distance(sortedMap.begin(), sortedIter);
+                auto indexIter = currNode->m_indexSortedChildren.begin();
+                IncrementIterator(indexIter, difference);
+                sourcePath.Push((*indexIter)->m_domIndex);
+            }
+            else
+            {
+                // RowSortAdapter only affect index entries, pass other types through
+                sourcePath.Push(pathEntry);
+            }
+        }
+        return sourcePath;
     }
 
     Dom::Value RowSortAdapter::GenerateContents()
@@ -117,17 +146,23 @@ namespace AZ::DocumentPropertyEditor
         {
             bool needsReset = false;
             //const auto& sourceContents = m_sourceAdapter->GetContents();
+
+            Dom::Patch outgoingPatch;
             for (auto operationIterator = patch.begin(), endIterator = patch.end(); !needsReset && operationIterator != endIterator;
                  ++operationIterator)
             {
-                //const auto& patchPath = operationIterator->GetDestinationPath();
+                const auto& patchPath = operationIterator->GetDestinationPath();
                 if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
                 {
                     needsReset = true;
                 }
                 else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
                 {
-
+                    if (!IsRow(patchPath))
+                    {
+                        outgoingPatch.PushBack(
+                            Dom::PatchOperation::ReplaceOperation(MapFromSourcePath(patchPath), operationIterator->GetValue()));
+                    }
                 }
                 else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
                 {

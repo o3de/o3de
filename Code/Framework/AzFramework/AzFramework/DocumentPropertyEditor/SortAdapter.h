@@ -47,9 +47,9 @@ namespace AZ::DocumentPropertyEditor
             size_t m_domIndex;
 
             //! holds the row childNodes in DOM order
-            AZStd::multiset<AZStd::unique_ptr<SortInfoNode>, IndexSortType> m_indexSortedChildren;
+            AZStd::set<AZStd::unique_ptr<SortInfoNode>, IndexSortType> m_indexSortedChildren;
 
-            //! holds a sorted list of the above children as defined by their RowSortAdapter::lessThan
+            //! holds a sorted multiset of the above children as defined by their RowSortAdapter::lessThan
             AZStd::multiset<SortInfoNode*, AdapterSortType> m_adapterSortedChildren;
 
         protected:
@@ -84,6 +84,16 @@ namespace AZ::DocumentPropertyEditor
 
         bool m_sortActive = true;
         bool m_reverseSort = false;
+
+    private:
+        struct FinderNode : public SortInfoNode
+        {
+            FinderNode(size_t index)
+                : SortInfoNode(nullptr)
+            {
+                m_domIndex = index;
+            }
+        };
     };
 
 } // namespace AZ::DocumentPropertyEditor
