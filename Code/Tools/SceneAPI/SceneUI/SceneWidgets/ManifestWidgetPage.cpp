@@ -429,9 +429,28 @@ namespace AZ
 
             void ManifestWidgetPage::AddObjects(AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>& objects)
             {
-                // Skip checking if this page supports this object, because AddObject checks if the type matches.
+                ManifestWidget* parent = ManifestWidget::FindRoot(this);
+                AZ_Assert(parent, "ManifestWidgetPage isn't docked in a ManifestWidget.");
+                if (!parent)
+                {
+                    return;
+                }
+                AZStd::shared_ptr<Containers::Scene> scene = parent->GetScene();
+                if (!scene)
+                {
+                    return;
+                }
+                Containers::SceneManifest& manifest = scene->GetManifest();
                 for (auto& object : objects)
                 {
+                    if (!SupportsType(object))
+                    {
+                        continue;
+                    }
+                    if (!manifest.AddEntry(object))
+                    {
+                        AZ_Assert(false, "Unable to add new object to manifest.");
+                    }
                     AddObject(object);
                 }
                 RefreshPage();
