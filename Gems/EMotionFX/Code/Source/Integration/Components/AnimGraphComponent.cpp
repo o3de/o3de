@@ -145,6 +145,7 @@ namespace EMotionFX
                     // General API
                     ->Event("FindParameterIndex", &AnimGraphComponentRequestBus::Events::FindParameterIndex)
                     ->Event("FindParameterName", &AnimGraphComponentRequestBus::Events::FindParameterName)
+                    ->Event("SetActiveMotionSet", &AnimGraphComponentRequestBus::Events::SetActiveMotionSet)
                     
                     // Setters
                     ->Event("SetParameterFloat", &AnimGraphComponentRequestBus::Events::SetParameterFloat)
@@ -1231,6 +1232,12 @@ namespace EMotionFX
                     &AnimGraphComponentNotificationBus::Events::OnAnimGraphDesynced,
                     m_animGraphInstance.get());
             }
+        }
+
+        void AnimGraphComponent::SetActiveMotionSet(const char* activeMotionSetName)
+        {
+            m_configuration.m_activeMotionSetName = activeMotionSetName;
+            CheckCreateAnimGraphInstance();
         }
     } // namespace Integration
 } // namespace EMotionFXAnimation

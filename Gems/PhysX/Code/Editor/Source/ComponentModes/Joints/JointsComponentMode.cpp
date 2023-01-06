@@ -416,6 +416,9 @@ namespace PhysX
                     }
                 }
                 break;
+            case JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition:
+            case JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation:
+                break;
             default:
                 AZ_Error("Joints", false, "Joints component mode cluster UI setup found unknown sub mode.");
                 break;
