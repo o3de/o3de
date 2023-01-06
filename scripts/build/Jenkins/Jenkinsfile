@@ -419,7 +419,7 @@ def NoControlFile(repoName, processed_repos) {
                 PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-restricted-path ${workspace}/${repoName}/Restricted || ver>nul", "Registering all restricted in ${workspace}/${repoName}/Restricted")
                 found = true
             }
-            if(!found){
+            if(!found) {
                 echo "WARNING: No objects found in repo ${repo.NAME}!"
             }
         }
@@ -537,6 +537,16 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
     }
 
     dir(workspace) {
+
+        //this is here because sometimes the volume may not immediately be available for writes once mounted
+        //and this is the first place it will try to write, if it passes this then it should be fine
+        def workspace_retry = 5
+        while(!fileExists(workspace) || workspace_retry > 0) {
+            sleep 1 // sleep in case directory creation is slow
+            PlatformSh("ls ${workspace}", "Printing directory listing")
+            workspace_retry--
+        }
+
         // Add folder where we will store the 3rdParty downloads and packages
         dir('3rdParty') {
         }
@@ -585,7 +595,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             }
             PlatformSh("scripts/o3de${ext} register --this-engine", "Registering this engine, will generate the o3de_manifest")
 
-            //if the engine has an automatedtesting.json execute it
+            //if the engine has an .automatedtesting.json execute it
             if(fileExists('.automatedtesting.json')) {
                 echo 'Loading Engine .automatedtesting.json'
                 engineAutomatedTestingControlFile = readJSON file: '.automatedtesting.json'
@@ -605,18 +615,17 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             {
                 CheckoutRepo(branchName, scm.userRemoteConfigs, disableSubmodules, true)
 
-                //if the repo has an automatedtesting.json execute it
+                //if the repo has an .automatedtesting.json execute it
                 if(fileExists('.automatedtesting.json')) {
                     echo "Loading ${COMMIT_REPOSITORY_NAME} .automatedtesting.json"
                     automatedTestingControlFile = readJSON file: '.automatedtesting.json'
                     automatedTestingControlFileFound = true
                 }
             }
-            if(automatedTestingControlFileFound){
+            if(automatedTestingControlFileFound) {
                 processed_repos = ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME, processed_repos)
             }
-            else
-            {
+            else {
                 processed_repos = NoControlFile(COMMIT_REPOSITORY_NAME, processed_repos)
             }
         }
