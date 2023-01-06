@@ -38,7 +38,7 @@ namespace AzToolsFramework
             AZStd::string m_iconPath; //!< Path of component icon.
             ViewportUi::ButtonId m_buttonId; //!< Button Id of switcher component.
 
-            AZ::Component* FindComponent() const;
+            const AZ::Component* FindComponent() const;
         };
 
         //! Handles all aspects of the ViewportUi Switcher related to Component Mode.
@@ -115,7 +115,7 @@ namespace AzToolsFramework
             void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
 
             // Member variables
-            AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode
+            const AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode
             AZStd::vector<ComponentData> m_addedComponents; //!< Vector of ComponentData elements..
             ViewportUi::ButtonId m_transformButtonId; //!< Id of the default button of the switcher, used to exit component mode.
             AZ::Event<ViewportUi::ButtonId>::Handler m_handler; //!< Handler for onclick of switcher buttons, activates component mode.
