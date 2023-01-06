@@ -20,7 +20,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-windows                              TARGETS expat                       PACKAGE_HASH 748d08f21f5339757059a7887e72b52d15e954c549245c638b0b05bd5961e307)
-ly_associate_package(PACKAGE_NAME assimp-5.1.6-rev1-windows                             TARGETS assimplib                   PACKAGE_HASH 299d8a3c70657d74af8841650538e9d083fda9356f6782416edbec0ef5a0493e)
+ly_associate_package(PACKAGE_NAME assimp-5.2.5-rev1-windows                             TARGETS assimplib                   PACKAGE_HASH a75ef3cdd0c880e990eee0afd1a40c1100ef34e757d0d5f59109be3439eb88c0)
 ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev5-windows                            TARGETS OpenEXR Imath               PACKAGE_HASH bff6dc78412bb1b04ded243753bee36e9229fdaf9a9e1fa85b1059238fba4c9b)
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.2-rev1-windows               TARGETS AWSGameLiftServerSDK        PACKAGE_HASH 9d30eb265adc8b46a7f6a9ad122c2d3c8820ca16961533a3cc994734e264969a)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2112-o3de-rev1-windows   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH fdcdc081e67abcfdc8172866258a9c36f1fd0d7b963ba5378ca01cb4fcdbf9c7)

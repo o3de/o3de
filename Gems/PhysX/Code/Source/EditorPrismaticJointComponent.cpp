@@ -23,8 +23,9 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorPrismaticJointComponent, EditorJointComponent>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("Linear Limit", &EditorPrismaticJointComponent::m_linearLimit)
+                ->Field("Motor", &EditorPrismaticJointComponent::m_motorConfiguration)
                 ;
 
             if (auto* editContext = serializeContext->GetEditContext())
@@ -36,6 +37,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(0, &EditorPrismaticJointComponent::m_motorConfiguration, "Motor Configuration", "Joint's motor configuration.")
                     ->DataElement(
                         0,
                         &EditorPrismaticJointComponent::m_linearLimit,
@@ -84,9 +86,7 @@ namespace PhysX
     {
         m_config.m_followerEntity = GetEntityId(); // joint is always in the same entity as the follower body.
         gameEntity->CreateComponent<PrismaticJointComponent>(
-            m_config.ToGameTimeConfig(),
-            m_config.ToGenericProperties(),
-            m_linearLimit.ToGameTimeConfig());
+            m_config.ToGameTimeConfig(), m_config.ToGenericProperties(), m_linearLimit.ToGameTimeConfig(), m_motorConfiguration);
     }
 
     float EditorPrismaticJointComponent::GetLinearValue(const AZStd::string& parameterName)
