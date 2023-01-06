@@ -57,62 +57,6 @@ namespace AzToolsFramework
         }
     }
 
-    void EditSymmetrically(
-        const AZ::EntityComponentIdPair& entityComponentIdPair,
-        const LinearManipulator::Action& action,
-        float transformScale,
-        [[maybe_unused]] const AZ::Vector3& nonUniformScale)
-    {
-        AZ::Transform boxLocalTransform = AZ::Transform::CreateIdentity();
-        BoxManipulatorRequestBus::EventResult(
-            boxLocalTransform, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetCurrentLocalTransform);
-
-        const AZ::Vector3 manipulatorPosition = GetPositionInManipulatorFrame(transformScale, boxLocalTransform, action);
-
-        AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
-        BoxManipulatorRequestBus::EventResult(
-            boxDimensions, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetDimensions);
-
-        const float newAxisLength = AZ::GetMax(0.0f, 2.0f * manipulatorPosition.Dot(action.m_fixed.m_axis));
-        const float oldAxisLength = boxDimensions.Dot(action.m_fixed.m_axis.GetAbs());
-        const AZ::Vector3 dimensionsDelta = (newAxisLength - oldAxisLength) * action.m_fixed.m_axis.GetAbs();
-
-        BoxManipulatorRequestBus::Event(
-            entityComponentIdPair, &BoxManipulatorRequestBus::Events::SetDimensions, boxDimensions + dimensionsDelta);
-    }
-
-    void EditAsymmetrically(
-        const AZ::EntityComponentIdPair& entityComponentIdPair,
-        const LinearManipulator::Action& action,
-        float transformScale,
-        const AZ::Vector3& nonUniformScale)
-    {
-        AZ::Transform boxLocalTransform = AZ::Transform::CreateIdentity();
-        BoxManipulatorRequestBus::EventResult(
-            boxLocalTransform, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetCurrentLocalTransform);
-
-        const AZ::Vector3 manipulatorPosition = GetPositionInManipulatorFrame(transformScale, boxLocalTransform, action);
-
-        AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
-        BoxManipulatorRequestBus::EventResult(
-            boxDimensions, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetDimensions);
-
-        const float newAxisLength = AZ::GetMax(0.0f, manipulatorPosition.Dot(action.m_fixed.m_axis));
-        const float oldAxisLength = 0.5f * boxDimensions.Dot(action.m_fixed.m_axis.GetAbs());
-        const AZ::Vector3 dimensionsDelta = (newAxisLength - oldAxisLength) * action.m_fixed.m_axis.GetAbs();
-
-        BoxManipulatorRequestBus::Event(
-            entityComponentIdPair, &BoxManipulatorRequestBus::Events::SetDimensions, boxDimensions + dimensionsDelta);
-
-        const AZ::Vector3 transformedAxis = nonUniformScale * boxLocalTransform.TransformVector(action.m_fixed.m_axis);
-        const AZ::Vector3 translationOffsetDelta = 0.5f * (newAxisLength - oldAxisLength) * transformedAxis;
-        AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
-        BoxManipulatorRequestBus::EventResult(
-            translationOffset, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetTranslationOffset);
-        BoxManipulatorRequestBus::Event(
-            entityComponentIdPair, &BoxManipulatorRequestBus::Events::SetTranslationOffset, translationOffset + translationOffsetDelta);
-    }
-
     void BoxViewportEdit::Setup(const AZ::EntityComponentIdPair& entityComponentIdPair, bool allowAsymmetricalEditing)
     {
         m_entityComponentIdPair = entityComponentIdPair;
@@ -145,13 +89,39 @@ namespace AzToolsFramework
                      transformScale{ linearManipulator->GetSpace().GetUniformScale() },
                      nonUniformScale{ linearManipulator->GetNonUniformScale() }](const LinearManipulator::Action& action)
                 {
-                    if (!m_allowAsymmetricalEditing || action.m_modifiers.Ctrl())
+                    const bool symmetrical = !m_allowAsymmetricalEditing || action.m_modifiers.Ctrl();
+
+                    AZ::Transform boxLocalTransform = AZ::Transform::CreateIdentity();
+                    BoxManipulatorRequestBus::EventResult(
+                        boxLocalTransform, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetCurrentLocalTransform);
+
+                    const AZ::Vector3 manipulatorPosition = GetPositionInManipulatorFrame(transformScale, boxLocalTransform, action);
+
+                    AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
+                    BoxManipulatorRequestBus::EventResult(
+                        boxDimensions, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetDimensions);
+
+                    // factor of 2 for symmetrical editing because both ends of the box move
+                    const float symmetryFactor = symmetrical ? 2.0f : 1.0f; 
+
+                    const float newAxisLength = AZ::GetMax(0.0f, symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis));
+                    const float oldAxisLength = 0.5f * symmetryFactor * boxDimensions.Dot(action.m_fixed.m_axis.GetAbs());
+                    const AZ::Vector3 dimensionsDelta = (newAxisLength - oldAxisLength) * action.m_fixed.m_axis.GetAbs();
+
+                    BoxManipulatorRequestBus::Event(
+                        entityComponentIdPair, &BoxManipulatorRequestBus::Events::SetDimensions, boxDimensions + dimensionsDelta);
+
+                    if (!symmetrical)
                     {
-                        EditSymmetrically(entityComponentIdPair, action, transformScale, nonUniformScale);
-                    }
-                    else
-                    {
-                        EditAsymmetrically(entityComponentIdPair, action, transformScale, nonUniformScale);
+                        const AZ::Vector3 transformedAxis = nonUniformScale * boxLocalTransform.TransformVector(action.m_fixed.m_axis);
+                        const AZ::Vector3 translationOffsetDelta = 0.5f * (newAxisLength - oldAxisLength) * transformedAxis;
+                        AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
+                        BoxManipulatorRequestBus::EventResult(
+                            translationOffset, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetTranslationOffset);
+                        BoxManipulatorRequestBus::Event(
+                            entityComponentIdPair,
+                            &BoxManipulatorRequestBus::Events::SetTranslationOffset,
+                            translationOffset + translationOffsetDelta);
                     }
 
                     UpdateManipulators();
