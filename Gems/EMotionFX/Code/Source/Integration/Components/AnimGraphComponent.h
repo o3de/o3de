@@ -138,6 +138,7 @@ namespace EMotionFX
             bool GetVisualizeEnabled() override;
             void SyncAnimGraph(AZ::EntityId leaderEntityId) override;
             void DesyncAnimGraph(AZ::EntityId leaderEntityId) override;
+            void SetActiveMotionSet(const char* activeMotionSetName) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
