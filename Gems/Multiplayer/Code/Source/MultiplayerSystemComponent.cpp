@@ -117,7 +117,8 @@ namespace Multiplayer
     AZ_CVAR(AZ::TimeMs, bg_captureTransportPeriod, AZ::TimeMs{1000}, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "How often in milliseconds to record transport metrics.");
 
-    AZ_CVAR(bool, bg_parallelNotifyPreRender, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "bg_useJobsNotifyPreRender");
+    AZ_CVAR(bool, bg_parallelNotifyPreRender, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "If true, OnPreRender events will be sent in parallel from job threads. Please make sure the handlers of the event are thread safe.");
     
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
