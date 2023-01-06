@@ -39,7 +39,7 @@ def EditMenu_Default_UndoRedo():
 
     # Preconditions
     import azlmbr.legacy.general as general
-    from editor_python_test_tools.QtPyO3DEEditor import QtPyO3DEEditor
+    from editor_python_test_tools.QtPy.QtPyO3DEEditor import QtPyO3DEEditor
 
     general.idle_enable(True)
 

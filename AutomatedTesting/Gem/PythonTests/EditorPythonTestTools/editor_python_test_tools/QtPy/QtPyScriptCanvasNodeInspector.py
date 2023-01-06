@@ -10,8 +10,8 @@ Object to house all the Qt Objects and behavior used in testing the script canva
 """
 
 from editor_python_test_tools.utils import TestHelper as helper
-from PySide2 import QtWidgets, QtTest, QtCore
-from editor_python_test_tools.QtPyCommon import CheckBoxStates
+from PySide2 import QtWidgets
+from editor_python_test_tools.QtPy.QtPyCommon import CheckBoxStates
 from consts.scripting import (PROPERTY_EDITOR_QT, INITIAL_VALUE_SOURCE_QT, NODE_INSPECTOR_QT)
 from consts.general import (WAIT_TIME_SEC_3)
 from enum import IntEnum
