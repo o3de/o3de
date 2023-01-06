@@ -62,6 +62,7 @@ namespace Terrain
 
         //! Size of each modified image tile that we'll cache off.
         //! This size is chosen somewhat arbitrarily to keep the number of tiles balanced at a reasonable size.
+        //! It should also ideally be a power of 2 for faster division and mods.
         static inline constexpr uint32_t ImageTileSize = 32;
 
         //! Keeps track of all the unmodified and modified pixel values, as well as our paint stroke opacity layer, for an NxN tile.

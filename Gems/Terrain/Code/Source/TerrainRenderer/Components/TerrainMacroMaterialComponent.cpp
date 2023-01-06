@@ -317,26 +317,15 @@ namespace Terrain
         return macroMaterial;
     }
 
-    uint32_t TerrainMacroMaterialComponent::GetMacroColorImageHeight() const
+    AZ::RHI::Size TerrainMacroMaterialComponent::GetMacroColorImageSize() const
     {
         if (m_colorImage)
         {
             const AZ::RHI::ImageDescriptor& imageDescriptor = m_colorImage->GetDescriptor();
-            return imageDescriptor.m_size.m_height;
+            return imageDescriptor.m_size;
         }
 
-        return 0;
-    }
-
-    uint32_t TerrainMacroMaterialComponent::GetMacroColorImageWidth() const
-    {
-        if (m_colorImage)
-        {
-            const AZ::RHI::ImageDescriptor& imageDescriptor = m_colorImage->GetDescriptor();
-            return imageDescriptor.m_size.m_width;
-        }
-
-        return 0;
+        return { 0, 0, 0 };
     }
 
     AZ::Vector2 TerrainMacroMaterialComponent::GetMacroColorImagePixelsPerMeter() const
@@ -463,12 +452,12 @@ namespace Terrain
         m_modifyingPixels = false;
     }
 
-    AZStd::vector<uint32_t>* TerrainMacroMaterialComponent::GetMacroColorImageModificationBuffer()
+    AZStd::span<const uint32_t> TerrainMacroMaterialComponent::GetMacroColorImageModificationBuffer() const
     {
         // This isn't generally safe to do, but this is a protected method only exposed outward to the editor component so that
         // we have a way to save the modification image buffer as a new source asset.
         // This method shouldn't get called by anything else.
-        return &m_modifiedMacroColorImageData;
+        return AZStd::span<const uint32_t>(m_modifiedMacroColorImageData.data(), m_modifiedMacroColorImageData.size());
     }
 
     bool TerrainMacroMaterialComponent::MacroColorImageIsModified() const
@@ -499,7 +488,7 @@ namespace Terrain
         if (m_modifiedMacroColorImageData.empty())
         {
             // Create a memory buffer for holding all of our modified image information.
-            // We'll always use a buffer of floats to ensure that we're modifying at the highest precision possible.
+            // We use a buffer of uint32 colors (R8G8B8A8) so that it doesn't get overly large when modifying large textures.
             m_modifiedMacroColorImageData.reserve(width * height);
 
             // Fill the buffer with all of our existing pixel values.

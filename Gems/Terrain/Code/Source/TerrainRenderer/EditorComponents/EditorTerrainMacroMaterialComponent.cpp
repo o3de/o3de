@@ -400,18 +400,16 @@ namespace Terrain
         const GradientSignal::OutputFormat format = GradientSignal::OutputFormat::R8G8B8A8;
 
         // Get the resolution of our modified image.
-        const int imageResolutionX = aznumeric_cast<int>(m_component.GetMacroColorImageWidth());
-        const int imageResolutionY = aznumeric_cast<int>(m_component.GetMacroColorImageHeight());
+        const auto imageResolution = m_component.GetMacroColorImageSize();
 
         // Get the image modification buffer
         auto pixelBuffer = m_component.GetMacroColorImageModificationBuffer();
-        AZStd::span<uint8_t>(reinterpret_cast<uint8_t*>(pixelBuffer->data()), pixelBuffer->size() * sizeof(uint32_t));
 
         // The image is stored in memory in linear color space, but the source asset that we write out needs to be in SRGB color space.
-        AZStd::vector<uint8_t> rawPixelData = ConvertLinearToSrgbGamma(
-            AZStd::span<uint8_t>(reinterpret_cast<uint8_t*>(pixelBuffer->data()), pixelBuffer->size() * sizeof(uint32_t)));
+        AZStd::vector<uint8_t> rawPixelData = ConvertLinearToSrgbGamma(pixelBuffer);
 
-        auto createdAsset = m_paintableMacroColorAssetHelper.SaveImage(imageResolutionX, imageResolutionY, format, rawPixelData);
+        auto createdAsset = m_paintableMacroColorAssetHelper.SaveImage(
+            imageResolution.m_width, imageResolution.m_height, format, rawPixelData);
 
         if (createdAsset)
         {
@@ -424,7 +422,7 @@ namespace Terrain
         return createdAsset.has_value();
     }
 
-    AZStd::vector<uint8_t> EditorTerrainMacroMaterialComponent::ConvertLinearToSrgbGamma(AZStd::span<uint8_t> pixelBuffer)
+    AZStd::vector<uint8_t> EditorTerrainMacroMaterialComponent::ConvertLinearToSrgbGamma(AZStd::span<const uint32_t> pixelBuffer) const
     {
         AZStd::array<uint8_t, 256> linearToSrgbGamma;
         const float uint8Max = static_cast<float>(AZStd::numeric_limits<uint8_t>::max());
@@ -437,17 +435,29 @@ namespace Terrain
         }
 
         AZStd::vector<uint8_t> convertedPixels;
-        convertedPixels.reserve(pixelBuffer.size());
+        convertedPixels.reserve(pixelBuffer.size() * sizeof(uint32_t));
+
+        union ColorBytes
+        {
+            struct
+            {
+                uint8_t m_red;
+                uint8_t m_green;
+                uint8_t m_blue;
+                uint8_t m_alpha;
+            };
+            uint32_t m_rgba;
+        };
 
         // The pixel buffer consists of R8G8B8A8 values. We'll take each byte individually and convert it from linear to gamma,
         // with the exception of the alpha byte, which should remain as-is.
-        for (size_t pixel = 0; pixel < pixelBuffer.size(); pixel++)
+        for (auto pixel : pixelBuffer)
         {
-            // Skip every 4th byte (alpha), but convert the RGB values.
-            if ((pixel & 0x04) != 0x03)
-            {
-                convertedPixels.push_back(linearToSrgbGamma[pixelBuffer[pixel]]);
-            }
+            const ColorBytes *pixelBytes = reinterpret_cast<const ColorBytes*>(&pixel);
+            convertedPixels.push_back(linearToSrgbGamma[pixelBytes->m_red]);
+            convertedPixels.push_back(linearToSrgbGamma[pixelBytes->m_green]);
+            convertedPixels.push_back(linearToSrgbGamma[pixelBytes->m_blue]);
+            convertedPixels.push_back(pixelBytes->m_alpha);
         }
 
         return convertedPixels;

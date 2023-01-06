@@ -35,6 +35,8 @@ namespace Terrain
         uint32_t pixelTileIndex = GetPixelTileIndex(pixelIndex);
 
         // Create the tile if it doesn't already exist.
+        // We lazy-create the tile on reads as well as writes because reading the original pixel value isn't necessarily very cheap
+        // and we may need to re-read the same pixel multiple times for things like smoothing operations.
         CreateImageTile(tileIndex);
 
         return { m_paintedImageTiles[tileIndex]->m_unmodifiedData[pixelTileIndex],
@@ -46,7 +48,8 @@ namespace Terrain
         uint32_t tileIndex = GetTileIndex(pixelIndex);
         uint32_t pixelTileIndex = GetPixelTileIndex(pixelIndex);
 
-        AZ_Assert(m_paintedImageTiles[tileIndex], "Cached image tile hasn't been created yet!");
+        // Create the tile if it doesn't already exist.
+        CreateImageTile(tileIndex);
 
         m_paintedImageTiles[tileIndex]->m_modifiedData[pixelTileIndex] = modifiedValue;
         m_paintedImageTiles[tileIndex]->m_modifiedDataOpacity[pixelTileIndex] = opacity;
@@ -254,14 +257,11 @@ namespace Terrain
         m_imageData.m_macroMaterialBounds = macroMaterialData.m_bounds;
 
         // Get the image width and height in pixels.
-        uint32_t imageWidth = 0;
-        uint32_t imageHeight = 0;
+        AZ::RHI::Size imageSize;
         TerrainMacroMaterialRequestBus::EventResult(
-            imageWidth, entityId, &TerrainMacroMaterialRequestBus::Events::GetMacroColorImageWidth);
-        TerrainMacroMaterialRequestBus::EventResult(
-            imageHeight, entityId, &TerrainMacroMaterialRequestBus::Events::GetMacroColorImageHeight);
-        m_imageData.m_imageWidth = aznumeric_cast<int16_t>(imageWidth);
-        m_imageData.m_imageHeight = aznumeric_cast<int16_t>(imageHeight);
+            imageSize, entityId, &TerrainMacroMaterialRequestBus::Events::GetMacroColorImageSize);
+        m_imageData.m_imageWidth = aznumeric_cast<int16_t>(imageSize.m_width);
+        m_imageData.m_imageHeight = aznumeric_cast<int16_t>(imageSize.m_height);
     }
 
     MacroMaterialImageModifier::~MacroMaterialImageModifier()

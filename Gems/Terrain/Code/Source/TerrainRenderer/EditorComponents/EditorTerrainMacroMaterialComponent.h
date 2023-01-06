@@ -86,7 +86,7 @@ namespace Terrain
             SmoothFn& smoothFn) override;
         AZ::Color OnGetColor(const AZ::Vector3& brushCenter) const override;
 
-        AZStd::vector<uint8_t> ConvertLinearToSrgbGamma(AZStd::span<uint8_t> pixelBuffer);
+        AZStd::vector<uint8_t> ConvertLinearToSrgbGamma(AZStd::span<const uint32_t> pixelBuffer) const;
 
         void RefreshPaintableAssetStatus();
 

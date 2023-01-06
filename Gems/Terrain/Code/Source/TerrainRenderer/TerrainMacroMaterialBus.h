@@ -13,6 +13,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Color.h>
+#include <Atom/RHI.Reflect/Size.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
 
 namespace Terrain
@@ -53,18 +54,11 @@ namespace Terrain
         //! Get the terrain macro material and the region that it covers.
         virtual MacroMaterialData GetTerrainMacroMaterialData() = 0;
 
-        //! Get the macro color image height in pixels
-        //! @return Number of pixels in the image height
-        virtual uint32_t GetMacroColorImageHeight() const
+        //! Get the macro color image size in pixels
+        //! @return Number of pixels in the image width, height, and depth
+        virtual AZ::RHI::Size GetMacroColorImageSize() const
         {
-            return 0;
-        }
-
-        //! Get the macro color image width in pixels
-        //! @return Number of pixels in the image width
-        virtual uint32_t GetMacroColorImageWidth() const
-        {
-            return 0;
+            return { 0, 0, 0 };
         }
 
         //! Get the number of macro color pixels per meter in world space.

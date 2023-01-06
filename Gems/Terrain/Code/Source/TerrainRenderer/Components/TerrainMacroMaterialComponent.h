@@ -80,8 +80,7 @@ namespace Terrain
 
         // TerrainMacroMaterialRequestBus overrides...
         MacroMaterialData GetTerrainMacroMaterialData() override;
-        uint32_t GetMacroColorImageHeight() const override;
-        uint32_t GetMacroColorImageWidth() const override;
+        AZ::RHI::Size GetMacroColorImageSize() const override;
         AZ::Vector2 GetMacroColorImagePixelsPerMeter() const override;
 
         // TerrainMacroColorModificationBus overrides...
@@ -102,9 +101,9 @@ namespace Terrain
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetMacroColorAsset() const;
         void SetMacroColorAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset);
 
-        //! Get a pointer to the macro color modification buffer.
+        //! Get the macro color modification buffer.
         //! This is *only* exposed so that the editor component has the ability to save the buffer as an asset.
-        AZStd::vector<uint32_t>* GetMacroColorImageModificationBuffer();
+        AZStd::span<const uint32_t> GetMacroColorImageModificationBuffer() const;
 
         // PaintBrushNotificationBus overrides...
         // Most of the bus is overridden in the MacroMaterialImageModifier.
