@@ -160,16 +160,17 @@ namespace LmbrCentral
 
     AZ::Vector3 EditorAxisAlignedBoxShapeComponent::GetTranslationOffset()
     {
-        return AZ::Vector3::CreateZero();
+        return m_aaboxShape.GetTranslationOffset();
     }
 
-    void EditorAxisAlignedBoxShapeComponent::SetTranslationOffset([[maybe_unused]] const AZ::Vector3& translationOffset)
+    void EditorAxisAlignedBoxShapeComponent::SetTranslationOffset(const AZ::Vector3& translationOffset)
     {
+        m_aaboxShape.SetTranslationOffset(translationOffset);
     }
 
     AZ::Transform EditorAxisAlignedBoxShapeComponent::GetCurrentLocalTransform()
     {
-        return AZ::Transform::CreateIdentity();
+        return AZ::Transform::CreateTranslation(m_aaboxShape.GetTranslationOffset());
     }
 
     AZ::Aabb EditorAxisAlignedBoxShapeComponent::GetLocalBounds()

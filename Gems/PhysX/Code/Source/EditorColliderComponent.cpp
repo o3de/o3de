@@ -1135,11 +1135,13 @@ namespace PhysX
 
     AZ::Vector3 EditorColliderComponent::GetTranslationOffset()
     {
-        return AZ::Vector3::CreateZero();
+        return m_configuration.m_position;
     }
 
-    void EditorColliderComponent::SetTranslationOffset([[maybe_unused]] const AZ::Vector3& translationOffset)
+    void EditorColliderComponent::SetTranslationOffset(const AZ::Vector3& translationOffset)
     {
+        m_configuration.m_position = translationOffset;
+        CreateStaticEditorCollider();
     }
 
     AZ::Transform EditorColliderComponent::GetCurrentLocalTransform()
