@@ -16,6 +16,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <Tests/Viewport/ViewportUiManagerTests.cpp>
@@ -654,8 +655,7 @@ namespace UnitTest
             ->CameraState(m_cameraState)
             // move the mouse to the position of the y scale manipulator
             ->MousePosition(screenStart)
-            // hold ctrl to select symmetrical editing
-            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Ctrl)
+            ->KeyboardModifierDown(AzToolsFramework::DefaultSymmetricalEditingModifier)
             // drag to move the manipulator
             ->MouseLButtonDown()
             ->MousePosition(screenEnd)
@@ -710,7 +710,7 @@ namespace UnitTest
 
         m_actionDispatcher
             ->CameraState(m_cameraState)
-            // move the mouse to the position of the y scale manipulator
+            // move the mouse to the position of the -z scale manipulator
             ->MousePosition(screenStart)
             // drag to move the manipulator
             ->MouseLButtonDown()

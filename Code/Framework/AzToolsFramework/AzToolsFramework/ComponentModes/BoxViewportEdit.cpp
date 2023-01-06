@@ -12,6 +12,7 @@
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportConstants.h>
 #include <AzCore/Component/TransformBus.h>
@@ -89,7 +90,7 @@ namespace AzToolsFramework
                      transformScale{ linearManipulator->GetSpace().GetUniformScale() },
                      nonUniformScale{ linearManipulator->GetNonUniformScale() }](const LinearManipulator::Action& action)
                 {
-                    const bool symmetrical = !m_allowAsymmetricalEditing || action.m_modifiers.Ctrl();
+                    const bool symmetrical = !m_allowAsymmetricalEditing || action.m_modifiers.IsHeld(DefaultSymmetricalEditingModifier);
 
                     AZ::Transform boxLocalTransform = AZ::Transform::CreateIdentity();
                     BoxManipulatorRequestBus::EventResult(
