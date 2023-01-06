@@ -65,7 +65,7 @@ namespace AzToolsFramework
             //! @param owningInstance The common owning prefab instance of all inputs.
             //! @param focusedInstance The current focused prefab instance.
             //! @param undoBatch The undo batch node to register the update-entity undo node to.
-            void UpdateEntityListAsOverride(
+            void UpdateEntitiesAsOverrides(
                 const AZStd::vector<const AZ::Entity*>& entityList,
                 Instance& owningInstance,
                 const Instance& focusedInstance,

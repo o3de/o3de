@@ -32,12 +32,12 @@ namespace AzToolsFramework::Prefab
         // The function to generate undo/redo an override subtree for updating the provided entity list as overrides.
         void Capture(const AZStd::vector<const AZ::Entity*>& entityList, Instance& owningInstance, const Instance& focusedInstance);
 
+    private:
         // The function to update link during undo and redo.
         void UpdateLink();
 
-    private:
-        // Map that stores entities' override patch paths and override subtrees.
-        AZStd::unordered_map<AZ::Dom::Path, PrefabOverridePrefixTree> m_overrideSubTrees;
+        // Map that stores subtree paths as well as before and after states of subtrees.
+        AZStd::unordered_map<AZ::Dom::Path, PrefabOverridePrefixTree> m_subtreeStates;
 
         // Link that connects the linked instance and the focused instance.
         LinkId m_linkId;

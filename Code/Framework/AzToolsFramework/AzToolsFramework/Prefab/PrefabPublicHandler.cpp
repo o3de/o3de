@@ -921,7 +921,7 @@ namespace AzToolsFramework
                             editorEntityContextId);
 
                         AZ::Entity* entityToUpdate = GetEntityById(entityId);
-                        PrefabUndoHelpers::UpdateEntityListAsOverride(
+                        PrefabUndoHelpers::UpdateEntitiesAsOverrides(
                             { entityToUpdate }, owningInstance->get(), focusedInstance->get(), parentUndoBatch);
                     }
                 }

@@ -105,7 +105,7 @@ namespace AzToolsFramework
                 state->Redo();
             }
 
-            void UpdateEntityListAsOverride(
+            void UpdateEntitiesAsOverrides(
                 const AZStd::vector<const AZ::Entity*>& entityList,
                 Instance& owningInstance,
                 const Instance& focusedInstance,

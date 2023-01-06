@@ -63,14 +63,10 @@ namespace AzToolsFramework
             {
                 if (!entity)
                 {
-                    AZ_Error("Prefab", false, "PrefabUndoEntityOverrides::Capture - Found a null entity. Skipping it.");
+                    AZ_Warning("Prefab", false, "PrefabUndoEntityOverrides::Capture - Found a null entity. Skipping it.");
                     continue;
                 }
 
-                // Hierarchy Example: Level (focused) -> Car (top) -> ... -> Wheel (owning) -> Tire (override)
-                // Path seen from focused: /Instances/Instance_[Car]/.../Instances/Instance_[Wheel]/Entities/Entity_[Tire]
-                //                                   (top instance)               (owning instance)         (entity to update)
-                // Note: Override patch path is the path seen from top without top instance alias path.
                 const AZStd::string entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entity->GetId());
                 const AZStd::string entityPathFromTopInstance = overridePatchPathToOwningInstance + entityAliasPath;
                 PrefabDomPath entityDomPathFromTopInstance(entityPathFromTopInstance.c_str());
@@ -102,9 +98,10 @@ namespace AzToolsFramework
                     }
                 }
 
-                PrefabOverridePrefixTree overrideSubTree = link->get().GenerateOverrideSubTreeForEntity(
+                // Subtrees in map are initialized as after-state subtrees for next redo.
+                PrefabOverridePrefixTree redoSubtree = link->get().GenerateOverrideSubTreeForEntity(
                     overridePatches, entityPathFromTopInstance);
-                m_overrideSubTrees[AZ::Dom::Path(entityPathFromTopInstance)] = AZStd::move(overrideSubTree);
+                m_subtreeStates[AZ::Dom::Path(entityPathFromTopInstance)] = AZStd::move(redoSubtree);
 
                 // Preemptively updates the cached DOM to prevent reloading instance DOM.
                 if (cachedOwningInstanceDom.has_value())
@@ -129,11 +126,14 @@ namespace AzToolsFramework
             LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
             if (link.has_value())
             {
-                for (auto& [pathToSubTree, overrideSubTree] : m_overrideSubTrees)
+                for (auto& [pathToSubtree, subtreeState] : m_subtreeStates)
                 {
-                    PrefabOverridePrefixTree prevSubTree = AZStd::move(link->get().RemoveOverrides(pathToSubTree));
-                    link->get().AddOverrides(pathToSubTree, AZStd::move(overrideSubTree));
-                    overrideSubTree = AZStd::move(prevSubTree);
+                    // In redo, after-state subtrees in map will be moved to the link tree.
+                    // In undo, before-state subtrees in map will be moved to the link tree.
+                    // The previous states of subtrees in link are moved back to the map for next undo/redo if any.
+                    PrefabOverridePrefixTree subtreeInLink = AZStd::move(link->get().RemoveOverrides(pathToSubtree));
+                    link->get().AddOverrides(pathToSubtree, AZStd::move(subtreeState));
+                    subtreeState = AZStd::move(subtreeInLink);
                 }
 
                 link->get().UpdateTarget();
