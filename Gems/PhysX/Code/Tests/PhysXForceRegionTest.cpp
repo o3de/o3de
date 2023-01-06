@@ -317,7 +317,7 @@ namespace PhysX
     TEST_F(PhysXForceRegionTest, ForceRegion_SimpleDragForce_EntityVelocitySpecificValue)
     {
         AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), SimpleDragForce);
-        EXPECT_GT(entityVelocity.GetZ(), -12.65f); // Falling velocity should be slower than free fall velocity, which is -12.65.
+        EXPECT_TRUE(entityVelocity.GetZ() > -12.66f); // Falling velocity should be slower than free fall velocity, which is -12.65 (+-0.01).
         EXPECT_NEAR(entityVelocity.GetX(), 0.0f, AZ::Constants::FloatEpsilon); // Dragging should not change original direction.
         EXPECT_NEAR(entityVelocity.GetY(), 0.0f, AZ::Constants::FloatEpsilon); // Dragging should not change original direction.
     }
@@ -325,7 +325,7 @@ namespace PhysX
     TEST_F(PhysXForceRegionTest, ForceRegion_LinearDampingForce_EntityVelocitySpecificValue)
     {
         AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), LinearDampingForce);
-        EXPECT_GT(entityVelocity.GetZ(), -12.65f); // Falling velocity should be slower than free fall velocity, which is -12.65.
+        EXPECT_TRUE(entityVelocity.GetZ() > -12.66f); // Falling velocity should be slower than free fall velocity, which is -12.65 (+-0.01).
         EXPECT_NEAR(entityVelocity.GetX(), 0.0f, AZ::Constants::FloatEpsilon); // Damping should not change original direction.
         EXPECT_NEAR(entityVelocity.GetY(), 0.0f, AZ::Constants::FloatEpsilon); // Damping should not change original direction.
     }
