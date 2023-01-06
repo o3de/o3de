@@ -122,6 +122,7 @@ set(FILES
     Prefab/PrefabUndoAddEntityTestFixture.cpp
     Prefab/PrefabUndoAddEntityTestFixture.h
     Prefab/PrefabUndoAddEntityTests.cpp
+    Prefab/PrefabUndoEditEntityTests.cpp
     Prefab/PrefabUndoDeleteTests.cpp
     Prefab/PrefabUndoLinkTests.cpp
     Prefab/PrefabUndoTests.cpp
