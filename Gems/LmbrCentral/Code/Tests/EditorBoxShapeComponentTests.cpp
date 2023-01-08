@@ -20,6 +20,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
+#include <EditorShapeTestUtils.h>
 
 namespace LmbrCentral
 {
@@ -138,11 +139,7 @@ namespace LmbrCentral
         const AZ::Vector3 boxDimensions(1.0f, 2.0f, 2.5f);
         BoxShapeComponentRequestsBus::Event(m_entity->GetId(), &BoxShapeComponentRequests::SetBoxDimensions, boxDimensions);
 
-        // enter the box shape component's component mode
-        AzToolsFramework::SelectEntity(m_entity->GetId());
-        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
-            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Events::AddSelectedComponentModesOfType,
-            EditorBoxShapeComponentTypeId);
+        EnterComponentMode(m_entity, EditorBoxShapeComponentTypeId);
 
         // position the camera so it is looking down at the box
         AzFramework::SetCameraTransform(
@@ -161,25 +158,9 @@ namespace LmbrCentral
         // position in world space to move to
         const AZ::Vector3 worldEnd(6.8f, 6.6f, 4.0f);
 
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd, AzToolsFramework::DefaultSymmetricalEditingModifier);
 
-        m_actionDispatcher
-            ->CameraState(m_cameraState)
-            // move the mouse to the position of the x scale manipulator
-            ->MousePosition(screenStart)
-            ->KeyboardModifierDown(AzToolsFramework::DefaultSymmetricalEditingModifier)
-            // drag to move the manipulator
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
-
-        AZ::Vector3 newBoxDimensions = AZ::Vector3::CreateZero();
-        BoxShapeComponentRequestsBus::EventResult(newBoxDimensions, m_entity->GetId(), &BoxShapeComponentRequests::GetBoxDimensions);
-
-        const AZ::Vector3 expectedBoxDimensions(2.0f, 2.0f, 2.5f);
-        // allow a reasonably high tolerance because we can't get better accuracy than the resolution of the viewport
-        EXPECT_THAT(newBoxDimensions, UnitTest::IsCloseTolerance(expectedBoxDimensions, 1e-2f));
+        ExpectBoxDimensions(m_entity, AZ::Vector3(2.0f, 2.0f, 2.5f));
     }
 
     TEST_F(EditorBoxShapeComponentManipulatorFixture, BoxShapeNonUniformScaleAsymmetricalEditingManipulatorsScaleCorrectly)
@@ -199,11 +180,7 @@ namespace LmbrCentral
         LmbrCentral::ShapeComponentRequestsBus::Event(
             m_entity->GetId(), &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, translationOffset);
 
-        // enter the box shape component's component mode
-        AzToolsFramework::SelectEntity(m_entity->GetId());
-        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
-            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Events::AddSelectedComponentModesOfType,
-            EditorBoxShapeComponentTypeId);
+        EnterComponentMode(m_entity, EditorBoxShapeComponentTypeId);
 
         // position the camera so it is looking down at the box
         AzFramework::SetCameraTransform(
@@ -217,31 +194,11 @@ namespace LmbrCentral
         // position in world space to move to 
         const AZ::Vector3 worldEnd(3.96f, -10.53f, -4.8f);
 
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
 
-        m_actionDispatcher
-            ->CameraState(m_cameraState)
-            // move the mouse to the position of the -y scale manipulator
-            ->MousePosition(screenStart)
-            // drag to move the manipulator
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
-
-        AZ::Vector3 newBoxDimensions = AZ::Vector3::CreateZero();
-        BoxShapeComponentRequestsBus::EventResult(newBoxDimensions, m_entity->GetId(), &BoxShapeComponentRequests::GetBoxDimensions);
-
-        const AZ::Vector3 expectedBoxDimensions(3.0f, 9.0f, 2.0f);
-        // only moving about 35 pixels, so can't expect much better accuracy than 1/35 of the distance moved (3.0), so about 0.1.
-        const float tolerance = 0.1f;
-        EXPECT_THAT(newBoxDimensions, UnitTest::IsCloseTolerance(expectedBoxDimensions, tolerance));
-
+        ExpectBoxDimensions(m_entity, AZ::Vector3(3.0f, 9.0f, 2.0f));
         // the offset should have changed because the editing was asymmetrical
-        AZ::Vector3 newOffset = AZ::Vector3::CreateZero();
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            newOffset, m_entity->GetId(), &LmbrCentral::ShapeComponentRequests::GetTranslationOffset);
-        EXPECT_THAT(newOffset, UnitTest::IsCloseTolerance(translationOffset - AZ::Vector3::CreateAxisY(1.5f), tolerance));
+        ExpectTranslationOffset(m_entity, translationOffset - AZ::Vector3::CreateAxisY(1.5f));
     }
 }
 

@@ -25,4 +25,8 @@ namespace LmbrCentral
         AzToolsFramework::ViewportInteraction::KeyboardModifier::None);
 
     void EnterComponentMode(AZ::Entity* entity, const AZ::Uuid& componentType);
+
+    void ExpectBoxDimensions(AZ::Entity* entity, const AZ::Vector3& expectedBoxDimensions);
+
+    void ExpectTranslationOffset(AZ::Entity* entity, const AZ::Vector3& expectedTranslationOffset);
 } // namespace LmbrCentral

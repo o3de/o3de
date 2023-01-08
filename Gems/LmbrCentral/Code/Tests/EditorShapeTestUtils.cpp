@@ -8,6 +8,7 @@
 
 #include <EditorShapeTestUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <Shape/EditorSphereShapeComponent.h>
 
@@ -41,5 +42,20 @@ namespace LmbrCentral
         AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
             &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Events::AddSelectedComponentModesOfType,
             componentType);
+    }
+
+    void ExpectBoxDimensions(AZ::Entity* entity, const AZ::Vector3& expectedBoxDimensions)
+    {
+        AZ::Vector3 boxDimensions;
+        BoxShapeComponentRequestsBus::EventResult(boxDimensions, entity->GetId(), &BoxShapeComponentRequests::GetBoxDimensions);
+        EXPECT_THAT(boxDimensions, UnitTest::IsCloseTolerance(expectedBoxDimensions, ManipulatorTolerance));
+    }
+
+    void ExpectTranslationOffset(AZ::Entity* entity, const AZ::Vector3& expectedTranslationOffset)
+    {
+        AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            translationOffset, entity->GetId(), &LmbrCentral::ShapeComponentRequests::GetTranslationOffset);
+        EXPECT_THAT(translationOffset, UnitTest::IsCloseTolerance(expectedTranslationOffset, ManipulatorTolerance));
     }
 } // namespace LmbrCentral

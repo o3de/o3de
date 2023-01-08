@@ -102,12 +102,7 @@ namespace LmbrCentral
 
         DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd, AzToolsFramework::DefaultSymmetricalEditingModifier);
 
-        AZ::Vector3 newBoxDimensions = AZ::Vector3::CreateZero();
-        BoxShapeComponentRequestsBus::EventResult(newBoxDimensions, m_entity->GetId(), &BoxShapeComponentRequests::GetBoxDimensions);
-
-        const AZ::Vector3 expectedBoxDimensions(4.0f, 4.0f, 3.0f);
-        // allow a reasonably high tolerance because we can't get better accuracy than the resolution of the viewport
-        EXPECT_THAT(newBoxDimensions, UnitTest::IsCloseTolerance(expectedBoxDimensions, 0.1f));
+        ExpectBoxDimensions(m_entity, AZ::Vector3(4.0f, 4.0f, 3.0f));
     }
 
     TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, AxisAlignedBoxShapeAsymmetricalEditingManipulatorsScaleCorrectly)
@@ -130,19 +125,9 @@ namespace LmbrCentral
 
         DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
 
-        AZ::Vector3 newBoxDimensions = AZ::Vector3::CreateZero();
-        BoxShapeComponentRequestsBus::EventResult(newBoxDimensions, m_entity->GetId(), &BoxShapeComponentRequests::GetBoxDimensions);
-
-        const AZ::Vector3 expectedBoxDimensions(3.0f, 6.0f, 4.0f);
-        // allow a reasonably high tolerance because we can't get better accuracy than the resolution of the viewport
-        const float tolerance = 0.1f;
-        EXPECT_THAT(newBoxDimensions, UnitTest::IsCloseTolerance(expectedBoxDimensions, tolerance));
-
+        ExpectBoxDimensions(m_entity, AZ::Vector3(3.0f, 6.0f, 4.0f));
         // the offset should have changed because the editing was asymmetrical
-        AZ::Vector3 newOffset = AZ::Vector3::CreateZero();
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            newOffset, m_entity->GetId(), &LmbrCentral::ShapeComponentRequests::GetTranslationOffset);
-        EXPECT_THAT(newOffset, UnitTest::IsCloseTolerance(translationOffset - AZ::Vector3::CreateAxisX(0.5f), tolerance));
+        ExpectTranslationOffset(m_entity, translationOffset - AZ::Vector3::CreateAxisX(0.5f));
     }
 }
 
