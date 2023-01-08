@@ -15,9 +15,9 @@
 #include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ViewportInteraction.h>
-#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
+#include <EditorShapeTestUtils.h>
 
 namespace LmbrCentral
 {
@@ -74,17 +74,12 @@ namespace LmbrCentral
     using EditorAxisAlignedBoxShapeComponentManipulatorFixture =
         UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<EditorAxisAlignedBoxShapeComponentFixture>;
 
-    void SetUpAxisAlignedBoxShapeComponentAndEnterComponentMode(
+    void SetUpAxisAlignedBoxShapeComponent(
         AZ::Entity* entity, const AZ::Transform& transform, const AZ::Vector3& translationOffset, const AZ::Vector3& boxDimensions)
     {
         AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetWorldTM, transform);
         ShapeComponentRequestsBus::Event(entity->GetId(), &ShapeComponentRequests::SetTranslationOffset, translationOffset);
         BoxShapeComponentRequestsBus::Event(entity->GetId(), &BoxShapeComponentRequests::SetBoxDimensions, boxDimensions);
-
-        AzToolsFramework::SelectEntity(entity->GetId());
-        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
-            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Events::AddSelectedComponentModesOfType,
-            EditorAxisAlignedBoxShapeComponentTypeId);
     }
 
     TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, AxisAlignedBoxShapeSymmetricalEditingManipulatorsScaleCorrectly)
@@ -92,7 +87,8 @@ namespace LmbrCentral
         const AZ::Transform transform(AZ::Vector3(7.0f, 5.0f, -2.0f), AZ::Quaternion::CreateIdentity(), 0.5f);
         const AZ::Vector3 translationOffset(-4.0f, -4.0f, 3.0f);
         const AZ::Vector3 boxDimensions(4.0f, 2.0f, 3.0f);
-        SetUpAxisAlignedBoxShapeComponentAndEnterComponentMode(m_entity, transform, translationOffset, boxDimensions);
+        SetUpAxisAlignedBoxShapeComponent(m_entity, transform, translationOffset, boxDimensions);
+        EnterComponentMode(m_entity, EditorAxisAlignedBoxShapeComponentTypeId);
 
         // position the camera so it is looking down at the box
         AzFramework::SetCameraTransform(
@@ -103,18 +99,8 @@ namespace LmbrCentral
         // position in world space which should allow grabbing the box's y scale manipulator
         const AZ::Vector3 worldStart(5.0f, 3.5f, -0.5f);
         const AZ::Vector3 worldEnd(5.0f, 4.0f, -0.5f);
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
 
-        m_actionDispatcher
-            ->CameraState(m_cameraState)
-            // move the mouse to the position of the y scale manipulator
-            ->MousePosition(screenStart)
-            ->KeyboardModifierDown(AzToolsFramework::DefaultSymmetricalEditingModifier)
-            // drag to move the manipulator
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd, AzToolsFramework::DefaultSymmetricalEditingModifier);
 
         AZ::Vector3 newBoxDimensions = AZ::Vector3::CreateZero();
         BoxShapeComponentRequestsBus::EventResult(newBoxDimensions, m_entity->GetId(), &BoxShapeComponentRequests::GetBoxDimensions);
@@ -129,7 +115,8 @@ namespace LmbrCentral
         const AZ::Transform transform(AZ::Vector3(2.0f, 4.0f, -7.0f), AZ::Quaternion::CreateIdentity(), 1.5f);
         const AZ::Vector3 translationOffset(-5.0f, 3.0f, 1.0f);
         const AZ::Vector3 boxDimensions(2.0f, 6.0f, 4.0f);
-        SetUpAxisAlignedBoxShapeComponentAndEnterComponentMode(m_entity, transform, translationOffset, boxDimensions);
+        SetUpAxisAlignedBoxShapeComponent(m_entity, transform, translationOffset, boxDimensions);
+        EnterComponentMode(m_entity, EditorAxisAlignedBoxShapeComponentTypeId);
 
         // position the camera so it is looking down at the box
         AzFramework::SetCameraTransform(
@@ -140,17 +127,8 @@ namespace LmbrCentral
         // position in world space which should allow grabbing the box's -x scale manipulator
         const AZ::Vector3 worldStart(-7.0f, 8.5f, -5.5f);
         const AZ::Vector3 worldEnd(-8.5f, 8.5f, -5.5f);
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
 
-        m_actionDispatcher
-            ->CameraState(m_cameraState)
-            // move the mouse to the position of the -x scale manipulator
-            ->MousePosition(screenStart)
-            // drag to move the manipulator
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
 
         AZ::Vector3 newBoxDimensions = AZ::Vector3::CreateZero();
         BoxShapeComponentRequestsBus::EventResult(newBoxDimensions, m_entity->GetId(), &BoxShapeComponentRequests::GetBoxDimensions);

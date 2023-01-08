@@ -17,6 +17,8 @@ set(FILES
     EditorCompoundShapeComponentTests.cpp
     EditorCylinderShapeComponentTests.cpp
     EditorPolygonPrismShapeComponentTests.cpp
+    EditorShapeTestUtils.cpp
+    EditorShapeTestUtils.h
     EditorTubeShapeComponentTests.cpp
     SpawnerComponentTest.cpp
     Builders/CopyDependencyBuilderTest.cpp
