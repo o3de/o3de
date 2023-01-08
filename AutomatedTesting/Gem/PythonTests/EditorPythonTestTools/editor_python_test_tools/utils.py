@@ -200,7 +200,7 @@ class TestHelper:
             TestHelper.wait_for_condition(lambda : multiplayer_helper.editorConnectionAttemptCount > 0, 10.0)
             Report.critical_result(("Multiplayer Editor attempting server connection.", "Multiplayer Editor never tried connecting to the server."), multiplayer_helper.editorConnectionAttemptCount > 0)
 
-            TestHelper.wait_for_condition(lambda : multiplayer_helper.editorSendingLevelData, 20.0)
+            TestHelper.wait_for_condition(lambda : multiplayer_helper.editorSendingLevelData, 10.0)
             Report.critical_result(("Multiplayer Editor sent level data to the server.", "Multiplayer Editor never sent the level to the server."), multiplayer_helper.editorSendingLevelData)
 
             TestHelper.wait_for_condition(lambda : multiplayer_helper.connectToSimulationSuccess, 10.0)
