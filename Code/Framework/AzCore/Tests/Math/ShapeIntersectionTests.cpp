@@ -11,6 +11,7 @@
 #include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/Sphere.h>
 #include <AzCore/Math/ShapeIntersection.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 
 namespace UnitTest
 {
@@ -50,14 +51,14 @@ namespace UnitTest
         {
             AZ::Vector3 intersectionPoint;
             EXPECT_TRUE(AZ::ShapeIntersection::IntersectThreePlanes(near_value, left, bottom, intersectionPoint));
-            EXPECT_TRUE(intersectionPoint.IsClose(AZ::Vector3(-5.f, -5.f, -5.f)));
+            EXPECT_THAT(intersectionPoint, IsClose(AZ::Vector3(-5.f, -5.f, -5.f)));
             EXPECT_FALSE(AZ::ShapeIntersection::IntersectThreePlanes(near_value, far_value, bottom, intersectionPoint));
         }
 
         {
             AZ::Vector3 intersectionPoint;
             EXPECT_TRUE(AZ::ShapeIntersection::IntersectThreePlanes(near_value, left, bottom, intersectionPoint));
-            EXPECT_TRUE(intersectionPoint.IsClose(AZ::Vector3(-5.f, -5.f, -5.f)));
+            EXPECT_THAT(intersectionPoint, IsClose(AZ::Vector3(-5.f, -5.f, -5.f)));
             EXPECT_FALSE(AZ::ShapeIntersection::IntersectThreePlanes(near_value, far_value, bottom, intersectionPoint));
         }
 
@@ -108,13 +109,13 @@ namespace UnitTest
             AZ::Sphere s1(AZ::Vector3(0.0f, -5.1f, 0.0f), 0.5f);
             AZ::Sphere s2(AZ::Vector3(0.0f, -5.6f, 0.0f), 0.5f);
 
-            EXPECT_TRUE(AZ::ShapeIntersection::Classify(near_value, s) ==  AZ::IntersectResult::Interior);
-            EXPECT_TRUE(AZ::ShapeIntersection::Classify(near_value, s1) == AZ::IntersectResult::Overlaps);
-            EXPECT_TRUE(AZ::ShapeIntersection::Classify(near_value, s2) == AZ::IntersectResult::Exterior);
+            EXPECT_EQ(AZ::ShapeIntersection::Classify(near_value, s), AZ::IntersectResult::Interior);
+            EXPECT_EQ(AZ::ShapeIntersection::Classify(near_value, s1), AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(AZ::ShapeIntersection::Classify(near_value, s2), AZ::IntersectResult::Exterior);
 
-            EXPECT_TRUE(AZ::ShapeIntersection::Classify(frustum, s) ==  AZ::IntersectResult::Interior);
-            EXPECT_TRUE(AZ::ShapeIntersection::Classify(frustum, s1) == AZ::IntersectResult::Overlaps);
-            EXPECT_TRUE(AZ::ShapeIntersection::Classify(frustum, s2) == AZ::IntersectResult::Exterior);
+            EXPECT_EQ(AZ::ShapeIntersection::Classify(frustum, s), AZ::IntersectResult::Interior);
+            EXPECT_EQ(AZ::ShapeIntersection::Classify(frustum, s1), AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(AZ::ShapeIntersection::Classify(frustum, s2), AZ::IntersectResult::Exterior);
         }
 
         {
@@ -124,9 +125,9 @@ namespace UnitTest
                 AZ::Vector3(0.0f, -5.1f, 0.0f), AZ::Quaternion::CreateIdentity(), AZ::Vector3::CreateOne());
             AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(
                 AZ::Vector3(0.0f, -6.1f, 0.0f), AZ::Quaternion::CreateIdentity(), AZ::Vector3::CreateOne());
-            EXPECT_TRUE(AZ::ShapeIntersection::Classify(near_value, obb) ==  AZ::IntersectResult::Interior);
-            EXPECT_TRUE(AZ::ShapeIntersection::Classify(near_value, obb1) == AZ::IntersectResult::Overlaps);
-            EXPECT_TRUE(AZ::ShapeIntersection::Classify(near_value, obb2) == AZ::IntersectResult::Exterior);
+            EXPECT_EQ(AZ::ShapeIntersection::Classify(near_value, obb), AZ::IntersectResult::Interior);
+            EXPECT_EQ(AZ::ShapeIntersection::Classify(near_value, obb1), AZ::IntersectResult::Overlaps);
+            EXPECT_EQ(AZ::ShapeIntersection::Classify(near_value, obb2), AZ::IntersectResult::Exterior);
         }
 
         //Test a bunch of different rotations with the OBBs

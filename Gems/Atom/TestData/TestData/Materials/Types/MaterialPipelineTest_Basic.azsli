@@ -20,6 +20,11 @@
     COMMON_OPTIONS_METALLIC()
     COMMON_OPTIONS_SPECULAR_F0()
     COMMON_OPTIONS_NORMAL()
+    
+    bool NeedsTangentFrame()
+    {
+        return o_normal_useTexture;
+    }
 
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>

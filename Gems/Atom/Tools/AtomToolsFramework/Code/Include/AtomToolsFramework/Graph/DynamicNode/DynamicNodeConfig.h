@@ -55,6 +55,8 @@ namespace AtomToolsFramework
         AZStd::string m_subTitle;
         //! Name of the node title bar UI palette style sheet entry
         AZStd::string m_titlePaletteName;
+        //! Brief description about the node
+        AZStd::string m_description;
         //! Vector of delimited strings, each representing a group of slot names that should share the same type
         AZStd::vector<AZStd::string> m_slotDataTypeGroups;
         //! Settings is a container of key value string pairs that can be used for any custom or application specific data

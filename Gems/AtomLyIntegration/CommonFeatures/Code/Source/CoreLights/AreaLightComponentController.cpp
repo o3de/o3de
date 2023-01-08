@@ -570,9 +570,15 @@ namespace AZ::Render
     {
         Transform transform = Transform::CreateIdentity();
         TransformBus::EventResult(transform, m_entityId, &TransformBus::Events::GetWorldTM);
+
+        AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            translationOffset, m_entityId, &LmbrCentral::ShapeComponentRequests::GetTranslationOffset);
+
         if (m_lightShapeDelegate)
         {
-            m_lightShapeDelegate->DrawDebugDisplay(transform, m_configuration.m_color, debugDisplay, isSelected);
+            m_lightShapeDelegate->DrawDebugDisplay(
+                transform * AZ::Transform::CreateTranslation(translationOffset), m_configuration.m_color, debugDisplay, isSelected);
         }
     }
 

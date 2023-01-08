@@ -96,7 +96,7 @@ namespace UnitTests
         EXPECT_TRUE(fileStateCache->Exists((assetRootDir / "test").c_str()));
     }
 
-    TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread)
+    TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread_SUITE_sandbox)
     {
         AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 

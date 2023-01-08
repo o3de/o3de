@@ -71,6 +71,14 @@ namespace DPEDebugView
             NotReflected = 0xFF
         };
 
+        // This enum is being used to test parsing of AZ::Edit::EnumConstant attributes from the reflection context
+        enum class EnumValueType : char
+        {
+            AValue,
+            BValue,
+            CValue
+        };
+
         AZStd::vector<AZ::Edit::EnumConstant<EnumType>> GetEnumValues() const
         {
             AZStd::vector<AZ::Edit::EnumConstant<EnumType>> values;
@@ -88,14 +96,15 @@ namespace DPEDebugView
         AZStd::map<AZStd::string, float> m_map;
         AZStd::map<AZStd::string, float> m_readOnlyMap;
         AZStd::unordered_map<AZStd::pair<int, double>, int> m_unorderedMap;
-        AZStd::unordered_map<EnumType, int> m_simpleEnum;
-        AZStd::unordered_map<EnumType, double> m_immutableEnum;
+        AZStd::unordered_map<EnumType, int> m_simpleEnumMap;
+        AZStd::unordered_map<EnumType, double> m_immutableEnumMap;
         AZStd::set<int> m_set;
         AZStd::unordered_set<EnumType> m_unorderedSet;
         AZStd::unordered_multimap<int, AZStd::string> m_multiMap;
         AZStd::unordered_map<EnumType, AZStd::unordered_map<int, int>> m_nestedMap;
         AZStd::unordered_map<AZ::EntityId, int> m_entityIdMap;
         EnumType m_enumValue = EnumType::Value1;
+        EnumValueType m_enumValueType = EnumValueType::BValue;
         AZ::EntityId m_entityId;
 
         // For testing invocable ReadOnly attributes
@@ -114,14 +123,15 @@ namespace DPEDebugView
                     ->Field("vector", &TestContainer::m_vector)
                     ->Field("map", &TestContainer::m_map)
                     ->Field("unorderedMap", &TestContainer::m_unorderedMap)
-                    ->Field("simpleEnum", &TestContainer::m_simpleEnum)
-                    ->Field("immutableEnum", &TestContainer::m_immutableEnum)
+                    ->Field("simpleEnum", &TestContainer::m_simpleEnumMap)
+                    ->Field("immutableEnum", &TestContainer::m_immutableEnumMap)
                     ->Field("set", &TestContainer::m_set)
                     ->Field("unorderedSet", &TestContainer::m_unorderedSet)
                     ->Field("multiMap", &TestContainer::m_multiMap)
                     ->Field("nestedMap", &TestContainer::m_nestedMap)
                     ->Field("entityIdMap", &TestContainer::m_entityIdMap)
                     ->Field("enumValue", &TestContainer::m_enumValue)
+                    ->Field("enumValueType", &TestContainer::m_enumValueType)
                     ->Field("entityId", &TestContainer::m_entityId)
                     ->Field("readonlyInt", &TestContainer::m_readOnlyInt)
                     ->Field("map", &TestContainer::m_readOnlyMap);
@@ -150,9 +160,9 @@ namespace DPEDebugView
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(
                             AZ::Edit::UIHandlers::Default, &TestContainer::m_unorderedMap, "unordered_map<pair<int, double>, int>", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleEnum, "unordered_map<enum, int>", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleEnumMap, "unordered_map<enum, int>", "")
                         ->DataElement(
-                            AZ::Edit::UIHandlers::Default, &TestContainer::m_immutableEnum, "unordered_map<enum, double> (fixed contents)",
+                            AZ::Edit::UIHandlers::Default, &TestContainer::m_immutableEnumMap, "unordered_map<enum, double> (fixed contents)",
                             "")
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_set, "set<int>", "")
@@ -163,9 +173,13 @@ namespace DPEDebugView
                             AZ::Edit::UIHandlers::Default, &TestContainer::m_nestedMap, "unordered_map<enum, unordered_map<int, int>>", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityIdMap, "unordered_map<EntityId, Number>", "")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_enumValue, "enum (no multi-edit)", "")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TestContainer::m_enumValue, "enum (no multi-edit)", "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, &TestContainer::GetEnumValues)
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, false)
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TestContainer::m_enumValueType, "enum (multi-edit)", "")
+                        ->EnumAttribute(EnumValueType::AValue, "AValueDescription")
+                        ->EnumAttribute(EnumValueType::BValue, "BValueDescription")
+                        ->EnumAttribute(EnumValueType::CValue, "CValueDescription")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityId, "entityId", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button2)
@@ -243,13 +257,13 @@ int main(int argc, char** argv)
     testContainer.m_unorderedMap[{1, 2.}] = 3;
     testContainer.m_unorderedMap[{ 4, 5. }] = 6;
 
-    testContainer.m_simpleEnum[DPEDebugView::TestContainer::EnumType::Value1] = 1;
-    testContainer.m_simpleEnum[DPEDebugView::TestContainer::EnumType::Value2] = 2;
-    testContainer.m_simpleEnum[DPEDebugView::TestContainer::EnumType::ValueZ] = 10;
+    testContainer.m_simpleEnumMap[DPEDebugView::TestContainer::EnumType::Value1] = 1;
+    testContainer.m_simpleEnumMap[DPEDebugView::TestContainer::EnumType::Value2] = 2;
+    testContainer.m_simpleEnumMap[DPEDebugView::TestContainer::EnumType::ValueZ] = 10;
 
-    testContainer.m_immutableEnum[DPEDebugView::TestContainer::EnumType::Value1] = 1.;
-    testContainer.m_immutableEnum[DPEDebugView::TestContainer::EnumType::Value2] = 2.;
-    testContainer.m_immutableEnum[DPEDebugView::TestContainer::EnumType::ValueZ] = 10.;
+    testContainer.m_immutableEnumMap[DPEDebugView::TestContainer::EnumType::Value1] = 1.;
+    testContainer.m_immutableEnumMap[DPEDebugView::TestContainer::EnumType::Value2] = 2.;
+    testContainer.m_immutableEnumMap[DPEDebugView::TestContainer::EnumType::ValueZ] = 10.;
 
     testContainer.m_set.insert(1);
     testContainer.m_set.insert(3);
@@ -258,7 +272,7 @@ int main(int argc, char** argv)
     testContainer.m_unorderedSet.insert(DPEDebugView::TestContainer::EnumType::Value1);
     testContainer.m_unorderedSet.insert(DPEDebugView::TestContainer::EnumType::ValueZ);
 
-    testContainer.m_multiMap.insert({1, "one"});
+    testContainer.m_multiMap.insert({ 1, "one"});
     testContainer.m_multiMap.insert({ 2, "two" });
     testContainer.m_multiMap.insert({ 1, "also one" });
 
@@ -274,8 +288,10 @@ int main(int argc, char** argv)
 
     sortFilter->SetSourceAdapter(cvarAdapter);
 
+    debugViewer->AddAdapterToList(
+        "Reflection Adapter",
+        AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
     debugViewer->AddAdapterToList("CVar Adapter", sortFilter);
-    debugViewer->AddAdapterToList("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
     debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 

@@ -307,6 +307,12 @@ void ApplicationManagerBase::Rescan()
     GetAssetScanner()->StartScan();
 }
 
+void ApplicationManagerBase::FastScan()
+{
+    m_assetProcessorManager->SetEnableModtimeSkippingFeature(true);
+    GetAssetScanner()->StartScan();
+}
+
 void ApplicationManagerBase::InitAssetCatalog()
 {
     using namespace AssetProcessor;
@@ -422,106 +428,77 @@ void ApplicationManagerBase::DestroyPlatformConfiguration()
 void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcherBase> fileWatcher)
 {
     m_fileWatcher = AZStd::move(fileWatcher);
+    using AssetProcessor::IntermediateAssetsFolderName;
+    using AssetProcessor::AssetProcessorManager;
+    using AssetProcessor::ScanFolderInfo;
+    using AssetProcessor::ExcludedFolderCacheInterface;
+    using AssetProcessor::FileProcessor;
 
-    for (int folderIdx = 0; folderIdx < m_platformConfiguration->GetScanFolderCount(); ++folderIdx)
-    {
-        const AssetProcessor::ScanFolderInfo& info = m_platformConfiguration->GetScanFolderAt(folderIdx);
-        m_fileWatcher->AddFolderWatch(info.ScanPath(), info.RecurseSubFolders());
-    }
-
+    QString projectPath = GetProjectPath();
     QDir cacheRoot;
-    if (AssetUtilities::ComputeProjectCacheRoot(cacheRoot))
+    AssetUtilities::ComputeProjectCacheRoot(cacheRoot);
+
+    m_fileWatcher->InstallDefaultExclusionRules(cacheRoot.absolutePath(), projectPath);
+
+    if (!cacheRoot.isEmpty())
     {
+        // note that in projects, if we watch the project root, the cache folder is a subfolder of that folder anyway,
+        // so AddFolderWatch below for the cache does nothing.  In the case where the project might watch only a specific
+        // subfolder, then this matters.
         m_fileWatcher->AddFolderWatch(cacheRoot.absolutePath(), true);
     }
 
-    if (m_platformConfiguration->GetScanFolderCount() || !cacheRoot.path().isEmpty())
+    for (int folderIdx = 0; folderIdx < m_platformConfiguration->GetScanFolderCount(); ++folderIdx)
     {
-        const auto cachePath = QDir::toNativeSeparators(cacheRoot.absolutePath());
-
-        // For the handlers below, we need to make sure to use invokeMethod on any QObjects so Qt can queue
-        // the callback to run on the QObject's thread if needed.  The APM methods for example are not thread-safe.
-
-        const auto OnFileAdded = [this, cachePath](QString path)
-        {
-            const bool isCacheRoot = AssetUtilities::IsInCacheFolder(path.toUtf8().constData(), cachePath.toUtf8().constData());
-            if (!isCacheRoot)
-            {
-                [[maybe_unused]] bool result = QMetaObject::invokeMethod(m_assetProcessorManager, [this, path]()
-                {
-                    m_assetProcessorManager->AssessAddedFile(path);
-                }, Qt::QueuedConnection);
-                AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessAddedFile");
-
-                result = QMetaObject::invokeMethod(m_fileProcessor.get(), [this, path]()
-                {
-                    m_fileProcessor->AssessAddedFile(path);
-                }, Qt::QueuedConnection);
-                AZ_Assert(result, "Failed to invoke m_fileProcessor::AssessAddedFile");
-
-                auto cache = AZ::Interface<AssetProcessor::ExcludedFolderCacheInterface>::Get();
-
-                if(cache)
-                {
-                    cache->FileAdded(path);
-                }
-                else
-                {
-                    AZ_Error("AssetProcessor", false, "ExcludedFolderCacheInterface not found");
-                }
-            }
-
-            m_fileStateCache->AddFile(path);
-        };
-
-        const auto OnFileModified = [this, cachePath](QString path)
-        {
-            const bool isCacheRoot = AssetUtilities::IsInCacheFolder(path.toUtf8().constData(), cachePath.toUtf8().constData());
-            if (!isCacheRoot)
-            {
-                m_fileStateCache->UpdateFile(path);
-                m_uuidManager->FileChanged(path.toUtf8().constData());
-            }
-
-            [[maybe_unused]] bool result = QMetaObject::invokeMethod(
-                m_assetProcessorManager,
-                [this, path]
-                {
-                    m_assetProcessorManager->AssessModifiedFile(path);
-                },
-                Qt::QueuedConnection);
-
-            AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessModifiedFile");
-        };
-
-        const auto OnFileRemoved = [this, cachePath](QString path)
-        {
-            [[maybe_unused]] bool result = false;
-            const bool isCacheRoot = AssetUtilities::IsInCacheFolder(path.toUtf8().constData(), cachePath.toUtf8().constData());
-            if (!isCacheRoot)
-            {
-                result = QMetaObject::invokeMethod(m_fileProcessor.get(), [this, path]()
-                {
-                    m_fileProcessor->AssessDeletedFile(path);
-                }, Qt::QueuedConnection);
-                AZ_Assert(result, "Failed to invoke m_fileProcessor::AssessDeletedFile");
-
-                m_uuidManager->FileRemoved(path.toUtf8().constData());
-            }
-
-            result = QMetaObject::invokeMethod(m_assetProcessorManager, [this, path]()
-            {
-                m_assetProcessorManager->AssessDeletedFile(path);
-            }, Qt::QueuedConnection);
-            AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessDeletedFile");
-
-            m_fileStateCache->RemoveFile(path);
-        };
-
-        connect(m_fileWatcher.get(), &FileWatcherBase::fileAdded, OnFileAdded);
-        connect(m_fileWatcher.get(), &FileWatcherBase::fileModified, OnFileModified);
-        connect(m_fileWatcher.get(), &FileWatcherBase::fileRemoved, OnFileRemoved);
+        const ScanFolderInfo& info = m_platformConfiguration->GetScanFolderAt(folderIdx);
+        m_fileWatcher->AddFolderWatch(info.ScanPath(), info.RecurseSubFolders());
     }
+  
+    const auto OnFileAdded = [this](QString path)
+    {
+        m_fileStateCache->AddFile(path);
+    };
+
+    const auto OnFileModified = [this](QString path)
+    {
+        m_fileStateCache->UpdateFile(path);
+        m_uuidManager->FileChanged(path.toUtf8().constData());
+    };
+
+    const auto OnFileRemoved = [this](QString path)
+    {
+        m_fileStateCache->RemoveFile(path);
+        m_uuidManager->FileRemoved(path.toUtf8().constData());
+    };
+
+    connect(m_fileWatcher.get(), &FileWatcher::fileAdded, OnFileAdded);
+    connect(m_fileWatcher.get(), &FileWatcher::fileModified, OnFileModified);
+    connect(m_fileWatcher.get(), &FileWatcher::fileRemoved, OnFileRemoved);
+
+    auto excludedFolderCacheInterfacePtr = AZ::Interface<ExcludedFolderCacheInterface>::Get();
+    if (!excludedFolderCacheInterfacePtr)
+    {
+        AZ_Error("AssetProcessor", false, "ExcludedFolderCacheInterface not found.");
+    }
+    else
+    {
+        const auto OnFileAddedForExcludeFolderCache = [excludedFolderCacheInterfacePtr](QString path)
+        {
+            excludedFolderCacheInterfacePtr->FileAdded(path);
+        };
+
+        connect(m_fileWatcher.get(), &FileWatcher::fileAdded, OnFileAddedForExcludeFolderCache);
+    }
+
+    if (m_fileProcessor.get())
+    {
+        connect(m_fileWatcher.get(), &FileWatcher::fileAdded, m_fileProcessor.get(), &FileProcessor::AssessAddedFile, Qt::QueuedConnection);
+        connect(m_fileWatcher.get(), &FileWatcher::fileRemoved, m_fileProcessor.get(), &FileProcessor::AssessDeletedFile, Qt::QueuedConnection);
+    }
+
+    connect(m_fileWatcher.get(), &FileWatcher::fileAdded, m_assetProcessorManager, &AssetProcessorManager::AssessAddedFile, Qt::QueuedConnection);
+    connect(m_fileWatcher.get(), &FileWatcher::fileModified, m_assetProcessorManager, &AssetProcessorManager::AssessModifiedFile, Qt::QueuedConnection);
+    connect(m_fileWatcher.get(), &FileWatcher::fileRemoved, m_assetProcessorManager, &AssetProcessorManager::AssessDeletedFile, Qt::QueuedConnection);
 }
 
 void ApplicationManagerBase::DestroyFileMonitor()

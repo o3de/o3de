@@ -370,19 +370,25 @@ namespace AZ::Debug
         }
 
         Debug::AllocationInfo* ai{};
+        const bool addressAlreadyRecorded = [this, address, newAddress, &ai]
         {
             AZStd::scoped_lock lock(m_recordsMutex);
             auto node = m_records.extract(address);
             if (node.empty())
             {
-                RegisterAllocation(newAddress, byteSize, alignment, stackSuppressCount);
-                return;
+                return false;
             }
 
             // Make a best effort to avoid reallocations from mutating the
             // records map when recording a reallocation
             node.key() = newAddress;
             ai = &m_records.insert(AZStd::move(node)).position->second;
+            return true;
+        }();
+        if (!addressAlreadyRecorded)
+        {
+            RegisterAllocation(newAddress, byteSize, alignment, stackSuppressCount);
+            return;
         }
 
         m_requestedBytes += (byteSize - ai->m_byteSize);

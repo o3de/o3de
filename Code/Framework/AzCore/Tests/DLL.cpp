@@ -13,6 +13,7 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <Tests/DLLTestVirtualClass.h>
 
 using namespace AZ;
 
@@ -80,7 +81,11 @@ namespace UnitTest
         }
     };
 
+#if AZ_TRAIT_DISABLE_FAILED_DLL_TESTS
+    TEST_F(DLL, DISABLED_CrossModuleBusHandler)
+#else
     TEST_F(DLL, CrossModuleBusHandler)
+#endif // AZ_TRAIT DISABLE_FAILED_DLL_TESTS
     {
         TransformHandler transformHandler;
 
@@ -106,6 +111,7 @@ namespace UnitTest
 
         UnloadModule();
     }
+
 #if AZ_TRAIT_DISABLE_FAILED_DLL_TESTS
     TEST_F(DLL, DISABLED_CreateVariableFromModuleAndMain)
 #else

@@ -32,6 +32,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         if (ConstructInstanceFromPrefabDom(prefab))
         {
             constexpr bool copyConstStrings = true;
+            // CopyFrom does not clear memory.  Force a clear by empty assignment first:
+            m_dom = PrefabDom();
             m_dom.CopyFrom(prefab, m_dom.GetAllocator(), copyConstStrings);
             return true;
         }

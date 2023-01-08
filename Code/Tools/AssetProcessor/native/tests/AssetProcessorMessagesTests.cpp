@@ -21,6 +21,8 @@
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 
+#include <gmock/gmock.h>
+
 namespace AssetProcessorMessagesTests
 {
     using namespace testing;
@@ -32,14 +34,20 @@ namespace AssetProcessorMessagesTests
 
     class AssetProcessorMessages;
 
-    class FileWatcherUnitTest : public FileWatcherBase
+    class MockFileWatcher;
+
+    // a 'nice' mock doesn't complain if its methods are called without a prior 'expect_call'.
+    using NiceMockFileWatcher = ::testing::NiceMock<MockFileWatcher>;
+    class MockFileWatcher : public FileWatcherBase
     {
     public:
-        void AddFolderWatch(QString, [[maybe_unused]] bool recursive = true) override {}
-        void ClearFolderWatches() override {}
-
-        void StartWatching() override {}
-        void StopWatching() override {}
+        MOCK_METHOD2(AddFolderWatch, void(QString, bool));
+        MOCK_METHOD0(ClearFolderWatches, void());
+        MOCK_METHOD0(StartWatching, void());
+        MOCK_METHOD0(StopWatching, void());
+        MOCK_METHOD2(InstallDefaultExclusionRules, void(QString, QString));
+        MOCK_METHOD1(AddExclusion, void(const AssetBuilderSDK::FilePatternMatcher&));
+        MOCK_CONST_METHOD1(IsExcluded, bool(QString));
     };
 
     struct UnitTestBatchApplicationManager
@@ -148,7 +156,7 @@ namespace AssetProcessorMessagesTests
             m_batchApplicationManager->m_assetCatalog = m_assetCatalog.get();
             m_batchApplicationManager->InitRCController();
             m_batchApplicationManager->InitFileStateCache();
-            m_batchApplicationManager->InitFileMonitor(AZStd::make_unique<FileWatcherUnitTest>());
+            m_batchApplicationManager->InitFileMonitor(AZStd::make_unique<NiceMockFileWatcher>());
             m_batchApplicationManager->InitApplicationServer();
             m_batchApplicationManager->InitConnectionManager();
             // Note this must be constructed after InitConnectionManager is called since it will interact with the connection manager

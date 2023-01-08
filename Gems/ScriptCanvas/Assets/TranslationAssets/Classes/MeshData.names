@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetVertexIndex",
-                    "context": "MeshData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Vertex Index"
@@ -48,7 +47,6 @@
                 },
                 {
                     "base": "GetPosition",
-                    "context": "MeshData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Position"
@@ -79,7 +77,6 @@
                 },
                 {
                     "base": "GetFaceInfo",
-                    "context": "MeshData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Face Info"
@@ -110,7 +107,6 @@
                 },
                 {
                     "base": "HasNormalData",
-                    "context": "MeshData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has Normal Data"
@@ -133,7 +129,6 @@
                 },
                 {
                     "base": "GetNormal",
-                    "context": "MeshData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Normal"
@@ -164,7 +159,6 @@
                 },
                 {
                     "base": "GetUsedPointIndexForControlPoint",
-                    "context": "MeshData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Used Point Index For Control Point"
@@ -195,7 +189,6 @@
                 },
                 {
                     "base": "GetVertexCount",
-                    "context": "MeshData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Vertex Count"
@@ -218,7 +211,6 @@
                 },
                 {
                     "base": "GetFaceCount",
-                    "context": "MeshData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Face Count"
@@ -241,7 +233,6 @@
                 },
                 {
                     "base": "GetUsedControlPointCount",
-                    "context": "MeshData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Used Control Point Count"
@@ -264,7 +255,6 @@
                 },
                 {
                     "base": "GetFaceMaterialId",
-                    "context": "MeshData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Face Material Id"
@@ -295,7 +285,6 @@
                 },
                 {
                     "base": "GetControlPointIndex",
-                    "context": "MeshData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Control Point Index"
