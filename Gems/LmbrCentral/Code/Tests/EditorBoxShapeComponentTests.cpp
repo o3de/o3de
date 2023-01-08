@@ -5,20 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include "LmbrCentralReflectionTest.h"
 #include "Shape/EditorBoxShapeComponent.h"
 #include "Shape/EditorSphereShapeComponent.h"
 #include <AZTestShared/Utils/Utils.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
-#include <AzFramework/Viewport/ViewportScreen.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
-#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
-#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
-#include <AzManipulatorTestFramework/ViewportInteraction.h>
-#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
-#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <EditorShapeTestUtils.h>
 
