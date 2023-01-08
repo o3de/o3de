@@ -265,10 +265,6 @@ namespace PhysX
                 EXPECT_THAT(expectedGravityMultiplier + i, testing::FloatEq(gameplayComponent->GetGravityMultiplier()));
             }
         }
-
-        // Move to a new test
-        //AZ::Transform endTransform = transform->GetWorldTM();
-        //EXPECT_THAT(endTransform, testing::Not(UnitTest::IsClose(startTransform)));
     }
 
     TEST_F(PhysXDefaultWorldTest, CharacterController_MovingDirectlyTowardsStaticBox_StoppedByBox)
