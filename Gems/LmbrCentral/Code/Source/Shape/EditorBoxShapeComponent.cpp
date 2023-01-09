@@ -177,4 +177,9 @@ namespace LmbrCentral
     {
         return AZ::Transform::CreateTranslation(m_boxShape.GetTranslationOffset());
     }
+
+    AZ::Transform EditorBoxShapeComponent::GetCurrentWorldTransform() const
+    {
+        return GetWorldTM();
+    }
 } // namespace LmbrCentral

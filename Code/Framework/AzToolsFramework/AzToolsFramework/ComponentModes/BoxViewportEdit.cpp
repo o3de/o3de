@@ -30,8 +30,8 @@ namespace AzToolsFramework
     void BoxViewportEdit::UpdateManipulators()
     {
         AZ::Transform boxWorldFromLocal = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(
-            boxWorldFromLocal, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+        BoxManipulatorRequestBus::EventResult(
+            boxWorldFromLocal, m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetCurrentWorldTransform);
 
         AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(

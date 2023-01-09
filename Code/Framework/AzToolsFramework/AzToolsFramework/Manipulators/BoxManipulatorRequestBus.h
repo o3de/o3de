@@ -32,6 +32,8 @@ namespace AzToolsFramework
         virtual void SetTranslationOffset(const AZ::Vector3& translationOffset) = 0;
         //! Get the transform of the box relative to the entity.
         virtual AZ::Transform GetCurrentLocalTransform() const = 0;
+        //! Get the transform of the entity, used to define the manipulator space.
+        virtual AZ::Transform GetCurrentWorldTransform() const = 0;
 
     protected:
         ~BoxManipulatorRequests() = default;

@@ -59,6 +59,7 @@ namespace LmbrCentral
         AZ::Vector3 GetTranslationOffset() const override;
         void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
         AZ::Transform GetCurrentLocalTransform() const override;
+        AZ::Transform GetCurrentWorldTransform() const override;
 
         void ConfigurationChanged();        
 

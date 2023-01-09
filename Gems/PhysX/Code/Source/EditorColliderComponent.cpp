@@ -1149,6 +1149,11 @@ namespace PhysX
         return GetColliderLocalTransform();
     }
 
+    AZ::Transform EditorColliderComponent::GetCurrentWorldTransform() const
+    {
+        return GetWorldTM();
+    }
+
     void EditorColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
         if (world.IsClose(m_cachedWorldTransform))

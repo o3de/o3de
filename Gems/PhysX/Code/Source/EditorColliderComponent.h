@@ -201,6 +201,7 @@ namespace PhysX
         AZ::Vector3 GetTranslationOffset() const override;
         void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
         AZ::Transform GetCurrentLocalTransform() const override;
+        AZ::Transform GetCurrentWorldTransform() const override;
 
         // AZ::Render::MeshComponentNotificationBus
         void OnModelReady(const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset,
