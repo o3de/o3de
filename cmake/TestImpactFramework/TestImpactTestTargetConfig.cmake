@@ -58,7 +58,7 @@ function(o3de_test_impact_apply_test_labels TEST_NAME TEST_FRAMEWORK TEST_LABELS
         endif()
     endif()
     
-    if(DEFINED label)
+    if(label)
         list(APPEND ${TEST_LABELS} ${label})
         set(${TEST_LABELS} ${${TEST_LABELS}} PARENT_SCOPE)
     endif()
