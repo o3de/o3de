@@ -538,15 +538,6 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
 
     dir(workspace) {
 
-        //this is here because sometimes the volume may not immediately be available for writes once mounted
-        //and this is the first place it will try to write, if it passes this then it should be fine
-        def workspace_retry = 5
-        while(!fileExists(workspace) || workspace_retry > 0) {
-            sleep(10) // sleep in case directory creation is slow
-            PlatformSh("ls ${workspace}", "Printing directory listing")
-            workspace_retry--
-        }
-
         // Add folder where we will store the 3rdParty downloads and packages
         dir('3rdParty') {
         }
