@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/DocumentPropertyEditor/SortAdapter.h>
+#include <AzCore/std/ranges/zip_view.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -47,72 +48,58 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
-    Dom::Path RowSortAdapter::MapFromSourcePath(const Dom::Path& sourcePath)
+    Dom::Path RowSortAdapter::MapPath(const Dom::Path& path, bool mapToSource)
     {
         if (!m_sortActive)
         {
-            return sourcePath;
+            return path;
         }
 
-        Dom::Path sortPath;
-        auto* currNode = m_rootNode.get();
+        Dom::Path mappedPath;
+        const auto* currNode = m_rootNode.get();
 
-        // go through each entry in the path, looking for a mapping to the sorted nodes
-        for (const auto& pathEntry : sourcePath)
+        // go through each entry in the path, looking for an existing mapping at the give index
+        for (const auto& pathEntry : path)
         {
-            auto& indexMap = currNode->m_indexSortedChildren;
-            decltype(indexMap.begin()) indexIter;
-
-            // use a finder node to search for the actual node in the indexMap, and then use that position to reference into m_adapterSortedChildren
-            if (pathEntry.IsIndex() && (indexIter = indexMap.find(AZStd::make_unique<FinderNode>(pathEntry.GetIndex()))) != indexMap.end())
+            if (pathEntry.IsIndex())
             {
-                auto difference = AZStd::distance(indexMap.begin(), indexIter);
-
-                auto sortedIter = currNode->m_adapterSortedChildren.begin();
-                IncrementIterator(sortedIter, difference);
-                sortPath.Push((*sortedIter)->m_domIndex);
+                bool found = false;
+                for (auto element : AZStd::views::zip(currNode->m_indexSortedChildren, currNode->m_adapterSortedChildren))
+                {
+                    const SortInfoNode* comparisonNode = (mapToSource ? AZStd::get<1>(element) : AZStd::get<0>(element).get());
+                    if (comparisonNode->m_domIndex == pathEntry.GetIndex())
+                    {
+                        // set the mapped entry
+                        const auto mappedIndex = (mapToSource ? AZStd::get<0>(element)->m_domIndex : AZStd::get<1>(element)->m_domIndex);
+                        mappedPath.Push(mappedIndex);
+                        currNode = comparisonNode;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    // if there's no mapping, this *should* be a column entry. Pass it through as-is
+                    mappedPath.Push(pathEntry);
+                }
             }
             else
             {
-                // RowSortAdapter only affect index entries, pass other types through
-                sortPath.Push(pathEntry);
+                // RowSortAdapter only affect index entries, pass other types (like attribute strings) through
+                mappedPath.Push(pathEntry);
             }
         }
-        return sortPath;
+        return mappedPath;
+    }
+
+    Dom::Path RowSortAdapter::MapFromSourcePath(const Dom::Path& sourcePath)
+    {
+        return MapPath(sourcePath, true);
     }
 
     Dom::Path RowSortAdapter::MapToSourcePath(const Dom::Path& filterPath)
     {
-        if (!m_sortActive)
-        {
-            return filterPath;
-        }
-
-        Dom::Path sourcePath;
-        auto* currNode = m_rootNode.get();
-
-        // go through each entry in the path, looking for a mapping to the sorted nodes
-        for (const auto& pathEntry : filterPath)
-        {
-            auto& sortedMap = currNode->m_adapterSortedChildren;
-            decltype(sortedMap.begin()) sortedIter;
-
-            // use a finder node to search for the actual node in the sortedMap, and then use that position to reference into
-            // m_adapterSortedChildren
-            if (pathEntry.IsIndex() && (sortedIter = sortedMap.find(AZStd::make_unique<FinderNode>(pathEntry.GetIndex()).get())) != sortedMap.end())
-            {
-                auto difference = std::distance(sortedMap.begin(), sortedIter);
-                auto indexIter = currNode->m_indexSortedChildren.begin();
-                IncrementIterator(indexIter, difference);
-                sourcePath.Push((*indexIter)->m_domIndex);
-            }
-            else
-            {
-                // RowSortAdapter only affect index entries, pass other types through
-                sourcePath.Push(pathEntry);
-            }
-        }
-        return sourcePath;
+        return MapPath(filterPath, false);
     }
 
     Dom::Value RowSortAdapter::GenerateContents()
@@ -162,6 +149,8 @@ namespace AZ::DocumentPropertyEditor
                     {
                         outgoingPatch.PushBack(
                             Dom::PatchOperation::ReplaceOperation(MapFromSourcePath(patchPath), operationIterator->GetValue()));
+
+                        // <apm> here, record parent's row index, recache its data, remove it, add it, check its new index. If it changes, generate move operation
                     }
                 }
                 else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
@@ -179,6 +168,10 @@ namespace AZ::DocumentPropertyEditor
                 // TODO: handle other patch types here. Some of this is not currently possible, 
                 // because a sort change is mostly move operations, and the DPE doesn't handle moves yet.
                 HandleReset();
+            }
+            else if (outgoingPatch.Size())
+            {
+                NotifyContentsChanged(outgoingPatch);
             }
         }
         else

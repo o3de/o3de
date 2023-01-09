@@ -25,6 +25,8 @@ namespace AZ::DocumentPropertyEditor
         Dom::Path MapFromSourcePath(const Dom::Path& sourcePath) override;
         Dom::Path MapToSourcePath(const Dom::Path& filterPath) override;
 
+        Dom::Path MapPath(const Dom::Path& sourcePath, bool mapToSource);
+
     protected:
         Dom::Value GenerateContents() override;
 
@@ -84,16 +86,6 @@ namespace AZ::DocumentPropertyEditor
 
         bool m_sortActive = true;
         bool m_reverseSort = false;
-
-    private:
-        struct FinderNode : public SortInfoNode
-        {
-            FinderNode(size_t index)
-                : SortInfoNode(nullptr)
-            {
-                m_domIndex = index;
-            }
-        };
     };
 
 } // namespace AZ::DocumentPropertyEditor
