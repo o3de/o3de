@@ -12,27 +12,27 @@ namespace UnitTest
 {
     using PrefabInstanceDomGeneratorTests = PrefabInstanceDomGeneratorTestFixture;
 
-    TEST_F(PrefabInstanceDomGeneratorTests, GenerateInstanceDom_TESTMEDescendantOfFocusedOrRoot_Succeeds)
+    TEST_F(PrefabInstanceDomGeneratorTests, GenerateInstanceDom_DescendantOfFocusedOrRootSucceeds)
     {
         // Generate a prefab DOM for the Wheel instance while the Level is in focus
         GenerateAndValidateInstanceDom(m_wheelInstance->get(), m_tireAlias, m_entityOverrideValueOnLevel);
     }
 
-    TEST_F(PrefabInstanceDomGeneratorTests, GenerateInstanceDom_TESTMEFocused_Succeeds)
+    TEST_F(PrefabInstanceDomGeneratorTests, GenerateInstanceDom_FocusedSucceeds)
     {
         // Generate a prefab DOM for the Wheel instance while the Wheel instance is in focus
         m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_wheelInstance->get().GetContainerEntityId());
         GenerateAndValidateInstanceDom(m_wheelInstance->get(), m_tireAlias, m_entityValueOnWheel);
     }
 
-    TEST_F(PrefabInstanceDomGeneratorTests, GenerateInstanceDom_TESTMEAncestorOfFocused_Succeeds)
+    TEST_F(PrefabInstanceDomGeneratorTests, GenerateInstanceDom_AncestorOfFocusedSucceeds)
     {
         // Generate a prefab DOM for the Car instance while the Wheel instance is in focus
         m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_wheelInstance->get().GetContainerEntityId());
         GenerateAndValidateInstanceDom(m_carInstance->get(), m_tireAlias, m_entityValueOnWheel);
     }
 
-    TEST_F(PrefabInstanceDomGeneratorTests, GenerateEntityDom_TESTMENotContainerEntity_Succeeds)
+    TEST_F(PrefabInstanceDomGeneratorTests, GenerateEntityDom_NotContainerEntitySucceeds)
     {
         const AZ::Entity& tireEntity = m_wheelInstance->get().GetEntity(m_tireAlias)->get();
 
@@ -48,7 +48,7 @@ namespace UnitTest
         GenerateAndValidateEntityDom(tireEntity, m_entityValueOnWheel);
     }
 
-    TEST_F(PrefabInstanceDomGeneratorTests, GenerateEntityDom_TESTMEContainerEntity_Succeeds)
+    TEST_F(PrefabInstanceDomGeneratorTests, GenerateEntityDom_ContainerEntitySucceeds)
     {
         const AZ::Entity& containerEntity = m_wheelInstance->get().GetContainerEntity()->get();
 
