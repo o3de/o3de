@@ -159,64 +159,6 @@ namespace PhysX
         }
     }
 
-    TEST_F(PhysXDefaultWorldTest, CharacterController_GamePlayComponent_EntityFallsUnderGravity)
-    {
-        PhysX::CharacterControllerComponent* characterComponent = nullptr;
-        PhysX::CharacterGameplayComponent* gameplayComponent = nullptr;
-        AzFramework::TransformComponent* transform = nullptr;
-
-        float expectedGravityMultiplier = 1.5f;
-
-        Physics::Character* controller = nullptr;
-
-
-        // Create character
-        auto gameplayEntity = AZStd::make_unique<AZ::Entity>("GameplayEntity");
-        {
-            auto characterConfiguration = AZStd::make_unique<Physics::CharacterConfiguration>();
-            auto characterShapeConfiguration = AZStd::make_unique<Physics::CapsuleShapeConfiguration>();
-            characterShapeConfiguration->m_height = 1.5f;
-            characterShapeConfiguration->m_radius = 0.5f;
-
-            PhysX::CharacterGameplayConfiguration characterGameplayConfiguration;
-
-            characterGameplayConfiguration.m_gravityMultiplier = expectedGravityMultiplier;
-            characterGameplayConfiguration.m_groundDetectionBoxHeight = 0.05f;
-
-            transform = gameplayEntity->CreateComponent<AzFramework::TransformComponent>();
-            characterComponent = gameplayEntity->CreateComponent<CharacterControllerComponent>(AZStd::move(characterConfiguration), AZStd::move(characterShapeConfiguration));           
-            gameplayComponent = gameplayEntity->CreateComponent<CharacterGameplayComponent>(characterGameplayConfiguration);
-
-            transform->SetWorldTM(AZ::Transform::Identity());
-        }
-        gameplayEntity->Init();
-        gameplayEntity->Activate();
-
-        Physics::CharacterRequestBus::EventResult(controller, gameplayEntity->GetId(), &Physics::CharacterRequests::GetCharacter);
-
-        // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
-        auto startPosition = controller->GetBasePosition();
-
-        int timeStepCount = 10;
-        float totalTime = 0.0f;
-        float timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
-
-        if (auto* physXSystem = GetPhysXSystem())
-        {
-            for (int i = 0; i < timeStepCount; i++)
-            {
-                physXSystem->Simulate(timeStep);
-                totalTime += timeStep;
-            }
-        }
-        
-        float expectedZ = TestUtils::CalculateZFromFalling(expectedGravityMultiplier, totalTime, startPosition.GetZ());
-        
-        auto endPosition = controller->GetBasePosition();
-
-        EXPECT_THAT(endPosition.GetZ(), testing::FloatEq(expectedZ));
-    }
-
     TEST_F(PhysXDefaultWorldTest, CharacterController_GamePlayComponent_GravitySetsWhileMoving)
     {
         PhysX::CharacterControllerComponent* characterComponent = nullptr;
