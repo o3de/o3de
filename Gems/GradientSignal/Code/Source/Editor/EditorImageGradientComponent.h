@@ -73,7 +73,7 @@ namespace GradientSignal
             ValueLookupFn& valueLookupFn,
             AZStd::span<const AZ::Vector3> valuePointOffsets,
             SmoothFn& smoothFn) override;
-        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) override;
+        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) const override;
 
         bool GetImageOptionsReadOnly() const;
 

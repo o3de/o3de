@@ -387,7 +387,7 @@ namespace GradientSignal
             color, dirtyArea, valueLookupFn, valuePointOffsets, smoothFn);
     }
 
-    AZ::Color EditorImageGradientComponent::OnGetColor(const AZ::Vector3& brushCenter)
+    AZ::Color EditorImageGradientComponent::OnGetColor(const AZ::Vector3& brushCenter) const
     {
         AZ::Color result;
 
