@@ -8,9 +8,9 @@
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_pytest(
-        NAME AutomatedTesting::Atom_Periodic_Null_Render_Level_Loads
-        TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic_Null_Render_Level_Loads.py
+        NAME AutomatedTesting::Atom_Main_Null_Render_Level_Loads
+        TEST_SUITE main
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Null_Render_Level_Loads.py
         TEST_SERIAL
         TIMEOUT 600
         RUNTIME_DEPENDENCIES
