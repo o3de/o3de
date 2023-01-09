@@ -153,7 +153,7 @@ namespace LmbrCentral
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
     }
 
-    AZ::Vector3 EditorBoxShapeComponent::GetDimensions()
+    AZ::Vector3 EditorBoxShapeComponent::GetDimensions() const
     {
         return m_boxShape.GetBoxDimensions();
     }
@@ -163,7 +163,7 @@ namespace LmbrCentral
         return m_boxShape.SetBoxDimensions(dimensions);
     }
 
-    AZ::Vector3 EditorBoxShapeComponent::GetTranslationOffset()
+    AZ::Vector3 EditorBoxShapeComponent::GetTranslationOffset() const
     {
         return m_boxShape.GetTranslationOffset();
     }
@@ -173,7 +173,7 @@ namespace LmbrCentral
         m_boxShape.SetTranslationOffset(translationOffset);
     }
 
-    AZ::Transform EditorBoxShapeComponent::GetCurrentLocalTransform()
+    AZ::Transform EditorBoxShapeComponent::GetCurrentLocalTransform() const
     {
         return AZ::Transform::CreateTranslation(m_boxShape.GetTranslationOffset());
     }

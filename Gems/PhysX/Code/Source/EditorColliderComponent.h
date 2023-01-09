@@ -196,11 +196,11 @@ namespace PhysX
         void OnNonUniformScaleChanged(const AZ::Vector3& nonUniformScale);
 
         // AzToolsFramework::BoxManipulatorRequestBus
-        AZ::Vector3 GetDimensions() override;
+        AZ::Vector3 GetDimensions() const override;
         void SetDimensions(const AZ::Vector3& dimensions) override;
-        AZ::Vector3 GetTranslationOffset() override;
+        AZ::Vector3 GetTranslationOffset() const override;
         void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
-        AZ::Transform GetCurrentLocalTransform() override;
+        AZ::Transform GetCurrentLocalTransform() const override;
 
         // AZ::Render::MeshComponentNotificationBus
         void OnModelReady(const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset,
