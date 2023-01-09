@@ -47,7 +47,7 @@ endif()
 # \arg:TEST_NAME The test target name
 # \arg:TEST_FRAMEWORK The test framework type of the test target
 # \arg:TEST_LABELS The existing test labels list that the TIAF label will be appended to
-function(o3de_test_impact_apply_test_labels TEST_NAME TEST_FRAMEWORK TEST_LABELS)
+function(o3de_test_impact_apply_test_labels TEST_FRAMEWORK TEST_LABELS)
     if("${TEST_FRAMEWORK}" STREQUAL "pytest" OR "${TEST_FRAMEWORK}" STREQUAL "pytest_editor")
         if(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
             set(label REQUIRES_tiaf)

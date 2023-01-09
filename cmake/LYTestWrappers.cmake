@@ -174,7 +174,7 @@ function(ly_add_test)
     endif()
 
     # Allow TIAF to apply the label of supported test categories from being run by CTest 
-    o3de_test_impact_apply_test_labels(${LY_ADDED_TEST_NAME} ${ly_add_test_TEST_LIBRARY} final_labels)
+    o3de_test_impact_apply_test_labels(${ly_add_test_TEST_LIBRARY} final_labels)
 
     # labels expects a single param, of concatenated labels
     # this always has a value because ly_add_test_TEST_SUITE is automatically
@@ -280,8 +280,9 @@ function(ly_add_test)
     # Add the test suite and timeout value to the test target params
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TEST_SUITE}")
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TIMEOUT}")
-    # Store the params for this test target
+    # Store the params and labels for this test target
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${test_target}_PARAMS ${LY_TEST_PARAMS})
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${test_target}_LABELS ${final_labels})
 endfunction()
 
 #! ly_add_pytest: registers target PyTest-based test with CTest

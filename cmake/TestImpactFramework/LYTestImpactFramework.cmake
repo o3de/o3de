@@ -265,24 +265,32 @@ function(ly_test_impact_write_test_enumeration_file TEST_ENUMERATION_TEMPLATE_FI
     foreach(test ${LY_ALL_TESTS})
         message(TRACE "Parsing ${test}")
         get_property(test_params GLOBAL PROPERTY LY_ALL_TESTS_${test}_PARAMS)
+        get_property(test_labels GLOBAL PROPERTY LY_ALL_TESTS_${test}_LABELS)
         get_property(test_type GLOBAL PROPERTY LY_ALL_TESTS_${test}_TEST_LIBRARY)
+        
+        if ("REQUIRES_gpu" IN_LIST test_labels)
+            message("Skipping test '${test}' a it requires GPU support")
+            continue()
+        endif()
+        
+        string(REPLACE ";" "\", \"" test_labels "${test_labels}")
         if("${test_type}" STREQUAL "pytest")
             # Python tests
             ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
-            list(APPEND python_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
+            list(APPEND python_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"suites\": [${test_suites}], \"labels\": [\"${test_labels}\"] }")
         elseif("${test_type}" STREQUAL "pytest_editor")
             # Python editor tests
             ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
-            list(APPEND python_editor_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
+            list(APPEND python_editor_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"suites\": [${test_suites}], \"labels\": [\"${test_labels}\"] }")
         elseif("${test_type}" STREQUAL "googletest")
             # Google tests
             ly_test_impact_extract_google_test_params(${test} "${test_params}" test_namespace test_name test_suites)
             ly_test_impact_get_test_launch_method(${test} launch_method)
-            list(APPEND google_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}] }")
+            list(APPEND google_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}], \"labels\": [\"${test_labels}\"] }")
         elseif("${test_type}" STREQUAL "googlebenchmark")
             # Google benchmarks
             ly_test_impact_extract_google_test_params(${test} "${test_params}" test_namespace test_name test_suites)
-            list(APPEND google_benchmarks "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}] }")
+            list(APPEND google_benchmarks "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}], \"labels\": [\"${test_labels}\"] }")
         else()
             ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
             message("${test_name} is of unknown type (TEST_LIBRARY property is \"${test_type}\")")
