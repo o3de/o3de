@@ -129,7 +129,7 @@ namespace AZ::SceneAPI::Behaviors
     Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateSceneForPrefabGroup(
         Containers::Scene& scene,
         ManifestAction action)
-    { // this toggle makes constructing default mesh groups and a prefab optional
+    {
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
         {
             bool createDefaultPrefab = true;
