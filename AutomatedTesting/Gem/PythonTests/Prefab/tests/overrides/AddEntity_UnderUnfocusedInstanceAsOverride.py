@@ -85,6 +85,7 @@ def AddEntity_UnderUnfocusedInstanceAsOverride():
     assert tire_entity.id.IsValid(), f"Couldn't create entity '{TIRE_ENTITY_NAME}'' under prefab instance '{LEFT_WHEEL_INSTANCE_NAME}'"
     assert tire_entity.get_name() == TIRE_ENTITY_NAME, f"Entity '{tire_entity.get_name()}''s name should be {TIRE_ENTITY_NAME}"
     assert tire_entity.get_parent_id() == left_wheel_instance_container_entity.id, f"Entity '{LEFT_WHEEL_INSTANCE_NAME}' should be the parent of entity '{TIRE_ENTITY_NAME}'"
+    prefab_test_utils.validate_expected_override_status(tire_entity, True)
 
     child_entity_ids = left_wheel_instance_container_entity.get_children()
     assert len(child_entity_ids) == 2, f"{len(child_entity_ids)} child entities found under entity '{LEFT_WHEEL_INSTANCE_NAME}'" \
@@ -131,6 +132,15 @@ def AddEntity_UnderUnfocusedInstanceAsOverride():
     child_entity_ids = right_wheel_instance_container_entity.get_children()
     assert len(child_entity_ids) == 1, f"{len(child_entity_ids)} child entities found under entity '{RIGHT_WHEEL_INSTANCE_NAME}'" \
                                               f" after Redo operation, when there should have been 1 child entity"
+    # Revert the re-applied overrides
+    tire_entity.revert_overrides()
+    PrefabWaiter.wait_for_propagation()
+
+    # Validate the revert
+    tire_entities = EditorEntity.find_editor_entities(entity_names=[TIRE_ENTITY_NAME])
+    assert len(tire_entities) == 0, f"Expected 0 '{TIRE_ENTITY_NAME}' entities after Revert Overrides operation, but " \
+                                    f"found {len(tire_entities)}."
+
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
