@@ -48,9 +48,6 @@ namespace PhysX
 
         void ResetPhysXSystem();
 
-        // Physics Math Helpers
-        float CalculateZFromFalling(float gravityMultipler, float totalTimeSteps, float startingZPosition);
-        
         // Updates the default world
         void UpdateScene(AzPhysics::Scene* scene, float timeStep, AZ::u32 numSteps);
         void UpdateScene(AzPhysics::SceneHandle sceneHandle, float timeStep, AZ::u32 numSteps);
