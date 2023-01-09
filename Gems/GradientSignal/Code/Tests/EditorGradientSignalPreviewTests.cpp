@@ -19,8 +19,7 @@
 
 namespace UnitTest
 {
-    // The GradientSignal unit tests need to use the GemTestEnvironment to load the LmbrCentral Gem so that Shape components can be used
-    // in the unit tests and benchmarks.
+    // Extend the GradientSignalTestEnvironment to include any editor-specific component descriptors that we might need.
     class GradientSignalEditorTestEnvironment : public GradientSignalTestEnvironment
     {
     public:
@@ -217,15 +216,16 @@ namespace UnitTest
 
         float shapeHalfBounds = 20.0f;
 
-        // Create a Random Gradient Component with arbitrary parameters.
+        // Create an Editor Constant Gradient Component with arbitrary parameters. We need the Editor version so that it has
+        // a gradient previewer.
         auto entity = CreateTestEntity(shapeHalfBounds);
         entity->CreateComponent<GradientSignal::EditorConstantGradientComponent>();
         ActivateEntity(entity.get());
 
+        // Verify that by default, the gradient previewer is hooked up to the entity that it exists on.
         AZ::EntityId previewEntityId;
         GradientSignal::GradientPreviewContextRequestBus::EventResult(
             previewEntityId, entity->GetId(), &GradientSignal::GradientPreviewContextRequestBus::Events::GetPreviewEntity);
-
         EXPECT_EQ(entity->GetId(), previewEntityId);
     }
 } // namespace UnitTest

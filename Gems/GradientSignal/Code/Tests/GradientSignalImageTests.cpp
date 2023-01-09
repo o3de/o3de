@@ -895,6 +895,8 @@ namespace UnitTest
 
     TEST_F(GradientSignalImagePaintingTestsFixture, ImageGradientHasWorkingEyedropper)
     {
+        // This test verifies that the paintbrush eyedropper can read values correctly from an Image Gradient.
+
         // Create an Image Gradient in a box that goes from (0, 0, 0) to (4, 4, 4) in world space.
         // We'll create a 4x4 image to map onto it, so each pixel is 1 x 1 m in size.
         // The lower left corner of the image maps to (0, 0) and the upper right to (4, 4).
@@ -924,7 +926,7 @@ namespace UnitTest
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
             shapeBounds, entity->GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
-        // Loop through each pixel, use the eyedropper in world space to try to look it up, and verify the colors match.
+        // Loop through each pixel, use the eyedropper in world space to try to look it up, and verify the intensities match.
         for (uint32_t pixelIndex = 0; pixelIndex < pixels.size(); pixelIndex++)
         {
             uint32_t pixelX = pixelIndex % width;
@@ -944,6 +946,8 @@ namespace UnitTest
 
     TEST_F(GradientSignalImagePaintingTestsFixture, ImageGradientCanBePainted)
     {
+        // This test verifies that the paintbrush paint commands can modify values correctly in an Image Gradient.
+
         // Create an Image Gradient in a box that goes from (0, 0, 0) to (4, 4, 4) in world space.
         // We'll create a 4x4 image to map onto it, so each pixel is 1 x 1 m in size.
         // The lower left corner of the image maps to (0, 0) and the upper right to (4, 4).
@@ -985,7 +989,7 @@ namespace UnitTest
         paintBrush.EndBrushStroke();
 
         // Loop through each pixel, use the eyedropper in world space to try to look it up, and verify the intensities match expectations.
-        // Most of the pixels should still be 0.0, but one pixel should be 0.5 (our brush intensity).
+        // Most of the pixels should still be 0.0, but the one painted pixel should be 0.5 (our brush intensity).
         for (uint32_t pixelIndex = 0; pixelIndex < pixels.size(); pixelIndex++)
         {
             uint32_t pixelX = pixelIndex % width;
