@@ -23,6 +23,8 @@ set(FILES
     Include/Atom/Utils/ImGuiTransientAttachmentProfiler.h
     Include/Atom/Utils/ImGuiTransientAttachmentProfiler.inl
     Include/Atom/Utils/MaterialUtils.h
+    Include/Atom/Utils/MultiIndexedStableDynamicArray.h
+    Include/Atom/Utils/MultiIndexedStableDynamicArray.inl
     Include/Atom/Utils/PngFile.h
     Include/Atom/Utils/PpmFile.h
     Include/Atom/Utils/StableDynamicArray.h
