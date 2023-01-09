@@ -367,7 +367,9 @@ void ApplicationManagerBase::InitAssetScanner()
     // asset processor manager
     QObject::connect(m_assetScanner, &AssetScanner::AssetScanningStatusChanged, m_assetProcessorManager, &AssetProcessorManager::OnAssetScannerStatusChange);
     QObject::connect(m_assetScanner, &AssetScanner::FilesFound,                 m_assetProcessorManager, &AssetProcessorManager::AssessFilesFromScanner);
-    QObject::connect(m_assetScanner, &AssetScanner::FoldersFound,                 m_assetProcessorManager, &AssetProcessorManager::RecordFoldersFromScanner);
+    QObject::connect(m_assetScanner, &AssetScanner::FoldersFound,               m_assetProcessorManager, &AssetProcessorManager::RecordFoldersFromScanner);
+    QObject::connect(m_assetScanner, &AssetScanner::ExcludedFound,              m_assetProcessorManager, &AssetProcessorManager::RecordExcludesFromScanner);
+
 
     QObject::connect(m_assetScanner, &AssetScanner::FilesFound, [this](QSet<AssetFileInfo> files) { m_fileStateCache->AddInfoSet(files); });
     QObject::connect(m_assetScanner, &AssetScanner::FoldersFound, [this](QSet<AssetFileInfo> files) { m_fileStateCache->AddInfoSet(files); });
@@ -1451,8 +1453,39 @@ bool ApplicationManagerBase::Activate()
 
     InitFileStateCache();
     InitFileProcessor();
-
     InitUuidManager();
+
+    // now that apm, statecache, processor, and uuid manager are all alive, hook them up to the signal that AP
+    // gives when it modifies an intermediate asset.  For the file cache, we hook it up directly so that there is
+    // no delay between the notification and the invalidation/creation of its cache entry.
+
+    auto notifyFileStateCache = [this](QString changedFile)
+    {
+        // the file state cache will get this immediately and inline, it needs to treat it with thread safety.
+        m_fileStateCache->UpdateFile(changedFile);
+    };
+
+    auto notifyUuidManagerAndFileProcessor = [this](QString changedFile)
+    {
+        // these are not necessarily time sensitive.
+        m_uuidManager->FileChanged(changedFile.toUtf8().constData());
+        m_fileProcessor->AssessAddedFile(changedFile);
+    };
+         
+    QObject::connect(
+        m_assetProcessorManager,
+        &AssetProcessor::AssetProcessorManager::IntermediateAssetCreated,
+        this,
+        notifyFileStateCache,
+        Qt::DirectConnection);
+
+    QObject::connect(
+        m_assetProcessorManager,
+        &AssetProcessor::AssetProcessorManager::IntermediateAssetCreated,
+        this,
+        notifyUuidManagerAndFileProcessor,
+        Qt::QueuedConnection);
+
     InitAssetCatalog();
     InitFileMonitor(AZStd::make_unique<FileWatcher>());
     InitAssetScanner();
