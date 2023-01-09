@@ -10,6 +10,8 @@
 
 #include "AzAssetBrowserWindow.h"
 
+#include <AssetBrowser/Views/AssetBrowserTreeView.h>
+
 // AzToolsFramework
 #include <AzCore/Console/IConsole.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -129,6 +131,19 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         connect(m_ui->m_assetBrowserTableViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
             this, &AzAssetBrowserWindow::CurrentIndexChangedSlot);
 
+        connect(
+            m_ui->m_assetBrowserTableViewWidget->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            [this](const QItemSelection& selected, const QItemSelection& deselected)
+            {
+                Q_UNUSED(deselected);
+                if (selected.indexes().size() > 0)
+                {
+                    CurrentIndexChangedSlot(selected.indexes()[0]);
+                }
+            });
+
         connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked,
             this, &AzAssetBrowserWindow::DoubleClickedItem);
 
@@ -140,6 +155,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
         m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
     }
+
+    m_ui->m_thumbnailView->SetPreviewerFrame(m_ui->m_previewerFrame);
 
     if (!ed_useWIPAssetBrowserDesign)
     {
@@ -181,6 +198,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     connect(m_ui->m_treeViewButton, &QAbstractButton::clicked, this, &AzAssetBrowserWindow::SetOneColumnMode);
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
+    // !!! Need to set the model on the tree widget first
+    m_ui->m_thumbnailView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
 
     connect(m_ui->m_searchWidget->GetFilter().data(), &AzAssetBrowser::AssetBrowserEntryFilter::updatedSignal,
         m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterUpdatedSlot);
@@ -195,6 +214,19 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     connect(m_ui->m_assetBrowserTreeViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
         this, &AzAssetBrowserWindow::CurrentIndexChangedSlot);
+
+    connect(
+        m_ui->m_assetBrowserTreeViewWidget->selectionModel(),
+        &QItemSelectionModel::selectionChanged,
+        this,
+        [this](const QItemSelection& selected, const QItemSelection& deselected)
+        {
+            Q_UNUSED(deselected);
+            if (selected.indexes().size() > 0)
+            {
+                CurrentIndexChangedSlot(selected.indexes()[0]);
+            }
+        });
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
 
@@ -280,6 +312,10 @@ void AzAssetBrowserWindow::RegisterViewClass()
     AzToolsFramework::ViewPaneOptions options;
     options.preferedDockingArea = Qt::LeftDockWidgetArea;
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(LyViewPane::AssetBrowser, LyViewPane::CategoryTools, options);
+
+    options.showInMenu = false;
+    const QString name = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
+    AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(qPrintable(name), LyViewPane::CategoryTools, options);
 }
 
 QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* parent)
@@ -288,6 +324,10 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
 
     // the listener is attached to the parent and will get cleaned up then
     return listener;
+}
+
+bool AzAssetBrowserWindow::TreeViewBelongsTo(AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView) {
+    return m_ui->m_assetBrowserTreeViewWidget == treeView;
 }
 
 void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)

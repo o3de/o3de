@@ -22,7 +22,7 @@ namespace AzToolsFramework
     public:
         BoxViewportEdit() = default;
 
-        void Setup(const AZ::EntityComponentIdPair& entityComponentIdPair);
+        void Setup(const AZ::EntityComponentIdPair& entityComponentIdPair, bool allowAsymmetricalEditing = false);
         void Teardown();
         void UpdateManipulators();
 
@@ -30,6 +30,7 @@ namespace AzToolsFramework
         AZ::EntityComponentIdPair m_entityComponentIdPair;
         using BoxManipulators = AZStd::array<AZStd::shared_ptr<LinearManipulator>, 6>;
         BoxManipulators m_linearManipulators; ///< Manipulators for editing box size.
+        bool m_allowAsymmetricalEditing = false; ///< Whether moving individual faces independently is allowed.
     };
 
     /// Calculates the position of the manipulator in its own reference frame.

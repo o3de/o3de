@@ -130,12 +130,6 @@ namespace GradientSignal
         //! we only perform an operation on a pixel once, not multiple times.
         //! After the paint stroke is complete, this buffer is handed off to the undo/redo batch so that we can undo/redo each stroke.
         AZStd::shared_ptr<ImageTileBuffer> m_strokeBuffer;
-
-        //! The intensity of the paint stroke (0 - 1)
-        float m_intensity = 0.0f;
-
-        //! The opacity of the paint stroke (0 - 1)
-        float m_opacity = 0.0f;
     };
 
     //! Handles all of the calculations for figuring out the dirty region AABB for the image gradient based on all its settings.
@@ -195,13 +189,14 @@ namespace GradientSignal
         // PaintBrushNotificationBus overrides
         void OnBrushStrokeBegin(const AZ::Color& color) override;
         void OnBrushStrokeEnd() override;
-        void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn) override;
+        void OnPaint(const AZ::Color& color, const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn) override;
         void OnSmooth(
+            const AZ::Color& color,
             const AZ::Aabb& dirtyArea,
             ValueLookupFn& valueLookupFn,
             AZStd::span<const AZ::Vector3> valuePointOffsets,
             SmoothFn& smoothFn) override;
-        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) override;
+        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) const override;
 
         void OnPaintSmoothInternal(
             const AZ::Aabb& dirtyArea,

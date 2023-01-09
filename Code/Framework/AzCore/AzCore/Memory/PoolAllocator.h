@@ -83,9 +83,9 @@ namespace AZ
         ThreadPoolSchema(const ThreadPoolSchema&);
         ThreadPoolSchema& operator=(const ThreadPoolSchema&);
 
-        class ThreadPoolSchemaImpl* m_impl;
         GetThreadPoolData m_threadPoolGetter;
         SetThreadPoolData m_threadPoolSetter;
+        class ThreadPoolSchemaImpl* m_impl;
     };
 
     /**
@@ -147,31 +147,13 @@ namespace AZ
 
             PoolAllocatorHelper()
             {
-                this->Create();
+                static_cast<Schema*>(this->m_schema)->Create();
                 this->PostCreate();
             }
 
             ~PoolAllocatorHelper() override
             {
                 this->PreDestroy();
-            }
-
-            bool Create()
-            {
-                AZ_Assert(this->IsReady() == false, "Allocator was already created!");
-                if (this->IsReady())
-                {
-                    return false;
-                }
-
-                bool isReady = static_cast<Base*>(this)->Create();
-
-                if (isReady)
-                {
-                    isReady = static_cast<Schema*>(this->m_schema)->Create();
-                }
-
-                return isReady;
             }
 
             AllocatorDebugConfig GetDebugConfig() override

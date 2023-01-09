@@ -18,6 +18,7 @@ set(FILES
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
     Include/Multiplayer/MultiplayerEditorServerBus.h
+    Include/Multiplayer/Components/SimplePlayerSpawnerComponent.h
     Include/Multiplayer/Components/MultiplayerComponent.h
     Include/Multiplayer/Components/MultiplayerComponentRegistry.h
     Include/Multiplayer/Components/MultiplayerController.h
@@ -62,6 +63,7 @@ set(FILES
     Include/Multiplayer/Session/SessionRequests.h
     Include/Multiplayer/Session/SessionConfig.h
     Include/Multiplayer/Session/SessionNotifications.h
+    Source/Components/SimplePlayerSpawnerComponent.cpp
     Source/Components/MultiplayerComponent.cpp
     Source/Components/MultiplayerComponentRegistry.cpp
     Source/Components/MultiplayerController.cpp

@@ -205,7 +205,7 @@ namespace UnitTest
         PrefabDom patchesCopyForUndoSupport;
         PrefabDom wheelInstanceLinkDom;
         firstWheelLink->get().GetLinkDom(wheelInstanceLinkDom, wheelInstanceLinkDom.GetAllocator());
-        PrefabDomValueConstReference wheelInstanceLinkPatches =
+        PrefabDomValueReference wheelInstanceLinkPatches =
             PrefabDomUtils::FindPrefabDomValue(wheelInstanceLinkDom, PrefabDomUtils::PatchesName);
         if (wheelInstanceLinkPatches.has_value())
         {

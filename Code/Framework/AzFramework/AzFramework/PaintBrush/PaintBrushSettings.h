@@ -59,20 +59,6 @@ namespace AzFramework
        then blended down using the Intensity, Opacity, and Blend Mode.
     */
 
-    //! The different types of functionality offered by the paint brush tool
-    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(PaintBrushMode, uint8_t,
-        (Paintbrush, 0),    //!< Uses color, opacity, and other brush settings to 'paint' values for an abstract data source
-        (Eyedropper, 1),    //!< Gets the current value underneath the brush from an abstract data source
-        (Smooth, 2)         //!< Smooths/blurs the existing values in an abstract data source
-    );
-
-    //! The different types of blend modes supported by the paint brush tool.
-    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(PaintBrushColorMode, uint8_t,
-        (Greyscale, 0), 
-        (SRGB, 1), 
-        (LinearColor, 2) 
-    );
-
     //! The different types of blend modes supported by the paint brush tool.
     AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(PaintBrushBlendMode, uint8_t,
         (Normal, 0),    //!< Alpha blends between the paint brush value and the existing value 
@@ -108,22 +94,6 @@ namespace AzFramework
 
         PaintBrushSettings() = default;
         virtual ~PaintBrushSettings() = default;
-
-        // Overall paintbrush settings
-
-        PaintBrushMode GetBrushMode() const
-        {
-            return m_brushMode;
-        }
-
-        void SetBrushMode(PaintBrushMode brushMode);
-
-        PaintBrushColorMode GetColorMode() const
-        {
-            return m_colorMode;
-        }
-
-        void SetColorMode(PaintBrushColorMode colorMode);
 
         // Stroke settings
 
@@ -196,16 +166,16 @@ namespace AzFramework
         AZ::u32 OnIntensityChanged();
         AZ::u32 OnOpacityChanged();
 
-        bool GetSizeVisibility() const;
-        bool GetColorVisibility() const;
-        bool GetIntensityVisibility() const;
-        bool GetOpacityVisibility() const;
-        bool GetHardnessVisibility() const;
-        bool GetFlowVisibility() const;
-        bool GetDistanceVisibility() const;
-        bool GetSmoothingRadiusVisibility() const;
-        bool GetBlendModeVisibility() const;
-        bool GetSmoothModeVisibility() const;
+        virtual bool GetSizeVisibility() const;
+        virtual bool GetColorVisibility() const;
+        virtual bool GetIntensityVisibility() const;
+        virtual bool GetOpacityVisibility() const;
+        virtual bool GetHardnessVisibility() const;
+        virtual bool GetFlowVisibility() const;
+        virtual bool GetDistanceVisibility() const;
+        virtual bool GetSmoothingRadiusVisibility() const;
+        virtual bool GetBlendModeVisibility() const;
+        virtual bool GetSmoothModeVisibility() const;
 
         float GetSizeMin() const;
         float GetSizeMax() const;
@@ -214,15 +184,7 @@ namespace AzFramework
         //! Notification functions for editing changes that aren't used for anything in PaintBrushSettings but can be overridden.
         //! They exist so that the GlobalPaintBrushSettings can notify listeners whenever the global settings change.
         virtual void OnSizeRangeChanged();
-        virtual void OnBrushModeChanged();
-        virtual void OnColorModeChanged();
         virtual AZ::u32 OnSettingsChanged();
-
-        //! Brush settings brush mode
-        PaintBrushMode m_brushMode = PaintBrushMode::Paintbrush;
-
-        //! Brush settings color mode
-        PaintBrushColorMode m_colorMode = PaintBrushColorMode::Greyscale;
 
         //! Brush stroke color
         AZ::Color m_brushColor = AZ::Color::CreateOne();
@@ -269,8 +231,6 @@ namespace AzFramework
 
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE(AzFramework::PaintBrushMode, "{88C6AEA1-5424-4F3A-9E22-6D55C050F06C}");
-    AZ_TYPE_INFO_SPECIALIZE(AzFramework::PaintBrushColorMode, "{0D3B0981-BFB3-47E0-9E28-99CFB540D5AC}");
     AZ_TYPE_INFO_SPECIALIZE(AzFramework::PaintBrushBlendMode, "{8C52DEAF-C45B-4C3B-8300-5DBC44CE30AF}");
     AZ_TYPE_INFO_SPECIALIZE(AzFramework::PaintBrushSmoothMode, "{7FEF32F1-54B8-419C-A11E-1CE821BEDF1D}");
 } // namespace AZ
