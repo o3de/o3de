@@ -26,7 +26,7 @@ namespace AzToolsFramework
         static void Reflect(AZ::ReflectContext* context);
 
         BoxComponentMode(
-            const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
+            const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType, bool allowAsymmetricalEditing = false);
         BoxComponentMode(const BoxComponentMode&) = delete;
         BoxComponentMode& operator=(const BoxComponentMode&) = delete;
         BoxComponentMode(BoxComponentMode&&) = delete;

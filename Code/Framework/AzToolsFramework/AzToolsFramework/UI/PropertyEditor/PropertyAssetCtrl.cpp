@@ -647,9 +647,9 @@ namespace AzToolsFramework
         AZ::Data::AssetInfo assetInfo;
 
         AZ::Data::AssetCatalogRequestBus::Broadcast(
-            [&assetInfo, assetId](AZ::Data::AssetCatalogRequestBus::Events* interface)
+            [&assetInfo, assetId](AZ::Data::AssetCatalogRequestBus::Events* handler)
             {
-                assetInfo = interface->GetAssetInfoById(assetId);
+                assetInfo = handler->GetAssetInfoById(assetId);
             }
         );
 

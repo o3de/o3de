@@ -474,7 +474,7 @@ namespace GradientSignal
         m_modifiedStrokeRegion = {};
     }
 
-    AZ::Color ImageGradientModifier::OnGetColor(const AZ::Vector3& brushCenter)
+    AZ::Color ImageGradientModifier::OnGetColor(const AZ::Vector3& brushCenter) const
     {
         AZ::EntityId entityId = m_ownerEntityComponentId.GetEntityId();
 
