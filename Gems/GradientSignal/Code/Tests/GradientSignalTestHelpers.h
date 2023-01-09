@@ -35,13 +35,13 @@ namespace UnitTest
 
     //! Build a mip chain asset that contains the basic image data from BuildBasicImageData
     //! @param mipLevels Number of mip levels in the chain
-    //! @param arraySize Number of sub images within a mip level
     //! @param width The width of the image
     //! @param height The height of the image
     //! @param pixelSize The number of bytes per pixel
-    //! @param seed The random seed for generating the data
+    //! @param data The raw pixel data
     //! @return A mip chain asset with the specified basic image data
-    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildBasicMipChainAsset(AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::s32 seed);
+    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildBasicMipChainAsset(
+        AZ::u16 mipLevels, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZStd::span<const uint8_t> data);
 
     //! Construct an array of image data where all the pixels are 0 except for one at the given coordinate
     //! @param width Width of the image
@@ -54,19 +54,14 @@ namespace UnitTest
     AZStd::vector<uint8_t> BuildSpecificPixelImageData(
         AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues);
 
-    //! Build a mip chain asset that contains the specific image data from BuildSpecificPixelImageData
-    //! @param mipLevels Number of mip levels in the chain
-    //! @param arraySize Number of sub images within a mip level
+    //! Given a set of raw pixel data, create an AZ::RPI::StreamingImageAsset
     //! @param width The width of the image
     //! @param height The height of the image
-    //! @param pixelSize The number of bytes per pixel
-    //! @param pixelX The X coordinate of the pixel to set to a specific value 
-    //! @param pixelY The Y coordinate of the pixel to set to a specific value 
-    //! @param setPixelValues The values to set the one specific pixel to (one value per pixel channel, determined by pixelSize)
-    //! @return A mip chain asset with the specific pixel image data
-    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildSpecificPixelMipChainAsset(
-        AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize,
-        AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues);
+    //! @param format The format of the pixel data
+    //! @param data The raw pixel data
+    //! \return The AZ::RPI::StreamingImageAsset in a loaded ready state
+    AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateImageAssetFromPixelData(
+        AZ::u32 width, AZ::u32 height, AZ::RHI::Format format, AZStd::span<const uint8_t> data);
 
     //! Creates a deterministically random set of pixel data as an AZ::RPI::StreamingImageAsset.
     //! \param width The width of the AZ::RPI::StreamingImageAsset

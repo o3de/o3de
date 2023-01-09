@@ -112,7 +112,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzFrameworkTestShared
                 AZ::AzTestShared
                 AZ::AzFramework
-                Gem::Atom_RPI.TestUtils.Static
                 Gem::LmbrCentral.Mocks
                 Gem::GradientSignal.Mocks
                 Gem::Terrain.Mocks
