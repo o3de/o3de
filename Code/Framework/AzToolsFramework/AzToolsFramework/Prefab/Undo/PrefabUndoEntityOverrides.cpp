@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoEntityOverrides.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
@@ -27,6 +28,9 @@ namespace AzToolsFramework
 
             m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
             AZ_Assert(m_instanceToTemplateInterface, "PrefabUndoEntityOverrides - Could not get instance to template interface.");
+
+            m_prefabOverridePublicInterface = AZ::Interface<PrefabOverridePublicInterface>::Get();
+            AZ_Assert(m_prefabOverridePublicInterface, "PrefabUndoEntityOverrides - Could not get prefab override public interface.");
         }
 
         bool PrefabUndoEntityOverrides::Changed() const
@@ -93,9 +97,10 @@ namespace AzToolsFramework
                         m_instanceToTemplateInterface->GeneratePatch(
                             overridePatchesWithSubpaths, *entityDomInTopTemplate, entityDomAfterUpdate);
                     }
-                    else
+                    else if (auto overrideType = m_prefabOverridePublicInterface->GetOverrideType(entity->GetId());
+                        overrideType.has_value() && overrideType == OverrideType::AddEntity)
                     {
-                        // If entity DOM is not present in template, it indicates that the entity itself was added as an override.
+                        // Check if the entity itself is added as an override already.
                         // In this case, additional override patches on this entity would be merged into the entity DOM value that is
                         // stored in the existing add-entity override patch.
 
@@ -104,6 +109,12 @@ namespace AzToolsFramework
                         // Entity path passing to the util function is empty such that the generated JSON patch won't contain any path.
                         // The path inside JSON patch will be set correctly below when generating the override subtree.
                         PrefabUndoUtils::AppendAddEntityPatch(overridePatchesWithSubpaths, entityDomAfterUpdate, "");
+                    }
+                    else
+                    {
+                        AZ_Warning("Prefab", false, "PrefabUndoEntityOverrides::Capture - "
+                            "Entity ('%s') is not present in template for override editing. Skipping it.", entity->GetName().c_str());
+                        continue;
                     }
                 }
 

@@ -14,6 +14,7 @@ namespace AzToolsFramework::Prefab
 {
     class PrefabSystemComponentInterface;
     class InstanceToTemplateInterface;
+    class PrefabOverridePublicInterface;
 
     //! Undo class for handling updating entities to an instance as override of focused instance.
     class PrefabUndoEntityOverrides
@@ -45,5 +46,6 @@ namespace AzToolsFramework::Prefab
 
         PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+        PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
     };
 } // namespace AzToolsFramework::Prefab
