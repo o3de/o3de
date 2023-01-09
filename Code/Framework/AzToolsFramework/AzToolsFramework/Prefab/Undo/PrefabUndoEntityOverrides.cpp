@@ -9,10 +9,10 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
-#include <AzToolsFramework/Prefab/Undo/PrefabUndoEntityOverrides.h>
-#include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoEntityOverrides.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
 
 namespace AzToolsFramework
 {
