@@ -16,6 +16,7 @@
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
+#include <GradientSignalTestHelpers.h>
 #include <TerrainRenderer/Components/TerrainMacroMaterialComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <AzTest/AzTest.h>
@@ -34,76 +35,31 @@ namespace UnitTest
     class TerrainMacroMaterialComponentTest : public UnitTest::TerrainSystemTestFixture
     {
     public:
-        AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildBasicMipChainAsset(
-            uint32_t width, uint32_t height, uint32_t pixelSize, const AZStd::vector<uint32_t>& pixels)
+        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateMacroColorAsset(
+            AZ::u32 width, AZ::u32 height, AZStd::span<const uint32_t> data)
         {
-            using namespace AZ;
-
-            RPI::ImageMipChainAssetCreator assetCreator;
-
-            const uint16_t mipLevels = 1;
-            const uint16_t arraySize = 1;
-
-            assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-
-            RHI::ImageSubresourceLayout layout(AZ::RHI::Size(width, height, 1), width, width * pixelSize, width * height * pixelSize, 1, 1);
-
-            assetCreator.BeginMip(layout);
-            assetCreator.AddSubImage(pixels.data(), pixels.size() * sizeof(uint32_t));
-            assetCreator.EndMip();
-
-            Data::Asset<RPI::ImageMipChainAsset> asset;
-            EXPECT_TRUE(assetCreator.End(asset));
-            EXPECT_TRUE(asset.IsReady());
-            EXPECT_NE(asset.Get(), nullptr);
-
-            return asset;
+            AZStd::span<const uint8_t> rawPixels(reinterpret_cast<const uint8_t*>(data.data()), data.size() * sizeof(uint32_t));
+            return CreateImageAssetFromPixelData(width, height, AZ::RHI::Format::R8G8B8A8_UNORM, rawPixels);
         }
 
-        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateImageAsset(
-            uint32_t width, uint32_t height, const AZStd::vector<uint32_t>& pixels)
+        AZStd::unique_ptr<AZ::Entity> CreateTestMacroMaterialEntity(
+            float bounds, AZ::Data::Asset<AZ::RPI::StreamingImageAsset> macroColorAsset)
         {
-            AZ_Assert(pixels.size() == (width * height), "Pixel array is the wrong size for this image width and height.");
+            auto entity = CreateTestBoxEntity(bounds / 2.0f);
 
-            auto randomAssetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom());
-            auto imageAsset = AZ::Data::AssetManager::Instance().CreateAsset<AZ::RPI::StreamingImageAsset>(
-                randomAssetId, AZ::Data::AssetLoadBehavior::Default);
+            Terrain::TerrainMacroMaterialConfig config;
+            config.m_macroColorAsset = macroColorAsset;
 
-            const auto format = AZ::RHI::Format::R8G8B8A8_UNORM;
-            const uint32_t pixelSize = AZ::RHI::GetFormatComponentCount(format);
+            m_macroMaterialComponent = entity->CreateComponent<Terrain::TerrainMacroMaterialComponent>(config);
 
-            AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> mipChain = BuildBasicMipChainAsset(width, height, pixelSize, pixels);
+            ActivateEntity(entity.get());
+            EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
 
-            AZ::RPI::StreamingImageAssetCreator assetCreator;
-            assetCreator.Begin(randomAssetId);
-
-            AZ::RHI::ImageDescriptor imageDesc =
-                AZ::RHI::ImageDescriptor::Create2D(AZ::RHI::ImageBindFlags::ShaderRead, width, height, format);
-
-            assetCreator.SetImageDescriptor(imageDesc);
-            assetCreator.AddMipChainAsset(*mipChain.Get());
-
-            EXPECT_TRUE(assetCreator.End(imageAsset));
-            EXPECT_TRUE(imageAsset.IsReady());
-            EXPECT_NE(imageAsset.Get(), nullptr);
-
-            return imageAsset;
+            return entity;
         }
 
-        AZ::Vector3 PixelCoordinatesToWorldSpace(
-            uint32_t pixelX, uint32_t pixelY, const AZ::Aabb& bounds, uint32_t width, uint32_t height)
-        {
-            AZ::Vector2 pixelSize(bounds.GetXExtent() / aznumeric_cast<float>(width), bounds.GetYExtent() / aznumeric_cast<float>(height));
-
-            // Return the center point of the pixel in world space.
-            // Note that Y gets flipped because of the way images map into world space. (0,0) is the lower left corner in world space,
-            // but the upper left corner in image space.
-            return AZ::Vector3(
-                bounds.GetMin().GetX() + ((pixelX + 0.5f) * pixelSize.GetX()),
-                bounds.GetMin().GetY() + ((height - (pixelY + 0.5f)) * pixelSize.GetY()),
-                0.0f
-            );
-        }
+        // Keep track of the Macro Material component so that we have an easy way to access the component ID.
+        Terrain::TerrainMacroMaterialComponent* m_macroMaterialComponent = nullptr;
     };
 
     TEST_F(TerrainMacroMaterialComponentTest, MissingRequiredComponentsActivateFailure)
@@ -143,24 +99,16 @@ namespace UnitTest
         EXPECT_CALL(mockMacroMaterialNotifications, OnTerrainMacroMaterialCreated).Times(1);
         EXPECT_CALL(mockMacroMaterialNotifications, OnTerrainMacroMaterialDestroyed).Times(1);
 
-        // Create an entity with a box
-        constexpr float BoxHalfBounds = 128.0f;
-        auto entity = CreateTestBoxEntity(BoxHalfBounds);
-
         // Create a dummy image asset to use for the macro color.
         constexpr uint32_t width = 4;
         constexpr uint32_t height = 4;
         AZStd::vector<uint32_t> pixels(width * height);
-        auto macroColorAsset = CreateImageAsset(width, height, pixels);
+        
+        auto macroColorAsset = CreateMacroColorAsset(width, height, pixels);
 
-        // Create the component.
-        Terrain::TerrainMacroMaterialConfig config;
-        config.m_macroColorAsset = macroColorAsset;
-        entity->CreateComponent<Terrain::TerrainMacroMaterialComponent>(config);
-
-        // Activate the entity and verify that it activated successfully. This should generate the macro material create notification.
-        ActivateEntity(entity.get());
-        EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
+        // Create and activate the test entity.
+        constexpr float BoxBounds = 256.0f;
+        auto entity = CreateTestMacroMaterialEntity(BoxBounds, macroColorAsset);
 
         // Decativate the entity, which should generate the macro material destroy notification.
         entity.reset();
@@ -177,8 +125,6 @@ namespace UnitTest
         // We'll create a 4x4 image to map onto it, so each pixel is 1 x 1 m in size.
         // The lower left corner of the image maps to (0, 0) and the upper right to (4, 4).
 
-        constexpr float BoxHalfBounds = 2.0f;
-        auto entity = CreateTestBoxEntity(BoxHalfBounds);
         uint32_t width = 4;
         uint32_t height = 4;
 
@@ -192,18 +138,15 @@ namespace UnitTest
             0x40000000, 0xFF400000, 0xFF004000, 0xFF000040, // 0 - 1 m
         };
 
-        auto macroColorAsset = CreateImageAsset(width, height, pixels);
-        Terrain::TerrainMacroMaterialConfig config;
-        config.m_macroColorAsset = macroColorAsset;
+        auto macroColorAsset = CreateMacroColorAsset(width, height, pixels);
 
-        auto macroMaterialComponent = entity->CreateComponent<Terrain::TerrainMacroMaterialComponent>(config);
-
-        ActivateEntity(entity.get());
-        EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
+        // Create and activate the test entity.
+        constexpr float BoxBounds = 4.0f;
+        auto entity = CreateTestMacroMaterialEntity(BoxBounds, macroColorAsset);
 
         AzFramework::PaintBrushSettings brushSettings;
 
-        AzFramework::PaintBrush paintBrush({ entity->GetId(), macroMaterialComponent->GetId() });
+        AzFramework::PaintBrush paintBrush({ entity->GetId(), m_macroMaterialComponent->GetId() });
         paintBrush.BeginPaintMode();
 
         AZ::Aabb shapeBounds = AZ::Aabb::CreateNull();
@@ -245,20 +188,15 @@ namespace UnitTest
         // We'll create a 4x4 image to map onto it, so each pixel is 1 x 1 m in size.
         // The lower left corner of the image maps to (0, 0) and the upper right to (4, 4).
 
-        constexpr float BoxHalfBounds = 2.0f;
-        auto entity = CreateTestBoxEntity(BoxHalfBounds);
         uint32_t width = 4;
         uint32_t height = 4;
         AZStd::vector<uint32_t> pixels(4 * 4);
 
-        auto macroColorAsset = CreateImageAsset(width, height, pixels);
-        Terrain::TerrainMacroMaterialConfig config;
-        config.m_macroColorAsset = macroColorAsset;
+        auto macroColorAsset = CreateMacroColorAsset(width, height, pixels);
 
-        auto macroMaterialComponent = entity->CreateComponent<Terrain::TerrainMacroMaterialComponent>(config);
-
-        ActivateEntity(entity.get());
-        EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
+        // Create and activate the test entity.
+        constexpr float BoxBounds = 4.0f;
+        auto entity = CreateTestMacroMaterialEntity(BoxBounds, macroColorAsset);
 
         AZ::Aabb shapeBounds = AZ::Aabb::CreateNull();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -277,7 +215,7 @@ namespace UnitTest
         constexpr uint32_t paintedPixelY = 1;
         auto paintedPixelLocation = PixelCoordinatesToWorldSpace(paintedPixelX, paintedPixelY, shapeBounds, width, height);
 
-        AzFramework::PaintBrush paintBrush({ entity->GetId(), macroMaterialComponent->GetId() });
+        AzFramework::PaintBrush paintBrush({ entity->GetId(), m_macroMaterialComponent->GetId() });
         paintBrush.BeginPaintMode();
 
         AZ::Color startColor = paintBrush.UseEyedropper(paintedPixelLocation);

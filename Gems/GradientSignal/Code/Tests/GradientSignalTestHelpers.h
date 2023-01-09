@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzTest/AzTest.h>
@@ -79,6 +80,15 @@ namespace UnitTest
     //! \return The AZ::RPI::StreamingImageAsset in a loaded ready state
     AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateSpecificPixelImageAsset(
         AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues);
+
+    //! Converts a set of pixel coordinates in an image to a world space value that represents the center of the pixel.
+    //! \param pixelX The X coordinate of the pixel to convert.
+    //! \param pixelY The Y coordinate of the pixel to convert.
+    //! \param bounds The world space bounds of the image.
+    //! \param width The width of the image in pixels.
+    //! \param height The height of the image in pixels.
+    //! @return The world space center of the requested pixel.
+    AZ::Vector3 PixelCoordinatesToWorldSpace(uint32_t pixelX, uint32_t pixelY, const AZ::Aabb& bounds, uint32_t width, uint32_t height);
 
     class GradientSignalTestHelpers
     {

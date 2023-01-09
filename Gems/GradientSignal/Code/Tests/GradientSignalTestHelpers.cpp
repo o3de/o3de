@@ -151,6 +151,19 @@ namespace UnitTest
         return CreateImageAssetFromPixelData(width, height, format, data);
     }
 
+    AZ::Vector3 PixelCoordinatesToWorldSpace(uint32_t pixelX, uint32_t pixelY, const AZ::Aabb& bounds, uint32_t width, uint32_t height)
+    {
+        AZ::Vector2 pixelSize(bounds.GetXExtent() / aznumeric_cast<float>(width), bounds.GetYExtent() / aznumeric_cast<float>(height));
+
+        // Return the center point of the pixel in world space.
+        // Note that Y gets flipped because of the way images map into world space. (0,0) is the lower left corner in world space,
+        // but the upper left corner in image space.
+        return AZ::Vector3(
+            bounds.GetMin().GetX() + ((pixelX + 0.5f) * pixelSize.GetX()),
+            bounds.GetMin().GetY() + ((height - (pixelY + 0.5f)) * pixelSize.GetY()),
+            0.0f);
+    }
+
     void GradientSignalTestHelpers::CompareGetValueAndGetValues(AZ::EntityId gradientEntityId, float queryMin, float queryMax)
     {
         // Create a gradient sampler and run through a series of points to see if they match expectations.
