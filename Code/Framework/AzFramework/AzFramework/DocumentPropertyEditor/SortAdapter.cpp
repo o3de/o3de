@@ -147,10 +147,13 @@ namespace AZ::DocumentPropertyEditor
                 {
                     if (!IsRow(patchPath))
                     {
-                        outgoingPatch.PushBack(
-                            Dom::PatchOperation::ReplaceOperation(MapFromSourcePath(patchPath), operationIterator->GetValue()));
+                        // pass on the replace column operation with the mapped path
+                        auto sortedPath = MapFromSourcePath(patchPath);
+                        outgoingPatch.PushBack(Dom::PatchOperation::ReplaceOperation(sortedPath, operationIterator->GetValue()));
 
-                        // <apm> here, record parent's row index, recache its data, remove it, add it, check its new index. If it changes, generate move operation
+                        // the replaced column entry might've changed the row's sorting. Updated it
+                        sortedPath.Pop();
+                        ResortRow(sortedPath);
                     }
                 }
                 else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
@@ -242,6 +245,11 @@ namespace AZ::DocumentPropertyEditor
         }
 
         return sortedValue;
+    }
+
+    void RowSortAdapter::ResortRow(Dom::Path sortedPath)
+    {
+        // TODO: record row's sorted index, remove it, re-cache its data,add it, check its new index. If changed, generate move operation
     }
 
 } // namespace AZ::DocumentPropertyEditor

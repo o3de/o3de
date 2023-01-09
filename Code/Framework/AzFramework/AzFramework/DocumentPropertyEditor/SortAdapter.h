@@ -83,6 +83,7 @@ namespace AZ::DocumentPropertyEditor
         void PopulateChildren(const Dom::Value& value, SortInfoNode* sortInfo);
 
         Dom::Value GetSortedValue(const Dom::Value& sourceValue, SortInfoNode* sortInfo);
+        void ResortRow(Dom::Path sortedPath);
 
         bool m_sortActive = true;
         bool m_reverseSort = false;
