@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "RotationZDegrees",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RotationZDegrees"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "GetUp",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetUp"
@@ -80,7 +78,6 @@
                 },
                 {
                     "base": "GetForward",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetForward"
@@ -118,7 +115,6 @@
                 },
                 {
                     "base": "IsClose",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsClose"
@@ -162,7 +158,6 @@
                 },
                 {
                     "base": "RotationXDegrees",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RotationXDegrees"
@@ -194,7 +189,6 @@
                 },
                 {
                     "base": "FromTranslation",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromTranslation"
@@ -226,7 +220,6 @@
                 },
                 {
                     "base": "IsFinite",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsFinite"
@@ -258,7 +251,6 @@
                 },
                 {
                     "base": "MultiplyByUniformScale",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByUniformScale"
@@ -296,7 +288,6 @@
                 },
                 {
                     "base": "MultiplyByTransform",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByTransform"
@@ -334,7 +325,6 @@
                 },
                 {
                     "base": "FromRotation",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromRotation"
@@ -366,7 +356,6 @@
                 },
                 {
                     "base": "RotationYDegrees",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RotationYDegrees"
@@ -398,7 +387,6 @@
                 },
                 {
                     "base": "FromRotationAndTranslation",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromRotationAndTranslation"
@@ -436,7 +424,6 @@
                 },
                 {
                     "base": "MultiplyByVector3",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByVector3"
@@ -474,7 +461,6 @@
                 },
                 {
                     "base": "MultiplyByVector4",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByVector4"
@@ -512,7 +498,6 @@
                 },
                 {
                     "base": "ToScale",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToScale"
@@ -544,7 +529,6 @@
                 },
                 {
                     "base": "FromMatrix3x3",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromMatrix3x3"
@@ -576,7 +560,6 @@
                 },
                 {
                     "base": "GetRight",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetRight"
@@ -614,7 +597,6 @@
                 },
                 {
                     "base": "IsOrthogonal",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsOrthogonal"
@@ -652,7 +634,6 @@
                 },
                 {
                     "base": "Orthogonalize",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Orthogonalize"
@@ -684,7 +665,6 @@
                 },
                 {
                     "base": "FromMatrix3x3AndTranslation",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromMatrix3x3AndTranslation"
@@ -722,7 +702,6 @@
                 },
                 {
                     "base": "FromScale",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromScale"
@@ -754,7 +733,6 @@
                 },
                 {
                     "base": "GetTranslation",
-                    "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetTranslation"

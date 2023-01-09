@@ -16,7 +16,10 @@
                 },
                 "Exclude Restricted AssetProcessorTestAssets": {
                     "pattern": "(^|.+/)asset_processor_tests/restricted(/.+)$"
-                }
+                },
+                "Exclude Scene_Tests": {
+                    "pattern": "(^|.+/)scene_tests/assets(/.+)$"
+                }  
             }
         }
     }

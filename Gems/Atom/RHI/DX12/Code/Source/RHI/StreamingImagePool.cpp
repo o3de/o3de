@@ -17,7 +17,7 @@
 #define AZ_RHI_DX12_DEBUG_STREAMINGIMAGEPOOL 0
 
 // enable tiled resource implementation
-#define AZ_RHI_USE_TILED_RESOURCES
+#define AZ_RHI_DX12_USE_TILED_RESOURCES
 
 namespace AZ
 {
@@ -153,7 +153,7 @@ namespace AZ
 
             m_enableTileResource = device.GetFeatures().m_tiledResource;
 
-#ifndef AZ_RHI_USE_TILED_RESOURCES
+#ifndef AZ_RHI_DX12_USE_TILED_RESOURCES
             // Disable tile resource for all 
             m_enableTileResource = false;
 #endif
@@ -176,7 +176,7 @@ namespace AZ
                 TileAllocator::Descriptor tileAllocatorDesc;
                 tileAllocatorDesc.m_tileSizeInBytes = TileSizeInBytes;
                 // Tile allocator updates used resident memory
-                tileAllocatorDesc.m_getHeapMemoryUsageFunction = heapPageAllocatorDesc.m_getHeapMemoryUsageFunction;
+                tileAllocatorDesc.m_heapMemoryUsage = &GetDeviceHeapMemoryUsage();
                 m_tileAllocator.Init(tileAllocatorDesc, m_heapPageAllocator);
 
                 // Allocate one tile for default tile
@@ -706,6 +706,11 @@ namespace AZ
                 heapMemoryUsage.m_budgetInBytes = newBudget;
             }
             return RHI::ResultCode::Success;
+        }
+
+        bool StreamingImagePool::SupportTiledImageInternal() const
+        {
+            return m_enableTileResource;
         }
     }
 }

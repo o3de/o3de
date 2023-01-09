@@ -360,8 +360,8 @@ namespace AZ
                     heapStats->m_name = AZStd::string::format("Heap %d", static_cast<int>(i));
                     heapStats->m_heapMemoryType = RHI::CheckBitsAll(properties.memoryProperties.memoryHeaps[i].flags, static_cast<VkMemoryHeapFlags>(VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)) ? RHI::HeapMemoryLevel::Device : RHI::HeapMemoryLevel::Host;
                     heapStats->m_memoryUsage.m_budgetInBytes = budget.heapBudget[i];
-                    heapStats->m_memoryUsage.m_reservedInBytes = 0;
-                    heapStats->m_memoryUsage.m_residentInBytes = budget.heapUsage[i];
+                    heapStats->m_memoryUsage.m_totalResidentInBytes = budget.heapUsage[i];
+                    heapStats->m_memoryUsage.m_usedResidentInBytes = 0;
                 }
             }
         }

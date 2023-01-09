@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "ExpectLessThanEqual",
-                    "context": "Unit Testing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Expect Less Than Equal"
@@ -55,7 +54,6 @@
                 },
                 {
                     "base": "ExpectGreaterThanEqual",
-                    "context": "Unit Testing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Expect Greater Than Equal"
@@ -100,7 +98,6 @@
                 },
                 {
                     "base": "MarkComplete",
-                    "context": "Unit Testing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Mark Complete"
@@ -131,7 +128,6 @@
                 },
                 {
                     "base": "ExpectTrue",
-                    "context": "Unit Testing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Expect True"
@@ -169,7 +165,6 @@
                 },
                 {
                     "base": "Checkpoint",
-                    "context": "Unit Testing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Checkpoint"
@@ -200,7 +195,6 @@
                 },
                 {
                     "base": "ExpectFalse",
-                    "context": "Unit Testing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Expect False"
@@ -238,7 +232,6 @@
                 },
                 {
                     "base": "ExpectEqual",
-                    "context": "Unit Testing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Expect Equal"
@@ -283,7 +276,6 @@
                 },
                 {
                     "base": "ExpectLessThan",
-                    "context": "Unit Testing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Expect Less Than"
@@ -328,7 +320,6 @@
                 },
                 {
                     "base": "AddSuccess",
-                    "context": "Unit Testing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add Success"
@@ -359,7 +350,6 @@
                 },
                 {
                     "base": "ExpectNotEqual",
-                    "context": "Unit Testing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Expect Not Equal"
@@ -404,7 +394,6 @@
                 },
                 {
                     "base": "ExpectGreaterThan",
-                    "context": "Unit Testing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Expect Greater Than"
@@ -449,7 +438,6 @@
                 },
                 {
                     "base": "AddFailure",
-                    "context": "Unit Testing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add Failure"

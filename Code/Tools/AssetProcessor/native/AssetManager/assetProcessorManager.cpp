@@ -3261,6 +3261,21 @@ namespace AssetProcessor
     // the scanner should be omitting directory changes.
     void AssetProcessorManager::AssessFilesFromScanner(QSet<AssetFileInfo> filePaths)
     {
+        if (m_initialScanSkippingFeature)
+        {
+            for (const AssetFileInfo& fileInfo : filePaths)
+            {
+                AddKnownFoldersRecursivelyForFile(fileInfo.m_filePath, fileInfo.m_scanFolder->ScanPath());
+            }
+
+            m_sourceFilesInDatabase.clear();
+            m_fileModTimes.clear();
+            m_fileHashes.clear();
+
+            m_initialScanSkippingFeature = false;
+            return;
+        }
+
         AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Received %i files from the scanner.  Assessing...\n", static_cast<int>(filePaths.size()));
         AssetProcessor::StatsCapture::BeginCaptureStat("WarmingFileCache");
         WarmUpFileCache(filePaths);
@@ -5068,6 +5083,11 @@ namespace AssetProcessor
     void AssetProcessorManager::SetEnableModtimeSkippingFeature(bool enable)
     {
         m_allowModtimeSkippingFeature = enable;
+    }
+
+    void AssetProcessorManager::SetInitialScanSkippingFeature(bool enable)
+    {
+        m_initialScanSkippingFeature = enable;
     }
 
     void AssetProcessorManager::SetQueryLogging(bool enableLogging)

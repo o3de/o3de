@@ -124,7 +124,7 @@ namespace Terrain
         // Since this surface data will no longer exist, notify the terrain system to refresh the area.
         TerrainSystemServiceRequestBus::Broadcast(
             &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-            AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData);
     }
 
     bool TerrainSurfaceGradientListComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -220,14 +220,14 @@ namespace Terrain
             TerrainSystemServiceRequestBus::Broadcast(
                 &TerrainSystemServiceRequestBus::Events::RefreshRegion,
                 dirtyRegion,
-                AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData);
         }
         else
         {
             TerrainSystemServiceRequestBus::Broadcast(
                 &TerrainSystemServiceRequestBus::Events::RefreshArea,
                 GetEntityId(),
-                AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData);
         }
     }
 

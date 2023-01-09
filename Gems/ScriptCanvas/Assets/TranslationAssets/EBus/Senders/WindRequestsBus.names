@@ -19,13 +19,15 @@
                         "tooltip": "Signaled after Get Global Wind is invoked"
                     },
                     "details": {
-                        "name": "Get Global Wind"
+                        "name": "Get Global Wind",
+                        "tooltip": "Get the strength and direction of the globally applied wind"
                     },
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Global Wind Direction"
+                                "name": "Global Wind",
+                                "tooltip": "The strength and direction of the globally applied wind"
                             }
                         }
                     ]
@@ -41,13 +43,15 @@
                         "tooltip": "Signaled after Get Wind At Position is invoked"
                     },
                     "details": {
-                        "name": "Get Wind At Position"
+                        "name": "Get Wind At Position",
+                        "tooltip": "Get the strength and direction of the accumulated wind at the requested position"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Position"
+                                "name": "Position",
+                                "tooltip": "The position at which the wind value is to be queried" 
                             }
                         }
                     ],
@@ -55,7 +59,8 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Wind Direction"
+                                "name": "Wind",
+                                "tooltip": "Strength and direction of the accumulated wind at the requested position"
                             }
                         }
                     ]
@@ -71,13 +76,15 @@
                         "tooltip": "Signaled after Get Wind Inside AABB is invoked"
                     },
                     "details": {
-                        "name": "Get Wind Inside AABB"
+                        "name": "Get Wind Inside AABB",
+                        "tooltip": "Get the strength and direction of the accumulated wind inside the requested axis-aligned bounding box"
                     },
                     "params": [
                         {
                             "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "AABB"
+                                "name": "AABB",
+                                "tooltip": "The axis-aligned bounding box inside which the wind value is to be queried"
                             }
                         }
                     ],
@@ -85,7 +92,8 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Wind Direction"
+                                "name": "Wind Direction",
+                                "tooltip": "The strength and direction of the accumulated wind inside the requested axis-aligned bounding box"
                             }
                         }
                     ]

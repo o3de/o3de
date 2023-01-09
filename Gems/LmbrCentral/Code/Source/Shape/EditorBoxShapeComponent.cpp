@@ -74,9 +74,10 @@ namespace LmbrCentral
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
 
         // ComponentMode
+        const bool allowAsymmetricalEditing = IsShapeComponentTranslationEnabled();
         m_componentModeDelegate.ConnectWithSingleComponentMode<
             EditorBoxShapeComponent, AzToolsFramework::BoxComponentMode>(
-                AZ::EntityComponentIdPair(GetEntityId(), GetId()), this);
+                AZ::EntityComponentIdPair(GetEntityId(), GetId()), this, allowAsymmetricalEditing);
     }
 
     void EditorBoxShapeComponent::Deactivate()
@@ -162,18 +163,18 @@ namespace LmbrCentral
         return m_boxShape.SetBoxDimensions(dimensions);
     }
 
-    AZ::Transform EditorBoxShapeComponent::GetCurrentTransform()
+    AZ::Vector3 EditorBoxShapeComponent::GetTranslationOffset()
     {
-        return AzToolsFramework::TransformNormalizedScale(m_boxShape.GetCurrentTransform());
+        return m_boxShape.GetTranslationOffset();
+    }
+
+    void EditorBoxShapeComponent::SetTranslationOffset(const AZ::Vector3& translationOffset)
+    {
+        m_boxShape.SetTranslationOffset(translationOffset);
     }
 
     AZ::Transform EditorBoxShapeComponent::GetCurrentLocalTransform()
     {
-        return AZ::Transform::CreateIdentity();
-    }
-
-    AZ::Vector3 EditorBoxShapeComponent::GetBoxScale()
-    {
-        return AZ::Vector3(m_boxShape.GetCurrentTransform().GetUniformScale() * m_boxShape.GetCurrentNonUniformScale());
+        return AZ::Transform::CreateTranslation(m_boxShape.GetTranslationOffset());
     }
 } // namespace LmbrCentral
