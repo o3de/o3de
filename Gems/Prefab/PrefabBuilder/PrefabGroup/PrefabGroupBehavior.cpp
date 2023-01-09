@@ -230,7 +230,7 @@ namespace AZ::SceneAPI::Behaviors
         }
         AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> manifestUpdates;
         AZ::SceneAPI::PrefabGroupEventBus::BroadcastResult(
-            manifestUpdates, &AZ::SceneAPI::PrefabGroupEventBus::Events::GeneratePrefabMeshGroups, scene);
+            manifestUpdates, &AZ::SceneAPI::PrefabGroupEventBus::Events::GenerateDefaultPrefabMeshGroups, scene);
 
         Events::ManifestMetaInfoBus::Broadcast(&Events::ManifestMetaInfoBus::Events::AddObjects, manifestUpdates);
         

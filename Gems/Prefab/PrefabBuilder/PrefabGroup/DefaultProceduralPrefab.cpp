@@ -338,7 +338,7 @@ namespace AZ::SceneAPI
         return true;
     }
 
-    AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> DefaultProceduralPrefabGroup::GeneratePrefabMeshGroups(
+    AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> DefaultProceduralPrefabGroup::GenerateDefaultPrefabMeshGroups(
         const Scene& scene) const
     {
         AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> newMeshGroups;

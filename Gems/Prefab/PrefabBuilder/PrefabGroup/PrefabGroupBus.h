@@ -49,7 +49,7 @@ namespace AZ::SceneAPI
         using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
 
         virtual AZStd::optional<ManifestUpdates> GeneratePrefabGroupManifestUpdates(const Scene& scene) const = 0;
-        virtual AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> GeneratePrefabMeshGroups(const Scene& scene) const = 0;
+        virtual AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> GenerateDefaultPrefabMeshGroups(const Scene& scene) const = 0;
     };
     using PrefabGroupEventBus = AZ::EBus<PrefabGroupRequests>;
 

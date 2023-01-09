@@ -38,7 +38,7 @@ namespace AZ::SceneAPI
 
         // PrefabGroupEventBus::Handler
         AZStd::optional<ManifestUpdates> GeneratePrefabGroupManifestUpdates(const Scene& scene) const override;
-        AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> GeneratePrefabMeshGroups(const Scene& scene) const override;
+        AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> GenerateDefaultPrefabMeshGroups(const Scene& scene) const override;
 
     protected:
         // this stores the data related with nodes that will translate to entities in the prefab group
