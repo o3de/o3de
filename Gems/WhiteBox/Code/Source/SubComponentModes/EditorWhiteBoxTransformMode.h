@@ -17,6 +17,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <SubComponentModes/EditorWhiteBoxTransformModeBus.h>
 #include <WhiteBox/WhiteBoxToolApi.h>
 
 namespace AZ
@@ -46,6 +47,7 @@ namespace WhiteBox
     struct IntersectionAndRenderData;
 
     class TransformMode
+        : public EditorWhiteBoxTransformModeRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -64,13 +66,6 @@ namespace WhiteBox
         static void BindActionsToModes(const AZStd::string& modeIdentifier);
         static void BindActionsToMenus();
 
-        enum class TransformType
-        {
-            Translation,
-            Rotation,
-            Scale
-        };
-
         void Refresh();
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActions(const AZ::EntityComponentIdPair& entityComponentIdPair);
         void Display(
@@ -86,6 +81,9 @@ namespace WhiteBox
             const AZStd::optional<EdgeIntersection>& edgeIntersection,
             const AZStd::optional<PolygonIntersection>& polygonIntersection,
             const AZStd::optional<VertexIntersection>& vertexIntersection);
+
+        // EditorWhiteBoxTransformModeRequestBus overrides ...
+        void ChangeTransformType(TransformType subModeType) override;
 
     private:
         //! shared data that is used between the different transformation modes Translation/Rotation/Scale.

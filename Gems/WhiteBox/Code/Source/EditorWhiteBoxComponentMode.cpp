@@ -357,6 +357,7 @@ namespace WhiteBox
         m_currentSubMode = SubMode::Default;
         SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_defaultModeButtonId);
 
+        // Change sub-mode to default at the next frame to go after the automated mode switching in ComponentModeActionHandler.
         QTimer::singleShot(
             0,
             []()

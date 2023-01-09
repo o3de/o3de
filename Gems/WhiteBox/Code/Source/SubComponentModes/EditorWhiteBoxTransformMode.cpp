@@ -72,6 +72,8 @@ namespace WhiteBox
     TransformMode::TransformMode(const AZ::EntityComponentIdPair& entityComponentIdPair)
         : m_entityComponentIdPair(entityComponentIdPair)
     {
+        EditorWhiteBoxTransformModeRequestBus::Handler::BusConnect(entityComponentIdPair);
+
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
             [&](AzToolsFramework::ViewportUi::ViewportUiRequests* requests)
@@ -94,26 +96,26 @@ namespace WhiteBox
                     ManipulatorModeClusterRotateTooltip);
                 requests->SetClusterButtonTooltip(m_transformClusterId, m_transformScaleButtonId, 
                     ManipulatorModeClusterScaleTooltip);
-            });
+            }
+        );
 
         m_transformSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
             [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
             {
                 if (buttonId == m_transformTranslateButtonId)
                 {
-                    m_transformType = TransformType::Translation;
+                    ChangeTransformType(TransformType::Translation);
                 }
                 else if (buttonId == m_transformRotateButtonId)
                 {
-                    m_transformType = TransformType::Rotation;
+                    ChangeTransformType(TransformType::Rotation);
                 }
                 else if (buttonId == m_transformScaleButtonId)
                 {
-                    m_transformType = TransformType::Scale;
+                    ChangeTransformType(TransformType::Scale);
                 }
-
-                RefreshManipulator();
-            });
+            }
+        );
 
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
@@ -132,6 +134,8 @@ namespace WhiteBox
             m_transformClusterId);
 
         DestroyManipulators();
+
+        EditorWhiteBoxTransformModeRequestBus::Handler::BusDisconnect();
     }
 
     void TransformMode::RegisterActionUpdaters()
@@ -158,9 +162,20 @@ namespace WhiteBox
                 EditorMainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                []
+                [&]
                 {
-                    // TODO - Activate Translation Mode
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorWhiteBoxTransformModeRequestBus::Event(
+                                entityComponentIdPair,
+                                &EditorWhiteBoxTransformModeRequests::ChangeTransformType,
+                                TransformType::Translation);
+                        }
+                    );
                 }
             );
 
@@ -179,9 +194,20 @@ namespace WhiteBox
                 EditorMainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                []
+                [&]
                 {
-                    // TODO - Activate Rotation Mode
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorWhiteBoxTransformModeRequestBus::Event(
+                                entityComponentIdPair,
+                                &EditorWhiteBoxTransformModeRequests::ChangeTransformType,
+                                TransformType::Rotation);
+                        }
+                    );
                 }
             );
 
@@ -202,7 +228,18 @@ namespace WhiteBox
                 actionProperties,
                 []
                 {
-                    // TODO - Activate Scale Mode
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorWhiteBoxTransformModeRequestBus::Event(
+                                entityComponentIdPair,
+                                &EditorWhiteBoxTransformModeRequests::ChangeTransformType,
+                                TransformType::Scale);
+                        }
+                    );
                 }
             );
 
@@ -239,6 +276,12 @@ namespace WhiteBox
             m_manipulator->Unregister();
             m_manipulator.reset();
         }
+    }
+
+    void TransformMode::ChangeTransformType(TransformType subModeType)
+    {
+        m_transformType = subModeType;
+        RefreshManipulator();
     }
 
     void TransformMode::Refresh()
