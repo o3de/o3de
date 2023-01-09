@@ -218,6 +218,8 @@ namespace WhiteBox
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.transform.translation");
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.transform.rotation");
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.transform.scale");
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.componentMode.end");
     }
 
     void TransformMode::BindActionsToMenus()

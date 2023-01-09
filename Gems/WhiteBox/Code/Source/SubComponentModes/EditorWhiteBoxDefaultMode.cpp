@@ -295,6 +295,8 @@ namespace WhiteBox
 
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.Default.hideEdge");
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.Default.hideVertex");
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.componentMode.end");
     }
 
     void DefaultMode::BindActionsToMenus()

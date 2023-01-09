@@ -24,6 +24,7 @@
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <QApplication> // required for querying modifier keys
+#include <QTimer>
 #include <QVBoxLayout>
 #include <WhiteBox/EditorWhiteBoxComponentBus.h>
 
@@ -356,12 +357,18 @@ namespace WhiteBox
         m_currentSubMode = SubMode::Default;
         SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_defaultModeButtonId);
 
-        // Set the Action Context Mode
-        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        AZ_Assert(
-            actionManagerInterface, "WhiteBoxDefaultMode - could not get ActionManagerInterface on EnterDefaultMode.");
+        QTimer::singleShot(
+            0,
+            []()
+            {
+                // Set the Action Context Mode
+                auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+                AZ_Assert(actionManagerInterface, "WhiteBoxDefaultMode - could not get ActionManagerInterface on EnterDefaultMode.");
 
-        actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, WhiteBoxDefaultSubModeIdentifier);
+                actionManagerInterface->SetActiveActionContextMode(
+                    EditorMainWindowActionContextIdentifier, WhiteBoxDefaultSubModeIdentifier);
+            }
+        );
     }
 
     void EditorWhiteBoxComponentMode::EnterEdgeRestoreMode()
