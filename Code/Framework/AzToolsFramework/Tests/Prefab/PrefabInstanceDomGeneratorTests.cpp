@@ -12,27 +12,27 @@ namespace UnitTest
 {
     using PrefabInstanceDomGeneratorTests = PrefabInstanceDomGeneratorTestFixture;
 
-    TEST_F(PrefabInstanceDomGeneratorTests, GenerateInstanceDomDescendantOfFocusedOrRootSucceeds)
+    TEST_F(PrefabInstanceDomGeneratorTests, GenerateInstanceDomForDescendantOfFocusedLevel)
     {
         // Generate a prefab DOM for the Wheel instance while the Level is in focus
         GenerateAndValidateInstanceDom(m_wheelInstance->get(), m_tireAlias, m_entityOverrideValueOnLevel);
     }
 
-    TEST_F(PrefabInstanceDomGeneratorTests, GenerateInstanceDomFocusedSucceeds)
+    TEST_F(PrefabInstanceDomGeneratorTests, GenerateInstanceDomForFocusedPrefab)
     {
         // Generate a prefab DOM for the Wheel instance while the Wheel instance is in focus
         m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_wheelInstance->get().GetContainerEntityId());
         GenerateAndValidateInstanceDom(m_wheelInstance->get(), m_tireAlias, m_entityValueOnWheel);
     }
 
-    TEST_F(PrefabInstanceDomGeneratorTests, GenerateInstanceDomAncestorOfFocusedSucceeds)
+    TEST_F(PrefabInstanceDomGeneratorTests, GenerateInstanceDomForAncestorOfFocusedPrefab)
     {
         // Generate a prefab DOM for the Car instance while the Wheel instance is in focus
         m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_wheelInstance->get().GetContainerEntityId());
         GenerateAndValidateInstanceDom(m_carInstance->get(), m_tireAlias, m_entityValueOnWheel);
     }
 
-    TEST_F(PrefabInstanceDomGeneratorTests, GenerateEntityDomNotContainerSucceeds)
+    TEST_F(PrefabInstanceDomGeneratorTests, GenerateEntityDomForDescendantOfFocusedPrefab)
     {
         const AZ::Entity& tireEntity = m_wheelInstance->get().GetEntity(m_tireAlias)->get();
 
@@ -48,12 +48,12 @@ namespace UnitTest
         GenerateAndValidateEntityDom(tireEntity, m_entityValueOnWheel);
     }
 
-    TEST_F(PrefabInstanceDomGeneratorTests, GenerateEntityDomContainerSucceeds)
+    TEST_F(PrefabInstanceDomGeneratorTests, GenerateEntityDomForContainerOfFocusedPrefab)
     {
         const AZ::Entity& containerEntity = m_wheelInstance->get().GetContainerEntity()->get();
 
         // Change focus to Wheel, so the container entity DOM should come from the root
         m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_wheelInstance->get().GetContainerEntityId());
-        GenerateAndValidateEntityDom(containerEntity, m_containerOverrideValueOnLevel);
+        GenerateAndValidateEntityDom(containerEntity, m_wheelContainerOverrideValueOnLevel);
     }
 } // namespace UnitTest

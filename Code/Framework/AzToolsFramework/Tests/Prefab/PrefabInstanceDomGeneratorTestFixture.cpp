@@ -90,7 +90,7 @@ namespace UnitTest
 
         // Generate a patch that will alter the Wheel's container entity
         PrefabDom containerPatch;
-        GenerateWorldXEntityPatch("", m_containerOverrideValueOnLevel, *m_wheelInstance, containerPatch);
+        GenerateWorldXEntityPatch("", m_wheelContainerOverrideValueOnLevel, *m_wheelInstance, containerPatch);
 
         // Apply the Wheel container patch to the Root template (level)
         ApplyEntityPatchToTemplate(containerPatch, "", *m_wheelInstance, rootInstance);

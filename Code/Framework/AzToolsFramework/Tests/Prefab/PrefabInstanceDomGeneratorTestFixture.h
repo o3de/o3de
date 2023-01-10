@@ -28,7 +28,7 @@ namespace UnitTest
         const float m_entityOverrideValueOnLevel = 1.0f;
         const float m_entityOverrideValueOnCar = 2.0f;
         const float m_entityValueOnWheel = 3.0f;
-        const float m_containerOverrideValueOnLevel = 1.0f;
+        const float m_wheelContainerOverrideValueOnLevel = 1.0f;
 
         InstanceOptionalReference m_carInstance;
         InstanceOptionalReference m_wheelInstance;
