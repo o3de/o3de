@@ -154,7 +154,8 @@ class TestDisableGemCommand:
         def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
             return self.disable_gem.project_data
 
-        def get_gem_json_data(gem_path: pathlib.Path, project_path: pathlib.Path):
+        def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
+                            project_path: pathlib.Path = None) -> dict or None:
             return self.disable_gem.gem_data
 
         def get_engine_json_data(engine_name:str = None, engine_path:pathlib.Path = None):
@@ -202,7 +203,7 @@ class TestDisableGemCommand:
             assert enable_gem.enable_gem_in_project(gem_path=gem_path, project_path=project_path) == 0
 
             # Check that the gem is enabled
-            gem_json = get_gem_json_data(gem_path, project_path)
+            gem_json = get_gem_json_data(gem_path=gem_path, project_path=project_path)
             project_json = get_project_json_data(project_path=project_path)
             enabled_gems_list = cmake.get_enabled_gems(project_path / "Gem/enabled_gems.cmake")
             assert gem_json.get('gem_name', '') in enabled_gems_list
@@ -219,7 +220,7 @@ class TestDisableGemCommand:
             assert result == expected_result
 
             # Refresh the enabled_gems list and check for removal of the gem
-            gem_json = get_gem_json_data(gem_path, project_path)
+            gem_json = get_gem_json_data(gem_path=gem_path, project_path=project_path)
             project_json = get_project_json_data(project_path=project_path)
             enabled_gems_list = cmake.get_enabled_gems(project_path / "Gem/enabled_gems.cmake")
             assert gem_json.get('gem_name', '') not in enabled_gems_list

@@ -483,3 +483,36 @@ def get_object_name_and_optional_version_specifier(input:str):
         return get_object_name_and_version_specifier(input)
     except (InvalidObjectNameException, InvalidVersionSpecifierException):
         return input, None
+
+
+def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_name:str = None):
+    """
+    Takes a dictionary of dictionaries and replaces the keys with the value of 
+    a specific value key.
+    For example, if you have a dictionary of gem_paths->gem_json_data, this function can be used
+    to convert the dictionary so the keys are gem names instead of paths (gem_name->gem_json_data)
+    :param input: A dictionary of key->value pairs where every value is a dictionary that has a value_key
+    :param value_key: The value's key to replace the current key with
+    :param replaced_key_name: (Optional) A key name under which to store the replaced key in value
+    """
+
+    # we cannot iterate over the dict while deleting entries
+    # so we iterate over a copy of the keys
+    keys = list(input.keys())
+    for key in keys:
+        value = input[key]
+
+        # if the value is invalid just remove it
+        if value == None:
+            del input[key]
+            continue
+
+        # include the key we're removing? 
+        if replaced_key_name:
+            value[replaced_key_name] = key
+
+        # remove the current entry 
+        del input[key]
+
+        # replace with an entry keyed on value_key's value
+        input[value[value_key]] = value

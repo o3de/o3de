@@ -184,7 +184,8 @@ class TestRegisterGem:
     project_path = pathlib.PurePath('TestProject')
 
     @staticmethod
-    def get_gem_json_data(gem_path: pathlib.Path = None, project_path: pathlib.Path = None):
+    def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
+                        project_path: pathlib.Path = None) -> dict or None:
         return json.loads(TEST_GEM_JSON_PAYLOAD)
 
     @pytest.mark.parametrize("gem_path, expected_manifest_file, dry_run, expected_result", [
@@ -331,6 +332,16 @@ class TestRegisterProject:
                 return self.engine_data
             return self.o3de_manifest_data
 
+        def get_gems_json_data_by_name( engine_path:pathlib.Path = None, 
+                                        project_path: pathlib.Path = None, 
+                                        external_subdirectories: list = list(),
+                                        include_manifest_gems: bool = False,
+                                        include_engine_gems: bool = False) -> dict:
+            all_gems_json_data = {}
+            for gem_name in registered_gem_versions.keys():
+                all_gems_json_data[gem_name] = get_gem_json_data(gem_name=gem_name)
+            return all_gems_json_data
+
         def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
                             project_path: pathlib.Path = None):
             gem_json_data = json.loads(TEST_GEM_JSON_PAYLOAD)
@@ -416,6 +427,7 @@ class TestRegisterProject:
             patch('o3de.validation.valid_o3de_project_json', return_value=True) as _9, \
             patch('o3de.utils.backup_file', return_value=True) as _10, \
             patch('o3de.cmake.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) as _11, \
+            patch('o3de.manifest.get_gems_json_data_by_name', side_effect=get_gems_json_data_by_name) as get_gems_json_data_by_name_patch,\
             patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as _12:
 
             result = register.register(project_path=TestRegisterProject.project_path, force=force, dry_run=dry_run)

@@ -416,11 +416,14 @@ def register_gem_path(json_data: dict,
             logger.error(f'Failed to load gem.json data needed for registration from {gem_path}')
             return 1
 
-        if project_path:
+        # do not check compatibility if the project has not been registered with an engine 
+        # because most gems depend on engine gems which would not be found 
+        if project_path and manifest.get_project_engine_path(project_path):
+            # note this check includes engine and manifest gems
             incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path)
             if incompatible_objects: 
                 logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
-                    'following objects/APIs and requires the --force parameter to register:'+
+                    'following objects/APIs and requires the --force parameter to register:\n  '+
                     "\n  ".join(incompatible_objects))
                 return 1
         elif engine_path:
@@ -428,10 +431,12 @@ def register_gem_path(json_data: dict,
             if not engine_json_data:
                 logger.error(f'Failed to load engine.json data needed for registration from {engine_path}')
                 return 1
-            incompatible_objects = compatibility.get_gem_engine_incompatible_objects(gem_json_data, engine_json_data)
+            # note this does NOT include o3de manifest gems, just engine gems
+            engine_gems_json_data = manifest.get_gems_json_data_by_name(engine_path=engine_path)
+            incompatible_objects = compatibility.get_gem_engine_incompatible_objects(gem_json_data, engine_json_data, engine_gems_json_data)
             if incompatible_objects: 
                 logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
-                    'following objects/APIs and requires the --force parameter to register:'+
+                    'following objects/APIs and requires the --force parameter to register:\n  '+
                     "\n  ".join(incompatible_objects))
                 return 1
 
@@ -469,12 +474,11 @@ def register_project_path(json_data: dict,
             return 1
 
         if not force:
-            incompatible_objects = compatibility.get_project_engine_incompatible_objects(project_path, project_json_data, engine_json_data)
+            incompatible_objects = compatibility.get_project_engine_incompatible_objects(project_path, engine_path)
             if incompatible_objects:
                 logger.error(f'{project_json_data["project_name"]} is not known to be compatible with the '
-                    'following objects/APIs and requires the --force parameter to register:')
-                for element in incompatible_objects:
-                    logger.error(f'  {element}')
+                    'following objects/APIs and requires the --force parameter to register:\n  '+
+                    "\n  ".join(incompatible_objects))
                 return 1
 
     result = register_o3de_object_path(json_data, project_path, 'projects', 'project.json',

@@ -109,13 +109,27 @@ def enable_gem_in_project(gem_name: str = None,
     if force:
         logger.warning(f'Bypassing version compatibility check for {gem_json_data["gem_name"]}.')
     else:
-        incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path, gem_paths=buildable_gems)
-        if incompatible_objects:
-            logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
-                'following objects/APIs and requires the --force parameter to activate:'
-                "\n  ".join(incompatible_objects))
-            return 1
-        elif dry_run:
+        # do not check compatibility if the project has not been registered with an engine 
+        # because most gems depend on engine gems which would not be found 
+        if manifest.get_project_engine_path(project_path):
+            enabled_gem_names = cmake.get_enabled_gems(project_enabled_gem_file)
+
+            # it's more efficient to open all gem.json files now instead of 
+            # looking up each by name, which will load many gem.json files multiple times
+            # it takes about 150ms to populate this structure with 137 gems, 4696 bytes in total
+            all_gems_json_data = manifest.get_gems_json_data_by_name(project_path=project_path, include_manifest_gems=True, include_engine_gems=True)
+
+            # remove any gems that are not active or dependencies
+            manifest.remove_non_dependency_gem_json_data(enabled_gem_names, all_gems_json_data)
+
+            incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path, all_gems_json_data)
+            if incompatible_objects:
+                logger.error(f'{gem_json_data["gem_name"]} has the following dependency compatibility issues and '
+                    'requires the --force parameter to activate:\n  '+ 
+                    "\n  ".join(incompatible_objects))
+                return 1
+
+        if dry_run:
             logger.info(f'{gem_json_data["gem_name"]} is compatible with this project')
             return 0
 
