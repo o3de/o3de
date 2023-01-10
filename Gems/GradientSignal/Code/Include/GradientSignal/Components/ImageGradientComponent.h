@@ -181,6 +181,7 @@ namespace GradientSignal
         // PaintBrushNotificationBus overrides...
         void OnPaintModeBegin() override;
         void OnPaintModeEnd() override;
+        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) const override;
 
         // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientTransform& newTransform) override;
