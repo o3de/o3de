@@ -74,7 +74,7 @@ namespace TestImpact
             "ttimeout",
             "gtimeout",
             "suites",
-            "labelexcludes"
+            "labelexcludes",
             "draftfailingtests",
             "excluded",
             "safemode",

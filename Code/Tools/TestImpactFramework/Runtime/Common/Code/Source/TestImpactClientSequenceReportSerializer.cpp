@@ -66,6 +66,7 @@ namespace TestImpact
                 "max_concurrency",
                 "policy",
                 "suite",
+                "exclude_labels",
                 "selected_test_runs",
                 "selected_test_run_report",
                 "total_num_passing_test_runs",
@@ -123,6 +124,7 @@ namespace TestImpact
                 MaxConcurrency,
                 Policy,
                 Suite,
+                SuiteLabelExclude,
                 SelectedTestRuns,
                 SelectedTestRunReport,
                 TotalNumPassingTestRuns,
@@ -460,6 +462,10 @@ namespace TestImpact
             // Suite
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::Suite]);
             writer.String(SuiteSetAsString(sequenceReport.GetSuiteSet()).c_str());
+
+            // Suite label excludes
+            writer.Key(SequenceReportFields::Keys[SequenceReportFields::SuiteLabelExclude]);
+            writer.String(SuiteLabelExcludeSetAsString(sequenceReport.GetSuiteLabelExcludeSet()).c_str());
 
             // Selected test runs
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::SelectedTestRuns]);

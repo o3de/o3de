@@ -46,6 +46,7 @@ namespace TestImpact::Console
                 options.GetPreviousRunDataFilePath(),
                 options.GetExcludedTests(),
                 options.GetSuiteSet(),
+                options.GetSuiteLabelExcludeSet(),
                 options.GetExecutionFailurePolicy(),
                 options.GetFailedTestCoveragePolicy(),
                 options.GetTestFailurePolicy(),

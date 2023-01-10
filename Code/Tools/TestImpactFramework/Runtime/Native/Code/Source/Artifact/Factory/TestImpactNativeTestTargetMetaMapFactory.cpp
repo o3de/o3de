@@ -15,7 +15,8 @@
 
 namespace TestImpact
 {
-    NativeTestTargetMetaMap NativeTestTargetMetaMapFactory(const AZStd::string& masterTestListData, const SuiteSet& suiteSet)
+    NativeTestTargetMetaMap NativeTestTargetMetaMapFactory(
+        const AZStd::string& masterTestListData, const SuiteSet& suiteSet, const SuiteLabelExcludeSet& suiteLabelExcludeSet)
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -67,22 +68,35 @@ namespace TestImpact
         {
             NativeTestTargetMeta testMeta;
             const auto testSuites = test[Keys[TestSuitesKey]].GetArray();
+            bool skipTest = false;
             for (const auto& suite : testSuites)
             {
                 // Check to see if this test target has the suite we're looking for
                 if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
                     suiteSet.contains(suiteName))
                 {
+                    const auto suiteLabels = suite[Keys[SuiteLabelsKey]].GetArray();
+                    for (const auto& label : suiteLabels)
+                    {
+                        const auto labelString = label.GetString();
+                        if (suiteLabelExcludeSet.contains(labelString))
+                        {
+                            skipTest = true;
+                            break;
+                        }
+
+                        testMeta.m_testTargetMeta.m_suiteMeta.m_labelSet.insert(labelString);
+                    }
+
+                    if (skipTest)
+                    {
+                        break;
+                    }
+
                     testMeta.m_testTargetMeta.m_namespace = test[Keys[Namespacekey]].GetString();
                     testMeta.m_testTargetMeta.m_suiteMeta.m_name = suiteName;
                     testMeta.m_testTargetMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
                     testMeta.m_launchMeta.m_customArgs = suite[Keys[CommandKey]].GetString();
-
-                    const auto suiteLabels = suite[Keys[SuiteLabelsKey]].GetArray();
-                    for (const auto& label : suiteLabels)
-                    {
-                        testMeta.m_testTargetMeta.m_suiteMeta.m_labelSet.insert(label.GetString());
-                    }
 
                     if (const auto buildTypeString = test[Keys[LaunchMethodKey]].GetString();
                         strcmp(buildTypeString, Keys[TestRunnerKey]) == 0)
@@ -104,6 +118,7 @@ namespace TestImpact
                     break;
                 }
             }
+            skipTest:
         }
 
         // If there's no tests in the repo then something is seriously wrong

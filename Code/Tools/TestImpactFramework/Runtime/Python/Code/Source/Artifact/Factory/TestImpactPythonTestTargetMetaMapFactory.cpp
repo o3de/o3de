@@ -15,7 +15,8 @@
 
 namespace TestImpact
 {
-    PythonTestTargetMetaMap PythonTestTargetMetaMapFactory(const AZStd::string& testListData, const SuiteSet& suiteSet)
+    PythonTestTargetMetaMap PythonTestTargetMetaMapFactory(
+        const AZStd::string& testListData, const SuiteSet& suiteSet, const SuiteLabelExcludeSet& suiteLabelExcludeSet)
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -63,23 +64,36 @@ namespace TestImpact
         {
             PythonTestTargetMeta testMeta;
             const auto testSuites = test[Keys[TestSuitesKey]].GetArray();
+            bool skipTest = false;
             for (const auto& suite : testSuites)
             {
                 // Check to see if this test target has the suite we're looking for
                 if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
                     suiteSet.contains(suiteName))
                 {
+                    const auto suiteLabels = suite[Keys[SuiteLabelsKey]].GetArray();
+                    for (const auto& label : suiteLabels)
+                    {
+                        const auto labelString = label.GetString();
+                        if (suiteLabelExcludeSet.contains(labelString))
+                        {
+                            skipTest = true;
+                            break;
+                        }
+
+                        testMeta.m_testTargetMeta.m_suiteMeta.m_labelSet.insert(labelString);
+                    }
+
+                    if (skipTest)
+                    {
+                        break;
+                    }
+
                     testMeta.m_testTargetMeta.m_namespace = test[Keys[NamespaceKey]].GetString();
                     testMeta.m_testTargetMeta.m_suiteMeta.m_name = suiteName;
                     testMeta.m_testTargetMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
                     testMeta.m_scriptMeta.m_scriptPath = suite[Keys[ScriptKey]].GetString();
                     testMeta.m_scriptMeta.m_testCommand = suite[Keys[TestCommandKey]].GetString();
-
-                    const auto suiteLabels = suite[Keys[SuiteLabelsKey]].GetArray();
-                    for (const auto& label : suiteLabels)
-                    {
-                        testMeta.m_testTargetMeta.m_suiteMeta.m_labelSet.insert(label.GetString());
-                    }
 
                     AZStd::string name = test[Keys[NameKey]].GetString();
                     AZ_Printf("meta: %s", test[Keys[NameKey]].GetString());

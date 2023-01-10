@@ -451,6 +451,7 @@ namespace TestImpact
     //! @param maxConcurrency The maximum concurrency being used for this sequence.
     //! @param policyState The policy state being used for the sequence.
     //! @param suiteSet The suites type used for this sequence.
+    //! @param suiteLabelExcludeSet The suite labels that will exclude any tests with any matching suite labels.
     //! @param timer The timer to use for the test run timings.
     //! @param testRunner The test runner functor to use for each of the test runs.
     //! @param includedSelectedTestTargets The subset of test targets that were selected to run and not also fully excluded from running.
@@ -467,6 +468,7 @@ namespace TestImpact
         size_t maxConcurrency,
         const ImpactAnalysisSequencePolicyState& policyState,
         const SuiteSet& suiteSet,
+        const SuiteLabelExcludeSet& suiteLabelExcludeSet,
         const Timer& sequenceTimer,
         const TestRunnerFunctor& testRunner,
         const AZStd::vector<const TestTarget*>& includedSelectedTestTargets,
@@ -492,7 +494,7 @@ namespace TestImpact
         // Inform the client that the sequence is about to start
         if (testSequenceStartCallback.has_value())
         {
-            (*testSequenceStartCallback)(suiteSet, selectedTests, discardedTests, draftedTests);
+            (*testSequenceStartCallback)(suiteSet, suiteLabelExcludeSet, selectedTests, discardedTests, draftedTests);
         }
 
         // We share the test run complete handler between the selected and drafted test runs as to present them together as one
@@ -537,6 +539,7 @@ namespace TestImpact
             globalTimeout,
             policyState,
             suiteSet,
+            suiteLabelExcludeSet,
             selectedTests,
             discardedTests,
             draftedTests,

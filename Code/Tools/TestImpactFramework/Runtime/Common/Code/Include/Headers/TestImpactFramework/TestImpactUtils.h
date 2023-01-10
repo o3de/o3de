@@ -74,7 +74,10 @@ namespace TestImpact
     [[nodiscard]] size_t FileCount(const RepoPath& path, const AZStd::string& pattern);
 
     //! User-friendly names for the test suite types.
-    AZStd::string SuiteSetAsString(const SuiteSet suiteSet);
+    AZStd::string SuiteSetAsString(const SuiteSet& suiteSet);
+
+    //! User-friendly names for the test suite label excludes.
+    AZStd::string SuiteLabelExcludeSetAsString(const SuiteLabelExcludeSet& suiteLabelExcludeSet);
 
     //! User-friendly names for the sequence report types.
     AZStd::string SequenceReportTypeAsString(Client::SequenceReportType type);

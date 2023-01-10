@@ -22,11 +22,15 @@ namespace TestImpact
     namespace Console
     {
         //! Handler for TestSequenceStartCallback event.
-        void TestSequenceStartCallback(const SuiteSet& suiteSet, const Client::TestRunSelection& selectedTests);
+        void TestSequenceStartCallback(
+            const SuiteSet& suiteSet,
+            const SuiteLabelExcludeSet& suiteLabelExcludeSet,
+            const Client::TestRunSelection& selectedTests);
 
         //! Handler for TestSequenceStartCallback event.
         void ImpactAnalysisTestSequenceStartCallback(
             const SuiteSet& suiteSet,
+            const SuiteLabelExcludeSet& suiteLabelExcludeSet,
             const Client::TestRunSelection& selectedTests,
             const AZStd::vector<AZStd::string>& discardedTests,
             const AZStd::vector<AZStd::string>& draftedTests);
@@ -34,6 +38,7 @@ namespace TestImpact
         //! Handler for SafeImpactAnalysisTestSequenceStartCallback event.
         void SafeImpactAnalysisTestSequenceStartCallback(
             const SuiteSet& suiteSet,
+            const SuiteLabelExcludeSet& suiteLabelExcludeSet,
             const Client::TestRunSelection& selectedTests,
             const Client::TestRunSelection& discardedTests,
             const AZStd::vector<AZStd::string>& draftedTests);
