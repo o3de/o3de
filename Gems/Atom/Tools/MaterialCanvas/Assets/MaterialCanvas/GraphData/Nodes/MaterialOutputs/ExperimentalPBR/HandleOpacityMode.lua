@@ -18,10 +18,6 @@ OpacityMode_Cutout = 1
 OpacityMode_Blended = 2
 OpacityMode_TintedTransparent = 3
 
-AlphaSource_Packed = 0
-AlphaSource_Split = 1
-AlphaSource_None = 2
-
 function ConfigureAlphaBlending(shaderItem) 
     shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
     shaderItem:GetRenderStatesOverride():SetDepthWriteMask(DepthWriteMask_Zero)

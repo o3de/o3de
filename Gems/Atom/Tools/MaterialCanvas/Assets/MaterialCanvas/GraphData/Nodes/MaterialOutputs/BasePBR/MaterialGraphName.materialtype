@@ -33,7 +33,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "./MaterialGraphName_HandleCastShadows.lua"
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/HandleCastShadows.lua"
             }
         }
     ]

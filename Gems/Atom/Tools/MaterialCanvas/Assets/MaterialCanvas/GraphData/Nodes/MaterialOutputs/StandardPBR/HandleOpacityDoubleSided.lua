@@ -13,9 +13,6 @@ function GetMaterialPropertyDependencies()
     return {"general.double_sided"}
 end
  
-ForwardPassIndex = 0
-ForwardPassEdsIndex = 1
-
 function Process(context)
     local doubleSided = context:GetMaterialPropertyValue_bool("general.double_sided")
     local lastShader = context:GetShaderCount() - 1;

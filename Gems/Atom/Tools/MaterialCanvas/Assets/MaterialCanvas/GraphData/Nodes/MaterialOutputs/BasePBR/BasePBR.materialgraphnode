@@ -16,7 +16,6 @@
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_DepthPass.shader",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_Forward.azsl",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_ForwardPass.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_HandleCastShadows.lua",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_LowEndForward.shader",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_MeshMotionVector.azsl",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_MeshMotionVector.shader",

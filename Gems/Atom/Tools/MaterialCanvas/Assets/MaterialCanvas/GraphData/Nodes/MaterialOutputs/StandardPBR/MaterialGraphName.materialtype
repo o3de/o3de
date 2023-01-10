@@ -66,25 +66,25 @@
         {
             "type": "Lua",
             "args": {
-                "file": "./MaterialGraphName_ShaderEnable.lua"
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/HandleShaderEnable.lua"
             }
         },
         {
             "type": "Lua",
             "args": {
-                "file": "./MaterialGraphName_HandleOpacityMode.lua"
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/HandleOpacityMode.lua"
             }
         },
         {
             "type": "Lua",
             "args": {
-                "file": "./MaterialGraphName_HandleOpacityDoubleSided.lua"
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/HandleOpacityDoubleSided.lua"
             }
         },
         {
             "type": "Lua",
             "args": {
-                "file": "./MaterialGraphName_HandleCastShadows.lua"
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/HandleCastShadows.lua"
             }
         }
     ],

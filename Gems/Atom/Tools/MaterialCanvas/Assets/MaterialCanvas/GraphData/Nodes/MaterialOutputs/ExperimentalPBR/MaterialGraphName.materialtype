@@ -4,11 +4,11 @@
     "shaders": [
         {
             "file": "./MaterialGraphName_ForwardPass.shader",
-            "tag": "ForwardPass"
+            "tag": "ForwardPass_EDS"
         },
         {
             "file": "./MaterialGraphName_ShadowPass.shader",
-            "tag": "ShadowPass"
+            "tag": "Shadowmap"
         },
         {
             "file": "./MaterialGraphName_DepthPass.shader",
@@ -19,19 +19,19 @@
         {
             "type": "Lua",
             "args": {
-                "file": "./MaterialGraphName_HandleCastShadows.lua"
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/HandleCastShadows.lua"
             }
         },
         {
             "type": "Lua",
             "args": {
-                "file": "./MaterialGraphName_HandleOpacityDoubleSided.lua"
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/HandleOpacityDoubleSided.lua"
             }
         },
         {
             "type": "Lua",
             "args": {
-                "file": "./MaterialGraphName_HandleOpacityMode.lua"
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/HandleOpacityMode.lua"
             }
         }
     ]

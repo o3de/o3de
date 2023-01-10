@@ -12,10 +12,6 @@
 function GetMaterialPropertyDependencies()
     return {"general.opacity_mode"}
 end
-
-function GetShaderOptionDependencies()
-    return {"o_opacity_mode"}
-end
  
 OpacityMode_Opaque = 0
 OpacityMode_Cutout = 1
@@ -53,16 +49,19 @@ end
 function Process(context)
     local opacityMode = context:GetMaterialPropertyValue_enum("general.opacity_mode")
 
-    local forwardPass = context:GetShaderByTag("ForwardPass")
+    local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
 
     if(opacityMode == OpacityMode_Blended) then
-        ConfigureAlphaBlending(forwardPass)
-        forwardPass:SetDrawListTagOverride("transparent")
+        ConfigureAlphaBlending(forwardPassEDS)
+        forwardPassEDS:SetDrawListTagOverride("transparent")
     elseif(opacityMode == OpacityMode_TintedTransparent) then
-        ConfigureDualSourceBlending(forwardPass)
-        forwardPass:SetDrawListTagOverride("transparent")
+        ConfigureDualSourceBlending(forwardPassEDS)
+        forwardPassEDS:SetDrawListTagOverride("transparent")
     else
-        ResetAlphaBlending(forwardPass)
-        forwardPass:SetDrawListTagOverride("") -- reset to default draw list
+        ResetAlphaBlending(forwardPassEDS)
+        forwardPassEDS:SetDrawListTagOverride("") -- reset to default draw list
     end
+end
+
+function ProcessEditor(context)
 end
