@@ -305,6 +305,11 @@ def print_repos(verbose: int) -> int:
 
 def register_show(verbose: int, project_path: pathlib.Path = None, project_name: str = None) -> int:
     json_data = manifest.load_o3de_manifest()
+    if project_name:
+        project_path = get_project_path(project_path, project_name)
+        print(project_path.as_posix())
+        return 1
+
     print(f"{manifest.get_o3de_manifest()}:")
     print(json.dumps(json_data, indent=4))
 

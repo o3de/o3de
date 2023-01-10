@@ -69,6 +69,7 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME'),
     booleanParam(defaultValue: false, description: 'Cancels AR immediately on any failure in the pipeline and marks it as failed', name: 'FAIL_FAST'),
     booleanParam(defaultValue: false, description: 'Deletes the volume used for the workspace after the pipeline steps are completed.', name: 'DISCARD_VOLUME')
+    stringParam(defaultValue: 'AutomatedTesting', description: 'PROJECT', name: 'PROJECT'))
 ]
 
 def PlatformSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
@@ -613,6 +614,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                     automatedTestingControlFileFound = true
                 }
             }
+
             if(automatedTestingControlFileFound) {
                 processed_repos = ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME, processed_repos)
             }
@@ -1209,6 +1211,19 @@ try {
                     envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                     envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
                     someBuildHappened = true
+
+                    if (params.PROJECT) {
+                        def ext = ''
+                        if(env.IS_UNIX) {
+                            ext = '.sh'
+                        }
+                        PlatformSh("scripts/o3de${ext} register_show --project-name ${params.PROJECT} > tmp_projectpath", "Get the path of the project from the manifest")
+                        envVars['CMAKE_LY_PROJECTS'] = readFile file: 'projectpath'
+                        envVars['CMAKE_LY_PROJECTS'] = envVars['CMAKE_LY_PROJECTS'].trim()
+                        PlatformRm('tmp_projectpath')
+                        echo "CMAKE_LY_PROJECTS = ${envVars['CMAKE_LY_PROJECTS']}"
+                    }
+
                     buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
                 }
             }
@@ -1260,7 +1275,8 @@ finally {
                     "recreate_volume": env.RECREATE_VOLUME,
                     "clean_output_directory": env.CLEAN_OUTPUT_DIRECTORY,
                     "clean_assets": env.CLEAN_ASSETS,
-                    "fail_fast": env.FAIL_FAST
+                    "fail_fast": env.FAIL_FAST,
+                    "project_to_build": env.PROJECT_TO_BUILD
                 ]
                 snsPublish(
                     topicArn: env.POST_AR_BUILD_SNS_TOPIC,
