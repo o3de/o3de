@@ -1,0 +1,40 @@
+{
+    "description": "Material Type with properties used to define Base PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
+    "version": 1,
+    "propertyLayout": {
+    },
+    "shaders": [
+        {
+            "file": "./MaterialGraphName_ForwardPass.shader",
+            "tag": "ForwardPass_EDS"
+        },
+        {
+            "file": "./MaterialGraphName_LowEndForward.shader",
+            "tag": "LowEndForward_EDS"
+        },
+        {
+            "file": "./MaterialGraphName_MultiViewForward.shader",
+            "tag": "MultiViewForward_EDS"
+        },
+        {
+            "file": "./MaterialGraphName_ShadowPass.shader",
+            "tag": "ShadowPass"
+        },
+        {
+            "file": "./MaterialGraphName_DepthPass.shader",
+            "tag": "DepthPass"
+        },
+        {
+            "file": "./MaterialGraphName_MeshMotionVector.shader",
+            "tag": "MeshMotionVector"
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "./MaterialGraphName_HandleCastShadows.lua"
+            }
+        }
+    ]
+}
