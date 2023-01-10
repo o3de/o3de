@@ -1212,7 +1212,7 @@ try {
                     envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
                     someBuildHappened = true
 
-                    if (params.PROJECT) {
+                    if (!params.PROJECT.isEmpty()) {
                         def ext = ''
                         if(env.IS_UNIX) {
                             ext = '.sh'
