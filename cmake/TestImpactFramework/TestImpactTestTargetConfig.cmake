@@ -13,7 +13,8 @@ set(O3DE_TEST_IMPACT_INSTRUMENTATION_BIN "" CACHE PATH "Path to test impact fram
 set(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED FALSE CACHE BOOL "Whether to enable native C++ test targets for test impact analysis (otherwise, CTest will be used to run these targets).")
 
 # Test impact analysis opt-in for Python test targets
-set(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED FALSE CACHE BOOL "Whether to enable Python test targets for test impact analysis (otherwise, CTest will be used to run these targets).")
+#set(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED FALSE CACHE BOOL "Whether to enable Python test targets for test impact analysis (otherwise, CTest will be used to run these targets).")
+set(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED TRUE)
 
 # If we are not provided a path to the Instrumentation bin,
 # set LY_TEST_IMPACT to false so that our tests don't get added
