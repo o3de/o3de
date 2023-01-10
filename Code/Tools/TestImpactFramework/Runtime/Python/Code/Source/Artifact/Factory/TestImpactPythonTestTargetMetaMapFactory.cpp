@@ -15,7 +15,7 @@
 
 namespace TestImpact
 {
-    PythonTestTargetMetaMap PythonTestTargetMetaMapFactory(const AZStd::string& testListData, SuiteType suiteType)
+    PythonTestTargetMetaMap PythonTestTargetMetaMapFactory(const AZStd::string& testListData, const SuiteSet& suiteSet)
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -65,7 +65,7 @@ namespace TestImpact
             {
                 // Check to see if this test target has the suite we're looking for
                 if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
-                    strcmp(SuiteTypeAsString(suiteType).c_str(), suiteName) == 0)
+                    suiteSet.contains(suiteName))
                 {
                     testMeta.m_testTargetMeta.m_namespace = test[Keys[NamespaceKey]].GetString();
                     testMeta.m_testTargetMeta.m_suiteMeta.m_name = suiteName;
@@ -74,6 +74,7 @@ namespace TestImpact
                     testMeta.m_scriptMeta.m_testCommand = suite[Keys[TestCommandKey]].GetString();
 
                     AZStd::string name = test[Keys[NameKey]].GetString();
+                    AZ_Printf("meta: %s", test[Keys[NameKey]].GetString());
                     AZ_TestImpact_Eval(!name.empty(), ArtifactException, "Test name field cannot be empty");
                     //AZ_TestImpact_Eval(!testMeta.m_scriptPath.empty(), ArtifactException, "Test script field cannot be empty");
                     testMetas.emplace(AZStd::move(name), AZStd::move(testMeta));

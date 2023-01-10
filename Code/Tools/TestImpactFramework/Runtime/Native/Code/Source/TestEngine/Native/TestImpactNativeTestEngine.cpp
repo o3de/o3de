@@ -191,8 +191,7 @@ namespace TestImpact
 
         const auto jobInfos = m_instrumentedTestJobInfoGenerator->GenerateJobInfos(testTargets);
 
-        return GenerateInstrumentedRunResult(
-            RunTests(
+        const auto result = RunTests(
                 m_instrumentedTestRunner.get(),
                 jobInfos,
                 testTargets,
@@ -203,7 +202,19 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 callback,
-                AZStd::nullopt),
-            integrityFailurePolicy);
+                AZStd::nullopt);
+
+            if(const auto integrityErrors = GenerateIntegrityErrorString(result);
+                !integrityErrors.empty())
+            {
+                AZ_TestImpact_Eval(
+                        integrityFailurePolicy != Policy::IntegrityFailure::Abort,
+                        TestEngineException,
+                        integrityErrors);
+
+                AZ_Error("InstrumentedRun", false, integrityErrors.c_str());
+            }
+
+            return result;
     }
 } // namespace TestImpact

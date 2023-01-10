@@ -15,7 +15,7 @@
 
 namespace TestImpact
 {
-    NativeTestTargetMetaMap NativeTestTargetMetaMapFactory(const AZStd::string& masterTestListData, SuiteType suiteType)
+    NativeTestTargetMetaMap NativeTestTargetMetaMapFactory(const AZStd::string& masterTestListData, const SuiteSet& suiteSet)
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -69,7 +69,7 @@ namespace TestImpact
             {
                 // Check to see if this test target has the suite we're looking for
                 if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
-                    strcmp(SuiteTypeAsString(suiteType).c_str(), suiteName) == 0)
+                    suiteSet.contains(suiteName))
                 {
                     testMeta.m_testTargetMeta.m_namespace = test[Keys[Namespacekey]].GetString();
                     testMeta.m_testTargetMeta.m_suiteMeta.m_name = suiteName;
