@@ -384,7 +384,7 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParam
                     AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This RemoteProcedure can only be invoked from {{InvokeFrom}} network entities, because this entity doesn't have a controller, it must not be a {{InvokeFrom}} entity. Please check your network context before attempting to call {{ UpperFirst(Property.attrib['Name']) }}.", entity->GetName().c_str(), id.ToString().c_str())
                     return;
                 }
-{% if HandleOn == 'Authority' or HandleOn == 'Server' %}
+{% if InvokeFrom == 'Authority' or InvokeFrom == 'Server' %}
 #if AZ_TRAIT_SERVER
                 controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
 #endif

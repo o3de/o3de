@@ -65,9 +65,6 @@ ly_add_target(
             AZ_TRAIT_SERVER=0
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::AzCore
-            AZ::AzFramework
-            AZ::AzNetworking
             Gem::Multiplayer.Common.Static
         PRIVATE
             Gem::EMotionFXStaticLib
@@ -97,9 +94,6 @@ ly_add_target(
             AZ_TRAIT_SERVER=1
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::AzCore
-            AZ::AzFramework
-            AZ::AzNetworking
             Gem::Multiplayer.Common.Static
         PRIVATE
             Gem::EMotionFXStaticLib
@@ -129,9 +123,6 @@ ly_add_target(
             AZ_TRAIT_SERVER=1
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::AzCore
-            AZ::AzFramework
-            AZ::AzNetworking
             Gem::Multiplayer.Common.Static
         PRIVATE
             Gem::EMotionFXStaticLib
