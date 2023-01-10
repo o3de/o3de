@@ -148,8 +148,6 @@ namespace AzToolsFramework
         // AssetEditorTab
         //////////////////////////////////////////////////////////////////////////
 
-        const AZ::Crc32 k_AssetEditorTabSettings = AZ_CRC("AssetEditorSettings", 0xfe740dee);
-
         AssetEditorTab::AssetEditorTab(QWidget* parent)
             : QWidget(parent)
             , m_dirty(true)
