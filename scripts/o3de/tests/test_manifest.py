@@ -367,7 +367,7 @@ class TestGetAllGems:
 
             # start with the first path in the dictionary
             gem_path = pathlib.Path(list(gem_external_subdirectories.keys())[0])
-            manifest.get_gem_external_subdirectories(gem_path, list())
+            manifest.get_gem_external_subdirectories(gem_path, list(), dict())
 
             assert self.cycle_detected == expected_cycle_detected
 

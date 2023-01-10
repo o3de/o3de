@@ -339,7 +339,7 @@ def get_project_templates(project_path: pathlib.Path) -> list:
 
 # gem.json queries
 def get_gem_gems(gem_path: pathlib.Path) -> list:
-    return get_gems_from_external_subdirectories(get_gem_external_subdirectories(gem_path, list()))
+    return get_gems_from_external_subdirectories(get_gem_external_subdirectories(gem_path, list(), dict()))
 
 
 def get_gem_external_subdirectories(gem_path: pathlib.Path, visited_gem_paths: list, gems_json_data_by_path: dict = None) -> list:
@@ -404,7 +404,7 @@ def get_all_projects() -> list:
 
 
 def get_all_gems(project_path: pathlib.Path = None) -> list:
-    return get_gems_from_external_subdirectories(get_all_external_subdirectories(project_path=project_path))
+    return get_gems_from_external_subdirectories(get_all_external_subdirectories(project_path=project_path, gems_json_data_by_path=dict()))
 
 
 def add_dependency_gem_names(gem_name:str, gems_json_data_by_name:dict, all_gem_names:set):
