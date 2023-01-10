@@ -25,14 +25,14 @@ namespace TestImpact
         TestInterleaved //!< Tests are interlaced across shards agnostic of fixtures (fastest but prone to inter-test dependency problems).
     };
 
-    //! Test suite types to select from.
-    enum class SuiteType : AZ::u8
-    {
-        Main = 0,
-        Periodic,
-        Sandbox,
-        AWSI
-    };
+    //! Test suites that tests should be drawn from.
+    //enum class SuiteType : AZ::u8
+    //{
+    //    Main = 0,
+    //    Periodic,
+    //    Sandbox,
+    //    AWSI
+    //};
 
     //! Result of a test sequence that was run.
     enum class TestSequenceResult
