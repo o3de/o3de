@@ -173,10 +173,13 @@ namespace AzToolsFramework::Prefab
                 }
             );
 
-            // Create undo node to select entities.
-            auto selectionUndo = aznew SelectionCommand(selectedEntities, "Select Entities of Focused Prefab");
-            selectionUndo->SetParent(undoBatch.GetUndoBatch());
-            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
+            if (!selectedEntities.empty())
+            {
+                // Create undo node to select entities.
+                auto selectionUndo = aznew SelectionCommand(selectedEntities, "Select Entities of Focused Prefab");
+                selectionUndo->SetParent(undoBatch.GetUndoBatch());
+                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
+            }
         }
 
         return AZ::Success();
