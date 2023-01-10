@@ -491,7 +491,7 @@ namespace Terrain
         }
 
         // No loaded mip level found.
-        return AZStd::numeric_limits<uint32_t>::max();
+        return InvalidMipLevel;
     }
 
     void TerrainMacroMaterialComponent::CreateMacroColorImageModificationBuffer()
@@ -499,7 +499,7 @@ namespace Terrain
         // Get the highest loaded mip, which is hopefully mip 0.
         uint32_t mipLevel = GetHighestLoadedMipLevel();
 
-        if (mipLevel == AZStd::numeric_limits<uint32_t>::max())
+        if (mipLevel == InvalidMipLevel)
         {
             AZ_Error("TerrainMacroMaterialComponent", false, "No mip levels are loaded, cannot create an image modification buffer.");
             return;
