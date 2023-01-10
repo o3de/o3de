@@ -382,7 +382,7 @@ def NoControlFile(repoName, processed_repos) {
         }
         else if(fileExists("gem.json")) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --gem-path ${workspace}/${repoName} || ver>nul", "Registering gem in ${workspace}/${repoName}")
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${params.PROJECT_NAME} || ver>nul", "Enabling ${gemName} in ${params.PROJECT_NAME}")
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${env.PROJECT_NAME} || ver>nul", "Enabling ${gemName} in ${env.PROJECT_NAME}")
         }
         else if(fileExists("template.json")) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --template-path ${workspace}/${repoName} || ver>nul", "Registering template in ${workspace}/${repoName}")
@@ -409,7 +409,7 @@ def NoControlFile(repoName, processed_repos) {
             }
             if(fileExists("Gems")) {
                 PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-gems-path ${workspace}/${repoName}/Gems || ver>nul", "Registering all gems in ${workspace}/${repoName}/Gems")
-                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${params.PROJECT_NAME} || ver>nul", "Enabling all gems in ${params.PROJECT_NAME}")
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${env.PROJECT_NAME} || ver>nul", "Enabling all gems in ${env.PROJECT_NAME}")
                 found = true
             }
             if(fileExists("Templates")) {
@@ -476,7 +476,7 @@ def ExecuteControlFile(controlFile, repoName, processed_repos) {
         if(controlFile.ENABLE_GEMS) {
             echo 'ENABLE_GEMS'
             controlFile.ENABLE_GEMS.each { gemName ->
-                PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${params.PROJECT_NAME} || ver>nul", "Enabling ${workspace}/${repoName}/${gemName} for ${params.PROJECT_NAME}")
+                PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${env.PROJECT_NAME} || ver>nul", "Enabling ${workspace}/${repoName}/${gemName} for ${env.PROJECT_NAME}")
             }
         }
     }
@@ -1210,7 +1210,7 @@ try {
                     def envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                     envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                     envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
-                    envVars['CMAKE_LY_PROJECTS'] = ${params.PROJECT}
+                    envVars['CMAKE_LY_PROJECTS'] = ${env.PROJECT_NAME}
                     someBuildHappened = true
                     buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
                 }
@@ -1264,7 +1264,7 @@ finally {
                     "clean_output_directory": env.CLEAN_OUTPUT_DIRECTORY,
                     "clean_assets": env.CLEAN_ASSETS,
                     "fail_fast": env.FAIL_FAST,
-                    "project_to_build": env.PROJECT_TO_BUILD
+                    "project_name": env.PROJECT_NAME
                 ]
                 snsPublish(
                     topicArn: env.POST_AR_BUILD_SNS_TOPIC,
