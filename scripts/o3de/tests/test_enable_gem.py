@@ -242,7 +242,7 @@ class TestEnableGemCommand:
         # fails when dependent gem with wrong version found
         pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.0.0', 'testgem2':'1.0.0'}, 
                     False, False, ['o3de-test~=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 1),
-        # does not modify project when check only  FAILING 16
+        # does not modify project when check only
         pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.2.3', 'testgem2':'2.0.0'}, 
                     True, False, ['o3de-test<=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
         # passes when a engine api versions found
