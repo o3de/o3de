@@ -374,7 +374,7 @@ bool UiCanvasOnMeshComponent::CalculateUVFromRayIntersection(const AzFramework::
 AZ::EntityId UiCanvasOnMeshComponent::GetCanvas()
 {
     AZ::EntityId result;
-    EBUS_EVENT_ID_RESULT(result, GetEntityId(), UiCanvasRefBus, GetCanvas);
+    UiCanvasRefBus::EventResult(result, GetEntityId(), &UiCanvasRefBus::Events::GetCanvas);
     return result;
 }
 

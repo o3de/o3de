@@ -218,7 +218,7 @@ void CAbstractUndoSequenceTransaction::AddSequence()
     CUiAnimViewSequenceManager* pSequenceManager = CUiAnimViewSequenceManager::GetSequenceManager();
 
     IUiAnimationSystem* pUiAnimationSystem = nullptr;
-    EBUS_EVENT_RESULT(pUiAnimationSystem, UiEditorAnimationBus, GetAnimationSystem);
+    UiEditorAnimationBus::BroadcastResult(pUiAnimationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
     // Add sequence back to UI Animation system
     pUiAnimationSystem->AddSequence(m_pSequence->m_pAnimSequence.get());
@@ -251,7 +251,7 @@ void CAbstractUndoSequenceTransaction::RemoveSequence(bool bAquireOwnership)
             // Remove from UI Animation system and UiAnimView
             pSequenceManager->m_sequences.erase(iter);
             IUiAnimationSystem* pUiAnimationSystem = nullptr;
-            EBUS_EVENT_RESULT(pUiAnimationSystem, UiEditorAnimationBus, GetAnimationSystem);
+            UiEditorAnimationBus::BroadcastResult(pUiAnimationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
             pUiAnimationSystem->RemoveSequence(m_pSequence->m_pAnimSequence.get());
 
             break;

@@ -132,7 +132,7 @@ CUiAnimViewDopeSheetBase::CUiAnimViewDopeSheetBase(QWidget* parent)
 CUiAnimViewDopeSheetBase::~CUiAnimViewDopeSheetBase()
 {
     CUiAnimationContext* pAnimationContext = nullptr;
-    EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
     pAnimationContext->RemoveListener(this);
 }
 
@@ -262,7 +262,7 @@ void CUiAnimViewDopeSheetBase::showEvent(QShowEvent* event)
 {
     QWidget::showEvent(event);
     CUiAnimationContext* pAnimationContext = nullptr;
-    EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
     pAnimationContext->AddListener(this);
 }
 
@@ -293,7 +293,7 @@ void CUiAnimViewDopeSheetBase::resizeEvent(QResizeEvent* event)
 void CUiAnimViewDopeSheetBase::wheelEvent(QWheelEvent* event)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         event->ignore();
@@ -415,7 +415,7 @@ void CUiAnimViewDopeSheetBase::mouseDoubleClickEvent(QMouseEvent* event)
 void CUiAnimViewDopeSheetBase::OnLButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -521,7 +521,7 @@ void CUiAnimViewDopeSheetBase::OnLButtonDown(Qt::KeyboardModifiers modifiers, co
 void CUiAnimViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, [[maybe_unused]] const QPoint& point)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     if (!pSequence)
     {
@@ -568,7 +568,7 @@ void CUiAnimViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, [[ma
 void CUiAnimViewDopeSheetBase::OnLButtonDblClk(Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence || m_rcTimeline.contains(point) || m_bEditLock)
     {
         return;
@@ -631,7 +631,7 @@ void CUiAnimViewDopeSheetBase::OnMButtonUp(Qt::KeyboardModifiers modifiers, cons
 void CUiAnimViewDopeSheetBase::OnRButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -713,7 +713,7 @@ void CUiAnimViewDopeSheetBase::OnRButtonDown(Qt::KeyboardModifiers modifiers, co
 void CUiAnimViewDopeSheetBase::OnRButtonUp([[maybe_unused]] Qt::KeyboardModifiers modifiers, [[maybe_unused]] const QPoint& point)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -749,7 +749,7 @@ void CUiAnimViewDopeSheetBase::OnRButtonUp([[maybe_unused]] Qt::KeyboardModifier
 void CUiAnimViewDopeSheetBase::mouseMoveEvent(QMouseEvent* event)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -846,7 +846,7 @@ void CUiAnimViewDopeSheetBase::paintEvent(QPaintEvent* event)
     QPainter painter(this);
 
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     {
         // In case of the fast-redraw mode, just draw the saved bitmap.
@@ -899,7 +899,7 @@ void CUiAnimViewDopeSheetBase::paintEvent(QPaintEvent* event)
 void CUiAnimViewDopeSheetBase::SelectAllKeysWithinTimeFrame(const QRect& rc, const bool bMultiSelection)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -970,7 +970,7 @@ void CUiAnimViewDopeSheetBase::SetCurrTime(float time)
     }
 
     CUiAnimationContext* pAnimationContext = nullptr;
-    EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
     pAnimationContext->SetTime(time);
 }
 
@@ -1009,7 +1009,7 @@ void CUiAnimViewDopeSheetBase::SetStartMarker(float fTime)
     }
 
     CUiAnimationContext* pAnimationContext = nullptr;
-    EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
     pAnimationContext->SetMarkers(m_timeMarked);
     update();
 }
@@ -1031,7 +1031,7 @@ void CUiAnimViewDopeSheetBase::SetEndMarker(float fTime)
         m_timeMarked.start = m_timeMarked.end;
     }
     CUiAnimationContext* pAnimationContext = nullptr;
-    EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
     pAnimationContext->SetMarkers(m_timeMarked);
     update();
 }
@@ -1081,7 +1081,7 @@ CUiAnimViewNode* CUiAnimViewDopeSheetBase::GetNodeFromPointRec(CUiAnimViewNode* 
 CUiAnimViewNode* CUiAnimViewDopeSheetBase::GetNodeFromPoint(const QPoint& point)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     return GetNodeFromPointRec(pSequence, point);
 }
 
@@ -1174,7 +1174,7 @@ void CUiAnimViewDopeSheetBase::StartPasteKeys()
 void CUiAnimViewDopeSheetBase::keyPressEvent(QKeyEvent* event)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -1261,7 +1261,7 @@ void CUiAnimViewDopeSheetBase::keyPressEvent(QKeyEvent* event)
 void CUiAnimViewDopeSheetBase::RecordTrackUndo(CUiAnimViewTrack* pTrack)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pTrack && pSequence)
     {
         UiAnimUndo undo("Track Modify");
@@ -1348,7 +1348,7 @@ void CUiAnimViewDopeSheetBase::MouseMoveSelect(const QPoint& point)
 void CUiAnimViewDopeSheetBase::MouseMoveStartEndTimeAdjust(const QPoint& p, bool bStart)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -1407,7 +1407,7 @@ void CUiAnimViewDopeSheetBase::MouseMoveStartEndTimeAdjust(const QPoint& p, bool
 void CUiAnimViewDopeSheetBase::MouseMoveMove(const QPoint& p, [[maybe_unused]] Qt::KeyboardModifiers modifiers)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     CUiAnimViewSequenceNotificationContext context(pSequence);
 
     SetMouseCursor(m_crsLeftRight);
@@ -1512,7 +1512,7 @@ void CUiAnimViewDopeSheetBase::MouseMoveMove(const QPoint& p, [[maybe_unused]] Q
             if (selectedKey.IsValid())
             {
                 CUiAnimationContext* pAnimationContext = nullptr;
-                EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+                UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
                 pAnimationContext->SetTime(selectedKey.GetTime());
             }
         }
@@ -1613,7 +1613,7 @@ void CUiAnimViewDopeSheetBase::MouseMoveOver(const QPoint& point)
 float CUiAnimViewDopeSheetBase::MagnetSnap(float newTime, const CUiAnimViewAnimNode* pNode) const
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return newTime;
@@ -1668,7 +1668,7 @@ int CUiAnimViewDopeSheetBase::GetScrollOffset()
 void CUiAnimViewDopeSheetBase::LButtonDownOnTimeAdjustBar([[maybe_unused]] const QPoint& point, CUiAnimViewKeyHandle& keyHandle, bool bStart)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     m_keyTimeOffset = 0;
     m_keyForTimeAdjust = keyHandle;
@@ -1701,7 +1701,7 @@ void CUiAnimViewDopeSheetBase::LButtonDownOnTimeAdjustBar([[maybe_unused]] const
 void CUiAnimViewDopeSheetBase::LButtonDownOnKey([[maybe_unused]] const QPoint& point, CUiAnimViewKeyHandle& keyHandle, Qt::KeyboardModifiers modifiers)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     if (!keyHandle.IsSelected() && !(modifiers & Qt::ControlModifier))
     {
@@ -1799,7 +1799,7 @@ void CUiAnimViewDopeSheetBase::AcceptUndo()
         else if (m_mouseMode == eUiAVMouseMode_Move || m_mouseMode == eUiAVMouseMode_Clone)
         {
             CUiAnimViewSequence* pSequence = nullptr;
-            EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+            UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
             if (pSequence && m_bKeysMoved)
             {
@@ -1844,7 +1844,7 @@ float CUiAnimViewDopeSheetBase::ComputeSnappedMoveOffset()
 void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKeysInGroup)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -1929,7 +1929,7 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
 void CUiAnimViewDopeSheetBase::DrawControl(QPainter* painter, const QRect& rcUpdate)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     DrawNodesRecursive(pSequence, painter, rcUpdate);
 
     DrawSummary(painter, rcUpdate);
@@ -2046,7 +2046,7 @@ void CUiAnimViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Ran
 void CUiAnimViewDopeSheetBase::DrawTrack(CUiAnimViewTrack* pTrack, QPainter* painter, const QRect& trackRect)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     const QPen prevPen = painter->pen();
     painter->setPen(QColor(120, 120, 120));
@@ -2392,7 +2392,7 @@ void CUiAnimViewDopeSheetBase::DrawKeys(CUiAnimViewTrack* pTrack, QPainter* pain
 void CUiAnimViewDopeSheetBase::DrawClipboardKeys(QPainter* painter, [[maybe_unused]] const QRect& rc)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     const float timeOffset = ComputeSnappedMoveOffset();
 
@@ -2587,7 +2587,7 @@ int CUiAnimViewDopeSheetBase::NumKeysFromPoint(const QPoint& point)
 void CUiAnimViewDopeSheetBase::SelectKeys(const QRect& rc, const bool bMultiSelection)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     UiAnimUndoManager::Get()->Begin();
     CUndoAnimKeySelection* pUndoKeySelection = new CUndoAnimKeySelection(pSequence);
@@ -2681,7 +2681,7 @@ ESnappingMode CUiAnimViewDopeSheetBase::GetKeyModifiedSnappingMode()
 void CUiAnimViewDopeSheetBase::DrawSelectedKeyIndicators(QPainter* painter)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     const QPen prevPen = painter->pen();
     painter->setPen(Qt::green);
@@ -2837,7 +2837,7 @@ void CUiAnimViewDopeSheetBase::DrawTimeLineInSeconds(QPainter* painter, const QR
 void CUiAnimViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUpdate)
 {
     CUiAnimationContext* pAnimationContext = nullptr;
-    EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
     bool recording = pAnimationContext->IsRecording();
 
     QColor lineCol(255, 0, 255);
@@ -2919,7 +2919,7 @@ void CUiAnimViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUp
 void CUiAnimViewDopeSheetBase::DrawSummary(QPainter* painter, const QRect& rcUpdate)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     const QColor lineCol = Qt::black;
     const QColor fillCol(150, 100, 220);
@@ -3089,7 +3089,7 @@ QRect CUiAnimViewDopeSheetBase::GetNodeRect(const CUiAnimViewNode* pNode) const
 void CUiAnimViewDopeSheetBase::StoreMementoForTracksWithSelectedKeys()
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     CUiAnimViewKeyBundle selectedKeys = pSequence->GetSelectedKeys();
 
     m_trackMementos.clear();

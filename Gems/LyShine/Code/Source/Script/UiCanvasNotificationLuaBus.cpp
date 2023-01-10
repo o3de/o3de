@@ -51,7 +51,7 @@ void UiCanvasNotificationLuaProxy::OnAction(AZ::EntityId entityId, const LyShine
 {
     // Forward the entity's UiCanvasNotification OnAction event to the Lua-wrapped bus (this
     // will execute the Lua script's OnAction).
-    EBUS_EVENT_ID(m_targetEntity, UiCanvasNotificationLuaBus, OnAction, entityId, actionName.c_str());
+    UiCanvasNotificationLuaBus::Event(m_targetEntity, &UiCanvasNotificationLuaBus::Events::OnAction, entityId, actionName.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ void UiCanvasNotificationLuaProxy::BusConnect(AZ::EntityId entityId)
         "UiCanvasNotificationLuaProxy:BusConnect is deprecated. Please use the UiCanvasNotificationBus directly instead\n");
 
     AZ::Entity* canvasEntity = nullptr;
-    EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, entityId);
+    AZ::ComponentApplicationBus::BroadcastResult(canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
     if (canvasEntity)
     {

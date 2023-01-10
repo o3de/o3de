@@ -31,7 +31,7 @@ AZ::EntityId UiCanvasLuaProxy::FindElementById(LyShine::ElementId id)
 
     // Forward the call to UiCanvasBus and return its result
     AZ::Entity* element = nullptr;
-    EBUS_EVENT_ID_RESULT(element, m_targetEntity, UiCanvasBus, FindElementById, id);
+    UiCanvasBus::EventResult(element, m_targetEntity, &UiCanvasBus::Events::FindElementById, id);
     if (element)
     {
         entityId = element->GetId();
@@ -54,7 +54,7 @@ AZ::EntityId UiCanvasLuaProxy::FindElementByName(const LyShine::NameType& name)
     AZ::EntityId entityId;
 
     AZ::Entity* element = nullptr;
-    EBUS_EVENT_ID_RESULT(element, m_targetEntity, UiCanvasBus, FindElementByName, name);
+    UiCanvasBus::EventResult(element, m_targetEntity, &UiCanvasBus::Events::FindElementByName, name);
     if (element)
     {
         entityId = element->GetId();
@@ -75,7 +75,7 @@ bool UiCanvasLuaProxy::GetEnabled()
         "UiCanvasLuaBus:GetEnabled is deprecated. Please use UiCanvasBus:GetEnabled instead\n");
 
     bool enabled = false;
-    EBUS_EVENT_ID_RESULT(enabled, m_targetEntity, UiCanvasBus, GetEnabled);
+    UiCanvasBus::EventResult(enabled, m_targetEntity, &UiCanvasBus::Events::GetEnabled);
     return enabled;
 }
 
@@ -85,7 +85,7 @@ void UiCanvasLuaProxy::SetEnabled(bool enabled)
         "UiCanvasLuaBus:SetEnabled is deprecated. Please use UiCanvasBus:SetEnabled instead\n");
 
 
-    EBUS_EVENT_ID(m_targetEntity, UiCanvasBus, SetEnabled, enabled);
+    UiCanvasBus::Event(m_targetEntity, &UiCanvasBus::Events::SetEnabled, enabled);
 }
 
 void UiCanvasLuaProxy::BusConnect(AZ::EntityId entityId)
@@ -94,7 +94,7 @@ void UiCanvasLuaProxy::BusConnect(AZ::EntityId entityId)
         "UiCanvasLuaProxy:BusConnect is deprecated. Please use the UiCanvasBus instead of the UiCanvasLuaBus and UiCanvasLuaProxy\n");
 
     AZ::Entity* canvasEntity = nullptr;
-    EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, entityId);
+    AZ::ComponentApplicationBus::BroadcastResult(canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
     if (canvasEntity)
     {
@@ -124,7 +124,7 @@ void UiCanvasLuaProxy::UnloadCanvas(AZ::EntityId canvasEntityId)
 
     // Make sure that the entity has a canvas component
     AZ::Entity* canvasEntity = nullptr;
-    EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, canvasEntityId);
+    AZ::ComponentApplicationBus::BroadcastResult(canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, canvasEntityId);
     if (canvasEntity)
     {
         UiCanvasComponent* canvasComponent = canvasEntity->FindComponent<UiCanvasComponent>();

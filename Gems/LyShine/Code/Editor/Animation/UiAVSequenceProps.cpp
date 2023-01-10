@@ -129,7 +129,7 @@ void CUiAVSequenceProps::OnOK()
     m_pSequence->SetTimeRange(timeRange);
 
     CUiAnimationContext* ac = nullptr;
-    EBUS_EVENT_RESULT(ac, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(ac, &UiEditorAnimationBus::Events::GetAnimationContext);
     if (ac)
     {
         ac->UpdateTimeRange();

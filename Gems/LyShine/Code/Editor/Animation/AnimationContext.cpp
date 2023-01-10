@@ -148,7 +148,7 @@ void CUiAnimationContext::RemoveListener(IUiAnimationContextListener* pListener)
 IUiAnimationSystem* CUiAnimationContext::GetUiAnimationSystem() const
 {
     IUiAnimationSystem* animationSystem = nullptr;
-    EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
+    UiEditorAnimationBus::BroadcastResult(animationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
     return animationSystem;
 }
 
@@ -576,7 +576,7 @@ void CUiAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
         m_bSavedRecordingState = m_recording;
         GetUiAnimationSystem()->SetRecording(false);
         CUiAnimationContext* ac = nullptr;
-        EBUS_EVENT_RESULT(ac, UiEditorAnimationBus, GetAnimationContext);
+        UiEditorAnimationBus::BroadcastResult(ac, &UiEditorAnimationBus::Events::GetAnimationContext);
         ac->SetSequence(nullptr, false, false);
         break;
     }

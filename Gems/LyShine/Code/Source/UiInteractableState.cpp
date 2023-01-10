@@ -106,7 +106,7 @@ void UiInteractableStateColor::Init(AZ::EntityId interactableEntityId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateColor::ApplyState()
 {
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideColor, m_color);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideColor, m_color);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -201,7 +201,7 @@ void UiInteractableStateAlpha::Init(AZ::EntityId interactableEntityId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateAlpha::ApplyState()
 {
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideAlpha, m_alpha);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideAlpha, m_alpha);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -318,7 +318,7 @@ void UiInteractableStateSprite::Init(AZ::EntityId interactableEntityId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateSprite::ApplyState()
 {
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideSprite, m_sprite, m_spriteSheetCellIndex);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideSprite, m_sprite, m_spriteSheetCellIndex);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -439,7 +439,7 @@ void UiInteractableStateSprite::OnTargetElementChange()
 void UiInteractableStateSprite::LoadSpriteFromTargetElement()
 {
     AZStd::string spritePathname;
-    EBUS_EVENT_ID_RESULT(spritePathname, m_targetEntity, UiImageBus, GetSpritePathname);
+    UiImageBus::EventResult(spritePathname, m_targetEntity, &UiImageBus::Events::GetSpritePathname);
     m_spritePathname.SetAssetPath(spritePathname.c_str());
 
     OnSpritePathnameChange();
@@ -449,7 +449,7 @@ void UiInteractableStateSprite::LoadSpriteFromTargetElement()
 UiInteractableStateSprite::AZu32ComboBoxVec UiInteractableStateSprite::PopulateIndexStringList() const
 {
     int indexCount = 0;
-    EBUS_EVENT_ID_RESULT(indexCount, m_targetEntity, UiIndexableImageBus, GetImageIndexCount);
+    UiIndexableImageBus::EventResult(indexCount, m_targetEntity, &UiIndexableImageBus::Events::GetImageIndexCount);
 
     if (indexCount > 0)
     {
@@ -511,8 +511,8 @@ void UiInteractableStateFont::Init(AZ::EntityId interactableEntityId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateFont::ApplyState()
 {
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideFont, m_fontFamily);
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideFontEffect, m_fontEffectIndex);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideFont, m_fontFamily);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideFontEffect, m_fontEffectIndex);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -554,7 +554,7 @@ void UiInteractableStateFont::SetFontPathname(const AZStd::string& pathname)
 {
     // Just to be safe we make sure is normalized
     AZStd::string fontPath = pathname;
-    EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, fontPath);
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePath, fontPath);
     m_fontFilename.SetAssetPath(fontPath.c_str());
 
     // We should minimize what is done in constructors and Init since components may be constructed

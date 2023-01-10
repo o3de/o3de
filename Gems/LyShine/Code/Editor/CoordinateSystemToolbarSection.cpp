@@ -133,7 +133,7 @@ void CoordinateSystemToolbarSection::UpdateCanvasSnapEnabled()
 
     // Add an undo command
     AZStd::string canvasUndoXml = CanvasHelpers::BeginUndoableCanvasChange(m_editorWindow->GetCanvas());
-    EBUS_EVENT_ID(m_editorWindow->GetCanvas(), UiEditorCanvasBus, SetIsSnapEnabled, checked);
+    UiEditorCanvasBus::Event(m_editorWindow->GetCanvas(), &UiEditorCanvasBus::Events::SetIsSnapEnabled, checked);
     CanvasHelpers::EndUndoableCanvasChange(m_editorWindow, "toggle snapping", canvasUndoXml);
 }
 

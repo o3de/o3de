@@ -23,7 +23,7 @@ CommandHierarchyItemToggleIsSelectable::CommandHierarchyItemToggleIsSelectable(U
         m_ids.push_back(i->GetEntityId());
     }
 
-    EBUS_EVENT_ID_RESULT(m_toIsSelectable, m_ids.front(), UiEditorBus, GetIsSelectable);
+    UiEditorBus::EventResult(m_toIsSelectable, m_ids.front(), &UiEditorBus::Events::GetIsSelectable);
     m_toIsSelectable = !m_toIsSelectable;
 }
 

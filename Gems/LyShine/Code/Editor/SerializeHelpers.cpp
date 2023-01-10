@@ -95,7 +95,7 @@ namespace SerializeHelpers
         if (!s_initializedReflection)
         {
             AZ::SerializeContext* context = nullptr;
-            EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(context, "No serialize context");
 
             context->Class<SerializedElementContainer>()
@@ -180,7 +180,7 @@ namespace SerializeHelpers
                     sliceRestoreInfo.m_instanceId = sliceInstanceMap[sliceRestoreInfo.m_instanceId];
                 }
 
-                EBUS_EVENT_ID(entityContext->GetContextId(), UiEditorEntityContextRequestBus, RestoreSliceEntity, entity, sliceRestoreInfo);
+                UiEditorEntityContextRequestBus::Event(entityContext->GetContextId(), &UiEditorEntityContextRequestBus::Events::RestoreSliceEntity, entity, sliceRestoreInfo);
             }
             else
             {
@@ -197,12 +197,12 @@ namespace SerializeHelpers
         if (AZ::Data::AssetManager::IsReady())
         {
             bool areRequestsPending = false;
-            EBUS_EVENT_ID_RESULT(areRequestsPending, entityContext->GetContextId(), UiEditorEntityContextRequestBus, HasPendingRequests);
+            UiEditorEntityContextRequestBus::EventResult(areRequestsPending, entityContext->GetContextId(), &UiEditorEntityContextRequestBus::Events::HasPendingRequests);
             while (areRequestsPending)
             {
                 AZ::Data::AssetManager::Instance().DispatchEvents();
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(50));
-                EBUS_EVENT_ID_RESULT(areRequestsPending, entityContext->GetContextId(), UiEditorEntityContextRequestBus, HasPendingRequests);
+                UiEditorEntityContextRequestBus::EventResult(areRequestsPending, entityContext->GetContextId(), &UiEditorEntityContextRequestBus::Events::HasPendingRequests);
             }
         }
 
@@ -213,7 +213,7 @@ namespace SerializeHelpers
         for (auto entityId : idsOfNewlyCreatedTopLevelElements)
         {
             AZ::Entity* entity = nullptr;
-            EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
             // Only add it to the validated list if the entity still exists
             if (entity)
@@ -343,7 +343,7 @@ namespace SerializeHelpers
         if (makeNewIDs)
         {
             AZ::SerializeContext* context = nullptr;
-            EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(context, "No serialization context found");
 
             AZ::SliceComponent::EntityIdToEntityIdMap entityIdMap;

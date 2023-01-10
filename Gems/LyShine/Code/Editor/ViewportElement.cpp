@@ -26,13 +26,13 @@ namespace
         // Find the orientation of the translation vector from the ACTIVE element's
         // perspective.
         AZ::Matrix4x4 activeTransformFromViewport;
-        EBUS_EVENT_ID(activeElementId, UiTransformBus, GetTransformFromViewport, activeTransformFromViewport);
+        UiTransformBus::Event(activeElementId, &UiTransformBus::Events::GetTransformFromViewport, activeTransformFromViewport);
         AZ::Vector3 activeElementTranslation = activeTransformFromViewport.Multiply3x3(mouseTranslation);
 
         // Give the translation vector the same orientation with respect to
         // the SELECTED element that it had with respect to the ACTIVE element.
         AZ::Matrix4x4 selectedTransformToViewport;
-        EBUS_EVENT_ID(selectedElement->GetId(), UiTransformBus, GetTransformToViewport, selectedTransformToViewport);
+        UiTransformBus::Event(selectedElement->GetId(), &UiTransformBus::Events::GetTransformToViewport, selectedTransformToViewport);
         AZ::Vector3 elementViewportTranslation = selectedTransformToViewport.Multiply3x3(activeElementTranslation);
 
         // Adjust the translation vector to have the same length as the original
@@ -55,7 +55,7 @@ bool ViewportElement::PickElementEdges(const AZ::Entity* element,
 
     // Transform the point and the pick distance from viewport space into untransformed canvas space
     AZ::Matrix4x4 transformFromViewport;
-    EBUS_EVENT_ID(element->GetId(), UiTransformBus, GetTransformFromViewport, transformFromViewport);
+    UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
 
     AZ::Vector3 pickDistance(distance, distance, 0.0f);
 
@@ -64,7 +64,7 @@ bool ViewportElement::PickElementEdges(const AZ::Entity* element,
         AZ::Vector3 pickDistanceX(distance, 0.0f, 0.0f);
         AZ::Vector3 pickDistanceY(0.0f, distance, 0.0f);
         AZ::Matrix4x4 transformToViewport;
-        EBUS_EVENT_ID(element->GetId(), UiTransformBus, GetTransformToViewport, transformToViewport);
+        UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::GetTransformToViewport, transformToViewport);
         AZ::Vector3 localDistanceX = transformToViewport.Multiply3x3(pickDistanceX);
         AZ::Vector3 localDistanceY = transformToViewport.Multiply3x3(pickDistanceY);
 
@@ -87,7 +87,7 @@ bool ViewportElement::PickElementEdges(const AZ::Entity* element,
 
     // Get the non-transformed edges of the element
     UiTransformInterface::RectPoints corners;
-    EBUS_EVENT_ID(element->GetId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, corners);
+    UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, corners);
 
     float left   = corners.TopLeft().GetX();
     float right  = corners.BottomRight().GetX();
@@ -155,17 +155,17 @@ bool ViewportElement::PickAnchors(const AZ::Entity* element,
     // It's simpler to do the calculations in canvas space, so we need to
     // transform everything from the parent's viewport space to canvas space.
     AZ::Matrix4x4 transformFromViewport;
-    EBUS_EVENT_ID(parentElement->GetId(), UiTransformBus, GetTransformFromViewport, transformFromViewport);
+    UiTransformBus::Event(parentElement->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
 
     UiTransformInterface::RectPoints parentRect;
-    EBUS_EVENT_ID(parentElement->GetId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, parentRect);
+    UiTransformBus::Event(parentElement->GetId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, parentRect);
     AZ::Vector2 parentSize = parentRect.GetAxisAlignedSize();
 
     AZ::Vector3 pickPoint3 = transformFromViewport * AZ::Vector3(point.GetX(), point.GetY(), 0.0f);
     AZ::Vector2 pickPoint(pickPoint3.GetX(), pickPoint3.GetY());
 
     UiTransform2dInterface::Anchors anchors;
-    EBUS_EVENT_ID_RESULT(anchors, element->GetId(), UiTransform2dBus, GetAnchors);
+    UiTransform2dBus::EventResult(anchors, element->GetId(), &UiTransform2dBus::Events::GetAnchors);
 
     AZ::Vector2 scaledIconSize(iconSize);
 
@@ -173,7 +173,7 @@ bool ViewportElement::PickAnchors(const AZ::Entity* element,
     if (transformFromViewport.GetElement(0, 0) != 1.0f || transformFromViewport.GetElement(1, 1) != 1.0f || transformFromViewport.GetElement(2, 2) != 1.0f)
     {
         AZ::Matrix4x4 transformToViewport;
-        EBUS_EVENT_ID(parentElement->GetId(), UiTransformBus, GetTransformToViewport, transformToViewport);
+        UiTransformBus::Event(parentElement->GetId(), &UiTransformBus::Events::GetTransformToViewport, transformToViewport);
         ViewportHelpers::TransformIconScale(scaledIconSize, transformToViewport);
     }
 
@@ -292,7 +292,7 @@ bool ViewportElement::PickAxisGizmo(const AZ::Entity* element,
         // It's simpler to do the calculations in canvas space, so we need to
         // transform everything from viewport space to canvas space.
         AZ::Matrix4x4 transformFromViewport;
-        EBUS_EVENT_ID(elementId, UiTransformBus, GetTransformFromViewport, transformFromViewport);
+        UiTransformBus::Event(elementId, &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
 
         AZ::Vector3 pickPoint3 = transformFromViewport * AZ::Vector3(point.GetX(), point.GetY(), 0.0f);
         pickPoint = AZ::Vector2(pickPoint3.GetX(), pickPoint3.GetY());
@@ -300,17 +300,17 @@ bool ViewportElement::PickAxisGizmo(const AZ::Entity* element,
         if (transformFromViewport.GetElement(0, 0) != 1.0f || transformFromViewport.GetElement(1, 1) != 1.0f || transformFromViewport.GetElement(2, 2) != 1.0f)
         {
             AZ::Matrix4x4 transformToViewport;
-            EBUS_EVENT_ID(elementId, UiTransformBus, GetTransformToViewport, transformToViewport);
+            UiTransformBus::Event(elementId, &UiTransformBus::Events::GetTransformToViewport, transformToViewport);
             ViewportHelpers::TransformIconScale(scaledIconSize, transformToViewport);
         }
 
-        EBUS_EVENT_ID_RESULT(pivotPosition, element->GetId(), UiTransformBus, GetCanvasSpacePivotNoScaleRotate);
+        UiTransformBus::EventResult(pivotPosition, element->GetId(), &UiTransformBus::Events::GetCanvasSpacePivotNoScaleRotate);
     }
     else
     {
         // for View coordinate system do everything in viewport space
         pickPoint = point;
-        EBUS_EVENT_ID_RESULT(pivotPosition, element->GetId(), UiTransformBus, GetViewportSpacePivot);
+        UiTransformBus::EventResult(pivotPosition, element->GetId(), &UiTransformBus::Events::GetViewportSpacePivot);
     }
 
     // Center square
@@ -357,7 +357,7 @@ bool ViewportElement::PickCircleGizmo(const AZ::Entity* element,
     float lineThickness = 4.0f;
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, element->GetId(), UiTransformBus, GetViewportSpacePivot);
+    UiTransformBus::EventResult(pivot, element->GetId(), &UiTransformBus::Events::GetViewportSpacePivot);
 
     float distance = (point - pivot).GetLength();
     float radius = 0.5f * iconSize.GetX() - 0.5f * lineThickness;
@@ -381,7 +381,7 @@ bool ViewportElement::PickPivot(const AZ::Entity* element,
     }
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, element->GetId(), UiTransformBus, GetViewportSpacePivot);
+    UiTransformBus::EventResult(pivot, element->GetId(), &UiTransformBus::Events::GetViewportSpacePivot);
     float distance = (point - pivot).GetLength();
     float radius = 0.5f * iconSize.GetX();
 
@@ -409,11 +409,11 @@ void ViewportElement::ResizeDirectly(HierarchyWidget* hierarchy,
     // Get the transform from viewport to parent element space
     AZ::Entity* parentElement = EntityHelpers::GetParentElement(element);
     AZ::Matrix4x4 parentTransformFromViewport;
-    EBUS_EVENT_ID(parentElement->GetId(), UiTransformBus, GetTransformFromViewport, parentTransformFromViewport);
+    UiTransformBus::Event(parentElement->GetId(), &UiTransformBus::Events::GetTransformFromViewport, parentTransformFromViewport);
 
     // Resize the element
     bool hasScaleOrRotation = false;
-    EBUS_EVENT_ID_RESULT(hasScaleOrRotation, element->GetId(), UiTransformBus, HasScaleOrRotation);
+    UiTransformBus::EventResult(hasScaleOrRotation, element->GetId(), &UiTransformBus::Events::HasScaleOrRotation);
     if (hasScaleOrRotation)
     {
         // This element has scale or rotation. This makes things complicated.
@@ -423,7 +423,7 @@ void ViewportElement::ResizeDirectly(HierarchyWidget* hierarchy,
 
         // get the viewport space points for this element
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(element->GetId(), UiTransformBus, GetViewportSpacePoints, points);
+        UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
 
         // get the 2D delta in viewport space for this element
         AZ::Vector2 delta(viewportTranslation.GetX(), viewportTranslation.GetY());
@@ -439,7 +439,7 @@ void ViewportElement::ResizeDirectly(HierarchyWidget* hierarchy,
 
         // calculate the new pivot in viewport space
         AZ::Vector2 pivot;
-        EBUS_EVENT_ID_RESULT(pivot, element->GetId(), UiTransformBus, GetPivot);
+        UiTransformBus::EventResult(pivot, element->GetId(), &UiTransformBus::Events::GetPivot);
         AZ::Vector2 viewportPivot = points.TopLeft()
             + pivot.GetX() * (points.TopRight() - points.TopLeft())
             + pivot.GetY() * (points.BottomLeft() - points.TopLeft());
@@ -450,11 +450,11 @@ void ViewportElement::ResizeDirectly(HierarchyWidget* hierarchy,
 
         // build matrix to transform these points into parent's transform space using this pivot
         float rotation;
-        EBUS_EVENT_ID_RESULT(rotation, element->GetId(), UiTransformBus, GetZRotation);
+        UiTransformBus::EventResult(rotation, element->GetId(), &UiTransformBus::Events::GetZRotation);
         float rotRad = DEG2RAD(-rotation);  // reverse rotation
 
         AZ::Vector2 scale;
-        EBUS_EVENT_ID_RESULT(scale, element->GetId(), UiTransformBus, GetScale);
+        UiTransformBus::EventResult(scale, element->GetId(), &UiTransformBus::Events::GetScale);
         AZ::Vector3 scale3(1.0f / scale.GetX(), 1.0f / scale.GetY(), 1); // inverse scale
 
         AZ::Matrix4x4 moveToPivotSpaceMat = AZ::Matrix4x4::CreateTranslation(-pivot3);
@@ -475,7 +475,7 @@ void ViewportElement::ResizeDirectly(HierarchyWidget* hierarchy,
         // get the existing (unchanged so far) version of these from the element
         // then compare the new points against the old points and adjust the offsets by the deltas
         UiTransformInterface::RectPoints oldPoints;
-        EBUS_EVENT_ID(element->GetId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, oldPoints);
+        UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, oldPoints);
 
         ViewportSnap::ResizeDirectlyWithScaleOrRotation(hierarchy, canvasId, grabbedEdges, element, (points - oldPoints));
     }
@@ -520,13 +520,13 @@ void ViewportElement::ResizeByGizmo(HierarchyWidget* hierarchy,
 
     // Transform to element space
     AZ::Matrix4x4 transformFromViewport;
-    EBUS_EVENT_ID(element->GetId(), UiTransformBus, GetTransformFromViewport, transformFromViewport);
+    UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
     AZ::Vector3 finalTranslation = transformFromViewport.Multiply3x3(viewportTranslation);
 
     // get the pivot (each field is in the range 0-1 if inside the element rect)
     // but note that it can be outside that range
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, element->GetId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, element->GetId(), &UiTransformBus::Events::GetPivot);
 
     // The resize works about the pivot, this stops the gizmo itself from moving as we resize.
     // If we split final translation on either side of the pivot (according to the
@@ -556,7 +556,7 @@ void ViewportElement::Rotate(HierarchyWidget* hierarchy,
 {
     // Find the vectors from the active element's pivot point to the last and current mouse positions
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, activeElementId, UiTransformBus, GetViewportSpacePivot);
+    UiTransformBus::EventResult(pivot, activeElementId, &UiTransformBus::Events::GetViewportSpacePivot);
     AZ::Vector2 pivotToLastPos = lastMouseDragPos - pivot;
     AZ::Vector2 pivotToThisPos = mousePosition - pivot;
 
@@ -571,7 +571,7 @@ void ViewportElement::Rotate(HierarchyWidget* hierarchy,
     // we test for this and, if so, negate the angle to rotate
     AZ::Entity* parentElement = EntityHelpers::GetParentElement(element);
     AZ::Matrix4x4 parentMatrix;
-    EBUS_EVENT_ID(parentElement->GetId(), UiTransformBus, GetTransformToViewport, parentMatrix);
+    UiTransformBus::Event(parentElement->GetId(), &UiTransformBus::Events::GetTransformToViewport, parentMatrix);
     if (parentMatrix.GetElement(0, 0) * parentMatrix.GetElement(1, 1) < 0.0f)
     {
         signedAngle = -signedAngle;
@@ -596,11 +596,11 @@ void ViewportElement::MoveAnchors(const ViewportHelpers::SelectedAnchors& grabbe
     // This uses the parents transform component because anchors are in parent space
     AZ::Entity* parentElement = EntityHelpers::GetParentElement(element);
     AZ::Matrix4x4 parentTransformFromViewport;
-    EBUS_EVENT_ID(parentElement->GetId(), UiTransformBus, GetTransformFromViewport, parentTransformFromViewport);
+    UiTransformBus::Event(parentElement->GetId(), &UiTransformBus::Events::GetTransformFromViewport, parentTransformFromViewport);
 
     // Get the parent's size in canvas space
     AZ::Vector2 parentSize;
-    EBUS_EVENT_ID_RESULT(parentSize, parentElement->GetId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+    UiTransformBus::EventResult(parentSize, parentElement->GetId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
     // Move the anchors
     AZ::Vector3 currPos3 = AZ::Vector3(mousePosition.GetX(), mousePosition.GetY(), 0.0f);
@@ -614,9 +614,9 @@ void ViewportElement::MoveAnchors(const ViewportHelpers::SelectedAnchors& grabbe
 
     auto newAnchors = ViewportHelpers::MoveGrabbedAnchor(startAnchors, grabbedAnchors, ViewportHelpers::IsHorizontallyFit(element),
         ViewportHelpers::IsVerticallyFit(element), localTranslation);
-    EBUS_EVENT_ID(element->GetId(), UiTransform2dBus, SetAnchors, newAnchors, adjustOffsets, false);
+    UiTransform2dBus::Event(element->GetId(), &UiTransform2dBus::Events::SetAnchors, newAnchors, adjustOffsets, false);
 
-    EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+    UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
 }
 
 void ViewportElement::MovePivot(const AZ::Vector2& lastMouseDragPos,
@@ -625,13 +625,13 @@ void ViewportElement::MovePivot(const AZ::Vector2& lastMouseDragPos,
 {
     // Get the element rect
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(element->GetId(), UiTransformBus, GetViewportSpacePoints, points);
+    UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
 
     if (ViewportHelpers::IsControlledByLayout(element))
     {
         // Apply the inverse of this element's rotation and scale about pivot
         AZ::Matrix4x4 transform;
-        EBUS_EVENT_ID(element->GetId(), UiTransformBus, GetLocalInverseTransform, transform);
+        UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::GetLocalInverseTransform, transform);
         AZ::Vector3 topLeft(points.TopLeft().GetX(), points.TopLeft().GetY(), 0.0f);
         topLeft = transform * topLeft;
         AZ::Vector3 topRight(points.TopRight().GetX(), points.TopRight().GetY(), 0.0f);
@@ -665,15 +665,15 @@ void ViewportElement::MovePivot(const AZ::Vector2& lastMouseDragPos,
 
     // Move the pivot point
     AZ::Vector2 currentPivot;
-    EBUS_EVENT_ID_RESULT(currentPivot, element->GetId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(currentPivot, element->GetId(), &UiTransformBus::Events::GetPivot);
     if (ViewportHelpers::IsControlledByLayout(element))
     {
-        EBUS_EVENT_ID(element->GetId(), UiTransformBus, SetPivot, currentPivot + localTranslation);
+        UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::SetPivot, currentPivot + localTranslation);
     }
     else
     {
-        EBUS_EVENT_ID(element->GetId(), UiTransform2dBus, SetPivotAndAdjustOffsets, currentPivot + localTranslation);
+        UiTransform2dBus::Event(element->GetId(), &UiTransform2dBus::Events::SetPivotAndAdjustOffsets, currentPivot + localTranslation);
     }
 
-    EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+    UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
 }

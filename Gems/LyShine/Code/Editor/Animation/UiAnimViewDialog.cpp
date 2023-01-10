@@ -1200,7 +1200,7 @@ void CUiAnimViewDialog::OnPlay()
         {
             {
                 CUiAnimationContext* pAnimationContext2 = nullptr;
-                EBUS_EVENT_RESULT(pAnimationContext2, UiEditorAnimationBus, GetAnimationContext);
+                UiEditorAnimationBus::BroadcastResult(pAnimationContext2, &UiEditorAnimationBus::Events::GetAnimationContext);
                 if (pAnimationContext2->IsPlaying())
                 {
                     AZ_Error("UiAnimViewDialog", false, "A sequence is already playing");
@@ -1215,7 +1215,7 @@ void CUiAnimViewDialog::OnPlay()
     {
         {
             CUiAnimationContext* pAnimationContext2 = nullptr;
-            EBUS_EVENT_RESULT(pAnimationContext2, UiEditorAnimationBus, GetAnimationContext);
+            UiEditorAnimationBus::BroadcastResult(pAnimationContext2, &UiEditorAnimationBus::Events::GetAnimationContext);
             if (!pAnimationContext2->IsPlaying())
             {
                 AZ_Error("UiAnimViewDialog", false, "A sequence is playing");

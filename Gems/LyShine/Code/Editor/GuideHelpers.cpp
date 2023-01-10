@@ -15,14 +15,14 @@ namespace GuideHelpers
     bool PickGuide(AZ::EntityId canvasEntityId, const AZ::Vector2& point, bool& guideIsVertical, int& guideIndex)
     {
         AZ::Matrix4x4 transform;
-        EBUS_EVENT_ID_RESULT(transform, canvasEntityId, UiCanvasBus, GetCanvasToViewportMatrix);
+        UiCanvasBus::EventResult(transform, canvasEntityId, &UiCanvasBus::Events::GetCanvasToViewportMatrix);
 
         const float pickTolerance = 5.0f;
         float guideDistance = pickTolerance + 1.0f;
 
         // search horizontal guide lines for closest match
         AZStd::vector<float> horizontalGuidePositions;
-        EBUS_EVENT_ID_RESULT(horizontalGuidePositions, canvasEntityId, UiEditorCanvasBus, GetHorizontalGuidePositions);
+        UiEditorCanvasBus::EventResult(horizontalGuidePositions, canvasEntityId, &UiEditorCanvasBus::Events::GetHorizontalGuidePositions);
         for (int index = 0; index < horizontalGuidePositions.size(); ++index)
         {
             AZ::Vector3 canvasPoint(0.0f, horizontalGuidePositions[index], 0.0f);
@@ -39,7 +39,7 @@ namespace GuideHelpers
 
         // search vertical guide lines for closest match
         AZStd::vector<float> verticalGuidePositions;
-        EBUS_EVENT_ID_RESULT(verticalGuidePositions, canvasEntityId, UiEditorCanvasBus, GetVerticalGuidePositions);
+        UiEditorCanvasBus::EventResult(verticalGuidePositions, canvasEntityId, &UiEditorCanvasBus::Events::GetVerticalGuidePositions);
         for (int index = 0; index < verticalGuidePositions.size(); ++index)
 
         {
@@ -65,11 +65,11 @@ namespace GuideHelpers
         AZStd::vector<float> guidePositions;
         if (guideIsVertical)
         {
-            EBUS_EVENT_ID_RESULT(guidePositions, canvasEntityId, UiEditorCanvasBus, GetVerticalGuidePositions);
+            UiEditorCanvasBus::EventResult(guidePositions, canvasEntityId, &UiEditorCanvasBus::Events::GetVerticalGuidePositions);
         }
         else
         {
-            EBUS_EVENT_ID_RESULT(guidePositions, canvasEntityId, UiEditorCanvasBus, GetHorizontalGuidePositions);
+            UiEditorCanvasBus::EventResult(guidePositions, canvasEntityId, &UiEditorCanvasBus::Events::GetHorizontalGuidePositions);
         }
 
         float pos = 0.0f;
@@ -85,11 +85,11 @@ namespace GuideHelpers
     {
         if (guideIsVertical)
         {
-            EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, SetVerticalGuidePosition, guideIndex, pos);
+            UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::SetVerticalGuidePosition, guideIndex, pos);
         }
         else
         {
-            EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, SetHorizontalGuidePosition, guideIndex, pos);
+            UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::SetHorizontalGuidePosition, guideIndex, pos);
         }
     }
 
@@ -97,11 +97,11 @@ namespace GuideHelpers
     {
         if (guideIsVertical)
         {
-            EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, SetVerticalGuidePosition, guideIndex, pos.GetX());
+            UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::SetVerticalGuidePosition, guideIndex, pos.GetX());
         }
         else
         {
-            EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, SetHorizontalGuidePosition, guideIndex, pos.GetY());
+            UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::SetHorizontalGuidePosition, guideIndex, pos.GetY());
         }
     }
 
@@ -109,39 +109,39 @@ namespace GuideHelpers
     {
         if (guideIsVertical)
         {
-            EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RemoveVerticalGuide, guideIndex);
+            UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::RemoveVerticalGuide, guideIndex);
         }
         else
         {
-            EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RemoveHorizontalGuide, guideIndex);
+            UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::RemoveHorizontalGuide, guideIndex);
         }
     }
 
     void SetGuidesAreLocked(AZ::EntityId canvasEntityId, bool areLocked)
     {
-        EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, SetGuidesAreLocked, areLocked);
+        UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::SetGuidesAreLocked, areLocked);
     }
 
     bool AreGuidesLocked(AZ::EntityId canvasEntityId)
     {
         bool areLocked = false;
-        EBUS_EVENT_ID_RESULT(areLocked, canvasEntityId, UiEditorCanvasBus, GetGuidesAreLocked);
+        UiEditorCanvasBus::EventResult(areLocked, canvasEntityId, &UiEditorCanvasBus::Events::GetGuidesAreLocked);
         return areLocked;
     }
 
     void DrawGuideLines(AZ::EntityId canvasEntityId, ViewportWidget* viewport, Draw2dHelper& draw2d)
     {
         AZ::Matrix4x4 transform;
-        EBUS_EVENT_ID_RESULT(transform, canvasEntityId, UiCanvasBus, GetCanvasToViewportMatrix);
+        UiCanvasBus::EventResult(transform, canvasEntityId, &UiCanvasBus::Events::GetCanvasToViewportMatrix);
 
         AZ::Vector2 viewportSize = viewport->GetRenderViewportSize();
 
         AZ::Color guideColor;
-        EBUS_EVENT_ID_RESULT(guideColor, canvasEntityId, UiEditorCanvasBus, GetGuideColor);
+        UiEditorCanvasBus::EventResult(guideColor, canvasEntityId, &UiEditorCanvasBus::Events::GetGuideColor);
 
         // draw horizontal guide lines
         AZStd::vector<float> horizontalGuidePositions;
-        EBUS_EVENT_ID_RESULT(horizontalGuidePositions, canvasEntityId, UiEditorCanvasBus, GetHorizontalGuidePositions);
+        UiEditorCanvasBus::EventResult(horizontalGuidePositions, canvasEntityId, &UiEditorCanvasBus::Events::GetHorizontalGuidePositions);
         for (float pos : horizontalGuidePositions)
         {
             AZ::Vector3 canvasPoint(0.0f, pos, 0.0f);
@@ -153,7 +153,7 @@ namespace GuideHelpers
 
         // draw vertical guide lines
         AZStd::vector<float> verticalGuidePositions;
-        EBUS_EVENT_ID_RESULT(verticalGuidePositions, canvasEntityId, UiEditorCanvasBus, GetVerticalGuidePositions);
+        UiEditorCanvasBus::EventResult(verticalGuidePositions, canvasEntityId, &UiEditorCanvasBus::Events::GetVerticalGuidePositions);
         for (float pos : verticalGuidePositions)
         {
             AZ::Vector3 canvasPoint(pos, 0.0f, 0.0f);

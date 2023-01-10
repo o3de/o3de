@@ -252,12 +252,12 @@ void CUiAnimAzEntityNode::ComputeOffsetsFromElementNames()
 {
     // Get the serialize context for the application
     AZ::SerializeContext* context = nullptr;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialization context found");
 
     // Get the AZ entity that this node is animating
     AZ::Entity* entity = nullptr;
-    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityId);
+    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_entityId);
     if (!entity)
     {
         // This can happen, if a UI element is deleted we do not delete all AnimNodes
@@ -392,7 +392,7 @@ void CUiAnimAzEntityNode::Animate(SUiAnimContext& ec)
     }
 
     AZ::Entity* entity = nullptr;
-    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityId);
+    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_entityId);
     if (!entity)
     {
         // This can happen, if a UI element is deleted we do not delete all AnimNodes
@@ -527,7 +527,7 @@ void CUiAnimAzEntityNode::Animate(SUiAnimContext& ec)
         m_bIgnoreSetParam = false;
     }
 
-    EBUS_EVENT_ID(m_entityId, UiAnimateEntityBus, PropertyValuesChanged);
+    UiAnimateEntityBus::Event(m_entityId, &UiAnimateEntityBus::Events::PropertyValuesChanged);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -613,7 +613,7 @@ IUiAnimTrack* CUiAnimAzEntityNode::GetTrackForAzField(const UiAnimParamData& par
 IUiAnimTrack* CUiAnimAzEntityNode::CreateTrackForAzField(const UiAnimParamData& param)
 {
     AZ::SerializeContext* context = nullptr;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialization context found");
 
     IUiAnimTrack* track = nullptr;

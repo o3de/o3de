@@ -606,7 +606,7 @@ void EditorWindow::AddMenu_View()
             {
                 // Clear guides
                 AZStd::string canvasUndoXml = CanvasHelpers::BeginUndoableCanvasChange(GetCanvas());
-                EBUS_EVENT_ID(GetCanvas(), UiEditorCanvasBus, RemoveAllGuides);
+                UiEditorCanvasBus::Event(GetCanvas(), &UiEditorCanvasBus::Events::RemoveAllGuides);
                 CanvasHelpers::EndUndoableCanvasChange(this, "clear guides", canvasUndoXml);
             });
         menu->addAction(action);
@@ -1031,7 +1031,7 @@ QAction* EditorWindow::CreateSaveCanvasAction(AZ::EntityId canvasEntityId, bool 
     if (canvasMetadata)
     {
         canvasSourcePathname = canvasMetadata->m_canvasSourceAssetPathname;
-        EBUS_EVENT_ID_RESULT(canvasFilename, canvasEntityId, UiCanvasBus, GetPathname);
+        UiCanvasBus::EventResult(canvasFilename, canvasEntityId, &UiCanvasBus::Events::GetPathname);
     }
 
     QFileInfo fileInfo(canvasSourcePathname.c_str());
@@ -1081,7 +1081,7 @@ QAction* EditorWindow::CreateSaveCanvasAsAction(AZ::EntityId canvasEntityId, boo
     if (canvasMetadata)
     {
         canvasSourcePathname = canvasMetadata->m_canvasSourceAssetPathname;
-        EBUS_EVENT_ID_RESULT(canvasFilename, canvasEntityId, UiCanvasBus, GetPathname);
+        UiCanvasBus::EventResult(canvasFilename, canvasEntityId, &UiCanvasBus::Events::GetPathname);
     }
 
     QAction* action = new QAction("Save Canvas &As...", this);
@@ -1128,7 +1128,7 @@ QAction* EditorWindow::CreateSaveSliceAction(UiCanvasMetadata *canvasMetadata, b
     // as a safeguard check that the entity still exists
     AZ::EntityId sliceEntityId = canvasMetadata->m_sliceEntityId;
     AZ::Entity* sliceEntity = nullptr;
-    EBUS_EVENT_RESULT(sliceEntity, AZ::ComponentApplicationBus, FindEntity, sliceEntityId);
+    AZ::ComponentApplicationBus::BroadcastResult(sliceEntity, &AZ::ComponentApplicationBus::Events::FindEntity, sliceEntityId);
     if (!sliceEntity)
     {
         // Slice entity not found, disable the menu item but also change it to indicate the error

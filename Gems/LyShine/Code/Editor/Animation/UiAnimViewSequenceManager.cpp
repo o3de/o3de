@@ -27,7 +27,7 @@ CUiAnimViewSequenceManager::CUiAnimViewSequenceManager()
 
     // get the undo stack from the UI editor, if no editor is active this will be null
     UndoStack* undoStack = nullptr;
-    EBUS_EVENT_RESULT(undoStack, UiEditorDLLBus, GetActiveUndoStack);
+    UiEditorDLLBus::BroadcastResult(undoStack, &UiEditorDLLBus::Events::GetActiveUndoStack);
     m_undoManager.SetActiveUndoStack(undoStack);
 
     s_instance = this;
@@ -106,7 +106,7 @@ void CUiAnimViewSequenceManager::CreateSequence(QString name)
     UiAnimUndo undo("Create Animation Sequence");
 
     IUiAnimationSystem* animationSystem = nullptr;
-    EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
+    UiEditorAnimationBus::BroadcastResult(animationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
     IUiAnimSequence* pNewUiAnimationSequence = animationSystem->CreateSequence(name.toUtf8().data(), false, ++m_nextSequenceId);
     CUiAnimViewSequence* pNewSequence = new CUiAnimViewSequence(pNewUiAnimationSequence);
@@ -124,7 +124,7 @@ void CUiAnimViewSequenceManager::DeleteSequence(CUiAnimViewSequence* pSequence)
     assert(pSequence);
 
     IUiAnimationSystem* animationSystem = nullptr;
-    EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
+    UiEditorAnimationBus::BroadcastResult(animationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
     uint32 animSequenceId = 0;
     IUiAnimSequence* animSequence = nullptr;
@@ -226,16 +226,16 @@ void CUiAnimViewSequenceManager::ActiveCanvasChanged()
     // Get the animation system from the active canvas, this must be updated if the UI Editor
     // switches to a different canvas
     AZ::EntityId canvasId;
-    EBUS_EVENT_RESULT(canvasId, UiEditorDLLBus, GetActiveCanvasId);
+    UiEditorDLLBus::BroadcastResult(canvasId, &UiEditorDLLBus::Events::GetActiveCanvasId);
 
     // Note: the canvasId may be invalid if the UI Editor window has closed in which case
     // the GetAnimationSystem event does nothing
     m_animationSystem = nullptr;
-    EBUS_EVENT_ID_RESULT(m_animationSystem, canvasId, UiCanvasBus, GetAnimationSystem);
+    UiCanvasBus::EventResult(m_animationSystem, canvasId, &UiCanvasBus::Events::GetAnimationSystem);
 
     // get the undo stack from the UI editor, if no editor is active this will be null
     UndoStack* undoStack = nullptr;
-    EBUS_EVENT_RESULT(undoStack, UiEditorDLLBus, GetActiveUndoStack);
+    UiEditorDLLBus::BroadcastResult(undoStack, &UiEditorDLLBus::Events::GetActiveUndoStack);
     UiAnimUndoManager::Get()->SetActiveUndoStack(undoStack);
 
     m_animationContext->ActiveCanvasChanged();
@@ -244,7 +244,7 @@ void CUiAnimViewSequenceManager::ActiveCanvasChanged()
     CreateSequencesFromAnimationSystem();
 
     // tell listeners in UI animation system the active canvas has changed
-    EBUS_EVENT(UiEditorAnimListenerBus, OnActiveCanvasChanged);
+    UiEditorAnimListenerBus::Broadcast(&UiEditorAnimListenerBus::Events::OnActiveCanvasChanged);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -276,7 +276,7 @@ void CUiAnimViewSequenceManager::DeleteAllSequences()
 void CUiAnimViewSequenceManager::CreateSequencesFromAnimationSystem()
 {
     IUiAnimationSystem* animationSystem = nullptr;
-    EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
+    UiEditorAnimationBus::BroadcastResult(animationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
     if (!animationSystem)
     {

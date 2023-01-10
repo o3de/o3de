@@ -57,7 +57,7 @@ CUiAnimViewCurveEditor::CUiAnimViewCurveEditor(QWidget* parent)
     GetIEditor()->RegisterNotifyListener(this);
 
     CUiAnimationContext* pAnimationContext = nullptr;
-    EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
     pAnimationContext->AddListener(this);
 
     m_timelineCtrl.SetTimeRange(Range(0, 1));
@@ -119,7 +119,7 @@ CUiAnimViewCurveEditor::CUiAnimViewCurveEditor(QWidget* parent)
 CUiAnimViewCurveEditor::~CUiAnimViewCurveEditor()
 {
     CUiAnimationContext* pAnimationContext = nullptr;
-    EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
 
     pAnimationContext->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
@@ -157,7 +157,7 @@ void CUiAnimViewCurveEditor::OnActiveCanvasChanged()
 void CUiAnimViewCurveEditor::UpdateSplines()
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     if (!pSequence || !m_hasActiveCanvas)
     {
@@ -278,7 +278,7 @@ void CUiAnimViewCurveEditor::showEvent(QShowEvent* event)
 void CUiAnimViewCurveEditor::OnSplineChange()
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         pSequence->OnKeysChanged();
@@ -299,7 +299,7 @@ void CUiAnimViewCurveEditor::OnSplineCmd(UINT cmd)
 void CUiAnimViewCurveEditor::OnSplineCmdUpdateUI()
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     if (!m_hasActiveCanvas || !pSequence)
     {
@@ -332,7 +332,7 @@ void CUiAnimViewCurveEditor::OnTimelineChange()
     float fTime = m_timelineCtrl.GetTimeMarker();
 
     CUiAnimationContext* pAnimationContext = nullptr;
-    EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
 
     pAnimationContext->SetTime(fTime);
 }

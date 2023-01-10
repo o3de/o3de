@@ -53,12 +53,12 @@ void PreviewActionLog::OnAction(AZ::EntityId entityId, const LyShine::ActionName
 {
     // Get element ID
     LyShine::ElementId elementId = 0;
-    EBUS_EVENT_ID_RESULT(elementId, entityId, UiElementBus, GetElementId);
+    UiElementBus::EventResult(elementId, entityId, &UiElementBus::Events::GetElementId);
 
     // Get the entity name
     QString entityName;
     AZ::Entity* entity = nullptr;
-    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
     AZ_Assert(entity, "Invalid Entity ID found");
     if (entity)
     {

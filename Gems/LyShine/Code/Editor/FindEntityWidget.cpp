@@ -52,7 +52,7 @@ FindEntityWidget::FindEntityWidget(AZ::EntityId canvasEntityId, QWidget* pParent
     m_objectTree->setModel(m_proxyModel);
 
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
     if (serializeContext)
     {

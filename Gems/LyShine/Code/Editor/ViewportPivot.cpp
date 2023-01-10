@@ -40,6 +40,6 @@ void ViewportPivot::Draw(Draw2dHelper& draw2d,
 
     // Draw the pivot icon
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, element->GetId(), UiTransformBus, GetViewportSpacePivot);
+    UiTransformBus::EventResult(pivot, element->GetId(), &UiTransformBus::Events::GetViewportSpacePivot);
     m_pivot->Draw(draw2d, pivot, AZ::Matrix4x4::CreateIdentity(), 0.0f, color);
 }
