@@ -277,12 +277,14 @@ function(ly_add_test)
         set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS ${test_target})
         set_property(GLOBAL PROPERTY LY_ALL_TESTS_${test_target}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
     endif()
-    # Add the test suite and timeout value to the test target params
+    # Add the test suite, timeout value and labels to the test target params
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TEST_SUITE}")
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TIMEOUT}")
+    string(REPLACE ";" ", " flattened_labels "${final_labels}")
+    set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${flattened_labels}")
     # Store the params and labels for this test target
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${test_target}_PARAMS ${LY_TEST_PARAMS})
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${test_target}_LABELS ${final_labels})
+    #set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${test_target}_LABELS ${final_labels})
 endfunction()
 
 #! ly_add_pytest: registers target PyTest-based test with CTest
