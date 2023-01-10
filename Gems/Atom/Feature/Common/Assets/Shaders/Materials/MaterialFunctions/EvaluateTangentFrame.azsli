@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 // The built-in tangent frame evaluation forwards the tangent frame interpolated from the vertex
 // data streams for UV-index 0. For UV-index 1, the tangent frame is computed from UV surface gradients.
 void EvaluateTangentFrame(
