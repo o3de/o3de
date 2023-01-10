@@ -32,9 +32,16 @@ namespace PhysX
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
+        AZ_RTTI(JointsComponentMode, "{BF9ABF22-950B-4FDD-846D-643D27F449C5}", EditorBaseComponentMode)
 
         JointsComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         ~JointsComponentMode();
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        static void RegisterActions();
+        static void BindActionsToModes();
+        static void BindActionsToMenus();
 
         // EditorBaseComponentMode ...
         void Refresh() override;

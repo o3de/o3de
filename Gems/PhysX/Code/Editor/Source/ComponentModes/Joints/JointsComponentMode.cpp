@@ -9,6 +9,10 @@
 #include <Editor/Source/ComponentModes/Joints/JointsComponentMode.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <Editor/EditorJointConfiguration.h>
 #include <Editor/Source/ComponentModes/Joints/JointsSubComponentModeAngleCone.h>
 #include <Editor/Source/ComponentModes/Joints/JointsSubComponentModeAnglePair.h>
@@ -21,6 +25,9 @@
 namespace PhysX
 {
     AZ_CLASS_ALLOCATOR_IMPL(JointsComponentMode, AZ::SystemAllocator, 0);
+
+    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
+    static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
     namespace SubModeData
     {
@@ -119,6 +126,334 @@ namespace PhysX
 
         TeardownSubModes();
         m_subModes[m_subMode]->Teardown(GetEntityComponentIdPair());
+    }
+
+    void JointsComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<JointsComponentMode>(context);
+    }
+
+    void JointsComponentMode::RegisterActions()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "JointsComponentMode - could not get ActionManagerInterface on RegisterActions.");
+
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        AZ_Assert(hotKeyManagerInterface, "JointsComponentMode - could not get HotKeyManagerInterface on RegisterActions.");
+
+        // Switch to Translation Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToTranslationSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::TranslationTitle;
+            actionProperties.m_description = SubModeData::TranslationToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
+                        {
+                            // TODO: Trigger switch
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "1");
+        }
+
+        // Switch to Rotation Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToRotationSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::RotationTitle;
+            actionProperties.m_description = SubModeData::RotationToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
+                        {
+                            // TODO: Trigger switch
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "2");
+        }
+
+        // Switch to MaxForce Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToMaxForceSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::MaxForceTitle;
+            actionProperties.m_description = SubModeData::MaxForceToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
+                        {
+                            // TODO: Trigger switch
+                        }
+                    );
+                }
+            );
+        }
+
+        // Switch to MaxTorque Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToMaxTorqueSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::MaxTorqueTitle;
+            actionProperties.m_description = SubModeData::MaxTorqueToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
+                        {
+                            // TODO: Trigger switch
+                        }
+                    );
+                }
+            );
+        }
+
+        // Switch to Damping Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToDampingSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::DampingTitle;
+            actionProperties.m_description = SubModeData::DampingToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
+                        {
+                            // TODO: Trigger switch
+                        }
+                    );
+                }
+            );
+        }
+
+        // Switch to Stiffness Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToStiffnessSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::StiffnessTitle;
+            actionProperties.m_description = SubModeData::StiffnessToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
+                        {
+                            // TODO: Trigger switch
+                        }
+                    );
+                }
+            );
+        }
+
+        // Switch to TwistLimits Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToTwistLimitsSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::TwistLimitsTitle;
+            actionProperties.m_description = SubModeData::TwistLimitsToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
+                        {
+                            // TODO: Trigger switch
+                        }
+                    );
+                }
+            );
+        }
+
+        // Switch to SwingLimits Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToSwingLimitsSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::SwingLimitsTitle;
+            actionProperties.m_description = SubModeData::SwingLimitsToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
+                        {
+                            // TODO: Trigger switch
+                        }
+                    );
+                }
+            );
+        }
+
+        // Switch to SnapPosition Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToSnapPositionSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::SnapPositionTitle;
+            actionProperties.m_description = SubModeData::SnapPositionToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
+                        {
+                            // TODO: Trigger switch
+                        }
+                    );
+                }
+            );
+        }
+
+        // Switch to SnapRotation Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToSnapRotationSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::SnapRotationTitle;
+            actionProperties.m_description = SubModeData::SnapRotationToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
+                        {
+                            // TODO: Trigger switch
+                        }
+                    );
+                }
+            );
+        }
+    }
+
+    void JointsComponentMode::BindActionsToModes()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "JointsComponentMode - could not get ActionManagerInterface on BindActionsToModes.");
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        AZStd::string modeIdentifier =
+            AZStd::string::format("o3de.context.mode.%s", serializeContext->FindClassData(azrtti_typeid<JointsComponentMode>())->m_name);
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToTranslationSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToRotationSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToMaxForceSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToMaxTorqueSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToDampingSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToStiffnessSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToTwistLimitsSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToSwingLimitsSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToSnapPositionSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToSnapRotationSubMode");
+    }
+
+    void JointsComponentMode::BindActionsToMenus()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "JointsComponentMode - could not get MenuManagerInterface on BindActionsToMenus.");
+
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToTranslationSubMode", 6000);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToRotationSubMode", 6001);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToMaxForceSubMode", 6002);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToMaxTorqueSubMode", 6003);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToDampingSubMode", 6004);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToStiffnessSubMode", 6005);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToTwistLimitsSubMode", 6006);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSwingLimitsSubMode", 6007);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSnapPositionSubMode", 6008);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSnapRotationSubMode", 6009);
     }
 
     void JointsComponentMode::Refresh()
