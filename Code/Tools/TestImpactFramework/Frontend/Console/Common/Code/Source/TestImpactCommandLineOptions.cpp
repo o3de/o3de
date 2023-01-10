@@ -35,6 +35,7 @@ namespace TestImpact
             TestTargetTimeoutKey,
             GlobalTimeoutKey,
             SuiteSetKey,
+            SuiteLabelExcludeKey,
             DraftFailingTestsKey,
             ExcludedTestsKey,
             SafeModeKey,
@@ -73,6 +74,7 @@ namespace TestImpact
             "ttimeout",
             "gtimeout",
             "suites",
+            "labelexcludes"
             "draftfailingtests",
             "excluded",
             "safemode",
@@ -264,6 +266,11 @@ namespace TestImpact
             return ParseMultiValueOption(OptionKeys[SuiteSetKey], cmd);
         }
 
+        SuiteLabelExcludeSet ParseSuiteLabelExcludeSet(const AZ::CommandLine& cmd)
+        {
+            return ParseMultiValueOption(OptionKeys[SuiteLabelExcludeKey], cmd);
+        }
+
         AZStd::vector<ExcludedTarget> ParseExcludedTestsFile(const AZ::CommandLine& cmd)
         {
             AZStd::optional<RepoPath> excludeFilePath = ParsePathOption(OptionKeys[ExcludedTestsKey], cmd);
@@ -302,6 +309,7 @@ namespace TestImpact
         m_globalTimeout = ParseGlobalTimeout(cmd);
         m_draftFailingTests = ParseDraftFailingTests(cmd);
         m_suiteSet = ParseSuiteSet(cmd);
+        m_suiteLabelExcludes = ParseSuiteLabelExcludeSet(cmd);
         m_excludedTests = ParseExcludedTestsFile(cmd);
         m_safeMode = ParseSafeMode(cmd);
         m_testTargetTimeout = ParseTestTargetTimeout(cmd);
@@ -413,9 +421,14 @@ namespace TestImpact
         return m_globalTimeout;
     }
 
-    SuiteSet CommandLineOptions::GetSuiteSet() const
+    const SuiteSet& CommandLineOptions::GetSuiteSet() const
     {
         return m_suiteSet;
+    }
+
+    const SuiteLabelExcludeSet& CommandLineOptions::GetSuiteLabelExcludeSet() const
+    {
+        return m_suiteLabelExcludes;
     }
 
     bool CommandLineOptions::HasExcludedTests() const
@@ -504,7 +517,9 @@ namespace TestImpact
             "    -safemode=<on,off>                                          Flag to specify a safe mode sequence where the set of unselected \n"
             "    -testrunner=<live,null>                                     Whether to use the null test runner (on) or run the tests (off). \n"
             "                                                                If not set, defaults to running the tests.                          \n"
-            "    -suite=<...>                                                The test suites to select from for this test sequence.";
+            "    -suite=<...>                                                The test suites to select from for this test sequence.\n"
+            "    -labelexcludes=<...>                                        The list of labels that will exclude any tests with any of these labels\n"
+            "                                                                in their suite.";
 
         return help;
     }

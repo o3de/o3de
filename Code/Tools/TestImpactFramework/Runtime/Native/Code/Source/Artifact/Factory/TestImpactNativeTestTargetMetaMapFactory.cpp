@@ -31,7 +31,8 @@ namespace TestImpact
             "namespace",
             "name",
             "command",
-            "timeout"
+            "timeout",
+            "labels"
         };
 
         enum
@@ -47,7 +48,8 @@ namespace TestImpact
             Namespacekey,
             NameKey,
             CommandKey,
-            TimeoutKey
+            TimeoutKey,
+            SuiteLabelsKey
         };
 
         AZ_TestImpact_Eval(!masterTestListData.empty(), ArtifactException, "Test meta-data cannot be empty");
@@ -75,6 +77,13 @@ namespace TestImpact
                     testMeta.m_testTargetMeta.m_suiteMeta.m_name = suiteName;
                     testMeta.m_testTargetMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
                     testMeta.m_launchMeta.m_customArgs = suite[Keys[CommandKey]].GetString();
+
+                    const auto suiteLabels = suite[Keys[SuiteLabelsKey]].GetArray();
+                    for (const auto& label : suiteLabels)
+                    {
+                        testMeta.m_testTargetMeta.m_suiteMeta.m_labelSet.insert(label.GetString());
+                    }
+
                     if (const auto buildTypeString = test[Keys[LaunchMethodKey]].GetString();
                         strcmp(buildTypeString, Keys[TestRunnerKey]) == 0)
                     {

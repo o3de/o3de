@@ -101,7 +101,10 @@ namespace TestImpact
         const AZStd::optional<AZStd::chrono::milliseconds>& GetGlobalTimeout() const;
 
         //! Returns the filter for test suites that will be allowed to be run.
-        SuiteSet GetSuiteSet() const;
+        const SuiteSet& GetSuiteSet() const;
+
+        //! Returns the test suite label exclude set that will be used to exclude any test targets with any matching suite labesl.#
+        const SuiteLabelExcludeSet& GetSuiteLabelExcludeSet() const;
 
         //! Returns the tests to exclude from this run of TIAF (if any).
         const AZStd::vector<ExcludedTarget>& GetExcludedTests() const;
@@ -129,6 +132,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> m_testTargetTimeout;
         AZStd::optional<AZStd::chrono::milliseconds> m_globalTimeout;
         SuiteSet m_suiteSet;
+        SuiteLabelExcludeSet m_suiteLabelExcludes;
         bool m_draftFailingTests = false;
         AZStd::vector<ExcludedTarget> m_excludedTests;
         bool m_safeMode = false;

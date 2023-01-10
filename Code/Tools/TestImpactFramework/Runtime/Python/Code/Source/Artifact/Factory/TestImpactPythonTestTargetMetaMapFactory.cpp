@@ -29,7 +29,8 @@ namespace TestImpact
             "name",
             "timeout",
             "script",
-            "command"
+            "command",
+            "labels"
         };
 
         enum
@@ -43,7 +44,8 @@ namespace TestImpact
             NameKey,
             TimeoutKey,
             ScriptKey,
-            TestCommandKey
+            TestCommandKey,
+            SuiteLabelsKey
         };
 
         AZ_TestImpact_Eval(!testListData.empty(), ArtifactException, "Test meta-data cannot be empty");
@@ -72,6 +74,12 @@ namespace TestImpact
                     testMeta.m_testTargetMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
                     testMeta.m_scriptMeta.m_scriptPath = suite[Keys[ScriptKey]].GetString();
                     testMeta.m_scriptMeta.m_testCommand = suite[Keys[TestCommandKey]].GetString();
+
+                    const auto suiteLabels = suite[Keys[SuiteLabelsKey]].GetArray();
+                    for (const auto& label : suiteLabels)
+                    {
+                        testMeta.m_testTargetMeta.m_suiteMeta.m_labelSet.insert(label.GetString());
+                    }
 
                     AZStd::string name = test[Keys[NameKey]].GetString();
                     AZ_Printf("meta: %s", test[Keys[NameKey]].GetString());

@@ -191,7 +191,7 @@ function(ly_test_impact_extract_google_test_params COMPOSITE_TEST COMPOSITE_SUIT
         list(GET suite_components 1 test_suite)
         list(GET suite_components 2 test_timeout)
         list(GET suite_components 3 test_labels)
-        string(REPLACE ";" "\", \"" test_labels "${test_labels}")
+        string(REPLACE "," "\",\"" test_labels "${test_labels}")
         set(suite_params "{ \"suite\": \"${test_suite}\",  \"command\": \"${test_command}\", \"timeout\": ${test_timeout}, \"labels\": [\"${test_labels}\"] }")
         list(APPEND test_suites "${suite_params}")
     endforeach()
@@ -245,7 +245,7 @@ function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUIT
             script_path
             "${LY_ROOT_FOLDER}"
         )
-        string(REPLACE ";" "\", \"" test_labels "${test_labels}")
+        string(REPLACE "," "\",\"" test_labels "${test_labels}")
         set(suite_params "{ \"suite\": \"${test_suite}\",  \"script\": \"${script_path}\", \"timeout\": ${test_timeout}, \"command\": \"${test_command}\", \"labels\": [\"${test_labels}\"] }")
         list(APPEND test_suites "${suite_params}")
     endforeach()
@@ -269,7 +269,6 @@ function(ly_test_impact_write_test_enumeration_file TEST_ENUMERATION_TEMPLATE_FI
     foreach(test ${LY_ALL_TESTS})
         message(TRACE "Parsing ${test}")
         get_property(test_params GLOBAL PROPERTY LY_ALL_TESTS_${test}_PARAMS)
-        get_property(test_labels GLOBAL PROPERTY LY_ALL_TESTS_${test}_LABELS)
         get_property(test_type GLOBAL PROPERTY LY_ALL_TESTS_${test}_TEST_LIBRARY)
 
         if("${test_type}" STREQUAL "pytest")

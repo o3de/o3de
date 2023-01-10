@@ -27,8 +27,14 @@ namespace TestImpact
     };
 
     //! Set of test suites that tests can be drawn from.
-    //! @note An ordered set is used so that the serialized string of the set order is always the same regardless of the order that the suites are specified.
+    //! @note An ordered set is used so that the serialized string of the set order is always the same regardless of the order that the
+    //! suites are specified.
     using SuiteSet = AZStd::set<AZStd::string>;
+
+    //! Set of test suite labels that will be used to exclude any test targets that have test suite labels matching any labels in this set.
+    //! @note An ordered set is used so that the serialized string of the set order is always the same regardless of the order that the
+    //! labels are specified.
+    using SuiteLabelExcludeSet = AZStd::set<AZStd::string>;
 
     //! Result of a test sequence that was run.
     enum class TestSequenceResult
