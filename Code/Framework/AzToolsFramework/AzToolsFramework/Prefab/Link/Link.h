@@ -160,14 +160,6 @@ namespace AzToolsFramework
              */
             void AddLinkIdToInstanceDom(PrefabDomValue& instanceDomValue);
 
-            //! Generates a DOM prefix subtree that contains the provided override patches for an entity.
-            //! Paths in patches should be subpath from an entity's perspective, eg: /Components/Component_[123].
-            //! @param subpathPatches The override patches for an entity that include subpaths.
-            //! @param pathToEntity The override path to an entity that will be used to construct patch paths.
-            //! @return DOM prefix tree that contains override patches.
-            AZ::Dom::DomPrefixTree<PrefabOverrideMetadata> GenerateOverrideSubTreeForEntity(
-                const PrefabDomValue& subpathPatches, const AZStd::string& pathToEntity);
-
         private:
             /**
              * Adds a linkId name,value object to the DOM of an instance.
