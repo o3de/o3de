@@ -1122,7 +1122,7 @@ namespace PhysX
         return m_shapeConfiguration.IsAssetConfig();
     }
 
-    AZ::Vector3 EditorColliderComponent::GetDimensions()
+    AZ::Vector3 EditorColliderComponent::GetDimensions() const
     {
         return m_shapeConfiguration.m_box.m_dimensions;
     }
@@ -1133,7 +1133,7 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    AZ::Vector3 EditorColliderComponent::GetTranslationOffset()
+    AZ::Vector3 EditorColliderComponent::GetTranslationOffset() const
     {
         return m_configuration.m_position;
     }
@@ -1144,9 +1144,14 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    AZ::Transform EditorColliderComponent::GetCurrentLocalTransform()
+    AZ::Transform EditorColliderComponent::GetCurrentLocalTransform() const
     {
         return GetColliderLocalTransform();
+    }
+
+    AZ::Transform EditorColliderComponent::GetManipulatorSpace() const
+    {
+        return GetWorldTM();
     }
 
     void EditorColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
