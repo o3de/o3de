@@ -465,19 +465,45 @@ namespace Terrain
         return !m_modifiedMacroColorImageData.empty() && m_macroColorImageIsModified;
     }
 
+    uint32_t TerrainMacroMaterialComponent::GetHighestLoadedMipLevel() const
+    {
+        if (m_configuration.m_macroColorAsset->IsReady())
+        {
+            // Walk through the mip chains to find the highest loaded mip level.
+            const size_t numMipChains = m_configuration.m_macroColorAsset->GetMipChainCount();
+            for (size_t mipChainIndex = 0; mipChainIndex < numMipChains; mipChainIndex++)
+            {
+                auto mipChainAsset = m_configuration.m_macroColorAsset->GetMipChainAsset(mipChainIndex);
+                if (mipChainAsset->IsReady())
+                {
+                    return aznumeric_cast<uint32_t>(m_configuration.m_macroColorAsset->GetMipLevel(mipChainIndex));
+                }
+            }
+        }
+
+        // No loaded mip level found.
+        return AZStd::numeric_limits<uint32_t>::max();
+    }
+
     void TerrainMacroMaterialComponent::CreateMacroColorImageModificationBuffer()
     {
-        if (!m_configuration.m_macroColorAsset->IsReady())
+        // Get the highest loaded mip, which is hopefully mip 0.
+        uint32_t mipLevel = GetHighestLoadedMipLevel();
+
+        if (mipLevel == AZStd::numeric_limits<uint32_t>::max())
         {
-            AZ_Error(
-                "TerrainMacroMaterialComponent",
-                false,
-                "Color data is empty. Make sure the image asset is fully loaded before attempting to modify it.");
+            AZ_Error("TerrainMacroMaterialComponent", false, "No mip levels are loaded, cannot create an image modification buffer.");
             return;
         }
 
+        if (mipLevel > 0)
+        {
+            AZ_Warning("TerrainMacroMaterialComponent", false,
+                "Highest mip level loaded is %zu, painting data will be of lesser quality.", mipLevel);
+        }
+
         const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_macroColorAsset->GetImageDescriptor();
-        auto imageData = m_configuration.m_macroColorAsset->GetSubImageData(0, 0);
+        auto imageData = m_configuration.m_macroColorAsset->GetSubImageData(mipLevel, 0);
 
         const auto& width = imageDescriptor.m_size.m_width;
         const auto& height = imageDescriptor.m_size.m_height;

@@ -112,6 +112,7 @@ namespace Terrain
         void OnPaintModeEnd() override;
         AZ::Color OnGetColor(const AZ::Vector3& brushCenter) const override;
 
+        uint32_t GetHighestLoadedMipLevel() const;
         void CreateMacroColorImageModificationBuffer();
         void DestroyMacroColorImageModificationBuffer();
         bool MacroColorModificationBufferIsActive() const;
