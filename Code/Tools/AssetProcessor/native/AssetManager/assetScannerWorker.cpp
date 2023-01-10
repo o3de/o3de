@@ -9,6 +9,7 @@
 #include "native/AssetManager/assetScanner.h"
 #include "native/utilities/PlatformConfiguration.h"
 #include <QDir>
+#include <QtConcurrent/QtConcurrentFilter>
 
 using namespace AssetProcessor;
 
@@ -25,6 +26,8 @@ void AssetScannerWorker::StartScan()
 
     m_fileList.clear();
     m_folderList.clear();
+    m_excludedList.clear();
+    
     m_doScan = true;
 
     AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Scanning file system for changes...\n");
@@ -46,6 +49,8 @@ void AssetScannerWorker::StartScan()
     {
         m_fileList.clear();
         m_folderList.clear();
+        m_excludedList.clear();
+        
         Q_EMIT ScanningStateChanged(AssetProcessor::AssetScanningStatus::Stopped);
         return;
     }
@@ -74,64 +79,118 @@ void AssetScannerWorker::ScanForSourceFiles(const ScanFolderInfo& scanFolderInfo
         return;
     }
 
-    QDir dir(scanFolderInfo.ScanPath());
-
     QFileInfoList entries;
 
-    //Only scan sub folders if recurseSubFolders flag is set
-    if (!scanFolderInfo.RecurseSubFolders())
-    {
-        entries = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::Files);
-    }
-    else
-    {
-        entries = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::Files);
-    }
+    QDir cacheDir;
+    AssetUtilities::ComputeProjectCacheRoot(cacheDir);
+    QString normalizedCachePath = AssetUtilities::NormalizeDirectoryPath(cacheDir.absolutePath());
+    AZ::IO::Path cachePath(normalizedCachePath.toUtf8().constData());
 
-    for (const QFileInfo& entry : entries)
+    QString intermediateAssetsFolder = QString::fromUtf8(AssetUtilities::GetIntermediateAssetsFolder(cachePath).c_str());
+    QString normalizedIntermediateAssetsFolder = AssetUtilities::NormalizeDirectoryPath(intermediateAssetsFolder);
+
+    // Implemented non-recursively so that the above functions only have to be called once per scan,
+    // and so that the performance is easy to analyze in a profiler:
+    QList<ScanFolderInfo> pathsToScanQueue;
+    pathsToScanQueue.push_back(scanFolderInfo);
+
+    while (!pathsToScanQueue.empty())
     {
-        if (!m_doScan) // scan was cancelled!
+        ScanFolderInfo pathToScan = pathsToScanQueue.back();
+        pathsToScanQueue.pop_back();
+        QDir dir(pathToScan.ScanPath());
+        dir.setSorting(QDir::Unsorted);
+        // Only scan sub folders if recurseSubFolders flag is set
+        if (!scanFolderInfo.RecurseSubFolders())
         {
-            return;
+            entries = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::Files);
+        }
+        else
+        {
+            entries = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::Files);
         }
 
-        QString absPath = entry.absoluteFilePath();
-        const bool isDirectory = entry.isDir();
-        QDateTime modTime = entry.lastModified();
-        AZ::u64 fileSize = isDirectory ? 0 : entry.size();
-        AssetFileInfo assetFileInfo(absPath, modTime, fileSize, &rootScanFolder, isDirectory);
+        for (const QFileInfo& entry : entries)
+        {
+            if (!m_doScan) // scan was cancelled!
+            {
+                return;
+            }
 
-        // Filtering out excluded files
-        if (m_platformConfiguration->IsFileExcluded(absPath))
-        {
-            m_excludedList.insert(AZStd::move(assetFileInfo));
-            continue;
-        }
+            QString absPath = entry.absoluteFilePath();
+            const bool isDirectory = entry.isDir();
+            QDateTime modTime = entry.lastModified();
+            AZ::u64 fileSize = isDirectory ? 0 : entry.size();
+            AssetFileInfo assetFileInfo(absPath, modTime, fileSize, &rootScanFolder, isDirectory);
+            QString relPath = absPath.mid(rootScanFolder.ScanPath().length() + 1);
 
-        if (isDirectory)
-        {
-            //Entry is a directory
-            // The AP needs to know about all directories so it knows when a delete occurs if the path refers to a folder or a file
-            m_folderList.insert(AZStd::move(assetFileInfo));
-            ScanFolderInfo tempScanFolderInfo(absPath, "", "", false, true);
-            ScanForSourceFiles(tempScanFolderInfo, rootScanFolder);
-        }
-        else if (!AssetUtilities::IsInCacheFolder(absPath.toUtf8().constData())) // Ignore files in the cache
-        {
-            //Entry is a file
-            m_fileList.insert(AZStd::move(assetFileInfo));
+            if (isDirectory)
+            {
+                // in debug, assert that the paths coming from qt directory info iteration is already normalized
+                // allowing us to skip normalization and know that comparisons like "IsInCacheFolder" will actually succed.
+                Q_ASSERT(absPath == AssetUtilities::NormalizeDirectoryPath(absPath));
+                // Filtering out excluded directories immediately (not in a thread pool) since that prevents us from recursing.
+
+                // we already know the root scan folder, and can thus chop that part off and call the cheaper IsFileExcludedRelPath:
+
+                if (m_platformConfiguration->IsFileExcludedRelPath(relPath))
+                {
+                    m_excludedList.insert(AZStd::move(assetFileInfo));
+                    continue;
+                }
+
+                // Entry is a directory
+                // The AP needs to know about all directories so it knows when a delete occurs if the path refers to a folder or a file
+                m_folderList.insert(AZStd::move(assetFileInfo));
+
+                // recurse into this folder.
+                // Since we only care about source files, we can skip cache folders that are not the Intermediate Assets Folder.
+
+                if (absPath.startsWith(normalizedCachePath))
+                {
+                    // its in the cache.  Is it the cache itself?
+                    if (absPath.length() != normalizedCachePath.length())
+                    {
+                        // no.  Is it in the intermediateassets?
+                        if (!absPath.startsWith(normalizedIntermediateAssetsFolder))
+                        {
+                            // Its not something in the intermediate assets folder, nor is it the cache itself,
+                            // so it is just a file somewhere in the cache.
+                            continue; // do not recurse.
+                        }
+                    }
+                }
+                // then we can recurse.  Otherwise, its a non-intermediate-assets-folder
+                ScanFolderInfo tempScanFolderInfo(absPath, "", "", false, true);
+                pathsToScanQueue.push_back(tempScanFolderInfo);
+            }
+            else
+            {
+                // Entry is a file
+                Q_ASSERT(absPath == AssetUtilities::NormalizeFilePath(absPath));
+
+                if (!AssetUtilities::IsInCacheFolder(absPath.toUtf8().constData(), cachePath)) // Ignore files in the cache
+                {
+                    if (!m_platformConfiguration->IsFileExcludedRelPath(relPath))
+                    {
+                        m_fileList.insert(AZStd::move(assetFileInfo));
+                    }
+                    else
+                    {
+                        m_excludedList.insert(AZStd::move(assetFileInfo));
+                    }
+                }
+            }
         }
     }
 }
 
 void AssetScannerWorker::EmitFiles()
 {
-    //Loop over all source asset files and send them up the chain:
     Q_EMIT FilesFound(m_fileList);
     m_fileList.clear();
     Q_EMIT FoldersFound(m_folderList);
     m_folderList.clear();
     Q_EMIT ExcludedFound(m_excludedList);
     m_excludedList.clear();
-
 }
