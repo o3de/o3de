@@ -20,9 +20,12 @@ logger = get_logger(__file__)
 
 def parse_args():
     def valid_file_path(value):
-        if pathlib.Path(value).is_file():
+        path = pathlib.Path(value)
+        if path.is_file():
             return value
         else:
+            for item in path.parent.iterdir():
+                print(item)
             raise FileNotFoundError(value)
 
     def valid_timout_type(value):
