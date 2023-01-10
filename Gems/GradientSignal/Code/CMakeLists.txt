@@ -75,6 +75,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 3rdParty::OpenImageIO
                 Gem::LmbrCentral.Editor
+                Gem::Atom_RPI.Edit
             PUBLIC
                 3rdParty::Qt::Widgets
                 AZ::AzCore
@@ -141,6 +142,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 AZ::AzTestShared
+                Gem::Atom_RPI.TestUtils.Static
                 Gem::GradientSignal.Static
                 Gem::LmbrCentral
                 Gem::LmbrCentral.Mocks

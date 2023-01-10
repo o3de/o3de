@@ -19,6 +19,7 @@
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 #include <Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h>
+#include <TerrainProfiler.h>
 
 using namespace Terrain;
 
@@ -84,9 +85,7 @@ void TerrainSystem::Activate()
         &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataCreateBegin);
 
     m_dirtyRegion = AZ::Aabb::CreateNull();
-    m_terrainHeightDirty = true;
-    m_terrainSettingsDirty = true;
-    m_terrainSurfacesDirty = true;
+    m_terrainDirtyMask = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All;
     m_requestedSettings.m_systemActive = true;
     m_cachedAreaBounds = AZ::Aabb::CreateNull();
 
@@ -137,9 +136,7 @@ void TerrainSystem::Deactivate()
     }
 
     m_dirtyRegion = AZ::Aabb::CreateNull();
-    m_terrainHeightDirty = true;
-    m_terrainSettingsDirty = true;
-    m_terrainSurfacesDirty = true;
+    m_terrainDirtyMask = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All;
     m_requestedSettings.m_systemActive = false;
 
     AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
@@ -149,7 +146,7 @@ void TerrainSystem::Deactivate()
 void TerrainSystem::SetTerrainHeightBounds(const AzFramework::Terrain::FloatRange& heightRange)
 {   
     m_requestedSettings.m_heightRange = heightRange;
-    m_terrainSettingsDirty = true;
+    m_terrainDirtyMask |= AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings;
 }
 
 bool TerrainSystem::TerrainAreaExistsInBounds(const AZ::Aabb& bounds) const
@@ -167,13 +164,13 @@ bool TerrainSystem::TerrainAreaExistsInBounds(const AZ::Aabb& bounds) const
 void TerrainSystem::SetTerrainHeightQueryResolution(float queryResolution)
 {
     m_requestedSettings.m_heightQueryResolution = queryResolution;
-    m_terrainSettingsDirty = true;
+    m_terrainDirtyMask |= AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings;
 }
 
 void TerrainSystem::SetTerrainSurfaceDataQueryResolution(float queryResolution)
 {
     m_requestedSettings.m_surfaceDataQueryResolution = queryResolution;
-    m_terrainSettingsDirty = true;
+    m_terrainDirtyMask |= AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings;
 }
 
 AZ::Aabb TerrainSystem::GetTerrainAabb() const
@@ -303,7 +300,7 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>&
     AZStd::vector<AZ::Vector3>& outPositions, float queryResolution,
     Sampler sampler) const
 {
-    AZ_PROFILE_FUNCTION(Terrain);
+    TERRAIN_PROFILE_FUNCTION_VERBOSE
 
     const float minHeight = m_currentSettings.m_heightRange.m_min;
     for (auto& position : inPositions)
@@ -384,7 +381,7 @@ void TerrainSystem::MakeBulkQueries(
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
     BulkQueriesCallback queryCallback) const
 {
-    AZ_PROFILE_FUNCTION(Terrain);
+    TERRAIN_PROFILE_FUNCTION_VERBOSE
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
@@ -432,7 +429,7 @@ void TerrainSystem::MakeBulkQueries(
 void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<float> heights, AZStd::span<bool> terrainExists) const
 {
-    AZ_PROFILE_FUNCTION(Terrain);
+    TERRAIN_PROFILE_FUNCTION_VERBOSE
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
@@ -466,7 +463,10 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
                             const auto& area = m_registeredAreas.find(areaId);
                             if ((area != m_registeredAreas.end()) && area->second.m_useGroundPlane)
                             {
-                                const float areaMin = area->second.m_areaBounds.GetMin().GetZ();
+                                const float areaMin = AZStd::clamp(
+                                    area->second.m_areaBounds.GetMin().GetZ(),
+                                    m_currentSettings.m_heightRange.m_min,
+                                    m_currentSettings.m_heightRange.m_max);
 
                                 for (size_t index = 0; index < outPositions.size(); index++)
                                 {
@@ -653,6 +653,7 @@ bool TerrainSystem::GetIsHoleFromFloats(float x, float y, Sampler sampler) const
 void TerrainSystem::GetNormalsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<AZ::Vector3> normals, AZStd::span<bool> terrainExists) const
 {
+    TERRAIN_PROFILE_FUNCTION_VERBOSE
     // We use different algorithms for calculating the normals depending on the input sampler type,
     // with no real shared logic, so they've been split out into separate methods.
     switch (sampler)
@@ -1266,7 +1267,7 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList,
     AZStd::span<bool> terrainExists) const
 {
-    AZ_PROFILE_FUNCTION(Terrain);
+    TERRAIN_PROFILE_FUNCTION_VERBOSE
 
     if (terrainExists.size() == outSurfaceWeightsList.size())
     {
@@ -1409,7 +1410,7 @@ void TerrainSystem::QueryList(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
-    AZ_PROFILE_FUNCTION(Terrain);
+    TERRAIN_PROFILE_FUNCTION_VERBOSE
 
     if (!perPositionCallback)
     {
@@ -1427,10 +1428,7 @@ void TerrainSystem::QueryList(
     if (requestedData & TerrainDataMask::Normals)
     {
         normals.resize(inPositions.size());
-        {
-            AZ_PROFILE_SCOPE(Terrain, "GetNormalsSynchronous");
-            GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
-        }
+        GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
     }
     if (requestedData & TerrainDataMask::Heights)
     {
@@ -1449,7 +1447,7 @@ void TerrainSystem::QueryList(
     }
 
     {
-        AZ_PROFILE_SCOPE(Terrain, "QueryList-PerPositionCallbacks");
+        TERRAIN_PROFILE_SCOPE_VERBOSE("QueryList-PerPositionCallbacks");
 
         AzFramework::SurfaceData::SurfacePoint surfacePoint;
         for (size_t i = 0; i < inPositions.size(); i++)
@@ -1688,8 +1686,8 @@ void TerrainSystem::RegisterArea(AZ::EntityId areaId)
 
     m_registeredAreas[areaId] = { aabb, useGroundPlane };
     m_dirtyRegion.AddAabb(aabb);
-    m_terrainHeightDirty = true;
-    m_terrainSurfacesDirty = true;
+    m_terrainDirtyMask |= AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData |
+        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData;
     m_cachedAreaBounds.AddAabb(aabb);
 }
 
@@ -1708,8 +1706,8 @@ void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
             if (areaId == entityId)
             {
                 m_dirtyRegion.AddAabb(areaData.m_areaBounds);
-                m_terrainHeightDirty = true;
-                m_terrainSurfacesDirty = true;
+                m_terrainDirtyMask |= AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData |
+                    AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData;
 
                 if (ContainedAabbTouchesEdge(m_cachedAreaBounds, areaData.m_areaBounds))
                 {
@@ -1761,15 +1759,10 @@ void TerrainSystem::RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::Terra
 void TerrainSystem::RefreshRegion(
     const AZ::Aabb& dirtyRegion, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask)
 {
-    using Terrain = AzFramework::Terrain::TerrainDataNotifications;
-
     m_dirtyRegion.AddAabb(dirtyRegion);
 
     // Keep track of which types of data have changed so that we can send out the appropriate notifications later.
-
-    m_terrainHeightDirty = m_terrainHeightDirty || ((changeMask & Terrain::HeightData) == Terrain::HeightData);
-
-    m_terrainSurfacesDirty = m_terrainSurfacesDirty || ((changeMask & Terrain::SurfaceData) == Terrain::SurfaceData);
+    m_terrainDirtyMask |= changeMask;
 }
 
 void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
@@ -1778,10 +1771,11 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 
     bool terrainSettingsChanged = false;
 
-    if (m_terrainSettingsDirty)
+    if ((m_terrainDirtyMask & AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings) ==
+        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings)
     {
         terrainSettingsChanged = true;
-        m_terrainSettingsDirty = false;
+        m_terrainDirtyMask &= ~AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings;
         if (m_currentSettings.m_heightRange.IsValid())
         {
             m_dirtyRegion = ClampZBoundsToHeightBounds(m_cachedAreaBounds);
@@ -1791,8 +1785,8 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
         // terrain layer areas to request the current world bounds.
         if (m_requestedSettings.m_heightRange != m_requestedSettings.m_heightRange)
         {
-            m_terrainHeightDirty = true;
-            m_terrainSurfacesDirty = true;
+            m_terrainDirtyMask |= AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData |
+                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData;
             m_currentSettings.m_heightRange = m_requestedSettings.m_heightRange;
 
             // Add the cached area bounds clamped to the new range, so both the old and new range are included.
@@ -1801,40 +1795,30 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 
         if (m_requestedSettings.m_heightQueryResolution != m_currentSettings.m_heightQueryResolution)
         {
-            m_terrainHeightDirty = true;
+            m_terrainDirtyMask |= AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData;
         }
 
         if (m_requestedSettings.m_surfaceDataQueryResolution != m_currentSettings.m_surfaceDataQueryResolution)
         {
-            m_terrainSurfacesDirty = true;
+            m_terrainDirtyMask |= AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData;
         }
 
         m_currentSettings = m_requestedSettings;
     }
 
-    if (terrainSettingsChanged || m_terrainHeightDirty || m_terrainSurfacesDirty)
+    if (terrainSettingsChanged || (m_terrainDirtyMask != AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::None))
     {
-        Terrain::TerrainDataChangedMask changeMask = Terrain::TerrainDataChangedMask::None;
+        Terrain::TerrainDataChangedMask changeMask = m_terrainDirtyMask;
 
         if (terrainSettingsChanged)
         {
-            changeMask = static_cast<Terrain::TerrainDataChangedMask>(changeMask | Terrain::TerrainDataChangedMask::Settings);
-        }
-        if (m_terrainHeightDirty)
-        {
-            changeMask = static_cast<Terrain::TerrainDataChangedMask>(changeMask | Terrain::TerrainDataChangedMask::HeightData);
-        }
-
-        if (m_terrainSurfacesDirty)
-        {
-            changeMask = static_cast<Terrain::TerrainDataChangedMask>(changeMask | Terrain::TerrainDataChangedMask::SurfaceData);
+            changeMask |= Terrain::TerrainDataChangedMask::Settings;
         }
 
         // Make sure to set these *before* calling OnTerrainDataChanged, since it's possible that subsystems reacting to that call will
         // cause the data to become dirty again.
         AZ::Aabb dirtyRegion = ClampZBoundsToHeightBounds(m_dirtyRegion);
-        m_terrainHeightDirty = false;
-        m_terrainSurfacesDirty = false;
+        m_terrainDirtyMask = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::None;
         m_dirtyRegion = AZ::Aabb::CreateNull();
 
         AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(

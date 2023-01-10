@@ -224,6 +224,7 @@ namespace O3DE::ProjectManager
         ResetGemOriginFilter();
         ResetTypeFilter();
         ResetFeatureFilter();
+        ResetPlatformFilter();
     }
 
     void GemFilterWidget::ResetFilterWidget(
@@ -421,7 +422,7 @@ namespace O3DE::ProjectManager
     void GemFilterWidget::ResetPlatformFilter()
     {
         ResetSimpleOrFilter<GemInfo::Platform, GemInfo::Platforms>(
-            m_platformFilter, "Supported Platforms", GemInfo::NumPlatforms,
+            m_platformFilter, "Platforms", GemInfo::NumPlatforms,
             [](GemModel* gemModel, GemInfo::Platform platform, int gemIndex)
             {
                 return static_cast<bool>(platform & gemModel->GetPlatforms(gemModel->index(gemIndex, 0)));

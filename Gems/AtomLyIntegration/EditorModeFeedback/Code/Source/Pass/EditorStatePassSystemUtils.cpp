@@ -240,6 +240,8 @@ namespace AZ::Render
             slot.m_shaderInputName = Name("m_existingDepth");
             slot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
             slot.m_shaderImageDimensionsName = Name("m_existingDepthDimensions");
+            slot.m_imageViewDesc = AZStd::make_shared<RHI::ImageViewDescriptor>();
+            slot.m_imageViewDesc->m_aspectFlags = RHI::ImageAspectFlags::Depth;
             maskPassTemplate->AddSlot(slot);
         }
 

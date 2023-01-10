@@ -18,6 +18,7 @@
 #include <AzFramework/FileTag/FileTagComponent.h>
 #include <AzFramework/Input/Contexts/InputContextComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
+#include <AzFramework/PaintBrush/PaintBrushSystemComponent.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
 #include <AzFramework/Scene/SceneSystemComponent.h>
 #include <AzFramework/Script/ScriptComponent.h>
@@ -46,6 +47,7 @@ namespace AzFramework
             AzFramework::AssetSystem::AssetSystemComponent::CreateDescriptor(),
             AzFramework::InputSystemComponent::CreateDescriptor(),
             AzFramework::InputContextComponent::CreateDescriptor(),
+            AzFramework::PaintBrushSystemComponent::CreateDescriptor(),
 
     #if !defined(AZCORE_EXCLUDE_LUA)
             AzFramework::ScriptComponent::CreateDescriptor(),

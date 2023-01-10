@@ -49,6 +49,8 @@ set(FILES
     AssetEditor/AssetEditorHeader.cpp
     AssetEditor/AssetEditorHeader.h
     AssetEditor/AssetEditorUtils.h
+    AssetEditor/AssetEditorTab.cpp
+    AssetEditor/AssetEditorTab.h
     AssetEditor/Resources/AssetEditorResources.qrc
     UI/Logging/LogLine.h
     UI/Logging/LogLine.cpp
@@ -214,6 +216,7 @@ set(FILES
     Manipulators/BoxManipulatorRequestBus.h
     Manipulators/EditorVertexSelection.h
     Manipulators/EditorVertexSelection.cpp
+    Manipulators/EditorVertexSelectionBus.h
     Manipulators/HoverSelection.h
     Manipulators/LineHoverSelection.h
     Manipulators/LineHoverSelection.cpp
@@ -666,6 +669,8 @@ set(FILES
     AssetBrowser/AssetBrowserFilterModel.h
     AssetBrowser/AssetBrowserTableModel.cpp
     AssetBrowser/AssetBrowserTableModel.h
+    AssetBrowser/AssetBrowserThumbnailViewProxyModel.cpp
+    AssetBrowser/AssetBrowserThumbnailViewProxyModel.h
     AssetBrowser/AssetBrowserModel.cpp
     AssetBrowser/AssetBrowserModel.h
     AssetBrowser/AssetEntryChange.h
@@ -680,6 +685,8 @@ set(FILES
     AssetBrowser/Views/AssetBrowserTreeViewDialog.h
     AssetBrowser/Views/AssetBrowserTableView.cpp
     AssetBrowser/Views/AssetBrowserTableView.h
+    AssetBrowser/Views/AssetBrowserThumbnailView.cpp
+    AssetBrowser/Views/AssetBrowserThumbnailView.h
     AssetBrowser/Views/EntryDelegate.cpp
     AssetBrowser/Views/EntryDelegate.h
     AssetBrowser/Views/AssetBrowserFolderWidget.cpp
@@ -802,6 +809,7 @@ set(FILES
     Prefab/Overrides/PrefabOverridePublicInterface.h
     Prefab/Overrides/PrefabOverridePublicHandler.h
     Prefab/Overrides/PrefabOverridePublicHandler.cpp
+    Prefab/Overrides/PrefabOverrideTypes.h
     Prefab/Procedural/ProceduralPrefabAsset.h
     Prefab/Procedural/ProceduralPrefabAsset.cpp
     Prefab/PrefabPublicHandler.h
@@ -903,6 +911,7 @@ set(FILES
     UI/Prefab/PrefabIntegrationInterface.h
     UI/Prefab/PrefabSaveLoadHandler.h
     UI/Prefab/PrefabSaveLoadHandler.cpp
+    UI/Prefab/Constants.h
     UI/Prefab/PrefabUiHandler.h
     UI/Prefab/PrefabUiHandler.cpp
     UI/Prefab/PrefabViewportFocusPathHandler.h

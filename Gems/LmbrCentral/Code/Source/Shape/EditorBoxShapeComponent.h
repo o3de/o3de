@@ -56,9 +56,9 @@ namespace LmbrCentral
         // AzToolsFramework::BoxManipulatorRequestBus
         AZ::Vector3 GetDimensions() override;
         void SetDimensions(const AZ::Vector3& dimensions) override;
-        AZ::Transform GetCurrentTransform() override;
+        AZ::Vector3 GetTranslationOffset() override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
         AZ::Transform GetCurrentLocalTransform() override;
-        AZ::Vector3 GetBoxScale() override;
 
         void ConfigurationChanged();        
 

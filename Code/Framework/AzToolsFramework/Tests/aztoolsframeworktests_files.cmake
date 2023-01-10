@@ -99,6 +99,7 @@ set(FILES
     Prefab/Overrides/PrefabOverrideTestFixture.cpp
     Prefab/Overrides/PrefabOverrideTestFixture.h
     Prefab/PrefabDeleteTests.cpp
+    Prefab/PrefabDeleteAsOverrideTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabInstanceToTemplatePropagatorTests.cpp
@@ -121,6 +122,7 @@ set(FILES
     Prefab/PrefabUndoAddEntityTestFixture.cpp
     Prefab/PrefabUndoAddEntityTestFixture.h
     Prefab/PrefabUndoAddEntityTests.cpp
+    Prefab/PrefabUndoDeleteTests.cpp
     Prefab/PrefabUndoLinkTests.cpp
     Prefab/PrefabUndoTests.cpp
     Prefab/PrefabUpdateInstancesTests.cpp

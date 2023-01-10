@@ -638,6 +638,7 @@ namespace Benchmark
         void internalSetUp()
         {
             executor = new TaskExecutor;
+            TaskExecutor::SetInstance(executor);
             graph = new TaskGraph{ "BenchmarkFixture" };
         }
 
@@ -645,6 +646,7 @@ namespace Benchmark
         {
             delete graph;
             delete executor;
+            TaskExecutor::SetInstance(nullptr);
         }
 
     public:

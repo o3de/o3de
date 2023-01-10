@@ -4,32 +4,16 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-import os
-import pyside_utils
-from editor_python_test_tools.utils import TestHelper as helper
-from editor_python_test_tools.utils import Report, Tracer
-import editor_python_test_tools.hydra_editor_utils as hydra
-import scripting_utils.scripting_tools as scripting_tools
-import azlmbr.legacy.general as general
-import azlmbr.paths as paths
-from scripting_utils.scripting_constants import (BASE_LEVEL_NAME, WAIT_TIME_3, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
 
 
-# fmt: off
 class Tests:
     entity_created     = ("New entity created",              "New entity not created")
     game_mode_entered = ("Game Mode successfully entered", "Game mode failed to enter")
     game_mode_exited  = ("Game Mode successfully exited",  "Game mode failed to exited")
     lines_found       = ("Expected log lines were found",  "Expected log lines were not found")
-# fmt: on
 
 
-EXPECTED_LINES = ["Greetings from the first script", "Greetings from the second script"]
-SOURCE_FILES = [os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents0.scriptcanvas"),
-                os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")]
-TEST_ENTITY_NAME = "test_entity"
-
-class TestScriptCanvas_TwoComponents_InteractSuccessfully:
+def ScriptCanvas_TwoComponents_InteractSuccessfully():
     """
     Summary:
      A test entity contains two Script Canvas components with different unique script canvas files.
@@ -53,41 +37,56 @@ class TestScriptCanvas_TwoComponents_InteractSuccessfully:
 
     :return: None
     """
+    from editor_python_test_tools.utils import TestHelper
+    from editor_python_test_tools.utils import Report, Tracer
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.editor_component.editor_script_canvas import ScriptCanvasComponent
+    import scripting_utils.scripting_tools as scripting_tools
+    import azlmbr.legacy.general as general
+    import os
+    import azlmbr.paths as paths
+    import azlmbr.math as math
+    from scripting_utils.scripting_constants import (WAIT_TIME_3)
 
-    def __init__(self):
-        self.editor_main_window = None
+    EXPECTED_LINES = ["Greetings from the first script", "Greetings from the second script"]
+    SOURCE_FILE_0 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
+    SOURCE_FILE_1 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
+    TEST_ENTITY_NAME = "test_entity"
 
-    @pyside_utils.wrap_async
-    async def run_test(self):
+    # Preconditions
+    general.idle_enable(True)
 
-        # Preconditions
-        general.idle_enable(True)
+    # 1) Create level
+    TestHelper.open_level("", "Base")
 
-        # 1) Create level
-        hydra.open_base_level()
-        helper.wait_for_condition(lambda: general.get_current_level_name() == BASE_LEVEL_NAME, WAIT_TIME_3)
-        general.close_pane("Error Report")
+    # 2) Create entity with SC components
+    position = math.Vector3(512.0, 512.0, 32.0)
+    editor_entity = EditorEntity.create_editor_entity_at(position, TEST_ENTITY_NAME)
 
-        # 2) Create entity with SC components
-        entity = scripting_tools.create_entity_with_multiple_sc_component_asset(TEST_ENTITY_NAME, SOURCE_FILES)
-        helper.wait_for_condition(lambda: entity is not None, WAIT_TIME_3)
-        Report.critical_result(Tests.entity_created, entity.id.isValid())
+    scriptcanvas_component_1 = ScriptCanvasComponent(editor_entity)
+    scriptcanvas_component_1.set_component_graph_file_from_path(SOURCE_FILE_0)
 
-        with Tracer() as section_tracer:
+    scriptcanvas_component_2 = ScriptCanvasComponent(editor_entity)
+    scriptcanvas_component_2.set_component_graph_file_from_path(SOURCE_FILE_1)
 
-            # 3) Enter game mode
-            helper.enter_game_mode(Tests.game_mode_entered)
+    with Tracer() as section_tracer:
 
-            # 4) Wait for expected lines to be found
-            lines_located = helper.wait_for_condition(
-                lambda: scripting_tools.located_expected_tracer_lines(self, section_tracer, EXPECTED_LINES),
-                WAIT_TIME_3)
-            Report.result(Tests.lines_found, lines_located)
+        # 3) Enter game mode
+        TestHelper.enter_game_mode(Tests.game_mode_entered)
 
+        # 4) Wait for expected lines to be found
+        lines_located = TestHelper.wait_for_condition(
+            lambda: scripting_tools.located_expected_tracer_lines(section_tracer, EXPECTED_LINES),
+            WAIT_TIME_3)
+        Report.result(Tests.lines_found, lines_located)
 
-        # 5) Exit game mode
-        helper.exit_game_mode(Tests.game_mode_exited)
+    # 5) Exit game mode
+    TestHelper.exit_game_mode(Tests.game_mode_exited)
 
+if __name__ == "__main__":
+    import ImportPathHelper as imports
 
-test = TestScriptCanvas_TwoComponents_InteractSuccessfully()
-test.run_test()
+    imports.init()
+    from utils import Report
+
+    Report.start_test(ScriptCanvas_TwoComponents_InteractSuccessfully)

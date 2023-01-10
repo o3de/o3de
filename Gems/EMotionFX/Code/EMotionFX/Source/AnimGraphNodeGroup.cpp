@@ -212,6 +212,7 @@ namespace EMotionFX
             ->Field("name", &AnimGraphNodeGroup::m_name)
             ->Field("color", &AnimGraphNodeGroup::m_color)
             ->Field("isVisible", &AnimGraphNodeGroup::m_isVisible)
-            ->Field("isNameEditOngoing", &AnimGraphNodeGroup::m_nameEditOngoing);
+            ->Field("isNameEditOngoing", &AnimGraphNodeGroup::m_nameEditOngoing)
+            ->Field("parentNodeId", &AnimGraphNodeGroup::m_parentNodeId);
     }
 } // namespace EMotionFX

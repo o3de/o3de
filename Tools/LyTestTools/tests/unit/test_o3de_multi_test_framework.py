@@ -1197,9 +1197,7 @@ class TestMultiTestCollector(unittest.TestCase):
         mock_run.obj.marks = {"run_type": 'run_shared'}
         mock_run_2 = mock.MagicMock()
         mock_run_2.obj.marks = {"run_type": 'result'}
-        mock_instance = mock.MagicMock()
-        mock_instance.collect.return_value = [mock_run, mock_run_2]
-        mock_collect.return_value = [mock_instance]
+        mock_collect.return_value = [mock_run_2]
 
         collection = self.mock_test_class.collect()
         assert collection == [mock_run_2]
@@ -1222,13 +1220,10 @@ class TestMultiTestCollector(unittest.TestCase):
         mock_run_2 = mock.MagicMock()
         mock_run_2.obj.marks = {"run_type": 'result'}
         mock_run_2.function.marks = {"runner": mock_runner_2}
-        mock_instance = mock.MagicMock()
-        mock_instance.collect.return_value = [mock_run, mock_run_2]
-        mock_collect.return_value = [mock_instance]
+        mock_collect.return_value = [mock_run_2]
 
         self.mock_test_class.collect()
 
-        assert mock_runner.run_pytestfunc == mock_run
         assert mock_run_2 in mock_runner_2.result_pytestfuncs
 
     @mock.patch('ly_test_tools.o3de.multi_test_framework.isinstance', mock.MagicMock())

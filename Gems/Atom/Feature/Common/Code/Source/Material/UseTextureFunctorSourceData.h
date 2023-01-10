@@ -41,7 +41,6 @@ namespace AZ
             AZStd::vector<Name> m_dependentProperties;
 
             // Shader option output...
-            AZStd::vector<AZ::Name> m_shaderTags; //!< Identifier tags associated to shaders that a material uses
             Name m_useTextureOptionName;        //!< Name of the shader option that controls whether the texture should be sampled
         };
 

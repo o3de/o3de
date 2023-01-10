@@ -25,11 +25,17 @@ namespace PhysX
         , public ColliderComponentModeUiRequestBus::Handler
     {
     public:
-
         AZ_CLASS_ALLOCATOR_DECL;
+        AZ_RTTI(ColliderComponentMode, "{07DA4C6A-743E-4703-8A31-98E276903C75}", EditorBaseComponentMode)
 
         ColliderComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         ~ColliderComponentMode();
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        static void RegisterActions();
+        static void BindActionsToModes();
+        static void BindActionsToMenus();
 
         // EditorBaseComponentMode overrides ...
         void Refresh() override;
@@ -39,6 +45,7 @@ namespace PhysX
         // ColliderComponentModeBus overrides ...
         SubMode GetCurrentMode() override;
         void SetCurrentMode(SubMode index) override;
+        void ResetCurrentMode() override;
 
         // ColliderComponentModeUiBus overrides ...
         AzToolsFramework::ViewportUi::ButtonId GetOffsetButtonId() const override;
@@ -48,12 +55,12 @@ namespace PhysX
 
         // ComponentMode overrides ...
         AZStd::string GetComponentModeName() const override;
+        AZ::Uuid GetComponentModeType() const override;
     private:
         
         // AzToolsFramework::ViewportInteraction::ViewportSelectionRequests ...
         bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         void CreateSubModes();
-        void ResetCurrentMode();
 
         AZStd::unordered_map<SubMode, AZStd::unique_ptr<PhysXSubComponentModeBase>> m_subModes;
         SubMode m_subMode = SubMode::Dimensions;

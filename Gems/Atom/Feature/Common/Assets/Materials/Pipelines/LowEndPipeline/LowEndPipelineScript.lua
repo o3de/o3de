@@ -15,9 +15,10 @@ function MaterialTypeSetup(context)
 
     context:ExcludeAllShaders()
     
-    if(lightingModel == "Base") then
         context:IncludeShader("DepthPass")
         context:IncludeShader("ShadowmapPass")
+
+    if(lightingModel == "Base") then
         context:IncludeShader("ForwardPass_BaseLighting")
         return true
     end
@@ -27,9 +28,12 @@ function MaterialTypeSetup(context)
             Warning("The low end pipeline does not support the Enhanced lighting model. Will use Standard lighting as a fallback.")
         end
 
-        context:IncludeShader("DepthPass")
-        context:IncludeShader("ShadowmapPass")
+        context:IncludeShader("DepthPass_CustomZ")
+        context:IncludeShader("ShadowmapPass_CustomZ")
         context:IncludeShader("ForwardPass_StandardLighting")
+        context:IncludeShader("ForwardPass_StandardLighting_CustomZ")
+        context:IncludeShader("Transparent_StandardLighting")
+        context:IncludeShader("TintedTransparent_StandardLighting")
         return true
     end
     

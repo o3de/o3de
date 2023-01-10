@@ -35,6 +35,7 @@
 #include <EMotionFX/Source/AnimGraphSyncTrack.h>
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/ActorManager.h>
+#include <EMotionFX/Source/ObjectId.h>
 
 #include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
@@ -291,6 +292,8 @@ namespace EMotionFX
             MCore::ReflectionSerializer::Reflect(context);
             MCore::StringIdPoolIndex::Reflect(context);
             EMotionFX::ConstraintTransformRotationAngles::Reflect(context);
+
+            EMotionFX::ObjectId::Reflect(context);
 
             // Actor
             EMotionFX::PhysicsSetup::Reflect(context);
@@ -931,9 +934,14 @@ namespace EMotionFX
                   QIcon(),
                   [&]( const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
                   {
-                      AZStd::string outFilePath;
-                      AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
-                          fullSourceFolderNameInCallback, "NewAnimGraph.animgraph", outFilePath);
+                      AZ::IO::FixedMaxPath outFilePath = AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
+                          AZ::IO::PathView(fullSourceFolderNameInCallback + "/NewAnimGraph.animgraph"));
+
+                      AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                          AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                          &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                          outFilePath.Native().c_str(),
+                          AZ::Crc32());
 
                       EMotionFX::AnimGraph* animGraph = aznew EMotionFX::AnimGraph();
                       // create the root state machine object
@@ -948,7 +956,7 @@ namespace EMotionFX
                           animGraph->RecursiveInvalidateUniqueDatas();
                           AZ::SerializeContext* serializeContext = nullptr;
                           AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-                          animGraph->SaveToFile(outFilePath, serializeContext);
+                          animGraph->SaveToFile(outFilePath.Native().c_str(), serializeContext);
                           delete animGraph;
                       }
                   } });
@@ -959,9 +967,14 @@ namespace EMotionFX
                   QIcon(),
                   [&]( const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
                   {
-                      AZStd::string outFilePath;
-                      AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
-                          fullSourceFolderNameInCallback, "NewMotionSet.motionset", outFilePath);
+                      AZ::IO::FixedMaxPath outFilePath = AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
+                          AZ::IO::PathView(fullSourceFolderNameInCallback + "/NewMotionSet.motionset"));
+
+                      AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                          AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                          &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                          outFilePath.Native().c_str(),
+                          AZ::Crc32());
 
                       AZ::IO::PathView filePath = outFilePath.c_str();
                       AZStd::string motionSetName = filePath.Stem().Native();
@@ -970,7 +983,7 @@ namespace EMotionFX
                       AZ::SerializeContext* serializeContext = nullptr;
                       AZ::ComponentApplicationBus::BroadcastResult(
                           serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-                      motionSet->SaveToFile(outFilePath, serializeContext);
+                      motionSet->SaveToFile(outFilePath.Native().c_str(), serializeContext);
                       delete motionSet;
                   } });
         }

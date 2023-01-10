@@ -93,6 +93,8 @@ namespace AZ
             AZ::Aabb GetWorldBounds() override;
             AZ::Aabb GetLocalBounds() override;
 
+            void RegisterInnerExtentsChangedHandler(AZ::Event<bool>::Handler& handler);
+
         private:
 
             AZ_DISABLE_COPY(ReflectionProbeComponentController);
@@ -110,6 +112,9 @@ namespace AZ
             // update the feature processor and configuration outer extents
             void UpdateOuterExtents();
 
+            // computes the effective transform taking both the entity transform and the shape translation offset into account
+            AZ::Transform ComputeOverallTransform(const AZ::Transform& entityTransform) const;
+
             // box shape component, used for defining the outer extents of the probe area
             LmbrCentral::BoxShapeComponentRequests* m_boxShapeInterface = nullptr;
             LmbrCentral::ShapeComponentRequests* m_shapeBus = nullptr;
@@ -121,6 +126,9 @@ namespace AZ
             TransformInterface* m_transformInterface = nullptr;
             AZ::EntityId m_entityId;
             ReflectionProbeComponentConfig m_configuration;
+
+            // event fired when the inner extents change
+            AZ::Event<bool> m_innerExtentsChangedEvent;
         };
     } // namespace Render
 } // namespace AZ
