@@ -6,7 +6,6 @@
  *
  */
 
-// Shader Resource Groups
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
@@ -14,35 +13,35 @@
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-
 #include <Atom/Features/SrgSemantics.azsli>
 
-#include "MaterialGraphName.azsli"
+#include "MaterialGraphName_Common.azsli"
 
 VsOutput MainVS(VsInput IN)
 {
     return EvaluateVertexGeometry(IN);
 }
 
-struct PSDepthOutput
+struct PsDepthOutput
 {
     precise float depth : SV_Depth;
 };
 
-PSDepthOutput MainPS(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
+PsDepthOutput MainPS(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-    PSDepthOutput OUT;
+    PsDepthOutput OUT;
     OUT.depth = IN.position.z;
+
+#if DEPTH_WITH_PS
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
 
 #if 0
     if(ShouldHandleParallaxInDepthShaders())
     {
-        float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-        float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
-
-        float3 vertexNormal, vertexTangent, vertexBitangent;
-        ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
-
         float3 tangents[UvSetCount] = { vertexTangent, vertexTangent };
         float3 bitangents[UvSetCount] = { vertexBitangent, vertexBitangent };
 
@@ -64,12 +63,12 @@ PSDepthOutput MainPS(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     }
 #endif
 
-    #define O3DE_MC_POSITION positionWS
-    #define O3DE_MC_UV(index) uvs[clamp(index, 0, UvSetCount-1];
+    #define O3DE_MC_POSITION IN.worldPosition
+    #define O3DE_MC_UV(index) IN.uv[clamp(index, 0, UvSetCount-1];
     #define O3DE_MC_NORMAL vertexNormal
-    #define O3DE_MC_TANGENT tangent[0]
-    #define O3DE_MC_BITANGENT bitangent[0]
-    #define O3DE_MC_WORLD_POSITION positionWS
+    #define O3DE_MC_TANGENT vertexTangent
+    #define O3DE_MC_BITANGENT vertexBitangent
+    #define O3DE_MC_WORLD_POSITION IN.worldPosition
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inAlpha
     float inAlpha = 1.0;
@@ -83,5 +82,7 @@ PSDepthOutput MainPS(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     #undef O3DE_MC_WORLD_POSITION
 
     CheckClipping(inAlpha, 0.99);
+#endif
+
     return OUT;
 }

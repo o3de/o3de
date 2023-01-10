@@ -19,6 +19,6 @@ function Process(context)
     -- a common .json file is to use a lua functor. If we had another way to add a connection to a property
     -- after defining it via $import, that would probably be simpler.
     local castShadows = context:GetMaterialPropertyValue_bool("general.cast_shadows")
-    local shadowMap = context:GetShaderByTag("ShadowPass")
+    local shadowMap = context:GetShaderByTag("Shadowmap")
     shadowMap:SetEnabled(castShadows)
 end

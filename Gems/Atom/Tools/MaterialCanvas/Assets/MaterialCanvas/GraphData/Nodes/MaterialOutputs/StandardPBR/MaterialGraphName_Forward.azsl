@@ -6,14 +6,17 @@
  *
  */
 
-
 // --- Pass SRG ---
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 
-
 // --- Material ---
-#include "MaterialGraphName.azsli"
-
+#include "MaterialGraphName_Common.azsli"
 
 // --- Vertex + Pixel Shader ---
+#if MULTI_VIEW_FORWARD
 #include <Atom/Features/Pipeline/Forward/MultiViewForwardPassVertexAndPixel.azsli>
+#elif LOW_END_FORWARD
+#include <Atom/Features/Pipeline/Forward/LowEndForwardPassVertexAndPixel.azsli>
+#else
+#include <Atom/Features/Pipeline/Forward/ForwardPassVertexAndPixel.azsli>
+#endif

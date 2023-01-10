@@ -17,8 +17,8 @@
             "tag": "MultiViewForward_EDS"
         },
         {
-            "file": "./MaterialGraphName_ShadowPass.shader",
-            "tag": "ShadowPass"
+            "file": "./MaterialGraphName_Shadowmap.shader",
+            "tag": "Shadowmap"
         },
         {
             "file": "./MaterialGraphName_DepthPass.shader",

@@ -44,9 +44,9 @@ Surface EvaluateSurface_StandardPBR(
     float inAlpha = 1.0;
     // O3DE_GENERATED_INSTRUCTIONS_END
 
-    float inDiffuseAmbientOcclusion = 0.0;
-    float inSpecularOcclusion = 0.0;
-    bool inOpacityAffectsSpecularFactor = true;
+    float inDiffuseAmbientOcclusion = 1.0;
+    float inSpecularOcclusion = 1.0;
+    bool inOpacityAffectsSpecularFactor = false;
 
     #undef O3DE_MC_POSITION
     #undef O3DE_MC_UV

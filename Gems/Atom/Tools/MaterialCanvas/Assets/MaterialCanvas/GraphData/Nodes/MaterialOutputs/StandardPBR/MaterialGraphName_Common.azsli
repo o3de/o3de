@@ -26,17 +26,21 @@
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/RPI/TangentSpace.azsli>
 #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli"
+#include <Atom/Features/PBR/LightingOptions.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
 
 #if 0
 #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli"
 #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli"
-#endif
-
-#include "MaterialGraphName_MaterialSrg.azsli"
-
-#if 0
 COMMON_OPTIONS_PARALLAX()
 #endif
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    // O3DE_GENERATED_MATERIAL_SRG_BEGIN
+    // O3DE_GENERATED_MATERIAL_SRG_END
+}
 
 // ------- Shader Stitching -------
  

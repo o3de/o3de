@@ -5,9 +5,9 @@
     // DrawListTag. If your pipeline doesn't have a "lowEndForward" DrawListTag, no draw items
     // for this shader will be created.
 
-    "Source" : "./MaterialGraphName_LowEndForward.azsl",
+    "Source" : "./MaterialGraphName_Forward.azsl",
 
-    "Definitions" : ["QUALITY_LOW_END_TIER1=1"],
+    "Definitions" : ["QUALITY_LOW_END_TIER1=1", "LOW_END_FORWARD=1"],
 
     "DepthStencilState" :
     {

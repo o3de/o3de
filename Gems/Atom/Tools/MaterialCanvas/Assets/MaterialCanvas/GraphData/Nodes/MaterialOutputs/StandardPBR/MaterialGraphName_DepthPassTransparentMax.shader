@@ -1,5 +1,5 @@
 {
-    "Source" : "./MaterialGraphName_DepthPass.azsl",
+    "Source" : "./MaterialGraphName_Depth.azsl",
 
     "RasterState": { "CullMode": "None" },
 

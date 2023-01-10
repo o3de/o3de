@@ -1,9 +1,7 @@
 {
-    "Source" : "./MaterialGraphName_DepthPass_WithPS.azsl",
+    "Source" : "./MaterialGraphName_Depth.azsl",
 
-    "Definitions" : ["SHADOWMAP=1"] ,
-
-    
+    "Definitions" : ["SHADOWMAP=1", "DEPTH_WITH_PS=1"],
     "DepthStencilState" : {
         "Depth" : { "Enable" : true, "CompareFunc" : "LessEqual" }
     },

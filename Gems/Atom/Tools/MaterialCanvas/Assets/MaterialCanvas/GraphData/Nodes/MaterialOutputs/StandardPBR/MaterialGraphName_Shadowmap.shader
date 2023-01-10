@@ -1,5 +1,5 @@
 {
-    "Source": "./MaterialGraphName_Shadowmap.azsl",
+    "Source": "./MaterialGraphName_Depth.azsl",
 
     "Definitions" : ["SHADOWMAP=1"] ,
 

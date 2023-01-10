@@ -1,5 +1,5 @@
 {
-    "Source" : "./MaterialGraphName_ForwardPass.azsl",
+    "Source" : "./MaterialGraphName_Forward.azsl",
 
     "DepthStencilState" :
     {
