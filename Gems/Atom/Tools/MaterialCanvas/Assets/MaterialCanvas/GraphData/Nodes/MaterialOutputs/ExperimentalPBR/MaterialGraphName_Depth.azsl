@@ -34,10 +34,6 @@ struct PSOutput
 
 PSOutput MainPS(CommonVSOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-    CommonPSOutput commonPSOutput = Evaluate_CommonPixelData(IN);
-
-    CheckClipping(commonPSOutput.m_alpha, 0.5);
-
     PSOutput OUT;
     OUT.m_depth = IN.m_position.z;
     return OUT;

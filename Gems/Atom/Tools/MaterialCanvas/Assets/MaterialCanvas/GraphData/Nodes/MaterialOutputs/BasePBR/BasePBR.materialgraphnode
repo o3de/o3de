@@ -36,6 +36,34 @@
                 "editableOnNode": false
             },
             {
+                "name": "inEnableNormal",
+                "displayName": "Enable Normal",
+                "description": "Enable Normal",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_normal_override_enabled"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
                 "name": "inDoubleSided",
                 "displayName": "Double Sided",
                 "description": "Whether to render back-faces or just front-faces.",

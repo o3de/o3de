@@ -50,7 +50,7 @@ Surface EvaluateSurface_BasePBR(
     Surface surface;
     surface.position = positionWS;
     surface.vertexNormal = vertexNormal;
-    surface.normal = (float3)inNormal;
+    surface.normal = normalize(o_normal_override_enabled ? (float3)inNormal : vertexNormal);
     surface.roughnessLinear = inRoughness;
     surface.SetAlbedoAndSpecularF0(inBaseColor, inSpecularF0Factor, inMetallic);
     surface.CalculateRoughnessA();

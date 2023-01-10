@@ -27,12 +27,6 @@
             "args": {
                 "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/HandleOpacityDoubleSided.lua"
             }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/HandleOpacityMode.lua"
-            }
         }
     ]
 }

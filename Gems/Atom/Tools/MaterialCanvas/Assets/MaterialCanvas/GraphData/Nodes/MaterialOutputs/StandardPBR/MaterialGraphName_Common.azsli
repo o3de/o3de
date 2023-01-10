@@ -10,10 +10,12 @@
 
 // ------- Options -------
 
-#define ENABLE_CLEAR_COAT       1
-#define ENABLE_TRANSMISSION     0
-#define ENABLE_PARALLAX         0 // Disabled until parallax depth functions can be rewritten to not pass in the heightmap or sampler from the material SRG
-#define UvSetCount              2
+#define ENABLE_CLEAR_COAT               1
+#define ENABLE_TRANSMISSION             0
+#define ENABLE_AREA_LIGHT_VALIDATION    0
+#define FORCE_OPAQUE                    0
+#define ENABLE_PARALLAX                 0 // Disabled until parallax depth functions can be rewritten to not pass in the heightmap or sampler from the material SRG
+#define UvSetCount                      2
 
 #include <Atom/Features/ShaderQualityOptions.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>

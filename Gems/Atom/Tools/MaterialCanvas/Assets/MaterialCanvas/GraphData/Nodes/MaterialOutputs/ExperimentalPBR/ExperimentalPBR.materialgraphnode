@@ -30,40 +30,6 @@
                 "editableOnNode": false
             },
             {
-                "name": "inOpacityMode",
-                "displayName": "Opacity Mode",
-                "description": "Indicates the general approach how transparency is to be applied.",
-                "supportedDataTypeRegex": "string",
-                "defaultDataType": "string",
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": "Opaque"
-                },
-                "enumValues": [
-                    "Opaque",
-                    "Cutout",
-                    "Blended",
-                    "TintedTransparent"
-                ],
-                "visibleOnNode": false,
-                "editableOnNode": false,
-                "allowNameSubstitution": false,
-                "settings": {
-                    "materialPropertyConnectionName": [
-                        "o_opacity_mode"
-                    ],
-                    "materialPropertyConnectionType": [
-                        "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
-                    ]
-                }
-            },
-            {
                 "name": "inDoubleSided",
                 "displayName": "Double Sided",
                 "description": "Whether to render back-faces or just front-faces.",
@@ -392,23 +358,6 @@
                 "description": "Emissive",
                 "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float3",
-                "allowNameSubstitution": false,
-                "settings": {
-                    "instructions": [
-                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
-                    ]
-                }
-            },
-            {
-                "name": "inAlpha",
-                "displayName": "Alpha",
-                "description": "Alpha",
-                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
-                "defaultDataType": "float",
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 1.0
-                },
                 "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [

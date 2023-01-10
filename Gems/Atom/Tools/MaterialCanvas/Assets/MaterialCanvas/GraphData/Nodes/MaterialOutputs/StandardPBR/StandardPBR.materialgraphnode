@@ -446,14 +446,6 @@
                 "description": "Position Offset",
                 "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float3",
-                "defaultValue": {
-                    "$type": "Vector3",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
                 "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
@@ -467,14 +459,6 @@
                 "description": "Normal",
                 "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float3",
-                "defaultValue": {
-                    "$type": "Vector3",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
                 "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [

@@ -31,8 +31,6 @@ ForwardPassOutput MainPS(CommonVSOutput IN)
 {
     CommonPSOutput commonPSOutput = Evaluate_CommonPixelData(IN);
 
-    CheckClipping(commonPSOutput.m_alpha, 0.5);
-
     // ------- Surface -------
 
     Surface surface;
@@ -73,6 +71,7 @@ ForwardPassOutput MainPS(CommonVSOutput IN)
 
     ForwardPassOutput OUT;
     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_diffuseColor.w = -1;
     OUT.m_specularColor = lightingOutput.m_specularColor;
     OUT.m_specularF0 = lightingOutput.m_specularF0;
     OUT.m_albedo = lightingOutput.m_albedo;
