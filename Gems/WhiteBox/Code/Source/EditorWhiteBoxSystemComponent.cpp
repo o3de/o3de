@@ -73,6 +73,7 @@ namespace WhiteBox
     void EditorWhiteBoxSystemComponent::Deactivate()
     {
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+        WhiteBoxSystemComponent::Deactivate();
     }
 
     void EditorWhiteBoxSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
