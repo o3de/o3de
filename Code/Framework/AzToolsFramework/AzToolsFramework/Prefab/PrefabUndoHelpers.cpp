@@ -113,8 +113,7 @@ namespace AzToolsFramework
             {
                 PrefabUndoEntityOverrides* state = aznew PrefabUndoEntityOverrides("Undo Updating Entity List As Override");
                 state->SetParent(undoBatch);
-                state->Capture(entityList, owningInstance, focusedInstance);
-                state->Redo();
+                state->CaptureAndRedo(entityList, owningInstance, focusedInstance);
             }
 
             void DeleteEntities(

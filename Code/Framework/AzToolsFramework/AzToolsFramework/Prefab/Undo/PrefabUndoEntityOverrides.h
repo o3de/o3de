@@ -30,8 +30,12 @@ namespace AzToolsFramework::Prefab
         void Undo() override;
         void Redo() override;
 
-        // The function to generate undo/redo an override subtree for updating the provided entity list as overrides.
-        void Capture(const AZStd::vector<const AZ::Entity*>& entityList, Instance& owningInstance, const Instance& focusedInstance);
+        // The function to generate override subtrees for updating the provided entity list as overrides.
+        // It does redo, so Redo() should not be called after.
+        void CaptureAndRedo(
+            const AZStd::vector<const AZ::Entity*>& entityList,
+            Instance& owningInstance,
+            const Instance& focusedInstance);
 
     private:
         // The function to update link during undo and redo.

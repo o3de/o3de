@@ -38,7 +38,7 @@ namespace AzToolsFramework
             return m_changed;
         }
 
-        void PrefabUndoEntityOverrides::Capture(
+        void PrefabUndoEntityOverrides::CaptureAndRedo(
             const AZStd::vector<const AZ::Entity*>& entityList,
             Instance& owningInstance,
             const Instance& focusedInstance)
@@ -118,10 +118,12 @@ namespace AzToolsFramework
                     }
                 }
 
-                // Subtrees in map are initialized as after-state subtrees for next redo.
-                PrefabOverridePrefixTree redoSubtree = link->get().GenerateOverrideSubTreeForEntity(
-                    overridePatchesWithSubpaths, entityPathFromTopInstance);
-                m_subtreeStates[AZ::Dom::Path(entityPathFromTopInstance)] = AZStd::move(redoSubtree);
+                // Remove the subtree and cache the subtree for undo.
+                AZ::Dom::Path entityDomPath(entityPathFromTopInstance.c_str());
+                m_subtreeStates[entityDomPath] = AZStd::move(link->get().RemoveOverrides(entityDomPath));
+
+                // Redo - Add the override patches to the tree.
+                link->get().AddOverrides(entityDomPath, overridePatchesWithSubpaths);
 
                 // Preemptively updates the cached DOM to prevent reloading instance DOM.
                 if (cachedOwningInstanceDom.has_value())
@@ -129,6 +131,11 @@ namespace AzToolsFramework
                     PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom, entityDomAfterUpdate, entityAliasPath);
                 }
             }
+
+            // Redo - Update target template of the link.
+            link->get().UpdateTarget();
+            m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
+            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
         }
 
         void PrefabUndoEntityOverrides::Undo()

@@ -103,7 +103,7 @@ namespace UnitTest
         InstanceOptionalReference carInstance = m_instanceEntityMapperInterface->FindOwningInstance(carContainerId);
         EXPECT_TRUE(carInstance.has_value());
 
-        // Retrieve the wheel entity object and entity id after adding to instance.
+        // Retrieve the wheel entity object and entity id after adding to instance
         EntityOptionalReference wheelEntityRef = carInstance->get().GetEntity(wheelEntityAlias);
         EXPECT_TRUE(wheelEntityRef.has_value());
         AZ::Entity* wheelEntity = &(wheelEntityRef->get());
@@ -117,12 +117,9 @@ namespace UnitTest
         wheelEntity->AddComponent(aznew PrefabTestComponent());
         wheelEntity->Activate();
 
-        // Create an undo node
+        // Create an undo node and redo
         PrefabUndoEntityOverrides undoNode("Undo Editing Entity As Override");
-        undoNode.Capture({ wheelEntity }, carInstance->get(), levelRootInstance->get());
-
-        // Redo
-        undoNode.Redo();
+        undoNode.CaptureAndRedo({ wheelEntity }, carInstance->get(), levelRootInstance->get());
         PropagateAllTemplateChanges();
 
         ASSERT_TRUE(overrideInterface->AreOverridesPresent(wheelEntityId));
@@ -186,12 +183,9 @@ namespace UnitTest
         addedEntity->AddComponent(aznew PrefabTestComponent());
         addedEntity->Activate();
 
-        // Create an undo node
+        // Create an undo node and redo
         PrefabUndoEntityOverrides undoNode("Undo Editing Entity As Override");
-        undoNode.Capture({ addedEntity }, carInstance->get(), levelRootInstance->get());
-
-        // Redo
-        undoNode.Redo();
+        undoNode.CaptureAndRedo({ addedEntity }, carInstance->get(), levelRootInstance->get());
         PropagateAllTemplateChanges();
 
         ASSERT_TRUE(overrideInterface->AreOverridesPresent(addedEntityId));

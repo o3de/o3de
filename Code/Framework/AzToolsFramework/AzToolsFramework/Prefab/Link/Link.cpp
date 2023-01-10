@@ -83,7 +83,7 @@ namespace AzToolsFramework
             }
         }
 
-        void Link::AddPatchesToLink(const PrefabDom& patches)
+        void Link::SetLinkPatches(const PrefabDom& patches)
         {
             RebuildLinkPatchesTree(patches);
         }
@@ -157,6 +157,11 @@ namespace AzToolsFramework
         bool Link::AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree)
         {
             return m_linkPatchesTree.OverwritePath(path, AZStd::move(subTree));
+        }
+
+        void Link::AddOverrides(const AZ::Dom::Path& path, const PrefabDomValue& patches)
+        {
+            AddLinkPatchesToTree(path, patches);
         }
 
         PrefabDomPath Link::GetInstancePath() const
@@ -284,35 +289,6 @@ namespace AzToolsFramework
             }
         }
 
-        PrefabOverridePrefixTree Link::GenerateOverrideSubTreeForEntity(
-            const PrefabDomValue& subpathPatches, const AZStd::string& pathToEntity)
-        {
-            PrefabOverridePrefixTree prefixTree;
-            if (subpathPatches.IsArray())
-            {
-                rapidjson::GenericArray patchesArray = subpathPatches.GetArray();
-                for (rapidjson::SizeType i = 0; i < patchesArray.Size(); i++)
-                {
-                    PrefabDom patchEntry;
-                    patchEntry.CopyFrom(patchesArray[i], patchEntry.GetAllocator());
-
-                    auto pathIter = patchEntry.FindMember("path");
-                    if (pathIter != patchEntry.MemberEnd())
-                    {
-                        AZStd::string subPath = pathIter->value.GetString(); // eg: '/Components/Component_[123]/Child Sort Order/0'
-                        AZStd::string fullPath = pathToEntity + subPath;
-                        pathIter->value.SetString(fullPath.c_str(), static_cast<rapidjson::SizeType>(fullPath.length()),
-                            patchEntry.GetAllocator());
-
-                        PrefabOverrideMetadata overrideMetadata(AZStd::move(patchEntry), m_patchIndexCounter++);
-                        // Subpath is used to build the subtree within an entity scope.
-                        prefixTree.SetValue(AZ::Dom::Path(subPath), AZStd::move(overrideMetadata));
-                    }
-                }
-            }
-            return prefixTree;
-        }
-
         void Link::RebuildLinkPatchesTree(const PrefabDomValue& patches)
         {
             m_linkPatchesTree.Clear();
@@ -324,10 +300,37 @@ namespace AzToolsFramework
                     PrefabDom patchEntry;
                     patchEntry.CopyFrom(patchesArray[i], patchEntry.GetAllocator());
 
-                    auto path = patchEntry.FindMember("path");
-                    if (path != patchEntry.MemberEnd())
+                    auto pathIter = patchEntry.FindMember("path");
+                    if (pathIter != patchEntry.MemberEnd())
                     {
-                        AZ::Dom::Path domPath(path->value.GetString());
+                        AZ::Dom::Path domPath(pathIter->value.GetString());
+                        PrefabOverrideMetadata overrideMetadata(AZStd::move(patchEntry), m_patchIndexCounter++);
+                        m_linkPatchesTree.SetValue(domPath, AZStd::move(overrideMetadata));
+                    }
+                }
+            }
+        }
+
+        void Link::AddLinkPatchesToTree(const AZ::Dom::Path& path, const PrefabDomValue& patches)
+        {
+            if (patches.IsArray())
+            {
+                rapidjson::GenericArray patchesArray = patches.GetArray();
+                for (rapidjson::SizeType i = 0; i < patchesArray.Size(); i++)
+                {
+                    PrefabDom patchEntry;
+                    patchEntry.CopyFrom(patchesArray[i], patchEntry.GetAllocator());
+
+                    auto pathIter = patchEntry.FindMember("path");
+                    if (pathIter != patchEntry.MemberEnd())
+                    {
+                        AZ::Dom::Path domPath = path / AZ::Dom::Path(pathIter->value.GetString());
+                        AZStd::string domPathString = domPath.ToString();
+
+                        pathIter->value.SetString(
+                            domPathString.c_str(), static_cast<rapidjson::SizeType>(domPathString.length()),
+                            patchEntry.GetAllocator());
+
                         PrefabOverrideMetadata overrideMetadata(AZStd::move(patchEntry), m_patchIndexCounter++);
                         m_linkPatchesTree.SetValue(domPath, AZStd::move(overrideMetadata));
                     }
