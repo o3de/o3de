@@ -66,7 +66,7 @@ namespace AzToolsFramework
             ~AssetEditorTab() override;
 
             void LoadAsset(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType, const QString& assetName);
-            void CreateAsset(AZ::Data::AssetType assetType, const QString& assetName);
+            void CreateAsset(AZ::Data::AssetType assetType, const QString& assetName, const AZ::Uuid& observerToken);
 
             const AZ::Data::AssetId& GetAssetId() const;
             void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
@@ -168,6 +168,9 @@ namespace AzToolsFramework
             void GenerateSaveDataSnapshot();
 
             QIcon m_warningIcon;
+
+            AZ::Uuid m_assetObserverToken; // Token that can be used to register for specific request for a new asset to be created via the AssetEditor::CreateAsset function. 
+
         };
     } // namespace AssetEditor
 } // namespace AzToolsFramework

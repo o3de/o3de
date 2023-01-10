@@ -120,8 +120,6 @@ namespace AzToolsFramework
             AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
             AZ_Assert(m_serializeContext, "Failed to retrieve serialize context.");
 
-            m_assetObserverToken = AZ::Uuid::CreateNull();
-
             setObjectName("AssetEditorWidget");
 
             QVBoxLayout* mainLayout = new QVBoxLayout();
@@ -168,7 +166,7 @@ namespace AzToolsFramework
                         this,
                         [assetType, this]()
                         {
-                            CreateAsset(assetType);
+                            CreateAsset(assetType, AZ::Uuid::CreateNull());
                         });
                 }
             }
@@ -218,31 +216,6 @@ namespace AzToolsFramework
         AssetEditorWidget::~AssetEditorWidget()
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
-        }
-
-        void AssetEditorWidget::CreateAsset(AZ::Data::AssetType assetType, const AZ::Uuid& observerToken)
-        {
-            m_assetObserverToken = observerToken;
-
-            auto typeIter = AZStd::find_if(
-                m_genericAssetTypes.begin(),
-                m_genericAssetTypes.end(),
-                [assetType](const AZ::Data::AssetType& testType)
-                {
-                    return assetType == testType;
-                });
-
-            if (typeIter != m_genericAssetTypes.end())
-            {
-                CreateAssetImpl(assetType);
-            }
-            else
-            {
-                AZ_Assert(
-                    false,
-                    "The AssetEditorWidget only supports Generic Asset Types, make sure your type has a handler that implements "
-                    "GenericAssetHandler");
-            }
         }
 
         void AssetEditorWidget::SaveAll()
@@ -321,11 +294,11 @@ namespace AzToolsFramework
             return true;
         }
 
-        void AssetEditorWidget::CreateAsset(AZ::Data::AssetType assetType)
+        void AssetEditorWidget::CreateAsset(AZ::Data::AssetType assetType, const AZ::Uuid& observerToken)
         {
             QString newAssetName = QString(tr("New Asset %1").arg(m_nextNewAssetIndex++));
             AssetEditorTab* newTab = MakeNewTab(newAssetName);
-            newTab->CreateAsset(assetType, newAssetName);
+            newTab->CreateAsset(assetType, newAssetName, observerToken);
         }
 
         void AssetEditorWidget::OpenAsset(const AZ::Data::Asset<AZ::Data::AssetData> asset)

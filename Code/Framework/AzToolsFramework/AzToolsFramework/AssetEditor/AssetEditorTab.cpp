@@ -153,6 +153,7 @@ namespace AzToolsFramework
         AssetEditorTab::AssetEditorTab(QWidget* parent)
             : QWidget(parent)
             , m_dirty(true)
+            , m_assetObserverToken(AZ::Uuid::CreateNull())
         {
             AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
             AZ_Assert(m_serializeContext, "Failed to retrieve serialize context.");
@@ -470,8 +471,10 @@ namespace AzToolsFramework
             return false;
         }
 
-        void AssetEditorTab::CreateAsset(AZ::Data::AssetType assetType, const QString& assetName)
+        void AssetEditorTab::CreateAsset(AZ::Data::AssetType assetType, const QString& assetName, const AZ::Uuid& observerToken)
         {
+            m_assetObserverToken = observerToken;
+
             if (m_parentEditorWidget->IsValidAssetType(assetType))
             {
                 CreateAssetImpl(assetType, assetName);
@@ -694,6 +697,8 @@ namespace AzToolsFramework
                 LoadAsset(assetId, assetInfo.m_assetType, m_currentAsset);
 
                 m_sourceAssetId = assetId;
+
+                AssetEditorNotificationsBus::Event(m_assetObserverToken, &AssetEditorNotifications::OnAssetCreated, assetId);
             }
         }
 
