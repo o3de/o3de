@@ -29,9 +29,9 @@ namespace AzToolsFramework
 
     void BoxViewportEdit::UpdateManipulators()
     {
-        AZ::Transform boxWorldFromLocal = AZ::Transform::CreateIdentity();
+        AZ::Transform manipulatorSpace = AZ::Transform::CreateIdentity();
         BoxManipulatorRequestBus::EventResult(
-            boxWorldFromLocal, m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetCurrentWorldTransform);
+            manipulatorSpace, m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetManipulatorSpace);
 
         AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(
@@ -49,7 +49,7 @@ namespace AzToolsFramework
         {
             if (auto& linearManipulator = m_linearManipulators[manipulatorIndex])
             {
-                linearManipulator->SetSpace(boxWorldFromLocal);
+                linearManipulator->SetSpace(manipulatorSpace);
                 linearManipulator->SetLocalTransform(
                     boxLocalTransform * AZ::Transform::CreateTranslation(s_boxAxes[manipulatorIndex] * 0.5f * boxDimensions));
                 linearManipulator->SetNonUniformScale(nonUniformScale);

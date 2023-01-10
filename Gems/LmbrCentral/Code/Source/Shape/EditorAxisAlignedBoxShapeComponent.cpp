@@ -173,7 +173,7 @@ namespace LmbrCentral
         return AZ::Transform::CreateTranslation(m_aaboxShape.GetTranslationOffset());
     }
 
-    AZ::Transform EditorAxisAlignedBoxShapeComponent::GetCurrentWorldTransform() const
+    AZ::Transform EditorAxisAlignedBoxShapeComponent::GetManipulatorSpace() const
     {
         AZ::Transform worldTransform = GetWorldTM();
         worldTransform.SetRotation(AZ::Quaternion::CreateIdentity());

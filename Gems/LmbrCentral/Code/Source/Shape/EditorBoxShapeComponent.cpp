@@ -178,7 +178,7 @@ namespace LmbrCentral
         return AZ::Transform::CreateTranslation(m_boxShape.GetTranslationOffset());
     }
 
-    AZ::Transform EditorBoxShapeComponent::GetCurrentWorldTransform() const
+    AZ::Transform EditorBoxShapeComponent::GetManipulatorSpace() const
     {
         return GetWorldTM();
     }

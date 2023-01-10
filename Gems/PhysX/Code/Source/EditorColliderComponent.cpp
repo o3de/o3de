@@ -1149,7 +1149,7 @@ namespace PhysX
         return GetColliderLocalTransform();
     }
 
-    AZ::Transform EditorColliderComponent::GetCurrentWorldTransform() const
+    AZ::Transform EditorColliderComponent::GetManipulatorSpace() const
     {
         return GetWorldTM();
     }
