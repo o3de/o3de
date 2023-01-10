@@ -41,31 +41,30 @@ namespace AZ::DocumentPropertyEditor
                 builder.BeginPropertyEditor<Nodes::SpinBox<T>>(Dom::Value(buffer));
                 builder.Attribute(Nodes::PropertyEditor::Description, functor->GetDesc());
                 builder.OnEditorChanged(
-                    [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
+                    [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType changeType)
                     {
-                        if (m_adapter->GetContents()[path] != value)
+                        if (changeType == Nodes::ValueChangeType::FinishedEdit)
                         {
-                            T buffer;
-                            if constexpr (AZStd::is_integral_v<T> && AZStd::is_signed_v<T>)
+                            if (m_adapter->GetContents()[path] != value)
                             {
-                                buffer = aznumeric_cast<T>(value.GetInt64());
+                                T buffer;
+                                if constexpr (AZStd::is_integral_v<T> && AZStd::is_signed_v<T>)
+                                {
+                                    buffer = aznumeric_cast<T>(value.GetInt64());
+                                }
+                                else if constexpr (AZStd::is_integral_v<T> && AZStd::is_unsigned_v<T>)
+                                {
+                                    buffer = aznumeric_cast<T>(value.GetUint64());
+                                }
+                                else
+                                {
+                                    buffer = aznumeric_cast<T>(value.GetDouble());
+                                }
+                                PerformCommand(functor->GetName(), { ConsoleTypeHelpers::ToString(buffer) });
+                                m_adapter->OnContentsChanged(path, value);
                             }
-                            else if constexpr (AZStd::is_integral_v<T> && AZStd::is_unsigned_v<T>)
-                            {
-                                buffer = aznumeric_cast<T>(value.GetUint64());
-                            }
-                            else
-                            {
-                                buffer = aznumeric_cast<T>(value.GetDouble());
-                            }
-                           PerformCommand(functor->GetName(), { ConsoleTypeHelpers::ToString(buffer) });
-                            m_adapter->OnContentsChanged(path, value);
                         }
                     });
-
-                /*using ValueType = typename Nodes::NumericEditor<T>::StorageType;
-                builder.Attribute(Nodes::SpinBox<T>::Min, aznumeric_cast<ValueType>(AZStd::numeric_limits<T>::min()));
-                builder.Attribute(Nodes::SpinBox<T>::Max, aznumeric_cast<ValueType>(AZStd::numeric_limits<T>::max()));*/
                 builder.EndPropertyEditor();
                 return true;
             }
@@ -92,9 +91,9 @@ namespace AZ::DocumentPropertyEditor
                 builder.Attribute(Nodes::PropertyEditor::Description, functor->GetDesc());
                 builder.Attribute(Nodes::PropertyEditor::ValueType, AZ::Dom::Utils::TypeIdToDomValue(azrtti_typeid<AZStd::string>()));
                 builder.OnEditorChanged(
-                    [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
+                    [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType changeType)
                     {
-                        if (m_adapter->GetContents()[path] != value)
+                        if (changeType == Nodes::ValueChangeType::FinishedEdit && m_adapter->GetContents()[path] != value)
                         {
                             PerformCommand(functor->GetName(), { value.GetString() });
                             m_adapter->OnContentsChanged(path, value);
@@ -117,22 +116,25 @@ namespace AZ::DocumentPropertyEditor
                 builder.BeginPropertyEditor<NodeType>(AZStd::move(contents));
                 builder.Attribute(Nodes::PropertyEditor::Description, functor->GetDesc());
                 builder.OnEditorChanged(
-                    [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
+                    [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType changeType)
                     {
-                        VectorType oldContainer =
-                            Dom::Utils::ValueToType<VectorType>(m_adapter->GetContents()[path]).value_or(VectorType());
-                        VectorType newContainer = Dom::Utils::ValueToType<VectorType>(value).value_or(VectorType());
-                        if (newContainer != oldContainer)
+                        if (changeType == Nodes::ValueChangeType::FinishedEdit)
                         {
-                            // ConsoleCommandContainer holds string_views, so ensure we allocate our parameters here
-                            AZStd::fixed_vector<CVarFixedString, ElementCount + 1> newValue;
-                            for (int i = 0; i < ElementCount; ++i)
+                            VectorType oldContainer =
+                                Dom::Utils::ValueToType<VectorType>(m_adapter->GetContents()[path]).value_or(VectorType());
+                            VectorType newContainer = Dom::Utils::ValueToType<VectorType>(value).value_or(VectorType());
+                            if (newContainer != oldContainer)
                             {
-                                newValue.push_back(ConsoleTypeHelpers::ToString(newContainer.GetElement(i)));
-                            }
-                            PerformCommand(functor->GetName(), ConsoleCommandContainer(AZStd::from_range, newValue));
+                                // ConsoleCommandContainer holds string_views, so ensure we allocate our parameters here
+                                AZStd::fixed_vector<CVarFixedString, ElementCount + 1> newValue;
+                                for (int i = 0; i < ElementCount; ++i)
+                                {
+                                    newValue.push_back(ConsoleTypeHelpers::ToString(newContainer.GetElement(i)));
+                                }
+                                PerformCommand(functor->GetName(), ConsoleCommandContainer(AZStd::from_range, newValue));
 
-                            m_adapter->OnContentsChanged(path, value);
+                                m_adapter->OnContentsChanged(path, value);
+                            }
                         }
                     });
                 builder.EndPropertyEditor();
@@ -150,9 +152,9 @@ namespace AZ::DocumentPropertyEditor
                 builder.BeginPropertyEditor<Nodes::CheckBox>(Dom::Value(value));
                 builder.Attribute(Nodes::PropertyEditor::Description, functor->GetDesc());
                 builder.OnEditorChanged(
-                    [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
+                    [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType changeType)
                     {
-                        if (m_adapter->GetContents()[path] != value)
+                        if (changeType == Nodes::ValueChangeType::FinishedEdit &&m_adapter->GetContents()[path] != value)
                         {
                             PerformCommand(functor->GetName(), { ConsoleTypeHelpers::ToString(value.GetBool()) });
                             m_adapter->OnContentsChanged(path, value);
