@@ -17,7 +17,7 @@ namespace UnitTest
         PrefabTestFixture::SetUpEditorFixtureImpl();
 
         m_instanceDomGeneratorInterface = AZ::Interface<InstanceDomGeneratorInterface>::Get();
-        EXPECT_TRUE(m_instanceDomGeneratorInterface);
+        ASSERT_TRUE(m_instanceDomGeneratorInterface);
 
         m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
         ASSERT_TRUE(m_prefabFocusPublicInterface);
@@ -38,10 +38,8 @@ namespace UnitTest
 
         AZ::IO::Path engineRootPath;
         m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-        AZ::IO::Path carPrefabFilepath(engineRootPath);
-        carPrefabFilepath.Append(carPrefabName);
-        AZ::IO::Path wheelPrefabFilepath(engineRootPath);
-        wheelPrefabFilepath.Append(wheelPrefabName);
+        AZ::IO::Path carPrefabFilepath = engineRootPath / carPrefabName;
+        AZ::IO::Path wheelPrefabFilepath = engineRootPath / wheelPrefabName;
 
         // Create the car hierarchy
         AZ::EntityId tireEntityId = CreateEditorEntityUnderRoot(tireEntityName);
@@ -198,7 +196,7 @@ namespace UnitTest
             instanceFromDom, generatedInstanceDom, PrefabDomUtils::LoadFlags::UseSelectiveDeserialization));
 
         // Verify that the worldX value of the provided child entity is coming from the correct template
-        EntityOptionalReference childEntity = FindEntityInNestedInstances(instanceFromDom, entityAlias);
+        EntityOptionalReference childEntity = FindEntityInInstanceHierarchy(instanceFromDom, entityAlias);
         ASSERT_TRUE(childEntity.has_value());
         childEntity->get().Init();
         childEntity->get().Activate(); // to connect to buses such as transform bus
@@ -216,7 +214,7 @@ namespace UnitTest
         EXPECT_TRUE(parentEntityId.IsValid());
     }
 
-    EntityOptionalReference PrefabInstanceDomGeneratorTestFixture::FindEntityInNestedInstances(
+    EntityOptionalReference PrefabInstanceDomGeneratorTestFixture::FindEntityInInstanceHierarchy(
         Instance& instance,
         EntityAlias entityAlias)
     {

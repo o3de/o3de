@@ -14,7 +14,7 @@ namespace UnitTest
 {
     using namespace AzToolsFramework::Prefab;
 
-    // Fixture for testing instance DOM generation based on the focused prefab via existing template DOMS
+    //! Fixture for testing instance DOM generation based on the focused prefab via existing template DOMS
     class PrefabInstanceDomGeneratorTestFixture
         : public PrefabTestFixture
     {
@@ -39,11 +39,13 @@ namespace UnitTest
     private:
         void SetUpInstanceHierarchy();
         void InitializePrefabTemplates();
-        EntityOptionalReference FindEntityInNestedInstances(
+
+        //! Finds an entity in the provided instance by recursing through its nested prefab hierarchy
+        EntityOptionalReference FindEntityInInstanceHierarchy(
             Instance& instance,
             EntityAlias entityAlias);
 
-        // Helpers that apply patches to in-memory template DOMs to simulate overrides
+        //! Helpers that apply patches to in-memory template DOMs to simulate overrides
         void GenerateWorldXEntityPatch(
             const EntityAlias& entityAlias,
             float updatedXValue,
