@@ -26,6 +26,10 @@ namespace AssetProcessor
 
         void FileAdded(QString path) override;
 
+        //! Initialize the cache from a known list of excluded folders, so that it does not have to do a scan
+        //! for itself.  Destroys the input.
+        void InitializeFromKnownSet(AZStd::unordered_set<AZStd::string>&& excludedFolders);
+
     private:
         bool m_builtCache = false;
         const PlatformConfiguration* m_platformConfig{};

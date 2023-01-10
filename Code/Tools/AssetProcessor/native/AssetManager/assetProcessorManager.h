@@ -273,6 +273,8 @@ namespace AssetProcessor
         void JobProcessDurationChanged(JobEntry jobEntry, int durationMs);
         void CreateJobsDurationChanged(QString sourceName);
 
+        void IntermediateAssetCreated(QString newFileAbsolutePath);
+
         //! Send a message when a new path dependency is resolved, so that downstream tools know the AssetId of the resolved dependency.
         void PathDependencyResolved(const AZ::Data::AssetId& assetId, const AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry);
 
@@ -291,6 +293,7 @@ namespace AssetProcessor
 
         void AssessFilesFromScanner(QSet<AssetFileInfo> filePaths);
         void RecordFoldersFromScanner(QSet<AssetFileInfo> folderPaths);
+        void RecordExcludesFromScanner(QSet<AssetFileInfo> excludePaths);
 
         virtual void AssessModifiedFile(QString filePath);
         virtual void AssessAddedFile(QString filePath);
