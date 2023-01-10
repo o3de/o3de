@@ -1218,7 +1218,7 @@ try {
                             ext = '.sh'
                         }
                         PlatformSh("scripts/o3de${ext} register_show --project-name ${params.PROJECT} > tmp_projectpath", "Get the path of the project from the manifest")
-                        envVars['CMAKE_LY_PROJECTS'] = readFile file: 'projectpath'
+                        envVars['CMAKE_LY_PROJECTS'] = readFile file: 'tmp_projectpath'
                         envVars['CMAKE_LY_PROJECTS'] = envVars['CMAKE_LY_PROJECTS'].trim()
                         PlatformRm('tmp_projectpath')
                         echo "CMAKE_LY_PROJECTS = ${envVars['CMAKE_LY_PROJECTS']}"
