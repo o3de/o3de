@@ -133,6 +133,9 @@ namespace AZ
             //! Returns the visibility state of the mesh.
             //! This only refers to whether or not the mesh has been explicitly hidden, and is not related to view frustum visibility.
             virtual bool GetVisible(const MeshHandle& meshHandle) const = 0;
+            //! Returns the scene of the MeshHandle. It's possible this is a different scene than the Parent-Scene of the
+            //! MeshFeatureProcessor.
+            virtual RPI::Scene* GetMeshScene(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh to render IBL specular in the forward pass.
             virtual void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) = 0;
         };

@@ -216,6 +216,7 @@ namespace AZ
             bool GetRayTracingEnabled(const MeshHandle& meshHandle) const override;
             void SetVisible(const MeshHandle& meshHandle, bool visible) override;
             bool GetVisible(const MeshHandle& meshHandle) const override;
+            RPI::Scene* GetMeshScene(const MeshHandle& meshHandle) const override;
             void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) override;
 
             RHI::Ptr <FlagRegistry> GetShaderOptionFlagRegistry();

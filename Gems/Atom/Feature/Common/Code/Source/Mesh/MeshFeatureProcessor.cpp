@@ -655,6 +655,15 @@ namespace AZ
             }
         }
 
+        RPI::Scene* MeshFeatureProcessor::GetMeshScene(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_scene;
+            }
+            return nullptr;
+        }
+
         void MeshFeatureProcessor::SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular)
         {
             if (meshHandle.IsValid())
