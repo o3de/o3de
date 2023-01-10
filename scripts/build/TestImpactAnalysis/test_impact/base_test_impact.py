@@ -57,6 +57,7 @@ class BaseTestImpact(ABC):
         self._change_list = {"createdFiles": [],
                              "updatedFiles": [], "deletedFiles": []}
         self._has_change_list = False
+        self._enabled = False
         self._use_test_impact_analysis = False
 
         # Unique instance id to be used as part of the report name.
@@ -66,6 +67,8 @@ class BaseTestImpact(ABC):
         self._suite = args.get(ARG_SUITE)
 
         self._config = self._parse_config_file(args.get(ARG_CONFIG))
+        if not self._enabled:
+            return
 
         # Initialize branches
         self._src_branch = args.get(ARG_SOURCE_BRANCH)
@@ -244,7 +247,8 @@ class BaseTestImpact(ABC):
         PREVIOUS_TEST_RUNS_KEY = "previous_test_runs"
         HISTORIC_DATA_FILE_KEY = "data"
         JENKINS_KEY = "jenkins"
-        USE_TIAF_KEY = "use_test_impact_analysis"
+        ENABLED_KEY = "enabled"
+        USE_TEST_IMPACT_ANALYSIS_KEY = "use_test_impact_analysis"
         RUNTIME_BIN_KEY = "runtime_bin"
         RUNTIME_ARTIFACT_DIR_KEY = "run_artifact_dir"
         RUNTIME_COVERAGE_DIR_KEY = "coverage_artifact_dir"
@@ -260,7 +264,8 @@ class BaseTestImpact(ABC):
                 self._repo = Repo(self._repo_dir)
 
                 # TIAF
-                self._use_test_impact_analysis = config[COMMON_CONFIG_KEY][JENKINS_KEY][USE_TIAF_KEY]
+                self._enabled = config[self.runtime_type][JENKINS_KEY][ENABLED_KEY]
+                self._use_test_impact_analysis = config[self.runtime_type][JENKINS_KEY][USE_TEST_IMPACT_ANALYSIS_KEY]
                 self._tiaf_bin = Path(
                     config[self.runtime_type][RUNTIME_BIN_KEY])
                 if self._use_test_impact_analysis and not self._tiaf_bin.is_file():
@@ -524,6 +529,10 @@ class BaseTestImpact(ABC):
         if self._persistent_storage:
             return self._persistent_storage.has_historic_data
         return False
+
+    @property
+    def enabled(self):
+        return self._enabled
 
     @property
     def source_branch(self):

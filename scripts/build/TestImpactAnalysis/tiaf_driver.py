@@ -191,6 +191,11 @@ def main(args: dict):
     try:
         tiaf_class = SUPPORTED_RUNTIMES[args.pop("runtime_type")]
         tiaf = tiaf_class(args)
+
+        if not tiaf.enabled:
+            logger.info("TIAF has been disabled for this runtime type.")
+            sys.exit(0)
+
         tiaf_result = tiaf.run()
         if args.get('mars_index_prefix'):
             logger.info("Transmitting report to MARS...")
