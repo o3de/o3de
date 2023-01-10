@@ -193,7 +193,7 @@ namespace WhiteBox
 
             actionManagerInterface->InstallEnabledStateCallback(
                 actionIdentifier,
-                [&]()
+                []()
                 {
                     // edge selection test - ensure an edge is selected before enabling this shortcut
                     auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
@@ -209,7 +209,7 @@ namespace WhiteBox
                             EditorWhiteBoxDefaultModeRequestBus::EventResult(
                                 handles, entityComponentIdPair, &EditorWhiteBoxDefaultModeRequests::SelectedEdgeHandles);
 
-                            if (handles.size() > 0)
+                            if (!handles.empty())
                             {
                                 isEdgeSelected = true;
                             }
@@ -253,7 +253,7 @@ namespace WhiteBox
 
             actionManagerInterface->InstallEnabledStateCallback(
                 actionIdentifier,
-                [&]()
+                []()
                 {
                     // vertex selection test - ensure a vertex is selected before enabling this shortcut
                     auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
@@ -272,7 +272,7 @@ namespace WhiteBox
                             EditorWhiteBoxDefaultModeRequestBus::EventResult(
                                 vertexHandles, entityComponentIdPair, &EditorWhiteBoxDefaultModeRequests::SelectedVertexHandles);
 
-                            if (edgeHandles.size() == 0 && vertexHandles.size() > 0)
+                            if (edgeHandles.empty() && !vertexHandles.empty())
                             {
                                 isVertexSelected = true;
                             }
@@ -333,7 +333,7 @@ namespace WhiteBox
                     .SetTip(HideEdgeDesc)
                     .SetEntityComponentIdPair(entityComponentIdPair)
                     .SetCallback(
-                        [&]()
+                        [this]()
                         {
                             HideSelectedEdge();
                         }
@@ -351,7 +351,7 @@ namespace WhiteBox
                     .SetTip(HideVertexDesc)
                     .SetEntityComponentIdPair(entityComponentIdPair)
                     .SetCallback(
-                        [&]()
+                        [this]()
                         {
                             HideSelectedVertex();
                         }
@@ -827,7 +827,7 @@ namespace WhiteBox
         return m_polygonTranslationModifier ? m_polygonTranslationModifier->GetPolygonHandle() : Api::PolygonHandle();
     }
 
-    void DefaultMode::HideSelectedEdge() const
+    void DefaultMode::HideSelectedEdge()
     {
         auto modifier = AZStd::get_if<AZStd::unique_ptr<EdgeTranslationModifier>>(&m_selectedModifier);
 
@@ -844,7 +844,7 @@ namespace WhiteBox
         }
     }
 
-    void DefaultMode::HideSelectedVertex() const
+    void DefaultMode::HideSelectedVertex()
     {
         auto modifier = AZStd::get_if<AZStd::unique_ptr<VertexTranslationModifier>>(&m_selectedModifier);
 

@@ -162,7 +162,7 @@ namespace WhiteBox
                 EditorMainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [&]
+                []
                 {
                     auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
                     AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
@@ -194,7 +194,7 @@ namespace WhiteBox
                 EditorMainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [&]
+                []
                 {
                     auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
                     AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");

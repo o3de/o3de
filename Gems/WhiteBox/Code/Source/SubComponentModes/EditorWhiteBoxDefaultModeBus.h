@@ -61,9 +61,9 @@ namespace WhiteBox
         //! @note If no polygon is currently being hovered then an empty PolygonHandle is returned.
         virtual Api::PolygonHandle HoveredPolygonHandle() const = 0;
         //! Hide the selected Edge.
-        virtual void HideSelectedEdge() const = 0;
+        virtual void HideSelectedEdge() = 0;
         //! Hide the selected Vertex.
-        virtual void HideSelectedVertex() const = 0;
+        virtual void HideSelectedVertex() = 0;
 
     protected:
         ~EditorWhiteBoxDefaultModeRequests() = default;

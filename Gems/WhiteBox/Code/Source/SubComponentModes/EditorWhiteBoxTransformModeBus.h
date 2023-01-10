@@ -13,6 +13,7 @@
 
 namespace WhiteBox
 {
+    //! Enumerates the different type of transform sub-modes available.
     enum class TransformType
     {
         Translation,
@@ -20,7 +21,7 @@ namespace WhiteBox
         Scale
     };
 
-    //! Request bus for White Box ComponentMode operations while in 'default' mode.
+    //! Request bus for White Box ComponentMode operations while in 'transform' mode.
     class EditorWhiteBoxTransformModeRequests : public AZ::EntityComponentBus
     {
     public:

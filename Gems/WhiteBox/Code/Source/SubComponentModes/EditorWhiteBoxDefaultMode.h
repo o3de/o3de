@@ -102,8 +102,8 @@ namespace WhiteBox
         Api::VertexHandle HoveredVertexHandle() const override;
         Api::EdgeHandle HoveredEdgeHandle() const override;
         Api::PolygonHandle HoveredPolygonHandle() const override;
-        void HideSelectedEdge() const override;
-        void HideSelectedVertex() const override;
+        void HideSelectedEdge() override;
+        void HideSelectedVertex() override;
 
         // EditorWhiteBoxPolygonModifierNotificationBus ...
         void OnPolygonModifierUpdatedPolygonHandle(
