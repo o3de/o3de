@@ -334,7 +334,6 @@ class TestRegisterProject:
 
         def get_gems_json_data_by_name( engine_path:pathlib.Path = None, 
                                         project_path: pathlib.Path = None, 
-                                        external_subdirectories: list = list(),
                                         include_manifest_gems: bool = False,
                                         include_engine_gems: bool = False) -> dict:
             all_gems_json_data = {}

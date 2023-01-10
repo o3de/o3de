@@ -441,7 +441,6 @@ def remove_non_dependency_gem_json_data(gem_names:list, gems_json_data_by_name:d
 
 def get_gems_json_data_by_name( engine_path:pathlib.Path = None, 
                                 project_path: pathlib.Path = None, 
-                                external_subdirectories: list = list(),
                                 include_manifest_gems: bool = False,
                                 include_engine_gems: bool = False) -> dict:
     """
@@ -450,7 +449,6 @@ def get_gems_json_data_by_name( engine_path:pathlib.Path = None,
     found using the o3de manifest.
     param: engine_path optional engine path
     param: project_path optional project path
-    param: external_subdirectories optional list of external subdirectory paths
     param: include_manifest_gems if True, include gems found using the o3de manifest 
     param: include_engine_gems if True, include gems found using the engine, 
     will use the current engine if no engine_path is provided and none can be deduced from
@@ -458,6 +456,7 @@ def get_gems_json_data_by_name( engine_path:pathlib.Path = None,
     return: a dictionary of gem_name -> gem.json data
     """
     all_gems_json_data = {}
+    external_subdirectories = list()
 
     if include_manifest_gems:
         external_subdirectories.extend(get_manifest_external_subdirectories())
