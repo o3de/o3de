@@ -1159,7 +1159,10 @@ AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedH
                      SetCVarFromConsoleCommand<double, CVAR_FLOAT>(changedCVar, azConsoleCommand)
                      );
 
-                AZ_Warning("ConsoleSCB", !handled, "an unknown type could not be read into the console!");
+                if (!handled)
+                {
+                    AZ_Warning("ConsoleSCB", false, "an unknown type could not be read into the console!");
+                }
             }
 
             if (!AzToolsFramework::DocumentPropertyEditor::ShouldReplaceRPE())

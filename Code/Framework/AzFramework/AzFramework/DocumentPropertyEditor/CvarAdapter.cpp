@@ -63,9 +63,9 @@ namespace AZ::DocumentPropertyEditor
                         }
                     });
 
-                using ValueType = typename Nodes::NumericEditor<T>::StorageType;
+                /*using ValueType = typename Nodes::NumericEditor<T>::StorageType;
                 builder.Attribute(Nodes::SpinBox<T>::Min, aznumeric_cast<ValueType>(AZStd::numeric_limits<T>::min()));
-                builder.Attribute(Nodes::SpinBox<T>::Max, aznumeric_cast<ValueType>(AZStd::numeric_limits<T>::max()));
+                builder.Attribute(Nodes::SpinBox<T>::Max, aznumeric_cast<ValueType>(AZStd::numeric_limits<T>::max()));*/
                 builder.EndPropertyEditor();
                 return true;
             }
