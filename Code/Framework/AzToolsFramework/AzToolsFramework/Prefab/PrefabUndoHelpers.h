@@ -84,7 +84,7 @@ namespace AzToolsFramework
                 const AZStd::vector<AZStd::string>& instanceAliasPathList,
                 const AZStd::vector<const AZ::Entity*> parentEntityList,
                 Instance& owningInstance,
-                Instance& focusedInstance,
+                const Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch);
         }
     } // namespace Prefab
