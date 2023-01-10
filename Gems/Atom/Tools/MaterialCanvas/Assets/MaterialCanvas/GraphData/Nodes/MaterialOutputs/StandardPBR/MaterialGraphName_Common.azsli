@@ -12,11 +12,16 @@
 
 #define ENABLE_CLEAR_COAT       1
 #define ENABLE_TRANSMISSION     0
+#define ENABLE_PARALLAX         0 // Disabled until parallax depth functions can be rewritten to not pass in the heightmap or sampler from the material SRG
 #define UvSetCount              2
 
 #include <Atom/Features/ShaderQualityOptions.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
+option bool o_normal_override_enabled;
+option bool o_opacity_affects_specular_factor;
+option bool o_clearCoat_enabled;
+option bool o_clearCoat_normal_override_enabled;
 
 // ------- Shader Resource Groups -------
 
@@ -30,7 +35,7 @@
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 #include <Atom/Features/SrgSemantics.azsli>
 
-#if 0
+#if ENABLE_PARALLAX
 #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli"
 #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli"
 COMMON_OPTIONS_PARALLAX()
@@ -54,7 +59,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 // O3DE_GENERATED_FUNCTIONS_END
 
 
-#if 0
+#if ENABLE_PARALLAX
 // Callback function for ParallaxMapping.azsli
 DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
@@ -77,7 +82,7 @@ bool ShouldHandleParallaxInDepthShaders()
 
 bool NeedsTangentFrame()
 {
-#if 0
+#if ENABLE_PARALLAX
     return ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture);
 #else
     return true;

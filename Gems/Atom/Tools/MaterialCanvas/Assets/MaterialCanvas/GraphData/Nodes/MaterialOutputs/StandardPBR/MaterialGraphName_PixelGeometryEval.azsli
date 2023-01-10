@@ -17,7 +17,7 @@
 
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli>
 
-#if 0
+#if ENABLE_PARALLAX
 #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli"
 #endif
 
@@ -38,7 +38,7 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
 
     geoData.isDisplacementClipped = false;
 
-#if 0
+#if ENABLE_PARALLAX
     if(ShouldHandleParallax())
     {
         SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,

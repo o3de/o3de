@@ -79,6 +79,62 @@
                 }
             },
             {
+                "name": "inOpacityAffectsSpecularFactor",
+                "displayName": "Opacity Affects Specular Factor",
+                "description": "Opacity Affects Specular Factor",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_opacity_affects_specular_factor"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
+                "name": "inEnableNormal",
+                "displayName": "Enable Normal",
+                "description": "Enable Normal",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_normal_override_enabled"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
                 "name": "inDoubleSided",
                 "displayName": "Double Sided",
                 "description": "Whether to render back-faces or just front-faces.",
@@ -325,6 +381,62 @@
                         "General"
                     ]
                 }
+            },
+            {
+                "name": "inEnableClearCoat",
+                "displayName": "Enable Clear Coat",
+                "description": "Enable Clear Coat",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_clearCoat_enabled"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
+            },
+            {
+                "name": "inEnableClearCoatNormal",
+                "displayName": "Enable Clear Coat Normal",
+                "description": "Enable Clear Coat Normal",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "allowNameSubstitution": false,
+                "settings": {
+                    "materialPropertyConnectionName": [
+                        "o_clearCoat_normal_override_enabled"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "ShaderOption"
+                    ],
+                    "materialPropertyFlags": [
+                        "UseSlotConfig"
+                    ],
+                    "materialPropertyGroup": [
+                        "General"
+                    ]
+                }
             }
         ],
         "inputSlots": [
@@ -334,6 +446,14 @@
                 "description": "Position Offset",
                 "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float3",
+                "defaultValue": {
+                    "$type": "Vector3",
+                    "Value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
                 "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
@@ -444,6 +564,95 @@
                 "defaultValue": {
                     "$type": "float",
                     "Value": 1.0
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inDiffuseAmbientOcclusion",
+                "displayName": "Diffuse Ambient Occlusion",
+                "description": "Diffuse Ambient Occlusion",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inSpecularOcclusion",
+                "displayName": "Specular Occlusion",
+                "description": "Specular Occlusion",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inClearCoatFactor",
+                "displayName": "Clear Coat Factor",
+                "description": "Clear Coat Factor",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 0.0
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inClearCoatRoughness",
+                "displayName": "Clear Coat Roughness",
+                "description": "Clear Coat Roughness",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 0.0
+                },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inClearCoatNormal",
+                "displayName": "Clear Coat Normal",
+                "description": "Clear Coat Normal",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float3",
+                "defaultValue": {
+                    "$type": "Vector3",
+                    "Value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
                 },
                 "allowNameSubstitution": false,
                 "settings": {

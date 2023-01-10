@@ -33,31 +33,13 @@ PsDepthOutput MainPS(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     OUT.depth = IN.position.z;
 
 #if DEPTH_WITH_PS
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
 
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    Surface surface = EvaluateSurface(geoData);
 
-    #define O3DE_MC_POSITION IN.worldPosition
-    #define O3DE_MC_UV(index) IN.uv[clamp(index, 0, UvSetCount-1];
-    #define O3DE_MC_NORMAL vertexNormal
-    #define O3DE_MC_TANGENT vertexTangent
-    #define O3DE_MC_BITANGENT vertexBitangent
-    #define O3DE_MC_WORLD_POSITION IN.worldPosition
+    CheckClipping(surface.alpha, 0.99);
 
-    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inAlpha
-    float inAlpha = 1.0;
-    // O3DE_GENERATED_INSTRUCTIONS_END
-
-    #undef O3DE_MC_POSITION
-    #undef O3DE_MC_UV
-    #undef O3DE_MC_NORMAL
-    #undef O3DE_MC_TANGENT
-    #undef O3DE_MC_BITANGENT
-    #undef O3DE_MC_WORLD_POSITION
-
-    CheckClipping(inAlpha, 0.99);
+    OUT.depth = surface.position.z;
 #endif
 
     return OUT;

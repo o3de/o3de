@@ -34,7 +34,7 @@ Surface EvaluateSurface_StandardPBR(
     #define O3DE_MC_BITANGENT bitangent[0]
     #define O3DE_MC_WORLD_POSITION positionWS
 
-    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor, inEmissive, inAlpha
+    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor, inEmissive, inAlpha, inDiffuseAmbientOcclusion, inSpecularOcclusion, inClearCoatFactor, inClearCoatRoughness, inClearCoatNormal, 
     float3 inNormal = vertexNormal;
     float3 inBaseColor = {1.0, 1.0, 1.0};
     float3 inEmissive = {0.0, 0.0, 0.0};
@@ -42,11 +42,12 @@ Surface EvaluateSurface_StandardPBR(
     float inRoughness = 0.0;
     float inSpecularF0Factor = 0.0;
     float inAlpha = 1.0;
-    // O3DE_GENERATED_INSTRUCTIONS_END
-
     float inDiffuseAmbientOcclusion = 1.0;
     float inSpecularOcclusion = 1.0;
-    bool inOpacityAffectsSpecularFactor = false;
+    float inClearCoatFactor = 0.0;
+    float inClearCoatRoughness = 0.0;
+    float3 inClearCoatNormal = vertexNormal;
+    // O3DE_GENERATED_INSTRUCTIONS_END
 
     #undef O3DE_MC_POSITION
     #undef O3DE_MC_UV
@@ -58,40 +59,39 @@ Surface EvaluateSurface_StandardPBR(
     Surface surface;
     surface.position = positionWS;
     surface.vertexNormal = vertexNormal;
-    surface.normal = (float3)inNormal;
+    surface.normal = normalize(o_normal_override_enabled ? (float3)inNormal : vertexNormal);
     surface.roughnessLinear = inRoughness;
     surface.SetAlbedoAndSpecularF0(inBaseColor, inSpecularF0Factor, inMetallic);
     surface.CalculateRoughnessA();
 
-
     // ------- Parallax Clipping -------
 
-#if 0
+#if ENABLE_PARALLAX
     if(o_parallax_highlightClipping && isDisplacementClipped)
     {
         ApplyParallaxClippingHighlight(surface.albedo);
     }
 #endif
 
-    CheckClipping(inAlpha, 0.99);
     surface.alpha = inAlpha;
     surface.emissiveLighting = inEmissive;
     surface.diffuseAmbientOcclusion = inDiffuseAmbientOcclusion;
     surface.specularOcclusion = inSpecularOcclusion;
-    surface.opacityAffectsSpecularFactor = inOpacityAffectsSpecularFactor;
+    surface.opacityAffectsSpecularFactor = o_opacity_affects_specular_factor;
+
+    CheckClipping(surface.alpha, 0.99);
 
     // ------- Clearcoat -------
 
 #if ENABLE_CLEAR_COAT
-    // Todo: Clean up the double uses of these clear coat flags
-    //if(o_clearCoat_feature_enabled)
+    if(o_clearCoat_enabled)
     {
-        //if(o_clearCoat_enabled)
-        {
-            surface.clearCoat.factor = 0.0;
-            surface.clearCoat.roughness = 0.0;
-            surface.clearCoat.normal = vertexNormal;
-        }
+        surface.clearCoat.factor = inClearCoatFactor;
+        surface.clearCoat.roughness = max(inClearCoatRoughness, 1e-3);
+
+        // Flip normal if back face is rendered   
+        surface.clearCoat.normal = normalize(o_clearCoat_normal_override_enabled ? (float3)inClearCoatNormal : vertexNormal);
+        surface.clearCoat.normal *= mad(isFrontFace, 2.0, -1.0);
 
         ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
     }
