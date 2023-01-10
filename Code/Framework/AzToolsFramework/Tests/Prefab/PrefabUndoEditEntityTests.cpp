@@ -143,7 +143,7 @@ namespace UnitTest
         ASSERT_TRUE(wheelEntity->FindComponent<PrefabTestComponent>());
     }
 
-    TEST_F(PrefabUndoEditEntityTests, PrefabUndoEditEntityTests_EditEntityAsOverride_OnAddEntityOverride)
+    TEST_F(PrefabUndoEditEntityTests, PrefabUndoEditEntityTests_EditEntityAsOverrideOnAddEntityOverride)
     {
         // Level         <-- focused
         // | Car
