@@ -6,8 +6,6 @@
 #
 #
 
-add_subdirectory(sc_test)
-
 set(SCRIPT_CANVAS_COMMON_DEFINES 
     SCRIPTCANVAS
     ENABLE_EXTENDED_MATH_SUPPORT=0
