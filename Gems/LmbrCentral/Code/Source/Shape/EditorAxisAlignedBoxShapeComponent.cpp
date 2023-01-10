@@ -148,7 +148,7 @@ namespace LmbrCentral
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
     }
 
-    AZ::Vector3 EditorAxisAlignedBoxShapeComponent::GetDimensions()
+    AZ::Vector3 EditorAxisAlignedBoxShapeComponent::GetDimensions() const
     {
         return m_aaboxShape.GetBoxDimensions();
     }
@@ -158,7 +158,7 @@ namespace LmbrCentral
         return m_aaboxShape.SetBoxDimensions(dimensions);
     }
 
-    AZ::Vector3 EditorAxisAlignedBoxShapeComponent::GetTranslationOffset()
+    AZ::Vector3 EditorAxisAlignedBoxShapeComponent::GetTranslationOffset() const
     {
         return m_aaboxShape.GetTranslationOffset();
     }
@@ -168,9 +168,16 @@ namespace LmbrCentral
         m_aaboxShape.SetTranslationOffset(translationOffset);
     }
 
-    AZ::Transform EditorAxisAlignedBoxShapeComponent::GetCurrentLocalTransform()
+    AZ::Transform EditorAxisAlignedBoxShapeComponent::GetCurrentLocalTransform() const
     {
         return AZ::Transform::CreateTranslation(m_aaboxShape.GetTranslationOffset());
+    }
+
+    AZ::Transform EditorAxisAlignedBoxShapeComponent::GetManipulatorSpace() const
+    {
+        AZ::Transform worldTransform = GetWorldTM();
+        worldTransform.SetRotation(AZ::Quaternion::CreateIdentity());
+        return worldTransform;
     }
 
     AZ::Aabb EditorAxisAlignedBoxShapeComponent::GetLocalBounds()
