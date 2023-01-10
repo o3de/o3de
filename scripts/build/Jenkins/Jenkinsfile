@@ -69,7 +69,7 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME'),
     booleanParam(defaultValue: false, description: 'Cancels AR immediately on any failure in the pipeline and marks it as failed', name: 'FAIL_FAST'),
     booleanParam(defaultValue: false, description: 'Deletes the volume used for the workspace after the pipeline steps are completed.', name: 'DISCARD_VOLUME'),
-    stringParam(defaultValue: 'AutomatedTesting', description: 'PROJECT', name: 'PROJECT'))
+    stringParam(defaultValue: 'AutomatedTesting', description: 'PROJECT', name: 'PROJECT')
 ]
 
 def PlatformSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
