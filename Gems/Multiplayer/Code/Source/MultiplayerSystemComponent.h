@@ -231,6 +231,10 @@ namespace Multiplayer
             MetricsEvent();
         }, AZ::Name("MultiplayerSystemComponent Metrics") };
 
+        void UpdatedMetricsConnectionCount();
+
+        void UpdateConnections();
+
         void OnPhysicsPreSimulate(float dt);
         AzPhysics::SystemEvents::OnPresimulateEvent::Handler m_preSimulateHandler{[this](float dt)
         {

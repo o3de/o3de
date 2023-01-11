@@ -88,12 +88,14 @@ namespace AzNetworking
 
     bool UdpConnection::SendReliablePacket(const IPacket& packet)
     {
+        AZStd::lock_guard lock(m_sendPacketMutex);
         const SequenceId reliableSequenceId = m_reliableQueue.GetNextSequenceId();
         return (m_networkInterface.SendPacket(*this, packet, reliableSequenceId) != InvalidPacketId);
     }
 
     PacketId UdpConnection::SendUnreliablePacket(const IPacket& packet)
     {
+        AZStd::lock_guard lock(m_sendPacketMutex);
         return m_networkInterface.SendPacket(*this, packet, InvalidSequenceId);
     }
 
