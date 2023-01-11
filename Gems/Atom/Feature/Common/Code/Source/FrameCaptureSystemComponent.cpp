@@ -436,7 +436,7 @@ namespace AZ
                 capture->m_outputFilePath = ResolvePath(imagePath);
             }
 
-            return AZ::Success(captureHandle);
+            return captureHandle;
         }
 
         FrameCaptureId FrameCaptureSystemComponent::CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle)
