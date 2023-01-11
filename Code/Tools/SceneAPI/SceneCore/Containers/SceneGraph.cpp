@@ -292,7 +292,7 @@ namespace AZ
                 const bool isValidName = IsValidName(name);
                 AZ_Assert(isValidName,
                     "Name '%s' for SceneGraph sibling contains invalid characters. "
-                    "This is likely due to the name containing the node separation character '%c'. ",
+                    "This is likely due to the name containing the node separation character '%c' ",
                     name, s_nodeSeperationCharacter);
 
                 if (!isValidName)
