@@ -27,8 +27,8 @@ namespace AzToolsFramework
             const AZStd::vector<AZStd::string>& entityAliasPathList,
             const AZStd::vector<AZStd::string>& instanceAliasPathList,
             const AZStd::vector<const AZ::Entity*> parentEntityList,
-            const Instance& owningInstance,
-            Instance& focusedInstance)
+            Instance& owningInstance,
+            const Instance& focusedInstance)
         {
             AZ_Assert(
                 &owningInstance != &focusedInstance,
@@ -40,7 +40,7 @@ namespace AzToolsFramework
 
             PrefabDom& focusedTempalteDom = m_prefabSystemComponentInterface->FindTemplateDom(m_templateId);
 
-            PrefabDomReference cachedOwningInstanceDom = focusedInstance.GetCachedInstanceDom();
+            PrefabDomReference cachedOwningInstanceDom = owningInstance.GetCachedInstanceDom();
 
             // Generates override patch path to owning instance.
             InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(owningInstance, &focusedInstance);

@@ -14,7 +14,7 @@ import ly_test_tools
 
 from ly_test_tools._internal.managers.platforms.windows import (
     _WindowsResourceLocator, WindowsWorkspaceManager,
-    CACHE_DIR, CONFIG_FILE)
+    CACHE_DIR)
 from ly_test_tools import WINDOWS
 
 pytestmark = pytest.mark.SUITE_smoke
@@ -37,15 +37,6 @@ mock_output_path = 'mock_output_path'
 @mock.patch('ly_test_tools._internal.managers.abstract_resource_locator._find_project_json', mock.MagicMock(
     return_value=mock_project))
 class TestWindowsResourceLocator(object):
-
-    def test_PlatformConfigFile_HasPath_ReturnsPath(self):
-        windows_resource_locator = ly_test_tools._internal.managers.platforms.windows._WindowsResourceLocator(
-            mock_build_directory, mock_project)
-        expected = os.path.join(
-            windows_resource_locator.engine_root(),
-            CONFIG_FILE)
-
-        assert windows_resource_locator.platform_config_file() == expected
 
     def test_PlatformCache_HasPath_ReturnsPath(self):
         windows_resource_locator = ly_test_tools._internal.managers.platforms.windows._WindowsResourceLocator(
