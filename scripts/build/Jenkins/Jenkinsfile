@@ -1210,13 +1210,12 @@ try {
                     envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                     envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
 
-
                     if (env.PROJECT_NAME != "AutomatedTesting") {
                         def ext = ''
                         if(env.IS_UNIX) {
                             ext = '.sh'
                         }
-                        PlatformSh("scripts/o3de${ext} register-show --project-name ${env.PROJECT_NAME} || projectpath", "Get the project path")
+                        PlatformSh("scripts/o3de${ext} register-show --project-name ${env.PROJECT_NAME} > projectpath", "Get the project path")
                         envVars['CMAKE_LY_PROJECTS'] = readFile file: 'projectpath'
                         envVars['CMAKE_LY_PROJECTS'] = envVars['CMAKE_LY_PROJECTS'].trim()
                         PlatformRm('projectpath')
