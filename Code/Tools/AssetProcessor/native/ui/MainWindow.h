@@ -256,5 +256,6 @@ private:
 
     AZStd::string m_cachedSourceAssetSelection;
     AZStd::string m_cachedProductAssetSelection;
+    QMetaObject::Connection m_connectionForResettingAssetsView;
 };
 
