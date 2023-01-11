@@ -20,6 +20,8 @@
 #include <Vegetation/EmptyInstanceSpawner.h>
 #include <Vegetation/PrefabInstanceSpawner.h>
 
+AZ_DEFINE_BUDGET(Vegetation);
+
 namespace Vegetation
 {
     namespace Details

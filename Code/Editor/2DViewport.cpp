@@ -89,7 +89,6 @@ Q2DViewport::Q2DViewport(QWidget* parent)
     m_viewType = ET_ViewportXY;
     m_axis = VPA_XY;
 
-    m_bShowTerrain = true;
     m_bShowGrid = true;
     m_bShowObjectsInfo = true;
     m_bShowMinorGridLines = true;

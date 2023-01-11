@@ -165,7 +165,7 @@ namespace AZ
 
             // Need to get the name of the azsl file from the .shader source asset, to be able to declare a dependency to SRG Layout Job.
             // and the macro options to preprocess.
-            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderAssetSourceFileFullPath);
+            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderAssetSourceFileFullPath, false);
             if (!descriptorParseOutcome.IsSuccess())
             {
                 AZ_Error(
@@ -329,8 +329,15 @@ namespace AZ
             AZStd::string shaderFileName;
             AzFramework::StringFunc::Path::GetFileName(request.m_sourceFile.c_str(), shaderFileName);
 
-            // No error checking because the same calls were already executed during CreateJobs()
             auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderFullPath);
+            if (!descriptorParseOutcome.IsSuccess())
+            {
+                AZ_Error(
+                    ShaderAssetBuilderName, false, "Failed to parse Shader Descriptor JSON: %s",
+                    descriptorParseOutcome.GetError().c_str());
+                return;
+            }
+
             RPI::ShaderSourceData shaderSourceData = descriptorParseOutcome.TakeValue();
             AZStd::string azslFullPath;
             ShaderBuilderUtility::GetAbsolutePathToAzslFile(shaderFullPath, shaderSourceData.m_source, azslFullPath);
@@ -389,8 +396,8 @@ namespace AZ
             RPI::ShaderAssetCreator shaderAssetCreator;
             shaderAssetCreator.Begin(Uuid::CreateRandom());
 
-            shaderAssetCreator.SetName(AZ::Name{shaderFileName.c_str()});
-            shaderAssetCreator.SetDrawListName(Name(shaderSourceData.m_drawListName));
+            shaderAssetCreator.SetName(AZ::Name{shaderFileName});
+            shaderAssetCreator.SetDrawListName(shaderSourceData.m_drawListName);
             shaderAssetCreator.SetShaderAssetBuildTimestamp(shaderAssetBuildTimestamp);
 
             // The ShaderOptionGroupLayout must be the same across all supervariants because
@@ -443,13 +450,6 @@ namespace AZ
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     return;
                 }
-
-                // The register number only makes sense if the platform uses "spaces",
-                // since the register Id of the resource will not change even if the pipeline layout changes.
-                // We can pass in a default ShaderCompilerArguments because all we care about is whether the shaderPlatformInterface
-                // appends the "--use-spaces" flag.
-                const auto& azslcArguments = buildArgsManager.GetCurrentArguments().m_azslcArguments;
-                const bool platformUsesRegisterSpaces = RHI::ShaderBuildArguments::HasArgument(azslcArguments, "--use-spaces");
 
                 uint32_t supervariantIndex = 0;
                 for (const auto& supervariantInfo : supervariantList)
@@ -525,8 +525,8 @@ namespace AZ
                     BindingDependencies bindingDependencies;
                     RootConstantData rootConstantData;
                     AssetBuilderSDK::ProcessJobResultCode azslJsonReadResult = ShaderBuilderUtility::PopulateAzslDataFromJsonFiles(
-                        ShaderAssetBuilderName, subProductsPaths, platformUsesRegisterSpaces, azslData, srgLayoutList, shaderOptionGroupLayout,
-                        bindingDependencies, rootConstantData);
+                        ShaderAssetBuilderName, subProductsPaths, azslData, srgLayoutList,
+                        shaderOptionGroupLayout, bindingDependencies, rootConstantData);
                     if (azslJsonReadResult != AssetBuilderSDK::ProcessJobResult_Success)
 
                     {
@@ -627,13 +627,19 @@ namespace AZ
                         const RHI::TargetBlendState& globalTargetBlendState = shaderSourceData.m_globalTargetBlendState;
                         const auto& targetBlendStates = shaderSourceData.m_targetBlendStates;
 
+                        // There are three ways to set blend state in the .shader file: "BlendState", "GlobalTargetBlendState", and "TargetBlendStates".
+                        // "BlendState" is a raw serialization of the BlendState struct, and is not very convenient to work with because it requires
+                        // every target to be specified in order for the data to load successfully. Normally users will want to use "GlobalTargetBlendState"
+                        // or "TargetBlendStates".
                         for (size_t i = 0; i < colorAttachmentCount; ++i)
                         {
                             if (targetBlendStates.contains(static_cast<uint32_t>(i)))
                             {
                                 renderStates.m_blendState.m_targets[i] = targetBlendStates.at(static_cast<uint32_t>(i));
                             }
-                            else
+                            // We have to ensure this actually has data before applying it, otherwise this would stomp any
+                            // data in the "BlendState" or "TargetBlendStates" with default values.
+                            else if(globalTargetBlendState.m_enable) 
                             {
                                 renderStates.m_blendState.m_targets[i] = globalTargetBlendState;
                             }

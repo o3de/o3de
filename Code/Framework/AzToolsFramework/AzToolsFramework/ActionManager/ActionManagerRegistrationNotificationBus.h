@@ -50,6 +50,9 @@ namespace AzToolsFramework
         //! Synchronization signal to register Widget Actions.
         virtual void OnWidgetActionRegistrationHook() {}
 
+        //! Synchronization signal to bind Actions to Action Context Modes.
+        virtual void OnActionContextModeBindingHook() {}
+
         //! Synchronization signal to add actions/widgets to Menus.
         virtual void OnMenuBindingHook() {}
 

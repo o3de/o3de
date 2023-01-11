@@ -577,6 +577,11 @@ AZ::Vector2 CLyShine::GetUiCursorPosition()
         systemCursorPositionNormalized.GetY() * viewportSize.GetY());
 }
 
+void CLyShine::SetUiCursorPosition(const AZ::Vector2& positionNormalized)
+{
+    AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorPositionNormalized, positionNormalized);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CLyShine::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
 {

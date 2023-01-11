@@ -110,13 +110,15 @@ Surface EvaluateSurface_EnhancedPBR(
     surface.scatterDistance = MaterialSrg::m_scatterDistance;
 
     // ------- Transmission -------
-
+    
+#if ENABLE_TRANSMISSION
     float2 transmissionUv = uvs[MaterialSrg::m_transmissionThicknessMapUvIndex];
     float4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, MaterialSrg::m_transmissionTintThickness);
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
     surface.transmission.transmissionParams = MaterialSrg::m_transmissionParams;
     surface.transmission.scatterDistance = MaterialSrg::m_scatterDistance;
+#endif
 
     // ------- Anisotropy -------
 
@@ -140,6 +142,7 @@ Surface EvaluateSurface_EnhancedPBR(
 
     // ------- Clearcoat -------
     
+#if ENABLE_CLEAR_COAT
     // Todo: Clean up the double uses of these clear coat flags
     if(o_clearCoat_feature_enabled)
     {
@@ -156,6 +159,7 @@ Surface EvaluateSurface_EnhancedPBR(
         
         ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
     }
+#endif
     
     // ------- Opacity -------
 

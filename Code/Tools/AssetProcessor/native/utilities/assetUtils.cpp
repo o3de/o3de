@@ -88,7 +88,8 @@ namespace AssetUtilsInternal
                 {
                     if (!failureOccurredOnce)
                     {
-                        AZ_Warning(AssetProcessor::ConsoleChannel, false, "Warning: Unable to remove file %s to copy source file %s in... (We may retry)\n", outputFile.toUtf8().constData(), sourceFile.toUtf8().constData());
+                        // This is not a warning because there is retry logic in place.
+                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Unable to remove file %s to copy source file %s in... (We may retry)\n", outputFile.toUtf8().constData(), sourceFile.toUtf8().constData());
                         failureOccurredOnce = true;
                     }
                     //not able to remove the file
@@ -467,7 +468,8 @@ namespace AssetUtilities
         fileName.toWCharArray(usableFileName.data());
 
         // third parameter dwShareMode (0) prevents share access
-        HANDLE fileHandle = CreateFileW(usableFileName.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, 0, 0);
+        const DWORD dwShareMode = 0;
+        HANDLE fileHandle = CreateFileW(usableFileName.c_str(), GENERIC_READ, dwShareMode, nullptr, OPEN_EXISTING, 0, 0);
 
         if (fileHandle != INVALID_HANDLE_VALUE)
         {
@@ -821,25 +823,32 @@ namespace AssetUtilities
     QString NormalizeFilePath(const QString& filePath)
     {
         // do NOT convert to absolute paths here, we just want to manipulate the string itself.
-
-        // note that according to the Qt Documentation, in QDir::toNativeSeparators,
-        // "The returned string may be the same as the argument on some operating systems, for example on Unix.".
-        // in other words, what we need here is a custom normalization - we want always the same
-        // direction of slashes on all platforms.s
-
         QString returnString = filePath;
-        returnString.replace(QChar('\\'), QChar('/'));
+
+        // QDir::cleanPath only replaces backslashes with forward slashes in the input string if the OS
+        // it is currently natively running on uses backslashes as its native path separator.
+        // see https://github.com/qt/qtbase/blob/40143c189b7c1bf3c2058b77d00ea5c4e3be8b28/src/corelib/io/qdir.cpp#L2357
+        // This assumption is incorrect in this application - it can receive file paths from data files created on
+        // backslash operating systems even if its a non-backslash operating system.
+
+        // we can skip this step in the cases where cleanPath will do it for us:
+        if (QDir::separator() == QLatin1Char('/'))
+        {
+            returnString.replace(QLatin1Char('\\'), QLatin1Char('/'));
+        }
+
+        // cleanPath to remove/resolve .. and . and any extra slashes, and remove any trailing slashes.
         returnString = QDir::cleanPath(returnString);
 
 #if defined(AZ_PLATFORM_WINDOWS)
         // windows has an additional idiosyncrasy - it returns upper and lower case drive letters
         // from various APIs differently.  we will settle on upper case as the standard.
-        if ((returnString.length() > 1) && (returnString[1] == ':'))
+        if ((returnString.length() > 1) && (returnString.at(1) == ':'))
         {
-            returnString[0] = returnString[0].toUpper();
+            QCharRef firstChar = returnString[0]; // QCharRef allows you to modify the string in place.
+            firstChar = firstChar.toUpper();
         }
 #endif
-
         return returnString;
     }
 
@@ -1436,15 +1445,13 @@ namespace AssetUtilities
 
         if (!topLevelSource)
         {
-            AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer source;
-            db->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source);
-
-            if(source.empty())
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
+            if(!db->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source))
             {
                 return {};
             }
 
-            topLevelSource = source[0];
+            topLevelSource = source;
         }
 
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolder;
@@ -1467,7 +1474,7 @@ namespace AssetUtilities
 
                 // Note: This call is intentionally re-using the products array.  The new results will be appended to the end (via push_back).
                 // The array will not be cleared.  We're essentially using products as a queue
-                db->GetProductsBySourceName(productPath.GetRelativePath().c_str(), products);
+                db->GetProductsBySourceNameScanFolderID(sources.back().RelativePath().c_str(), sources.back().ScanFolderId(), products);
                 size = products.size(); // Update the loop size since the array grew
             }
         }

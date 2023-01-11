@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeConfig.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeConfig.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/algorithm.h>
@@ -20,7 +20,7 @@ namespace MaterialCanvas
         AZStd::string baseName = AZ::RPI::AssetUtils::SanitizeFileName(nodeConfig.m_title);
         AZStd::to_lower(baseName.begin(), baseName.end());
         return AZStd::string::format(
-            "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/Functions/%s.materialgraphnode", baseName.c_str());
+            "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/Functions/%s.materialgraphnode", baseName.c_str());
     }
 
     void CreateTestNodes()

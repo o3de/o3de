@@ -219,6 +219,14 @@ set(FILES
     StreamingInstall/StreamingInstall.cpp
     StreamingInstall/StreamingInstallRequests.h
     StreamingInstall/StreamingInstallNotifications.h
+    PaintBrush/PaintBrush.cpp
+    PaintBrush/PaintBrush.h
+    PaintBrush/PaintBrushNotificationBus.h
+    PaintBrush/PaintBrushSessionBus.h
+    PaintBrush/PaintBrushSystemComponent.cpp
+    PaintBrush/PaintBrushSystemComponent.h
+    PaintBrush/PaintBrushSettings.cpp
+    PaintBrush/PaintBrushSettings.h
     Physics/Collision/CollisionEvents.h
     Physics/Collision/CollisionEvents.cpp
     Physics/Collision/CollisionLayers.h

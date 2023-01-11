@@ -22,7 +22,7 @@ namespace AZ
         RHI::Ptr<Memory> MemoryPageFactory::CreateObject()
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            if (!heapMemoryUsage.TryReserveMemory(m_descriptor.m_pageSizeInBytes))
+            if (!heapMemoryUsage.CanAllocate(m_descriptor.m_pageSizeInBytes))
             {
                 return nullptr;
             }
@@ -36,12 +36,8 @@ namespace AZ
 
             if (memoryView.IsValid())
             {
-                heapMemoryUsage.m_residentInBytes += m_descriptor.m_pageSizeInBytes;
                 memoryView.SetName(AZStd::string::format("BufferPage_%s", AZ::Uuid::CreateRandom().ToString<AZStd::string>().c_str()));
-            }
-            else
-            {
-                heapMemoryUsage.m_reservedInBytes -= m_descriptor.m_pageSizeInBytes;
+                heapMemoryUsage.m_totalResidentInBytes += memoryView.GetSize();
             }
 
             return memoryView.GetMemory();
@@ -50,8 +46,8 @@ namespace AZ
         void MemoryPageFactory::ShutdownObject(Memory& memory, bool isPoolShutdown)
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            heapMemoryUsage.m_residentInBytes -= m_descriptor.m_pageSizeInBytes;
-            heapMemoryUsage.m_reservedInBytes -= m_descriptor.m_pageSizeInBytes;
+            heapMemoryUsage.m_totalResidentInBytes -= m_descriptor.m_pageSizeInBytes;
+            heapMemoryUsage.Validate();
 
             if (isPoolShutdown)
             {

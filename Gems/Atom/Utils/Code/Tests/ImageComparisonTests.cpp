@@ -14,7 +14,7 @@ namespace UnitTest
     using namespace AZ::Utils;
 
     class ImageComparisonTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         static const AZ::RHI::Format DefaultFormat = AZ::RHI::Format::R8G8B8A8_UNORM;

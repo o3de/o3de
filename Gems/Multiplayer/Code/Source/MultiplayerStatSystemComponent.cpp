@@ -54,7 +54,8 @@ namespace Multiplayer
             constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
 
             auto stream = AZStd::make_unique<AZ::IO::SystemFileStream>(metricsFilepath.c_str(), openMode);
-            auto eventLogger = AZStd::make_unique<AZ::Metrics::JsonTraceEventLogger>(AZStd::move(stream));
+            AZ::Metrics::JsonTraceEventLoggerConfig config{ "Multiplayer" };
+            auto eventLogger = AZStd::make_unique<AZ::Metrics::JsonTraceEventLogger>(AZStd::move(stream), config);
             eventLoggerFactory->RegisterEventLogger(NetworkingMetricsId, AZStd::move(eventLogger));
         }
     }
@@ -208,6 +209,25 @@ namespace Multiplayer
         AZLOG_WARN("Stat with id %d has not been declared using DECLARE_PERFORMANCE_STAT", uniqueStatId);
     }
 
+    void MultiplayerStatSystemComponent::IncrementStat(int uniqueStatId)
+    {
+        AZStd::lock_guard lock(m_access);
+        const auto statIterator = m_statIdToGroupId.find(uniqueStatId);
+        if (statIterator != m_statIdToGroupId.end())
+        {
+            if (const auto group = m_statGroups.Find(statIterator->second))
+            {
+                if (CumulativeAverage* stat = group->m_stats.Find(uniqueStatId))
+                {
+                    stat->m_counterValue++;
+                    return;
+                }
+            }
+        }
+
+        AZLOG_WARN("Stat with id %d has not been declared using DECLARE_PERFORMANCE_STAT", uniqueStatId);
+    }
+
     void MultiplayerStatSystemComponent::RecordMetrics()
     {
         if (const auto* eventLoggerFactory = AZ::Interface<AZ::Metrics::IEventLoggerFactory>::Get())
@@ -225,6 +245,13 @@ namespace Multiplayer
                         {
                             // If there are new entries, update the average.
                             argsContainer.emplace_back(stat.m_name.c_str(), stat.m_average.CalculateAverage());
+                        }
+                        else if (stat.m_counterValue > 0)
+                        {
+                            // counter metric
+                            argsContainer.emplace_back(stat.m_name.c_str(), stat.m_counterValue);
+                            stat.m_counterValue = 0;
+                            stat.m_lastValue = 0;
                         }
                         else
                         {

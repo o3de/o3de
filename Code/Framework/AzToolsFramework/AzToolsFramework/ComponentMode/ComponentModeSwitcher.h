@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzFramework/Viewport/ViewportBus.h>
+
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -33,11 +34,11 @@ namespace AzToolsFramework
 
             // Member variables
             AZ::EntityComponentIdPair m_pairId; //!< Id of entity component pair.
-            AZ::Entity* m_entity = nullptr; //!< Pointer to entity associated with pairId.
-            AZ::Component* m_component = nullptr; //!< Pointer to component associated with pairId.
             AZStd::string m_componentName; //!< Friendly name of component.
             AZStd::string m_iconPath; //!< Path of component icon.
             ViewportUi::ButtonId m_buttonId; //!< Button Id of switcher component.
+
+            const AZ::Component* FindComponent() const;
         };
 
         //! Handles all aspects of the ViewportUi Switcher related to Component Mode.
@@ -60,11 +61,6 @@ namespace AzToolsFramework
 
             // Returns a null pointer if not in component mode
             const AZ::Component* GetActiveComponent() const
-            {
-                return m_activeSwitcherComponent;
-            }
-
-            AZ::Component* GetActiveComponent()
             {
                 return m_activeSwitcherComponent;
             }
@@ -110,8 +106,11 @@ namespace AzToolsFramework
             void OnComponentModeDelegateConnect(const AZ::EntityComponentIdPair& pairId) override;
             void OnComponentModeDelegateDisconnect(const AZ::EntityComponentIdPair& pairId) override;
 
+            // EditorComponentModeNotificationBus overrides ...
+            void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
+
             // Member variables
-            AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode
+            const AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode
             AZStd::vector<ComponentData> m_addedComponents; //!< Vector of ComponentData elements..
             ViewportUi::ButtonId m_transformButtonId; //!< Id of the default button of the switcher, used to exit component mode.
             AZ::Event<ViewportUi::ButtonId>::Handler m_handler; //!< Handler for onclick of switcher buttons, activates component mode.

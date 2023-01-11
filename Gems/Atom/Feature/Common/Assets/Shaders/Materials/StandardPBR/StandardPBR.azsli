@@ -19,7 +19,6 @@
 
 // ------- Shader Resource Groups -------
 
-#include <Atom/Features/SrgSemantics.azsli>
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include "StandardPBR_MaterialSrg.azsli"
@@ -40,10 +39,27 @@ COMMON_OPTIONS_NORMAL()
 COMMON_OPTIONS_CLEAR_COAT()
 COMMON_OPTIONS_OCCLUSION()
 COMMON_OPTIONS_EMISSIVE()
-// COMMON_OPTIONS_PARALLAX() is in StandardPBR_Common.azsli because it's needed by all StandardPBR shaders.
-
+COMMON_OPTIONS_PARALLAX()
 
 // ------- Shader Stitching -------
+
+
+// Callback function for ParallaxMapping.azsli
+DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+{
+    return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+}
+
+bool ShouldHandleParallax()
+{
+    // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
+    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useHeightmap;
+}
+
+bool NeedsTangentFrame()
+{
+    return ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture);
+}
 
 // Use same vertex logic as BasePBR
 #include "../BasePBR/BasePBR_VertexData.azsli"

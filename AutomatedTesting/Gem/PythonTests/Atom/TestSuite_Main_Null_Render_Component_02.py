@@ -6,11 +6,13 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import pytest
 
+import ly_test_tools
 from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.skipif(ly_test_tools.LINUX, reason="https://github.com/o3de/o3de/issues/13930")
 class TestAutomation(EditorTestSuite):
 
     @pytest.mark.test_case_id("C32078115")
@@ -20,10 +22,6 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C32078122")
     class AtomEditorComponents_GridAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_GridAdded as test_module
-
-    @pytest.mark.test_case_id("C36553404")
-    class AtomEditorComponents_HairAdded(EditorBatchedTest):
-        from Atom.tests import hydra_AtomEditorComponents_HairAdded as test_module
 
     @pytest.mark.test_case_id("C36525671")
     class AtomEditorComponents_HDRColorGradingAdded(EditorBatchedTest):
@@ -44,10 +42,6 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C32078123")
     class AtomEditorComponents_MaterialAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_MaterialAdded as test_module
-
-    @pytest.mark.test_case_id("C32078124")
-    class AtomEditorComponents_MeshAdded(EditorBatchedTest):
-        from Atom.tests import hydra_AtomEditorComponents_MeshAdded as test_module
 
     @pytest.mark.test_case_id("C36525663")
     class AtomEditorComponents_OcclusionCullingPlaneAdded(EditorBatchedTest):

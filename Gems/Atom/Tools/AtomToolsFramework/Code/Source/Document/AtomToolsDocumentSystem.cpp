@@ -458,11 +458,18 @@ namespace AtomToolsFramework
         bool result = true;
         for (const auto& documentPair : m_documentMap)
         {
-            bool canSave = false;
-            AtomToolsDocumentRequestBus::EventResult(canSave, documentPair.first, &AtomToolsDocumentRequestBus::Events::CanSave);
-            if (canSave && !SaveDocument(documentPair.first))
+            const auto& documentId = documentPair.first;
+
+            AZStd::string documentPath;
+            AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
+            DocumentTypeInfo documentInfo;
+            AtomToolsDocumentRequestBus::EventResult(documentInfo, documentId, &AtomToolsDocumentRequestBus::Events::GetDocumentTypeInfo);
+            if (documentInfo.IsSupportedExtensionToSave(documentPath))
             {
-                result = false;
+                if (!SaveDocument(documentId))
+                {
+                    result = false;
+                }
             }
         }
 
@@ -474,13 +481,23 @@ namespace AtomToolsFramework
         bool result = true;
         for (const auto& documentPair : m_documentMap)
         {
-            bool isModified = false;
-            AtomToolsDocumentRequestBus::EventResult(isModified, documentPair.first, &AtomToolsDocumentRequestBus::Events::IsModified);
-            bool canSave = false;
-            AtomToolsDocumentRequestBus::EventResult(canSave, documentPair.first, &AtomToolsDocumentRequestBus::Events::CanSave);
-            if (isModified && canSave && !SaveDocument(documentPair.first))
+            const auto& documentId = documentPair.first;
+
+            AZStd::string documentPath;
+            AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
+            DocumentTypeInfo documentInfo;
+            AtomToolsDocumentRequestBus::EventResult(documentInfo, documentId, &AtomToolsDocumentRequestBus::Events::GetDocumentTypeInfo);
+            if (documentInfo.IsSupportedExtensionToSave(documentPath))
             {
-                result = false;
+                bool isModified = false;
+                AtomToolsDocumentRequestBus::EventResult(isModified, documentId, &AtomToolsDocumentRequestBus::Events::IsModified);
+                if (isModified)
+                {
+                    if (!SaveDocument(documentId))
+                    {
+                        result = false;
+                    }
+                }
             }
         }
 
@@ -505,13 +522,12 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocumentSystem::ReopenModifiedDocuments()
     {
-        m_queueReopenModifiedDocuments = false;
-
         const bool enableHotReload = GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload", true);
         if (!enableHotReload)
         {
             m_documentIdsWithDependencyChanges.clear();
             m_documentIdsWithExternalChanges.clear();
+            m_queueReopenModifiedDocuments = false;
             return false;
         }
 
@@ -585,6 +601,7 @@ namespace AtomToolsFramework
 
         m_documentIdsWithDependencyChanges.clear();
         m_documentIdsWithExternalChanges.clear();
+        m_queueReopenModifiedDocuments = false;
         return true;
     }
 

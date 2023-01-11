@@ -29,7 +29,7 @@
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
-#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
@@ -58,7 +58,6 @@ namespace AzToolsFramework
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
         PrefabFocusInterface* PrefabIntegrationManager::s_prefabFocusInterface = nullptr;
         PrefabFocusPublicInterface* PrefabIntegrationManager::s_prefabFocusPublicInterface = nullptr;
-        PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
 
         PrefabIntegrationManager::PrefabIntegrationManager()
@@ -84,13 +83,6 @@ namespace AzToolsFramework
                 return;
             }
 
-            s_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
-            if (s_prefabLoaderInterface == nullptr)
-            {
-                AZ_Assert(false, "Prefab - could not get PrefabLoaderInterface on PrefabIntegrationManager construction.");
-                return;
-            }
-
             s_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             if (s_prefabFocusInterface == nullptr)
             {
@@ -102,6 +94,13 @@ namespace AzToolsFramework
             if (s_prefabFocusPublicInterface == nullptr)
             {
                 AZ_Assert(false, "Prefab - could not get PrefabFocusPublicInterface on PrefabIntegrationManager construction.");
+                return;
+            }
+
+            m_prefabOverridePublicInterface = AZ::Interface<PrefabOverridePublicInterface>::Get();
+            if (m_prefabOverridePublicInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - could not get PrefabOverridePublicInterface on PrefabIntegrationManager construction.");
                 return;
             }
 
@@ -477,18 +476,32 @@ namespace AzToolsFramework
                         // Also don't allow to create a prefab if any of the selected entities are read-only
                         if (!layerInSelection && !readOnlyEntityInSelection)
                         {
-                            QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
-                            createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
+                            if (s_prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntities))
+                            {
+                                AZ::EntityId entityToCheck = selectedEntities[0];
 
-                            QObject::connect(
-                                createAction, &QAction::triggered, createAction,
-                                [this, selectedEntities]
+                                // If it is a container entity, then check its parent entity's owning instance instead.
+                                if (s_prefabPublicInterface->IsInstanceContainerEntity(entityToCheck))
                                 {
-                                    ContextMenu_CreatePrefab(selectedEntities);
+                                    AZ::TransformBus::EventResult(entityToCheck, entityToCheck, &AZ::TransformBus::Events::GetParentId);
                                 }
-                            );
 
-                            itemWasShown = true;
+                                // Do not show the option when it is not a prefab edit.
+                                if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityToCheck))
+                                {
+                                    QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
+                                    createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
+
+                                    QObject::connect(
+                                        createAction, &QAction::triggered, createAction,
+                                        [this, selectedEntities]
+                                        {
+                                            ContextMenu_CreatePrefab(selectedEntities);
+                                        });
+
+                                    itemWasShown = true;
+                                }
+                            }
                         }
                     }
                 }
@@ -498,20 +511,27 @@ namespace AzToolsFramework
             if (onlySelectedEntityIsClosedPrefabContainer)
             {
                 AZ::EntityId selectedEntityId = selectedEntities.front();
+                AZ::EntityId parentEntityId;
+                AZ::TransformBus::EventResult(parentEntityId, selectedEntityId, &AZ::TransformBus::Events::GetParentId);
 
-                QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
-                QObject::connect(
-                    detachPrefabAction, &QAction::triggered, detachPrefabAction,
-                    [this, selectedEntityId]
-                    {
-                        ContextMenu_DetachPrefab(selectedEntityId);
-                    }
-                );
+                // Do not show the option when it is not a prefab edit.
+                if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(parentEntityId))
+                {
+                    QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
+                    QObject::connect(
+                        detachPrefabAction, &QAction::triggered, detachPrefabAction,
+                        [this, selectedEntityId]
+                        {
+                            ContextMenu_DetachPrefab(selectedEntityId);
+                        });
+                }
             }
 
             // Instantiate Prefab
-            if (selectedEntities.size() == 0 ||
-                selectedEntities.size() == 1 && !readOnlyEntityInSelection && !onlySelectedEntityIsClosedPrefabContainer)
+            // Do not show the option when it is not a prefab edit.
+            if (selectedEntities.size() == 0 || selectedEntities.size() == 1 &&
+                !readOnlyEntityInSelection && !onlySelectedEntityIsClosedPrefabContainer &&
+                s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities[0]))
             {
                 QAction* instantiateAction = menu->addAction(QObject::tr("Instantiate Prefab..."));
                 instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));
@@ -622,6 +642,29 @@ namespace AzToolsFramework
                         ContextMenu_DeleteSelected();
                     }
                 );
+            }
+
+            // Revert Overrides
+            {
+                if (IsPrefabOverridesUxEnabled() && selectedEntities.size() == 1)
+                {
+                    AZ::EntityId selectedEntity = selectedEntities[0];
+                    if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
+                        m_prefabOverridePublicInterface->AreOverridesPresent(selectedEntity))
+                    {
+                        QAction* revertAction = menu->addAction(QObject::tr("Revert Overrides"));
+                        QObject::connect(
+                            revertAction,
+                            &QAction::triggered,
+                            revertAction,
+                            [this, selectedEntity]
+                            {
+                                ContextMenu_RevertOverrides(selectedEntity);
+                            });
+
+                        menu->addSeparator();
+                    }
+                }
             }
 
             menu->addSeparator();
@@ -742,7 +785,7 @@ namespace AzToolsFramework
                 }
             }
 
-            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefabInDisk(selectedEntities, prefabFilePath.data());
+            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefabAndSaveToDisk(selectedEntities, prefabFilePath.data());
 
             if (!createPrefabOutcome.IsSuccess())
             {
@@ -864,6 +907,11 @@ namespace AzToolsFramework
             {
                 WarningDialog("Detach Prefab error", detachPrefabResult.GetError());
             }
+        }
+
+        void PrefabIntegrationManager::ContextMenu_RevertOverrides(AZ::EntityId entityId)
+        {
+            m_prefabOverridePublicInterface->RevertOverrides(entityId);
         }
 
         void PrefabIntegrationManager::GatherAllReferencedEntitiesAndCompare(

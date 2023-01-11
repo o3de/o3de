@@ -8,16 +8,15 @@
 
 #pragma once
 
+#include "FileWatcherBase.h"
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/thread.h>
-#include <QMap>
-#include <QVector>
 #include <QString>
 #include <QObject>
-
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -25,8 +24,7 @@
 /*! Class that handles creation and deletion of FolderRootWatches based on
  *! the given FolderWatches, and forwards file change signals to them.
  * */
-class FileWatcher
-    : public QObject
+class FileWatcher : public FileWatcherBase
 {
     Q_OBJECT
 
@@ -35,26 +33,22 @@ public:
     ~FileWatcher() override;
 
     //////////////////////////////////////////////////////////////////////////
-    void AddFolderWatch(QString directory, bool recursive = true);
-    void ClearFolderWatches();
+    void AddFolderWatch(QString directory, bool recursive = true) override;
+    bool HasWatchFolder(QString directory) const; 
+    void ClearFolderWatches() override;
     //////////////////////////////////////////////////////////////////////////
 
-    void StartWatching();
-    void StopWatching();
+    //////////////////////////////////////////////////////////////////////////
+    void StartWatching() override;
+    void StopWatching() override;
+    //////////////////////////////////////////////////////////////////////////
 
-Q_SIGNALS:
-    // These signals are emitted when a file under a watched path changes
-    void fileAdded(QString filePath);
-    void fileRemoved(QString filePath);
-    void fileModified(QString filePath);
+    //////////////////////////////////////////////////////////////////////////
+    void AddExclusion(const AssetBuilderSDK::FilePatternMatcher& excludeMatch) override;
+    bool IsExcluded(QString filePath) const override;
+    //////////////////////////////////////////////////////////////////////////
 
-    // These signals are emitted by the platform implementations when files
-    // change. Some platforms' file watch APIs do not support non-recursive
-    // watches, so the signals are filtered before being forwarded to the
-    // non-"raw" fileAdded/Removed/Modified signals above.
-    void rawFileAdded(QString filePath, QPrivateSignal);
-    void rawFileRemoved(QString filePath, QPrivateSignal);
-    void rawFileModified(QString filePath, QPrivateSignal);
+    void InstallDefaultExclusionRules(QString cacheRootPath, QString projectRootPath) override;
 
 private:
     bool PlatformStart();
@@ -72,7 +66,12 @@ private:
 
     AZStd::unique_ptr<PlatformImplementation> m_platformImpl;
     AZStd::vector<WatchRoot> m_folderWatchRoots;
+    AZStd::vector<AssetBuilderSDK::FilePatternMatcher> m_excludes;
     AZStd::thread m_thread;
     bool m_startedWatching = false;
     AZStd::atomic_bool m_shutdownThreadSignal = false;
+
+    // platform implementations must signal this to indicate they have fully initialized
+    // and will not be dropping events.
+    AZStd::atomic_bool m_startedSignal = false;
 };

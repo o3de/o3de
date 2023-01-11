@@ -6,9 +6,12 @@
  *
  */
 
+#include <cstdint>
+
 #include <AzCore/PlatformIncl.h>
-#include <AzCore/Memory/AllocatorDebug.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Memory/AllocatorInstance.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzCore/std/allocator_stateless.h>
 #include <AzCore/std/containers/span.h>
@@ -28,6 +31,29 @@
 #define POOL_ALLOCATION_PAGE_SIZE (size_t{4} * size_t{1024})
 #define POOL_ALLOCATION_MIN_ALLOCATION_SIZE size_t{8}
 #define POOL_ALLOCATION_MAX_ALLOCATION_SIZE size_t{512}
+
+namespace
+{
+    struct Magic32
+    {
+        static const AZ::u32 m_defValue = 0xfeedf00d;
+        AZ_FORCE_INLINE Magic32()
+        {
+            m_value = (m_defValue ^ AZ::u32(reinterpret_cast<uintptr_t>(this)));
+        }
+        AZ_FORCE_INLINE ~Magic32()
+        {
+            m_value = 0;
+        }
+        AZ_FORCE_INLINE bool Validate() const
+        {
+            return m_value == (m_defValue ^ AZ::u32(reinterpret_cast<uintptr_t>(this)));
+        }
+
+    private:
+        AZ::u32 m_value;
+    };
+}
 
 namespace AZ
 {
@@ -97,7 +123,7 @@ namespace AZ
 
             FreeListType m_freeList;
             u32 m_bin;
-            Debug::Magic32 m_magic;
+            Magic32 m_magic;
             u32 m_elementSize;
             u32 m_maxNumElements;
         };
@@ -210,7 +236,7 @@ namespace AZ
             AZStd::lock_free_intrusive_stack_node<Page> m_lfStack; ///< Lock Free stack node
             struct ThreadPoolData* m_threadData; ///< The thread data that own's the page.
             u32 m_bin;
-            Debug::Magic32 m_magic;
+            Magic32 m_magic;
             u32 m_elementSize;
             u32 m_maxNumElements;
         };
@@ -594,7 +620,8 @@ namespace AZ
     // [9/15/2009]
     //=========================================================================
     PoolSchema::PoolSchema()
-        : m_impl(nullptr)
+        : m_impl(new (AZStd::stateless_allocator().allocate(sizeof(PoolSchemaImpl), AZStd::alignment_of<PoolSchemaImpl>::value))
+                 PoolSchemaImpl())
     {
     }
 
@@ -615,14 +642,7 @@ namespace AZ
     //=========================================================================
     bool PoolSchema::Create()
     {
-        AZ_Assert(m_impl == nullptr, "PoolSchema already created!");
-        if (m_impl == nullptr)
-        {
-            m_impl =
-                reinterpret_cast<PoolSchemaImpl*>(AZStd::stateless_allocator().allocate(sizeof(PoolSchemaImpl), alignof(PoolSchemaImpl)));
-            new (m_impl) PoolSchemaImpl();
-        }
-        return (m_impl != nullptr);
+        return true;
     }
 
     //=========================================================================
@@ -820,9 +840,10 @@ namespace AZ
     // [9/15/2009]
     //=========================================================================
     ThreadPoolSchema::ThreadPoolSchema(GetThreadPoolData getThreadPoolData, SetThreadPoolData setThreadPoolData)
-        : m_impl(nullptr)
-        , m_threadPoolGetter(getThreadPoolData)
+        : m_threadPoolGetter(getThreadPoolData)
         , m_threadPoolSetter(setThreadPoolData)
+        , m_impl(new (AZStd::stateless_allocator().allocate(sizeof(ThreadPoolSchemaImpl), AZStd::alignment_of<ThreadPoolSchemaImpl>::value))
+                     ThreadPoolSchemaImpl(m_threadPoolGetter, m_threadPoolSetter))
     {
     }
 
@@ -843,16 +864,7 @@ namespace AZ
     //=========================================================================
     bool ThreadPoolSchema::Create()
     {
-        AZ_Assert(m_impl == nullptr, "PoolSchema already created!");
-        if (m_impl == nullptr)
-        {
-            // We use the AZStd::stateless_allocator for the allocation of this object to prevent it from showing up as a leak
-            // in other allocators.
-            m_impl = reinterpret_cast<ThreadPoolSchemaImpl*>(
-                AZStd::stateless_allocator().allocate(sizeof(ThreadPoolSchemaImpl), AZStd::alignment_of<ThreadPoolSchemaImpl>::value));
-            new (m_impl) ThreadPoolSchemaImpl(m_threadPoolGetter, m_threadPoolSetter);
-        }
-        return (m_impl != nullptr);
+        return true;
     }
 
     //=========================================================================

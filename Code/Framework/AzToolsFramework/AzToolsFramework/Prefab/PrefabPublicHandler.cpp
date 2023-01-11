@@ -105,6 +105,14 @@ namespace AzToolsFramework
                 return AZ::Failure(findCommonRootOutcome.TakeError());
             }
 
+            // Block creating prefab as override since it is not supported.
+            if (commonRootEntityOwningInstance.has_value() &&
+                !m_prefabFocusHandler.IsOwningPrefabBeingFocused(commonRootEntityOwningInstance->get().GetContainerEntityId()))
+            {
+                return AZ::Failure<AZStd::string>("Creating prefab as an override edit is currently not supported.\n"
+                    "To perform a prefab edit, please first enter Prefab Edit Mode on the direct owning prefab.");
+            }
+
             const TemplateId commonRootInstanceTemplateId = commonRootEntityOwningInstance->get().GetTemplateId();
 
             // Order entities by their respective positions within hierarchy.
@@ -370,7 +378,13 @@ namespace AzToolsFramework
 
         CreatePrefabResult PrefabPublicHandler::CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath)
         {
-            AZ_Assert(filePath.IsAbsolute(), "CreatePrefabInDisk requires an absolute file path.");
+            AZ_Warning("Prefab", false, "This function is marked for deprecation. Please use CreatePrefabAndSaveToDisk instead.")
+            return CreatePrefabAndSaveToDisk(entityIds, filePath);
+        }
+
+        CreatePrefabResult PrefabPublicHandler::CreatePrefabAndSaveToDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath)
+        {
+            AZ_Assert(filePath.IsAbsolute(), "CreatePrefabAndSaveToDisk requires an absolute file path.");
 
             auto result = CreatePrefabInMemory(entityIds, filePath);
             if (result.IsSuccess())
@@ -381,7 +395,7 @@ namespace AzToolsFramework
                 if (!m_prefabLoaderInterface->SaveTemplateToFile(templateId, filePath))
                 {
                     AZStd::string_view filePathString(filePath);
-                    return AZ::Failure(AZStd::string::format("CreatePrefabInDisk - "
+                    return AZ::Failure(AZStd::string::format("CreatePrefabAndSaveToDisk - "
                         "Could not save the newly created prefab to file path %.*s - internal error ",
                         AZ_STRING_ARG(filePathString)));
                 }
@@ -446,6 +460,13 @@ namespace AzToolsFramework
                 AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
                 instanceToParentUnder = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
                 parentId = instanceToParentUnder->get().GetContainerEntityId();
+            }
+
+            // Block instantiating prefab as override since it is not supported.
+            if (!m_prefabFocusHandler.IsOwningPrefabBeingFocused(instanceToParentUnder->get().GetContainerEntityId()))
+            {
+                return AZ::Failure<AZStd::string>("Instantiating prefab as an override edit is currently not supported.\n"
+                    "To perform a prefab edit, please first enter Prefab Edit Mode on the direct owning prefab.");
             }
 
             //Detect whether this instantiation would produce a cyclical dependency
@@ -629,7 +650,7 @@ namespace AzToolsFramework
             PrefabDom patchesCopyForUndoSupport;
             PrefabDom nestedInstanceLinkDom;
             nestedInstanceLink->get().GetLinkDom(nestedInstanceLinkDom, nestedInstanceLinkDom.GetAllocator());
-            PrefabDomValueConstReference nestedInstanceLinkPatches =
+            PrefabDomValueReference nestedInstanceLinkPatches =
                 PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom, PrefabDomUtils::PatchesName);
             if (nestedInstanceLinkPatches.has_value())
             {
@@ -1418,8 +1439,7 @@ namespace AzToolsFramework
                     parentEntitiesToUpdate.insert(GetEntityById(parentEntityId));
                 }
 
-                commonOwningInstance->get().DetachEntity(entityId).release();
-                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
+                commonOwningInstance->get().DetachEntity(entityId);
 
                 detachedEntityAliasPaths.push_back(AZStd::move(nestedEntityAliasPath));
             }
@@ -1484,6 +1504,13 @@ namespace AzToolsFramework
 
                 auto& parentInstance = getParentInstanceResult->get();
                 const auto parentTemplateId = parentInstance.GetTemplateId();
+
+                // Block detaching prefab as override since it is not supported.
+                if (!m_prefabFocusHandler.IsOwningPrefabBeingFocused(parentInstance.GetContainerEntityId()))
+                {
+                    return AZ::Failure(AZStd::string("Detaching prefab as an override edit is currently not supported.\n"
+                        "To perform a prefab edit, please first enter Prefab Edit Mode on the direct owning prefab."));
+                }
 
                 {
                     auto instancePtr = parentInstance.DetachNestedInstance(owningInstance->get().GetInstanceAlias());
@@ -2056,7 +2083,7 @@ namespace AzToolsFramework
 
                 // Create the new Entity DOM from parsing the JSON string
                 PrefabDom entityDomAfter(&domToAddDuplicatedEntitiesUnder.GetAllocator());
-                entityDomAfter.Parse(newEntityDomString.toUtf8().constData());
+                entityDomAfter.Parse<rapidjson::kParseFullPrecisionFlag>(newEntityDomString.toUtf8().constData());
 
                 EntityAlias parentEntityAlias;
                 if (auto componentsIter = entityDomAfter.FindMember(PrefabDomUtils::ComponentsName);
@@ -2195,7 +2222,7 @@ namespace AzToolsFramework
 
                 // Create the new Instance DOM from parsing the JSON string
                 PrefabDom nestedInstanceDomAfter(&domToAddDuplicatedInstancesUnder.GetAllocator());
-                nestedInstanceDomAfter.Parse(newInstanceDomString.toUtf8().constData());
+                nestedInstanceDomAfter.Parse<rapidjson::kParseFullPrecisionFlag>(newInstanceDomString.toUtf8().constData());
 
                 // Add the new Instance DOM to the Instances member of the instance
                 rapidjson::Value aliasName(newInstanceAlias.c_str(), static_cast<rapidjson::SizeType>(newInstanceAlias.length()), domToAddDuplicatedInstancesUnder.GetAllocator());

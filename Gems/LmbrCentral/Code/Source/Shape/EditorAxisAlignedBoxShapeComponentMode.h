@@ -17,9 +17,11 @@ namespace LmbrCentral
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
-        EditorAxisAlignedBoxShapeComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
+        EditorAxisAlignedBoxShapeComponentMode(
+            const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType, bool allowAsymmetricalEditing);
 
         //! AzToolsFramework::BoxComponentMode overrides ...
         AZStd::string GetComponentModeName() const override;
+        AZ::Uuid GetComponentModeType() const override;
     };
 } // namespace LmbrCentral

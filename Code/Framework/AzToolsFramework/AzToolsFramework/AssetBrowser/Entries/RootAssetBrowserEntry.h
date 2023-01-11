@@ -79,6 +79,7 @@ namespace AzToolsFramework
             AZ_DISABLE_COPY_MOVE(RootAssetBrowserEntry);
 
             AZ::IO::Path m_enginePath;
+            AZ::IO::Path m_projectPath;
 
             //! Create folder entry child
             FolderAssetBrowserEntry* CreateFolder(AZStd::string_view folderName, AssetBrowserEntry* parent, bool isScanFolder);

@@ -13,7 +13,6 @@
 
 #include <CryCommon/IConsole.h>
 #include <CryCommon/CryListenerSet.h>
-#include <CryCommon/StaticInstance.h>
 
 #if (!defined(RELEASE) || defined(RELEASE_LOGGING) || defined(ENABLE_PROFILING_CODE)) && !defined(AZ_LEGACY_CRYSYSTEM_TRAIT_REMOTE_CONSOLE_UNSUPPORTED)
     #define USE_REMOTE_CONSOLE
@@ -34,7 +33,7 @@ class CRemoteConsole
 public:
     static CRemoteConsole* GetInst() 
     { 
-        static StaticInstance<CRemoteConsole, AZStd::no_destruct<CRemoteConsole>> inst;
+        static CRemoteConsole inst;
         return &inst; 
     }
 
@@ -66,9 +65,6 @@ public:
 
 #if defined(USE_REMOTE_CONSOLE)
     SRemoteServer* m_pServer;
-    ICVar* m_pLogEnableRemoteConsole = nullptr;
-    ICVar* m_remoteConsoleAllowedHostList = nullptr;
-    ICVar* m_remoteConsolePort = nullptr;
 #endif
 };
 

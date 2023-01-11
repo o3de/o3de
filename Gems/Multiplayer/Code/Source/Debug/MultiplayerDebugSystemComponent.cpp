@@ -11,12 +11,13 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/MultiplayerConstants.h>
+#include <Multiplayer/MultiplayerPerformanceStats.h>
+#include <Multiplayer/MultiplayerMetrics.h>
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <ImGuiContextScope.h>
 #include <ImGui/ImGuiPass.h>
@@ -70,6 +71,10 @@ namespace Multiplayer
     {
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
+        m_auditTrailElems.clear();
+        m_committedAuditTrail.clear();
+        m_pendingAuditTrail.clear();
+        m_filteredAuditTrail.clear();
 #endif
     }
 
@@ -94,6 +99,11 @@ namespace Multiplayer
         [[maybe_unused]] const AZStd::string& name,
         [[maybe_unused]] AZStd::vector<MultiplayerAuditingElement>&& entryDetails)
     {
+        if (category == AuditCategory::Desync)
+        {
+            INCREMENT_PERFORMANCE_STAT(MultiplayerStat_DesyncCorrections);
+        }
+
 #ifdef IMGUI_ENABLED
         while (m_auditTrailElems.size() >= net_DebutAuditTrail_HistorySize)
         {

@@ -273,7 +273,7 @@ namespace Terrain
             m_detailTextureScale, &AzFramework::Terrain::TerrainDataRequests::GetTerrainSurfaceDataQueryResolution);
 
         // Texture size needs to be twice the render distance because the camera is positioned in the middle of the texture.
-        m_detailTextureSize = lroundf(m_config.m_renderDistance / m_detailTextureScale) * 2;
+        m_detailTextureSize = static_cast<int32_t>(lroundf(m_config.m_renderDistance / m_detailTextureScale) * 2);
 
         ClipmapBoundsDescriptor desc;
         desc.m_clipmapUpdateMultiple = 1;
@@ -321,11 +321,11 @@ namespace Terrain
 
     void TerrainDetailMaterialManager::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        if ((dataChangedMask & TerrainDataChangedMask::SurfaceData) != 0)
+        if ((dataChangedMask & TerrainDataChangedMask::SurfaceData) == TerrainDataChangedMask::SurfaceData)
         {
             m_dirtyDetailRegion.AddAabb(dirtyRegion);
         }
-        if ((dataChangedMask & TerrainDataChangedMask::Settings) != 0)
+        if ((dataChangedMask & TerrainDataChangedMask::Settings) == TerrainDataChangedMask::Settings)
         {
             InitializeTextureParams();
         }
@@ -601,12 +601,6 @@ namespace Terrain
     void TerrainDetailMaterialManager::UpdateDetailMaterialData(uint16_t detailMaterialIndex, MaterialInstance material)
     {
         DetailMaterialData& materialData = m_detailMaterials.GetData(detailMaterialIndex);
-        if (materialData.m_materialChangeId == material->GetCurrentChangeId())
-        {
-            return; // material hasn't changed, nothing to do
-        }
-
-        materialData.m_materialChangeId = material->GetCurrentChangeId();
         materialData.m_assetId = material->GetAssetId();
         
         DetailMaterialShaderData& shaderData = m_detailMaterialShaderData.GetElement(materialData.m_detailMaterialBufferIndex);

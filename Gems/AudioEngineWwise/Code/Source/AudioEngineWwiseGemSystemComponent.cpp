@@ -10,7 +10,6 @@
 
 #include <AzCore/PlatformDef.h>
 #include <AzCore/Console/ILogger.h>
-#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -116,30 +115,15 @@ namespace AudioEngineWwiseGem
         AZ_Assert(Audio::Wwise::Cvars::s_PrimaryMemorySize > memorySubpartitionSizes,
             "Wwise memory sizes of sub-categories add up to more than the primary memory pool size!")
 
-        // Initialize memory block for Wwise to use...
-        if (!AZ::AllocatorInstance<Audio::AudioImplAllocator>::IsReady())
-        {
-            const size_t poolSize = Audio::Wwise::Cvars::s_PrimaryMemorySize << 10;
-
-            Audio::AudioImplAllocator::Descriptor allocDesc;
-
-            // Generic Allocator:
-            allocDesc.m_allocationRecords = true;
-            allocDesc.m_heap.m_numFixedMemoryBlocks = 1;
-            allocDesc.m_heap.m_fixedMemoryBlocksByteSize[0] = poolSize;
-
-            allocDesc.m_heap.m_fixedMemoryBlocks[0] = AZ::AllocatorInstance<AZ::OSAllocator>::Get().Allocate(
-                allocDesc.m_heap.m_fixedMemoryBlocksByteSize[0], allocDesc.m_heap.m_memoryBlockAlignment);
-
-            AZ::AllocatorInstance<Audio::AudioImplAllocator>::Create(allocDesc);
-        }
-
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform = AzFramework::OSPlatformToDefaultAssetPlatform(
             AZ_TRAIT_OS_PLATFORM_CODENAME);
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        if (assetPlatform.empty())
         {
-            AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetPlatform,
-                AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "assets");
+            if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetPlatform,
+                    AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "assets");
+            }
         }
 
         m_engineWwise = AZStd::make_unique<Audio::CAudioSystemImpl_wwise>(assetPlatform.c_str());
@@ -163,11 +147,6 @@ namespace AudioEngineWwiseGem
     void AudioEngineWwiseGemSystemComponent::Release()
     {
         m_engineWwise.reset();
-
-        if (AZ::AllocatorInstance<Audio::AudioImplAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<Audio::AudioImplAllocator>::Destroy();
-        }
     }
 
 #if defined(AUDIO_ENGINE_WWISE_EDITOR)

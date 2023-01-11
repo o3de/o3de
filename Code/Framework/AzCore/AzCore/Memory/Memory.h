@@ -37,19 +37,11 @@
     #define azmalloc_2(_1, _2)                                      AZ::AllocatorInstance< AZ::SystemAllocator >::Get().allocate(_1, _2)
 /// azmalloc(size,alignment,Allocator)
     #define azmalloc_3(_1, _2, _3)                                  AZ::AllocatorInstance< _3 >::Get().allocate(_1, _2)
-/// azmalloc(size,alignment,Allocator,allocationName)
-    #define azmalloc_4(_1, _2, _3, _4)                              AZ::AllocatorInstance< _3 >::Get().allocate(_1, _2)
-/// azmalloc(size,alignment,Allocator,allocationName,flags)
-    #define azmalloc_5(_1, _2, _3, _4, _5)                          AZ::AllocatorInstance< _3 >::Get().allocate(_1, _2)
 
 /// azcreate(class,params)
-    #define azcreate_2(_1, _2)                                      new(azmalloc_4(sizeof(_1), AZStd::alignment_of< _1 >::value, AZ::SystemAllocator,#_1)) _1 _2
+    #define azcreate_2(_1, _2)                                      new(azmalloc_3(sizeof(_1), AZStd::alignment_of< _1 >::value, AZ::SystemAllocator)) _1 _2
 /// azcreate(class,params,Allocator)
-    #define azcreate_3(_1, _2, _3)                                  new(azmalloc_4(sizeof(_1), AZStd::alignment_of< _1 >::value, _3,#_1)) _1 _2
-/// azcreate(class,params,Allocator,allocationName)
-    #define azcreate_4(_1, _2, _3, _4)                              new(azmalloc_4(sizeof(_1), AZStd::alignment_of< _1 >::value, _3, _4)) _1 _2
-/// azcreate(class,params,Allocator,allocationName,flags)
-    #define azcreate_5(_1, _2, _3, _4, _5)                          new(azmalloc_5(sizeof(_1), AZStd::alignment_of< _1 >::value, _3, _4, _5)) _1 _2
+    #define azcreate_3(_1, _2, _3)                                  new(azmalloc_3(sizeof(_1), AZStd::alignment_of< _1 >::value, _3)) _1 _2
 #else
     #define aznew           new
     #define aznewex(_Name)  new
@@ -60,26 +52,18 @@
     #define azmalloc_2(_1, _2)                                      AZ::AllocatorInstance< AZ::SystemAllocator >::Get().allocate(_1, _2)
 /// azmalloc(size,alignment,Allocator)
     #define azmalloc_3(_1, _2, _3)                                  AZ::AllocatorInstance< _3 >::Get().allocate(_1, _2)
-/// azmalloc(size,alignment,Allocator,allocationName)
-    #define azmalloc_4(_1, _2, _3, _4)                              AZ::AllocatorInstance< _3 >::Get().allocate(_1, _2)
-/// azmalloc(size,alignment,Allocator,allocationName,flags)
-    #define azmalloc_5(_1, _2, _3, _4, _5)                          AZ::AllocatorInstance< _3 >::Get().allocate(_1, _2)
 
 /// azcreate(class)
-    #define azcreate_1(_1)                                          new(azmalloc_4(sizeof(_1), AZStd::alignment_of< _1 >::value, AZ::SystemAllocator, #_1)) _1()
+    #define azcreate_1(_1)                                          new(azmalloc_3(sizeof(_1), AZStd::alignment_of< _1 >::value, AZ::SystemAllocator)) _1()
 /// azcreate(class,params)
-    #define azcreate_2(_1, _2)                                      new(azmalloc_4(sizeof(_1), AZStd::alignment_of< _1 >::value, AZ::SystemAllocator, #_1)) _1 _2
+    #define azcreate_2(_1, _2)                                      new(azmalloc_3(sizeof(_1), AZStd::alignment_of< _1 >::value, AZ::SystemAllocator)) _1 _2
 /// azcreate(class,params,Allocator)
-    #define azcreate_3(_1, _2, _3)                                  new(azmalloc_4(sizeof(_1), AZStd::alignment_of< _1 >::value, _3, #_1)) _1 _2
-/// azcreate(class,params,Allocator,allocationName)
-    #define azcreate_4(_1, _2, _3, _4)                              new(azmalloc_4(sizeof(_1), AZStd::alignment_of< _1 >::value, _3, _4)) _1 _2
-/// azcreate(class,params,Allocator,allocationName,flags)
-    #define azcreate_5(_1, _2, _3, _4, _5)                          new(azmalloc_5(sizeof(_1), AZStd::alignment_of< _1 >::value, _3, _4, _5)) _1 _2
+    #define azcreate_3(_1, _2, _3)                                  new(azmalloc_3(sizeof(_1), AZStd::alignment_of< _1 >::value, _3)) _1 _2
 #endif
 
 /**
 * azmalloc is equivalent to ::malloc(...). It should be used with corresponding azfree call.
-* macro signature: azmalloc(size_t byteSize, size_t alignment = DefaultAlignment, AllocatorType = AZ::SystemAllocator, const char* name = "Default Name", int flags = 0)
+* macro signature: azmalloc(size_t byteSize, size_t alignment = DefaultAlignment, AllocatorType = AZ::SystemAllocator)
 */
 #define azmalloc(...)       AZ_MACRO_SPECIALIZE(azmalloc_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
@@ -89,10 +73,6 @@
 #define azcalloc_2(_1, _2)              ::memset(azmalloc_2(_1, _2), 0, _1);
 /// azcalloc(size, alignment, Allocator)
 #define azcalloc_3(_1, _2, _3)          ::memset(azmalloc_3(_1, _2, _3), 0, _1);
-/// azcalloc(size, alignment, allocationName)
-#define azcalloc_4(_1, _2, _3, _4)      ::memset(azmalloc_4(_1, _2, _3, _4), 0, _1);
-/// azcalloc(size, alignment, allocationName, flags)
-#define azcalloc_5(_1, _2, _3, _4, _5)  ::memset(azmalloc_5(_1, _2, _3, _4, _5), 0, _1);
 
 /**
 * azcalloc is equivalent to ::memset(azmalloc(...), 0, size);
@@ -117,7 +97,7 @@
  * azcreate is customized aznew function call. aznew can be used anywhere where we use new, while azcreate has a function call signature.
  * azcreate allows you to override the operator new and by this you can override the allocator per object instance. It should
  * be used with corresponding azdestroy call.
- * macro signature: azcreate(ClassName, CtorParams = (), AllocatorType = AZ::SystemAllocator, AllocationName = "ClassName", int flags = 0)
+ * macro signature: azcreate(ClassName, CtorParams = (), AllocatorType = AZ::SystemAllocator)
  */
 #define azcreate(...)       AZ_MACRO_SPECIALIZE(azcreate_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
@@ -399,24 +379,9 @@ namespace AZ
     public:
         AZ_ALLOCATOR_DEFAULT_TRAITS
 
-        AZ_FORCE_INLINE AZStdAlloc()
-        {
-            if (AllocatorInstance<Allocator>::IsReady())
-            {
-                m_name = AllocatorInstance<Allocator>::Get().GetName();
-            }
-            else
-            {
-                m_name = AzTypeInfo<Allocator>::Name();
-            }
-        }
-        AZ_FORCE_INLINE AZStdAlloc(const char* name)
-            : m_name(name)     {}
-        AZ_FORCE_INLINE AZStdAlloc(const AZStdAlloc& rhs)
-            : m_name(rhs.m_name)  {}
-        AZ_FORCE_INLINE AZStdAlloc(const AZStdAlloc& rhs, const char* name)
-            : m_name(name) { (void)rhs; }
-        AZ_FORCE_INLINE AZStdAlloc& operator=(const AZStdAlloc& rhs) { m_name = rhs.m_name; return *this; }
+        AZ_FORCE_INLINE AZStdAlloc() = default;
+        AZ_FORCE_INLINE AZStdAlloc(const AZStdAlloc& rhs) = default;
+        AZ_FORCE_INLINE AZStdAlloc& operator=(const AZStdAlloc& rhs) = default;
         AZ_FORCE_INLINE pointer allocate(size_t byteSize, size_t alignment)
         {
             return AllocatorInstance<Allocator>::Get().allocate(byteSize, alignment);
@@ -429,16 +394,12 @@ namespace AZ
         {
             AllocatorInstance<Allocator>::Get().deallocate(ptr, byteSize, alignment);
         }
-        AZ_FORCE_INLINE const char* get_name() const            { return m_name; }
-        AZ_FORCE_INLINE void        set_name(const char* name)  { m_name = name; }
         size_type                   max_size() const            { return AllocatorInstance<Allocator>::Get().max_size(); }
         size_type                   get_allocated_size() const  { return AllocatorInstance<Allocator>::Get().get_allocated_size(); }
 
         AZ_FORCE_INLINE bool is_lock_free()                     { return AllocatorInstance<Allocator>::Get().is_lock_free(); }
         AZ_FORCE_INLINE bool is_stale_read_allowed()            { return AllocatorInstance<Allocator>::Get().is_stale_read_allowed(); }
         AZ_FORCE_INLINE bool is_delayed_recycling()             { return AllocatorInstance<Allocator>::Get().is_delayed_recycling(); }
-    private:
-        const char* m_name;
     };
 
     AZ_TYPE_INFO_TEMPLATE(AZStdAlloc, "{42D0AA1E-3C6C-440E-ABF8-435931150470}", AZ_TYPE_INFO_CLASS);
@@ -459,19 +420,15 @@ namespace AZ
     public:
         AZ_ALLOCATOR_DEFAULT_TRAITS
 
-        AZ_FORCE_INLINE AZStdIAllocator(IAllocator* allocator, const char* name = "AZ::AZStdIAllocator")
+        AZ_FORCE_INLINE AZStdIAllocator(IAllocator* allocator)
             : m_allocator(allocator)
-            , m_name(name)
         {
             AZ_Assert(m_allocator != NULL, "You must provide a valid allocator!");
         }
         AZ_FORCE_INLINE AZStdIAllocator(const AZStdIAllocator& rhs)
             : m_allocator(rhs.m_allocator)
-            , m_name(rhs.m_name)  {}
-        AZ_FORCE_INLINE AZStdIAllocator(const AZStdIAllocator& rhs, const char* name)
-            : m_allocator(rhs.m_allocator)
-            , m_name(name) { (void)rhs; }
-        AZ_FORCE_INLINE AZStdIAllocator& operator=(const AZStdIAllocator& rhs) { m_allocator = rhs.m_allocator; m_name = rhs.m_name; return *this; }
+        {}
+        AZ_FORCE_INLINE AZStdIAllocator& operator=(const AZStdIAllocator& rhs) { m_allocator = rhs.m_allocator; return *this; }
         AZ_FORCE_INLINE pointer allocate(size_t byteSize, size_t alignment)
         {
             return m_allocator->allocate(byteSize, alignment);
@@ -484,8 +441,6 @@ namespace AZ
         {
             m_allocator->deallocate(ptr, byteSize, alignment);
         }
-        AZ_FORCE_INLINE const char* get_name() const { return m_name; }
-        AZ_FORCE_INLINE void        set_name(const char* name) { m_name = name; }
         size_type                   max_size() const { return m_allocator->GetMaxContiguousAllocationSize(); }
         size_type                   get_allocated_size() const { return m_allocator->NumAllocatedBytes(); }
 
@@ -493,7 +448,6 @@ namespace AZ
         AZ_FORCE_INLINE bool operator!=(const AZStdIAllocator& rhs) const { return m_allocator != rhs.m_allocator; }
     private:
         IAllocator* m_allocator;
-        const char* m_name;
     };
 
     /**
@@ -511,14 +465,8 @@ namespace AZ
         using functor_type = IAllocator&(*)(); ///< Function Pointer must return IAllocator&.
                                                ///< function pointers do not support covariant return types
 
-        constexpr AZStdFunctorAllocator(functor_type allocatorFunctor, const char* name = "AZ::AZStdFunctorAllocator")
+        constexpr AZStdFunctorAllocator(functor_type allocatorFunctor)
             : m_allocatorFunctor(allocatorFunctor)
-            , m_name(name)
-        {
-        }
-        constexpr AZStdFunctorAllocator(const AZStdFunctorAllocator& rhs, const char* name)
-            : m_allocatorFunctor(rhs.m_allocatorFunctor)
-            , m_name(name)
         {
         }
         constexpr AZStdFunctorAllocator(const AZStdFunctorAllocator& rhs) = default;
@@ -535,8 +483,6 @@ namespace AZ
         {
             m_allocatorFunctor().deallocate(ptr, byteSize, alignment);
         }
-        constexpr const char* get_name() const { return m_name; }
-        void set_name(const char* name) { m_name = name; }
         size_type max_size() const { return m_allocatorFunctor().GetMaxContiguousAllocationSize(); }
         size_type get_allocated_size() const { return m_allocatorFunctor().NumAllocatedBytes(); }
 
@@ -544,7 +490,6 @@ namespace AZ
         constexpr bool operator!=(const AZStdFunctorAllocator& rhs) const { return m_allocatorFunctor != rhs.m_allocatorFunctor; }
     private:
         functor_type m_allocatorFunctor;
-        const char* m_name;
     };
 
     /**

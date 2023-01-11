@@ -161,6 +161,14 @@ namespace AZ
             return;
         }
 
+        // retrieve the shader APIs for this platform
+        AZStd::vector<RHI::ShaderPlatformInterface*> platformInterfaces = ShaderBuilder::ShaderBuilderUtility::DiscoverValidShaderPlatformInterfaces(request.m_platformInfo);
+        if (platformInterfaces.empty())
+        {
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+            return;
+        }
+
         AssetBuilderSDK::JobProduct jobProduct;
 
         // load the variant product assets, for each supervariant
@@ -171,6 +179,21 @@ namespace AZ
             RPI::ShaderAssetCreator::ShaderRootVariantAssets rootVariantProductAssets;
             for (const auto& rootShaderVariantAsset : supervariant->m_rootShaderVariantAssets)
             {
+                // find the API in the list of supported APIs on this platform
+                AZStd::vector<RHI::ShaderPlatformInterface*>::const_iterator itFoundAPI = AZStd::find_if(
+                    platformInterfaces.begin(),
+                    platformInterfaces.end(),
+                    [&rootShaderVariantAsset](const RHI::ShaderPlatformInterface* shaderPlatformInterface)
+                    {
+                        return rootShaderVariantAsset->m_apiName == shaderPlatformInterface->GetAPIName();
+                    });
+
+                if (itFoundAPI == platformInterfaces.end())
+                {
+                    // the API is not supported on this platform, skip this entry
+                    continue;
+                }
+
                 // retrieve the variant asset
                 auto assetOutcome = RPI::AssetUtils::LoadAsset<RPI::ShaderVariantAsset>(request.m_fullPath, rootShaderVariantAsset->m_rootShaderVariantAssetFileName, 0);
                 if (!assetOutcome)
@@ -187,13 +210,15 @@ namespace AZ
                 jobProduct.m_dependencies.push_back(productDependency);
             }
 
-            supervariants.push_back({ supervariant->m_name, rootVariantProductAssets });
+            if (!rootVariantProductAssets.empty())
+            {
+                supervariants.push_back({ supervariant->m_name, rootVariantProductAssets });
+            }
         }
 
-        // retrieve the shader APIs for this platform
-        AZStd::vector<RHI::ShaderPlatformInterface*> platformInterfaces = ShaderBuilder::ShaderBuilderUtility::DiscoverValidShaderPlatformInterfaces(request.m_platformInfo);
-        if (platformInterfaces.empty())
+        if (supervariants.empty())
         {
+            // no applicable shader variants for this platform
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
             return;
         }

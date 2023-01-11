@@ -122,7 +122,14 @@ def create_linear_nested_prefabs(entities, nested_prefabs_file_name_prefix, nest
         created_prefabs.append(current_prefab)
         created_prefab_instances.append(current_prefab_instance)
         entities = current_prefab_instance.get_direct_child_entities()
+
+        # Focus on the newly created prefab instance before next creation to perform a prefab edit rather than override edit.
+        current_prefab_instance.container_entity.focus_on_owning_prefab()
     
+    # Switch focus back on the originally focused instance.
+    parent_entity = EditorEntity(created_prefab_instances[0].container_entity.get_parent_id())
+    parent_entity.focus_on_owning_prefab()
+
     return created_prefabs, created_prefab_instances
 
 
@@ -188,6 +195,32 @@ def check_entity_children_count(entity_id, expected_children_count):
         Report.info(f"Entity '{entity_id.ToString()}' actual children count: {len(children_entity_ids)}. Expected children count: {expected_children_count}")
 
     return entity_children_count_matched
+
+
+def validate_count_for_named_editor_entity(entity_name, expected_count):
+    """
+    This is a helper function which helps validate the number of entities for a given name in editor.
+
+    :param entity_name: Entity name for the entities to be validated.
+    :param expected_count: Expected number of entities.
+    """
+    entities = EditorEntity.find_editor_entities([entity_name])
+    assert len(entities) == expected_count, f"{len(entities)} entity(s) found. " \
+                                            f"Expected {expected_count} {entity_name} entity(s)."
+
+
+def validate_child_count_for_named_editor_entity(entity_name, expected_child_count):
+    """
+    This is a helper function which helps validate the number of children of entities for a given name in editor.
+
+    :param entity_name: Entity name for the entities to be validated.
+    :param expected_child_count: Expected number of children.
+    """
+    entities = EditorEntity.find_editor_entities([entity_name])
+    for entity in entities:
+        child_entities = entity.get_children()
+        assert len(child_entities) == expected_child_count, f"{len(child_entities)} children found. " \
+                                                            f"Expected {expected_child_count} children for all {entity_name} entity(s)."
 
 
 def open_base_tests_level():
@@ -309,3 +342,36 @@ def validate_spawned_entity_transform(entity, expected_position, expected_rotati
         f"expected {expected_scale}"
 
     return position_success and rotation_success and scale_success
+
+
+def validate_expected_override_status(entity: EditorEntity, expected_override_status: bool) -> None:
+    """
+    Validates the expected override status of the given entity. NOTE: This should only be used on an entity within a
+    prefab as this will currently always return as True on a container entity.
+    :param entity: The EditorEntity to validate the status of overrides on
+    :param expected_override_status: True if overrides are expected, False otherwise
+    :return: None
+    """
+    if expected_override_status:
+        assert entity.has_overrides(), \
+            f"Found no overrides on expected entity: {entity.id}"
+    else:
+        assert not entity.has_overrides(), \
+            f"Found overrides present on unexpected entity: {entity.id}"
+
+
+def validate_expected_components(entity: EditorEntity, expected_components: list = None,
+                                 unexpected_components: list = None) -> None:
+    """
+    Validates that the entity has the given expected components, and none of the unexpected components.
+    Useful for ensuring prefab overrides have affected only specific entities.
+    :return: None
+    """
+    if expected_components:
+        for component in expected_components:
+            assert entity.has_component(component), \
+                f"Failed to find expected {component} component on {entity.get_name()} with id {entity.id}"
+    if unexpected_components:
+        for component in unexpected_components:
+            assert not entity.has_component(component), \
+                f"Unexpectedly found {component} component on {entity.get_name()} with id {entity.id}"

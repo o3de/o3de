@@ -244,6 +244,12 @@ namespace AssetProcessor
             return;
         }
 
+        if (!m_root)
+        {
+            // we haven't reset the model yet, which means all of this will happen when we do.
+            return;
+        }
+
         // Model changes need to be run on the main thread.
         AZ::SystemTickBus::QueueFunction([&, entry]()
             {
@@ -301,6 +307,12 @@ namespace AssetProcessor
     {
         if (ap_disableAssetTreeView)
         {
+            return;
+        }
+
+        if (!m_root)
+        {
+            // we haven't reset the model yet, which means all of this will happen when we do.
             return;
         }
 

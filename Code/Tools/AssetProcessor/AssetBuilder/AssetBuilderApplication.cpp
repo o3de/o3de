@@ -38,6 +38,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <Entity/EntityUtilityComponent.h>
 #include <AssetBuilderStatic.h>
+#include <Metadata/MetadataManager.h>
 
 namespace AssetBuilder
 {
@@ -83,6 +84,7 @@ AZ::ComponentTypeList AssetBuilderApplication::GetRequiredSystemComponents() con
         azrtti_typeid<AzToolsFramework::EditorEntityContextComponent>(),
         azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>(),
         azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
+        azrtti_typeid<AzToolsFramework::MetadataManager>(),
         });
 
     return components;

@@ -55,6 +55,7 @@ namespace Multiplayer
                 detail->m_elements.emplace_back(
                     AZStd::make_unique<MultiplayerAuditingDatum<AZStd::string>>("The hash mismatched, but no differences were found."));
             }
+            return;
         }
 
         for (auto iter = differences.begin(); iter != differences.end(); ++iter)

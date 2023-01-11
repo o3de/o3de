@@ -18,11 +18,12 @@
 
 #include <AzToolsFramework/AzToolsFrameworkModule.h>
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsSystemComponent.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsSystemComponent.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
@@ -76,6 +77,7 @@
 #include <Entity/EntityUtilityComponent.h>
 #include <AzToolsFramework/Script/LuaEditorSystemComponent.h>
 #include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
+#include <Metadata/MetadataManager.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
 
 #include <QtWidgets/QMessageBox>
@@ -298,7 +300,8 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
                 azrtti_typeid<AzToolsFramework::Script::LuaSymbolsReporterSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::Script::LuaEditorSystemComponent>(),
-                azrtti_typeid<AzToolsFramework::PaintBrushSettingsSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::GlobalPaintBrushSettingsSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::MetadataManager>(),
             });
 
         return components;
@@ -388,6 +391,9 @@ namespace AzToolsFramework
         Prefab::PrefabIntegrationManager::Reflect(context);
 
         ComponentModeFramework::ComponentModeDelegate::Reflect(context);
+        ComponentModeFramework::EditorBaseComponentMode::Reflect(context);
+
+        BoxComponentMode::Reflect(context);
 
         ViewportInteraction::ViewportInteractionReflect(context);
         ViewportEditorModeNotifications::Reflect(context);
@@ -893,7 +899,7 @@ namespace AzToolsFramework
             &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
         AZ_Assert(editorRootSlice, "Failed to retrieve editor root slice.");
 
-        // Gather desired changes without modifying slices or entities 
+        // Gather desired changes without modifying slices or entities
         for (const AZ::EntityId& entityId : entitiesToDetach)
         {
             AZ::SliceComponent::SliceInstanceAddress sliceAddress(nullptr, nullptr);
@@ -932,7 +938,7 @@ namespace AzToolsFramework
         // Apply pending changes
         for (AZStd::pair<AZ::Entity*, AZ::SliceComponent::SliceReference*>& pendingSliceChange : pendingSliceChanges)
         {
-            // Remove entity from current slice instance without deleting the entity. Delete slice instance if the detached entity is the last one 
+            // Remove entity from current slice instance without deleting the entity. Delete slice instance if the detached entity is the last one
             // in the slice instance. The slice instance will be reconstructed upon undo.
             bool success = pendingSliceChange.second->GetSliceComponent()->RemoveEntity(pendingSliceChange.first->GetId(), false, true);
             if (success)
@@ -1189,7 +1195,7 @@ namespace AzToolsFramework
             &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
 
         for (int index = 1; index < entityIds.size(); index++)
-        {   
+        {
             AZ::SliceComponent::SliceInstanceAddress sliceAddressTemp;
             AzFramework::SliceEntityRequestBus::EventResult(sliceAddressTemp, entityIds[index],
                 &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
@@ -1869,7 +1875,7 @@ namespace AzToolsFramework
     }
 
     void ToolsApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
-    { 
+    {
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Tool;
     };
 } // namespace AzToolsFramework

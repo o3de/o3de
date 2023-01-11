@@ -167,7 +167,7 @@ namespace Terrain
             float m_rcpLodLevel{ 1.0f };
         };
 
-        struct ShaderMeshData
+        struct alignas(16) ShaderMeshData
         {
             AZStd::array<float, 3> m_mainCameraPosition{ 0.0f, 0.0f, 0.0f };
             float m_firstLodDistance;
