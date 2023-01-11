@@ -394,15 +394,14 @@ namespace AZ
         {
             if (!CanCapture())
             {
-                AZ_Error("FrameCaptureSystemComponent", false, "Frame capture is not avaible.");
-                return FrameCaptureSystemComponent::CaptureHandle::Null();
+                return CaptureHandle::Null();
             }
 
             CaptureHandle captureHandle = InitCapture();
             if (captureHandle.IsNull())
             {
                 AZ_Error("FrameCaptureSystemComponent", false, "Failed to allocate a capture.");
-                return FrameCaptureSystemComponent::CaptureHandle::Null();
+                return CaptureHandle::Null();
             }
 
             AZStd::scoped_lock<CaptureHandle> scope_lock(captureHandle);
@@ -411,14 +410,14 @@ namespace AZ
             {
                 m_idleCaptures.push_back(captureHandle);
                 AZ_Error("FrameCaptureSystemComponent", false, "Failed to get the captureState.");
-                return FrameCaptureSystemComponent::CaptureHandle::Null();
+                return CaptureHandle::Null();
             }
 
             if (!capture->m_readback->IsReady())
             {
                 m_idleCaptures.push_back(captureHandle);
                 AZ_Error("FrameCaptureSystemComponent", false, "Failed to capture attachment since the readback is not ready.");
-                return FrameCaptureSystemComponent::CaptureHandle::Null();
+                return CaptureHandle::Null();
             }
 
             capture->m_readback->SetUserIdentifier(captureHandle.GetCaptureStateIndex());
