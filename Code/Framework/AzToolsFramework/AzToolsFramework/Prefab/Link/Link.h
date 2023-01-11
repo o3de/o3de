@@ -134,12 +134,9 @@ namespace AzToolsFramework
             //! @return Whether the overrides are successfully added or not.
             bool AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree);
 
-            //! Adds overrides at the provided path by adding the provided override patches.
-            //! If the path is the entity alias path, the subpaths stored in the given patches are supposed to be relative subpaths
-            //! that point at non-entity nodes in tree. Two types of paths are combined to generate full paths to the nodes.
-            //! @param path The path at which new override patches should be added.
-            //! @param patches The override patches that contain subpaths that point at nodes in tree.
-            void AddOverrides(const AZ::Dom::Path& path, const PrefabDomValue& patches);
+            //! Adds overrides patches to the tree. It can be used to add patches to tree for an entity.
+            //! @param patches The override patches that will be added to tree.
+            void AddOverrides(const PrefabDomValue& patches);
 
             PrefabDomPath GetInstancePath() const;
             const AZStd::string& GetInstanceName() const;
@@ -179,11 +176,8 @@ namespace AzToolsFramework
             void RebuildLinkPatchesTree(const PrefabDomValue& patches);
 
             //! Adds patches to the existing tree. It can be used to add patches to tree for an entity.
-            //! If the path is the entity alias path, the subpaths stored in the given patches are supposed to be relative subpaths
-            //! that point at non-entity nodes in tree. Two types of paths are combined to generate full paths to the nodes.
-            //! @param path The prefix path that will be contatenated with subpaths stored in patches.
-            //! @param patches The patches to be added to the tree. Each patch contains a relative subpath to node in tree.
-            void AddLinkPatchesToTree(const AZ::Dom::Path& path, const PrefabDomValue& patches);
+            //! @param patches The patches to be added to the tree.
+            void AddLinkPatchesToTree(const PrefabDomValue& patches);
 
             // The prefix tree to store patches on a link. The tree is built with nodes. A node may or may not store a patch.
             // The path from the root to a node represents a path to a DOM value. Eg: 'Instances/Instance1/Entities/Entity1'.

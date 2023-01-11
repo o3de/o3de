@@ -76,7 +76,6 @@ namespace AzToolsFramework
 
                 const AZStd::string entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entity->GetId());
                 const AZStd::string entityPathFromTopInstance = overridePatchPathToOwningInstance + entityAliasPath;
-                PrefabDomPath entityDomPathFromTopInstance(entityPathFromTopInstance.c_str());
 
                 PrefabDom entityDomAfterUpdate;
                 m_instanceToTemplateInterface->GenerateDomForEntity(entityDomAfterUpdate, *entity);
@@ -85,29 +84,25 @@ namespace AzToolsFramework
                 const TemplateId topTemplateId = link->get().GetSourceTemplateId();
                 const PrefabDom& topTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(topTemplateId);
 
-                PrefabDom overridePatchesWithSubpaths; // subpath is path pointing from entity to component value
+                PrefabDom overridePatches;
+                overridePatches.SetArray();
                 {
                     // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
                     // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
+                    PrefabDomPath entityDomPathFromTopInstance(entityPathFromTopInstance.c_str());
                     const PrefabDomValue* entityDomInTopTemplate = entityDomPathFromTopInstance.Get(topTemplateDom);
 
                     if (entityDomInTopTemplate)
                     {
-                        m_instanceToTemplateInterface->GeneratePatch(
-                            overridePatchesWithSubpaths, *entityDomInTopTemplate, entityDomAfterUpdate);
+                        PrefabUndoUtils::AppendUpdateEntityPatch(
+                            overridePatches, *entityDomInTopTemplate, entityDomAfterUpdate, entityPathFromTopInstance);
                     }
                     else if (auto overrideType = m_prefabOverridePublicInterface->GetOverrideType(entity->GetId());
                         overrideType.has_value() && overrideType == OverrideType::AddEntity)
                     {
-                        // Check if the entity itself is added as an override already.
-                        // In this case, additional override patches on this entity would be merged into the entity DOM value that is
-                        // stored in the existing add-entity override patch.
-
-                        overridePatchesWithSubpaths.SetArray();
-                        // Note that for add-entity patch, there is no subpath that points from entity to component value.
-                        // Entity path passing to the util function is empty such that the generated JSON patch won't contain any path.
-                        // The path inside JSON patch will be set correctly below when generating the override subtree.
-                        PrefabUndoUtils::AppendAddEntityPatch(overridePatchesWithSubpaths, entityDomAfterUpdate, "");
+                        // Override patches on the entity would be merged into the entity DOM value stored in the
+                        // add-entity override patch.
+                        PrefabUndoUtils::AppendAddEntityPatch(overridePatches, entityDomAfterUpdate, entityPathFromTopInstance);
                     }
                     else
                     {
@@ -122,7 +117,7 @@ namespace AzToolsFramework
                 m_subtreeStates[entityDomPath] = AZStd::move(link->get().RemoveOverrides(entityDomPath));
 
                 // Redo - Add the override patches to the tree.
-                link->get().AddOverrides(entityDomPath, overridePatchesWithSubpaths);
+                link->get().AddOverrides(overridePatches);
 
                 // Preemptively updates the cached DOM to prevent reloading instance DOM.
                 if (cachedOwningInstanceDom.has_value())
