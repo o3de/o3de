@@ -118,7 +118,6 @@ namespace TestImpact
                     break;
                 }
             }
-            skipTest:
         }
 
         // If there's no tests in the repo then something is seriously wrong
