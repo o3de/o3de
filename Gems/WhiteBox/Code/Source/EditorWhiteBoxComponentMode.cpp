@@ -361,12 +361,13 @@ namespace WhiteBox
             0,
             []()
             {
-                // Set the Action Context Mode
+                // Set the Action Context Mode in the Action Manager, if enabled.
                 auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-                AZ_Assert(actionManagerInterface, "WhiteBoxDefaultMode - could not get ActionManagerInterface on EnterDefaultMode.");
-
-                actionManagerInterface->SetActiveActionContextMode(
-                    EditorMainWindowActionContextIdentifier, WhiteBoxDefaultSubModeIdentifier);
+                if (actionManagerInterface)
+                {
+                    actionManagerInterface->SetActiveActionContextMode(
+                        EditorMainWindowActionContextIdentifier, WhiteBoxDefaultSubModeIdentifier);
+                }
             }
         );
     }
@@ -378,11 +379,12 @@ namespace WhiteBox
         m_currentSubMode = SubMode::EdgeRestore;
         SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_edgeRestoreModeButtonId);
 
+        // Set the Action Context Mode in the Action Manager, if enabled.
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        AZ_Assert(actionManagerInterface, "WhiteBoxDefaultMode - could not get ActionManagerInterface on EnterEdgeRestoreMode.");
-
-        // Set the Action Context Mode
-        actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, WhiteBoxEdgeRestoreSubModeIdentifier);
+        if (actionManagerInterface)
+        {
+            actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, WhiteBoxEdgeRestoreSubModeIdentifier);
+        }
     }
 
     void EditorWhiteBoxComponentMode::EnterTransformMode()
@@ -392,11 +394,12 @@ namespace WhiteBox
         m_currentSubMode = SubMode::Transform;
         SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_transformModeButtonId);
 
+        // Set the Action Context Mode in the Action Manager, if enabled.
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        AZ_Assert(actionManagerInterface, "WhiteBoxDefaultMode - could not get ActionManagerInterface on EnterTransformMode.");
-
-        // Set the Action Context Mode
-        actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, WhiteBoxTransformSubModeIdentifier);
+        if (actionManagerInterface)
+        {
+            actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, WhiteBoxTransformSubModeIdentifier);
+        }
     }
 
     void EditorWhiteBoxComponentMode::DisplayEntityViewport(

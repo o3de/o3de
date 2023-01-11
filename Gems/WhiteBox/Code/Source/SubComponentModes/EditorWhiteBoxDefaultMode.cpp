@@ -78,13 +78,12 @@ namespace WhiteBox
                 AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
                     &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::RefreshActions);
 
-                // Update actions defined with the Action Manager
+                // Update actions defined with the Action Manager, if enabled.
                 auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-                AZ_Assert(
-                    actionManagerInterface,
-                    "WhiteBoxDefaultMode - could not get ActionManagerInterface on AssignSelectedVertexSelectionModifier.");
-
-                actionManagerInterface->TriggerActionUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier);
+                if (actionManagerInterface)
+                {
+                    actionManagerInterface->TriggerActionUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier);
+                }
             }
         }
     }
@@ -671,13 +670,12 @@ namespace WhiteBox
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
                 &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::RefreshActions);
 
-            // Update actions defined with the Action Manager
+            // Update actions defined with the Action Manager, if enabled.
             auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-            AZ_Assert(
-                actionManagerInterface,
-                "WhiteBoxDefaultMode - could not get ActionManagerInterface on AssignSelectedEdgeTranslationModifier.");
-
-            actionManagerInterface->TriggerActionUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier);
+            if (actionManagerInterface)
+            {
+                actionManagerInterface->TriggerActionUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier);
+            }
 
             if (auto modifier = AZStd::get_if<AZStd::unique_ptr<EdgeTranslationModifier>>(&m_selectedModifier))
             {
@@ -702,11 +700,12 @@ namespace WhiteBox
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
                 &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::RefreshActions);
 
-            // Update actions defined with the Action Manager
+            // Update actions defined with the Action Manager, if enabled.
             auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-            AZ_Assert(actionManagerInterface, "WhiteBoxDefaultMode - could not get ActionManagerInterface on AssignSelectedVertexSelectionModifier.");
-
-            actionManagerInterface->TriggerActionUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier);
+            if (actionManagerInterface)
+            {
+                actionManagerInterface->TriggerActionUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier);
+            }
 
             if (auto modifier = AZStd::get_if<AZStd::unique_ptr<VertexTranslationModifier>>(&m_selectedModifier))
             {
