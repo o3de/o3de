@@ -116,10 +116,14 @@ namespace PhysX
 
         EditorJointRequestBus::Event(
             entityComponentIdPair, &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParameterNames::ComponentMode, true);
+
+        PhysX::JointsComponentModeRequestBus::Handler::BusConnect(entityComponentIdPair);
     }
 
     JointsComponentMode::~JointsComponentMode()
     {
+        PhysX::JointsComponentModeRequestBus::Handler::BusDisconnect();
+
         EditorJointRequestBus::Event(
             GetEntityComponentIdPair(), &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParameterNames::ComponentMode,
             false);
@@ -161,7 +165,18 @@ namespace PhysX
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
                         {
-                            // TODO: Trigger switch
+                            auto componentModeCollectionInterface =
+                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                            componentModeCollectionInterface->EnumerateActiveComponents(
+                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                                {
+                                    JointsComponentModeRequestBus::Event(
+                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
+                                        JointsComponentModeCommon::SubComponentModes::ModeType::Translation);
+                                }
+                            );
                         }
                     );
                 }
@@ -190,7 +205,18 @@ namespace PhysX
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
                         {
-                            // TODO: Trigger switch
+                            auto componentModeCollectionInterface =
+                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                            componentModeCollectionInterface->EnumerateActiveComponents(
+                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                                {
+                                    JointsComponentModeRequestBus::Event(
+                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
+                                        JointsComponentModeCommon::SubComponentModes::ModeType::Rotation);
+                                }
+                            );
                         }
                     );
                 }
@@ -219,9 +245,53 @@ namespace PhysX
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
                         {
-                            // TODO: Trigger switch
+                            auto componentModeCollectionInterface =
+                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                            componentModeCollectionInterface->EnumerateActiveComponents(
+                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                                {
+                                    JointsComponentModeRequestBus::Event(
+                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
+                                        JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce);
+                                }
+                            );
                         }
                     );
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    bool isComponentActive = false;
+                    bool isAvailable = true;
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            isComponentActive = true;
+
+                            bool isCurrentSubModeAvailable = false;
+                            JointsComponentModeRequestBus::EventResult(
+                                isCurrentSubModeAvailable,
+                                entityComponentIdPair,
+                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
+                                JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce);
+
+                            if(!isCurrentSubModeAvailable)
+                            {
+                                isAvailable = false;
+                            }
+                        }
+                    );
+
+                    return isComponentActive && isAvailable;
                 }
             );
         }
@@ -246,9 +316,52 @@ namespace PhysX
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
                         {
-                            // TODO: Trigger switch
+                            auto componentModeCollectionInterface =
+                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                            componentModeCollectionInterface->EnumerateActiveComponents(
+                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                                {
+                                    JointsComponentModeRequestBus::Event(
+                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
+                                        JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque);
+                                }
+                            );
                         }
                     );
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    bool isComponentActive = false;
+                    bool isAvailable = true;
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            isComponentActive = true;
+
+                            bool isCurrentSubModeAvailable = false;
+                            JointsComponentModeRequestBus::EventResult(
+                                isCurrentSubModeAvailable,
+                                entityComponentIdPair,
+                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
+                                JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque);
+
+                            if (!isCurrentSubModeAvailable)
+                            {
+                                isAvailable = false;
+                            }
+                        });
+
+                    return isComponentActive && isAvailable;
                 }
             );
         }
@@ -273,9 +386,52 @@ namespace PhysX
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
                         {
-                            // TODO: Trigger switch
+                            auto componentModeCollectionInterface =
+                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                            componentModeCollectionInterface->EnumerateActiveComponents(
+                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                                {
+                                    JointsComponentModeRequestBus::Event(
+                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
+                                        JointsComponentModeCommon::SubComponentModes::ModeType::Damping);
+                                }
+                            );
                         }
                     );
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    bool isComponentActive = false;
+                    bool isAvailable = true;
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            isComponentActive = true;
+
+                            bool isCurrentSubModeAvailable = false;
+                            JointsComponentModeRequestBus::EventResult(
+                                isCurrentSubModeAvailable,
+                                entityComponentIdPair,
+                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
+                                JointsComponentModeCommon::SubComponentModes::ModeType::Damping);
+
+                            if (!isCurrentSubModeAvailable)
+                            {
+                                isAvailable = false;
+                            }
+                        });
+
+                    return isComponentActive && isAvailable;
                 }
             );
         }
@@ -300,9 +456,52 @@ namespace PhysX
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
                         {
-                            // TODO: Trigger switch
+                            auto componentModeCollectionInterface =
+                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                            componentModeCollectionInterface->EnumerateActiveComponents(
+                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                                {
+                                    JointsComponentModeRequestBus::Event(
+                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
+                                        JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness);
+                                }
+                            );
                         }
                     );
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    bool isComponentActive = false;
+                    bool isAvailable = true;
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            isComponentActive = true;
+
+                            bool isCurrentSubModeAvailable = false;
+                            JointsComponentModeRequestBus::EventResult(
+                                isCurrentSubModeAvailable,
+                                entityComponentIdPair,
+                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
+                                JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness);
+
+                            if (!isCurrentSubModeAvailable)
+                            {
+                                isAvailable = false;
+                            }
+                        });
+
+                    return isComponentActive && isAvailable;
                 }
             );
         }
@@ -327,9 +526,52 @@ namespace PhysX
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
                         {
-                            // TODO: Trigger switch
+                            auto componentModeCollectionInterface =
+                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                            componentModeCollectionInterface->EnumerateActiveComponents(
+                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                                {
+                                    JointsComponentModeRequestBus::Event(
+                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
+                                        JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits);
+                                }
+                            );
                         }
                     );
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    bool isComponentActive = false;
+                    bool isAvailable = true;
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            isComponentActive = true;
+
+                            bool isCurrentSubModeAvailable = false;
+                            JointsComponentModeRequestBus::EventResult(
+                                isCurrentSubModeAvailable,
+                                entityComponentIdPair,
+                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
+                                JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits);
+
+                            if (!isCurrentSubModeAvailable)
+                            {
+                                isAvailable = false;
+                            }
+                        });
+
+                    return isComponentActive && isAvailable;
                 }
             );
         }
@@ -354,9 +596,52 @@ namespace PhysX
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
                         {
-                            // TODO: Trigger switch
+                            auto componentModeCollectionInterface =
+                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                            componentModeCollectionInterface->EnumerateActiveComponents(
+                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                                {
+                                    JointsComponentModeRequestBus::Event(
+                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
+                                        JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits);
+                                }
+                            );
                         }
                     );
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    bool isComponentActive = false;
+                    bool isAvailable = true;
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            isComponentActive = true;
+
+                            bool isCurrentSubModeAvailable = false;
+                            JointsComponentModeRequestBus::EventResult(
+                                isCurrentSubModeAvailable,
+                                entityComponentIdPair,
+                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
+                                JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits);
+
+                            if (!isCurrentSubModeAvailable)
+                            {
+                                isAvailable = false;
+                            }
+                        });
+
+                    return isComponentActive && isAvailable;
                 }
             );
         }
@@ -381,9 +666,52 @@ namespace PhysX
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
                         {
-                            // TODO: Trigger switch
+                            auto componentModeCollectionInterface =
+                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                            componentModeCollectionInterface->EnumerateActiveComponents(
+                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                                {
+                                    JointsComponentModeRequestBus::Event(
+                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
+                                        JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition);
+                                }
+                            );
                         }
                     );
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    bool isComponentActive = false;
+                    bool isAvailable = true;
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            isComponentActive = true;
+
+                            bool isCurrentSubModeAvailable = false;
+                            JointsComponentModeRequestBus::EventResult(
+                                isCurrentSubModeAvailable,
+                                entityComponentIdPair,
+                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
+                                JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition);
+
+                            if (!isCurrentSubModeAvailable)
+                            {
+                                isAvailable = false;
+                            }
+                        });
+
+                    return isComponentActive && isAvailable;
                 }
             );
         }
@@ -408,9 +736,52 @@ namespace PhysX
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
                         {
-                            // TODO: Trigger switch
+                            auto componentModeCollectionInterface =
+                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                            componentModeCollectionInterface->EnumerateActiveComponents(
+                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                                {
+                                    JointsComponentModeRequestBus::Event(
+                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
+                                        JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation);
+                                }
+                            );
                         }
                     );
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    bool isComponentActive = false;
+                    bool isAvailable = true;
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            isComponentActive = true;
+
+                            bool isCurrentSubModeAvailable = false;
+                            JointsComponentModeRequestBus::EventResult(
+                                isCurrentSubModeAvailable,
+                                entityComponentIdPair,
+                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
+                                JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation);
+
+                            if (!isCurrentSubModeAvailable)
+                            {
+                                isAvailable = false;
+                            }
+                        });
+
+                    return isComponentActive && isAvailable;
                 }
             );
         }
@@ -489,9 +860,7 @@ namespace PhysX
                 SubModeData::TranslationTitle, SubModeData::TranslationToolTip,
                 [this]()
                 {
-                    SetCurrentMode(
-                        JointsComponentModeCommon::SubComponentModes::ModeType::Translation,
-                        m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::Translation]);
+                    SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::Translation);
                 });
             translateAction.SetKeySequence(QKeySequence(Qt::Key_1));
             actions.emplace_back(translateAction);
@@ -504,9 +873,7 @@ namespace PhysX
                 SubModeData::RotationTitle, SubModeData::RotationToolTip,
                 [this]()
                 {
-                    SetCurrentMode(
-                        JointsComponentModeCommon::SubComponentModes::ModeType::Rotation,
-                        m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::Rotation]);
+                    SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::Rotation);
                 });
             rotationAction.SetKeySequence(QKeySequence(Qt::Key_2));
             actions.emplace_back(rotationAction);
@@ -524,9 +891,7 @@ namespace PhysX
                         SubModeData::MaxForceTitle, SubModeData::MaxForceToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce);
                         }));
                 }
                 break;
@@ -537,9 +902,7 @@ namespace PhysX
                         SubModeData::MaxTorqueTitle, SubModeData::MaxTorqueToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque);
                         }));
                 }
                 break;
@@ -550,9 +913,7 @@ namespace PhysX
                         SubModeData::DampingTitle, SubModeData::DampingToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::Damping,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::Damping]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::Damping);
                         }));
                 }
                 break;
@@ -563,9 +924,7 @@ namespace PhysX
                         SubModeData::StiffnessTitle, SubModeData::StiffnessToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness);
                         }));
                 }
                 break;
@@ -576,9 +935,7 @@ namespace PhysX
                         SubModeData::TwistLimitsTitle, SubModeData::TwistLimitsToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits);
                         }));
                 }
                 break;
@@ -589,9 +946,7 @@ namespace PhysX
                         SubModeData::SwingLimitsTitle, SubModeData::SwingLimitsToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits);
                         }));
                 }
                 break;
@@ -602,9 +957,7 @@ namespace PhysX
                         SubModeData::SnapPositionTitle, SubModeData::SnapPositionToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition);
                         }));
                 }
                 break;
@@ -615,9 +968,7 @@ namespace PhysX
                         SubModeData::SnapRotationTitle, SubModeData::SnapRotationToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation);
                         }));
                 }
                 break;
@@ -664,9 +1015,8 @@ namespace PhysX
         return azrtti_typeid<JointsComponentMode>();
     }
 
-    void JointsComponentMode::SetCurrentMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode, ButtonData& buttonData)
+    void JointsComponentMode::SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode)
     {
-        
         if (auto subMode = m_subModes.find(newMode);
             subMode != m_subModes.end())
         {
@@ -676,7 +1026,7 @@ namespace PhysX
             subMode->second->Setup(entityComponentIdPair);
 
             // if this button is on a different cluster. clear the active state.
-            if (m_activeButton.m_clusterId != buttonData.m_clusterId)
+            if (m_activeButton.m_clusterId != m_buttonData[newMode].m_clusterId)
             {
                 AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
                     AzToolsFramework::ViewportUi::DefaultViewportId,
@@ -684,14 +1034,21 @@ namespace PhysX
             }
             AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
                 AzToolsFramework::ViewportUi::DefaultViewportId,
-                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, buttonData.m_clusterId,
-                buttonData.m_buttonId);
-            m_activeButton = buttonData;
+                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton,
+                m_buttonData[newMode].m_clusterId,
+                m_buttonData[newMode].m_buttonId);
+            m_activeButton = m_buttonData[newMode];
         }
         else
         {
             AZ_Assert(false, "PhysXJoints Uninitialized joint component mode selected.");
         }
+    }
+
+    bool JointsComponentMode::IsCurrentSubModeAvailable(JointsComponentModeCommon::SubComponentModes::ModeType mode)
+    {
+        return m_subModes.contains(mode);
+        
     }
 
     bool JointsComponentMode::HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
@@ -897,7 +1254,7 @@ namespace PhysX
                 {
                     if (itr.second.m_clusterId == GetClusterId(ClusterGroups::Group1) && itr.second.m_buttonId == buttonId)
                     {
-                        SetCurrentMode(itr.first, itr.second);
+                        SetCurrentSubMode(itr.first);
                         break;
                     }
                 }
@@ -909,7 +1266,7 @@ namespace PhysX
                 {
                     if (itr.second.m_clusterId == GetClusterId(ClusterGroups::Group2) && itr.second.m_buttonId == buttonId)
                     {
-                        SetCurrentMode(itr.first, itr.second);
+                        SetCurrentSubMode(itr.first);
                         break;
                     }
                 }
@@ -921,7 +1278,7 @@ namespace PhysX
                 {
                     if (itr.second.m_clusterId == GetClusterId(ClusterGroups::Group3) && itr.second.m_buttonId == buttonId)
                     {
-                        SetCurrentMode(itr.first, itr.second);
+                        SetCurrentSubMode(itr.first);
                         break;
                     }
                 }
@@ -939,9 +1296,8 @@ namespace PhysX
         }
         
         // set the translate as enabled by default.
-        SetCurrentMode(
-            JointsComponentModeCommon::SubComponentModes::ModeType::Translation,
-            m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::Translation]);
+        SetCurrentSubMode(
+            JointsComponentModeCommon::SubComponentModes::ModeType::Translation);
 
         m_subModes[JointsComponentModeCommon::SubComponentModes::ModeType::Translation]->Setup(GetEntityComponentIdPair());
         m_subMode = JointsComponentModeCommon::SubComponentModes::ModeType::Translation;

@@ -16,7 +16,7 @@
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
-#include <Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.h>
+#include <Editor/Source/ComponentModes/Joints/JointsComponentModeBus.h>
 #include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
 
 namespace AZ
@@ -29,6 +29,7 @@ namespace PhysX
     //! Class responsible for managing component mode for joints.
     class JointsComponentMode final
         : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
+        , public PhysX::JointsComponentModeRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
@@ -42,6 +43,10 @@ namespace PhysX
         static void RegisterActions();
         static void BindActionsToModes();
         static void BindActionsToMenus();
+
+        // JointsComponentModeRequestBus overrides ...
+        void SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode) override;
+        bool IsCurrentSubModeAvailable(JointsComponentModeCommon::SubComponentModes::ModeType mode) override;
 
         // EditorBaseComponentMode ...
         void Refresh() override;
@@ -68,7 +73,6 @@ namespace PhysX
             AzToolsFramework::ViewportUi::ButtonId m_buttonId;
         };
 
-        void SetCurrentMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode, ButtonData& buttonData);
         bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         void SetupSubModes(const AZ::EntityComponentIdPair& entityComponentIdPair);
         void ResetCurrentMode();
