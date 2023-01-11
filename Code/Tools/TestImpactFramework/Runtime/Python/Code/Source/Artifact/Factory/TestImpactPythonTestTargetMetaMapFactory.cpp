@@ -96,9 +96,7 @@ namespace TestImpact
                     testMeta.m_scriptMeta.m_testCommand = suite[Keys[TestCommandKey]].GetString();
 
                     AZStd::string name = test[Keys[NameKey]].GetString();
-                    AZ_Printf("meta: %s", test[Keys[NameKey]].GetString());
                     AZ_TestImpact_Eval(!name.empty(), ArtifactException, "Test name field cannot be empty");
-                    //AZ_TestImpact_Eval(!testMeta.m_scriptPath.empty(), ArtifactException, "Test script field cannot be empty");
                     testMetas.emplace(AZStd::move(name), AZStd::move(testMeta));
                     break;
                 }
