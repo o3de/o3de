@@ -503,7 +503,7 @@ namespace AzToolsFramework::Prefab
 
     bool PrefabFocusHandler::IsOwningPrefabBeingFocused(AZ::EntityId entityId) const
     {
-        if (!entityId.IsValid())
+        if (!entityId.IsValid() || !m_instanceEntityMapperInterface)
         {
             return false;
         }

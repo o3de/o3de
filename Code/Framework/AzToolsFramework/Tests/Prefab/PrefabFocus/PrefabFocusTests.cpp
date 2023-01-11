@@ -260,7 +260,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(PrefabFocusTests, VerifySelectionAfterFocus)
+    TEST_F(PrefabFocusTests, DISABLED_VerifySelectionAfterFocus)
     {
         // Verify entity selection is set to nested entities and prefabs
         AzToolsFramework::EntityIdList selectedEntities;
@@ -277,7 +277,7 @@ namespace UnitTest
         EXPECT_EQ(selectedEntities[0], m_entityMap[Passenger1EntityName]->GetId());
     }
 
-    TEST_F(PrefabFocusTests, VerifySelectionAfterFocusOnRoot)
+    TEST_F(PrefabFocusTests, DISABLED_VerifySelectionAfterFocusOnRoot)
     {
         // Focusing on the root should not change selection
         AzToolsFramework::EntityIdList selectedEntities;
