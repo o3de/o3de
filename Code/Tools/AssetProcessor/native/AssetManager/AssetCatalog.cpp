@@ -1148,6 +1148,43 @@ namespace AssetProcessor
         return false;
     }
 
+    bool AssetCatalog::ClearFingerprintForAsset(const AZStd::string& sourcePath)
+    {
+        AZStd::lock_guard<AZStd::mutex> lock(m_databaseMutex);
+
+        SourceAssetReference sourceAsset;
+
+        if (QFileInfo(sourcePath.c_str()).isAbsolute())
+        {
+            sourceAsset = SourceAssetReference(sourcePath.c_str());
+        }
+        else
+        {
+            QString absolutePath = m_platformConfig->FindFirstMatchingFile(sourcePath.c_str());
+
+            if (absolutePath.isEmpty())
+            {
+                return false;
+            }
+
+            sourceAsset = SourceAssetReference(absolutePath.toUtf8().constData());
+        }
+
+        if(!m_db->UpdateFileHashByFileNameAndScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), 0))
+        {
+            return false;
+        }
+
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
+        if (!m_db->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source))
+        {
+            return false;
+        }
+
+        // if setting the file hash failed, still try to clear the job fingerprints.
+        return m_db->SetJobFingerprintsBySourceID(source.m_sourceID, 0);
+    }
+
     bool AssetCatalog::GetScanFolders(AZStd::vector<AZStd::string>& scanFolders)
     {
         int scanFolderCount = m_platformConfig->GetScanFolderCount();

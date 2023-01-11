@@ -169,6 +169,7 @@ namespace AzToolsFramework
             SourceFileNotificationMessage::Reflect(context);
 
             // Requests
+            AssetFingerprintClearRequest::Reflect(context);
             AssetJobsInfoRequest::Reflect(context);
             AssetJobLogRequest::Reflect(context);
             GetAbsoluteAssetDatabaseLocationRequest::Reflect(context);
@@ -181,6 +182,7 @@ namespace AzToolsFramework
             SourceAssetProductsInfoRequest::Reflect(context);
 
             // Responses
+            AssetFingerprintClearResponse::Reflect(context);
             AssetJobsInfoResponse::Reflect(context);
             AssetJobLogResponse::Reflect(context);
             GetAbsoluteAssetDatabaseLocationResponse::Reflect(context);
@@ -541,6 +543,27 @@ namespace AzToolsFramework
             }
 
             return response.m_numberOfPendingJobs;
+        }
+
+        bool AssetSystemComponent::ClearFingerprintForAsset(const AZStd::string& sourcePath)
+        {
+            AzFramework::SocketConnection* engineConnection = AzFramework::SocketConnection::GetInstance();
+            if (!engineConnection || !engineConnection->IsConnected())
+            {
+                return false;
+            }
+
+            AssetFingerprintClearRequest request(sourcePath);
+
+            AssetFingerprintClearResponse response;
+            if (!SendRequest(request, response))
+            {
+                AZ_Error(
+                    "Editor",
+                    false, "ClearFingerprintForAsset request failed for source asset: %.*s", AZ_STRING_ARG(sourcePath));
+                return false;
+            }
+            return response.m_isSuccess;
         }
 
         AZ::Outcome<AssetSystem::JobInfoContainer> AssetSystemComponent::GetAssetJobsInfo(const AZStd::string& path, const bool escalateJobs)

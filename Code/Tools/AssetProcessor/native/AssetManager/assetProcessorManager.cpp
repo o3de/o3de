@@ -357,6 +357,42 @@ namespace AssetProcessor
         return response;
     }
 
+    AssetFingerprintClearResponse AssetProcessorManager::ProcessFingerprintClearRequest(MessageData<AssetFingerprintClearRequest> messageData)
+    {
+        SourceAssetReference sourceAsset;
+        AssetFingerprintClearResponse response;
+
+        if (QFileInfo(messageData.m_message->m_searchTerm.c_str()).isAbsolute())
+        {
+            sourceAsset = SourceAssetReference(messageData.m_message->m_searchTerm.c_str());
+        }
+        else
+        {
+            QString absolutePath = m_platformConfig->FindFirstMatchingFile(messageData.m_message->m_searchTerm.c_str());
+
+            if (absolutePath.isEmpty())
+            {
+                return response;
+            }
+
+            sourceAsset = SourceAssetReference(absolutePath.toUtf8().constData());
+        }
+
+        response.m_isSuccess = m_stateData->UpdateFileHashByFileNameAndScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), 0);
+
+        // if setting the file hash failed, still try to clear the job fingerprints.
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
+        if (!m_stateData->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source))
+        {
+            response.m_isSuccess = false;
+            return response;
+        }
+
+        response.m_isSuccess = response.m_isSuccess && m_stateData->SetJobFingerprintsBySourceID(source.m_sourceID, 0);
+
+        return response;
+    }
+
     //! A network request came in asking, for a given input asset, what the status is of any jobs related to that request
     AssetJobsInfoResponse AssetProcessorManager::ProcessGetAssetJobsInfoRequest(MessageData<AssetJobsInfoRequest> messageData)
     {
