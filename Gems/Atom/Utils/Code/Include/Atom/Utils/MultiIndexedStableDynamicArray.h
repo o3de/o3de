@@ -22,8 +22,9 @@ namespace AZ
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     class MultiIndexedStableDynamicArrayHandle;
     
-    using MultiIndexedStableDynamicArrayPageIndexType = uint32_t;
-    constexpr uint32_t MultiIndexedStableDynamicArrayInvalidPageIndex = AZStd::numeric_limits<MultiIndexedStableDynamicArrayPageIndexType>::max();
+    using MultiIndexedStableDynamicArrayPageIndexType = size_t;
+    constexpr MultiIndexedStableDynamicArrayPageIndexType MultiIndexedStableDynamicArrayInvalidPageIndex =
+        AZStd::numeric_limits<MultiIndexedStableDynamicArrayPageIndexType>::max();
 
     /**
     *   A MultiIndexedStableDynamicArray uses a variable number of arrays to store data. Basically this container
@@ -161,7 +162,7 @@ namespace AZ
         * Note: may return empty slots.
         */
         template<size_t RowIndex>
-        AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>& GetItem(MultiIndexedStableDynamicArrayPageIndexType index);
+        AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>* GetItem(MultiIndexedStableDynamicArrayPageIndexType index);
 
         /// Gets the number of items allocated on this page.
         size_t GetItemCount() const;
@@ -192,7 +193,7 @@ namespace AZ
 
         Handle operator*() const;
         template <size_t RowIndex>
-        auto& GetItem() const;
+        auto* GetItem() const;
 
         bool operator==(const this_type& rhs) const;
         bool operator!=(const this_type& rhs) const;
@@ -227,7 +228,7 @@ namespace AZ
         explicit const_iterator(Page* firstPage);
 
         template<size_t RowIndex>
-        auto& GetItem() const;
+        auto* GetItem() const;
 
         this_type& operator++();
         this_type operator++(int);
@@ -248,7 +249,7 @@ namespace AZ
 
         Handle operator*() const;
         template<size_t RowIndex>
-        auto& GetItem() const;
+        auto* GetItem() const;
 
         bool operator==(const this_type& rhs) const;
         bool operator!=(const this_type& rhs) const;
@@ -304,7 +305,7 @@ namespace AZ
 
         /// Access the data associated with this handle from a particular row
         template<size_t RowIndex>
-        auto& GetItem() const;
+        auto* GetItem() const;
 
     private:
 
@@ -316,7 +317,7 @@ namespace AZ
         void Invalidate();
 
         PageType* m_page = nullptr; ///< The page the data this Handle points to was allocated on.
-        MultiIndexedStableDynamicArrayPageIndexType m_index = AZStd::numeric_limits<MultiIndexedStableDynamicArrayPageIndexType>::max();
+        MultiIndexedStableDynamicArrayPageIndexType m_index = MultiIndexedStableDynamicArrayInvalidPageIndex;
     };
     
     /// Used for returning information about the internal state of the MultiIndexedStableDynamicArray.

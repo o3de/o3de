@@ -141,6 +141,7 @@ namespace UnitTest
         // remove the last half of the elements
         for (uint32_t i = 0; i < s_testCount / 2; ++i)
         {
+            handles.back().Free();
             handles.pop_back();
         }
 
@@ -261,7 +262,7 @@ namespace UnitTest
 
         for (TestArrayHandle item : testArray)
         {
-            success = success && (item.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().index == index);
+            success = success && (item.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->index == index);
             ++index;
         }
 
@@ -278,7 +279,7 @@ namespace UnitTest
         index = 1;
         for (TestArrayHandle item : testArray)
         {
-            success = success && (item.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().index == index);
+            success = success && (item.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->index == index);
             index += 2;
         }
         EXPECT_TRUE(success);
@@ -294,7 +295,7 @@ namespace UnitTest
         index = s_testCount / 2 + 1;
         for (TestArrayHandle item : testArray)
         {
-            success = success && (item.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().index == index);
+            success = success && (item.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->index == index);
             index += 2;
         }
         EXPECT_TRUE(success);
@@ -317,7 +318,7 @@ namespace UnitTest
 
         for (auto it = testArray.cbegin(); it != testArray.cend(); ++it)
         {
-            success = success && (it.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().index == index);
+            success = success && (it.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->index == index);
             ++index;
         }
 
@@ -334,7 +335,7 @@ namespace UnitTest
         index = 1;
         for (auto it = testArray.cbegin(); it != testArray.cend(); ++it)
         {
-            success = success && (it.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().index == index);
+            success = success && (it.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->index == index);
             index += 2;
         }
         EXPECT_TRUE(success);
@@ -350,7 +351,7 @@ namespace UnitTest
         index = s_testCount / 2 + 1;
         for (auto it = testArray.cbegin(); it != testArray.cend(); ++it)
         {
-            success = success && (it.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().index == index);
+            success = success && (it.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->index == index);
             index += 2;
         }
         EXPECT_TRUE(success);
@@ -377,8 +378,8 @@ namespace UnitTest
         {
             for (auto iterator = iteratorPair.first; iterator != iteratorPair.second; ++iterator)
             {
-                TestItem& item = iterator.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>();
-                success = success && (item.index == index);
+                TestItem* item = iterator.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>();
+                success = success && (item->index == index);
                 ++index;
             }
         }
@@ -398,8 +399,8 @@ namespace UnitTest
         {
             for (auto iterator = iteratorPair.first; iterator != iteratorPair.second; ++iterator)
             {
-                TestItem& item = iterator.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>();
-                success = success && (item.index == index);
+                TestItem* item = iterator.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>();
+                success = success && (item->index == index);
                 index += 2;
             }
         }
@@ -421,8 +422,8 @@ namespace UnitTest
         {
             for (auto iterator = iteratorPair.first; iterator != iteratorPair.second; ++iterator)
             {
-                TestItem& item = iterator.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>();
-                success = success && (item.index == index);
+                TestItem* item = iterator.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>();
+                success = success && (item->index == index);
                 index += 2;
             }
         }
@@ -608,12 +609,12 @@ namespace UnitTest
                 EXPECT_EQ(destination.IsNull(), false);
 
                 // The destination handle should have the value that came from the source handle
-                SourceTestItemType& testItem = destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>();
-                EXPECT_EQ(testItem.GetValue(), 123);
+                SourceTestItemType* testItem = destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>();
+                EXPECT_EQ(testItem->GetValue(), 123);
 
                 // The destination handle should be pointing to real data that can be modified
-                destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>() = 789;
-                EXPECT_EQ(destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().GetValue(), 789);
+                *destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>() = 789;
+                EXPECT_EQ(destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->GetValue(), 789);
 
                 // One item was constructed, none destructed, one modified
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, 1);
@@ -639,11 +640,11 @@ namespace UnitTest
                 EXPECT_EQ(destination.IsNull(), false);
 
                 // The destination handle should have the value that came from the source handle
-                EXPECT_EQ(destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().GetValue(), 123);
+                EXPECT_EQ(destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->GetValue(), 123);
 
                 // The destination handle should be pointing to real data that can be modified
-                destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>() = 789;
-                EXPECT_EQ(destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().GetValue(), 789);
+                *destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>() = 789;
+                EXPECT_EQ(destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->GetValue(), 789);
 
                 // Two items were constructed, one destructed, one modified
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, 2);
@@ -761,12 +762,12 @@ namespace UnitTest
         MultiIndexedStableDynamicArrayOwner owner;
         MultiIndexedTestItemHandle handle = owner.AcquireItem(1);
         int testValue = 12;
-        handle.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>() = testValue;
+        *handle.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>() = testValue;
 
         // Self assignment should not invalidate the handle
         handle = AZStd::move(handle);
         EXPECT_TRUE(handle.IsValid());
         EXPECT_FALSE(handle.IsNull());
-        EXPECT_EQ(handle.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().GetValue(), testValue);
+        EXPECT_EQ(handle.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->GetValue(), testValue);
     }
 }

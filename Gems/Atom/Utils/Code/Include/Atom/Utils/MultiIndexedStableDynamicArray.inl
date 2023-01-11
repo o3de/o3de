@@ -69,8 +69,11 @@ namespace AZ
         TupleType& valuesTuple)
     {
         using DataType = AZStd::tuple_element_t<RowIndex, TupleType>;
-        DataType& item = page->GetItem<RowIndex>(pageElementIndex);
-        item = AZStd::get<RowIndex>(valuesTuple);
+        //DataType& item = page->GetItem<RowIndex>(pageElementIndex);
+        //item = AZStd::get<RowIndex>(valuesTuple);
+        DataType* item = page->GetItem<RowIndex>(pageElementIndex);
+        // must be copy constructable
+        AZStd::Internal::construct<DataType*>::single(item, AZStd::get<RowIndex>(valuesTuple));
     }
 
     
@@ -103,8 +106,10 @@ namespace AZ
     static void DestructElement(PageType* page, MultiIndexedStableDynamicArrayPageIndexType pageElementIndex)
     {
         using DataType = AZStd::tuple_element_t<RowIndex, TupleType>;
-        DataType& item = page->GetItem<RowIndex>(pageElementIndex);
-        item.~DataType();
+        //DataType& item = page->GetItem<RowIndex>(pageElementIndex);
+        //item.~DataType();
+        DataType* item = page->GetItem<RowIndex>(pageElementIndex);
+        item->~DataType();
     }
 
     template<typename TupleType, typename PageType, size_t... Ints>
@@ -418,12 +423,12 @@ namespace AZ
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     template<size_t RowIndex>
-    AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>& MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::Page::GetItem(
+    AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>* MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::Page::GetItem(
         MultiIndexedStableDynamicArrayPageIndexType index)
     {
         //using AlignedStorageType = AZStd::tuple_element_t<RowIndex,AZStd::tuple<AZStd::aligned_storage_t<ElementsPerPage * sizeof(value_types), alignof(value_types)>...>>;
         using DataType = AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>;
-        return *(reinterpret_cast<DataType*>(&AZStd::get<RowIndex>(m_data)) + index);
+        return (reinterpret_cast<DataType*>(&AZStd::get<RowIndex>(m_data)) + index);
     }
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
@@ -462,7 +467,7 @@ namespace AZ
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     template<size_t RowIndex>
-    auto& MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::iterator::GetItem() const
+    auto* MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::iterator::GetItem() const
     {
         return m_page->GetItem<RowIndex>(m_itemIndex);
     }
@@ -566,7 +571,7 @@ namespace AZ
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     template<size_t RowIndex>
-    auto& MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::const_iterator::GetItem() const
+    auto* MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::const_iterator::GetItem() const
     {
         return base_type::m_page->GetItem<RowIndex>(base_type::m_itemIndex);
     }
@@ -608,7 +613,7 @@ namespace AZ
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     template<size_t RowIndex>
-    auto& MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::pageIterator::GetItem() const
+    auto* MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::pageIterator::GetItem() const
     {
         return m_page->GetItem<RowIndex>(m_itemIndex);
     }
@@ -754,7 +759,7 @@ namespace AZ
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     template<size_t RowIndex>
-    auto& MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>::GetItem() const
+    auto* MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>::GetItem() const
     {
         return m_page->GetItem<RowIndex>(m_index);
     }
