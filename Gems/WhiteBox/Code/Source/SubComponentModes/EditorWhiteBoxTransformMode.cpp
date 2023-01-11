@@ -13,6 +13,10 @@
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Viewport/ViewportColors.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Manipulators/LinearManipulator.h>
 #include <Manipulators/ManipulatorManager.h>
@@ -41,6 +45,9 @@ namespace WhiteBox
     const constexpr char* SwitchToRotationModeDesc = "Switch to Rotation Mode";
     const constexpr char* SwitchToScaleModeDesc = "Switch to Scale Mode";
 
+    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
+    static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
+
     static void SetViewportUiClusterActiveButton(
         AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)
     {
@@ -65,6 +72,8 @@ namespace WhiteBox
     TransformMode::TransformMode(const AZ::EntityComponentIdPair& entityComponentIdPair)
         : m_entityComponentIdPair(entityComponentIdPair)
     {
+        EditorWhiteBoxTransformModeRequestBus::Handler::BusConnect(entityComponentIdPair);
+
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
             [&](AzToolsFramework::ViewportUi::ViewportUiRequests* requests)
@@ -87,26 +96,26 @@ namespace WhiteBox
                     ManipulatorModeClusterRotateTooltip);
                 requests->SetClusterButtonTooltip(m_transformClusterId, m_transformScaleButtonId, 
                     ManipulatorModeClusterScaleTooltip);
-            });
+            }
+        );
 
         m_transformSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
             [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
             {
                 if (buttonId == m_transformTranslateButtonId)
                 {
-                    m_transformType = TransformType::Translation;
+                    ChangeTransformType(TransformType::Translation);
                 }
                 else if (buttonId == m_transformRotateButtonId)
                 {
-                    m_transformType = TransformType::Rotation;
+                    ChangeTransformType(TransformType::Rotation);
                 }
                 else if (buttonId == m_transformScaleButtonId)
                 {
-                    m_transformType = TransformType::Scale;
+                    ChangeTransformType(TransformType::Scale);
                 }
-
-                RefreshManipulator();
-            });
+            }
+        );
 
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
@@ -125,6 +134,139 @@ namespace WhiteBox
             m_transformClusterId);
 
         DestroyManipulators();
+
+        EditorWhiteBoxTransformModeRequestBus::Handler::BusDisconnect();
+    }
+
+    void TransformMode::RegisterActionUpdaters()
+    {
+    }
+
+    void TransformMode::RegisterActions()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "WhiteBoxTransformMode - could not get ActionManagerInterface on RegisterActions.");
+
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        AZ_Assert(hotKeyManagerInterface, "WhiteBoxTransformMode - could not get HotKeyManagerInterface on RegisterActions.");
+
+        // Translation
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.whiteBoxComponentMode.transform.translation";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SwitchToTranslationModeTile;
+            actionProperties.m_description = SwitchToTranslationModeDesc;
+            actionProperties.m_category = "White Box Component Mode - Transform";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorWhiteBoxTransformModeRequestBus::Event(
+                                entityComponentIdPair,
+                                &EditorWhiteBoxTransformModeRequests::ChangeTransformType,
+                                TransformType::Translation);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "1");
+        }
+
+        // Rotation
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.whiteBoxComponentMode.transform.rotation";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SwitchToRotationModeTile;
+            actionProperties.m_description = SwitchToRotationModeDesc;
+            actionProperties.m_category = "White Box Component Mode - Transform";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorWhiteBoxTransformModeRequestBus::Event(
+                                entityComponentIdPair,
+                                &EditorWhiteBoxTransformModeRequests::ChangeTransformType,
+                                TransformType::Rotation);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "2");
+        }
+
+        // Scale
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.whiteBoxComponentMode.transform.scale";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SwitchToScaleModeTile;
+            actionProperties.m_description = SwitchToScaleModeDesc;
+            actionProperties.m_category = "White Box Component Mode - Transform";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorWhiteBoxTransformModeRequestBus::Event(
+                                entityComponentIdPair,
+                                &EditorWhiteBoxTransformModeRequests::ChangeTransformType,
+                                TransformType::Scale);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "3");
+        }
+    }
+
+    void TransformMode::BindActionsToModes(const AZStd::string& modeIdentifier)
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "WhiteBoxTransformMode - could not get ActionManagerInterface on BindActionsToModes.");
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.transform.translation");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.transform.rotation");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.transform.scale");
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.componentMode.end");
+    }
+
+    void TransformMode::BindActionsToMenus()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "WhiteBoxTransformMode - could not get MenuManagerInterface on BindActionsToMenus.");
+
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.translation", 6000);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.rotation", 6001);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.scale", 6002);
     }
 
     void TransformMode::DestroyManipulators()
@@ -134,6 +276,12 @@ namespace WhiteBox
             m_manipulator->Unregister();
             m_manipulator.reset();
         }
+    }
+
+    void TransformMode::ChangeTransformType(TransformType subModeType)
+    {
+        m_transformType = subModeType;
+        RefreshManipulator();
     }
 
     void TransformMode::Refresh()

@@ -99,6 +99,8 @@ namespace AZ
                 // Add new object to the list so it's ready for updating later on.
                 m_objects.push_back(object);
 
+                UpdateAddButtonStatus();
+
                 QTimer::singleShot(0, this,
                     [this]()
                     {
@@ -107,6 +109,21 @@ namespace AZ
                 );
 
                 return true;
+            }
+
+            void ManifestWidgetPage::UpdateAddButtonStatus()
+            {
+                if (m_objects.size() >= m_capSize)
+                {
+                    QString entryString(tr(m_capSize == 1 ? "entry" : "entries"));
+                    ui->m_addButton->setToolTip(tr("Maximum number of entries reached. This page can contain up to %1 %2.").arg(m_capSize).arg(entryString));
+                    ui->m_addButton->setEnabled(false);
+                }
+                else
+                {
+                    ui->m_addButton->setToolTip(QString());
+                    ui->m_addButton->setEnabled(true);
+                }
             }
 
             bool ManifestWidgetPage::RemoveObject(const AZStd::shared_ptr<DataTypes::IManifestObject>& object)
@@ -126,6 +143,8 @@ namespace AZ
                     }
 
                     m_objects.erase(it);
+
+                    UpdateAddButtonStatus();
 
                     if (m_objects.size() == 0)
                     {
@@ -173,6 +192,7 @@ namespace AZ
             {
                 m_objects.clear();
                 m_propertyEditor->ClearInstances();
+                UpdateAddButtonStatus();
             }
 
             void ManifestWidgetPage::BeforePropertyModified(AzToolsFramework::InstanceDataNode* /*pNode*/)
@@ -244,6 +264,8 @@ namespace AZ
                     }
 
                     AddNewObject(m_classTypeIds[0]);
+
+                    UpdateAddButtonStatus();
                 }
             }
 
@@ -256,6 +278,8 @@ namespace AZ
                     return;
                 }
                 AddNewObject(id);
+
+                UpdateAddButtonStatus();
             }
 
             void ManifestWidgetPage::BuildAndConnectAddButton()
@@ -268,6 +292,24 @@ namespace AZ
                 {
                     AZStd::string className = ClassIdToName(m_classTypeIds[0]);
                     AZStd::to_lower(className.begin(), className.end());
+
+                    AZ::SerializeContext* serializeContext = nullptr;
+                    AZ::ComponentApplicationBus::BroadcastResult(
+                        serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+                    AZ_Assert(serializeContext, "No serialize context");
+                    auto classData = serializeContext->FindClassData(m_classTypeIds[0]);
+                    if (classData && classData->m_editData)
+                    {
+                        const AZ::Edit::ElementData* editorElementData =
+                            classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
+                        if (auto categoryAttribute = editorElementData->FindAttribute(AZ::Edit::Attributes::Max))
+                        {
+                            if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<int>*>(categoryAttribute))
+                            {
+                                m_capSize = categoryAttributeData->Get(nullptr);
+                            }
+                        }
+                    }
 
                     ui->m_addButton->setText(QString::fromLatin1("Add another %1").arg(className.c_str()));
                     connect(ui->m_addButton, &QPushButton::clicked, this, &ManifestWidgetPage::OnSingleGroupAdd);

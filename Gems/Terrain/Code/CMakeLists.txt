@@ -68,6 +68,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 Include
         BUILD_DEPENDENCIES
+            PRIVATE
+                Gem::Atom_RPI.Edit
+                Gem::GradientSignal.Editor.Static
             PUBLIC
                 AZ::AzToolsFramework
                 Gem::GradientSignal
@@ -110,6 +113,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTestShared
                 AZ::AzFramework
                 Gem::Atom_RPI.TestUtils.Static
+                Gem::GradientSignal.Tests.Static
                 Gem::LmbrCentral.Mocks
                 Gem::GradientSignal.Mocks
                 Gem::Terrain.Mocks
