@@ -308,7 +308,7 @@ def register_show(verbose: int, project_path: pathlib.Path = None, project_name:
     if project_name:
         project_path = get_project_path(project_path, project_name)
         print(project_path.as_posix())
-        return 1
+        return 0
 
     print(f"{manifest.get_o3de_manifest()}:")
     print(json.dumps(json_data, indent=4))
