@@ -37,7 +37,7 @@ PsDepthOutput MainPS(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     Surface surface = EvaluateSurface(geoData);
 
-    CheckClipping(surface.alpha, 0.99);
+    CheckClipping(surface.alpha, 0.0);
 
     OUT.depth = surface.position.z;
 #endif

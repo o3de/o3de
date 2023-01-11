@@ -257,7 +257,7 @@
                 "defaultDataType": "bool",
                 "defaultValue": {
                     "$type": "bool",
-                    "Value": false
+                    "Value": true
                 },
                 "visibleOnNode": false,
                 "editableOnNode": false,

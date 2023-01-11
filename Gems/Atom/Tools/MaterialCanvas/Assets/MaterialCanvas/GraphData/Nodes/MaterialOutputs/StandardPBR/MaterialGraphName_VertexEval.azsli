@@ -25,14 +25,17 @@ VsOutput EvaluateVertexGeometry_StandardPBR(
     float2 uv1)
 {
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
-    float3 bitangent = cross(normal, tangent.xyz);
+
+    float3 vertexNormal, vertexTangent, vertexBitangent;
+    ConstructTBN(normal, tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
 
     #define O3DE_MC_POSITION IN.m_position
     #define O3DE_MC_UV(index) (index == 0 ? uv0 : uv1);
-    #define O3DE_MC_NORMAL normal
-    #define O3DE_MC_TANGENT tangent
-    #define O3DE_MC_BITANGENT bitangent
+    #define O3DE_MC_NORMAL vertexNormal
+    #define O3DE_MC_TANGENT vertexTangent
+    #define O3DE_MC_BITANGENT vertexBitangent
     #define O3DE_MC_WORLD_POSITION worldPosition
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
@@ -47,15 +50,12 @@ VsOutput EvaluateVertexGeometry_StandardPBR(
     #undef O3DE_MC_WORLD_POSITION
 
     VsOutput output;
-
     output.worldPosition = (float3)worldPosition + (float3)inPositionOffset;
     output.position = mul(ViewSrg::m_viewProjectionMatrix, float4(output.worldPosition, 1.0));
     output.uvs[0] = uv0;
     output.uvs[1] = uv1;
-
     output.normal = normal;
     output.tangent = tangent;
-
     return output;
 }
 

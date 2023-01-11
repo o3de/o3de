@@ -20,10 +20,10 @@
 #include <Atom/Features/ShaderQualityOptions.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
-option bool o_normal_override_enabled;
-option bool o_opacity_affects_specular_factor;
-option bool o_clearCoat_enabled;
-option bool o_clearCoat_normal_override_enabled;
+option bool o_normal_override_enabled = false;
+option bool o_opacity_affects_specular_factor = true;
+option bool o_clearCoat_enabled = false;
+option bool o_clearCoat_normal_override_enabled = false;
 
 // ------- Shader Resource Groups -------
 

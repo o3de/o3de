@@ -19,7 +19,7 @@
 #include <Atom/Features/ShaderQualityOptions.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
-option bool o_normal_override_enabled;
+option bool o_normal_override_enabled = false;
 
 // ------- Shader Resource Groups -------
 
