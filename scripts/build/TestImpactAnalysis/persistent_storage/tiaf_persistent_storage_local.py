@@ -108,9 +108,8 @@ class PersistentStorageLocal(PersistentStorage):
         @param source_directory: pathlib.Path to directory to copy files from.
         @param target_direcotry: pathlib.Path to directory to store files in.
         """
-        for artifact_path in source_directory.iterdir():
-            try:
-                shutil.copy2(artifact_path, target_directory.joinpath(artifact_path.name))
-            except OSError as e:
-                logger.error(f"Error copying file {artifact_path.name} from {source_directory} to {target_directory}")
+        try:
+            shutil.copytree(source_directory, target_directory, dirs_exist_ok=True)
+        except OSError as e:
+                logger.error(f"Error copying tree '{source_directory}' to '{target_directory}'")
                 logger.error(f"Error thrown: {e}")
