@@ -58,6 +58,8 @@ DEFAULT_BUILD_SNAPSHOT = BUILD_SNAPSHOTS_WITH_EMPTY.get(0)
 // Branches with build snapshots as comma separated value string
 env.BUILD_SNAPSHOTS = BUILD_SNAPSHOTS.join(",")
 
+env.PROJECT_PATH = ''
+
 def pipelineProperties = []
 
 def pipelineParameters = [
@@ -1222,7 +1224,7 @@ try {
                     envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                     envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
 
-                    if (env.PROJECT_NAME != "AutomatedTesting") {
+                    if (!env.PROJECT_PATH.isEmpty()) {
                         envVars['CMAKE_LY_PROJECTS'] = env.PROJECT_PATH
                     }
 
