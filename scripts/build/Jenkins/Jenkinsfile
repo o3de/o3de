@@ -390,7 +390,7 @@ def NoControlFile(repoName, processed_repos) {
         else if(fileExists("restricted.json")) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --restricted-path ${workspace}/${repoName} || ver>nul", "Registering restricted in ${workspace}/${repoName}")
         }
-        else{
+        else {
             //A standard composite repo has the form
             //root
             //  Engines
@@ -603,8 +603,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             echo "Commit repo: ${scm.userRemoteConfigs.url[0]}"
             def automatedTestingControlFile = {}
             def automatedTestingControlFileFound = false
-            dir(COMMIT_REPOSITORY_NAME)
-            {
+            dir(COMMIT_REPOSITORY_NAME) {
                 CheckoutRepo(branchName, scm.userRemoteConfigs, disableSubmodules, true)
 
                 //if the repo has an .automatedtesting.json execute it
@@ -1210,7 +1209,20 @@ try {
                     def envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                     envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                     envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
-                    envVars['CMAKE_LY_PROJECTS'] = env.PROJECT_NAME
+
+
+                    if (env.PROJECT_NAME != "AutomatedTesting") {
+                        def ext = ''
+                        if(env.IS_UNIX) {
+                            ext = '.sh'
+                        }
+                        PlatformSh("scripts/o3de${ext} register-show --project-name ${env.PROJECT_NAME} || projectpath", "Get the project path")
+                        envVars['CMAKE_LY_PROJECTS'] = readFile file: 'projectpath'
+                        envVars['CMAKE_LY_PROJECTS'] = envVars['CMAKE_LY_PROJECTS'].trim()
+                        PlatformRm('projectpath')
+                        echo "CMAKE_LY_PROJECTS = ${envVars['CMAKE_LY_PROJECTS']}"
+                    }
+
                     someBuildHappened = true
                     buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
                 }
