@@ -96,8 +96,7 @@ class BaseTestImpact(ABC):
         # If flag is set for us to use TIAF
         if self._use_test_impact_analysis:
             logger.info("Test impact analysis is enabled.")
-            self._persistent_storage = self._initialize_persistent_storage(
-                s3_bucket=self._s3_bucket, suites=self._suites_string, s3_top_level_dir=args.get(ARG_S3_TOP_LEVEL_DIR))
+            self._persistent_storage = self._initialize_persistent_storage(s3_top_level_dir=args.get(ARG_S3_TOP_LEVEL_DIR))
 
             # If persistent storage intialized correctly
             if self._persistent_storage:
@@ -140,8 +139,7 @@ class BaseTestImpact(ABC):
         self._report_file = PurePath(self._report_workspace).joinpath(
             f"report.{self._instance_id}.json")
         args[ARG_REPORT] = self._report_file
-        self._parse_arguments_to_runtime(
-            args, self._runtime_args)
+        self._parse_arguments_to_runtime(args)
 
     def _compile_multi_arg_string(self, multi_args):
         num_args = len(multi_args)
@@ -153,21 +151,20 @@ class BaseTestImpact(ABC):
 
         return multi_args_string
 
-    def _parse_arguments_to_runtime(self, args, runtime_args):
+    def _parse_arguments_to_runtime(self, args):
         """
         Fetches the relevant keys from the provided dictionary, and applies the values of the arguments(or applies them as a flag) to our runtime_args list.
 
         @param args: Dictionary containing the arguments passed to this TestImpact object. Will contain all the runtime arguments we need to apply.
-        @runtime_args: A list of strings that will become the arguments for our runtime.
         """
 
         for argument in RuntimeArgs:
             value = args.get(argument.driver_argument)
             if value:
                 if type(value) == list:
-                    runtime_args.append(f"{argument.runtime_arg}{','.join(value)}")
+                    self._runtime_args.append(f"{argument.runtime_arg}{','.join(value)}")
                 else:
-                    runtime_args.append(f"{argument.runtime_arg}{value}")
+                    self._runtime_args.append(f"{argument.runtime_arg}{value}")
                 logger.info(f"{argument.message}{value}")
 
     def _handle_historic_data(self):
@@ -203,24 +200,22 @@ class BaseTestImpact(ABC):
             # If this commit is different to the last commit in our historic data, we can diff the commits to get our change list
             self._attempt_to_generate_change_list()
 
-    def _initialize_persistent_storage(self, suites: str, s3_bucket: str = None, s3_top_level_dir: str = None):
+    def _initialize_persistent_storage(self, s3_top_level_dir: str = None):
         """
         Initialise our persistent storage object. Defaults to initialising local storage, unless the s3_bucket argument is not None.
         Returns PersistentStorage object or None if initialisation failed.
 
-        @param suites: The testing suites we are using.
-        @param s3_bucket: the name of the S3 bucket to connect to. Can be set to none.
         @param s3_top_level_dir: The name of the top level directory to use in the s3 bucket.
 
         @returns: Returns a persistent storage object, or None if a SystemError exception occurs while initialising the object.
         """
         try:
-            if s3_bucket:
+            if self._s3_bucket:
                 return PersistentStorageS3(
-                    self._config, suites, self._dst_commit, s3_bucket, self._compile_s3_top_level_dir_name(s3_top_level_dir), self._source_of_truth_branch, self._active_workspace, self._unpacked_coverage_data_file, self._previous_test_run_data_file, self._temp_workspace)
+                    self._config, self._suites_string, self._dst_commit, self._s3_bucket, self._compile_s3_top_level_dir_name(s3_top_level_dir), self._source_of_truth_branch, self._active_workspace, self._unpacked_coverage_data_file, self._previous_test_run_data_file, self._temp_workspace)
             else:
                 return PersistentStorageLocal(
-                    self._config, suites, self._dst_commit, self._active_workspace, self._unpacked_coverage_data_file, self._previous_test_run_data_file, self._historic_workspace, self._historic_data_file, self._temp_workspace)
+                    self._config, self._suites_string, self._dst_commit, self._active_workspace, self._unpacked_coverage_data_file, self._previous_test_run_data_file, self._historic_workspace, self._historic_data_file, self._temp_workspace)
         except SystemError as e:
             logger.warning(
                 f"The persistent storage encountered an irrecoverable error, test impact analysis will be disabled: '{e}'")
@@ -495,6 +490,7 @@ class BaseTestImpact(ABC):
             if report_type == constants.SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY:
                 test_runs = test_runs + self._extract_test_runs_from_test_run_report(
                     report[constants.DISCARDED_TEST_RUN_REPORT_KEY])
+        return test_runs
 
     def run(self):
         """
