@@ -42,17 +42,12 @@ namespace AzToolsFramework
                 m_thumbnailViewWidget,
                 &AzQtComponents::AssetFolderThumbnailView::IndexClicked,
                 this,
-                [this](const QModelIndex& index)
+                [](const QModelIndex& index)
                 {
-                    if (!m_previewerFrame)
-                    {
-                        return;
-                    }
-
                     auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
                     if (indexData->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
                     {
-                        m_previewerFrame->Display(indexData);
+                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
                     }
                 });
 
@@ -102,11 +97,6 @@ namespace AzToolsFramework
         }
 
         AssetBrowserThumbnailView::~AssetBrowserThumbnailView() = default;
-
-        void AssetBrowserThumbnailView::SetPreviewerFrame(PreviewerFrame* previewerFrame)
-        {
-            m_previewerFrame = previewerFrame;
-        }
 
         void AssetBrowserThumbnailView::SetAssetTreeView(AssetBrowserTreeView* treeView)
         {

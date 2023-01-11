@@ -38,12 +38,10 @@ namespace AzToolsFramework
             explicit AssetBrowserThumbnailView(QWidget* parent = nullptr);
             ~AssetBrowserThumbnailView() override;
 
-            void SetPreviewerFrame(PreviewerFrame* previewerFrame);
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
 
         private:
             AssetBrowserTreeView* m_assetTreeView = nullptr;
-            PreviewerFrame* m_previewerFrame = nullptr;
             AzQtComponents::AssetFolderThumbnailView* m_thumbnailViewWidget = nullptr;
             AssetBrowserThumbnailViewProxyModel* m_thumbnailViewProxyModel = nullptr;
             AssetBrowserFilterModel* m_assetFilterModel = nullptr;

@@ -157,8 +157,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
     }
 
-    m_ui->m_thumbnailView->SetPreviewerFrame(m_ui->m_previewerFrame);
-
     if (!ed_useWIPAssetBrowserDesign)
     {
         m_ui->m_breadcrumbsWrapper->hide(); 
