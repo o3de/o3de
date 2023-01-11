@@ -13,8 +13,27 @@
 
 namespace UnitTest
 {
-    // Fixture that creates a bare-bones app
+    enum TestMultiIndexedStableDynamicArrayRows
+    {
+        TestItemIndex = 0,
+        UInt32Index
+    };
 
+    // Fixture that creates a bare-bones app
+    constexpr size_t TestElementsPerPage = 512;
+    using MultiIndexedTestAllocator = AZ::OSAllocator;
+
+    struct MultiIndexedStableDynamicArrayTestsTestItem
+    {
+        MultiIndexedStableDynamicArrayTestsTestItem() = default;
+        MultiIndexedStableDynamicArrayTestsTestItem(uint32_t value)
+            : index(value)
+        {
+        }
+        uint32_t index = 0;
+    };
+
+    using TestArrayHandle = AZ::MultiIndexedStableDynamicArray<TestElementsPerPage, MultiIndexedTestAllocator, MultiIndexedStableDynamicArrayTestsTestItem, uint32_t>::Handle;
     class MultiIndexedStableDynamicArrayTests
         : public LeakDetectionFixture
     {
@@ -29,34 +48,35 @@ namespace UnitTest
 
         void TearDown() override
         {
-            handles = AZStd::vector<AZ::MultiIndexedStableDynamicArray<TestItem>::Handle>(); // force memory deallocation.
-            
+            for (TestArrayHandle& handle : handles)
+            {
+                handle.Free();
+            }
+
+            handles = AZStd::vector<TestArrayHandle>(); // force memory deallocation.
+
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
             LeakDetectionFixture::TearDown();
         }
 
-        struct TestItem
-        {
-            TestItem() = default;
-            TestItem(uint32_t value) : index(value) {}
-            uint32_t index = 0;
-        };
+        using TestItem = MultiIndexedStableDynamicArrayTestsTestItem;
 
         static constexpr uint32_t s_testCount = 1000000;
 
-        AZStd::vector<AZ::MultiIndexedStableDynamicArray<TestItem>::Handle> handles;
+        AZStd::vector<AZ::MultiIndexedStableDynamicArray<TestElementsPerPage, MultiIndexedTestAllocator, TestItem, uint32_t>::Handle> handles;
+
+        AZ::MultiIndexedStableDynamicArray<TestElementsPerPage, MultiIndexedTestAllocator, TestItem, uint32_t> testArray;
     };
 
     TEST_F(MultiIndexedStableDynamicArrayTests, insert_erase)
     {
         using namespace AZ;
-        AZ::MultiIndexedStableDynamicArray<TestItem> testArray;
 
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            MultiIndexedStableDynamicArray<TestItem>::Handle handle = testArray.insert({});
-            handle->index = i;
+            TestArrayHandle handle =
+                testArray.insert({ i }, { i });
             handles.push_back(AZStd::move(handle));
         }
 
@@ -75,19 +95,16 @@ namespace UnitTest
 
         metrics = testArray.GetMetrics();
         EXPECT_EQ(metrics.m_totalElements, s_testCount / 2);
-
-        handles.clear(); // cleanup remaining handles.
     }
 
     TEST_F(MultiIndexedStableDynamicArrayTests, emplace_Free)
     {
         using namespace AZ;
-        AZ::MultiIndexedStableDynamicArray<TestItem> testArray;
 
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            MultiIndexedStableDynamicArray<TestItem>::Handle handle = testArray.emplace(i);
+            TestArrayHandle handle = testArray.insert(TestItem{ i }, i);
             handles.push_back(AZStd::move(handle));
         }
 
@@ -97,18 +114,15 @@ namespace UnitTest
         // remove half of the elements
         for (uint32_t i = 0; i < s_testCount; i += 2)
         {
-            handles.at(i).Free();
+            testArray.erase(handles.at(i));
         }
         metrics = testArray.GetMetrics();
         EXPECT_EQ(metrics.m_totalElements, s_testCount / 2);
-
-        handles.clear(); // cleanup remaining handles.
     }
 
     TEST_F(MultiIndexedStableDynamicArrayTests, ReleaseEmptyPages)
     {
         using namespace AZ;
-        AZ::MultiIndexedStableDynamicArray<TestItem> testArray;
 
         // Test removing items at the end
 
@@ -117,7 +131,7 @@ namespace UnitTest
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
             item.index = i;
-            MultiIndexedStableDynamicArray<TestItem>::Handle handle = testArray.insert(item);
+            TestArrayHandle handle = testArray.insert(item, i);
             handles.push_back(AZStd::move(handle));
         }
 
@@ -142,6 +156,11 @@ namespace UnitTest
 
         // Test removing All the items
 
+        for (TestArrayHandle& handle : handles)
+        {
+            handle.Free();
+        }
+
         handles.clear(); // cleanup remaining handles.
 
         // release all the pages.
@@ -159,14 +178,14 @@ namespace UnitTest
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            MultiIndexedStableDynamicArray<TestItem>::Handle handle = testArray.emplace(i);
+            TestArrayHandle handle = testArray.insert(i, i);
             handles.push_back(AZStd::move(handle));
         }
 
         // remove the first half of the elements
         for (uint32_t i = 0; i < s_testCount / 2; ++i)
         {
-            handles.at(i).Free();
+            testArray.erase(handles.at(i));
         }
 
         // release the pages at the beginning that are now empty
@@ -177,22 +196,18 @@ namespace UnitTest
 
         // There should be fewer pages now than before
         EXPECT_LT(beginReducedPageCount, fullPageCount);
-
-        handles.clear(); // cleanup remaining handles.
-
     }
-
+    /*
     TEST_F(MultiIndexedStableDynamicArrayTests, DefragmentHandle)
     {
         using namespace AZ;
-        AZ::MultiIndexedStableDynamicArray<TestItem> testArray;
+        AZ::MultiIndexedStableDynamicArray<TestElementsPerPage, MultiIndexedTestAllocator, TestItem, uint32_t> testArray;
         MultiIndexedStableDynamicArrayMetrics metrics;
 
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            MultiIndexedStableDynamicArray<TestItem>::Handle handle = testArray.emplace(i);
-            handle->index = i;
+            TestArrayHandle handle = testArray.insert(i, i);
             handles.push_back(AZStd::move(handle));
         }
 
@@ -202,7 +217,7 @@ namespace UnitTest
         // remove every other elements
         for (uint32_t i = 0; i < s_testCount; i += 2)
         {
-            handles.at(i).Free();
+            testArray.erase(handles.at(i));
         }
 
         // release shouldn't be able to do anything since ever other element was removed
@@ -227,17 +242,16 @@ namespace UnitTest
 
         handles.clear(); // cleanup remaining handles.
     }
+    */
 
     TEST_F(MultiIndexedStableDynamicArrayTests, Iterator)
     {
         using namespace AZ;
-        AZ::MultiIndexedStableDynamicArray<TestItem> testArray;
 
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            MultiIndexedStableDynamicArray<TestItem>::Handle handle = testArray.emplace(i);
-            handle->index = i;
+            TestArrayHandle handle = testArray.insert(i, i);
             handles.push_back(AZStd::move(handle));
         }
 
@@ -245,9 +259,9 @@ namespace UnitTest
         size_t index = 0;
         bool success = true;
 
-        for (TestItem& item : testArray)
+        for (TestArrayHandle item : testArray)
         {
-            success = success && (item.index == index);
+            success = success && (item.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().index == index);
             ++index;
         }
 
@@ -257,14 +271,14 @@ namespace UnitTest
         // remove every other elements
         for (uint32_t i = 0; i < s_testCount; i += 2)
         {
-            handles.at(i).Free();
+            testArray.erase(handles.at(i));
         }
 
         // now the iterator should hit every other item (starting at 1 since 0 was freed).
         index = 1;
-        for (TestItem& item : testArray)
+        for (TestArrayHandle item : testArray)
         {
-            success = success && (item.index == index);
+            success = success && (item.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().index == index);
             index += 2;
         }
         EXPECT_TRUE(success);
@@ -272,30 +286,28 @@ namespace UnitTest
         // remove the first half completely so there are a bunch of empty pages to skip
         for (uint32_t i = 0; i < s_testCount / 2; ++i)
         {
-            handles.at(i).Free();
+            testArray.erase(handles.at(i));
         }
 
         // now the iterator should hit every other item after s_testCount / 2.
         success = true;
         index = s_testCount / 2 + 1;
-        for (TestItem& item : testArray)
+        for (TestArrayHandle item : testArray)
         {
-            success = success && (item.index == index);
+            success = success && (item.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().index == index);
             index += 2;
         }
         EXPECT_TRUE(success);
-        handles.clear(); // cleanup remaining handles.
     }
 
     TEST_F(MultiIndexedStableDynamicArrayTests, ConstIterator)
     {
         using namespace AZ;
-        AZ::MultiIndexedStableDynamicArray<TestItem> testArray;
 
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            MultiIndexedStableDynamicArray<TestItem>::Handle handle = testArray.emplace(i);
+            TestArrayHandle handle = testArray.insert(i, i);
             handles.push_back(AZStd::move(handle));
         }
 
@@ -305,7 +317,7 @@ namespace UnitTest
 
         for (auto it = testArray.cbegin(); it != testArray.cend(); ++it)
         {
-            success = success && (it->index == index);
+            success = success && (it.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().index == index);
             ++index;
         }
 
@@ -315,14 +327,14 @@ namespace UnitTest
         // remove every other elements
         for (uint32_t i = 0; i < s_testCount; i += 2)
         {
-            handles.at(i).Free();
+            testArray.erase(handles.at(i));
         }
 
         // now the iterator should hit every other item (starting at 1 since 0 was freed).
         index = 1;
         for (auto it = testArray.cbegin(); it != testArray.cend(); ++it)
         {
-            success = success && (it->index == index);
+            success = success && (it.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().index == index);
             index += 2;
         }
         EXPECT_TRUE(success);
@@ -330,7 +342,7 @@ namespace UnitTest
         // remove the first half completely so there are a bunch of empty pages to skip
         for (uint32_t i = 0; i < s_testCount / 2; ++i)
         {
-            handles.at(i).Free();
+            testArray.erase(handles.at(i));
         }
 
         // now the iterator should hit every other item after s_testCount / 2.
@@ -338,23 +350,20 @@ namespace UnitTest
         index = s_testCount / 2 + 1;
         for (auto it = testArray.cbegin(); it != testArray.cend(); ++it)
         {
-            success = success && (it->index == index);
+            success = success && (it.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().index == index);
             index += 2;
         }
         EXPECT_TRUE(success);
-        handles.clear(); // cleanup remaining handles.
     }
 
     TEST_F(MultiIndexedStableDynamicArrayTests, PageIterator)
     {
         using namespace AZ;
-        AZ::MultiIndexedStableDynamicArray<TestItem> testArray;
 
         // Fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            MultiIndexedStableDynamicArray<TestItem>::Handle handle = testArray.emplace(i);
-            handle->index = i;
+            TestArrayHandle handle = testArray.insert(i, i);
             handles.push_back(AZStd::move(handle));
         }
 
@@ -368,7 +377,7 @@ namespace UnitTest
         {
             for (auto iterator = iteratorPair.first; iterator != iteratorPair.second; ++iterator)
             {
-                TestItem& item = *iterator;
+                TestItem& item = iterator.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>();
                 success = success && (item.index == index);
                 ++index;
             }
@@ -379,7 +388,7 @@ namespace UnitTest
         // Remove every other elements
         for (uint32_t i = 0; i < s_testCount; i += 2)
         {
-            handles.at(i).Free();
+            testArray.erase(handles.at(i));
         }
 
         // Now the page iterators should hit every other item (starting at 1 since 0 was freed).
@@ -389,7 +398,7 @@ namespace UnitTest
         {
             for (auto iterator = iteratorPair.first; iterator != iteratorPair.second; ++iterator)
             {
-                TestItem& item = *iterator;
+                TestItem& item = iterator.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>();
                 success = success && (item.index == index);
                 index += 2;
             }
@@ -399,7 +408,7 @@ namespace UnitTest
         // Remove the first half completely so there are a bunch of empty pages to skip
         for (uint32_t i = 0; i < s_testCount / 2; ++i)
         {
-            handles.at(i).Free();
+            testArray.erase(handles.at(i));
         }
 
         // Now the page iterators should hit every other item after s_testCount / 2.
@@ -412,13 +421,12 @@ namespace UnitTest
         {
             for (auto iterator = iteratorPair.first; iterator != iteratorPair.second; ++iterator)
             {
-                TestItem& item = *iterator;
+                TestItem& item = iterator.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>();
                 success = success && (item.index == index);
                 index += 2;
             }
         }
         EXPECT_TRUE(success);
-        handles.clear(); // cleanup remaining handles.
     }
 
 
@@ -557,42 +565,33 @@ namespace UnitTest
             int m_value = 0;
         };
 
-        AZ::MultiIndexedStableDynamicArrayHandle<TestItemImplementation> AcquireItem(uint32_t value)
+        AZ::MultiIndexedStableDynamicArrayHandle<TestElementsPerPage, MultiIndexedTestAllocator, TestItemImplementation> AcquireItem(
+            uint32_t value)
         {
-            return m_testArray.emplace(value);
+            return m_testArray.emplace(TestItemImplementation{ static_cast<int>(value) });
         }
 
-        void ReleaseItem(AZ::MultiIndexedStableDynamicArrayHandle<TestItemInterface>& interfaceHandle)
-        {
-            AZ::MultiIndexedStableDynamicArrayHandle<TestItemImplementation> temp(AZStd::move(interfaceHandle));
-            ReleaseItem(temp);
-        }
-
-        void ReleaseItem(AZ::MultiIndexedStableDynamicArrayHandle<TestItemImplementation>& handle)
+        void ReleaseItem(
+            AZ::MultiIndexedStableDynamicArrayHandle<TestElementsPerPage, MultiIndexedTestAllocator, TestItemImplementation>& handle)
         {
             m_testArray.erase(handle);
         }
 
     private:
-        AZ::MultiIndexedStableDynamicArray<TestItemImplementation> m_testArray;
+        AZ::MultiIndexedStableDynamicArray<TestElementsPerPage, MultiIndexedTestAllocator, TestItemImplementation> m_testArray;
     };
 
-    using MultiIndexedTestItemInterfaceHandle = AZ::MultiIndexedStableDynamicArrayHandle<MultiIndexedStableDynamicArrayOwner::TestItemInterface>;
-    using MultiIndexedTestItemHandle = AZ::MultiIndexedStableDynamicArrayHandle<MultiIndexedStableDynamicArrayOwner::TestItemImplementation>;
-    using MultiIndexedTestItemHandleSibling = AZ::MultiIndexedStableDynamicArrayHandle<MultiIndexedStableDynamicArrayOwner::TestItemImplementation2>;
-    using MultiIndexedTestItemHandleUnrelated = AZ::MultiIndexedStableDynamicArrayHandle<MultiIndexedStableDynamicArrayOwner::TestItemImplementationUnrelated>;
+    using MultiIndexedTestItemInterfaceHandle = AZ::MultiIndexedStableDynamicArrayHandle<TestElementsPerPage, MultiIndexedTestAllocator, MultiIndexedStableDynamicArrayOwner::TestItemInterface>;
+    using MultiIndexedTestItemHandle = AZ::MultiIndexedStableDynamicArrayHandle<TestElementsPerPage, MultiIndexedTestAllocator, MultiIndexedStableDynamicArrayOwner::TestItemImplementation>;
+    using MultiIndexedTestItemHandleSibling = AZ::MultiIndexedStableDynamicArrayHandle<TestElementsPerPage, MultiIndexedTestAllocator, MultiIndexedStableDynamicArrayOwner::TestItemImplementation2>;
+    using MultiIndexedTestItemHandleUnrelated = AZ::MultiIndexedStableDynamicArrayHandle<TestElementsPerPage, MultiIndexedTestAllocator, MultiIndexedStableDynamicArrayOwner::TestItemImplementationUnrelated>;
 
     // This class runs several scenarios around transferring ownership from one handle to another
-    template<typename SourceTestItemType, typename DestinationTestItemType>
+    template<typename SourceTestItemType>
     class MultiIndexedMoveTests
     {
-        using SourceHandle = AZ::MultiIndexedStableDynamicArrayHandle<SourceTestItemType>;
-        using DestinationHandle = AZ::MultiIndexedStableDynamicArrayHandle<DestinationTestItemType>;
+        using SourceHandle = AZ::MultiIndexedStableDynamicArrayHandle<TestElementsPerPage, MultiIndexedTestAllocator, SourceTestItemType>;
     public:
-        MultiIndexedMoveTests() 
-        { 
-            AZ_Assert(SourceTestItemType::RTTI_IsContainType(DestinationTestItemType::RTTI_Type()) || DestinationTestItemType::RTTI_IsContainType(SourceTestItemType::RTTI_Type()), "These tests expect the transfer of ownership from one handle to the other will succeed, and should only be called with compatible types.");
-        }
 
         void MoveValidSourceToNullDestination_ExpectMoveToSucceed()
         {
@@ -600,7 +599,7 @@ namespace UnitTest
                 MultiIndexedStableDynamicArrayOwner owner;
 
                 SourceHandle source = owner.AcquireItem(123);
-                DestinationHandle destination = AZStd::move(source);
+                SourceHandle destination = AZStd::move(source);
 
                 // Source handle should be invalid after move, destination handle should be valid
                 EXPECT_EQ(source.IsValid(), false);
@@ -609,11 +608,12 @@ namespace UnitTest
                 EXPECT_EQ(destination.IsNull(), false);
 
                 // The destination handle should have the value that came from the source handle
-                EXPECT_EQ(destination->GetValue(), 123);
+                SourceTestItemType& testItem = destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>();
+                EXPECT_EQ(testItem.GetValue(), 123);
 
                 // The destination handle should be pointing to real data that can be modified
-                destination->SetValue(789);
-                EXPECT_EQ(destination->GetValue(), 789);
+                destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>() = 789;
+                EXPECT_EQ(destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().GetValue(), 789);
 
                 // One item was constructed, none destructed, one modified
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, 1);
@@ -629,7 +629,7 @@ namespace UnitTest
                 MultiIndexedStableDynamicArrayOwner owner;
 
                 SourceHandle source = owner.AcquireItem(123);
-                DestinationHandle destination = owner.AcquireItem(456);
+                SourceHandle destination = owner.AcquireItem(456);
                 destination = AZStd::move(source);
 
                 // Source handle should be invalid after move, destination handle should be valid
@@ -639,11 +639,11 @@ namespace UnitTest
                 EXPECT_EQ(destination.IsNull(), false);
 
                 // The destination handle should have the value that came from the source handle
-                EXPECT_EQ(destination->GetValue(), 123);
+                EXPECT_EQ(destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().GetValue(), 123);
 
                 // The destination handle should be pointing to real data that can be modified
-                destination->SetValue(789);
-                EXPECT_EQ(destination->GetValue(), 789);
+                destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>() = 789;
+                EXPECT_EQ(destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().GetValue(), 789);
 
                 // Two items were constructed, one destructed, one modified
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, 2);
@@ -659,7 +659,7 @@ namespace UnitTest
                 MultiIndexedStableDynamicArrayOwner owner;
                 
                 SourceHandle source;
-                DestinationHandle destination = owner.AcquireItem(456);
+                SourceHandle destination = owner.AcquireItem(456);
                 destination = AZStd::move(source);
 
                 // Both handles should be invalid after move
@@ -681,7 +681,7 @@ namespace UnitTest
                 MultiIndexedStableDynamicArrayOwner owner;
 
                 SourceHandle source = owner.AcquireItem(123);
-                DestinationHandle destination = owner.AcquireItem(456);
+                SourceHandle destination = owner.AcquireItem(456);
                 destination = AZStd::move(source);
 
                 // Attempting to release the invalid source handle should be a no-op
@@ -700,37 +700,12 @@ namespace UnitTest
             EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, MultiIndexedStableDynamicArrayHandleTests::s_testItemsDestructed);
         }
 
-        void MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_ExpectMoveToSucceed()
-        {
-            {
-                MultiIndexedStableDynamicArrayOwner owner;
-
-                SourceHandle source = owner.AcquireItem(123);
-                DestinationHandle destination = owner.AcquireItem(456);
-                destination = AZStd::move(source);
-
-                // Attempting to release the invalid source handle should be a no-op
-                source.Free();
-                EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, 2);
-                EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsDestructed, 1);
-
-                // Releasing the valid destination handle should succeed
-                destination.Free();
-                EXPECT_FALSE(destination.IsValid());
-                EXPECT_TRUE(destination.IsNull());
-                // One item was constructed and destructed
-                EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, 2);
-                EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsDestructed, 2);
-            }
-            EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, MultiIndexedStableDynamicArrayHandleTests::s_testItemsDestructed);
-        }
-
         void MoveHandleAndReleaseByLettingHandleGoOutOfScope_ExpectMoveToSucceed()
         {
             {
                 MultiIndexedStableDynamicArrayOwner owner;
                 {
-                    DestinationHandle destination = owner.AcquireItem(456);
+                    SourceHandle destination = owner.AcquireItem(456);
                     {
                         SourceHandle source = owner.AcquireItem(123);
                         destination = AZStd::move(source);
@@ -753,148 +728,31 @@ namespace UnitTest
     // Move TestItem->TestItem
     TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandle_FromValidTestItemHandleToNullTestItemHandle_SourceTestItemMovedToDestination)
     {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation, MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
+        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
         moveTest.MoveValidSourceToNullDestination_ExpectMoveToSucceed();
     }
 
     TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandle_FromValidTestItemHandleToValidTestItemHandle_DestinationTestItemReleasedThenSourceTestItemMoved)
     {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation, MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
+        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
         moveTest.MoveValidSourceToValidDestination_ExpectMoveToSucceed();
     }
 
     TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandle_FromNullTestItemHandleToValidTestItemHandle_DestinationTestItemReleased)
     {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation, MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
+        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
         moveTest.MoveNullSourceToValidDestination_ExpectMoveToSucceed();
     }
 
     TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandleAndReleaseByOwner_FromValidTestItemHandleToValidTestItemHandle_DestinationTestItemReleased)
     {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation, MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
+        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
         moveTest.MoveHandleAndReleaseByOwner_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_FromValidTestItemHandleToValidTestItemHandle_DestinationTestItemReleased)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation, MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
-        moveTest.MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_ExpectMoveToSucceed();
     }
 
     TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandleAndReleaseByLettingHandleGoOutOfScope_FromValidTestItemHandleToValidTestItemHandle_DestinationTestItemReleased)
     {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation, MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
-        moveTest.MoveHandleAndReleaseByLettingHandleGoOutOfScope_ExpectMoveToSucceed();
-    }
-
-    // Move TestItem->Interface
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandle_FromValidTestItemHandleToNullInterfaceHandle_SourceTestItemMovedToDestination)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation, MultiIndexedStableDynamicArrayOwner::TestItemInterface> moveTest;
-        moveTest.MoveValidSourceToNullDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandle_FromValidTestItemHandleToValidInterfaceHandle_DestinationTestItemReleasedThenSourceTestItemMoved)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation, MultiIndexedStableDynamicArrayOwner::TestItemInterface> moveTest;
-        moveTest.MoveValidSourceToValidDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandle_FromNullTestItemHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation, MultiIndexedStableDynamicArrayOwner::TestItemInterface> moveTest;
-        moveTest.MoveNullSourceToValidDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandleAndReleaseByOwner_FromValidTestItemHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation, MultiIndexedStableDynamicArrayOwner::TestItemInterface> moveTest;
-        moveTest.MoveHandleAndReleaseByOwner_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_FromValidTestItemHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation, MultiIndexedStableDynamicArrayOwner::TestItemInterface> moveTest;
-        moveTest.MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandleAndReleaseByLettingHandleGoOutOfScope_FromValidTestItemHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation, MultiIndexedStableDynamicArrayOwner::TestItemInterface> moveTest;
-        moveTest.MoveHandleAndReleaseByLettingHandleGoOutOfScope_ExpectMoveToSucceed();
-    }
-
-    // Move Interface->TestItem
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandle_FromValidInterfaceHandleToNullTestItemHandle_SourceTestItemMovedToDestination)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemInterface, MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
-        moveTest.MoveValidSourceToNullDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandle_FromValidInterfaceHandleToValidTestItemHandle_DestinationTestItemReleasedThenSourceTestItemMoved)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemInterface, MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
-        moveTest.MoveValidSourceToValidDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandle_FromNullInterfaceHandleToValidTestItemHandle_DestinationTestItemReleased)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemInterface, MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
-        moveTest.MoveNullSourceToValidDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandleAndReleaseByOwner_FromValidInterfaceHandleToValidTestItemHandle_DestinationTestItemReleased)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemInterface, MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
-        moveTest.MoveHandleAndReleaseByOwner_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_FromValidInterfaceHandleToValidTestItemHandle_DestinationTestItemReleased)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemInterface, MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
-        moveTest.MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandleAndReleaseByLettingHandleGoOutOfScope_FromValidInterfaceHandleToValidTestItemHandle_DestinationTestItemReleased)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemInterface, MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
-        moveTest.MoveHandleAndReleaseByLettingHandleGoOutOfScope_ExpectMoveToSucceed();
-    }
-
-    // Move Interface->Interface
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandle_FromValidInterfaceHandleToNullInterfaceHandle_SourceTestItemMovedToDestination)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemInterface, MultiIndexedStableDynamicArrayOwner::TestItemInterface> moveTest;
-        moveTest.MoveValidSourceToNullDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandle_FromValidInterfaceHandleToValidInterfaceHandle_DestinationTestItemReleasedThenSourceTestItemMoved)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemInterface, MultiIndexedStableDynamicArrayOwner::TestItemInterface> moveTest;
-        moveTest.MoveValidSourceToValidDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandle_FromNullInterfaceHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemInterface, MultiIndexedStableDynamicArrayOwner::TestItemInterface> moveTest;
-        moveTest.MoveNullSourceToValidDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandleAndReleaseByOwner_FromValidInterfaceHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemInterface, MultiIndexedStableDynamicArrayOwner::TestItemInterface> moveTest;
-        moveTest.MoveHandleAndReleaseByOwner_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_FromValidInterfaceHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemInterface, MultiIndexedStableDynamicArrayOwner::TestItemInterface> moveTest;
-        moveTest.MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_ExpectMoveToSucceed();
-    }
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandleAndReleaseByLettingHandleGoOutOfScope_FromValidInterfaceHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemInterface, MultiIndexedStableDynamicArrayOwner::TestItemInterface> moveTest;
+        MultiIndexedMoveTests<MultiIndexedStableDynamicArrayOwner::TestItemImplementation> moveTest;
         moveTest.MoveHandleAndReleaseByLettingHandleGoOutOfScope_ExpectMoveToSucceed();
     }
 
@@ -903,38 +761,12 @@ namespace UnitTest
         MultiIndexedStableDynamicArrayOwner owner;
         MultiIndexedTestItemHandle handle = owner.AcquireItem(1);
         int testValue = 12;
-        handle->SetValue(testValue);
+        handle.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>() = testValue;
 
         // Self assignment should not invalidate the handle
         handle = AZStd::move(handle);
         EXPECT_TRUE(handle.IsValid());
         EXPECT_FALSE(handle.IsNull());
-        EXPECT_EQ(handle->GetValue(), testValue);
+        EXPECT_EQ(handle.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>().GetValue(), testValue);
     }
-
-    //
-    // Invalid cases
-    //
-
-    TEST_F(MultiIndexedStableDynamicArrayHandleTests, MoveHandleBetweenDifferentTypes_FromInterfaceToASiblingHandle_AssertsAndLeavesBothHandlesInvalid)
-    {
-        {
-            MultiIndexedStableDynamicArrayOwner owner;
-
-            // The the underlying type that the interface handle refers to is a TestItemImplementation
-            MultiIndexedTestItemInterfaceHandle interfaceHandle = owner.AcquireItem(1);
-
-            AZ_TEST_START_ASSERTTEST;
-            // The interface handle is referring to a TestItemImplementation, so you should not be able to move it to a handle to a TestItemImplementation2
-            MultiIndexedTestItemHandleSibling testItemHandle2FromInterface = AZStd::move(interfaceHandle);
-            AZ_TEST_STOP_ASSERTTEST(1);
-            EXPECT_FALSE(interfaceHandle.IsValid());
-            EXPECT_TRUE(interfaceHandle.IsNull());
-            EXPECT_FALSE(testItemHandle2FromInterface.IsValid());
-            EXPECT_TRUE(testItemHandle2FromInterface.IsNull());
-        }
-        EXPECT_EQ(s_testItemsConstructed, s_testItemsDestructed);
-    }
-
-
 }

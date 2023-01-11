@@ -19,8 +19,11 @@ namespace AZ
     /// forward declarations
     struct MultiIndexedStableDynamicArrayMetrics;
 
-    template<typename ValueType>
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
     class MultiIndexedStableDynamicArrayHandle;
+    
+    using MultiIndexedStableDynamicArrayPageIndexType = uint32_t;
+    constexpr uint32_t MultiIndexedStableDynamicArrayInvalidPageIndex = AZStd::numeric_limits<MultiIndexedStableDynamicArrayPageIndexType>::max();
 
     /**
     *   A MultiIndexedStableDynamicArray uses a variable number of arrays to store data. Basically this container
@@ -33,13 +36,14 @@ namespace AZ
     *   It will always place new items at the front-most slot of the first array with available space.
     * DefragmentHandle() can be called to reorganize data to reduce the amount of empty slots.
     **/
-    template<typename T, size_t ElementsPerPage = 512, class Allocator = AZStd::allocator>
+
+    // The template paramaterization is a little different than StableDynamicArray. The ElementsPerPage and Allocator
+    // come first, and do not have default arguments, so that it is explicit which arguments are part of the parameter pack (...)
+    // https://en.cppreference.com/w/cpp/language/parameter_pack
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
     class MultiIndexedStableDynamicArray
     {
-        static_assert(!(ElementsPerPage % 64) && ElementsPerPage > 0, "PageSize must be a multiple of 64.");
-        static constexpr size_t PageSize = ElementsPerPage * sizeof(T);
-
-        using value_type = T;
+        static_assert(!(ElementsPerPage % 64) && ElementsPerPage > 0, "ElementsPerPage must be a multiple of 64.");
 
         class iterator;
         class const_iterator;
@@ -47,7 +51,7 @@ namespace AZ
 
         friend iterator;
         friend const_iterator;
-        friend MultiIndexedStableDynamicArrayHandle<T>;
+        friend MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>;
 
         typedef Allocator allocator_type;
 
@@ -55,20 +59,19 @@ namespace AZ
 
     public:
 
-        using Handle = MultiIndexedStableDynamicArrayHandle<T>;
+        using Handle = MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>;
 
         MultiIndexedStableDynamicArray() = default;
         explicit MultiIndexedStableDynamicArray(allocator_type allocator);
         ~MultiIndexedStableDynamicArray();
 
         /// Reserves and constructs an item of type T and returns a handle to it.
-        Handle insert(const value_type& value);
+        Handle insert(const value_types&... value);
         /// Reserves and constructs an item of type T and returns a handle to it.
-        Handle insert(value_type&& value);
+        Handle insert(value_types&&... value);
 
-        /// Reserves and constructs an item of type T with provided args and returns a handle to it.
-        template<class ... Args>
-        Handle emplace(Args&& ... args);
+        /// Reserves and copies an item of type T with provided args and returns a handle to it.
+        Handle emplace(const value_types&... values);
 
         /// Destructs and frees the memory associated with a handle, then invalidates the handle.
         void erase(Handle& handle);
@@ -90,7 +93,8 @@ namespace AZ
         * This will change the pointer inside the handle, so should only be called when no other system
         * is holding on to a direct pointer to the same memory.
         */
-        void DefragmentHandle(Handle& handle);
+        //TODO: Not sure we can support this if we don't treat handles as unique_ptr
+        //void DefragmentHandle(Handle& handle);
 
         /// Release any empty pages that may exist to free up memory.
         void ReleaseEmptyPages();
@@ -108,6 +112,9 @@ namespace AZ
         /// Returns an iterator representing the end of the array.
         iterator end();
         const_iterator cend() const;
+
+        /// Access data via handle
+        //auto& GetElement(size_t rowIndex, Handle& handle);
 
     private:
 
@@ -127,10 +134,10 @@ namespace AZ
     };
 
     /// Private class used by MultiIndexedStableDynamicArray to manage the arrays of data.
-    template<typename T, size_t ElementsPerPage, class Allocator>
-    struct MultiIndexedStableDynamicArray<T, ElementsPerPage, Allocator>::Page
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
+    struct MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::Page
     {
-        static constexpr size_t InvalidPage = std::numeric_limits<size_t>::max();
+        static constexpr size_t InvalidPage = AZStd::numeric_limits<size_t>::max();
         static constexpr uint64_t FullBits = 0xFFFFFFFFFFFFFFFFull;
         static constexpr size_t NumUint64_t = ElementsPerPage / 64;
 
@@ -138,10 +145,10 @@ namespace AZ
         ~Page() = default;
 
         /// Reserve the next availble index and return it. If no more space is available, returns InvalidPage.
-        size_t Reserve();
+        MultiIndexedStableDynamicArrayPageIndexType Reserve();
 
         /// Free the given index so it can be reserved again.
-        void Free(T* item);
+        void Free(MultiIndexedStableDynamicArrayPageIndexType index);
 
         /// True if this page is completely full
         bool IsFull() const;
@@ -153,39 +160,39 @@ namespace AZ
         * Gets a specific item from the Page
         * Note: may return empty slots.
         */
-        T* GetItem(size_t index);
+        template<size_t RowIndex>
+        AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>& GetItem(MultiIndexedStableDynamicArrayPageIndexType index);
 
         /// Gets the number of items allocated on this page.
         size_t GetItemCount() const;
 
         size_t m_bitStartIndex = 0; ///< Index of the first uint64_t that might have space.
         Page* m_nextPage = nullptr; ///< pointer to the next page.
-        MultiIndexedStableDynamicArray<T, ElementsPerPage, Allocator>*
+        MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>*
             m_container; ///< pointer to the container this page was allocated from.
         size_t m_pageIndex = 0; ///< used for comparing pages when items are freed so the earlier page in the list can be cached.
         size_t m_itemCount = 0; ///< the number of items in the page.
         AZStd::array<uint64_t, NumUint64_t> m_bits; ///< Bits representing free slots in the array. Free slots are 1, occupied slots are 0.
-        AZStd::aligned_storage_t<PageSize, alignof(T)> m_data; ///< aligned storage for all the actual data.
+        AZStd::tuple<AZStd::aligned_storage_t<ElementsPerPage * sizeof(value_types), alignof(value_types)>...>
+            m_data; ///< aligned storage for all the actual data.
     };
 
     /// Forward iterator for MultiIndexedStableDynamicArray
-    template<typename T, size_t ElementsPerPage, class Allocator>
-    class MultiIndexedStableDynamicArray<T, ElementsPerPage, Allocator>::iterator
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
+    class MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::iterator
     {
         using this_type = iterator;
         using container_type = MultiIndexedStableDynamicArray;
 
     public:
         using iterator_category = AZStd::forward_iterator_tag;
-        using value_type = T;
-        using reference = T&;
-        using pointer = T*;
 
         iterator() = default;
         explicit iterator(Page* firstPage);
 
-        reference operator*() const;
-        pointer operator->() const;
+        Handle operator*() const;
+        template <size_t RowIndex>
+        auto& GetItem() const;
 
         bool operator==(const this_type& rhs) const;
         bool operator!=(const this_type& rhs) const;
@@ -201,50 +208,47 @@ namespace AZ
         Page* m_page = nullptr; ///< Pointer to the current page being iterrated through
         size_t m_bitGroupIndex = 0; ///< The index of the current bit group in the m_page
         uint64_t m_remainingBitsInBitGroup = 0; ///< This starts out equivalent to the bits from the current bit group, but trailing 1s are changed to 0s as the iterator increments
-        T* m_item = nullptr; ///< The pointer to the current item
+        MultiIndexedStableDynamicArrayPageIndexType m_itemIndex =
+            MultiIndexedStableDynamicArrayInvalidPageIndex; ///< The index to the current item
 
     };
 
     /// Forward const iterator for MultiIndexedStableDynamicArray
-    template<typename T, size_t ElementsPerPage, class Allocator>
-    class MultiIndexedStableDynamicArray<T, ElementsPerPage, Allocator>::const_iterator
-        : public MultiIndexedStableDynamicArray<T, ElementsPerPage, Allocator>::iterator
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
+    class MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::const_iterator
+        : public MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::iterator
     {
         using this_type = const_iterator;
         using base_type = iterator;
 
     public:
-        using reference = const T & ;
-        using pointer = const T * ;
 
         const_iterator() = default;
         explicit const_iterator(Page* firstPage);
 
-        reference operator*() const;
-        pointer operator->() const;
+        template<size_t RowIndex>
+        auto& GetItem() const;
 
         this_type& operator++();
         this_type operator++(int);
     };
 
     /// Forward iterator for an individual page in MultiIndexedStableDynamicArray
-    template<typename T, size_t ElementsPerPage, class Allocator>
-    class MultiIndexedStableDynamicArray<T, ElementsPerPage, Allocator>::pageIterator
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
+    class MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::pageIterator
     {
         using this_type = pageIterator;
         using container_type = MultiIndexedStableDynamicArray;
 
     public:
         using iterator_category = AZStd::forward_iterator_tag;
-        using value_type = T;
-        using reference = T &;
-        using pointer = T *;
 
         pageIterator() = default;
         explicit pageIterator(Page* page);
 
-        reference operator*() const;
-        pointer operator->() const;
+        Handle operator*() const;
+        template<size_t RowIndex>
+        auto& GetItem() const;
 
         bool operator==(const this_type& rhs) const;
         bool operator!=(const this_type& rhs) const;
@@ -260,7 +264,8 @@ namespace AZ
         Page* m_page = nullptr; ///< Pointer to the current page being iterrated through
         size_t m_bitGroupIndex = 0; ///< The index of the current bit group in the m_page
         uint64_t m_remainingBitsInBitGroup = 0; ///< This starts out equivalent to the bits from the current bit group, but trailing 1s are changed to 0s as the iterator increments
-        T* m_item = nullptr; ///< The pointer to the current item
+        MultiIndexedStableDynamicArrayPageIndexType m_itemIndex =
+            MultiIndexedStableDynamicArrayInvalidPageIndex; ///< The index to the current item
 
     };
 
@@ -269,14 +274,11 @@ namespace AZ
     * quickly marked as free later. Since there is no ref counting, copy is not allowed, only move. When
     * a handle is used to free it's associated data it is marked as invalid.
     */
-    template<typename ValueType>
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
     class MultiIndexedStableDynamicArrayHandle
     {
-        template<typename T, size_t ElementsPerPage, class Allocator>
-        friend class MultiIndexedStableDynamicArray;
+        friend class MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types>;
 
-        template<typename OtherType>
-        friend class MultiIndexedStableDynamicArrayHandle;
     public:
 
         /// Default constructor creates an invalid handle.
@@ -284,20 +286,12 @@ namespace AZ
 
         /// Move Constructor
         MultiIndexedStableDynamicArrayHandle(MultiIndexedStableDynamicArrayHandle&& other);
-
-        /// Move constructor that allows converting between handles of different types, as long as they are part of the same inheritance chain
-        template<typename OtherType>
-        MultiIndexedStableDynamicArrayHandle<ValueType>(MultiIndexedStableDynamicArrayHandle<OtherType>&& other);
         
         /// Destructor will also destroy its underlying data and free it from the MultiIndexedStableDynamicArray
         ~MultiIndexedStableDynamicArrayHandle();
 
         /// Move Assignment
         MultiIndexedStableDynamicArrayHandle& operator=(MultiIndexedStableDynamicArrayHandle&& other);
-
-        /// Move assignment that allows converting between handles of different types, as long as they are part of the same inheritance chain
-        template<typename OtherType>
-        MultiIndexedStableDynamicArrayHandle<ValueType>& operator=(MultiIndexedStableDynamicArrayHandle<OtherType>&& other);
 
         /// Destroy the underlying data and free it from the MultiIndexedStableDynamicArray. Marks the handle as invalid.
         void Free();
@@ -308,23 +302,21 @@ namespace AZ
         /// Returns true if this Handle doesn't contain a value (same as !IsValid()).
         bool IsNull() const;
 
-        ValueType& operator*() const;
-        ValueType* operator->() const;
+        /// Access the data associated with this handle from a particular row
+        template<size_t RowIndex>
+        auto& GetItem() const;
 
     private:
 
-        template<typename PageType>
-        MultiIndexedStableDynamicArrayHandle(ValueType* data, PageType* page);
+        using PageType = typename MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::Page;
+        MultiIndexedStableDynamicArrayHandle(PageType* page, MultiIndexedStableDynamicArrayPageIndexType index);
 
         MultiIndexedStableDynamicArrayHandle(const MultiIndexedStableDynamicArrayHandle&) = delete;
 
         void Invalidate();
 
-        using HandleDestructor = void(*)(void*);
-        HandleDestructor m_destructorCallback = nullptr; ///< Called for valid handles on delete so the underlying data can be removed from the MultiIndexedStableDynamicArray
-
-        ValueType* m_data = nullptr; ///< The actual data this handle points to in the MultiIndexedStableDynamicArrayHandle.
-        void* m_page = nullptr; ///< The page the data this Handle points to was allocated on.
+        PageType* m_page = nullptr; ///< The page the data this Handle points to was allocated on.
+        MultiIndexedStableDynamicArrayPageIndexType m_index = AZStd::numeric_limits<MultiIndexedStableDynamicArrayPageIndexType>::max();
     };
     
     /// Used for returning information about the internal state of the MultiIndexedStableDynamicArray.
