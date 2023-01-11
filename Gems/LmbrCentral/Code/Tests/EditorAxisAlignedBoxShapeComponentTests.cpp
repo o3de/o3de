@@ -122,5 +122,31 @@ namespace LmbrCentral
         // the offset should have changed because the editing was asymmetrical
         ExpectTranslationOffset(m_entity, translationOffset - AZ::Vector3::CreateAxisX(0.5f));
     }
+
+    TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, AxisAlignedBoxShapeRotatedEntityManipulatorSpaceCorrect)
+    {
+        const AZ::Transform transform(AZ::Vector3(7.0f, -6.0f, -2.0f), AZ::Quaternion(0.7f, 0.1f, -0.1f, 0.7f), 2.0f);
+        const AZ::Vector3 translationOffset(-4.0f, 4.0f, 2.0f);
+        const AZ::Vector3 boxDimensions(2.0f, 3.0f, 4.0f);
+        SetUpAxisAlignedBoxShapeComponent(m_entity, transform, translationOffset, boxDimensions);
+        EnterComponentMode(m_entity, EditorAxisAlignedBoxShapeComponentTypeId);
+
+        // position the camera so it is looking down at the box
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateRotationX(-AZ::Constants::HalfPi), AZ::Vector3(-1.0f, 2.0f, 15.0f)));
+
+        // position in world space which should allow grabbing the box's x scale manipulator
+        // the entity is rotated, but the box (and the manipulator space) should act as if it is not rotated
+        const AZ::Vector3 worldStart(1.0f, 2.0f, 2.0f);
+        const AZ::Vector3 worldEnd(3.0f, 2.0f, 2.0f);
+
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
+
+        ExpectBoxDimensions(m_entity, AZ::Vector3(3.0f, 3.0f, 4.0f));
+        // the offset should have changed because the editing was asymmetrical
+        ExpectTranslationOffset(m_entity, translationOffset + AZ::Vector3::CreateAxisX(0.5f));
+    }
 }
 

@@ -142,6 +142,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 AZ::AzTestShared
+                Gem::Atom_RPI.TestUtils.Static
                 Gem::GradientSignal.Static
                 Gem::LmbrCentral
                 Gem::LmbrCentral.Mocks
