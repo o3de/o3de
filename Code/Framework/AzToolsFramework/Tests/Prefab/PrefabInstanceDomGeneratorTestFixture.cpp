@@ -155,7 +155,6 @@ namespace UnitTest
             patchPrefix.insert(0, "/Entities/" + entityAlias);
         }
 
-        auto instanceToAddPatches = m_prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
         const Instance* curInstance = &owningInstance;
         while (curInstance != &targetInstance)
         {
