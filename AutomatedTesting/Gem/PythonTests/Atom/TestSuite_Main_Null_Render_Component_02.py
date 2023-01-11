@@ -12,7 +12,6 @@ from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.skipif(ly_test_tools.LINUX, reason="https://github.com/o3de/o3de/issues/13930")
 class TestAutomation(EditorTestSuite):
 
     @pytest.mark.test_case_id("C32078115")
@@ -39,6 +38,7 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_LookModificationAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_LookModificationAdded as test_module
 
+    @pytest.mark.skipif(ly_test_tools.LINUX, reason="https://github.com/o3de/o3de/issues/13930")
     @pytest.mark.test_case_id("C32078123")
     class AtomEditorComponents_MaterialAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_MaterialAdded as test_module
