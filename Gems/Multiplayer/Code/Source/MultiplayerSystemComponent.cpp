@@ -615,27 +615,30 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::UpdateConnections()
     {
-        AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: UpdateConnections");
-
-        AZ::JobCompletion jobCompletion;
-
-        auto sendNetworkUpdates = [&jobCompletion](IConnection& connection)
+        if (m_networkInterface->GetConnectionSet().GetConnectionCount() > 0)
         {
-            AZ::Job* job = AZ::CreateJobFunction([&connection]()
-                {
-                    if (connection.GetUserData() != nullptr)
+            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: UpdateConnections");
+
+            AZ::JobCompletion jobCompletion;
+
+            auto sendNetworkUpdates = [&jobCompletion](IConnection& connection)
+            {
+                AZ::Job* job = AZ::CreateJobFunction([&connection]()
                     {
-                        IConnectionData* connectionData = static_cast<IConnectionData*>(connection.GetUserData());
-                        connectionData->Update();
-                    }
-                }, true /*auto delete*/, nullptr);
+                        if (connection.GetUserData() != nullptr)
+                        {
+                            IConnectionData* connectionData = static_cast<IConnectionData*>(connection.GetUserData());
+                            connectionData->Update();
+                        }
+                    }, true /*auto delete*/, nullptr);
 
-            job->SetDependent(&jobCompletion);
-            job->Start();
-        };
+                job->SetDependent(&jobCompletion);
+                job->Start();
+            };
 
-        m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
-        jobCompletion.StartAndWaitForCompletion();
+            m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
+            jobCompletion.StartAndWaitForCompletion();
+        }
     }
 
     int MultiplayerSystemComponent::GetTickOrder()
