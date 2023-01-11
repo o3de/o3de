@@ -30,6 +30,7 @@
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
 #include <SceneAPI/SceneCore/Mocks/DataTypes/MockIGraphObject.h>
 #include <SceneAPI/SceneCore/SceneCoreStandaloneAllocator.h>
+#include <SceneAPI/SceneCore/Events/GraphMetaInfoBus.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
 #include <SceneAPI/SceneData/SceneDataStandaloneAllocator.h>
 
@@ -129,6 +130,23 @@ namespace UnitTest
             AZ::SceneAPI::Events::ExportProductList m_productList;
             AZStd::string m_outputDirectory;
             AZ::SceneAPI::Containers::Scene m_scene;
+        };
+
+        class MockGraphMetaInfoBus
+            : public AZ::SceneAPI::Events::GraphMetaInfoBus::Handler
+        {
+        public:
+            MockGraphMetaInfoBus()
+            {
+                AZ::SceneAPI::Events::GraphMetaInfoBus::Handler::BusConnect();
+            }
+
+            ~MockGraphMetaInfoBus()
+            {
+                AZ::SceneAPI::Events::GraphMetaInfoBus::Handler::BusDisconnect();
+            }
+
+            MOCK_CONST_METHOD2(GetAppliedPolicyNames, void(const AZ::SceneAPI::Containers::Scene&, AZStd::set<AZStd::string>&));
         };
 
         // Helpers
@@ -409,5 +427,80 @@ namespace UnitTest
         AssetImportRequestBus::BroadcastResult(result, &AssetImportRequestBus::Events::UpdateManifest, *scene, action, requester);
         EXPECT_EQ(result, ProcessingResult::Ignored);
         EXPECT_EQ(scene->GetManifest().GetEntryCount(), 0);
+    }
+
+    TEST_F(PrefabBehaviorTests, PrefabBehavior_IgnoreActors_ToggleTrueReturnsIgnored)
+    {
+        using namespace AZ::SceneAPI;
+        using namespace AZ::SceneAPI::Events;
+
+        ::testing::NiceMock<MockGraphMetaInfoBus> mockGraphMetaInfoBus;
+
+        ON_CALL(mockGraphMetaInfoBus, GetAppliedPolicyNames)
+            .WillByDefault([](const Containers::Scene&, AZStd::set<AZStd::string>& policySet)
+            {
+                policySet.insert("ActorGroupBehavior");
+            });
+
+        ASSERT_TRUE(AZ::SettingsRegistry::Get());
+        AZ::SettingsRegistry::Get()->Set("/O3DE/Preferences/Prefabs/IgnoreActors", true);
+
+        auto scene = CreateMockScene();
+        AssetImportRequest::ManifestAction action = AssetImportRequest::ManifestAction::ConstructDefault;
+        AssetImportRequest::RequestingApplication requester = {};
+
+        Behaviors::PrefabGroupBehavior prefabGroupBehavior;
+        ProcessingResult result = ProcessingResult::Failure;
+        AssetImportRequestBus::BroadcastResult(result, &AssetImportRequestBus::Events::UpdateManifest, *scene, action, requester);
+        EXPECT_EQ(result, ProcessingResult::Ignored);
+        EXPECT_EQ(scene->GetManifest().GetEntryCount(), 0);
+    }
+
+    TEST_F(PrefabBehaviorTests, PrefabBehavior_IgnoreActors_ToggleTrueReturnsSuccessWhenNoActorDetected)
+    {
+        using namespace AZ::SceneAPI;
+        using namespace AZ::SceneAPI::Events;
+
+        ::testing::NiceMock<MockGraphMetaInfoBus> mockGraphMetaInfoBus;
+
+        ASSERT_TRUE(AZ::SettingsRegistry::Get());
+        AZ::SettingsRegistry::Get()->Set("/O3DE/Preferences/Prefabs/IgnoreActors", true);
+
+        auto scene = CreateMockScene();
+        AssetImportRequest::ManifestAction action = AssetImportRequest::ManifestAction::ConstructDefault;
+        AssetImportRequest::RequestingApplication requester = {};
+
+        Behaviors::PrefabGroupBehavior prefabGroupBehavior;
+        ProcessingResult result = ProcessingResult::Failure;
+        AssetImportRequestBus::BroadcastResult(result, &AssetImportRequestBus::Events::UpdateManifest, *scene, action, requester);
+        EXPECT_EQ(result, ProcessingResult::Success);
+        EXPECT_EQ(scene->GetManifest().GetEntryCount(), 3);
+    }
+
+    TEST_F(PrefabBehaviorTests, PrefabBehavior_IgnoreActors_ToggleFalseReturnsSuccess)
+    {
+        using namespace AZ::SceneAPI;
+        using namespace AZ::SceneAPI::Events;
+
+        ::testing::NiceMock<MockGraphMetaInfoBus> mockGraphMetaInfoBus;
+
+        ON_CALL(mockGraphMetaInfoBus, GetAppliedPolicyNames)
+            .WillByDefault([](const Containers::Scene&, AZStd::set<AZStd::string>& policySet)
+            {
+                policySet.insert("ActorGroupBehavior");
+            });
+
+        ASSERT_TRUE(AZ::SettingsRegistry::Get());
+        AZ::SettingsRegistry::Get()->Set("/O3DE/Preferences/Prefabs/IgnoreActors", false);
+
+        auto scene = CreateMockScene();
+        AssetImportRequest::ManifestAction action = AssetImportRequest::ManifestAction::ConstructDefault;
+        AssetImportRequest::RequestingApplication requester = {};
+
+        Behaviors::PrefabGroupBehavior prefabGroupBehavior;
+        ProcessingResult result = ProcessingResult::Failure;
+        AssetImportRequestBus::BroadcastResult(result, &AssetImportRequestBus::Events::UpdateManifest, *scene, action, requester);
+        EXPECT_EQ(result, ProcessingResult::Success);
+        EXPECT_EQ(scene->GetManifest().GetEntryCount(), 3);
     }
 }
