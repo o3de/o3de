@@ -93,6 +93,7 @@ function(update_pip_requirements requirements_file_path unique_name)
 
     if (NOT ${PIP_RESULT} EQUAL 0)
         message(CHECK_FAIL "Failed to fetch / update python dependencies: ${PIP_OUT} - use CMAKE_MESSAGE_LOG_LEVEL to VERBOSE for more information")
+        message(FATAL_ERROR "some python dependencies failed to install/download.  This will likely cause errors further down the line, stopping.")
     else()
         string(FIND "${PIP_OUT}" "Installing collected packages" NEW_PACKAGES_INSTALLED)
 
@@ -193,6 +194,7 @@ function(ly_pip_install_local_package_editable package_folder_path pip_package_n
 
     if (NOT ${PIP_RESULT} EQUAL 0)
         message(CHECK_FAIL "Failed to install ${package_folder_path}: ${PIP_OUT} - use CMAKE_MESSAGE_LOG_LEVEL to VERBOSE for more information")
+        message(FATAL_ERROR "Failure to install a python package will likely cause errors further down the line, stopping!")
     else()
         file(TOUCH ${stamp_file})
     endif()
