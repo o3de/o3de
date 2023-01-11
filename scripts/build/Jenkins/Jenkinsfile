@@ -622,7 +622,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             }
         }
 
-        if (env.PROJECT_NAME != "AutomatedTesting") {
+        dir(ENGINE_REPOSITORY_NAME) {
             def ext = ''
             if(env.IS_UNIX) {
                 ext = '.sh'
