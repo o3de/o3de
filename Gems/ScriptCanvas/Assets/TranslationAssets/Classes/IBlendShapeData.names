@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetNormal",
-                    "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Normal"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "GetFaceVertexIndex",
-                    "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Face Vertex Index"
@@ -79,7 +77,6 @@
                 },
                 {
                     "base": "GetFaceInfo",
-                    "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Face Info"
@@ -110,7 +107,6 @@
                 },
                 {
                     "base": "GetPosition",
-                    "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Position"
@@ -141,7 +137,6 @@
                 },
                 {
                     "base": "GetUsedPointIndexForControlPoint",
-                    "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Used Point Index For Control Point"
@@ -172,7 +167,6 @@
                 },
                 {
                     "base": "GetVertexCount",
-                    "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Vertex Count"
@@ -195,7 +189,6 @@
                 },
                 {
                     "base": "GetFaceCount",
-                    "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Face Count"
@@ -218,7 +211,6 @@
                 },
                 {
                     "base": "GetControlPointIndex",
-                    "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Control Point Index"
@@ -249,7 +241,6 @@
                 },
                 {
                     "base": "GetUsedControlPointCount",
-                    "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Used Control Point Count"

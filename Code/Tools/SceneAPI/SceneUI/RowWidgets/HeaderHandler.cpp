@@ -76,6 +76,18 @@ namespace AZ
                     s_instance = nullptr;
                 }
             }
+
+            bool HeaderHandler::ModifyTooltip(QWidget* widget, QString& toolTipString)
+            {
+                HeaderWidget* headerWidget = qobject_cast<HeaderWidget*>(widget);
+                if (!headerWidget)
+                {
+                    return false;
+                }
+
+                return headerWidget->ModifyTooltip(toolTipString);
+                
+            }
         } // UI
     } // SceneAPI
 } // AZ

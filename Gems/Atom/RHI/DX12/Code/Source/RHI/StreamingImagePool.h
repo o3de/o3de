@@ -45,6 +45,7 @@ namespace AZ
             RHI::ResultCode ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) override;
             RHI::ResultCode TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel) override;
             RHI::ResultCode SetMemoryBudgetInternal(size_t newBudget) override;
+            bool SupportTiledImageInternal() const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////

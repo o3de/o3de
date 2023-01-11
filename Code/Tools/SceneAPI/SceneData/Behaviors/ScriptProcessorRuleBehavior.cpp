@@ -337,7 +337,7 @@ namespace AZ::SceneAPI::Behaviors
         using namespace AZ::SceneAPI;
 
         // is the Python interface ready?
-        if (m_editorPythonEventsInterface)
+        if (m_pythonLoaded)
         {
             return true;
         }
@@ -351,32 +351,28 @@ namespace AZ::SceneAPI::Behaviors
             return false;
         }
 
-        if (editorPythonEventsInterface->IsPythonActive() == false)
+        m_pythonLoaded = editorPythonEventsInterface->IsPythonActive();
+        if (m_pythonLoaded == false)
         {
             const bool silenceWarnings = false;
-            if (editorPythonEventsInterface->StartPython(silenceWarnings) == false)
-            {
-                editorPythonEventsInterface = nullptr;
-            }
+            m_pythonLoaded = editorPythonEventsInterface->StartPython(silenceWarnings);
         }
 
         // Python is ready?
-        if (editorPythonEventsInterface == nullptr)
-        {
-            return false;
-        }
-
-        m_editorPythonEventsInterface = editorPythonEventsInterface;
-        return true;
+        return m_pythonLoaded;
     }
 
     void ScriptProcessorRuleBehavior::UnloadPython()
     {
-        if (m_editorPythonEventsInterface)
+        if (m_pythonLoaded)
         {
-            const bool silenceWarnings = true;
-            m_editorPythonEventsInterface->StopPython(silenceWarnings);
-            m_editorPythonEventsInterface = nullptr;
+            m_pythonLoaded = false;
+            auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
+            if (editorPythonEventsInterface)
+            {
+                const bool silenceWarnings = true;
+                editorPythonEventsInterface->StopPython(silenceWarnings);
+            }
         }
     }
 
@@ -416,7 +412,11 @@ namespace AZ::SceneAPI::Behaviors
         };
 
         EditorPythonConsoleNotificationHandler logger;
-        m_editorPythonEventsInterface->ExecuteWithLock(executeCallback);
+        auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
+        if (editorPythonEventsInterface)
+        {
+            editorPythonEventsInterface->ExecuteWithLock(executeCallback);
+        }
     }
 
     bool ScriptProcessorRuleBehavior::DoPrepareForExport(Events::PreExportEventContext& context)
@@ -479,7 +479,11 @@ namespace AZ::SceneAPI::Behaviors
         };
 
         EditorPythonConsoleNotificationHandler logger;
-        m_editorPythonEventsInterface->ExecuteWithLock(executeCallback);
+        auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
+        if (editorPythonEventsInterface)
+        {
+            editorPythonEventsInterface->ExecuteWithLock(executeCallback);
+        }
 
         // if the returned scene manifest is empty then ignore the script update
         return (manifestUpdate.empty() == false);

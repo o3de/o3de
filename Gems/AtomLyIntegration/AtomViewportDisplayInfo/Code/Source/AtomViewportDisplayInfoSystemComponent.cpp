@@ -299,10 +299,6 @@ namespace AZ::Render
 
         for (const auto& pool : stats->m_pools)
         {
-            deviceReserved += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_reservedInBytes;
-            deviceResident += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_residentInBytes;
-
-            // Add m_totalResidentInBytes and m_usedResidentInBytes to the states since they are used by StreamingImagePool
             deviceReserved += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes;
             deviceResident += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_usedResidentInBytes;
         }
@@ -344,9 +340,10 @@ namespace AZ::Render
         Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetSystemStreamingPool();
         const RHI::HeapMemoryUsage& imagePoolMemoryUsage = streamingImagePool->GetRHIPool()->GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
 
-        float imagePoolUsedAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_usedResidentInBytes + imagePoolMemoryUsage.m_residentInBytes) / MB;
-        float imagePoolTotalAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_totalResidentInBytes + imagePoolMemoryUsage.m_reservedInBytes) / MB;
+        float imagePoolUsedAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_usedResidentInBytes) / MB;
+        float imagePoolTotalAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_totalResidentInBytes) / MB;
         float imagePoolBudgetMB = static_cast<float>(imagePoolMemoryUsage.m_budgetInBytes) / MB;
+        bool supportTiledImage = streamingImagePool->GetRHIPool()->SupportTiledImage();
         AZ::Color fontColor = AZ::Colors::White;
         if (streamingImagePool->IsMemoryLow())
         {
@@ -354,7 +351,7 @@ namespace AZ::Render
         }
 
         DrawLine(
-            AZStd::string::format("RPI SystemStreamingImagePool (used/allocated/budget): %.2f / %.2f/%.2f MiB", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
+            AZStd::string::format("StreamingImagePool %s (used/allocated/budget): %.2f / %.2f/%.2f MiB", supportTiledImage?"Tiled":"", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
             fontColor
         );
     }

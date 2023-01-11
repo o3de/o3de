@@ -532,12 +532,9 @@ class MultiTestSuite(object):
             runners.append(self._create_runner("run_parallel_batched_tests", cls._run_parallel_batched_tests,
                                                parallel_batched_tests, cls))
 
-            # Now that we have added the functions to the class, have pytest retrieve all the tests the class contains
-            pytest_class_instance = super().collect()[0]
-
-            # Override the istestfunction for the object, with this we make sure that the
-            # runners are always collected, even if they don't follow the "test_" naming
-            original_istestfunction = pytest_class_instance.istestfunction
+            # Override istestfunction for our own object, to collect runners even if they don't follow "test_" naming
+            # avoid declaring istestfunction on the class, so it only exists now after initial pytest collect() has run
+            original_istestfunction = self.istestfunction
 
             def istestfunction(self, obj, name):
                 ret = original_istestfunction(obj, name)
@@ -545,9 +542,10 @@ class MultiTestSuite(object):
                     ret = hasattr(obj, "marks")
                 return ret
 
-            pytest_class_instance.istestfunction = types.MethodType(istestfunction, pytest_class_instance)
-            collection = pytest_class_instance.collect()
+            self.istestfunction = types.MethodType(istestfunction, self)
 
+            # Now that we have added the functions to the class, have pytest retrieve all the tests the class contains
+            collection = super().collect()
             collected_run_pytestfuncs = [item for item in collection if
                                          # Gets function run type
                                          getattr(item.obj, "marks", {}).setdefault("run_type", None) == "run_shared"]

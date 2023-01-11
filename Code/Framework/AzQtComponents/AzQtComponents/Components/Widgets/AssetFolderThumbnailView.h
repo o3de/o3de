@@ -34,9 +34,8 @@ namespace AzQtComponents
         {
             struct Thumbnail
             {
-                int smallSize;
-                int mediumSize;
-                int largeSize;
+                int width;
+                int height;
                 qreal borderRadius;
                 int padding;
                 QColor backgroundColor;
@@ -51,6 +50,7 @@ namespace AzQtComponents
                 int width;
                 qreal borderRadius;
                 qreal caretWidth;
+                qreal caretHeight;
                 QColor backgroundColor;
                 QColor caretColor;
             };
@@ -59,10 +59,15 @@ namespace AzQtComponents
             {
                 int padding;
                 qreal borderRadius;
+                QColor borderColor;
                 QColor backgroundColor;
+                int closeButtonWidth;
             };
 
-            int margin;
+            int viewportPadding;
+            int topItemsHorizontalSpacing;
+            int topItemsVerticalSpacing;
+            int childrenItemsHorizontalSpacing;
             Thumbnail rootThumbnail;
             Thumbnail childThumbnail;
             ExpandButton expandButton;
@@ -92,6 +97,9 @@ namespace AzQtComponents
         void scrollTo(const QModelIndex& index, QAbstractItemView::ScrollHint hint) override;
         QRect visualRect(const QModelIndex& index) const override;
 
+        Q_SIGNAL void IndexClicked(const QModelIndex& idx);
+        Q_SIGNAL void IndexDoubleClicked(const QModelIndex& idx);
+
     protected:
         friend class Style;
 
@@ -107,6 +115,7 @@ namespace AzQtComponents
 
         void paintEvent(QPaintEvent* event) override;
         void mousePressEvent(QMouseEvent* event) override;
+        void mouseDoubleClickEvent(QMouseEvent* event) override;
 
     private:
         void paintChildFrames(QPainter* painter) const;

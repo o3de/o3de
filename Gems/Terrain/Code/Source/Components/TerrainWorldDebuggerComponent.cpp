@@ -261,22 +261,25 @@ namespace Terrain
 
     void TerrainWorldDebuggerComponent::DrawLastDirtyRegion(AzFramework::DebugDisplayRequests& debugDisplay)
     {
+        using DataChangedMask = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask;
+
         if (!m_configuration.m_drawLastDirtyRegion)
         {
             return;
         }
 
         // Draw a translucent box around the terrain dirty region
-        const AZ::Color dirtyRegionColor(1.0f, 0.0f, 1.0f, 0.25f);
+        const AZ::Color dirtyRegionColor(
+            (m_lastDirtyData & (DataChangedMask::HeightData | DataChangedMask::Settings)) != DataChangedMask::None ? 1.0f : 0.0f,
+            (m_lastDirtyData & (DataChangedMask::SurfaceData | DataChangedMask::Settings)) != DataChangedMask::None ? 1.0f : 0.0f,
+            (m_lastDirtyData & (DataChangedMask::ColorData | DataChangedMask::Settings)) != DataChangedMask::None ? 1.0f : 0.0f,
+            0.25f);
 
         if (m_lastDirtyRegion.IsValid())
         {
             debugDisplay.SetColor(dirtyRegionColor);
             debugDisplay.DrawSolidBox(m_lastDirtyRegion.GetMin(), m_lastDirtyRegion.GetMax());
         }
-
-        // Clear it out until something goes dirty again.
-        m_lastDirtyRegion = AZ::Aabb::CreateNull();
     }
 
     void TerrainWorldDebuggerComponent::DrawWorldBounds(AzFramework::DebugDisplayRequests& debugDisplay)
@@ -650,14 +653,12 @@ namespace Terrain
     void TerrainWorldDebuggerComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
         m_lastDirtyRegion = dirtyRegion;
+        m_lastDirtyData = dataChangedMask;
 
-        if (dataChangedMask & (TerrainDataChangedMask::Settings | TerrainDataChangedMask::HeightData))
+        if ((dataChangedMask & (TerrainDataChangedMask::Settings | TerrainDataChangedMask::HeightData)) != TerrainDataChangedMask::None)
         {
             MarkDirtySectors(dirtyRegion);
-        }
 
-        if (dataChangedMask & TerrainDataChangedMask::Settings)
-        {
             // Any time the world bounds potentially changes, notify that the terrain debugger's visibility bounds also changed.
             AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
                 &AzFramework::IEntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());

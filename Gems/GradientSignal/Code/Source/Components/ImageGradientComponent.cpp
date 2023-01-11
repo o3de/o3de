@@ -189,12 +189,12 @@ namespace GradientSignal
 
     bool ImageGradientConfig::IsImageAssetReadOnly() const
     {
-        return m_imageModificationActive;
+        return m_numImageModificationsActive > 0;
     }
 
     bool ImageGradientConfig::AreImageOptionsReadOnly() const
     {
-        return m_imageModificationActive || !(m_imageAsset.GetId().IsValid());
+        return (m_numImageModificationsActive > 0) || !(m_imageAsset.GetId().IsValid());
     }
 
     AZStd::string ImageGradientConfig::GetImageAssetPropertyName() const
@@ -246,7 +246,6 @@ namespace GradientSignal
 
             behaviorContext->Class<ImageGradientComponent>()
                 ->RequestBus("ImageGradientRequestBus")
-                ->RequestBus("ImageGradientModificationBus")
                 ;
 
             behaviorContext->EBus<ImageGradientRequestBus>("ImageGradientRequestBus")
@@ -264,20 +263,6 @@ namespace GradientSignal
                 ->Event("GetTilingY", &ImageGradientRequestBus::Events::GetTilingY)
                 ->Event("SetTilingY", &ImageGradientRequestBus::Events::SetTilingY)
                 ->VirtualProperty("TilingY", "GetTilingY", "SetTilingY")
-            ;
-
-            behaviorContext->EBus<ImageGradientModificationBus>("ImageGradientModificationBus")
-                ->Attribute(AZ::Script::Attributes::Category, "Vegetation/ImageGradient/Modifications")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Module, "vegetation.imageGradient.modifications")
-                ->Event("StartImageModification", &ImageGradientModificationBus::Events::StartImageModification)
-                ->Event("EndImageModification", &ImageGradientModificationBus::Events::EndImageModification)
-                ->Event("BeginBrushStroke", &ImageGradientModificationBus::Events::BeginBrushStroke)
-                ->Event("EndBrushStroke", &ImageGradientModificationBus::Events::EndBrushStroke)
-                ->Event("IsInBrushStroke", &ImageGradientModificationBus::Events::IsInBrushStroke)
-                ->Event("ResetBrushStrokeTracking", &ImageGradientModificationBus::Events::ResetBrushStrokeTracking)
-                ->Event("PaintToLocation", &ImageGradientModificationBus::Events::PaintToLocation)
-                ->Event("SmoothToLocation", &ImageGradientModificationBus::Events::SmoothToLocation)
             ;
         }
     }
@@ -649,6 +634,7 @@ namespace GradientSignal
         GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
 
         ImageGradientRequestBus::Handler::BusConnect(GetEntityId());
+        AzFramework::PaintBrushNotificationBus::Handler::BusConnect({ GetEntityId(), GetId() });
         ImageGradientModificationBus::Handler::BusConnect(GetEntityId());
 
         // Invoke the QueueLoad before connecting to the AssetBus, so that
@@ -669,6 +655,7 @@ namespace GradientSignal
 
         AZ::Data::AssetBus::Handler::BusDisconnect();
         ImageGradientModificationBus::Handler::BusDisconnect();
+        AzFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
         ImageGradientRequestBus::Handler::BusDisconnect();
         GradientTransformNotificationBus::Handler::BusDisconnect();
 
@@ -747,91 +734,65 @@ namespace GradientSignal
         m_gradientTransform = newTransform;
     }
 
+    void ImageGradientComponent::OnPaintModeBegin()
+    {
+        StartImageModification();
+    }
+
+    void ImageGradientComponent::OnPaintModeEnd()
+    {
+        EndImageModification();
+    }
+
+    AZ::Color ImageGradientComponent::OnGetColor(const AZ::Vector3& brushCenter) const
+    {
+        // Get the gradient value at the given point.
+        // We use "GetPixelValuesByPosition" instead of "GetGradientValue" because we want to select unscaled, unsmoothed values.
+        float gradientValue = 0.0f;
+        GetPixelValuesByPosition(AZStd::span<const AZ::Vector3>(&brushCenter, 1), AZStd::span<float>(&gradientValue, 1));
+
+        return AZ::Color(gradientValue, gradientValue, gradientValue, 1.0f);
+    }
+
     void ImageGradientComponent::StartImageModification()
     {
-        m_imageModifier = AZStd::make_unique<ImageGradientModifier>(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
-        m_paintBrush = AZStd::make_unique<AzFramework::PaintBrush>(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
-        m_paintBrush->BeginPaintMode();
-
-        m_configuration.m_imageModificationActive = true;
+        if (!m_imageModifier)
+        {
+            AZ_Assert(m_configuration.m_numImageModificationsActive == 0,
+                "The imageModifier should exist since image modifications are already currently active.");
+            m_imageModifier = AZStd::make_unique<ImageGradientModifier>(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        }
 
         if (m_modifiedImageData.empty())
         {
             CreateImageModificationBuffer();
         }
+
+        m_configuration.m_numImageModificationsActive++;
     }
 
     void ImageGradientComponent::EndImageModification()
     {
-        m_paintBrush->EndPaintMode();
-        m_paintBrush = {};
-        m_imageModifier = {};
-        m_configuration.m_imageModificationActive = false;
-    }
+        AZ_Assert(m_configuration.m_numImageModificationsActive > 0, "Mismatched calls to StartImageModification / EndImageModification");
 
-    void ImageGradientComponent::BeginBrushStroke(const AzFramework::PaintBrushSettings& brushSettings)
-    {
-        AZ_Error("ImageGradientComponent", m_paintBrush, "StartImageModification() needs to be called first to use the paint controls.");
-        if (m_paintBrush)
+        m_configuration.m_numImageModificationsActive--;
+
+        if (m_configuration.m_numImageModificationsActive == 0)
         {
-            m_paintBrush->BeginBrushStroke(brushSettings);
+            m_imageModifier = {};
         }
     }
-
-    void ImageGradientComponent::EndBrushStroke()
-    {
-        AZ_Error("ImageGradientComponent", m_paintBrush, "StartImageModification() needs to be called first to use the paint controls.");
-        if (m_paintBrush)
-        {
-            m_paintBrush->EndBrushStroke();
-        }
-    }
-
-    bool ImageGradientComponent::IsInBrushStroke() const
-    {
-        if (m_paintBrush)
-        {
-            return m_paintBrush->IsInBrushStroke();
-        }
-
-        return false;
-    }
-
-    void ImageGradientComponent::ResetBrushStrokeTracking()
-    {
-        AZ_Error("ImageGradientComponent", m_paintBrush, "StartImageModification() needs to be called first to use the paint controls.");
-        if (m_paintBrush)
-        {
-            m_paintBrush->ResetBrushStrokeTracking();
-        }
-    }
-
-    void ImageGradientComponent::PaintToLocation(
-        const AZ::Vector3& brushCenter, const AzFramework::PaintBrushSettings& brushSettings)
-    {
-        AZ_Error("ImageGradientComponent", m_paintBrush, "StartImageModification() needs to be called first to use the paint controls.");
-        if (m_paintBrush)
-        {
-            m_paintBrush->PaintToLocation(brushCenter, brushSettings);
-        }
-    }
-
-    void ImageGradientComponent::SmoothToLocation(
-        const AZ::Vector3& brushCenter, const AzFramework::PaintBrushSettings& brushSettings)
-    {
-        AZ_Error("ImageGradientComponent", m_paintBrush, "StartImageModification() needs to be called first to use the paint controls.");
-        if (m_paintBrush)
-        {
-            m_paintBrush->SmoothToLocation(brushCenter, brushSettings);
-        }
-    }
-
 
     AZStd::vector<float>* ImageGradientComponent::GetImageModificationBuffer()
     {
         // This will get replaced with safe/robust methods of modifying the image as paintbrush functionality
         // continues to get added to the Image Gradient component.
         return &m_modifiedImageData;
+    }
+
+    bool ImageGradientComponent::ImageIsModified() const
+    {
+        return !m_modifiedImageData.empty() && m_imageIsModified;
     }
 
     void ImageGradientComponent::CreateImageModificationBuffer()
@@ -845,6 +806,9 @@ namespace GradientSignal
 
         const auto width = m_imageDescriptor.m_size.m_width;
         const auto height = m_imageDescriptor.m_size.m_height;
+
+        // Track that the image hasn't been modified yet, even though we've created a modification buffer.
+        m_imageIsModified = false;
 
         if (m_modifiedImageData.empty())
         {
@@ -883,8 +847,9 @@ namespace GradientSignal
     void ImageGradientComponent::ClearImageModificationBuffer()
     {
         AZ_Assert(!ModificationBufferIsActive(), "Clearing modified image data while it's still in use as the active asset!");
-        AZ_Assert(!m_configuration.m_imageModificationActive, "Clearing modified image data while in modification mode!")
+        AZ_Assert(m_configuration.m_numImageModificationsActive == 0, "Clearing modified image data while in modification mode!")
         m_modifiedImageData.resize(0);
+        m_imageIsModified = false;
     }
 
     bool ImageGradientComponent::ModificationBufferIsActive() const
@@ -1234,18 +1199,6 @@ namespace GradientSignal
         }
     }
 
-    void ImageGradientComponent::SetPixelValueByPosition(const AZ::Vector3& position, float value)
-    {
-        PixelIndex pixelIndex;
-        GetPixelIndicesForPositions(AZStd::span<const AZ::Vector3>(&position, 1), AZStd::span<PixelIndex>(&pixelIndex, 1));
-        SetPixelValuesByPixelIndex(AZStd::span<const PixelIndex>(&pixelIndex, 1), AZStd::span<float>(&value, 1));
-    }
-
-    void ImageGradientComponent::SetPixelValueByPixelIndex(const PixelIndex& position, float value)
-    {
-        SetPixelValuesByPixelIndex(AZStd::span<const PixelIndex>(&position, 1), AZStd::span<float>(&value, 1));
-    }
-
     void ImageGradientComponent::SetPixelValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values)
     {
         AZStd::vector<PixelIndex> pixelIndices(positions.size());
@@ -1315,6 +1268,9 @@ namespace GradientSignal
                         // If these expand, we'll need to recalculate our auto-scale multiplier and offset and refresh the entire image.
                         m_minValue = AZStd::min(m_minValue, values[index]);
                         m_maxValue = AZStd::max(m_maxValue, values[index]);
+
+                        // Track that we've modified the image
+                        m_imageIsModified = true;
                     }
                 }
 
@@ -1345,6 +1301,9 @@ namespace GradientSignal
 
                         // Modify the correct pixel in our modification buffer.
                         m_modifiedImageData[(y * width) + x] = values[index];
+
+                        // Track that we've modified the image
+                        m_imageIsModified = true;
                     }
                 }
             }

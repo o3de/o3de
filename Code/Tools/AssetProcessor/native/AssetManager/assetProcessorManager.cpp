@@ -1373,7 +1373,59 @@ namespace AssetProcessor
 
             for (const AZStd::string& affectedSourceFile : processedAsset.m_response.m_sourcesToReprocess)
             {
-                AssessFileInternal(affectedSourceFile.c_str(), false);
+                // the data coming in m_sourcesToReprocess comes directly from a builder, we have to sanitize, check, etc.
+                QString sanitizedFilePath = AssetUtilities::NormalizeFilePath(QString::fromUtf8(affectedSourceFile.c_str())).toUtf8().constData();
+                if (IsInCacheFolder(sanitizedFilePath.toUtf8().constData()))
+                {
+                    // this is a silent notification, that is, it makes it into the log but not
+                    // into any ui display or console.
+                    AZ_TracePrintf(AssetProcessor::DebugChannel,
+                        "File \"%s\" \n"
+                        "Builder UUID \"%s\" \n"
+                        "requested reprocess \"%s\" \n"
+                        "but that file lives in the Cache folder.  \nIgnored.\n",
+                        processedAsset.m_entry.m_sourceAssetReference.AbsolutePath().c_str(),
+                        processedAsset.m_entry.m_builderGuid.ToFixedString().c_str(),
+                        affectedSourceFile.c_str());
+                    continue;
+                }
+                // is it even in a scan folder?
+                QString watchedFolder;
+                QString relPath;
+                if (!m_platformConfig->ConvertToRelativePath(sanitizedFilePath, watchedFolder, relPath))
+                {
+                    // this is probably a mistake by either the builder author, or asset author, so
+                    // it gets surfaced to the UI.
+                    AZ_Warning(
+                        AssetProcessor::DebugChannel,
+                        false,
+                        "File \"%s\" \n"
+                        "Builder UUID \"%s\" \n"
+                        "requested reprocess \"%s\" \n"
+                        "That file does not live in any folder monitored by AP. \nIgnored.\n",
+                        processedAsset.m_entry.m_sourceAssetReference.AbsolutePath().c_str(),
+                        processedAsset.m_entry.m_builderGuid.ToFixedString().c_str(),
+                        affectedSourceFile.c_str());
+                    continue;
+                }
+
+                if (m_platformConfig->IsFileExcluded(sanitizedFilePath))
+                {
+                    // This is a silent notification, that is, it makes it into the log but not
+                    // into any ui display or console.
+                    AZ_TracePrintf(
+                        AssetProcessor::DebugChannel,
+                        "File \"%s\" \n"
+                        "Builder UUID \"%s\" \n"
+                        "requested reprocess \"%s\" \n"
+                        "That file is excluded by an exclude rule.  \nIgnored.\n",
+                        processedAsset.m_entry.m_sourceAssetReference.AbsolutePath().c_str(),
+                        processedAsset.m_entry.m_builderGuid.ToFixedString().c_str(),
+                        affectedSourceFile.c_str());
+                    continue;
+                }
+
+                AssessFileInternal(sanitizedFilePath.toUtf8().constData(), false);
             }
 
             // If there are any new or updated products, trigger any source dependencies which depend on a specific product
@@ -1506,8 +1558,8 @@ namespace AssetProcessor
                 {
                     // Now that we've verified that the output doesn't conflict with an existing source
                     // And we've updated the database, trigger processing the output
-
-                    AssessFileInternal(productPath.GetIntermediatePath().c_str(), false);
+                    Q_EMIT IntermediateAssetCreated(QString::fromUtf8(productPath.GetIntermediatePath().c_str()));
+                    AssessFileInternal(QString::fromUtf8(productPath.GetIntermediatePath().c_str()), false);
                 }
             }
 
@@ -2604,8 +2656,19 @@ namespace AssetProcessor
             return;
         }
 
+        // During unit tests, it can be the case that cache folders are actually in a temp folder structure
+        // on OSX this is /var/... , but that is a symlink for real path /private/var.  In some circumstances file monitor
+        // for deletions may report the canonical path (/private/var/...) when the 'cache root' or watched folder
+        // is actually /var/...
+        // to account for this, we check if the canonical path to the cache root is not the same as the path we are running at
+        // if they are different, incoming files may need a fixup that involves replacing their canonical paths (de-symlinked)
+        // with the paths we expect (symlinked).
+        
         QString canonicalRootDir = AssetUtilities::NormalizeFilePath(m_cacheRootDir.canonicalPath());
-
+        
+        // we only need to do a fixup if the root dir is not the same as the canonical root dir.
+        bool needCanonicalFixup = canonicalRootDir != m_cacheRootDir.canonicalPath();
+        
         FileExamineContainer swapped;
         m_filesToExamine.swap(swapped); // makes it okay to call CheckSource(...)
 
@@ -2633,30 +2696,13 @@ namespace AssetProcessor
 
             // examination occurs here.
             // first, is it a source or is it a product in the cache folder?
-
-
-            QString normalizedPath = examineFile.m_fileName.toUtf8().constData();
-
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "ProcessFilesToExamineQueue: %s delete: %s.\n", examineFile.m_fileName.toUtf8().constData(), examineFile.m_isDelete ? "true" : "false");
-
-            // debug-only check to make sure our assumption about normalization is correct.
+            QString normalizedPath = examineFile.m_fileName;
+             // debug-only check to make sure our assumption about normalization is correct.
             Q_ASSERT(normalizedPath == AssetUtilities::NormalizeFilePath(normalizedPath));
-
-            // if its in the cache root then its a product file:
-            bool isProductFile = IsInCacheFolder(examineFile.m_fileName.toUtf8().constData());
-#if AZ_TRAIT_OS_PLATFORM_APPLE
-            // a case can occur on apple platforms in the temp folders
-            // where there is a symlink and /var/folders/.../ is also known
-            // as just /private/var/folders/...
-            // this tends to happen for delete notifies and we can't canonicalize incoming delete notifies
-            // because the file has already been deleted and thus its canonical path cannot be found.  Instead
-            // we will use the canonical path of the cache root dir instead, and then alter the file
-            // to have the current cache root dir instead.
-            if ((!isProductFile)&&(!canonicalRootDir.isEmpty()))
+            
+            if (needCanonicalFixup)
             {
-                // try the canonicalized form:
-                isProductFile = examineFile.m_fileName.startsWith(canonicalRootDir);
-                if (isProductFile)
+                if (normalizedPath.startsWith(canonicalRootDir))
                 {
                     // found in canonical location, update its normalized path
                     QString withoutCachePath = normalizedPath.mid(canonicalRootDir.length() + 1);
@@ -2664,7 +2710,12 @@ namespace AssetProcessor
                     normalizedPath = AssetUtilities::NormalizeFilePath(m_cacheRootDir.absoluteFilePath(withoutCachePath));
                 }
             }
-#endif // AZ_TRAIT_OS_PLATFORM_APPLE
+
+            AZ_TracePrintf(AssetProcessor::DebugChannel, "ProcessFilesToExamineQueue: %s delete: %s.\n", examineFile.m_fileName.toUtf8().constData(), examineFile.m_isDelete ? "true" : "false");
+
+            // if its in the cache root then its a product file:
+            bool isProductFile = IsInCacheFolder(normalizedPath.toUtf8().constData());
+
             // strip the engine off it so that its a "normalized asset path" with appropriate slashes and such:
             if (isProductFile)
             {
@@ -2914,7 +2965,7 @@ namespace AssetProcessor
 
                 // its an input file or a file we don't care about...
                 // note that if the file now exists, we have to treat it as an input asset even if it came in as a delete.
-                if (examineFile.m_isDelete && !QFile::exists(examineFile.m_fileName))
+                if (examineFile.m_isDelete && !QFile::exists(normalizedPath))
                 {
                     AZ_TracePrintf(AssetProcessor::DebugChannel, "Input was deleted and no overrider was found.\n");
 
@@ -3013,6 +3064,11 @@ namespace AssetProcessor
     // ----------------------------------------------------
     // ------------- File change Queue --------------------
     // ----------------------------------------------------
+
+    // note that this function is on the "hot path" of file analysis
+    // during startup, and should avoid logging, sleeping, or doing
+    // any more work than is necessary (Log only in error or uncommon
+    // circumstances).
     void AssetProcessorManager::AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner)
     {
         if (m_quitRequested)
@@ -3063,8 +3119,6 @@ namespace AssetProcessor
 
         m_AssetProcessorIsBusy = true;
         Q_EMIT AssetProcessorManagerIdleState(false);
-
-        AZ_TracePrintf(AssetProcessor::DebugChannel, "AssesFileInternal: %s %s\n", normalizedFullFile.toUtf8().constData(), isDelete ? "true" : "false");
 
         // this function is the raw function that gets called from the file monitor
         // whenever an asset has been modified or added (not deleted)
@@ -3209,6 +3263,21 @@ namespace AssetProcessor
     // the scanner should be omitting directory changes.
     void AssetProcessorManager::AssessFilesFromScanner(QSet<AssetFileInfo> filePaths)
     {
+        if (m_initialScanSkippingFeature)
+        {
+            for (const AssetFileInfo& fileInfo : filePaths)
+            {
+                AddKnownFoldersRecursivelyForFile(fileInfo.m_filePath, fileInfo.m_scanFolder->ScanPath());
+            }
+
+            m_sourceFilesInDatabase.clear();
+            m_fileModTimes.clear();
+            m_fileHashes.clear();
+
+            m_initialScanSkippingFeature = false;
+            return;
+        }
+
         AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Received %i files from the scanner.  Assessing...\n", static_cast<int>(filePaths.size()));
         AssetProcessor::StatsCapture::BeginCaptureStat("WarmingFileCache");
         WarmUpFileCache(filePaths);
@@ -3265,6 +3334,20 @@ namespace AssetProcessor
         {
             AddKnownFoldersRecursivelyForFile(folder.m_filePath, folder.m_scanFolder->ScanPath());
         }
+    }
+
+    // warm up the excluded folder cache with the data from the scanner so that it is not necessary to rescan.
+    void AssetProcessorManager::RecordExcludesFromScanner(QSet<AssetFileInfo> excludePaths)
+    {
+        AZStd::unordered_set<AZStd::string> excludedFolders;
+        for (const auto& folder : excludePaths)
+        {
+            if (folder.m_isDirectory)
+            {
+                excludedFolders.insert(folder.m_filePath.toUtf8().constData());
+            }
+        }
+        m_excludedFolderCache->InitializeFromKnownSet(AZStd::move(excludedFolders));
     }
 
     bool AssetProcessorManager::CanSkipProcessingFile(const AssetFileInfo &fileInfo, AZ::u64& fileHashOut)
@@ -4226,23 +4309,23 @@ namespace AssetProcessor
             for (const AssetProcessor::JobDependencyInternal& jobDependency : jobToCheck.m_jobDependencyList)
             {
                 // figure out whether we can resolve the dependency or not:
-                QStringList resolvedDependencyList;
+                QStringList resolvedWildcardDependencies;
                 QString resolvedDatabaseName;
 
                 if (!ResolveSourceFileDependencyPath(
-                    jobDependency.m_jobDependency.m_sourceFile, resolvedDatabaseName, resolvedDependencyList))
+                    jobDependency.m_jobDependency.m_sourceFile, resolvedDatabaseName, resolvedWildcardDependencies))
                 {
                     continue;
                 }
 
                 AZStd::string subIds = jobDependency.m_jobDependency.ConcatenateSubIds();
 
-                for (const auto& thisEntry : resolvedDependencyList)
+                for (const auto& thisEntry : resolvedWildcardDependencies)
                 {
                     SourceFileDependencyEntry newDependencyEntry(
                         builderId, entry.m_sourceFileInfo.m_uuid, PathOrUuid::Create(thisEntry.toUtf8().constData()),
                         JobDependencyType,
-                        false,
+                        false, // Wildcard dependencies never come from an AssetId
                         subIds.c_str());
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
                 }
@@ -4259,7 +4342,7 @@ namespace AssetProcessor
                         AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
                         ? SourceFileDependencyEntry::DEP_SourceLikeMatch
                         : JobDependencyType,
-                        !entry.m_sourceFileInfo.m_uuid.IsNull(),
+                        !jobDependency.m_jobDependency.m_sourceFile.m_sourceFileDependencyUUID.IsNull(),
                         subIds.c_str());
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
                 }
@@ -4271,9 +4354,9 @@ namespace AssetProcessor
         for (const AZStd::pair<AZ::Uuid, AssetBuilderSDK::SourceFileDependency>& sourceDependency : entry.m_sourceFileDependencies)
         {
             // figure out whether we can resolve the dependency or not:
-            QStringList resolvedDependencyList;
+            QStringList resolvedWildcardDependencies;
             QString resolvedDatabaseName;
-            if (!ResolveSourceFileDependencyPath(sourceDependency.second, resolvedDatabaseName, resolvedDependencyList))
+            if (!ResolveSourceFileDependencyPath(sourceDependency.second, resolvedDatabaseName, resolvedWildcardDependencies))
             {
                 // ResolveDependencyPath should only fail in a data error, otherwise it always outputs something
                 continue;
@@ -4284,7 +4367,7 @@ namespace AssetProcessor
                 "This is unnecessary and the builder should be updated to only emit the Job Dependency.";
 
             // Handle multiple resolves (wildcard dependencies)
-            for (const auto& thisEntry : resolvedDependencyList)
+            for (const auto& thisEntry : resolvedWildcardDependencies)
             {
                 if (jobDependenciesDeduplication.contains(
                     DependencyDeduplication{ sourceDependency.first,
@@ -4312,7 +4395,7 @@ namespace AssetProcessor
                         entry.m_sourceFileInfo.m_uuid,
                         PathOrUuid::Create(thisEntry.toUtf8().constData()),
                         SourceFileDependencyEntry::DEP_SourceToSource,
-                        false,
+                        false, // Wildcard dependencies never come from an AssetId
                         "");
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
                 }
@@ -5016,6 +5099,11 @@ namespace AssetProcessor
     void AssetProcessorManager::SetEnableModtimeSkippingFeature(bool enable)
     {
         m_allowModtimeSkippingFeature = enable;
+    }
+
+    void AssetProcessorManager::SetInitialScanSkippingFeature(bool enable)
+    {
+        m_initialScanSkippingFeature = enable;
     }
 
     void AssetProcessorManager::SetQueryLogging(bool enableLogging)
