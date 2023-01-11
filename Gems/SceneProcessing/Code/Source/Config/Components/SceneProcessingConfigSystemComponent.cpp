@@ -39,21 +39,54 @@ namespace AZ
             ActivateSceneModule(SceneProcessing::s_sceneCoreModule);
             ActivateSceneModule(SceneProcessing::s_sceneDataModule);
             ActivateSceneModule(SceneProcessing::s_sceneBuilderModule);
-            
-            // Defaults in case there's no config setup
-            m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]1(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh1", true));
-            m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]2(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh2", true));
-            m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]3(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh3", true));
-            m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]4(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh4", true));
-            m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]5(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh5", true));
-            m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Pp][Hh][Yy][Ss](_optimized)?$", PatternMatcher::MatchApproach::Regex, "PhysicsMesh", true));
-            m_softNames.push_back(aznew NodeSoftNameSetting("_ignore", PatternMatcher::MatchApproach::PostFix, "Ignore", false));
-            // If the filename ends with "_anim" this will mark all nodes as "Ignore" unless they're derived from IAnimationData. This will
-            // cause only animations to be exported from the source scene file even if there's other data available.
-            m_softNames.push_back(aznew FileSoftNameSetting("_anim", PatternMatcher::MatchApproach::PostFix, "Ignore", false,
-                { FileSoftNameSetting::GraphType(SceneAPI::DataTypes::IAnimationData::TYPEINFO_Name()) }));
 
+            PopulateDefaultSoftNameSettings();
             m_UseCustomNormals = true;
+        }
+
+        void SceneProcessingConfigSystemComponent::PopulateDefaultSoftNameSettings()
+        {
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                AZStd::vector<NodeSoftNameSetting*> nodeSoftNameSettings;
+                settingsRegistry->GetObject(nodeSoftNameSettings, AssetProcessorDefaultNodeSoftNameSettingsKey);
+                for (NodeSoftNameSetting* nodeSoftNameSetting : nodeSoftNameSettings)
+                {
+                    if (!AddSoftName(nodeSoftNameSetting))
+                    {
+                        delete nodeSoftNameSetting;
+                        nodeSoftNameSetting = nullptr;
+                    }
+                }
+
+                AZStd::vector<FileSoftNameSetting*> fileSoftNameSettings;
+                settingsRegistry->GetObject(fileSoftNameSettings, AssetProcessorDefaultFileSoftNameSettingsKey);
+                for (FileSoftNameSetting* fileSoftNameSetting : fileSoftNameSettings)
+                {
+                    if (!AddSoftName(fileSoftNameSetting))
+                    {
+                        delete fileSoftNameSetting;
+                        fileSoftNameSetting = nullptr;
+                    }
+                }
+            }
+
+            if (m_softNames.empty())
+            {
+                // Defaults in case there's no config setup
+                m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]_?1(_optimized)?$", SceneAPI::SceneCore::PatternMatcher::MatchApproach::Regex, "LODMesh1", true));
+                m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]_?2(_optimized)?$", SceneAPI::SceneCore::PatternMatcher::MatchApproach::Regex, "LODMesh2", true));
+                m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]_?3(_optimized)?$", SceneAPI::SceneCore::PatternMatcher::MatchApproach::Regex, "LODMesh3", true));
+                m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]_?4(_optimized)?$", SceneAPI::SceneCore::PatternMatcher::MatchApproach::Regex, "LODMesh4", true));
+                m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]_?5(_optimized)?$", SceneAPI::SceneCore::PatternMatcher::MatchApproach::Regex, "LODMesh5", true));
+                m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Pp][Hh][Yy][Ss](_optimized)?$", SceneAPI::SceneCore::PatternMatcher::MatchApproach::Regex, "PhysicsMesh", true));
+                m_softNames.push_back(aznew NodeSoftNameSetting("_ignore", SceneAPI::SceneCore::PatternMatcher::MatchApproach::PostFix, "Ignore", false));
+                // If the filename ends with "_anim" this will mark all nodes as "Ignore" unless they're derived from IAnimationData. This will
+                // cause only animations to be exported from the source scene file even if there's other data available.
+                m_softNames.push_back(aznew FileSoftNameSetting("_anim", SceneAPI::SceneCore::PatternMatcher::MatchApproach::PostFix, "Ignore", false,
+                    { FileSoftNameSetting::GraphType(SceneAPI::DataTypes::IAnimationData::TYPEINFO_Name()) }));
+            }
         }
 
         void SceneProcessingConfigSystemComponent::Activate()

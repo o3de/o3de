@@ -176,6 +176,8 @@ namespace AZ
                     ->Field("graphTypes", &FileSoftNameSetting::m_graphTypes)
                     ->Field("inclusiveList", &FileSoftNameSetting::m_inclusiveList);
 
+                serialize->RegisterGenericType<AZStd::vector<FileSoftNameSetting*>>();
+
                 EditContext* editContext = serialize->GetEditContext();
                 if (editContext)
                 {

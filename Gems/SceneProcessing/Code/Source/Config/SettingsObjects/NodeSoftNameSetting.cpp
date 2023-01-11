@@ -31,6 +31,8 @@ namespace AZ
                     ->Version(1)
                     ->Field("includeChildren", &NodeSoftNameSetting::m_includeChildren);
 
+                serialize->RegisterGenericType<AZStd::vector<NodeSoftNameSetting*>>();
+
                 EditContext* editContext = serialize->GetEditContext();
                 if (editContext)
                 {

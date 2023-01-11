@@ -43,6 +43,9 @@ namespace AZ
         public:
             AZ_COMPONENT(SceneProcessingConfigSystemComponent, "{80FE1130-91B4-44D4-869F-859BB996161A}", AZ::SceneAPI::SceneCore::SceneSystemComponent);
 
+            static constexpr const char AssetProcessorDefaultNodeSoftNameSettingsKey[] = "/O3DE/AssetProcessor/SceneBuilder/NodeSoftNameSettings";
+            static constexpr const char AssetProcessorDefaultFileSoftNameSettingsKey[] = "/O3DE/AssetProcessor/SceneBuilder/FileSoftNameSettings";
+
             SceneProcessingConfigSystemComponent();
             ~SceneProcessingConfigSystemComponent();
 
@@ -84,6 +87,8 @@ namespace AZ
             /// It is the responsibility of the caller to delete newSoftname if this method returns
             /// false.
             bool AddSoftName(SoftNameSetting* newSoftname);
+
+            void PopulateDefaultSoftNameSettings();
 
             void LoadScriptSettings();
 

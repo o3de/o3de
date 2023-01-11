@@ -73,8 +73,8 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
-				<Class name="AZStd::string" field="Name" value="lodtest_lod3" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Name" value="lodtest_LOD_3" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -128,8 +128,8 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
-				<Class name="AZStd::string" field="Name" value="lodtest_lod2" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Name" value="lodtest_Lod2" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -183,8 +183,8 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
-				<Class name="AZStd::string" field="Name" value="lodtest_lod1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Name" value="lodtest_lod_1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -293,8 +293,8 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
-				<Class name="AZStd::string" field="Name" value="lodtest_lod3_lodtest_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3_lodtest_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Name" value="lodtest_LOD_3_lodtest_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3_lodtest_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -348,8 +348,8 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
-				<Class name="AZStd::string" field="Name" value="lodtest_lod2_lodtest_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2_lodtest_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Name" value="lodtest_Lod2_lodtest_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2_lodtest_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -403,8 +403,8 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
-				<Class name="AZStd::string" field="Name" value="lodtest_lod1_lodtest_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1_lodtest_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Name" value="lodtest_lod_1_lodtest_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1_lodtest_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -515,20 +515,20 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
-				<Class name="AZStd::string" field="Name" value="Material" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest.Material" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Name" value="Material_002" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest.Material_002" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="MaterialName" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZStd::string" field="m_data" value="Material" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="m_data" value="Material.002" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						</Class>
 					</Class>
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="UniqueId" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::u64" field="m_data" value="11127505492038345244" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+							<Class name="AZ::u64" field="m_data" value="618298070506015545" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 						</Class>
 					</Class>
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -565,6 +565,12 @@
 						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="double" field="m_data" value="36.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="RoughnessFactor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="0.4000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -627,7 +633,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -640,7 +646,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -665,7 +671,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexUVData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -684,7 +690,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3.DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3.DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -739,7 +745,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexTangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -770,7 +776,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexBitangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -795,7 +801,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -808,7 +814,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -833,7 +839,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexUVData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -852,7 +858,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2.DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2.DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -907,7 +913,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexTangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -938,7 +944,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexBitangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -963,7 +969,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -976,7 +982,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1001,7 +1007,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexUVData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1020,7 +1026,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1.DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1.DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1075,7 +1081,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexTangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1106,7 +1112,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexBitangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1243,20 +1249,20 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
-				<Class name="AZStd::string" field="Name" value="Material" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lodtest_optimized.Material" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Name" value="Material_002" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lodtest_optimized.Material_002" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="MaterialName" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZStd::string" field="m_data" value="Material" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="m_data" value="Material.002" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						</Class>
 					</Class>
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="UniqueId" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::u64" field="m_data" value="11127505492038345244" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+							<Class name="AZ::u64" field="m_data" value="618298070506015545" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 						</Class>
 					</Class>
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1295,11 +1301,17 @@
 							<Class name="double" field="m_data" value="36.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
 						</Class>
 					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="RoughnessFactor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="0.4000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3_lodtest_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3_lodtest_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1324,7 +1336,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3_lodtest_optimized.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3_lodtest_optimized.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexUVData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1343,7 +1355,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3_lodtest_optimized.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3_lodtest_optimized.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexTangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1374,7 +1386,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3_lodtest_optimized.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3_lodtest_optimized.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexBitangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1399,7 +1411,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3_lodtest_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3_lodtest_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1412,7 +1424,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod3_lodtest_optimized.DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_LOD_3_lodtest_optimized.DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1467,7 +1479,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2_lodtest_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2_lodtest_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1492,7 +1504,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2_lodtest_optimized.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2_lodtest_optimized.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexUVData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1511,7 +1523,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2_lodtest_optimized.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2_lodtest_optimized.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexTangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1542,7 +1554,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2_lodtest_optimized.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2_lodtest_optimized.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexBitangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1567,7 +1579,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2_lodtest_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2_lodtest_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1580,7 +1592,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod2_lodtest_optimized.DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_Lod2_lodtest_optimized.DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1635,7 +1647,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1_lodtest_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1_lodtest_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1660,7 +1672,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1_lodtest_optimized.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1_lodtest_optimized.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexUVData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1679,7 +1691,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1_lodtest_optimized.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1_lodtest_optimized.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexTangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1710,7 +1722,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1_lodtest_optimized.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1_lodtest_optimized.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshVertexBitangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1735,7 +1747,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1_lodtest_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1_lodtest_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1748,7 +1760,7 @@
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod1_lodtest_optimized.DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.lodtest_lod_1_lodtest_optimized.DefaultMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
