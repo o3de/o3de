@@ -528,34 +528,11 @@ namespace Multiplayer
         stats.m_entityCount = GetNetworkEntityManager()->GetEntityCount();
         stats.m_serverConnectionCount = 0;
         stats.m_clientConnectionCount = 0;
-
-        // Send out the game state update to all connections
-        /*{            
-            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendOutGameStateUpdate");
-
-            auto sendNetworkUpdates = [&stats](IConnection& connection)
-            {
-                if (connection.GetUserData() != nullptr)
-                {
-                    IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
-                    connectionData->Update();
-                    if (connectionData->GetConnectionDataType() == ConnectionDataType::ServerToClient)
-                    {
-                        stats.m_clientConnectionCount++;
-                    }
-                    else
-                    {
-                        stats.m_serverConnectionCount++;
-                    }
-                }
-            };
-
-            m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
-        }*/
-
+        
         // Metrics calculation, as update calls are threaded.
         UpdatedMetricsConnectionCount();
-        
+
+        // Send out the game state update to all connections
         UpdateConnections();
 
         MultiplayerPackets::SyncConsole packet;
@@ -615,29 +592,48 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::UpdateConnections()
     {
-        if (m_networkInterface->GetConnectionSet().GetConnectionCount() > 0)
+        if (GetAgentType() == MultiplayerAgentType::ClientServer || GetAgentType() == MultiplayerAgentType::DedicatedServer)
         {
-            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: UpdateConnections");
-
-            AZ::JobCompletion jobCompletion;
-
-            auto sendNetworkUpdates = [&jobCompletion](IConnection& connection)
+            // Threaded update calls.
+            if (m_networkInterface->GetConnectionSet().GetConnectionCount() > 0)
             {
-                AZ::Job* job = AZ::CreateJobFunction([&connection]()
-                    {
-                        if (connection.GetUserData() != nullptr)
-                        {
-                            IConnectionData* connectionData = static_cast<IConnectionData*>(connection.GetUserData());
-                            connectionData->Update();
-                        }
-                    }, true /*auto delete*/, nullptr);
+                AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: UpdateConnections");
 
-                job->SetDependent(&jobCompletion);
-                job->Start();
+                AZ::JobCompletion jobCompletion;
+
+                auto sendNetworkUpdates = [&jobCompletion](IConnection& connection)
+                {
+                    AZ::Job* job = AZ::CreateJobFunction([&connection]()
+                        {
+                            if (connection.GetUserData() != nullptr)
+                            {
+                                IConnectionData* connectionData = static_cast<IConnectionData*>(connection.GetUserData());
+                                connectionData->Update();
+                            }
+                        }, true /*auto delete*/, nullptr);
+
+                    job->SetDependent(&jobCompletion);
+                    job->Start();
+                };
+
+                m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
+                jobCompletion.StartAndWaitForCompletion();
+            }
+        }
+        else // On clients (including the Editor) run in a single threaded mode to avoid issues in UI asset loading
+        {
+            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendOutGameStateUpdate");
+
+            auto sendNetworkUpdates = [](IConnection& connection)
+            {
+                if (connection.GetUserData() != nullptr)
+                {
+                    IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
+                    connectionData->Update();
+                }
             };
 
             m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
-            jobCompletion.StartAndWaitForCompletion();
         }
     }
 
