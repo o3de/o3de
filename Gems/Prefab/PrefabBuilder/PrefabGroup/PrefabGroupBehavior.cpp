@@ -57,6 +57,7 @@ namespace AZ::SceneAPI::Behaviors
     //
 
     static constexpr const char s_PrefabGroupBehaviorCreateDefaultKey[] = "/O3DE/Preferences/Prefabs/CreateDefaults";
+    static constexpr const char s_PrefabGroupBehaviorIgnoreActorsKey[] = "/O3DE/Preferences/Prefabs/IgnoreActors";
 
     struct PrefabGroupBehavior::ExportEventHandler final
         : public AZ::SceneAPI::SceneCore::ExportingComponent
@@ -128,14 +129,29 @@ namespace AZ::SceneAPI::Behaviors
         ManifestAction action,
         [[maybe_unused]] RequestingApplication requester)
     {
-        // this toggle makes constructing default mesh groups and a prefab optional
+        using namespace SceneAPI::Events;
+
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
         {
+            // this toggle makes constructing default mesh groups and a prefab optional
             bool createDefaultPrefab = true;
             settingsRegistry->Get(createDefaultPrefab, s_PrefabGroupBehaviorCreateDefaultKey);
             if (createDefaultPrefab == false)
             {
                 return Events::ProcessingResult::Ignored;
+            }
+
+            // do not make a Prefab Group if the animation policy will be applied (if ignore actors is set)
+            bool ignoreActors = true;
+            settingsRegistry->Get(ignoreActors, s_PrefabGroupBehaviorIgnoreActorsKey);
+            if (ignoreActors)
+            {
+                AZStd::set<AZStd::string> appliedPolicySet;
+                GraphMetaInfoBus::Broadcast(&GraphMetaInfoBus::Events::GetAppliedPolicyNames, scene, appliedPolicySet);
+                if (appliedPolicySet.find("ActorGroupBehavior") != appliedPolicySet.end())
+                {
+                    return Events::ProcessingResult::Ignored;
+                }
             }
         }
 

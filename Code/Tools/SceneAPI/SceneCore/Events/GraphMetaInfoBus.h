@@ -67,6 +67,9 @@ namespace AZ
 
                 // Converts the virtual type hashed name into a readable name.
                 SCENE_CORE_API virtual void GetVirtualTypeName([[maybe_unused]] AZStd::string& name, [[maybe_unused]] Crc32 type) {}
+
+                // Provides the policies that will be applied to the scene from the asset builders.
+                SCENE_CORE_API virtual void GetAppliedPolicyNames([[maybe_unused]] const Containers::Scene& scene, [[maybe_unused]] AZStd::set<AZStd::string>& appliedPolicySet) const {}
             };
 
             using GraphMetaInfoBus = AZ::EBus<GraphMetaInfo>;
