@@ -21,7 +21,6 @@ namespace AzToolsFramework
         PrefabUndoEntityOverrides::PrefabUndoEntityOverrides(const AZStd::string& undoOperationName)
             : UndoSystem::URSequencePoint(undoOperationName)
             , m_linkId(InvalidLinkId)
-            , m_changed(true)
         {
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface, "PrefabUndoEntityOverrides - Failed to grab prefab system component interface.");
@@ -35,7 +34,7 @@ namespace AzToolsFramework
 
         bool PrefabUndoEntityOverrides::Changed() const
         {
-            return m_changed;
+            return true;
         }
 
         void PrefabUndoEntityOverrides::CaptureAndRedo(

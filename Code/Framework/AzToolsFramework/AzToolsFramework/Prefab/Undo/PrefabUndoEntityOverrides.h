@@ -47,7 +47,6 @@ namespace AzToolsFramework::Prefab
 
         // Link that connects the linked instance and the focused instance.
         LinkId m_linkId;
-        bool m_changed;
 
         PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
