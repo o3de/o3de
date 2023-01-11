@@ -452,7 +452,8 @@ bool UiSliderComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractable,
             m_isDragging = true;
 
             // tell the canvas that this is now the active interactable
-            UiInteractableActiveNotificationBus::Event(currentActiveInteractable, &UiInteractableActiveNotificationBus::Events::ActiveChanged, GetEntityId(), false);
+            UiInteractableActiveNotificationBus::Event(
+                currentActiveInteractable, &UiInteractableActiveNotificationBus::Events::ActiveChanged, GetEntityId(), false);
         }
     }
 

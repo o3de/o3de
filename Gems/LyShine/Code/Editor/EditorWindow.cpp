@@ -1320,7 +1320,8 @@ void EditorWindow::SaveActiveCanvasEditState()
         canvasEditState.m_uiAnimationEditState.m_time = 0.0f;
         canvasEditState.m_uiAnimationEditState.m_timelineScale = 1.0f;
         canvasEditState.m_uiAnimationEditState.m_timelineScrollOffset = 0;
-        UiEditorAnimationStateBus::BroadcastResult(canvasEditState.m_uiAnimationEditState, &UiEditorAnimationStateBus::Events::GetCurrentEditState);
+        UiEditorAnimationStateBus::BroadcastResult(
+            canvasEditState.m_uiAnimationEditState, &UiEditorAnimationStateBus::Events::GetCurrentEditState);
 
         canvasEditState.m_inited = true;
     }
@@ -1347,7 +1348,8 @@ void EditorWindow::RestoreActiveCanvasEditState()
             HierarchyHelpers::SetSelectedItems(m_hierarchy, &canvasEditState.m_selectedElements);
 
             // Restore animation state
-            UiEditorAnimationStateBus::Broadcast(&UiEditorAnimationStateBus::Events::RestoreCurrentEditState, canvasEditState.m_uiAnimationEditState);
+            UiEditorAnimationStateBus::Broadcast(
+                &UiEditorAnimationStateBus::Events::RestoreCurrentEditState, canvasEditState.m_uiAnimationEditState);
         }
     }
 }
@@ -1601,7 +1603,8 @@ void EditorWindow::ToggleEditorMode()
             m_previewAnimationList->Deactivate();
 
             AZ::Entity* entity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_previewModeCanvasEntityId);
+            AZ::ComponentApplicationBus::BroadcastResult(
+                entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_previewModeCanvasEntityId);
             if (entity)
             {
                 AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_previewModeCanvasEntityId, false);
@@ -1823,7 +1826,8 @@ void EditorWindow::EditSliceInNewTab(AZ::Data::AssetId sliceAssetId)
     }
 
     AZStd::string assetIdPathname;
-    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetIdPathname, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, sliceAssetId);
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+        assetIdPathname, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, sliceAssetId);
 
     AZStd::string sourceAssetPathName;
     bool fullPathfound = false;
@@ -1854,7 +1858,8 @@ void EditorWindow::EditSliceInNewTab(AZ::Data::AssetId sliceAssetId)
     const AzFramework::EntityContextId& entityContextId = canvasMetadata->m_entityContext->GetContextId();
 
     AzFramework::SliceInstantiationTicket ticket;
-    UiEditorEntityContextRequestBus::EventResult(ticket, entityContextId, &UiEditorEntityContextRequestBus::Events::InstantiateEditorSlice, sliceAsset, viewportPosition);
+    UiEditorEntityContextRequestBus::EventResult(
+        ticket, entityContextId, &UiEditorEntityContextRequestBus::Events::InstantiateEditorSlice, sliceAsset, viewportPosition);
 
     if (ticket.IsValid())
     {
@@ -1939,12 +1944,14 @@ void EditorWindow::FontTextureHasChanged()
     for (auto mapItem : m_canvasMetadataMap)
     {
         auto canvasMetadata = mapItem.second;
-        UiCanvasComponentImplementationBus::Event(canvasMetadata->m_canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
+        UiCanvasComponentImplementationBus::Event(
+            canvasMetadata->m_canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
     }
 
     if (GetEditorMode() == UiEditorMode::Preview)
     {
-        UiCanvasComponentImplementationBus::Event(GetPreviewModeCanvas(), &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
+        UiCanvasComponentImplementationBus::Event(
+            GetPreviewModeCanvas(), &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
     }
 }
 

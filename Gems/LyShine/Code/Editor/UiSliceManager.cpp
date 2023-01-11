@@ -77,7 +77,12 @@ void UiSliceManager::InstantiateSlice(const AZ::Data::AssetId& assetId, AZ::Vect
     AZ::Data::Asset<AZ::SliceAsset> sliceAsset;
     sliceAsset.Create(assetId, true);
 
-    UiEditorEntityContextRequestBus::Event(m_entityContextId, &UiEditorEntityContextRequestBus::Events::InstantiateEditorSliceAtChildIndex, sliceAsset, viewportPosition, childIndex);
+    UiEditorEntityContextRequestBus::Event(
+        m_entityContextId,
+        &UiEditorEntityContextRequestBus::Events::InstantiateEditorSliceAtChildIndex,
+        sliceAsset,
+        viewportPosition,
+        childIndex);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -481,7 +486,8 @@ AzToolsFramework::SliceUtilities::SliceTransaction::Result SlicePreSaveCallbackF
 
             // see if the entity has been deleted
             AZ::Entity* referencedEntity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(referencedEntity, &AZ::ComponentApplicationBus::Events::FindEntity, referencedEntityId);
+            AZ::ComponentApplicationBus::BroadcastResult(
+                referencedEntity, &AZ::ComponentApplicationBus::Events::FindEntity, referencedEntityId);
 
             if (referencedEntity)
             {
@@ -551,7 +557,8 @@ void UiSliceManager::PushEntitiesModal(const AzToolsFramework::EntityIdList& ent
     config->m_postSaveCB = nullptr;
     config->m_deleteEntitiesCB = [this](const AzToolsFramework::EntityIdList& entitiesToRemove) -> void
     {
-        UiEditorEntityContextRequestBus::Event(this->GetEntityContextId(), &UiEditorEntityContextRequestBus::Events::DeleteElements, entitiesToRemove);
+        UiEditorEntityContextRequestBus::Event(
+            this->GetEntityContextId(), &UiEditorEntityContextRequestBus::Events::DeleteElements, entitiesToRemove);
     };
     config->m_isRootEntityCB = [this](const AZ::Entity* entity) -> bool
     {
@@ -608,7 +615,8 @@ void UiSliceManager::DetachSliceEntities(const AzToolsFramework::EntityIdList& e
 
         if (ConfirmDialog_Detach(title, body))
         {
-            UiEditorEntityContextRequestBus::Event(m_entityContextId, &UiEditorEntityContextRequestBus::Events::DetachSliceEntities, entities);
+            UiEditorEntityContextRequestBus::Event(
+                m_entityContextId, &UiEditorEntityContextRequestBus::Events::DetachSliceEntities, entities);
         }
     }
 }
@@ -667,7 +675,8 @@ void UiSliceManager::DetachSliceInstances(const AzToolsFramework::EntityIdList& 
             }
 
             // Detach the entities
-            UiEditorEntityContextRequestBus::Event(m_entityContextId, &UiEditorEntityContextRequestBus::Events::DetachSliceEntities, entitiesToDetach);
+            UiEditorEntityContextRequestBus::Event(
+                m_entityContextId, &UiEditorEntityContextRequestBus::Events::DetachSliceEntities, entitiesToDetach);
         }
     }
 }
@@ -969,7 +978,8 @@ AZ::Outcome<void, AZStd::string> UiSliceManager::QuickPushSliceInstance(const AZ
         {
             // Successful commit
             // Remove any entities that were succesfully pushed into a slice (since they'll be brought to life through slice reloading)
-            UiEditorEntityContextRequestBus::Event(this->GetEntityContextId(), &UiEditorEntityContextRequestBus::Events::DeleteElements, entitiesBeingAdded);
+            UiEditorEntityContextRequestBus::Event(
+                this->GetEntityContextId(), &UiEditorEntityContextRequestBus::Events::DeleteElements, entitiesBeingAdded);
         }
         else
         {

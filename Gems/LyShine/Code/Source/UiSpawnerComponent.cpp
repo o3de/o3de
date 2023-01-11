@@ -234,10 +234,19 @@ void UiSpawnerComponent::OnEntityContextSliceInstantiationFailed(const AZ::Data:
 AzFramework::SliceInstantiationTicket UiSpawnerComponent::SpawnSliceInternal(const AZ::Data::Asset<AZ::Data::AssetData>& slice, const AZ::Vector2& position, bool isViewportPosition)
 {
     AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
-    AzFramework::EntityIdContextQueryBus::EventResult(contextId, GetEntityId(), &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
+    AzFramework::EntityIdContextQueryBus::EventResult(
+        contextId, GetEntityId(), &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
 
     AzFramework::SliceInstantiationTicket ticket;
-    UiGameEntityContextBus::EventResult(ticket, contextId, &UiGameEntityContextBus::Events::InstantiateDynamicSlice, slice, position, isViewportPosition, GetEntity(), nullptr);
+    UiGameEntityContextBus::EventResult(
+        ticket,
+        contextId,
+        &UiGameEntityContextBus::Events::InstantiateDynamicSlice,
+        slice,
+        position,
+        isViewportPosition,
+        GetEntity(),
+        nullptr);
 
     UiGameEntityContextSliceInstantiationResultsBus::MultiHandler::BusConnect(ticket);
 

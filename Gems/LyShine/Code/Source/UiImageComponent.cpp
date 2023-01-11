@@ -2590,7 +2590,8 @@ void UiImageComponent::InvalidateLayouts()
 {
     AZ::EntityId canvasEntityId;
     UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
-    UiLayoutManagerBus::Event(canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), true);
+    UiLayoutManagerBus::Event(
+        canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), true);
     UiLayoutManagerBus::Event(canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayout, GetEntityId());
 
     MarkRenderCacheDirty();

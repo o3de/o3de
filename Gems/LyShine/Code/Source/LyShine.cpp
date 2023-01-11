@@ -197,7 +197,8 @@ CLyShine::CLyShine()
         azrtti_typeid<UiLayoutFitterComponent>(),
         azrtti_typeid<UiParticleEmitterComponent>(),
     };
-    AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(&AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, componentUuidsForMetricsCollection);
+    AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+        &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, componentUuidsForMetricsCollection);
 
 
 

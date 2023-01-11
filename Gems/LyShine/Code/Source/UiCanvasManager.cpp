@@ -385,7 +385,8 @@ void UiCanvasManager::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
     // notify any listeners of any UI canvases that were reloaded
     for (auto reloadedCanvasComponent : reloadedCanvases)
     {
-        UiCanvasManagerNotificationBus::Broadcast(&UiCanvasManagerNotificationBus::Events::OnCanvasReloaded, reloadedCanvasComponent->GetEntityId());
+        UiCanvasManagerNotificationBus::Broadcast(
+            &UiCanvasManagerNotificationBus::Events::OnCanvasReloaded, reloadedCanvasComponent->GetEntityId());
     }
 
     // notify any listeners of any UI canvases that were unloaded

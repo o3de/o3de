@@ -987,10 +987,22 @@ static AZ::Entity* CreateButton(const char* name, bool atRoot, AZ::EntityId pare
         UiTransform2dBus::Event(buttonId, &UiTransform2dBus::Events::SetOffsets, offsets);
         UiImageBus::Event(buttonId, &UiImageBus::Events::SetColor, baseColor);
 
-        UiInteractableStatesBus::Event(buttonId, &UiInteractableStatesBus::Events::SetStateColor, UiInteractableStatesInterface::StateHover, buttonId, selectedColor);
-        UiInteractableStatesBus::Event(buttonId, &UiInteractableStatesBus::Events::SetStateAlpha, UiInteractableStatesInterface::StateHover, buttonId,  selectedColor.GetA());
-        UiInteractableStatesBus::Event(buttonId, &UiInteractableStatesBus::Events::SetStateColor, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor);
-        UiInteractableStatesBus::Event(buttonId, &UiInteractableStatesBus::Events::SetStateAlpha, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor.GetA());
+        UiInteractableStatesBus::Event(
+            buttonId, &UiInteractableStatesBus::Events::SetStateColor, UiInteractableStatesInterface::StateHover, buttonId, selectedColor);
+        UiInteractableStatesBus::Event(
+            buttonId,
+            &UiInteractableStatesBus::Events::SetStateAlpha,
+            UiInteractableStatesInterface::StateHover,
+            buttonId,
+            selectedColor.GetA());
+        UiInteractableStatesBus::Event(
+            buttonId, &UiInteractableStatesBus::Events::SetStateColor, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor);
+        UiInteractableStatesBus::Event(
+            buttonId,
+            &UiInteractableStatesBus::Events::SetStateAlpha,
+            UiInteractableStatesInterface::StatePressed,
+            buttonId,
+            pressedColor.GetA());
 
         AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
         ISprite* sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(pathname);
@@ -1010,7 +1022,8 @@ static AZ::Entity* CreateButton(const char* name, bool atRoot, AZ::EntityId pare
 
         AZ_Assert(UiTransform2dBus::FindFirstHandler(textId), "Transform component missing");
 
-        UiTransform2dBus::Event(textId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.5, 0.5, 0.5, 0.5), false, false);
+        UiTransform2dBus::Event(
+            textId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.5, 0.5, 0.5, 0.5), false, false);
         UiTransform2dBus::Event(textId, &UiTransform2dBus::Events::SetOffsets, UiTransform2dInterface::Offsets(0, 0, 0, 0));
 
         UiTextBus::Event(textId, &UiTextBus::Events::SetText, text);
@@ -1085,11 +1098,31 @@ static AZ::Entity* CreateTextInput(const char* name, bool atRoot, AZ::EntityId p
         UiTransform2dBus::Event(textInputId, &UiTransform2dBus::Events::SetOffsets, offsets);
         UiImageBus::Event(textInputId, &UiImageBus::Events::SetColor, baseColor);
 
-        UiInteractableStatesBus::Event(textInputId, &UiInteractableStatesBus::Events::SetStateColor, UiInteractableStatesInterface::StateHover, textInputId, selectedColor);
-        UiInteractableStatesBus::Event(textInputId, &UiInteractableStatesBus::Events::SetStateAlpha, UiInteractableStatesInterface::StateHover, textInputId, selectedColor.GetA());
+        UiInteractableStatesBus::Event(
+            textInputId,
+            &UiInteractableStatesBus::Events::SetStateColor,
+            UiInteractableStatesInterface::StateHover,
+            textInputId,
+            selectedColor);
+        UiInteractableStatesBus::Event(
+            textInputId,
+            &UiInteractableStatesBus::Events::SetStateAlpha,
+            UiInteractableStatesInterface::StateHover,
+            textInputId,
+            selectedColor.GetA());
 
-        UiInteractableStatesBus::Event(textInputId, &UiInteractableStatesBus::Events::SetStateColor, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor);
-        UiInteractableStatesBus::Event(textInputId, &UiInteractableStatesBus::Events::SetStateAlpha, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor.GetA());
+        UiInteractableStatesBus::Event(
+            textInputId,
+            &UiInteractableStatesBus::Events::SetStateColor,
+            UiInteractableStatesInterface::StatePressed,
+            textInputId,
+            pressedColor);
+        UiInteractableStatesBus::Event(
+            textInputId,
+            &UiInteractableStatesBus::Events::SetStateAlpha,
+            UiInteractableStatesInterface::StatePressed,
+            textInputId,
+            pressedColor.GetA());
 
         AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
         ISprite* sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(pathname);
@@ -1228,7 +1261,8 @@ static void TestCanvasCreate ([[maybe_unused]] IConsoleCmdArgs* Cmd)
 
     AZ_Assert(UiTransform2dBus::FindFirstHandler(pauseMenuId), "Transform component missing");
 
-    UiTransform2dBus::Event(pauseMenuId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.25, 0.25, 0.75, 0.75), false, false);
+    UiTransform2dBus::Event(
+        pauseMenuId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.25, 0.25, 0.75, 0.75), false, false);
     UiTransform2dBus::Event(pauseMenuId, &UiTransform2dBus::Events::SetOffsets, UiTransform2dInterface::Offsets(0, 0, 0, 0));
     UiImageBus::Event(pauseMenuId, &UiImageBus::Events::SetColor, grey);
 
@@ -1274,8 +1308,14 @@ static void TestCanvasCreate ([[maybe_unused]] IConsoleCmdArgs* Cmd)
     AZ::Entity* testImageElem = canvas->CreateChildElement("TestImage");
     CreateComponent(testImageElem, LyShine::UiTransform2dComponentUuid);
     CreateComponent(testImageElem, LyShine::UiImageComponentUuid);
-    UiTransform2dBus::Event(testImageElem->GetId(), &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.78f, 0.25f, 0.95f, 0.75f), false, false);
-    UiTransform2dBus::Event(testImageElem->GetId(), &UiTransform2dBus::Events::SetOffsets, UiTransform2dInterface::Offsets(0.0f, 0.0f, 0.0f, 0.0f));
+    UiTransform2dBus::Event(
+        testImageElem->GetId(),
+        &UiTransform2dBus::Events::SetAnchors,
+        UiTransform2dInterface::Anchors(0.78f, 0.25f, 0.95f, 0.75f),
+        false,
+        false);
+    UiTransform2dBus::Event(
+        testImageElem->GetId(), &UiTransform2dBus::Events::SetOffsets, UiTransform2dInterface::Offsets(0.0f, 0.0f, 0.0f, 0.0f));
     UiImageBus::Event(testImageElem->GetId(), &UiImageBus::Events::SetColor, yellow);
 
     // create some text items that the textInputItem will edit,
@@ -1329,7 +1369,8 @@ static void TestCanvasCreate ([[maybe_unused]] IConsoleCmdArgs* Cmd)
     AZ::Entity* clonedMenuElem = nullptr;
     UiCanvasBus::EventResult(clonedMenuElem, canvasEntityId, &UiCanvasBus::Events::CloneElement, pauseMenuElem, nullptr);
     AZ::EntityId clonedMenuId = clonedMenuElem->GetId();
-    UiTransform2dBus::Event(clonedMenuId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.0f, 0.25f, 0.23f, 0.75f), false, false);
+    UiTransform2dBus::Event(
+        clonedMenuId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.0f, 0.25f, 0.23f, 0.75f), false, false);
     UiImageBus::Event(clonedMenuId, &UiImageBus::Events::SetColor, grey);
 
     // The clone will copy the action name on the Hide button but not the callback on the

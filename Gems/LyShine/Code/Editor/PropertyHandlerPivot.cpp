@@ -36,7 +36,8 @@ PropertyPivotCtrl::PropertyPivotCtrl(QWidget* parent)
                     m_propertyVectorCtrl->setValuebyIndex(presetValues.GetX(), 0);
                     m_propertyVectorCtrl->setValuebyIndex(presetValues.GetY(), 1);
 
-                    AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
+                    AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                        &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
                 },
                 this);
 
@@ -50,7 +51,8 @@ PropertyPivotCtrl::PropertyPivotCtrl(QWidget* parent)
 
         QObject::connect(m_propertyVectorCtrl, &AzQtComponents::VectorInput::valueChanged, this, [this]()
             {
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
             });
 
         m_propertyVectorCtrl->setMinimum(-std::numeric_limits<float>::max());
@@ -179,7 +181,8 @@ AZ::EntityId PropertyHandlerPivot::GetParentEntityId(AzToolsFramework::InstanceD
 
 void PropertyHandlerPivot::Register()
 {
-    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerPivot());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerPivot());
 }
 
 #include <moc_PropertyHandlerPivot.cpp>

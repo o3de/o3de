@@ -180,7 +180,8 @@ namespace SerializeHelpers
                     sliceRestoreInfo.m_instanceId = sliceInstanceMap[sliceRestoreInfo.m_instanceId];
                 }
 
-                UiEditorEntityContextRequestBus::Event(entityContext->GetContextId(), &UiEditorEntityContextRequestBus::Events::RestoreSliceEntity, entity, sliceRestoreInfo);
+                UiEditorEntityContextRequestBus::Event(
+                    entityContext->GetContextId(), &UiEditorEntityContextRequestBus::Events::RestoreSliceEntity, entity, sliceRestoreInfo);
             }
             else
             {
@@ -197,12 +198,14 @@ namespace SerializeHelpers
         if (AZ::Data::AssetManager::IsReady())
         {
             bool areRequestsPending = false;
-            UiEditorEntityContextRequestBus::EventResult(areRequestsPending, entityContext->GetContextId(), &UiEditorEntityContextRequestBus::Events::HasPendingRequests);
+            UiEditorEntityContextRequestBus::EventResult(
+                areRequestsPending, entityContext->GetContextId(), &UiEditorEntityContextRequestBus::Events::HasPendingRequests);
             while (areRequestsPending)
             {
                 AZ::Data::AssetManager::Instance().DispatchEvents();
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(50));
-                UiEditorEntityContextRequestBus::EventResult(areRequestsPending, entityContext->GetContextId(), &UiEditorEntityContextRequestBus::Events::HasPendingRequests);
+                UiEditorEntityContextRequestBus::EventResult(
+                    areRequestsPending, entityContext->GetContextId(), &UiEditorEntityContextRequestBus::Events::HasPendingRequests);
             }
         }
 

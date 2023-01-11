@@ -564,14 +564,24 @@ void UiMaskComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligned
     AZ::EntityId canvasEntityId;
     UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     AZ::RHI::Size imageSize(static_cast<uint32_t>(renderTargetSize.GetX()), static_cast<uint32_t>(renderTargetSize.GetY()), 1);
-    LyShine::RenderToTextureRequestBus::EventResult(m_contentAttachmentImageId, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        m_contentAttachmentImageId,
+        canvasEntityId,
+        &LyShine::RenderToTextureRequestBus::Events::UseRenderTarget,
+        AZ::Name(m_renderTargetName.c_str()),
+        imageSize);
     if (m_contentAttachmentImageId.IsEmpty())
     {
         AZ_Warning("UI", false, "Failed to create content render target for UiMaskComponent");
     }
 
     // Create separate render target for the mask texture
-    LyShine::RenderToTextureRequestBus::EventResult(m_maskAttachmentImageId, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::UseRenderTarget, AZ::Name(m_maskRenderTargetName.c_str()), imageSize);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        m_maskAttachmentImageId,
+        canvasEntityId,
+        &LyShine::RenderToTextureRequestBus::Events::UseRenderTarget,
+        AZ::Name(m_maskRenderTargetName.c_str()),
+        imageSize);
     if (m_maskAttachmentImageId.IsEmpty())
     {
         AZ_Warning("UI", false, "Failed to create mask render target for UiMaskComponent");
@@ -596,7 +606,8 @@ void UiMaskComponent::DestroyRenderTarget()
     {
         AZ::EntityId canvasEntityId;
         UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
-        LyShine::RenderToTextureRequestBus::Event(canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::ReleaseRenderTarget, m_contentAttachmentImageId);
+        LyShine::RenderToTextureRequestBus::Event(
+            canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::ReleaseRenderTarget, m_contentAttachmentImageId);
 
         m_contentAttachmentImageId = AZ::RHI::AttachmentId{};
     }
@@ -605,7 +616,8 @@ void UiMaskComponent::DestroyRenderTarget()
     {
         AZ::EntityId canvasEntityId;
         UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
-        LyShine::RenderToTextureRequestBus::Event(canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::ReleaseRenderTarget, m_maskAttachmentImageId);
+        LyShine::RenderToTextureRequestBus::Event(
+            canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::ReleaseRenderTarget, m_maskAttachmentImageId);
 
         m_maskAttachmentImageId = AZ::RHI::AttachmentId{};
     }
@@ -709,8 +721,10 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     AZ::Data::Instance<AZ::RPI::AttachmentImage> maskAttachmentImage;
     AZ::EntityId canvasEntityId;
     UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
-    LyShine::RenderToTextureRequestBus::EventResult(contentAttachmentImage, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::GetRenderTarget, m_contentAttachmentImageId);
-    LyShine::RenderToTextureRequestBus::EventResult(maskAttachmentImage, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::GetRenderTarget, m_maskAttachmentImageId);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        contentAttachmentImage, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::GetRenderTarget, m_contentAttachmentImageId);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        maskAttachmentImage, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::GetRenderTarget, m_maskAttachmentImageId);
 
     // We don't want parent faders to affect what is rendered to the render target since we will
     // apply those fades when we render from the render target.
@@ -978,7 +992,8 @@ UiElementInterface* UiMaskComponent::GetValidatedChildMaskElement()
                         const char* elementName = GetEntity()->GetName().c_str();
                         const char* childMaskElementName = "";
                         AZ::Entity* childMaskEntity = nullptr;
-                        AZ::ComponentApplicationBus::BroadcastResult(childMaskEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_childMaskElement);
+                        AZ::ComponentApplicationBus::BroadcastResult(
+                            childMaskEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_childMaskElement);
                         if (childMaskEntity)
                         {
                             childMaskElementName = childMaskEntity->GetName().c_str();

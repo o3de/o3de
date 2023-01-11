@@ -960,7 +960,8 @@ void UiDynamicScrollBoxComponent::PrepareListForDisplay()
 
             // Store the size of the item prototype element for future content element size calculations
             AZ::Vector2 prototypeElementSize(0.0f, 0.0f);
-            UiTransformBus::EventResult(prototypeElementSize, m_prototypeElement[i], &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
+            UiTransformBus::EventResult(
+                prototypeElementSize, m_prototypeElement[i], &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
             m_prototypeElementSize[i] = (m_isVertical ? prototypeElementSize.GetY() : prototypeElementSize.GetX());
 
@@ -1046,7 +1047,8 @@ AZ::EntityId UiDynamicScrollBoxComponent::ClonePrototypeElement(ElementType elem
 
     // Clone the prototype element and add it as a child of the specified parent (defaults to content entity)
     AZ::Entity* prototypeEntity = nullptr;
-    AZ::ComponentApplicationBus::BroadcastResult(prototypeEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_prototypeElement[elementType]);
+    AZ::ComponentApplicationBus::BroadcastResult(
+        prototypeEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_prototypeElement[elementType]);
     if (prototypeEntity)
     {
         if (!parentEntityId.IsValid())
@@ -1345,11 +1347,17 @@ float UiDynamicScrollBoxComponent::CalculateVariableElementSize(int index)
                 ElementIndexInfo elementIndexInfo = GetElementIndexInfoFromIndex(index);
                 if (elementType == ElementType::Item)
                 {
-                    UiDynamicScrollBoxDataBus::EventResult(size, GetEntityId(), &UiDynamicScrollBoxDataBus::Events::GetElementInSectionHeight, elementIndexInfo.m_sectionIndex, elementIndexInfo.m_itemIndexInSection);
+                    UiDynamicScrollBoxDataBus::EventResult(
+                        size,
+                        GetEntityId(),
+                        &UiDynamicScrollBoxDataBus::Events::GetElementInSectionHeight,
+                        elementIndexInfo.m_sectionIndex,
+                        elementIndexInfo.m_itemIndexInSection);
                 }
                 else if (elementType == ElementType::SectionHeader)
                 {
-                    UiDynamicScrollBoxDataBus::EventResult(size, GetEntityId(), &UiDynamicScrollBoxDataBus::Events::GetSectionHeaderHeight, elementIndexInfo.m_sectionIndex);
+                    UiDynamicScrollBoxDataBus::EventResult(
+                        size, GetEntityId(), &UiDynamicScrollBoxDataBus::Events::GetSectionHeaderHeight, elementIndexInfo.m_sectionIndex);
                 }
                 else
                 {
@@ -1368,11 +1376,17 @@ float UiDynamicScrollBoxComponent::CalculateVariableElementSize(int index)
                 ElementIndexInfo elementIndexInfo = GetElementIndexInfoFromIndex(index);
                 if (elementType == ElementType::Item)
                 {
-                    UiDynamicScrollBoxDataBus::EventResult(size, GetEntityId(), &UiDynamicScrollBoxDataBus::Events::GetElementInSectionWidth, elementIndexInfo.m_sectionIndex, elementIndexInfo.m_itemIndexInSection);
+                    UiDynamicScrollBoxDataBus::EventResult(
+                        size,
+                        GetEntityId(),
+                        &UiDynamicScrollBoxDataBus::Events::GetElementInSectionWidth,
+                        elementIndexInfo.m_sectionIndex,
+                        elementIndexInfo.m_itemIndexInSection);
                 }
                 else if (elementType == ElementType::SectionHeader)
                 {
-                    UiDynamicScrollBoxDataBus::EventResult(size, GetEntityId(), &UiDynamicScrollBoxDataBus::Events::GetSectionHeaderWidth, elementIndexInfo.m_sectionIndex);
+                    UiDynamicScrollBoxDataBus::EventResult(
+                        size, GetEntityId(), &UiDynamicScrollBoxDataBus::Events::GetSectionHeaderWidth, elementIndexInfo.m_sectionIndex);
                 }
                 else
                 {
@@ -1391,18 +1405,31 @@ float UiDynamicScrollBoxComponent::CalculateVariableElementSize(int index)
         // Notify listeners to setup this element for auto calculation
         if (!m_hasSections)
         {
-            UiDynamicScrollBoxElementNotificationBus::Event(GetEntityId(), &UiDynamicScrollBoxElementNotificationBus::Events::OnPrepareElementForSizeCalculation, elementForAutoSizeCalculation, index);
+            UiDynamicScrollBoxElementNotificationBus::Event(
+                GetEntityId(),
+                &UiDynamicScrollBoxElementNotificationBus::Events::OnPrepareElementForSizeCalculation,
+                elementForAutoSizeCalculation,
+                index);
         }
         else
         {
             ElementIndexInfo elementIndexInfo = GetElementIndexInfoFromIndex(index);
             if (elementType == ElementType::Item)
             {
-                UiDynamicScrollBoxElementNotificationBus::Event(GetEntityId(), &UiDynamicScrollBoxElementNotificationBus::Events::OnPrepareElementInSectionForSizeCalculation, elementForAutoSizeCalculation, elementIndexInfo.m_sectionIndex, elementIndexInfo.m_itemIndexInSection);
+                UiDynamicScrollBoxElementNotificationBus::Event(
+                    GetEntityId(),
+                    &UiDynamicScrollBoxElementNotificationBus::Events::OnPrepareElementInSectionForSizeCalculation,
+                    elementForAutoSizeCalculation,
+                    elementIndexInfo.m_sectionIndex,
+                    elementIndexInfo.m_itemIndexInSection);
             }
             else if (elementType == ElementType::SectionHeader)
             {
-                UiDynamicScrollBoxElementNotificationBus::Event(GetEntityId(), &UiDynamicScrollBoxElementNotificationBus::Events::OnPrepareSectionHeaderForSizeCalculation, elementForAutoSizeCalculation, elementIndexInfo.m_sectionIndex);
+                UiDynamicScrollBoxElementNotificationBus::Event(
+                    GetEntityId(),
+                    &UiDynamicScrollBoxElementNotificationBus::Events::OnPrepareSectionHeaderForSizeCalculation,
+                    elementForAutoSizeCalculation,
+                    elementIndexInfo.m_sectionIndex);
             }
             else
             {
@@ -1865,17 +1892,27 @@ void UiDynamicScrollBoxComponent::UpdateElementVisibility(bool keepAtEndIfWasAtE
                 // Notify listeners that this element is about to be displayed
                 if (!m_hasSections)
                 {
-                    UiDynamicScrollBoxElementNotificationBus::Event(GetEntityId(), &UiDynamicScrollBoxElementNotificationBus::Events::OnElementBecomingVisible, element, i);
+                    UiDynamicScrollBoxElementNotificationBus::Event(
+                        GetEntityId(), &UiDynamicScrollBoxElementNotificationBus::Events::OnElementBecomingVisible, element, i);
                 }
                 else
                 {
                     if (elementType == ElementType::Item)
                     {
-                        UiDynamicScrollBoxElementNotificationBus::Event(GetEntityId(), &UiDynamicScrollBoxElementNotificationBus::Events::OnElementInSectionBecomingVisible, element, elementIndexInfo.m_sectionIndex, elementIndexInfo.m_itemIndexInSection);
+                        UiDynamicScrollBoxElementNotificationBus::Event(
+                            GetEntityId(),
+                            &UiDynamicScrollBoxElementNotificationBus::Events::OnElementInSectionBecomingVisible,
+                            element,
+                            elementIndexInfo.m_sectionIndex,
+                            elementIndexInfo.m_itemIndexInSection);
                     }
                     else if (elementType == ElementType::SectionHeader)
                     {
-                        UiDynamicScrollBoxElementNotificationBus::Event(GetEntityId(), &UiDynamicScrollBoxElementNotificationBus::Events::OnSectionHeaderBecomingVisible, element, elementIndexInfo.m_sectionIndex);
+                        UiDynamicScrollBoxElementNotificationBus::Event(
+                            GetEntityId(),
+                            &UiDynamicScrollBoxElementNotificationBus::Events::OnSectionHeaderBecomingVisible,
+                            element,
+                            elementIndexInfo.m_sectionIndex);
                     }
                     else
                     {
@@ -2024,7 +2061,11 @@ void UiDynamicScrollBoxComponent::UpdateStickyHeader(int firstVisibleElementInde
                 SizeVariableElementAtIndex(m_currentStickyHeader.m_element, m_currentStickyHeader.m_elementIndex);
             }
 
-            UiDynamicScrollBoxElementNotificationBus::Event(GetEntityId(), &UiDynamicScrollBoxElementNotificationBus::Events::OnSectionHeaderBecomingVisible, m_currentStickyHeader.m_element, m_currentStickyHeader.m_indexInfo.m_sectionIndex);
+            UiDynamicScrollBoxElementNotificationBus::Event(
+                GetEntityId(),
+                &UiDynamicScrollBoxElementNotificationBus::Events::OnSectionHeaderBecomingVisible,
+                m_currentStickyHeader.m_element,
+                m_currentStickyHeader.m_indexInfo.m_sectionIndex);
         }
 
         float stickyHeaderOffset = 0.0f;

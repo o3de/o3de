@@ -180,7 +180,8 @@ void ViewportNudge::Nudge(
                 UiTransformBus::EventResult(rotation, element->GetId(), &UiTransformBus::Events::GetZRotation);
 
                 // Set.
-                UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::SetZRotation, (rotation + (rotationDeltaInDegrees * rotationDirection)));
+                UiTransformBus::Event(
+                    element->GetId(), &UiTransformBus::Events::SetZRotation, (rotation + (rotationDeltaInDegrees * rotationDirection)));
 
                 // Update.
                 UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);

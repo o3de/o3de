@@ -185,14 +185,16 @@ bool UiMarkupButtonComponent::HandleReleased(AZ::Vector2 point)
     // event occurred (OnClickableTextChanged resets the pressed index value).
     if (m_clickableRectPressedIndex < 0)
     {
-        UiMarkupButtonNotificationsBus::Event(GetEntityId(), &UiMarkupButtonNotificationsBus::Events::OnReleased, -1, AZStd::string(), AZStd::string());
+        UiMarkupButtonNotificationsBus::Event(
+            GetEntityId(), &UiMarkupButtonNotificationsBus::Events::OnReleased, -1, AZStd::string(), AZStd::string());
     }
     else
     {
         const int pressedClickableId = m_clickableTextRects[m_clickableRectPressedIndex].id;
         const AZStd::string& action = m_clickableTextRects[m_clickableRectPressedIndex].action;
         const AZStd::string& data = m_clickableTextRects[m_clickableRectPressedIndex].data;
-        UiMarkupButtonNotificationsBus::Event(GetEntityId(), &UiMarkupButtonNotificationsBus::Events::OnReleased, pressedClickableId, action, data);
+        UiMarkupButtonNotificationsBus::Event(
+            GetEntityId(), &UiMarkupButtonNotificationsBus::Events::OnReleased, pressedClickableId, action, data);
 
         bool onClickTriggered = false;
         const int releasedClickableRectIndex = FindClickableTextRectIndexFromViewportSpacePoint(GetEntityId(), point, m_clickableTextRects);
@@ -202,7 +204,8 @@ bool UiMarkupButtonComponent::HandleReleased(AZ::Vector2 point)
             const int releasedClickableId = m_clickableTextRects[releasedClickableRectIndex].id;
             if (releasedClickableId == pressedClickableId)
             {
-                UiMarkupButtonNotificationsBus::Event(GetEntityId(), &UiMarkupButtonNotificationsBus::Events::OnClick, pressedClickableId, action, data);
+                UiMarkupButtonNotificationsBus::Event(
+                    GetEntityId(), &UiMarkupButtonNotificationsBus::Events::OnClick, pressedClickableId, action, data);
                 onClickTriggered = true;
             }
         }
@@ -423,7 +426,8 @@ void UiMarkupButtonComponent::OnLinkHoverColorChanged()
             // If it is currently being hovered then set its color to the new link hover color
             if (clickableText.id == hoverClickableId)
             {
-                UiClickableTextBus::Event(GetEntityId(), &UiClickableTextBus::Events::SetClickableTextColor, clickableText.id, m_linkHoverColor);
+                UiClickableTextBus::Event(
+                    GetEntityId(), &UiClickableTextBus::Events::SetClickableTextColor, clickableText.id, m_linkHoverColor);
             }
 
             lastClickableId = clickableText.id;

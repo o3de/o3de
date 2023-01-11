@@ -662,7 +662,8 @@ bool UiScrollBarComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractab
             m_lastDragPoint = m_pressedPoint;
 
             // tell the canvas that this is now the active interactable
-            UiInteractableActiveNotificationBus::Event(currentActiveInteractable, &UiInteractableActiveNotificationBus::Events::ActiveChanged, GetEntityId(), false);
+            UiInteractableActiveNotificationBus::Event(
+                currentActiveInteractable, &UiInteractableActiveNotificationBus::Events::ActiveChanged, GetEntityId(), false);
         }
     }
 
@@ -1075,7 +1076,8 @@ void UiScrollBarComponent::DoChangingActions()
     {
         AZ::EntityId canvasEntityId;
         UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
-        UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_valueChangingActionName);
+        UiCanvasNotificationBus::Event(
+            canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_valueChangingActionName);
     }
 
     ResetFade();
@@ -1097,13 +1099,15 @@ void UiScrollBarComponent::NotifyListenersOnValueChanging()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiScrollBarComponent::NotifyScrollableOnValueChanged()
 {
-    UiScrollerToScrollableNotificationBus::Event(GetEntityId(), &UiScrollerToScrollableNotificationBus::Events::OnValueChangedByScroller, m_value);
+    UiScrollerToScrollableNotificationBus::Event(
+        GetEntityId(), &UiScrollerToScrollableNotificationBus::Events::OnValueChangedByScroller, m_value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiScrollBarComponent::NotifyScrollableOnValueChanging()
 {
-    UiScrollerToScrollableNotificationBus::Event(GetEntityId(), &UiScrollerToScrollableNotificationBus::Events::OnValueChangingByScroller, m_value);
+    UiScrollerToScrollableNotificationBus::Event(
+        GetEntityId(), &UiScrollerToScrollableNotificationBus::Events::OnValueChangingByScroller, m_value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

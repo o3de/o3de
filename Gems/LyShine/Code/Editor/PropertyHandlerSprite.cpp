@@ -39,7 +39,8 @@ PropertySpriteCtrl::PropertySpriteCtrl(QWidget* parent)
         this,
         [ this ]([[maybe_unused]] AZ::Data::AssetId newAssetID)
         {
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, m_propertyAssetCtrl);
         });
 
@@ -80,7 +81,8 @@ PropertySpriteCtrl::PropertySpriteCtrl(QWidget* parent)
                 }
 
                 AZStd::string assetPath;
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, m_propertyAssetCtrl->GetCurrentAssetID());
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, m_propertyAssetCtrl->GetCurrentAssetID());
 
                 SpriteBorderEditor sbe(assetPath.c_str(), this->window());
                 if (sbe.GetHasBeenInitializedProperly())
@@ -145,7 +147,8 @@ void PropertyHandlerSprite::WriteGUIValuesIntoProperty(size_t index, PropertySpr
     (void)node;
 
     AZStd::string assetPath;
-    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, GUI->GetPropertyAssetCtrl()->GetCurrentAssetID());
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+        assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, GUI->GetPropertyAssetCtrl()->GetCurrentAssetID());
 
     // Convert streaming image's product path to relative source path to assign to the SimpleAssetReference<Texture>
     AZStd::string sourcePath = CSprite::GetImageSourcePathFromProductPath(assetPath);
@@ -191,7 +194,8 @@ bool PropertyHandlerSprite::ReadValuesIntoGUI(size_t index, PropertySpriteCtrl* 
 
 void PropertyHandlerSprite::Register()
 {
-    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerSprite());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerSprite());
 }
 
 #include <moc_PropertyHandlerSprite.cpp>

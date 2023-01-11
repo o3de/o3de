@@ -67,7 +67,8 @@ PropertyAnchorCtrl::PropertyAnchorCtrl(QWidget* parent)
                     m_propertyVectorCtrl->setValuebyIndex(presetValues.GetZ(), 2);
                     m_propertyVectorCtrl->setValuebyIndex(presetValues.GetW(), 3);
 
-                    AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
+                    AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                        &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
                 },
                 this);
 
@@ -83,7 +84,8 @@ PropertyAnchorCtrl::PropertyAnchorCtrl(QWidget* parent)
 
         QObject::connect(m_propertyVectorCtrl, &AzQtComponents::VectorInput::valueChanged, this, [this]()
             {
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
             });
 
         m_propertyVectorCtrl->setMinimum(-std::numeric_limits<float>::max());
@@ -408,7 +410,8 @@ AZ::EntityId PropertyHandlerAnchor::GetParentEntityId(AzToolsFramework::Instance
 
 void PropertyHandlerAnchor::Register()
 {
-    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerAnchor());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerAnchor());
 }
 
 #include <moc_PropertyHandlerAnchor.cpp>

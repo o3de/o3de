@@ -57,7 +57,8 @@ void UiDynamicLayoutComponent::SetNumChildElements(int numChildren)
                 {
                     // Clone the prototype element and add it as a child
                     AZ::Entity* clonedElement = nullptr;
-                    UiCanvasBus::EventResult(clonedElement, canvasEntityId, &UiCanvasBus::Events::CloneElement, prototypeEntity, GetEntity());
+                    UiCanvasBus::EventResult(
+                        clonedElement, canvasEntityId, &UiCanvasBus::Events::CloneElement, prototypeEntity, GetEntity());
                 }
 
                 SetPrototypeElementActive(false);
@@ -104,7 +105,8 @@ void UiDynamicLayoutComponent::InGamePostActivate()
             m_prototypeElement = prototypeEntity->GetId();
 
             // Store the size of the prototype element for future layout element size calculations
-            UiTransformBus::EventResult(m_prototypeElementSize, m_prototypeElement, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
+            UiTransformBus::EventResult(
+                m_prototypeElementSize, m_prototypeElement, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
             UiElementComponent* elementComponent = GetEntity()->FindComponent<UiElementComponent>();
             AZ_Assert(elementComponent, "entity has no UiElementComponent");

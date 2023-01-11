@@ -487,7 +487,8 @@ void UiFlipbookAnimationComponent::Update(float deltaTime)
                 if (m_currentFrame > m_endFrame)
                 {
                     m_currentFrame = m_loopStartFrame;
-                    UiFlipbookAnimationNotificationsBus::Event(GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnLoopSequenceCompleted);
+                    UiFlipbookAnimationNotificationsBus::Event(
+                        GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnLoopSequenceCompleted);
                 }
                 break;
             case LoopType::PingPong:
@@ -495,13 +496,15 @@ void UiFlipbookAnimationComponent::Update(float deltaTime)
                 {
                     m_currentLoopDirection = -1;
                     m_currentFrame = m_endFrame;
-                    UiFlipbookAnimationNotificationsBus::Event(GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnLoopSequenceCompleted);
+                    UiFlipbookAnimationNotificationsBus::Event(
+                        GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnLoopSequenceCompleted);
                 }
                 else if (m_currentLoopDirection < 0 && m_currentFrame <= m_loopStartFrame)
                 {
                     m_currentLoopDirection = 1;
                     m_currentFrame = m_loopStartFrame;
-                    UiFlipbookAnimationNotificationsBus::Event(GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnLoopSequenceCompleted);
+                    UiFlipbookAnimationNotificationsBus::Event(
+                        GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnLoopSequenceCompleted);
                 }
                 break;
             default:

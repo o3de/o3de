@@ -254,5 +254,6 @@ UiTransform2dInterface::Offsets PropertyHandlerOffset::DisplayedOffsetToInternal
 void PropertyHandlerOffset::Register()
 {
     qRegisterMetaType<UiTransform2dInterface::Anchors>("UiTransform2dInterface::Anchors");
-    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerOffset());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerOffset());
 }

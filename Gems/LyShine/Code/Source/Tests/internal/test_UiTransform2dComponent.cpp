@@ -228,7 +228,8 @@ namespace
         // Test that scaling to the device modifies the transform
         UiTransformBus::Event(testElemId, &UiTransformBus::Events::SetScaleToDeviceMode, UiTransformInterface::ScaleToDeviceMode::None);
         UiTransformBus::Event(testElemId, &UiTransformBus::Events::GetLocalTransform, transform);
-        UiTransformBus::Event(testElemId, &UiTransformBus::Events::SetScaleToDeviceMode, UiTransformInterface::ScaleToDeviceMode::UniformScaleToFit);
+        UiTransformBus::Event(
+            testElemId, &UiTransformBus::Events::SetScaleToDeviceMode, UiTransformInterface::ScaleToDeviceMode::UniformScaleToFit);
         
         // Resize the canvas to change the DeviceScale
         canvas->SetTargetCanvasSize(true, AZ::Vector2(3, 3));
@@ -246,7 +247,8 @@ namespace
         AZ_Assert(active == transform, "Test failed");
 
         // Test that setting it to UniformScaleToFit when it is None, sets it to UniformScaleToFit
-        UiTransformBus::Event(testElemId, &UiTransformBus::Events::SetScaleToDeviceMode, UiTransformInterface::ScaleToDeviceMode::UniformScaleToFit);
+        UiTransformBus::Event(
+            testElemId, &UiTransformBus::Events::SetScaleToDeviceMode, UiTransformInterface::ScaleToDeviceMode::UniformScaleToFit);
         UiTransformBus::EventResult(scaleToDeviceMode, testElemId, &UiTransformBus::Events::GetScaleToDeviceMode);
         AZ_Assert(scaleToDeviceMode == UiTransformInterface::ScaleToDeviceMode::UniformScaleToFit, "Test failed");
 
@@ -259,7 +261,8 @@ namespace
         AZ_Assert(hasScaleOrRotation, "Test failed");
 
         // Test that setting it to UniformScaleToFit when it is UniformScaleToFit, does not set it to None
-        UiTransformBus::Event(testElemId, &UiTransformBus::Events::SetScaleToDeviceMode, UiTransformInterface::ScaleToDeviceMode::UniformScaleToFit);
+        UiTransformBus::Event(
+            testElemId, &UiTransformBus::Events::SetScaleToDeviceMode, UiTransformInterface::ScaleToDeviceMode::UniformScaleToFit);
         UiTransformBus::EventResult(scaleToDeviceMode, testElemId, &UiTransformBus::Events::GetScaleToDeviceMode);
         AZ_Assert(scaleToDeviceMode == UiTransformInterface::ScaleToDeviceMode::UniformScaleToFit, "Test failed");
 
@@ -681,14 +684,24 @@ namespace
         // Test positive cases
         for (size_t i = 0; i < boundsA.size(); i++)
         {
-            UiTransformBus::EventResult(result, testElemId, &UiTransformBus::Events::BoundsAreOverlappingRect, AZ::Vector2(boundsA[i].left, boundsA[i].top), AZ::Vector2(boundsA[i].right, boundsA[i].bottom));
+            UiTransformBus::EventResult(
+                result,
+                testElemId,
+                &UiTransformBus::Events::BoundsAreOverlappingRect,
+                AZ::Vector2(boundsA[i].left, boundsA[i].top),
+                AZ::Vector2(boundsA[i].right, boundsA[i].bottom));
             AZ_Assert(result, "Test failed");
         }
         
         // Test negative cases
         for (size_t i = 0; i < boundsB.size(); i++)
         {
-            UiTransformBus::EventResult(result, testElemId, &UiTransformBus::Events::BoundsAreOverlappingRect, AZ::Vector2(boundsB[i].left, boundsB[i].top), AZ::Vector2(boundsB[i].right, boundsB[i].bottom));
+            UiTransformBus::EventResult(
+                result,
+                testElemId,
+                &UiTransformBus::Events::BoundsAreOverlappingRect,
+                AZ::Vector2(boundsB[i].left, boundsB[i].top),
+                AZ::Vector2(boundsB[i].right, boundsB[i].bottom));
             AZ_Assert(!result, "Test failed");
         }
 
@@ -697,7 +710,12 @@ namespace
 
         for (size_t i = 0; i < boundsA.size(); i++)
         {
-            UiTransformBus::EventResult(result, testElemId, &UiTransformBus::Events::BoundsAreOverlappingRect, AZ::Vector2(boundsA[i].left, boundsA[i].top), AZ::Vector2(boundsA[i].right, boundsA[i].bottom));
+            UiTransformBus::EventResult(
+                result,
+                testElemId,
+                &UiTransformBus::Events::BoundsAreOverlappingRect,
+                AZ::Vector2(boundsA[i].left, boundsA[i].top),
+                AZ::Vector2(boundsA[i].right, boundsA[i].bottom));
             AZ_Assert(!result, "Test failed");
         }
 
@@ -706,7 +724,12 @@ namespace
 
         for (size_t i = 0; i < boundsB.size(); i++)
         {
-            UiTransformBus::EventResult(result, testElemId, &UiTransformBus::Events::BoundsAreOverlappingRect, AZ::Vector2(boundsB[i].left, boundsB[i].top), AZ::Vector2(boundsB[i].right, boundsB[i].bottom));
+            UiTransformBus::EventResult(
+                result,
+                testElemId,
+                &UiTransformBus::Events::BoundsAreOverlappingRect,
+                AZ::Vector2(boundsB[i].left, boundsB[i].top),
+                AZ::Vector2(boundsB[i].right, boundsB[i].bottom));
             AZ_Assert(result, "Test failed");
         }
 
@@ -716,14 +739,24 @@ namespace
 
         for (size_t i = 0; i < boundsA.size(); i++)
         {
-            UiTransformBus::EventResult(result, testElemId, &UiTransformBus::Events::BoundsAreOverlappingRect, AZ::Vector2(boundsA[i].left, boundsA[i].top), AZ::Vector2(boundsA[i].right, boundsA[i].bottom));
+            UiTransformBus::EventResult(
+                result,
+                testElemId,
+                &UiTransformBus::Events::BoundsAreOverlappingRect,
+                AZ::Vector2(boundsA[i].left, boundsA[i].top),
+                AZ::Vector2(boundsA[i].right, boundsA[i].bottom));
             AZ_Assert(!result, "Test failed");
         }
 
         // Test cases that would be negative cases, but aren't due to a rotation
         for (size_t i = 0; i < boundsB.size(); i++)
         {
-            UiTransformBus::EventResult(result, testElemId, &UiTransformBus::Events::BoundsAreOverlappingRect, AZ::Vector2(boundsB[i].left, boundsB[i].top), AZ::Vector2(boundsB[i].right, boundsB[i].bottom));
+            UiTransformBus::EventResult(
+                result,
+                testElemId,
+                &UiTransformBus::Events::BoundsAreOverlappingRect,
+                AZ::Vector2(boundsB[i].left, boundsB[i].top),
+                AZ::Vector2(boundsB[i].right, boundsB[i].bottom));
             AZ_Assert(result, "Test failed");
         }
 
@@ -994,19 +1027,22 @@ namespace
         UiTransform2dBus::Event(testElemId, &UiTransform2dBus::Events::SetLocalWidth, expectedWidth);
 
         // Test that when there isn't a fixed width the functions don't give non-zero return values
-        UiTransform2dBus::Event(testElemId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0, 0, 1, 1), false, false);
+        UiTransform2dBus::Event(
+            testElemId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0, 0, 1, 1), false, false);
         UiTransform2dBus::EventResult(actualWidth, testElemId, &UiTransform2dBus::Events::GetLocalWidth);
         AZ_Assert(AZ::IsClose(actualWidth, 0, AZ::Constants::FloatEpsilon ), "Test failed");
         UiTransform2dBus::EventResult(actualHeight, testElemId, &UiTransform2dBus::Events::GetLocalHeight);
         AZ_Assert(AZ::IsClose(actualHeight, 0, AZ::Constants::FloatEpsilon ), "Test failed");
 
-        UiTransform2dBus::Event(testElemId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0, 1, 1, 1), false, false);
+        UiTransform2dBus::Event(
+            testElemId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0, 1, 1, 1), false, false);
         UiTransform2dBus::EventResult(actualWidth, testElemId, &UiTransform2dBus::Events::GetLocalWidth);
         AZ_Assert(AZ::IsClose(actualWidth, 0, AZ::Constants::FloatEpsilon ), "Test failed");
         UiTransform2dBus::EventResult(actualHeight, testElemId, &UiTransform2dBus::Events::GetLocalHeight);
         AZ_Assert(AZ::IsClose(actualHeight, expectedHeight, AZ::Constants::FloatEpsilon ), "Test failed");
 
-        UiTransform2dBus::Event(testElemId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(1, 0, 1, 1), false, false);
+        UiTransform2dBus::Event(
+            testElemId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(1, 0, 1, 1), false, false);
         UiTransform2dBus::EventResult(actualWidth, testElemId, &UiTransform2dBus::Events::GetLocalWidth);
         AZ_Assert(AZ::IsClose(actualWidth, expectedWidth, AZ::Constants::FloatEpsilon ), "Test failed");
         UiTransform2dBus::EventResult(actualHeight, testElemId, &UiTransform2dBus::Events::GetLocalHeight);

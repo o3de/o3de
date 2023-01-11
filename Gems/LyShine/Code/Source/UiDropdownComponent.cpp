@@ -117,7 +117,8 @@ void UiDropdownComponent::SetValue(AZ::EntityId value)
     {
         AZ::EntityId canvasEntityId;
         UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
-        UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_optionSelectedActionName);
+        UiCanvasNotificationBus::Event(
+            canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_optionSelectedActionName);
     }
     UiDropdownNotificationBus::Event(GetEntityId(), &UiDropdownNotificationBus::Events::OnDropdownValueChanged, value);
 }
@@ -949,7 +950,8 @@ AZ::EntityId UiDropdownComponent::CreateContentParentInteractable()
     AZ::Entity* button = nullptr;
     if (m_expandedParentId.IsValid())
     {
-        UiElementBus::EventResult(button, m_expandedParentId, &UiElementBus::Events::CreateChildElement, "InternalContentParentInteractable");
+        UiElementBus::EventResult(
+            button, m_expandedParentId, &UiElementBus::Events::CreateChildElement, "InternalContentParentInteractable");
     }
     else
     {

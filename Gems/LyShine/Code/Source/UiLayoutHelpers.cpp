@@ -735,7 +735,8 @@ namespace UiLayoutHelpers
     {
         AZ::EntityId canvasEntityId;
         UiElementBus::EventResult(canvasEntityId, elementId, &UiElementBus::Events::GetCanvasEntityId);
-        UiLayoutManagerBus::Event(canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, elementId, true);
+        UiLayoutManagerBus::Event(
+            canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, elementId, true);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

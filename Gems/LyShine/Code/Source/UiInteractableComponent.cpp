@@ -729,7 +729,8 @@ void UiInteractableComponent::TriggerReleasedAction()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableComponent::TriggerReceivedHoverByNavigatingFromDescendantAction(AZ::EntityId descendantEntityId)
 {
-    UiInteractableNotificationBus::Event(GetEntityId(), &UiInteractableNotificationBus::Events::OnReceivedHoverByNavigatingFromDescendant, descendantEntityId);
+    UiInteractableNotificationBus::Event(
+        GetEntityId(), &UiInteractableNotificationBus::Events::OnReceivedHoverByNavigatingFromDescendant, descendantEntityId);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -39,7 +39,8 @@ PropertyUiParticleColorKeyframeCtrl::PropertyUiParticleColorKeyframeCtrl(QWidget
 
     QObject::connect(m_timeCtrl, &AzToolsFramework::PropertyDoubleSpinCtrl::valueChanged, this, [this]()
         {
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
         });
 
     layout->addWidget(m_timeCtrl);
@@ -53,7 +54,8 @@ PropertyUiParticleColorKeyframeCtrl::PropertyUiParticleColorKeyframeCtrl(QWidget
 
     QObject::connect(m_colorCtrl, &AzToolsFramework::PropertyColorCtrl::valueChanged, this, [this]()
         {
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
         });
 
     layout->addWidget(m_colorCtrl);
@@ -83,7 +85,8 @@ PropertyUiParticleColorKeyframeCtrl::PropertyUiParticleColorKeyframeCtrl(QWidget
 
     QObject::connect(m_inTangentCtrl, &AzToolsFramework::PropertyEnumComboBoxCtrl::valueChanged, this, [this]()
         {
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
         });
 
     layoutRow2->addWidget(m_inTangentCtrl);
@@ -100,7 +103,8 @@ PropertyUiParticleColorKeyframeCtrl::PropertyUiParticleColorKeyframeCtrl(QWidget
 
     QObject::connect(m_outTangentCtrl, &AzToolsFramework::PropertyEnumComboBoxCtrl::valueChanged, this, [this]()
         {
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
         });
 
     layoutRow2->addWidget(m_outTangentCtrl);
@@ -193,7 +197,9 @@ AZ::EntityId PropertyHandlerUiParticleColorKeyframe::GetParentEntityId(AzToolsFr
 
 void PropertyHandlerUiParticleColorKeyframe::Register()
 {
-    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerUiParticleColorKeyframe());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType,
+        aznew PropertyHandlerUiParticleColorKeyframe());
 }
 
 #include <moc_PropertyHandlerUiParticleColorKeyframe.cpp>

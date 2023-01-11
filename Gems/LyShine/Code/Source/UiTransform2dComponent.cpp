@@ -840,7 +840,8 @@ void UiTransform2dComponent::NotifyAndResetCanvasSpaceRectChange()
         Rect prevRect = m_prevRect;
         m_prevRect = m_rect;
         m_rectChangedByInitialization = false;
-        UiTransformChangeNotificationBus::Event(GetEntityId(), &UiTransformChangeNotificationBus::Events::OnCanvasSpaceRectChanged, GetEntityId(), prevRect, m_rect);
+        UiTransformChangeNotificationBus::Event(
+            GetEntityId(), &UiTransformChangeNotificationBus::Events::OnCanvasSpaceRectChanged, GetEntityId(), prevRect, m_rect);
     }
 }
 

@@ -343,7 +343,8 @@ bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
                 m_textSelectionStartPos = m_textCursorPos - 1;
                 EraseAndUpdateSelectionRange(currentText, m_textCursorPos, m_textSelectionStartPos);
             }
-            UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
+            UiTextBus::Event(
+                m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
 
             changedText = true;
         }
@@ -373,7 +374,8 @@ bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
 
                     m_textCursorPos++;
                     m_textSelectionStartPos = m_textCursorPos;
-                    UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
+                    UiTextBus::Event(
+                        m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
                     changedText = true;
                 }
             }
@@ -564,7 +566,8 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
                 m_textCursorPos = m_textSelectionStartPos = adjustedIndex;
             }
 
-            UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
+            UiTextBus::Event(
+                m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
         }
         else
         {
@@ -754,7 +757,8 @@ void UiTextInputComponent::Update(float deltaTime)
         {
             m_textCursorColor.SetA(m_textCursorColor.GetA() ? 0.0f : 1.0f);
             m_cursorBlinkStartTime = currentTime;
-            UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
+            UiTextBus::Event(
+                m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
         }
     }
 }
@@ -962,7 +966,8 @@ void UiTextInputComponent::SetText(const AZStd::string& text)
             UiTextBus::Event(m_textEntity, &UiTextBus::Events::GetSelectionRange, selStartIndex, selEndIndex);
             if (selStartIndex >= 0)
             {
-                UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
+                UiTextBus::Event(
+                    m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
             }
         }
     }

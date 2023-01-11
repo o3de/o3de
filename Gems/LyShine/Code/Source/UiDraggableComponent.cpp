@@ -275,7 +275,8 @@ bool UiDraggableComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractab
             m_pressedPoint = startPoint;
 
             // tell the canvas that this is now the active interactable
-            UiInteractableActiveNotificationBus::Event(currentActiveInteractable, &UiInteractableActiveNotificationBus::Events::ActiveChanged, GetEntityId(), false);
+            UiInteractableActiveNotificationBus::Event(
+                currentActiveInteractable, &UiInteractableActiveNotificationBus::Events::ActiveChanged, GetEntityId(), false);
 
             // start the drag
             m_isDragging = true;

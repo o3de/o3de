@@ -256,16 +256,19 @@ void UiRadioButtonGroupComponent::SetStateCommon(AZ::EntityId radioButton, bool 
             // Check if we currently have a checked radio button
             if (m_checkedEntity.IsValid())
             {
-                UiRadioButtonCommunicationBus::Event(m_checkedEntity, &UiRadioButtonCommunicationBus::Events::SetState, false, sendNotifications);
+                UiRadioButtonCommunicationBus::Event(
+                    m_checkedEntity, &UiRadioButtonCommunicationBus::Events::SetState, false, sendNotifications);
                 m_checkedEntity.SetInvalid();
             }
 
             m_checkedEntity = radioButton;
-            UiRadioButtonCommunicationBus::Event(m_checkedEntity, &UiRadioButtonCommunicationBus::Events::SetState, true, sendNotifications);
+            UiRadioButtonCommunicationBus::Event(
+                m_checkedEntity, &UiRadioButtonCommunicationBus::Events::SetState, true, sendNotifications);
         }
         else if (m_allowUncheck && radioButton == m_checkedEntity) // && isOn == false
         {
-            UiRadioButtonCommunicationBus::Event(m_checkedEntity, &UiRadioButtonCommunicationBus::Events::SetState, false, sendNotifications);
+            UiRadioButtonCommunicationBus::Event(
+                m_checkedEntity, &UiRadioButtonCommunicationBus::Events::SetState, false, sendNotifications);
             m_checkedEntity.SetInvalid();
         }
         else // we didn't change anything, don't send events
@@ -281,7 +284,8 @@ void UiRadioButtonGroupComponent::SetStateCommon(AZ::EntityId radioButton, bool 
                 UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
                 UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_changedActionName);
             }
-            UiRadioButtonGroupNotificationBus::Event(GetEntityId(), &UiRadioButtonGroupNotificationBus::Events::OnRadioButtonGroupStateChange, m_checkedEntity);
+            UiRadioButtonGroupNotificationBus::Event(
+                GetEntityId(), &UiRadioButtonGroupNotificationBus::Events::OnRadioButtonGroupStateChange, m_checkedEntity);
         }
     }
 }

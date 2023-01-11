@@ -211,7 +211,8 @@ AZ::Entity* UiElementComponent::GetChildElement(int index)
         }
         else
         {
-            AZ::ComponentApplicationBus::BroadcastResult(childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_childEntityIdOrder[index].m_entityId);
+            AZ::ComponentApplicationBus::BroadcastResult(
+                childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_childEntityIdOrder[index].m_entityId);
         }
     }
     return childEntity;
@@ -286,7 +287,8 @@ LyShine::EntityArray UiElementComponent::GetChildElements()
         for (auto& childOrderEntry : m_childEntityIdOrder)
         {
             AZ::Entity* childEntity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, childOrderEntry.m_entityId);
+            AZ::ComponentApplicationBus::BroadcastResult(
+                childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, childOrderEntry.m_entityId);
             if (childEntity)
             {
                 children.push_back(childEntity);
@@ -312,7 +314,8 @@ AZStd::vector<AZ::EntityId> UiElementComponent::GetChildEntityIds()
 AZ::Entity* UiElementComponent::CreateChildElement(const LyShine::NameType& name)
 {
     AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
-    AzFramework::EntityIdContextQueryBus::EventResult(contextId, GetEntityId(), &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
+    AzFramework::EntityIdContextQueryBus::EventResult(
+        contextId, GetEntityId(), &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
 
     AZ::Entity* child = nullptr;
     UiEntityContextRequestBus::EventResult(child, contextId, &UiEntityContextRequestBus::Events::CreateUiEntity, name.c_str());
@@ -918,7 +921,8 @@ void UiElementComponent::SetIsEnabled(bool isEnabled)
         if (areAncestorsEnabled)
         {
             // Tell any listeners that the effective enabled state has changed
-            UiElementNotificationBus::Event(GetEntityId(), &UiElementNotificationBus::Events::OnUiElementAndAncestorsEnabledChanged, m_isEnabled);
+            UiElementNotificationBus::Event(
+                GetEntityId(), &UiElementNotificationBus::Events::OnUiElementAndAncestorsEnabledChanged, m_isEnabled);
 
             DoRecursiveEnabledNotification(m_isEnabled);
         }
@@ -1103,7 +1107,8 @@ void UiElementComponent::AddChild(AZ::Entity* child, AZ::Entity* insertBefore)
     // Adding or removing child elements may require recomputing the
     // transforms of all children
     UiLayoutManagerBus::Event(GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayout, GetEntityId());
-    UiLayoutManagerBus::Event(GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), false);
+    UiLayoutManagerBus::Event(
+        GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), false);
 
     // It will always require recomputing the transform for the child just added
     if (IsFullyInitialized())
@@ -1146,7 +1151,8 @@ void UiElementComponent::RemoveChild(AZ::Entity* child)
         // Adding or removing child elements may require recomputing the
         // transforms of all children
         UiLayoutManagerBus::Event(GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayout, GetEntityId());
-        UiLayoutManagerBus::Event(GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), false);
+        UiLayoutManagerBus::Event(
+            GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), false);
 
         // tell the canvas to invalidate the render graph
         if (m_canvas)
@@ -1190,7 +1196,8 @@ void UiElementComponent::RemoveChild(AZ::EntityId child)
         // Adding or removing child elements may require recomputing the
         // transforms of all children
         UiLayoutManagerBus::Event(GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayout, GetEntityId());
-        UiLayoutManagerBus::Event(GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), false);
+        UiLayoutManagerBus::Event(
+            GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), false);
 
         // tell the canvas to invalidate the render graph
         if (m_canvas)
@@ -1298,7 +1305,8 @@ bool UiElementComponent::FixupPostLoad(AZ::Entity* entity, UiCanvasComponent* ca
     // Tell any listeners that the canvas entity ID for the element is now set, this allows other components to
     // listen for messages from the canvas
     AZ::EntityId parentEntityId = (parent) ? parent->GetId() : AZ::EntityId();
-    UiElementNotificationBus::Event(GetEntityId(), &UiElementNotificationBus::Events::OnUiElementFixup, canvas->GetEntityId(), parentEntityId);
+    UiElementNotificationBus::Event(
+        GetEntityId(), &UiElementNotificationBus::Events::OnUiElementFixup, canvas->GetEntityId(), parentEntityId);
 
     return true;
 }
@@ -1555,7 +1563,8 @@ void UiElementComponent::DoRecursiveEnabledNotification(bool newIsEnabledValue)
         // but if it is enabled then its effective enabled state is controlled by its ancestors
         if (child->m_isEnabled)
         {
-            UiElementNotificationBus::Event(child->GetEntityId(), &UiElementNotificationBus::Events::OnUiElementAndAncestorsEnabledChanged, newIsEnabledValue);
+            UiElementNotificationBus::Event(
+                child->GetEntityId(), &UiElementNotificationBus::Events::OnUiElementAndAncestorsEnabledChanged, newIsEnabledValue);
             child->DoRecursiveEnabledNotification(newIsEnabledValue);
         }
     }

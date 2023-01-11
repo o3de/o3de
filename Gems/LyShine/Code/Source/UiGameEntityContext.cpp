@@ -135,7 +135,8 @@ bool UiGameEntityContext::DestroyEntity(AZ::Entity* entity)
     AZ_Assert(m_entityOwnershipService->IsInitialized(), "The context has not been initialized.");
 
     AzFramework::EntityContextId owningContextId = AzFramework::EntityContextId::CreateNull();
-    AzFramework::EntityIdContextQueryBus::EventResult(owningContextId, entity->GetId(), &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
+    AzFramework::EntityIdContextQueryBus::EventResult(
+        owningContextId, entity->GetId(), &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
     AZ_Assert(owningContextId == m_contextId, "Entity does not belong to this context, and therefore can not be safely destroyed by this context.");
 
     if (owningContextId == m_contextId)
@@ -308,7 +309,11 @@ void UiGameEntityContext::OnSlicePreInstantiate(const AZ::Data::AssetId& sliceAs
                 }, m_serializeContext, false);
         }
 
-        UiGameEntityContextSliceInstantiationResultsBus::Event(ticket, &UiGameEntityContextSliceInstantiationResultsBus::Events::OnEntityContextSlicePreInstantiate, sliceAssetId, sliceAddress);
+        UiGameEntityContextSliceInstantiationResultsBus::Event(
+            ticket,
+            &UiGameEntityContextSliceInstantiationResultsBus::Events::OnEntityContextSlicePreInstantiate,
+            sliceAssetId,
+            sliceAddress);
     }
 }
 
@@ -415,9 +420,11 @@ void UiGameEntityContext::OnSliceInstantiated(const AZ::Data::AssetId& sliceAsse
         m_instantiatingDynamicSlices.erase(instantiatingIter);
 
         // This allows the UiSpawnerComponent to respond after the entities have been activated and fixed up
-        UiGameEntityContextSliceInstantiationResultsBus::Event(ticket, &UiGameEntityContextSliceInstantiationResultsBus::Events::OnEntityContextSliceInstantiated, sliceAssetId, instance);
+        UiGameEntityContextSliceInstantiationResultsBus::Event(
+            ticket, &UiGameEntityContextSliceInstantiationResultsBus::Events::OnEntityContextSliceInstantiated, sliceAssetId, instance);
 
-        UiGameEntityContextNotificationBus::Broadcast(&UiGameEntityContextNotificationBus::Events::OnSliceInstantiated, sliceAssetId, instance, ticket);
+        UiGameEntityContextNotificationBus::Broadcast(
+            &UiGameEntityContextNotificationBus::Events::OnSliceInstantiated, sliceAssetId, instance, ticket);
     }
 }
 
@@ -430,7 +437,9 @@ void UiGameEntityContext::OnSliceInstantiationFailed(const AZ::Data::AssetId& sl
 
     if (m_instantiatingDynamicSlices.erase(ticket) > 0)
     {
-        UiGameEntityContextSliceInstantiationResultsBus::Event(ticket, &UiGameEntityContextSliceInstantiationResultsBus::Events::OnEntityContextSliceInstantiationFailed, sliceAssetId);
-        UiGameEntityContextNotificationBus::Broadcast(&UiGameEntityContextNotificationBus::Events::OnSliceInstantiationFailed, sliceAssetId, ticket);
+        UiGameEntityContextSliceInstantiationResultsBus::Event(
+            ticket, &UiGameEntityContextSliceInstantiationResultsBus::Events::OnEntityContextSliceInstantiationFailed, sliceAssetId);
+        UiGameEntityContextNotificationBus::Broadcast(
+            &UiGameEntityContextNotificationBus::Events::OnSliceInstantiationFailed, sliceAssetId, ticket);
     }
 }

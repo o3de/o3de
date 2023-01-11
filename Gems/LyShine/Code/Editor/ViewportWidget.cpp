@@ -178,7 +178,8 @@ namespace
                                 const AzFramework::ModifierKeyMask activeModifierKeys = AzFramework::ModifierKeyMask::None)
     {
         bool handled = false;
-        UiCanvasBus::EventResult(handled, canvasEntityId, &UiCanvasBus::Events::HandleInputEvent, inputSnapshot, viewportPos, activeModifierKeys);
+        UiCanvasBus::EventResult(
+            handled, canvasEntityId, &UiCanvasBus::Events::HandleInputEvent, inputSnapshot, viewportPos, activeModifierKeys);
 
         // Execute events that have been queued during the input event handler
         AZ::Interface<ILyShine>::Get()->ExecuteQueuedEvents();

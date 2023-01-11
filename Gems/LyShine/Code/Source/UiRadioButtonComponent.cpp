@@ -150,21 +150,24 @@ void UiRadioButtonComponent::SetState(bool isOn, bool sendNotifications)
             {
                 AZ::EntityId canvasEntityId;
                 UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
-                UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_turnOnActionName);
+                UiCanvasNotificationBus::Event(
+                    canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_turnOnActionName);
             }
 
             if (!m_isOn && !m_turnOffActionName.empty())
             {
                 AZ::EntityId canvasEntityId;
                 UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
-                UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_turnOffActionName);
+                UiCanvasNotificationBus::Event(
+                    canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_turnOffActionName);
             }
 
             if (!m_changedActionName.empty())
             {
                 AZ::EntityId canvasEntityId;
                 UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
-                UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_changedActionName);
+                UiCanvasNotificationBus::Event(
+                    canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_changedActionName);
             }
 
             UiRadioButtonNotificationBus::Event(GetEntityId(), &UiRadioButtonNotificationBus::Events::OnRadioButtonStateChange, m_isOn);
@@ -410,7 +413,8 @@ bool UiRadioButtonComponent::HandleReleasedCommon([[maybe_unused]] const AZ::Vec
     {
         UiInteractableComponent::TriggerReleasedAction();
 
-        UiRadioButtonGroupCommunicationBus::Event(m_group, &UiRadioButtonGroupCommunicationBus::Events::RequestRadioButtonStateChange, GetEntityId(), !m_isOn);
+        UiRadioButtonGroupCommunicationBus::Event(
+            m_group, &UiRadioButtonGroupCommunicationBus::Events::RequestRadioButtonStateChange, GetEntityId(), !m_isOn);
     }
 
     m_isPressed = false;

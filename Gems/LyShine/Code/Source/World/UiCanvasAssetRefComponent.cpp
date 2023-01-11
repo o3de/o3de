@@ -113,8 +113,10 @@ AZ::EntityId UiCanvasAssetRefComponent::LoadCanvas()
 
         m_canvasEntityId = AZ::Interface<ILyShine>::Get()->LoadCanvas(canvasPath.c_str());
 
-        UiCanvasAssetRefNotificationBus::Event(GetEntityId(), &UiCanvasAssetRefNotificationBus::Events::OnCanvasLoadedIntoEntity, m_canvasEntityId);
-        UiCanvasRefNotificationBus::Event(GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
+        UiCanvasAssetRefNotificationBus::Event(
+            GetEntityId(), &UiCanvasAssetRefNotificationBus::Events::OnCanvasLoadedIntoEntity, m_canvasEntityId);
+        UiCanvasRefNotificationBus::Event(
+            GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
     }
 
     return m_canvasEntityId;
@@ -128,7 +130,8 @@ void UiCanvasAssetRefComponent::UnloadCanvas()
         AZ::Interface<ILyShine>::Get()->ReleaseCanvasDeferred(m_canvasEntityId);
         m_canvasEntityId.SetInvalid();
 
-        UiCanvasRefNotificationBus::Event(GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
+        UiCanvasRefNotificationBus::Event(
+            GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
     }
 }
 
@@ -140,7 +143,8 @@ void UiCanvasAssetRefComponent::OnCanvasUnloaded(AZ::EntityId canvasEntityId)
         // this canvas has been unloaded (e.g. from script), set our canvas entity ID to invalid
         // and tell anyone watching this assert ref that it changed
         m_canvasEntityId.SetInvalid();
-        UiCanvasRefNotificationBus::Event(GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
+        UiCanvasRefNotificationBus::Event(
+            GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
     }
 }
 

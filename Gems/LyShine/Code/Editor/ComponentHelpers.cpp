@@ -142,7 +142,8 @@ namespace Internal
         for (const AZ::TypeId& otherComponentType : otherComponentTypes)
         {
             AZ::ComponentDescriptor* otherComponentDescriptor = nullptr;
-            AZ::ComponentDescriptorBus::EventResult(otherComponentDescriptor, otherComponentType, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
+            AZ::ComponentDescriptorBus::EventResult(
+                otherComponentDescriptor, otherComponentType, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
             if (!otherComponentDescriptor)
             {
                 AZStd::string message = AZStd::string::format("ComponentDescriptor not found for component %s.", GetFriendlyComponentNameFromType(otherComponentType).c_str());
@@ -333,7 +334,8 @@ namespace Internal
             const AZ::Uuid& componentTypeId = AzToolsFramework::GetUnderlyingComponentType(*component);
 
             AZ::ComponentDescriptor* componentDescriptor = nullptr;
-            AZ::ComponentDescriptorBus::EventResult(componentDescriptor, componentTypeId, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
+            AZ::ComponentDescriptorBus::EventResult(
+                componentDescriptor, componentTypeId, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
             if (!componentDescriptor)
             {
                 AZStd::string message = AZStd::string::format("ComponentDescriptor not found for component %s.", GetFriendlyComponentNameFromType(componentTypeId).c_str());
@@ -382,7 +384,8 @@ namespace Internal
                 const AZ::Uuid& componentToRemoveTypeId = AzToolsFramework::GetUnderlyingComponentType(*componentToRemove);
 
                 AZ::ComponentDescriptor* componentDescriptor = nullptr;
-                AZ::ComponentDescriptorBus::EventResult(componentDescriptor, componentToRemoveTypeId, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
+                AZ::ComponentDescriptorBus::EventResult(
+                    componentDescriptor, componentToRemoveTypeId, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
                 if (!componentDescriptor)
                 {
                     AZStd::string message = AZStd::string::format("ComponentDescriptor not found for component %s.", GetFriendlyComponentNameFromType(componentToRemoveTypeId).c_str());
@@ -607,7 +610,9 @@ namespace Internal
             }
         }
 
-        UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, componentsToRemove.size() > 1 ? "delete components" : "delete component");
+        UiEditorInternalNotificationBus::Broadcast(
+            &UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange,
+            componentsToRemove.size() > 1 ? "delete components" : "delete component");
 
         HandleSelectedEntitiesPropertiesChanged();
     }
@@ -794,13 +799,15 @@ namespace ComponentHelpers
 
                             entity->Deactivate();
                             AZ::Component* component;
-                            AZ::ComponentDescriptorBus::EventResult(component, componentClass->m_typeId, &AZ::ComponentDescriptorBus::Events::CreateComponent);
+                            AZ::ComponentDescriptorBus::EventResult(
+                                component, componentClass->m_typeId, &AZ::ComponentDescriptorBus::Events::CreateComponent);
                             entity->AddComponent(component);
                             entity->Activate();
                         }
                     }
 
-                    UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, "add component");
+                    UiEditorInternalNotificationBus::Broadcast(
+                        &UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, "add component");
 
                     Internal::HandleSelectedEntitiesPropertiesChanged();
                 });
@@ -1006,7 +1013,8 @@ namespace ComponentHelpers
                         }
                     }
 
-                    UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, "paste component");
+                    UiEditorInternalNotificationBus::Broadcast(
+                        &UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, "paste component");
 
                     Internal::HandleSelectedEntitiesPropertiesChanged();
                 }

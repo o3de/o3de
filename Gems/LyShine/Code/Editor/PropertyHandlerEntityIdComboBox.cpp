@@ -33,7 +33,8 @@ QWidget* PropertyHandlerEntityIdComboBox::CreateGUI(QWidget* pParent)
     PropertyEntityIdComboBoxCtrl* newCtrl = aznew PropertyEntityIdComboBoxCtrl(pParent);
     QObject::connect(newCtrl, &PropertyEntityIdComboBoxCtrl::valueChanged, this, [newCtrl]()
         {
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
         });
     return newCtrl;
 }
@@ -122,7 +123,8 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
 }
 void PropertyHandlerEntityIdComboBox::Register()
 {
-    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerEntityIdComboBox());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerEntityIdComboBox());
 }
 
 PropertyEntityIdComboBoxCtrl::PropertyEntityIdComboBoxCtrl(QWidget* pParent)

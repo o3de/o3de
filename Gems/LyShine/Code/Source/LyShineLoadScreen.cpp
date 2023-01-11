@@ -185,7 +185,8 @@ namespace LyShine
             // Release the game canvas.
             if (m_gameCanvasEntityId.IsValid())
             {
-                AZ::ComponentApplicationBus::BroadcastResult(canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_gameCanvasEntityId);
+                AZ::ComponentApplicationBus::BroadcastResult(
+                    canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_gameCanvasEntityId);
                 if (canvasEntity)
                 {
                     AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_gameCanvasEntityId, false);
@@ -196,7 +197,8 @@ namespace LyShine
             // Release the level canvas.
             if (m_levelCanvasEntityId.IsValid())
             {
-                AZ::ComponentApplicationBus::BroadcastResult(canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_levelCanvasEntityId);
+                AZ::ComponentApplicationBus::BroadcastResult(
+                    canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_levelCanvasEntityId);
                 if (canvasEntity)
                 {
                     AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_levelCanvasEntityId, false);

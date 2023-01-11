@@ -462,7 +462,12 @@ void UiFaderComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligne
     AZ::EntityId canvasEntityId;
     UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     AZ::RHI::Size imageSize(static_cast<uint32_t>(renderTargetSize.GetX()), static_cast<uint32_t>(renderTargetSize.GetY()), 1);
-    LyShine::RenderToTextureRequestBus::EventResult(m_attachmentImageId, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        m_attachmentImageId,
+        canvasEntityId,
+        &LyShine::RenderToTextureRequestBus::Events::UseRenderTarget,
+        AZ::Name(m_renderTargetName.c_str()),
+        imageSize);
     if (m_attachmentImageId.IsEmpty())
     {
         AZ_Warning("UI", false, "Failed to create render target for UiFaderComponent");
@@ -486,7 +491,8 @@ void UiFaderComponent::DestroyRenderTarget()
     {
         AZ::EntityId canvasEntityId;
         UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
-        LyShine::RenderToTextureRequestBus::Event(canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::ReleaseRenderTarget, m_attachmentImageId);
+        LyShine::RenderToTextureRequestBus::Event(
+            canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::ReleaseRenderTarget, m_attachmentImageId);
         m_attachmentImageId = AZ::RHI::AttachmentId{};
     }
 }
@@ -565,7 +571,8 @@ void UiFaderComponent::RenderRttFader(LyShine::IRenderGraph* renderGraph, UiElem
     AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage;
     AZ::EntityId canvasEntityId;
     UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
-    LyShine::RenderToTextureRequestBus::EventResult(attachmentImage, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::GetRenderTarget, m_attachmentImageId);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        attachmentImage, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::GetRenderTarget, m_attachmentImageId);
 
     // Render the element and its children to a render target
     {

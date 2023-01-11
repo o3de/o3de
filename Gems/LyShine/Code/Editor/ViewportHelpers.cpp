@@ -18,7 +18,8 @@ namespace ViewportHelpers
         bool isControlledByParent = false;
         if (parentElement)
         {
-            UiLayoutBus::EventResult(isControlledByParent, parentElement->GetId(), &UiLayoutBus::Events::IsControllingChild, element->GetId());
+            UiLayoutBus::EventResult(
+                isControlledByParent, parentElement->GetId(), &UiLayoutBus::Events::IsControllingChild, element->GetId());
         }
 
         return isControlledByParent;

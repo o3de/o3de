@@ -869,7 +869,8 @@ void UiCanvasComponent::SetCanvasToViewportMatrix(const AZ::Matrix4x4& matrix)
     {
         m_canvasToViewportMatrix = matrix;
         m_viewportToCanvasMatrix = m_canvasToViewportMatrix.GetInverseTransform();
-        UiTransformBus::Event(GetRootElement()->GetId(), &UiTransformBus::Events::SetRecomputeFlags, UiTransformInterface::Recompute::ViewportTransformOnly);
+        UiTransformBus::Event(
+            GetRootElement()->GetId(), &UiTransformBus::Events::SetRecomputeFlags, UiTransformInterface::Recompute::ViewportTransformOnly);
     }
 }
 
@@ -934,7 +935,8 @@ bool UiCanvasComponent::GetIsPixelAligned()
 void UiCanvasComponent::SetIsPixelAligned(bool isPixelAligned)
 {
     m_isPixelAligned = isPixelAligned;
-    UiCanvasPixelAlignmentNotificationBus::Event(GetEntityId(), &UiCanvasPixelAlignmentNotificationBus::Events::OnCanvasPixelAlignmentChange);
+    UiCanvasPixelAlignmentNotificationBus::Event(
+        GetEntityId(), &UiCanvasPixelAlignmentNotificationBus::Events::OnCanvasPixelAlignmentChange);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -947,7 +949,8 @@ bool UiCanvasComponent::GetIsTextPixelAligned()
 void UiCanvasComponent::SetIsTextPixelAligned(bool isTextPixelAligned)
 {
     m_isTextPixelAligned = isTextPixelAligned;
-    UiCanvasPixelAlignmentNotificationBus::Event(GetEntityId(), &UiCanvasPixelAlignmentNotificationBus::Events::OnCanvasTextPixelAlignmentChange);
+    UiCanvasPixelAlignmentNotificationBus::Event(
+        GetEntityId(), &UiCanvasPixelAlignmentNotificationBus::Events::OnCanvasTextPixelAlignmentChange);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -970,7 +973,8 @@ void UiCanvasComponent::SetEnabled(bool enabled)
         m_enabled = enabled;
         MarkRenderGraphDirty();
 
-        UiCanvasEnabledStateNotificationBus::Broadcast(&UiCanvasEnabledStateNotificationBus::Events::OnCanvasEnabledStateChanged, GetEntityId(), m_enabled);
+        UiCanvasEnabledStateNotificationBus::Broadcast(
+            &UiCanvasEnabledStateNotificationBus::Events::OnCanvasEnabledStateChanged, GetEntityId(), m_enabled);
     }
 }
 
@@ -1327,7 +1331,8 @@ void UiCanvasComponent::ForceHoverInteractable(AZ::EntityId newHoverInteractable
         if (ancestorInteractable.IsValid())
         {
             // Send an event that the descendant interactable became the hover interactable via navigation
-            UiInteractableBus::Event(ancestorInteractable, &UiInteractableBus::Events::HandleDescendantReceivedHoverByNavigation, m_hoverInteractable);
+            UiInteractableBus::Event(
+                ancestorInteractable, &UiInteractableBus::Events::HandleDescendantReceivedHoverByNavigation, m_hoverInteractable);
         }
 
         CheckHoverInteractableAndAutoActivate();
@@ -2656,7 +2661,8 @@ bool UiCanvasComponent::HandleKeyInputEvent(const AzFramework::InputChannel::Sna
         if (inputSnapshot.m_state == AzFramework::InputChannel::State::Began ||
             AzFramework::InputDeviceVirtualKeyboard::IsVirtualKeyboardDevice(inputSnapshot.m_deviceId)) // Virtual keyboard events don't have state
         {
-            UiInteractableBus::EventResult(result, m_activeInteractable, &UiInteractableBus::Events::HandleKeyInputBegan, inputSnapshot, activeModifierKeys);
+            UiInteractableBus::EventResult(
+                result, m_activeInteractable, &UiInteractableBus::Events::HandleKeyInputBegan, inputSnapshot, activeModifierKeys);
         }
     }
 
@@ -2677,7 +2683,8 @@ bool UiCanvasComponent::HandleKeyInputEvent(const AzFramework::InputChannel::Sna
             else if (!m_isActiveInteractablePressed)
             {
                 // Check if the active interactable automatically goes to an active state
-                UiInteractableBus::EventResult(handleDirectionalNavigation, m_activeInteractable, &UiInteractableBus::Events::GetIsAutoActivationEnabled);
+                UiInteractableBus::EventResult(
+                    handleDirectionalNavigation, m_activeInteractable, &UiInteractableBus::Events::GetIsAutoActivationEnabled);
             }
 
             if (handleDirectionalNavigation)
@@ -2693,7 +2700,10 @@ bool UiCanvasComponent::HandleKeyInputEvent(const AzFramework::InputChannel::Sna
                     if (ancestorInteractable.IsValid())
                     {
                         // Send an event that the descendant interactable became the hover interactable via navigation
-                        UiInteractableBus::Event(ancestorInteractable, &UiInteractableBus::Events::HandleDescendantReceivedHoverByNavigation, m_hoverInteractable);
+                        UiInteractableBus::Event(
+                            ancestorInteractable,
+                            &UiInteractableBus::Events::HandleDescendantReceivedHoverByNavigation,
+                            m_hoverInteractable);
                     }
 
                     ClearActiveInteractable();
@@ -2769,7 +2779,8 @@ bool UiCanvasComponent::HandleEnterInputEvent(UiNavigationHelpers::Command comma
                     // it becomes the currently pressed interactable for the canvas
                     bool handled = false;
                     bool shouldStayActive = false;
-                    UiInteractableBus::EventResult(handled, m_hoverInteractable, &UiInteractableBus::Events::HandleEnterPressed, shouldStayActive);
+                    UiInteractableBus::EventResult(
+                        handled, m_hoverInteractable, &UiInteractableBus::Events::HandleEnterPressed, shouldStayActive);
 
                     if (handled)
                     {
@@ -2784,7 +2795,8 @@ bool UiCanvasComponent::HandleEnterInputEvent(UiNavigationHelpers::Command comma
             }
 
             // Send a notification to listeners telling them who was just pressed (can be noone)
-            UiCanvasInputNotificationBus::Event(GetEntityId(), &UiCanvasInputNotificationBus::Events::OnCanvasEnterPressed, prevHoverInteractable);
+            UiCanvasInputNotificationBus::Event(
+                GetEntityId(), &UiCanvasInputNotificationBus::Events::OnCanvasEnterPressed, prevHoverInteractable);
         }
         else if (inputSnapshot.m_state == AzFramework::InputChannel::State::Ended)
         {
@@ -2810,7 +2822,8 @@ bool UiCanvasComponent::HandleEnterInputEvent(UiNavigationHelpers::Command comma
             }
 
             // Send a notification to listeners telling them who was just released (can be noone)
-            UiCanvasInputNotificationBus::Event(GetEntityId(), &UiCanvasInputNotificationBus::Events::OnCanvasEnterReleased, prevActiveInteractable);
+            UiCanvasInputNotificationBus::Event(
+                GetEntityId(), &UiCanvasInputNotificationBus::Events::OnCanvasEnterReleased, prevActiveInteractable);
         }
     }
 
@@ -2923,7 +2936,8 @@ bool UiCanvasComponent::HandleNavigationInputEvent(UiNavigationHelpers::Command 
                     {
                         // Check if parent interactable was auto-activated
                         bool autoActivated = false;
-                        UiInteractableBus::EventResult(autoActivated, ancestorInteractable, &UiInteractableBus::Events::GetIsAutoActivationEnabled);
+                        UiInteractableBus::EventResult(
+                            autoActivated, ancestorInteractable, &UiInteractableBus::Events::GetIsAutoActivationEnabled);
                         if (autoActivated)
                         {
                             curInteractable = ancestorInteractable;
@@ -2986,7 +3000,8 @@ bool UiCanvasComponent::PassHoverToAncestorByKeyInput([[maybe_unused]] const AzF
 
         SetHoverInteractable(ancestorInteractable);
 
-        UiInteractableBus::Event(ancestorInteractable, &UiInteractableBus::Events::HandleReceivedHoverByNavigatingFromDescendant, descendantInteractable);
+        UiInteractableBus::Event(
+            ancestorInteractable, &UiInteractableBus::Events::HandleReceivedHoverByNavigatingFromDescendant, descendantInteractable);
 
         result = true;
     }
@@ -3075,7 +3090,8 @@ bool UiCanvasComponent::HandlePrimaryRelease(AZ::Vector2 point)
     }
 
     // Send a notification to listeners telling them who was just released
-    UiCanvasInputNotificationBus::Event(GetEntityId(), &UiCanvasInputNotificationBus::Events::OnCanvasPrimaryReleased, prevActiveInteractable);
+    UiCanvasInputNotificationBus::Event(
+        GetEntityId(), &UiCanvasInputNotificationBus::Events::OnCanvasPrimaryReleased, prevActiveInteractable);
 
     return result;
 }
@@ -3092,7 +3108,8 @@ bool UiCanvasComponent::HandleMultiTouchPress(AZ::Vector2 point, int multiTouchI
 
         if (interactableEntity.IsValid() && !IsInteractableActiveOrPressed(interactableEntity))
         {
-            UiInteractableBus::EventResult(result, interactableEntity, &UiInteractableBus::Events::HandleMultiTouchPressed, point, multiTouchIndex);
+            UiInteractableBus::EventResult(
+                result, interactableEntity, &UiInteractableBus::Events::HandleMultiTouchPressed, point, multiTouchIndex);
             if (result)
             {
                 m_multiTouchInteractablesByTouchIndex[multiTouchIndex] = interactableEntity;
@@ -3100,7 +3117,8 @@ bool UiCanvasComponent::HandleMultiTouchPress(AZ::Vector2 point, int multiTouchI
         }
 
         // Send a notification to listeners telling them who was just pressed (can be noone)
-        UiCanvasInputNotificationBus::Event(GetEntityId(), &UiCanvasInputNotificationBus::Events::OnCanvasMultiTouchPressed, interactableEntity, multiTouchIndex);
+        UiCanvasInputNotificationBus::Event(
+            GetEntityId(), &UiCanvasInputNotificationBus::Events::OnCanvasMultiTouchPressed, interactableEntity, multiTouchIndex);
     }
 
     return result;
@@ -3125,7 +3143,8 @@ bool UiCanvasComponent::HandleMultiTouchRelease(AZ::Vector2 point, int multiTouc
         }
 
         // Send a notification to listeners telling them who was just released
-        UiCanvasInputNotificationBus::Event(GetEntityId(), &UiCanvasInputNotificationBus::Events::OnCanvasMultiTouchReleased, multiTouchInteractable, multiTouchIndex);
+        UiCanvasInputNotificationBus::Event(
+            GetEntityId(), &UiCanvasInputNotificationBus::Events::OnCanvasMultiTouchReleased, multiTouchInteractable, multiTouchIndex);
     }
 
     return result;
@@ -3179,7 +3198,8 @@ void UiCanvasComponent::SetHoverInteractable(AZ::EntityId newHoverInteractable)
         if (m_hoverInteractable.IsValid())
         {
             UiInteractableBus::Event(m_hoverInteractable, &UiInteractableBus::Events::HandleHoverStart);
-            UiCanvasInputNotificationBus::Event(GetEntityId(), &UiCanvasInputNotificationBus::Events::OnCanvasHoverStart, m_hoverInteractable);
+            UiCanvasInputNotificationBus::Event(
+                GetEntityId(), &UiCanvasInputNotificationBus::Events::OnCanvasHoverStart, m_hoverInteractable);
 
             // we want to know if this entity is deactivated or destroyed
             // (unlikely: while hovered over we can't be in edit mode, could happen from C++ interface though)
@@ -3269,7 +3289,8 @@ void UiCanvasComponent::CheckActiveInteractableAndPassHoverToDescendant(AZ::Enti
     if (hoverInteractable.IsValid())
     {
         // Send an event that the descendant interactable became the hover interactable via navigation
-        UiInteractableBus::Event(m_activeInteractable, &UiInteractableBus::Events::HandleDescendantReceivedHoverByNavigation, hoverInteractable);
+        UiInteractableBus::Event(
+            m_activeInteractable, &UiInteractableBus::Events::HandleDescendantReceivedHoverByNavigation, hoverInteractable);
 
         ClearActiveInteractable();
         SetHoverInteractable(hoverInteractable);
@@ -3306,7 +3327,8 @@ AZ::EntityId UiCanvasComponent::GetFirstHoverInteractable()
     {
         // Make sure that this interactable exists
         AZ::Entity* hoverEntity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(hoverEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_firstHoverInteractable);
+        AZ::ComponentApplicationBus::BroadcastResult(
+            hoverEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_firstHoverInteractable);
 
         if (hoverEntity)
         {
@@ -3681,13 +3703,15 @@ UiCanvasComponent::EntityComboBoxVec UiCanvasComponent::PopulateTooltipDisplayEn
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::OnPixelAlignmentChange()
 {
-    UiCanvasPixelAlignmentNotificationBus::Event(GetEntityId(), &UiCanvasPixelAlignmentNotificationBus::Events::OnCanvasPixelAlignmentChange);
+    UiCanvasPixelAlignmentNotificationBus::Event(
+        GetEntityId(), &UiCanvasPixelAlignmentNotificationBus::Events::OnCanvasPixelAlignmentChange);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::OnTextPixelAlignmentChange()
 {
-    UiCanvasPixelAlignmentNotificationBus::Event(GetEntityId(), &UiCanvasPixelAlignmentNotificationBus::Events::OnCanvasTextPixelAlignmentChange);
+    UiCanvasPixelAlignmentNotificationBus::Event(
+        GetEntityId(), &UiCanvasPixelAlignmentNotificationBus::Events::OnCanvasTextPixelAlignmentChange);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4042,7 +4066,10 @@ UiCanvasComponent*  UiCanvasComponent::LoadCanvasInternal(const AZStd::string& p
                     {
                         // The canvas size may get reset on the first call to RenderCanvas to set the size to
                         // viewport size. So we'll recompute again on first render.
-                        UiTransformBus::Event(canvasComponent->GetRootElement()->GetId(), &UiTransformBus::Events::SetRecomputeFlags, UiTransformInterface::Recompute::RectAndTransform);
+                        UiTransformBus::Event(
+                            canvasComponent->GetRootElement()->GetId(),
+                            &UiTransformBus::Events::SetRecomputeFlags,
+                            UiTransformInterface::Recompute::RectAndTransform);
 
                         canvasComponent->m_pathname = assetIdPathname;
                         canvasComponent->m_isLoadedInGame = !forEditor;

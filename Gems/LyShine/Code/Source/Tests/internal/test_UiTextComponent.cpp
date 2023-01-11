@@ -2710,7 +2710,8 @@ namespace
         UiTextBus::Event(testElemId, &UiTextBus::Events::SetFontSize, fontSize);
 
         float baseWidth;
-        UiLayoutCellDefaultBus::EventResult(baseWidth, testElemId, &UiLayoutCellDefaultBus::Events::GetTargetWidth, LyShine::UiLayoutCellUnspecifiedSize);
+        UiLayoutCellDefaultBus::EventResult(
+            baseWidth, testElemId, &UiLayoutCellDefaultBus::Events::GetTargetWidth, LyShine::UiLayoutCellUnspecifiedSize);
 
         UiTextBus::Event(testElemId, &UiTextBus::Events::SetCharacterSpacing, characterSpacing);
         float newWidth;
@@ -2749,11 +2750,13 @@ namespace
         UiTextBus::Event(testElemId, &UiTextBus::Events::SetFontSize, fontSize);
 
         float baseHeight;
-        UiLayoutCellDefaultBus::EventResult(baseHeight, testElemId, &UiLayoutCellDefaultBus::Events::GetTargetHeight, LyShine::UiLayoutCellUnspecifiedSize);
+        UiLayoutCellDefaultBus::EventResult(
+            baseHeight, testElemId, &UiLayoutCellDefaultBus::Events::GetTargetHeight, LyShine::UiLayoutCellUnspecifiedSize);
 
         UiTextBus::Event(testElemId, &UiTextBus::Events::SetLineSpacing, lineSpacing);
         float newHeight;
-        UiLayoutCellDefaultBus::EventResult(newHeight, testElemId, &UiLayoutCellDefaultBus::Events::GetTargetHeight, LyShine::UiLayoutCellUnspecifiedSize);
+        UiLayoutCellDefaultBus::EventResult(
+            newHeight, testElemId, &UiLayoutCellDefaultBus::Events::GetTargetHeight, LyShine::UiLayoutCellUnspecifiedSize);
 
         float expectedHeight = baseHeight + numNewlines * lineSpacing;
 
@@ -2951,7 +2954,8 @@ namespace
                     UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetText);
                     AZ_Assert(testString == resultString, "Test failed");
                     resultString.clear();
-                    UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
+                    UiTextBus::EventResult(
+                        resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
                     AZ_Assert(testString == resultString, "Test failed");
                     resultString.clear();
                 }
@@ -2990,7 +2994,8 @@ namespace
                     UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetText);
                     AZ_Assert(testString == resultString, "Test failed");
                     resultString.clear();
-                    UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
+                    UiTextBus::EventResult(
+                        resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
                     AZ_Assert(testString == resultString, "Test failed");
                     resultString.clear();
                 }

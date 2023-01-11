@@ -1002,7 +1002,8 @@ void PropertiesContainer::SetSelectedEntityDisplayNameWidget(QLineEdit* selected
 
                 AZ::EntityId selectedEntityId = m_selectedEntities.front();
                 AZ::Entity* selectedEntity = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(selectedEntity, &AZ::ComponentApplicationBus::Events::FindEntity, selectedEntityId);
+                AZ::ComponentApplicationBus::BroadcastResult(
+                    selectedEntity, &AZ::ComponentApplicationBus::Events::FindEntity, selectedEntityId);
                 if (selectedEntity)
                 {
                     AZStd::string currentName = selectedEntity->GetName();

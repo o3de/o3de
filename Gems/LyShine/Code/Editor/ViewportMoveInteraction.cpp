@@ -72,7 +72,8 @@ ViewportMoveInteraction::ViewportMoveInteraction(
 
         // store the starting pivots of the primary element for snapping (in local and canvas space)
         m_startingPrimaryLocalPivot = GetPivotRelativeToTopLeftAnchor(m_primaryElement->GetId());
-        UiTransformBus::EventResult(m_startingPrimaryCanvasSpacePivot, m_primaryElement->GetId(), &UiTransformBus::Events::GetCanvasSpacePivot);
+        UiTransformBus::EventResult(
+            m_startingPrimaryCanvasSpacePivot, m_primaryElement->GetId(), &UiTransformBus::Events::GetCanvasSpacePivot);
     }
     else
     {

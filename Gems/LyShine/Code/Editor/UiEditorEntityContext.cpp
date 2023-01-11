@@ -536,7 +536,8 @@ void UiEditorEntityContext::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId
     if (m_queuedSliceReplacement.IsValid())
     {
         AZStd::string relativePath;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(relativePath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            relativePath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
 
         if (AZStd::string::npos != AzFramework::StringFunc::Find(m_queuedSliceReplacement.m_path.c_str(), relativePath.c_str()))
         {
@@ -739,7 +740,8 @@ void UiEditorEntityContext::OnSliceInstantiated(const AZ::Data::AssetId& sliceAs
 
             m_instantiatingSlices.erase(instantiatingIter);
 
-            UiEditorEntityContextNotificationBus::Broadcast(&UiEditorEntityContextNotificationBus::Events::OnSliceInstantiated, sliceAssetId, sliceAddress, ticket);
+            UiEditorEntityContextNotificationBus::Broadcast(
+                &UiEditorEntityContextNotificationBus::Events::OnSliceInstantiated, sliceAssetId, sliceAddress, ticket);
 
             break;
         }
@@ -758,7 +760,8 @@ void UiEditorEntityContext::OnSliceInstantiationFailed(const AZ::Data::AssetId& 
         if (instantiatingIter->first.GetId() == sliceAssetId)
         {
             AZ::Data::AssetBus::MultiHandler::BusDisconnect(sliceAssetId);
-            UiEditorEntityContextNotificationBus::Broadcast(&UiEditorEntityContextNotificationBus::Events::OnSliceInstantiationFailed, sliceAssetId, ticket);
+            UiEditorEntityContextNotificationBus::Broadcast(
+                &UiEditorEntityContextNotificationBus::Events::OnSliceInstantiationFailed, sliceAssetId, ticket);
 
             m_instantiatingSlices.erase(instantiatingIter);
             break;

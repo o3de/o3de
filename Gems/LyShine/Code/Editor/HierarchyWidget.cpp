@@ -652,7 +652,8 @@ bool HierarchyWidget::AcceptsMimeData(const QMimeData* mimeData)
 
         // Get the entity context that the first dragged entity is attached to
         AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityIdContextQueryBus::EventResult(contextId, entityIdListContainer.m_entityIds[0], &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
+        AzFramework::EntityIdContextQueryBus::EventResult(
+            contextId, entityIdListContainer.m_entityIds[0], &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
         if (contextId.IsNull())
         {
             return false;
@@ -847,7 +848,8 @@ void HierarchyWidget::DropMimeDataAssets(const QMimeData* mimeData,
                 const ComponentAssetHelpers::ComponentAssetPair& pair = componentAssetPairs.front();
                 const AZ::Data::AssetId& assetId = pair.second;
                 AZStd::string assetPath;
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
                 if (!assetPath.empty())
                 {
                     AZStd::string entityName;
@@ -1100,7 +1102,8 @@ void HierarchyWidget::PickItem(HierarchyItem* item)
 bool HierarchyWidget::IsEntityInEntityContext(AZ::EntityId entityId)
 {
     AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
-    AzFramework::EntityIdContextQueryBus::EventResult(contextId, entityId, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
+    AzFramework::EntityIdContextQueryBus::EventResult(
+        contextId, entityId, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
 
     if (!contextId.IsNull())
     {

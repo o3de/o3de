@@ -17,7 +17,8 @@ QWidget* PropertyHandlerChar::CreateGUI(QWidget* pParent)
     ctrl->setMaxLen(1);
     QObject::connect(ctrl, &AzToolsFramework::PropertyStringLineEditCtrl::valueChanged, this, [ctrl]()
         {
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, ctrl);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, ctrl);
         });
 
     return ctrl;
@@ -53,7 +54,8 @@ bool PropertyHandlerChar::ReadValuesIntoGUI([[maybe_unused]] size_t index, AzToo
 
 void PropertyHandlerChar::Register()
 {
-    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerChar());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerChar());
 }
 
 #include <moc_PropertyHandlerChar.cpp>

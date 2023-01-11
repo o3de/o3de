@@ -500,7 +500,8 @@ void ViewportInteraction::MousePressEvent(QMouseEvent* ev)
                     {
                         // Hovering over anchors, if the click is outside the element with the anchors then ignore
                         bool isElementUnderCursor = false;
-                        UiTransformBus::EventResult(isElementUnderCursor, elementWithAnchors->GetId(), &UiTransformBus::Events::IsPointInRect, mousePosition);
+                        UiTransformBus::EventResult(
+                            isElementUnderCursor, elementWithAnchors->GetId(), &UiTransformBus::Events::IsPointInRect, mousePosition);
                         if (!isElementUnderCursor)
                         {
                             ignoreClickForSelection = true;
@@ -650,7 +651,8 @@ void ViewportInteraction::MouseReleaseEvent(QMouseEvent* ev,
                 if (m_activeElementId.IsValid())
                 {
                     bool isActiveElementUnderCursor = false;
-                    UiTransformBus::EventResult(isActiveElementUnderCursor, m_activeElementId, &UiTransformBus::Events::IsPointInRect, mousePosition);
+                    UiTransformBus::EventResult(
+                        isActiveElementUnderCursor, m_activeElementId, &UiTransformBus::Events::IsPointInRect, mousePosition);
                     if (!isActiveElementUnderCursor)
                     {
                         ignoreClick = true;
@@ -1344,7 +1346,8 @@ void ViewportInteraction::ProcessInteraction(const AZ::Vector2& mousePosition,
                 AZ::Vector2 rectMax(max(m_startMouseDragPos.GetX(), mousePosition.GetX()), max(m_startMouseDragPos.GetY(), mousePosition.GetY()));
 
                 LyShine::EntityArray elementsToSelect;
-                UiCanvasBus::EventResult(elementsToSelect, m_editorWindow->GetCanvas(), &UiCanvasBus::Events::PickElements, rectMin, rectMax);
+                UiCanvasBus::EventResult(
+                    elementsToSelect, m_editorWindow->GetCanvas(), &UiCanvasBus::Events::PickElements, rectMin, rectMax);
 
                 if (ctrlIsPressed)
                 {

@@ -22,5 +22,6 @@ QWidget* PropertyHandlerLayoutPadding::CreateGUI(QWidget* pParent)
 
 void PropertyHandlerLayoutPadding::Register()
 {
-    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerLayoutPadding());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerLayoutPadding());
 }

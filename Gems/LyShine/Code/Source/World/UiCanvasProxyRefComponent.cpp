@@ -39,13 +39,15 @@ void UiCanvasProxyRefComponent::SetCanvasRefEntity(AZ::EntityId canvasAssetRefEn
 
     AZ::EntityId uiCanvasEntityId = GetCanvas();
 
-    UiCanvasRefNotificationBus::Event(GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), uiCanvasEntityId);
+    UiCanvasRefNotificationBus::Event(
+        GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), uiCanvasEntityId);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasProxyRefComponent::OnCanvasRefChanged([[maybe_unused]] AZ::EntityId uiCanvasRefEntity, AZ::EntityId uiCanvasEntity)
 {
-    UiCanvasRefNotificationBus::Event(GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), uiCanvasEntity);
+    UiCanvasRefNotificationBus::Event(
+        GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), uiCanvasEntity);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
