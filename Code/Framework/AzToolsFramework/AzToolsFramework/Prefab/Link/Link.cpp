@@ -291,7 +291,10 @@ namespace AzToolsFramework
 
         void Link::RebuildLinkPatchesTree(const PrefabDomValue& patches)
         {
+            // Remove all patches in tree and reset index counter for new patches.
             m_linkPatchesTree.Clear();
+            m_patchIndexCounter = 0u;
+
             AddLinkPatchesToTree(patches);
         }
 
