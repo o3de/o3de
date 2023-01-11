@@ -17,7 +17,7 @@ namespace UnitTest
 {
     using PrefabUndoEditEntityTests = PrefabTestFixture;
 
-    TEST_F(PrefabUndoEditEntityTests, PrefabUndoEditEntityTests_EditEntity)
+    TEST_F(PrefabUndoEditEntityTests, EditEntity)
     {
         const AZStd::string wheelEntityName = "Wheel";
 
@@ -79,7 +79,7 @@ namespace UnitTest
         ASSERT_TRUE(wheelEntity->FindComponent<PrefabTestComponent>());
     }
 
-    TEST_F(PrefabUndoEditEntityTests, PrefabUndoEditEntityTests_EditEntityAsOverride)
+    TEST_F(PrefabUndoEditEntityTests, EditEntityAsOverride)
     {
         PrefabOverridePublicInterface* overrideInterface = AZ::Interface<PrefabOverridePublicInterface>::Get();
         EXPECT_TRUE(overrideInterface) << "Could not get the override public interface.";
@@ -143,7 +143,7 @@ namespace UnitTest
         ASSERT_TRUE(wheelEntity->FindComponent<PrefabTestComponent>());
     }
 
-    TEST_F(PrefabUndoEditEntityTests, PrefabUndoEditEntityTests_EditEntityAsOverrideOnAddEntityOverride)
+    TEST_F(PrefabUndoEditEntityTests, EditEntityAsOverrideOnAddEntityOverride)
     {
         // Level         <-- focused
         // | Car

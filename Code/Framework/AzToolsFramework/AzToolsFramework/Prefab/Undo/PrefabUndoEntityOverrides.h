@@ -31,7 +31,8 @@ namespace AzToolsFramework::Prefab
         void Redo() override;
 
         // The function to generate override subtrees for updating the provided entity list as overrides.
-        // It does redo, so Redo() should not be called after.
+        // Redo should not be called after. It does redo in capture because adding override patches here allows us
+        // to generate patches with correct indices and add them to tree in one place. Two operations won't be disconnected.
         void CaptureAndRedo(
             const AZStd::vector<const AZ::Entity*>& entityList,
             Instance& owningInstance,

@@ -32,7 +32,7 @@ namespace AzToolsFramework
         {
             AZ_Assert(
                 &owningInstance != &focusedInstance,
-                "PrefabUndoDeleteAsOverride::Capture - Owning instance could not be the focused instance for override edit node.");
+                "PrefabUndoDeleteAsOverride::Capture - Owning instance should not be the focused instance for override edit node.");
 
             m_templateId = focusedInstance.GetTemplateId();
             m_redoPatch.SetArray();

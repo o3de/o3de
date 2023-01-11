@@ -45,7 +45,7 @@ namespace AzToolsFramework
         {
             AZ_Assert(
                 &owningInstance != &focusedInstance,
-                "PrefabUndoEntityOverrides::Capture - Owning instance could not be the focused instance for override edit node.");
+                "PrefabUndoEntityOverrides::Capture - Owning instance should not be the focused instance for override edit node.");
 
             InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(owningInstance, &focusedInstance);
             AZ_Assert(climbUpResult.m_isTargetInstanceReached, "PrefabUndoEntityOverrides::Capture - "
