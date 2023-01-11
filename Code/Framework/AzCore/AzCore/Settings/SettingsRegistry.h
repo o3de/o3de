@@ -247,7 +247,7 @@ namespace AZ
         //! Register a post-merge hahndler with the PostMergeEvent.
         //! The handler will be called after a file is merged.
         //! @param handler The handler to register with the PostmergeEVent.
-        virtual void RegisterPostMergeEvent(PostMergeEventHandler& hanlder) = 0;
+        virtual void RegisterPostMergeEvent(PostMergeEventHandler& handler) = 0;
 
         //! Gets the boolean value at the provided path.
         //! @param result The target to write the result to.
@@ -278,7 +278,7 @@ namespace AZ
         //! @param resultTypeId The type id of the target that's being written to.
         //! @param path The path to the value.
         //! @return Whether or not the value was stored. An invalid path will return false;
-        virtual bool GetObject(void* result, AZ::Uuid resultTypeID, AZStd::string_view path) const = 0;
+        virtual bool GetObject(void* result, AZ::Uuid resultTypeId, AZStd::string_view path) const = 0;
         //! Gets the json object value at the provided path serialized to the target struct/class. Classes retrieved
         //! through this call needs to be registered with the Serialize Context.
         //! @param result The target to write the result to.
@@ -322,13 +322,13 @@ namespace AZ
         //! @param value The new value to store.
         //! @param valueTypeId The type id of the target that's being stored.
         //! @return Whether or not the value was stored. An invalid path will return false;
-        virtual bool SetObject(AZStd::string_view path, const void* value, AZ::Uuid valueTypeID) = 0;
-        template<typename T>
+        virtual bool SetObject(AZStd::string_view path, const void* value, AZ::Uuid valueTypeId) = 0;
         //! Sets the value at the provided path to the serialized version of the provided struct/class.
         //! Classes used for this call need to be registered with the Serialize Context.
         //! @param path The path to the value.
         //! @param value The new value to store.
         //! @return Whether or not the value was stored. An invalid path will return false;
+        template<typename T>
         bool SetObject(AZStd::string_view path, const T& value) { return SetObject(path, &value, azrtti_typeid(value)); }
 
         //! Remove the value at the provided path 
