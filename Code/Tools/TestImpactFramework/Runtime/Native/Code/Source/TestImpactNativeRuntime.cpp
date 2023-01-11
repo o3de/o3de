@@ -302,6 +302,7 @@ namespace TestImpact
         // Draft in the test targets that have no coverage entries in the dynamic dependency map
         const AZStd::vector<const TestTarget*> draftedTestTargets = m_dynamicDependencyMap->GetNotCoveringTests();
 
+        // Use test impact analysis to select the tests and remove any tests from the discarded set that exist in the drafted set
         const auto selectCoveringTestTargetsAndPruneDraftedFromDiscarded =
             [this, &draftedTestTargets, &changeList, testPrioritizationPolicy]()
         {

@@ -300,20 +300,12 @@ namespace TestImpact
         // Set of selected tests so we can prune from drafted tests to avoid duplicate runs
         const AZStd::unordered_set<const PythonTestTarget*> selectedTestTargetSet(selectedTestTargets.begin(), selectedTestTargets.end());
 
-        // Test targets that do not have coverage are always drafted in to be run as without coverage there is no way to determine whether
-        // or not such test targets can be safely discarded
+        // Unlike native test impact analysis, python test impact analysis can have tests with no coverage so we cannot simply
+        // draft in tests without coverage (i.e. for native, new tests, or tests that have yet to successfully execute in previous
+        // runs). Instead, the python test selector will run all parent test target tests when a new python test is added. What we
+        // should do in future versions (for both native and python) is draft in any previous failing tests. For now, we will leave
+        // the drafted set empty.
         AZStd::vector<const TestTarget*> draftedTestTargets;
-        if (HasImpactAnalysisData())
-        {
-            const auto notCovered = m_dynamicDependencyMap->GetNotCoveringTests();
-            for (const auto& testTarget : notCovered)
-            {
-                if (!m_testTargetExcludeList->IsTestTargetFullyExcluded(testTarget) && !selectedTestTargetSet.contains(testTarget))
-                {
-                    draftedTestTargets.push_back(testTarget);
-                }
-            }
-        }
 
         // The subset of selected test targets that are not on the configuration's exclude list and those that are
         const auto [includedSelectedTestTargets, excludedSelectedTestTargets] =
