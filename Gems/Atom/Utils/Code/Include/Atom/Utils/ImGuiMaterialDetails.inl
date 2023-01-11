@@ -139,7 +139,7 @@ namespace AZ::Render
 
                                 const ImGuiTreeNodeFlags shaderNodeFlags = ImGuiTreeNodeFlags_DefaultOpen;
 
-                                if (ImGui::TreeNodeEx(AZStd::string::format("Shader: %s - %s", shaderData.m_shaderTag.GetCStr(), shaderData.m_shader->GetAsset().GetHint().c_str()).c_str(), shaderNodeFlags))
+                                if (ImGui::TreeNodeEx(AZStd::string::format("Shader: %s - %s - %s", shaderData.m_materialPipelineName.GetCStr(), shaderData.m_shaderTag.GetCStr(), shaderData.m_shader->GetAsset().GetHint().c_str()).c_str(), shaderNodeFlags))
                                 {
                                     ImGui::Indent();
 

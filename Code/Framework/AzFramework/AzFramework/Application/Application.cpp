@@ -54,6 +54,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/IO/RemoteStorageDrive.h>
 #include <AzFramework/PaintBrush/PaintBrushSettings.h>
+#include <AzFramework/PaintBrush/PaintBrushSystemComponent.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
@@ -365,6 +366,7 @@ namespace AzFramework
             azrtti_typeid<AzFramework::RenderGeometry::GameIntersectorComponent>(),
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<AzFramework::InputSystemComponent>(),
+            azrtti_typeid<AzFramework::PaintBrushSystemComponent>(),
             azrtti_typeid<AzFramework::StreamingInstall::StreamingInstallSystemComponent>(),
             azrtti_typeid<AzFramework::SpawnableSystemComponent>(),
             azrtti_typeid<Physics::MaterialSystemComponent>(),

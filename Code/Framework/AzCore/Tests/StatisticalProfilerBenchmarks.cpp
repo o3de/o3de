@@ -34,11 +34,11 @@ namespace Benchmark
     public:
         void RunBenchmark(benchmark::State& state)
         {
-            if (state.thread_index == 0)
+            if (state.thread_index() == 0)
             {
                 m_profiler = new ProfilerType;
 
-                for (int i = 0; i < state.threads; ++i)
+                for (int i = 0; i < state.threads(); ++i)
                 {
                     const AZStd::string threadStatName = AZStd::string::format("thread%03d", i);
                     const auto threadStatId = UnitTest::ConvertNameToStatId<StatIdType>(threadStatName);
@@ -47,7 +47,7 @@ namespace Benchmark
                 }
             }
 
-            const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index);
+            const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index());
             const auto statId = UnitTest::ConvertNameToStatId<StatIdType>(statName);
 
             for ([[maybe_unused]] auto _ : state)
@@ -56,7 +56,7 @@ namespace Benchmark
                 benchmark::DoNotOptimize(m_profiler);
             }
 
-            if (state.thread_index == 0)
+            if (state.thread_index() == 0)
             {
                 delete m_profiler;
             }
@@ -131,14 +131,14 @@ namespace Benchmark
     public:
         void RunBenchmark(benchmark::State& state)
         {
-            if (state.thread_index == 0)
+            if (state.thread_index() == 0)
             {
                 TimedScopeType::ClearCachedProxy();
 
                 m_proxy = new ProxyType;
                 ProfilerType& profiler = m_proxy->GetProfiler(UnitTest::ProfilerProxyGroup);
 
-                for (int i = 0; i < state.threads; ++i)
+                for (int i = 0; i < state.threads(); ++i)
                 {
                     const AZStd::string threadStatName = AZStd::string::format("thread%03d", i);
                     const auto threadStatId = UnitTest::ConvertNameToStatId<StatIdType>(threadStatName);
@@ -149,7 +149,7 @@ namespace Benchmark
                 m_proxy->ActivateProfiler(UnitTest::ProfilerProxyGroup, true);
             }
 
-            const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index);
+            const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index());
             const auto statId = UnitTest::ConvertNameToStatId<StatIdType>(statName);
 
             for ([[maybe_unused]] auto _ : state)
@@ -158,7 +158,7 @@ namespace Benchmark
                 benchmark::DoNotOptimize(m_proxy);
             }
 
-            if (state.thread_index == 0)
+            if (state.thread_index() == 0)
             {
                 delete m_proxy;
             }

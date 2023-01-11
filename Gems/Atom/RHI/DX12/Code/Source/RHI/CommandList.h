@@ -83,13 +83,17 @@ namespace AZ
             void EndPredication() override;
             void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
             void BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas) override;
+            void SetFragmentShadingRate(
+                RHI::ShadingRate rate,
+                const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override;
             //////////////////////////////////////////////////////////////////////////
 
             void SetRenderTargets(
                 uint32_t renderTargetCount,
                 const ImageView* const* renderTarget,
                 const ImageView* depthStencilAttachment,
-                RHI::ScopeAttachmentAccess depthStencilAccess);
+                RHI::ScopeAttachmentAccess depthStencilAccess,
+                const ImageView* shadingRateAttachment);
 
             //////////////////////////////////////////////////////////////////////////
             // Tile Mapping Methods
@@ -193,6 +197,7 @@ namespace AZ
             void SetTopology(RHI::PrimitiveTopology topology);
             void CommitViewportState();
             void CommitScissorState();
+            void CommitShadingRateState();
 
             void ExecuteIndirect(const RHI::IndirectArguments& arguments);
 
@@ -227,6 +232,7 @@ namespace AZ
                 RHI::PrimitiveTopology m_topology = RHI::PrimitiveTopology::Undefined;
                 RHI::CommandListViewportState m_viewportState;
                 RHI::CommandListScissorState m_scissorState;
+                RHI::CommandListShadingRateState m_shadingRateState;
 
                 // Array of shader resource bindings, indexed by command pipe.
                 AZStd::array<ShaderResourceBindings, static_cast<size_t>(RHI::PipelineStateType::Count)> m_bindingsByPipe;
@@ -242,6 +248,9 @@ namespace AZ
 
                 // Signal that the global bindless heap is bound
                 bool m_bindBindlessHeap = false;
+
+                // The currently bound shading rate image
+                const ImageView* m_shadingRateImage = nullptr;
 
             } m_state;
 

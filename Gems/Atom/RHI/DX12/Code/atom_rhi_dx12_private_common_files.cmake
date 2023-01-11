@@ -107,7 +107,6 @@ set(FILES
     Source/RHI/SwapChain.h
     Source/RHI/SystemComponent.cpp
     Source/RHI/SystemComponent.h
-    Source/RHI/TileAllocator.cpp
     Source/RHI/TileAllocator.h
     Source/RHI/TransientAttachmentPool.cpp
     Source/RHI/TransientAttachmentPool.h

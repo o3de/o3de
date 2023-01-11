@@ -103,6 +103,8 @@ namespace AzToolsFramework
             const QString& GetDisplayPath() const;
             //! Return path relative to scan folder
             const AZStd::string& GetRelativePath() const;
+            //! Return path visible to asset browser
+            const AZStd::string& GetVisiblePath() const;
             //! Return absolute path to this file. Note that this decodes it to native slashes and resolves
             //! any aliases.
             const AZStd::string GetFullPath() const;
@@ -136,6 +138,7 @@ namespace AzToolsFramework
             QString m_displayName;
             QString m_displayPath;
             AZ::IO::Path m_relativePath;
+            AZ::IO::Path m_visiblePath;
             AZ::IO::Path m_fullPath;
             AZStd::vector<AssetBrowserEntry*> m_children;
             AssetBrowserEntry* m_parentAssetEntry = nullptr;

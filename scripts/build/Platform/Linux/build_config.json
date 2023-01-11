@@ -393,8 +393,8 @@
     "COMMAND": "deploy_cdk_applications.sh",
     "PARAMETERS": {
       "NVM_VERSION": "v0.39.1",
-      "CDK_VERSION": "1.179.0",
-      "PYTHON_RUNTIME": "python-3.10.5-rev1-linux"
+      "CDK_VERSION": "1.183.0",
+      "PYTHON_RUNTIME": "python-3.10.5-rev2-linux"
     }
   },
   "awsi_destruction": {
@@ -405,8 +405,8 @@
     "COMMAND": "destroy_cdk_applications.sh",
     "PARAMETERS": {
       "NVM_VERSION": "v0.39.1",
-      "CDK_VERSION": "1.179.0",
-      "PYTHON_RUNTIME": "python-3.10.5-rev1-linux"
+      "CDK_VERSION": "1.183.0",
+      "PYTHON_RUNTIME": "python-3.10.5-rev2-linux"
     }
   }
 }
