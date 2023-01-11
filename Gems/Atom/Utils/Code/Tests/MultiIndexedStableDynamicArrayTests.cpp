@@ -21,7 +21,7 @@ namespace UnitTest
 
     // Fixture that creates a bare-bones app
     constexpr size_t TestElementsPerPage = 512;
-    using MultiIndexedTestAllocator = AZ::OSAllocator;
+    using MultiIndexedTestAllocator = AZStd::allocator;
 
     struct MultiIndexedStableDynamicArrayTestsTestItem
     {
