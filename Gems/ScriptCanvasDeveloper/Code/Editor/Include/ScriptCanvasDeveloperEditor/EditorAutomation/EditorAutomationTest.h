@@ -189,6 +189,7 @@ namespace ScriptCanvas::Developer
     class NamedAutomationState : public EditorAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(NamedAutomationState, AZ::SystemAllocator)
 
         AZ_TYPE_INFO(NamedAutomationState, "{62DD037C-D80F-4B1B-9F3E-9F05400ABA24}");
 

@@ -168,7 +168,7 @@ namespace AZ {
 #define _AZ_CLASS_ALLOCATOR_ALIGNED_NEW(_Class, _Allocator)                                                                                                                          \
     /* class-specific allocation functions */                                                                                                                                                \
     [[nodiscard]] void* operator new(std::size_t size, std::align_val_t align) {                                                                                                             \
-        AZ_Assert(size >= sizeof(_Class), "Size mismatch! Did you forget to declare the macro in derived class? Size: %d sizeof(%s): %d", size, #_Class, sizeof(_Class));                    \
+        AZ_Assert(size == sizeof(_Class), "Size mismatch! Did you forget to declare the macro in derived class? Size: %d sizeof(%s): %d", size, #_Class, sizeof(_Class));                    \
         return AZ::AllocatorInstance< _Allocator >::Get().allocate(size, static_cast<std::size_t>(align));                                                                                   \
     }                                                                                                                                                                                        \
     [[nodiscard]] void* operator new(std::size_t size, std::align_val_t align, const std::nothrow_t&) noexcept {                                                                             \
@@ -203,7 +203,7 @@ namespace AZ {
     AZ_FORCE_INLINE void  operator delete[](void*, void*)       { }             /* placement array delete */                                                                        \
     /* ========== standard operator new/delete ========== */                                                                                                                        \
     AZ_FORCE_INLINE void* operator new(std::size_t size) {                      /* default operator new (called with "new _Class()") */                                             \
-        AZ_Assert(size >= sizeof(_Class), "Size mismatch! Did you forget to declare the macro in derived class? Size: %d sizeof(%s): %d", size, #_Class, sizeof(_Class));           \
+        AZ_Assert(size == sizeof(_Class), "Size mismatch! Did you forget to declare the macro in derived class? Size: %d sizeof(%s): %d", size, #_Class, sizeof(_Class));           \
         AZ_Warning(0, true/*false*/, "Make sure you use aznew, offers better tracking! (%s)", #_Class /*Warning temporarily disabled until engine is using AZ allocators.*/);       \
         return AZ::AllocatorInstance< _Allocator >::Get().allocate(size, AZStd::alignment_of< _Class >::value);                                                                     \
     }                                                                                                                                                                               \
@@ -278,7 +278,7 @@ namespace AZ {
 // Defines the C++17 aligned_new operator new/operator delete overloads
 #define _AZ_CLASS_ALLOCATOR_IMPL_ALIGNED_NEW(_Class, _Allocator, _Template)                                                                                                                     \
     _Template [[nodiscard]] void* _Class::operator new(std::size_t size, std::align_val_t align) {                                                                                                      \
-        AZ_Assert(size >= sizeof(_Class), "Size mismatch! Did you forget to declare the macro in derived class? Size: %d sizeof(%s): %d", size, #_Class, sizeof(_Class));                               \
+        AZ_Assert(size == sizeof(_Class), "Size mismatch! Did you forget to declare the macro in derived class? Size: %d sizeof(%s): %d", size, #_Class, sizeof(_Class));                               \
         return AZ::AllocatorInstance< _Allocator >::Get().allocate(size, static_cast<std::size_t>(align));                                                                                              \
     }                                                                                                                                                                                                   \
     _Template [[nodiscard]] void* _Class::operator new(std::size_t size, std::align_val_t align, const std::nothrow_t&) noexcept {                                                                      \
@@ -309,7 +309,7 @@ namespace AZ {
     _Template                                                                                                                                                                                                                                       \
     [[nodiscard]] void* _Class::operator new(std::size_t size)                                                                                                                                                                                      \
     {                                                                                                                                                                                                                                               \
-        AZ_Assert(size >= sizeof(_Class), "Size mismatch! Did you forget to declare the macro in derived class? Size: %d sizeof(_Class): %d", size, sizeof(_Class));                                                                                \
+        AZ_Assert(size == sizeof(_Class), "Size mismatch! Did you forget to declare the macro in derived class? Size: %d sizeof(_Class): %d", size, sizeof(_Class));                                                                                \
         return AZ::AllocatorInstance< _Allocator >::Get().allocate(size, AZStd::alignment_of< _Class >::value);                                                                                                                     \
     }                                                                                                                                                                                                                                               \
     _Template                                                                                                                                                                                                                                       \

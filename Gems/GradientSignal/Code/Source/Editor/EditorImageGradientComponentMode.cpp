@@ -28,6 +28,8 @@
 
 namespace GradientSignal
 {
+    AZ_CLASS_ALLOCATOR_IMPL(EditorImageGradientComponentMode, AZ::SystemAllocator)
+
     //! Class that tracks the data for undoing/redoing a paint stroke.
     class PaintBrushUndoBuffer : public AzToolsFramework::UndoSystem::URSequencePoint
     {

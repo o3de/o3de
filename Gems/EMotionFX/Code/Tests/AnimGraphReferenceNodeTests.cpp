@@ -32,6 +32,7 @@ namespace EMotionFX
         : public EmptyAnimGraph
     {
     public:
+        AZ_CLASS_ALLOCATOR(JustAReferenceNodeGraph, AnimGraphAllocator)
         JustAReferenceNodeGraph()
         {
             /*
@@ -76,6 +77,7 @@ namespace EMotionFX
         : public JustAReferenceNodeGraph
     {
     public:
+        AZ_CLASS_ALLOCATOR(ReferenceNodeWithParameterGraph, AnimGraphAllocator)
         ReferenceNodeWithParameterGraph()
         {
             /*
@@ -110,6 +112,7 @@ namespace EMotionFX
         : public EmptyAnimGraph
     {
     public:
+        AZ_CLASS_ALLOCATOR(BlendTreeTransformNodeAnimGraph, AnimGraphAllocator)
         BlendTreeTransformNodeAnimGraph()
         {
             /*

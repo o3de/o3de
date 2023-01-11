@@ -676,6 +676,7 @@ namespace AZ
         {
             using base_type = BehaviorMethodImpl<R(C::*)(Args...)>;
         public:
+            AZ_CLASS_ALLOCATOR(BehaviorMethodImpl, AZ::SystemAllocator)
             using base_type::base_type;
             using FunctionPointer = R(C::*)(Args...) noexcept;
             using FunctionPointerConst = R(C::*)(Args...) const noexcept;

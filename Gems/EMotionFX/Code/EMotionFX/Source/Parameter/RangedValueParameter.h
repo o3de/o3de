@@ -19,6 +19,7 @@ namespace EMotionFX
         using BaseType = DefaultValueParameter<ValueType, RangedValueParameter<ValueType, Derived>>;
     public:
         AZ_RTTI((RangedValueParameter, "{83572845-AFBD-4685-AACD-0D15CF79006A}", ValueType, Derived), BaseType);
+        AZ_CLASS_ALLOCATOR(RangedValueParameter, AnimGraphAllocator)
 
         RangedValueParameter(const ValueType& defaultValue, const ValueType& minValue, const ValueType& maxValue, bool hasMinValue = true, bool hasMaxValue = true, AZStd::string name = {}, AZStd::string description = {})
             : BaseType(defaultValue, AZStd::move(name), AZStd::move(description))

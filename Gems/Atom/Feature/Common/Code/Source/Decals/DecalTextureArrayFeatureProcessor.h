@@ -33,6 +33,7 @@ namespace AZ
             , public Data::AssetBus::MultiHandler
         {
         public:
+            AZ_CLASS_ALLOCATOR(DecalTextureArrayFeatureProcessor, AZ::SystemAllocator)
 
             AZ_RTTI(AZ::Render::DecalTextureArrayFeatureProcessor, "{5E8365FA-BEA7-4D02-9A5C-67E6810D5465}", AZ::Render::DecalFeatureProcessorInterface);
 

@@ -61,6 +61,7 @@ namespace AZ
             friend class ShaderAssetTester;
             friend class Shader;
         public:
+            AZ_CLASS_ALLOCATOR(ShaderAsset , SystemAllocator)
             AZ_RTTI(ShaderAsset, "{823395A3-D570-49F4-99A9-D820CD1DEF98}", Data::AssetData);
             static void Reflect(ReflectContext* context);
 

@@ -34,6 +34,7 @@ namespace UnitTest
     struct MockAsset
         : public AZ::Data::AssetData
     {
+        AZ_CLASS_ALLOCATOR(MockAsset, AZ::SystemAllocator)
         AZ_RTTI(MockAsset, "{6A98A05A-5B8B-455B-BA92-508A7CF76024}", AZ::Data::AssetData);
 
         static void Reflect(ReflectContext* reflection)

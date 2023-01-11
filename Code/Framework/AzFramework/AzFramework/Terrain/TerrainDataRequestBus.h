@@ -79,6 +79,7 @@ namespace AzFramework
         class TerrainJobContext : public AZ::JobContext
         {
         public:
+            AZ_CLASS_ALLOCATOR(TerrainJobContext, AZ::ThreadPoolAllocator)
             TerrainJobContext(AZ::JobManager& jobManager, int numJobsToComplete)
                 : JobContext(jobManager)
                 , m_numJobsToComplete(numJobsToComplete)
