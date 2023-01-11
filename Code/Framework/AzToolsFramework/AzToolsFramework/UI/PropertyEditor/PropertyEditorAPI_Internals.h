@@ -237,14 +237,21 @@ namespace AzToolsFramework
                 }
                 AZ::Crc32 attributeId = AZ::Crc32(name.GetStringView());
 
-                const AZ::DocumentPropertyEditor::AttributeDefinitionInterface* attribute =
-                    propertyEditorSystem->FindNodeAttribute(name, propertyEditorSystem->FindNode(AZ::Name(GetHandlerName(m_rpeHandler))));
                 AZStd::shared_ptr<AZ::Attribute> marshalledAttribute;
-                if (attribute != nullptr)
-                {
-                    marshalledAttribute = attribute->DomValueToLegacyAttribute(attributeIt->second);
-                }
-                else
+                // Attribute definitions may be templated and will thus support multiple types.
+                // Therefore we must try all registered definitions for a particular attribute
+                // in an effort to find one that can successfully extract the attribute data.
+                propertyEditorSystem->EnumerateRegisteredAttributes(
+                    name,
+                    [&](const AZ::DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+                    {
+                        if (marshalledAttribute == nullptr)
+                        {
+                            marshalledAttribute = attributeReader.DomValueToLegacyAttribute(attributeIt->second);
+                        }
+                    });
+
+                if (!marshalledAttribute)
                 {
                     marshalledAttribute = AZ::Reflection::WriteDomValueToGenericAttribute(attributeIt->second);
                 }

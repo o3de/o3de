@@ -67,7 +67,7 @@ namespace AZ::DocumentPropertyEditor
                 attribute->GetName().GetCStr());
             return;
         }
-        m_attributeMetadata[attribute->GetName()][parentNodeName] = attribute;
+        m_attributeMetadata[attribute->GetName()].insert({ parentNodeName, attribute });
     }
 
     const NodeMetadata* PropertyEditorSystem::FindNode(AZ::Name name) const

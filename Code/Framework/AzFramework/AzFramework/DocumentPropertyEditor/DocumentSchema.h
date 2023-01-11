@@ -340,22 +340,6 @@ namespace AZ::DocumentPropertyEditor
             return result;
         }
 
-        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
-        {
-            if (attribute == nullptr)
-            {
-                return {};
-            }
-
-            AZ::AttributeReader reader(instance, attribute);
-            if (GenericValueList value; reader.Read<GenericValueList>(value))
-            {
-                return ValueToDom(value);
-            }
-
-            return {};
-        }
-
         AZStd::optional<GenericValueList> DomToValue(const Dom::Value& value) const override
         {
             if (!value.IsArray())
@@ -370,13 +354,26 @@ namespace AZ::DocumentPropertyEditor
                 {
                     continue;
                 }
-                result.emplace_back(
-                    AZStd::make_pair<GenericValueType, AZStd::string>(
-                        AZStd::any_cast<GenericValueType>(entryDom[EntryValueKey].GetOpaqueValue()),
-                        entryDom[EntryDescriptionKey].GetString()));
+
+                const AZStd::any* opaqueValue = &entryDom[EntryValueKey].GetOpaqueValue();
+                auto genericValue = AZStd::any_cast<GenericValueType>(opaqueValue);
+                if (opaqueValue->is<GenericValueType>() && genericValue)
+                {
+                    result.emplace_back(
+                        AZStd::make_pair<GenericValueType, AZStd::string>(
+                            *genericValue,
+                            entryDom[EntryDescriptionKey].GetString()));
+                }
             }
 
-            return result;
+            if (result.empty())
+            {
+                return {};
+            }
+            else
+            {
+                return result;
+            }
         }
     };
 
