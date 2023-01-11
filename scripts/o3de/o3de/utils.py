@@ -507,7 +507,7 @@ def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_nam
             del input[key]
             continue
 
-        # include the key we're removing? 
+        # include the key we're removing if replaced_key_name provided
         if replaced_key_name:
             value[replaced_key_name] = key
 

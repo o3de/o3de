@@ -439,10 +439,10 @@ def remove_non_dependency_gem_json_data(gem_names:list, gems_json_data_by_name:d
         del gems_json_data_by_name[gem_name]
 
 
-def get_gems_json_data_by_name( engine_path:pathlib.Path = None, 
-                                project_path: pathlib.Path = None, 
-                                include_manifest_gems: bool = False,
-                                include_engine_gems: bool = False) -> dict:
+def get_gems_json_data_by_name(engine_path:pathlib.Path = None, 
+                               project_path: pathlib.Path = None, 
+                               include_manifest_gems: bool = False,
+                               include_engine_gems: bool = False) -> dict:
     """
     Create a dictionary of gem.json data with gem names as keys based on the provided list of
     external subdirectories, engine_path or project_path.  Optionally, include gems

@@ -150,10 +150,10 @@ class TestEnableGemCommand:
                 return json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
             return None
 
-        def get_gems_json_data_by_name( engine_path:pathlib.Path = None, 
-                                        project_path: pathlib.Path = None, 
-                                        include_manifest_gems: bool = False,
-                                        include_engine_gems: bool = False) -> dict:
+        def get_gems_json_data_by_name(engine_path:pathlib.Path = None, 
+                                       project_path: pathlib.Path = None, 
+                                       include_manifest_gems: bool = False,
+                                       include_engine_gems: bool = False) -> dict:
             return {}
 
         def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
