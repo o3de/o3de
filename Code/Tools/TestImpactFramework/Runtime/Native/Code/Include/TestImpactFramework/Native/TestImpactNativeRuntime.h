@@ -31,7 +31,7 @@ namespace TestImpact
         //! @param previousRunDataFile The optional previous run data file to be used instead of that specified in the config file.
         //! @param testsToExclude The tests to exclude from the run (will override any excluded tests in the config file).
         //! @param suiteSet The test suites for which the coverage data and test selection will draw from.
-        //! @param suiteLabelExcludeSet The suite labels that will exclude any tests with any matching suite labels.
+        //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
         //! @param executionFailurePolicy Determines how to handle test targets that fail to execute.
         //! @param executionFailureDraftingPolicy Determines how test targets that previously failed to execute are drafted into subsequent test sequences.
         //! @param testFailurePolicy Determines how to handle test targets that report test failures.
