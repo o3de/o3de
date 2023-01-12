@@ -1355,13 +1355,13 @@ namespace AzToolsFramework
             emit SelectEntity(entityId, selected);
         }
 
-        m_supressNextSelectEntity = false;
+        m_suppressNextSelectEntity = false;
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedLocked(AZ::EntityId entityId, bool /*locked*/)
     {
         // Prevent a SelectEntity call occurring during the update to stop the item clicked from scrolling away.
-        m_supressNextSelectEntity = true;
+        m_suppressNextSelectEntity = true;
 
         //update all ancestors because they will show partial state for descendants
         QueueEntityUpdate(entityId);
@@ -1371,7 +1371,7 @@ namespace AzToolsFramework
     void EntityOutlinerListModel::OnEntityInfoUpdatedVisibility(AZ::EntityId entityId, bool /*visible*/)
     {
         // Prevent a SelectEntity call occurring during the update to stop the item clicked from scrolling away.
-        m_supressNextSelectEntity = true;
+        m_suppressNextSelectEntity = true;
 
         //update all ancestors because they will show partial state for descendants
         QueueEntityUpdate(entityId);
