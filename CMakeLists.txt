@@ -46,6 +46,7 @@ include(cmake/Install.cmake)
 include(cmake/LYWrappers.cmake)
 include(cmake/Gems.cmake)
 include(cmake/UnitTest.cmake)
+include(cmake/TestImpactFramework/TestImpactTestTargetConfig.cmake) # LYTestWrappers dependency
 include(cmake/LYTestWrappers.cmake)
 include(cmake/Monolithic.cmake)
 include(cmake/SettingsRegistry.cmake)
