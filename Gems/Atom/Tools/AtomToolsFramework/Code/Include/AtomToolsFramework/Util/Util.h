@@ -80,6 +80,12 @@ namespace AtomToolsFramework
     //! @returns a pointer to the application main window 
     QWidget* GetToolMainWindow();
 
+    //! Searches a vector of string values for the first non empty string.
+    //! @param values Container of strings to be searched.
+    //! @param defaultValue Value returned if no valid string was found.
+    //! @returns The first nonempty string or the default value
+    AZStd::string GetFirstNonEmptyString(const AZStd::vector<AZStd::string>& values, const AZStd::string& defaultValue = {});
+
     //! Converts input text into a code-friendly symbol name, removing special characters and replacing whitespace with underscores.
     //! @param text Input text that will be converted into a symbol name
     //! @returns the symbol name generated from the text

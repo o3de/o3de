@@ -45,13 +45,6 @@
                 "settings": {
                     "materialPropertyConnectionName": [
                         "doubleSided"
-                    ],
-                    "materialPropertyConnectionType": {},
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -74,12 +67,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -102,12 +89,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -127,13 +108,6 @@
                 "settings": {
                     "materialPropertyConnectionName": [
                         "castShadows"
-                    ],
-                    "materialPropertyConnectionType": {},
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -156,12 +130,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -184,12 +152,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -212,12 +174,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -240,12 +196,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -268,12 +218,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             }

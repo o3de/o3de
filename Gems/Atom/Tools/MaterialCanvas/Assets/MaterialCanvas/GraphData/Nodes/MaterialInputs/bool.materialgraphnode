@@ -48,7 +48,7 @@
                         "ShaderInput"
                     ],
                     "materialPropertySrgMember": [
-                        "SLOTSTANDARDSRGMEMBER"
+                        "STANDARD_SRG_MEMBER"
                     ]
                 }
             }

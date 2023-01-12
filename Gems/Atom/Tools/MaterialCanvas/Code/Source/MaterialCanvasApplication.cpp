@@ -200,13 +200,30 @@ namespace MaterialCanvas
     {
         // Registering custom property handlers for dynamic node configuration settings. The settings are just a map of string data.
         // Recognized settings will need special controls for selecting files or editing large blocks of text without taking up much real
-        // estate in the property editor.
+        // estate in the property editor. In the future, this will likely be replaced with a more specialized node configuration editor. 
         AZ::Edit::ElementData editData;
         editData.m_elementId = AZ_CRC_CE("MultilineStringDialog");
         m_dynamicNodeManager->RegisterEditDataForSetting("instructions", editData);
-        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertySrgMember", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("classDefinitions", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("functionDefinitions", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertySrgMember", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyDescription", editData);
+
+        editData = {};
+        editData.m_elementId = AZ::Edit::UIHandlers::LineEdit;
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyDisplayName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyConnectionName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyGroupName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyGroup", editData);
+
+        editData = {};
+        editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
+        AtomToolsFramework::AddEditDataAttribute(
+            editData,
+            AZ::Edit::Attributes::StringList,
+            AZStd::vector<AZStd::string>{ "None", "ShaderInput", "ShaderOption", "ShaderEnabled", "InternalProperty", "" });
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyConnectionType", editData);
 
         editData = {};
         editData.m_elementId = AZ_CRC_CE("StringFilePath");

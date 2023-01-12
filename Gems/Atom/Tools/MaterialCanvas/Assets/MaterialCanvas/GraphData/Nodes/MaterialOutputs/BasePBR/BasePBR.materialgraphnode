@@ -37,8 +37,8 @@
             },
             {
                 "name": "inEnableNormal",
-                "displayName": "Enable Normal",
-                "description": "Enable Normal",
+                "displayName": "Enable Normal Input",
+                "description": "Use normal values from material inputs.",
                 "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "bool",
                 "defaultValue": {
@@ -54,12 +54,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -79,13 +73,6 @@
                 "settings": {
                     "materialPropertyConnectionName": [
                         "doubleSided"
-                    ],
-                    "materialPropertyConnectionType": {},
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -108,12 +95,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -136,12 +117,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -161,13 +136,6 @@
                 "settings": {
                     "materialPropertyConnectionName": [
                         "castShadows"
-                    ],
-                    "materialPropertyConnectionType": {},
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -190,12 +158,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -218,12 +180,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -246,12 +202,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -274,12 +224,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -302,12 +246,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             }

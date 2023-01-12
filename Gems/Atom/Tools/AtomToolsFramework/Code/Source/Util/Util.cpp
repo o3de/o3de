@@ -86,15 +86,28 @@ namespace AtomToolsFramework
         return mainWindow;
     }
 
+    AZStd::string GetFirstNonEmptyString(const AZStd::vector<AZStd::string>& values, const AZStd::string& defaultValue)
+    {
+        for (const auto& value : values)
+        {
+            if (!value.empty())
+            {
+                return value;
+            }
+        }
+
+        return defaultValue;
+    }
+
     AZStd::string GetSymbolNameFromText(const AZStd::string& text)
     {
         QString symbolName(text.c_str());
+        // Remove all trailing whitespace
+        symbolName.replace(QRegExp("\\s+$"), "");
         // Replace non alphanumeric characters with space
         symbolName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
         // Insert a space between a lowercase or numeric character followed by an uppercase character
         symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
-        // Remove all trailing whitespace
-        symbolName.replace(QRegExp("\\s+\\Z"), "");
         // Insert an underscore at the beginning of the string if it starts with a digit
         symbolName.replace(QRegExp("\\A(\\d)"), "_\\1");
         // Replace every sequence of whitespace characters with underscores
@@ -105,12 +118,12 @@ namespace AtomToolsFramework
     AZStd::string GetDisplayNameFromText(const AZStd::string& text)
     {
         QString displayName(text.c_str());
+        // Remove all trailing whitespace
+        displayName.replace(QRegExp("\\s+$"), "");
         // Replace non alphanumeric characters with space
         displayName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
         // Insert a space between a lowercase or numeric character followed by an uppercase character
         displayName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
-        // Remove all trailing whitespace
-        displayName.replace(QRegExp("\\s+\\Z"), "");
         // Tokenize the string where separated by whitespace
         QStringList displayNameParts = displayName.split(QRegExp("\\s"), Qt::SkipEmptyParts);
         for (QString& part : displayNameParts)

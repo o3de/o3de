@@ -100,9 +100,6 @@ namespace MaterialCanvas
             const AZStd::vector<AZStd::string>& inputSlotNames,
             AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const;
 
-        // Get the value from a slot as a string
-        AZStd::string GetStringValueFromSlot(GraphModel::ConstSlotPtr slot, const AZStd::string& defaultValue = {}) const;
-
         // Create a unique string identifier, from a node title and ID, that can be used for a file name or symbol in code
         AZStd::string GetSymbolNameFromNode(GraphModel::ConstNodePtr node) const;
 

@@ -69,12 +69,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -97,19 +91,13 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
             {
                 "name": "inEnableNormal",
-                "displayName": "Enable Normal",
-                "description": "Enable Normal",
+                "displayName": "Enable Normal Input",
+                "description": "Use normal values from material inputs.",
                 "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "bool",
                 "defaultValue": {
@@ -125,12 +113,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -150,13 +132,6 @@
                 "settings": {
                     "materialPropertyConnectionName": [
                         "doubleSided"
-                    ],
-                    "materialPropertyConnectionType": {},
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -179,12 +154,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -207,12 +176,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -232,13 +195,6 @@
                 "settings": {
                     "materialPropertyConnectionName": [
                         "castShadows"
-                    ],
-                    "materialPropertyConnectionType": {},
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -261,12 +217,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -289,12 +239,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -317,12 +261,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -345,12 +283,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
@@ -373,19 +305,13 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
             {
                 "name": "inEnableClearCoat",
                 "displayName": "Enable Clear Coat",
-                "description": "Enable Clear Coat",
+                "description": "Enable the clear coat feature for this material.",
                 "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "bool",
                 "defaultValue": {
@@ -401,19 +327,13 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             },
             {
                 "name": "inEnableClearCoatNormal",
-                "displayName": "Enable Clear Coat Normal",
-                "description": "Enable Clear Coat Normal",
+                "displayName": "Enable Clear Coat Normal Input",
+                "description": "Use normal values from clear coat material inputs.",
                 "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "bool",
                 "defaultValue": {
@@ -429,12 +349,6 @@
                     ],
                     "materialPropertyConnectionType": [
                         "ShaderOption"
-                    ],
-                    "materialPropertyFlags": [
-                        "UseSlotConfig"
-                    ],
-                    "materialPropertyGroup": [
-                        "General"
                     ]
                 }
             }
@@ -626,8 +540,8 @@
             },
             {
                 "name": "inClearCoatNormal",
-                "displayName": "Clear Coat Normal",
-                "description": "Clear Coat Normal",
+                "displayName": "Clear Coat Normal Input",
+                "description": "Use material input values for clear coat normals instead of vertex normals.",
                 "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float3",
                 "defaultValue": {
