@@ -194,7 +194,7 @@ def get_incompatible_gem_version_specifiers(gem_version_specifier_list:list, all
             # when no version specifier is provided we assume compatibility with any version
             continue
         
-        gem_version = all_gems_json_data[gem_name].get('gem_version','')
+        gem_version = all_gems_json_data[gem_name].get('version','')
         if gem_version and not has_compatible_version([gem_version_specifier], gem_name, gem_version):
             incompatible_gem_version_specifiers.add(f"{gem_version_specifier} (different version found ${gem_version})")
             continue

@@ -325,10 +325,10 @@ class TestEnableGemCommand:
             if gem_name in gem_names_and_versions:
                 # gem dependencies data
                 gem_data['gem_name'] = gem_name 
-                gem_data['gem_version'] = gem_names_and_versions[gem_name] 
+                gem_data['version'] = gem_names_and_versions[gem_name] 
             else:
                 # test gem data
-                gem_data['gem_version'] = gem_version
+                gem_data['version'] = gem_version
                 gem_data['dependencies'] = gem_dependencies
                 if compatible_engines:
                     gem_data['compatible_engines'] = compatible_engines
