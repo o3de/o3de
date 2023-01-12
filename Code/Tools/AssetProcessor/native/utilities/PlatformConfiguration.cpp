@@ -1879,16 +1879,14 @@ namespace AssetProcessor
 
     void PlatformConfiguration::AddGemScanFolders(const AZStd::vector<AzFramework::GemInfo>& gemInfoList)
     {
-        // Default order should be:
-        // Project Gems > Project > Engine and External Gems
-        // Query the Project/Assets scan order.
         // Determine if a Gem is from the project.
-        // Cross-check gem name against the gemInfo name.
+        // Cross-check gem paths against visited project gem paths.
+        // If the gem is project-relative, make adjustments to it's priority order.
         // Registry Settings:
-        // /Amazon/AssetProcessor/Settings/GemScanFolderPriorityStart
-        //      The starting gem order
-        // /Amazon/AssetProcessor/Settings/ProjectGemsRelativeScanFolderPriority
-        //      "none" - any project Gem scan folder priority will be incremented from the "GemScanFolderPriorityStart" value.
+        // /Amazon/AssetProcessor/Settings/GemScanFolderStartingPriorityOrder
+        //      The starting gem priority order
+        // /Amazon/AssetProcessor/Settings/ProjectRelativeGemsScanFolderPriority
+        //      "none" - any project Gem scan folder priority will be incremented from the "GemScanFolderStartingPriorityOrder" value.
         //      "lower" - each project Gem scan folder will be set to lower priority (higher numeric value) than the project scan folder.
         //      "higher" - each project Gem scan folder will be set to higher priority (lower numeric value) than the project scan folder.
 
@@ -1903,10 +1901,10 @@ namespace AssetProcessor
         if (settingsRegistry != nullptr)
         {
             settingsRegistry->Get(gemStartingOrder,
-                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + "/GemScanFolderPriorityStart");
+                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + "/GemScanFolderStartingPriorityOrder");
 
             settingsRegistry->Get(projectGemPrioritySetting,
-                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + "/ProjectGemsRelativeScanFolderPriority");
+                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + "/ProjectRelativeGemsScanFolderPriority");
             AZStd::to_lower(projectGemPrioritySetting.begin(), projectGemPrioritySetting.end());
 
             auto projectGemCallback = [&projectGemPaths]([[maybe_unused]] AZStd::string_view manifestObjectKey,

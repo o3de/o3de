@@ -156,13 +156,13 @@
 
                 // Configurable starting prioirity for all Gem scan folders to use.
                 // Each Gem scan folder added will increment this.
-                "GemScanFolderPriorityStart": 100,
+                "GemScanFolderStartingPriorityOrder": 100,
 
                 // Control how project-relative Gem scan folders are prioritized against the project's main scan folder (key: "Project/Assets", alias: @PROJECTROOT@).
-                //  "none" - any project Gem scan folder priority will be incremented from the "GemScanFolderPriorityStart" value (default behavior).
+                //  "none" - any project Gem scan folder priority will be incremented from the "GemScanFolderStartingPriorityOrder" value (default behavior).
                 //  "lower" - each project Gem scan folder will be set to lower priority (higher numeric value) than the project scan folder.
                 //  "higher" - each project Gem scan folder will be set to higher priority (lower numeric value) than the project scan folder.
-                "ProjectGemsRelativeScanFolderPriority": "none",
+                "ProjectRelativeGemsScanFolderPriority": "none",
 
                 // Excludes files that match the pattern or glob.
                 // the input string will be the relative path from the scan folder the file was found in.
