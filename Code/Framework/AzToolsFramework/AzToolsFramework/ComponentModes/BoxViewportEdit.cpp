@@ -28,6 +28,11 @@ namespace AzToolsFramework
         AZ::Vector3::CreateAxisZ(), -AZ::Vector3::CreateAxisZ()
     } };
 
+    BoxViewportEdit::BoxViewportEdit(bool allowAsymmetricalEditing)
+        : m_allowAsymmetricalEditing(allowAsymmetricalEditing)
+    {
+    }
+
     void BoxViewportEdit::UpdateManipulators()
     {
         AZ::Transform manipulatorSpace = AZ::Transform::CreateIdentity();
@@ -59,10 +64,9 @@ namespace AzToolsFramework
         }
     }
 
-    void BoxViewportEdit::Setup(const AZ::EntityComponentIdPair& entityComponentIdPair, bool allowAsymmetricalEditing)
+    void BoxViewportEdit::Setup(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         m_entityComponentIdPair = entityComponentIdPair;
-        m_allowAsymmetricalEditing = allowAsymmetricalEditing;
 
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(

@@ -20,9 +20,9 @@ namespace AzToolsFramework
     class BoxViewportEdit
     {
     public:
-        BoxViewportEdit() = default;
+        BoxViewportEdit(bool allowAsymmetricalEditing = false);
 
-        void Setup(const AZ::EntityComponentIdPair& entityComponentIdPair, bool allowAsymmetricalEditing = false);
+        void Setup(const AZ::EntityComponentIdPair& entityComponentIdPair);
         void Teardown();
         void UpdateManipulators();
 

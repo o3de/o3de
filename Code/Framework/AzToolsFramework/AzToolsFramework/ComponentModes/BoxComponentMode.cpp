@@ -32,7 +32,7 @@ namespace AzToolsFramework
         }
         else
         {
-            m_subModes[static_cast<size_t>(SubMode::Dimensions)]->Setup(entityComponentIdPair, m_allowAsymmetricalEditing);
+            m_subModes[static_cast<size_t>(SubMode::Dimensions)]->Setup(entityComponentIdPair);
         }
     }
 
@@ -120,7 +120,7 @@ namespace AzToolsFramework
         const auto modeIndex = static_cast<size_t>(mode);
         AZ_Assert(modeIndex < m_buttonIds.size(), "Invalid mode index %i.", modeIndex);
         m_subMode = mode;
-        m_subModes[modeIndex]->Setup(m_entityComponentIdPair, m_allowAsymmetricalEditing);
+        m_subModes[modeIndex]->Setup(m_entityComponentIdPair);
 
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::ClearClusterActiveButton, m_clusterId);
