@@ -72,6 +72,7 @@ void BatchApplicationManager::OnErrorMessage([[maybe_unused]] const char* error)
 
 void BatchApplicationManager::Reflect()
 {
+    ApplicationManagerBase::Reflect();
 }
 
 const char* BatchApplicationManager::GetLogBaseName()
@@ -112,6 +113,10 @@ void BatchApplicationManager::MakeActivationConnections()
         m_assetProcessorManager, [this](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse /*response*/)
         {
             m_processedAssetCount++;
+
+            // If a file fails and later succeeds, don't count it as a failure.
+            // This avoids marking the entire run as a failure (returning non-zero) when everything compiled successfully *eventually*
+            m_failedAssets.erase(entry.GetAbsoluteSourcePath().toUtf8().constData());
 
             AssetProcessor::JobDiagnosticInfo info{};
             AssetProcessor::JobDiagnosticRequestBus::BroadcastResult(info, &AssetProcessor::JobDiagnosticRequestBus::Events::GetDiagnosticInfo, entry.m_jobRunKey);

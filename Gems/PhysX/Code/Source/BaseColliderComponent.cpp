@@ -64,13 +64,20 @@ namespace PhysX
 
             auto pxShape = static_cast<physx::PxShape*>(shapes[0]->GetNativePointer());
             physx::PxTransform pxWorldTransform = PxMathConvert(m_worldTransform);
-            physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(pxShape->getGeometry().any(),
+
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+            const physx::PxGeometry& pxShapeGeom = pxShape->getGeometry();
+#else
+            const physx::PxGeometry& pxShapeGeom = pxShape->getGeometry().any();
+#endif
+
+            physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(pxShapeGeom,
                 pxWorldTransform * pxShape->getLocalPose(), 1.0f);
 
             for (size_t shapeIndex = 1; shapeIndex < numShapes; ++shapeIndex)
             {
                 pxShape = static_cast<physx::PxShape*>(shapes[0]->GetNativePointer());
-                bounds.include(physx::PxGeometryQuery::getWorldBounds(pxShape->getGeometry().any(),
+                bounds.include(physx::PxGeometryQuery::getWorldBounds(pxShapeGeom,
                     pxWorldTransform * pxShape->getLocalPose(), 1.0f));
             }
 
@@ -268,7 +275,7 @@ namespace PhysX
         }
         else
         {
-            const AZ::Vector3 nonUniformScale = Utils::GetTransformScale(GetEntityId());
+            const float transformScale = Utils::GetTransformScale(GetEntityId());
 
             m_shapes.reserve(m_shapeConfigList.size());
 
@@ -283,7 +290,7 @@ namespace PhysX
                 }
 
                 Physics::ColliderConfiguration colliderConfiguration = *shapeConfigPair.first;
-                colliderConfiguration.m_position *= nonUniformScale;
+                colliderConfiguration.m_position *= transformScale;
 
                 AZStd::shared_ptr<Physics::Shape> shape;
                 Physics::SystemRequestBus::BroadcastResult(shape, &Physics::SystemRequests::CreateShape, colliderConfiguration, *shapeConfiguration);

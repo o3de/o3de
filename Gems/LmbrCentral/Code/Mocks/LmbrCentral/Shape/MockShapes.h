@@ -30,8 +30,9 @@ namespace UnitTest
         }
 
         MOCK_METHOD0(GetBoxConfiguration, LmbrCentral::BoxShapeConfig());
-        MOCK_METHOD0(GetBoxDimensions, AZ::Vector3());
+        MOCK_CONST_METHOD0(GetBoxDimensions, AZ::Vector3());
         MOCK_METHOD1(SetBoxDimensions, void(const AZ::Vector3& newDimensions));
+        MOCK_METHOD0(IsTypeAxisAligned, bool());
     };
 
     class MockShapeComponentRequests

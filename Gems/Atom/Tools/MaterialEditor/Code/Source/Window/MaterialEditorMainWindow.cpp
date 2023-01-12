@@ -37,7 +37,7 @@ namespace MaterialEditor
 
         // Initialize the atom scene and pipeline that will bind to the viewport window to render entities and presets
         auto viewportScene = AZStd::make_shared<AtomToolsFramework::EntityPreviewViewportScene>(
-            m_toolId, m_materialViewport, entityContext, "MaterialEditorViewportWidget", "passes/MainRenderPipeline.azasset");
+            m_toolId, m_materialViewport, entityContext, "MaterialEditorViewportWidget", "passes/mainrenderpipeline.azasset");
 
         // Viewport content will instantiate all of the entities that will be displayed and controlled by the viewport
         auto viewportContent = AZStd::make_shared<MaterialEditorViewportContent>(m_toolId, m_materialViewport, entityContext);

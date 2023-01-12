@@ -388,7 +388,6 @@ void MainWindow::Activate()
     // Asset view
     m_sourceAssetTreeFilterModel = new AssetProcessor::SourceAssetTreeFilterModel(this);
     m_sourceModel = new AssetProcessor::SourceAssetTreeModel(m_sharedDbConnection, this);
-    m_sourceModel->Reset();
     m_sourceAssetTreeFilterModel->setSourceModel(m_sourceModel);
     ui->SourceAssetsTreeView->setModel(m_sourceAssetTreeFilterModel);
     ui->SourceAssetsTreeView->setColumnWidth(aznumeric_cast<int>(AssetTreeColumns::Extension), 80);
@@ -399,7 +398,6 @@ void MainWindow::Activate()
     m_intermediateAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
     m_intermediateModel = new AssetProcessor::SourceAssetTreeModel(m_sharedDbConnection, this);
     m_intermediateModel->SetOnlyShowIntermediateAssets();
-    m_intermediateModel->Reset();
     m_intermediateAssetTreeFilterModel->setSourceModel(m_intermediateModel);
     ui->IntermediateAssetsTreeView->setModel(m_intermediateAssetTreeFilterModel);
     connect(
@@ -411,7 +409,6 @@ void MainWindow::Activate()
 
     m_productAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
     m_productModel = new AssetProcessor::ProductAssetTreeModel(m_sharedDbConnection, this);
-    m_productModel->Reset();
     m_productAssetTreeFilterModel->setSourceModel(m_productModel);
     ui->ProductAssetsTreeView->setModel(m_productAssetTreeFilterModel);
     ui->ProductAssetsTreeView->setColumnWidth(aznumeric_cast<int>(AssetTreeColumns::Extension), 80);
@@ -493,6 +490,23 @@ void MainWindow::Activate()
         &MainWindow::ShowIncomingProductDependenciesContextMenu);
 
     SetupAssetSelectionCaching();
+    // the first time we open that panel we can refresh it.
+    m_connectionForResettingAssetsView = connect(
+        ui->dialogStack,
+        &QStackedWidget::currentChanged,
+        this,
+        [&](int index)
+        {
+            if (index == static_cast<int>(DialogStackIndex::Assets))
+            {
+                // the first time we show the asset window, reset the model since its so expensive to do on every startup
+                // and many times, the user does not even go to that panel.
+                m_sourceModel->Reset();
+                m_intermediateModel->Reset();
+                m_productModel->Reset();
+                QObject::disconnect(m_connectionForResettingAssetsView);
+            }
+        });
 
     //Log View
     m_loggingPanel = ui->LoggingPanel;
@@ -617,6 +631,25 @@ void MainWindow::Activate()
 
     m_guiApplicationManager->GetAssetProcessorManager()->SetBuilderDebugFlag(enableBuilderDebugFlag);
     ui->debugOutputCheckBox->setCheckState(enableBuilderDebugFlag ? Qt::Checked : Qt::Unchecked);
+
+    settings.beginGroup("Options");
+    bool initialScanSkippingEnabled = settings.value("SkipInitialScan", QVariant(false)).toBool();
+    settings.endGroup();
+
+    QObject::connect(ui->skipinitialdatabaseCheck, &QCheckBox::stateChanged, this,
+        [](int newCheckState)
+    {
+        bool newOption = newCheckState == Qt::Checked ? true : false;
+        // don't change initial scan skipping feature value, as it's only relevant on the first scan
+        // save the value for the next run
+        QSettings settingsInCallback;
+        settingsInCallback.beginGroup("Options");
+        settingsInCallback.setValue("SkipInitialScan", QVariant(newOption));
+        settingsInCallback.endGroup();
+    });
+
+    m_guiApplicationManager->GetAssetProcessorManager()->SetInitialScanSkippingFeature(initialScanSkippingEnabled);
+    ui->skipinitialdatabaseCheck->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
 
     // Shared Cache tab:
     SetupAssetServerTab();
@@ -1751,7 +1784,7 @@ void MainWindow::JobStatusChanged([[maybe_unused]] AssetProcessor::JobEntry entr
     }
 
     // ignore the notification if it's not for the selected entry
-    if (cachedJobInfo->m_elementId.GetInputAssetName() != entry.m_databaseSourceName)
+    if (cachedJobInfo->m_elementId.GetSourceAssetReference() != entry.m_sourceAssetReference)
     {
         return;
     }
@@ -1841,21 +1874,7 @@ void MainWindow::ShowJobLogContextMenu(const QPoint& pos)
 
 static QString FindAbsoluteFilePath(const AssetProcessor::CachedJobInfo* cachedJobInfo)
 {
-    using namespace AzToolsFramework;
-
-    bool result = false;
-    AZ::Data::AssetInfo info;
-    AZStd::string watchFolder;
-    QByteArray assetNameUtf8 = cachedJobInfo->m_elementId.GetInputAssetName().toUtf8();
-    AssetSystemRequestBus::BroadcastResult(result, &AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, assetNameUtf8.constData(), info, watchFolder);
-    if (!result)
-    {
-        AZ_Error("AssetProvider", false, "Failed to locate asset info for '%s'.", assetNameUtf8.constData());
-    }
-
-    return result
-        ? QDir(watchFolder.c_str()).absoluteFilePath(info.m_relativePath.c_str())
-        : QString();
+    return cachedJobInfo ? cachedJobInfo->m_elementId.GetSourceAssetReference().AbsolutePath().c_str() : QString{};
 };
 
 static void SendShowInAssetBrowserResponse(const QString& filePath, ConnectionManager* connectionManager, unsigned int connectionId, QByteArray data)
@@ -1944,7 +1963,7 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
     {
         ui->dialogStack->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
         ui->buttonList->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
-        ui->sourceAssetDetailsPanel->GoToSource(AZStd::string(item->m_elementId.GetInputAssetName().toUtf8().constData()));
+        ui->sourceAssetDetailsPanel->GoToSource(item->m_elementId.GetSourceAssetReference().RelativePath().c_str());
     });
 
     if (item->m_jobState != AzToolsFramework::AssetSystem::JobStatus::Completed)
@@ -2225,13 +2244,13 @@ void MainWindow::BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcess
 
     int intermediateCount = 0;
     int productCount = 0;
-    AZStd::string sourceName(sourceItemData->m_assetDbName);
+    SourceAssetReference sourceAsset(sourceItemData->m_scanFolderInfo.m_scanFolder.c_str(), sourceItemData->m_sourceInfo.m_sourceName.c_str());
     m_sharedDbConnection->QueryJobBySourceID(sourceItemData->m_sourceInfo.m_sourceID,
-        [&,sourceName](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
+        [this, &jobMenu, &productAssetMenu, &intermediateAssetMenu, &intermediateCount, &productCount, sourceAsset](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
     {
-        QAction* jobAction = jobMenu->addAction(tr("with key %1 for platform %2").arg(jobEntry.m_jobKey.c_str(), jobEntry.m_platform.c_str()), this, [&, jobEntry, sourceName]()
+        QAction* jobAction = jobMenu->addAction(tr("with key %1 for platform %2").arg(jobEntry.m_jobKey.c_str(), jobEntry.m_platform.c_str()), this, [this, jobEntry, sourceAsset]()
         {
-            QModelIndex jobIndex = m_jobsModel->GetJobFromSourceAndJobInfo(sourceName, jobEntry.m_platform, jobEntry.m_jobKey);
+            QModelIndex jobIndex = m_jobsModel->GetJobFromSourceAndJobInfo(sourceAsset, jobEntry.m_platform, jobEntry.m_jobKey);
             SelectJobAndMakeVisible(jobIndex);
         });
         jobAction->setToolTip(tr("Show this job in the Jobs tab."));

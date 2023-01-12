@@ -36,7 +36,7 @@ namespace AZ
 #endif
 
             static Vec1::FloatType ToVec1(FloatArgType value);
-            static FloatType FromVec1(Vec1::FloatArgType value);
+            static FloatType FromVec1(Vec1::FloatArgType value); // Generates Vec2 {Vec1.x, Vec1.x}
 
             static FloatType LoadAligned(const float* __restrict addr); // addr *must* be 16-byte aligned
             static Int32Type LoadAligned(const int32_t* __restrict addr); // addr *must* be 16-byte aligned

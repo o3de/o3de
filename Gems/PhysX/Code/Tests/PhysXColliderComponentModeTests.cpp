@@ -16,6 +16,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <Tests/Viewport/ViewportUiManagerTests.cpp>
@@ -24,7 +25,7 @@
 namespace UnitTest
 {
     class PhysXColliderComponentModeTest
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<false>
     {
     protected:
         using EntityPtr = AZ::Entity*;
@@ -440,7 +441,7 @@ namespace UnitTest
         EXPECT_NEAR(assetScale.GetZ(), 1.0f, tolerance);
     }
 
-    class PhysXEditorColliderComponentFixture : public UnitTest::ToolsApplicationFixture
+    class PhysXEditorColliderComponentFixture : public UnitTest::ToolsApplicationFixture<false>
     {
     public:
         void SetUpEditorFixtureImpl() override;
@@ -617,7 +618,7 @@ namespace UnitTest
         EXPECT_THAT(newColliderOffset, IsCloseTolerance(AZ::Vector3(-2.0f, 3.0f, -2.0f), ManipulatorTolerance));
     }
 
-    TEST_F(PhysXEditorColliderComponentManipulatorFixture, BoxColliderScaleManipulatorsCorrectlyLocatedRelativeToColliderWithNonUniformScale)
+    TEST_F(PhysXEditorColliderComponentManipulatorFixture, BoxColliderScaleManipulatorsSymmetricalEditingWithNonUniformScale)
     {
         const AZ::Vector3 boxDimensions(2.0f, 2.0f, 3.0f);
         const AZ::Quaternion boxRotation(0.7f, 0.7f, -0.1f, 0.1f);
@@ -654,6 +655,7 @@ namespace UnitTest
             ->CameraState(m_cameraState)
             // move the mouse to the position of the y scale manipulator
             ->MousePosition(screenStart)
+            ->KeyboardModifierDown(AzToolsFramework::DefaultSymmetricalEditingModifier)
             // drag to move the manipulator
             ->MouseLButtonDown()
             ->MousePosition(screenEnd)
@@ -664,6 +666,72 @@ namespace UnitTest
             newBoxDimensions, m_idPair, &AzToolsFramework::BoxManipulatorRequests::GetDimensions);
 
         EXPECT_THAT(newBoxDimensions, IsCloseTolerance(AZ::Vector3(2.0f, 2.2f, 3.0f), ManipulatorTolerance));
+
+        // the offset should not have changed, because the editing was symmetrical
+        AZ::Vector3 newBoxOffset = AZ::Vector3::CreateZero();
+        AzToolsFramework::BoxManipulatorRequestBus::EventResult(
+            newBoxOffset, m_idPair, &AzToolsFramework::BoxManipulatorRequests::GetTranslationOffset);
+
+        EXPECT_THAT(newBoxOffset, IsCloseTolerance(boxOffset, ManipulatorTolerance));
+    }
+
+    TEST_F(PhysXEditorColliderComponentManipulatorFixture, BoxColliderScaleManipulatorsAsymmetricalEditingWithNonUniformScale)
+    {
+        const AZ::Vector3 boxDimensions(4.0f, 5.0f, 2.0f);
+        const AZ::Quaternion boxRotation(0.3f, -0.3f, -0.1f, 0.9f);
+        const AZ::Vector3 boxOffset(1.0f, -4.0f, -3.0f);
+        SetupCollider(Physics::BoxShapeConfiguration(boxDimensions), boxRotation, boxOffset);
+        const AZ::Quaternion entityRotation(0.5f, -0.1f, 0.7f, 0.5f);
+        const AZ::Vector3 entityTranslation(-2.0f, -2.0f, 5.0f);
+        const float uniformScale = 3.0f;
+        SetupTransform(entityRotation, entityTranslation, uniformScale);
+        const AZ::Vector3 nonUniformScale(0.5f, 1.5f, 2.5f);
+        SetupNonUniformScale(nonUniformScale);
+        EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode::Dimensions);
+
+        // the expected position of the collider centre based on the combination of entity transform, collider offset and non-uniform scale
+        const AZ::Vector3 expectedColliderPosition(-1.1f, 21.94f, -11.08f);
+
+        // the expected position of the -z scale manipulator relative to the centre of the collider, based on collider
+        // rotation, entity rotation and scale, and non-uniform scale
+        const AZ::Vector3 scaleManipulatorMinusZDelta(-4.608f, 2.5752f, -0.8064f);
+
+        // position the camera to look at the collider along the x-y diagonal
+        const AZ::Vector3 worldStart = expectedColliderPosition + scaleManipulatorMinusZDelta;
+        const AZ::Vector3 worldEnd = worldStart + 0.5f * scaleManipulatorMinusZDelta;
+
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateRotationZ(3.0f * AZ::Constants::QuarterPi), worldStart + AZ::Vector3(5.0f, 5.0f, 0.0f)));
+
+        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
+        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
+
+        m_actionDispatcher
+            ->CameraState(m_cameraState)
+            // move the mouse to the position of the -z scale manipulator
+            ->MousePosition(screenStart)
+            // drag to move the manipulator
+            ->MouseLButtonDown()
+            ->MousePosition(screenEnd)
+            ->MouseLButtonUp();
+
+        AZ::Vector3 newBoxDimensions = AZ::Vector3::CreateZero();
+        AzToolsFramework::BoxManipulatorRequestBus::EventResult(
+            newBoxDimensions, m_idPair, &AzToolsFramework::BoxManipulatorRequests::GetDimensions);
+
+        EXPECT_THAT(newBoxDimensions, IsCloseTolerance(AZ::Vector3(4.0f, 5.0f, 2.5f), ManipulatorTolerance));
+
+        // the offset should have changed, because the editing was asymmetrical
+        AZ::Vector3 newBoxOffset = AZ::Vector3::CreateZero();
+        AzToolsFramework::BoxManipulatorRequestBus::EventResult(
+            newBoxOffset, m_idPair, &AzToolsFramework::BoxManipulatorRequests::GetTranslationOffset);
+
+        // the offset should have moved 0.25 units (half the change in the z dimension)
+        // along the -z axis, tranformed by the local rotation of the box
+        const AZ::Vector3 rotatedMinusZAxis(0.6f, 0.48f, -0.64f);
+        EXPECT_THAT(newBoxOffset, IsCloseTolerance(boxOffset + 0.25f * rotatedMinusZAxis, ManipulatorTolerance));
     }
 
     TEST_F(PhysXEditorColliderComponentManipulatorFixture, SphereColliderScaleManipulatorsCorrectlyLocatedRelativeToColliderWithNonUniformScale)

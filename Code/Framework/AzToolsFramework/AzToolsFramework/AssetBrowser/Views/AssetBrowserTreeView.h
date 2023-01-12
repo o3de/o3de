@@ -38,6 +38,8 @@ namespace AzToolsFramework
             : public QTreeViewWithStateSaving
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler
+            , public AssetBrowserInteractionNotificationBus::Handler
+
         {
             Q_OBJECT
 
@@ -92,6 +94,8 @@ namespace AzToolsFramework
             template <class TEntryType>
             const TEntryType* GetEntryFromIndex(const QModelIndex& index) const;
 
+            const AssetBrowserEntry* GetEntryByPath(QStringView path);
+
             bool IsIndexExpandedByDefault(const QModelIndex& index) const override;
 
         Q_SIGNALS:
@@ -127,6 +131,9 @@ namespace AzToolsFramework
             //! Grab one entry from the source thumbnail list and update it
             void UpdateSCThumbnails();
 
+            //! AssetBrowserInteractionNotificationBus::Handler overrides...
+            void AddSourceFileCreators(const char* fullSourceFolderName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators) override;
+
         private Q_SLOTS:
             void OnContextMenu(const QPoint& point);
 
@@ -145,5 +152,8 @@ namespace AzToolsFramework
             }
             return nullptr;
         }
+
+        void MoveEntry(AZStd::string_view fromPath, AZStd::string_view toPath, bool isFolder, QWidget* parent = nullptr);
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

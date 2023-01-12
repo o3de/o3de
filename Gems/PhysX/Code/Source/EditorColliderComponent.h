@@ -14,11 +14,12 @@
 #include <AzCore/Math/Quaternion.h>
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/Shape.h>
-#include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
+#include <AzFramework/Physics/Shape.h>
+#include <AzFramework/Physics/ShapeConfiguration.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
@@ -125,6 +126,7 @@ namespace PhysX
         , private PhysX::EditorColliderComponentRequestBus::Handler
         , private PhysX::EditorColliderValidationRequestBus::Handler
         , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
+        , public AzFramework::BoundsRequestBus::Handler
     {
     public:
         AZ_RTTI(EditorColliderComponent, "{FD429282-A075-4966-857F-D0BBF186CFE6}", AzToolsFramework::Components::EditorComponentBase);
@@ -148,6 +150,11 @@ namespace PhysX
         virtual const EditorProxyShapeConfig& GetShapeConfiguration() const;
         virtual const Physics::ColliderConfiguration& GetColliderConfiguration() const;
         virtual Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
+        Physics::ColliderConfiguration GetColliderConfigurationNoOffset() const;
+
+        // BoundsRequestBus overrides ...
+        AZ::Aabb GetWorldBounds() override;
+        AZ::Aabb GetLocalBounds() override;
 
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
@@ -189,11 +196,12 @@ namespace PhysX
         void OnNonUniformScaleChanged(const AZ::Vector3& nonUniformScale);
 
         // AzToolsFramework::BoxManipulatorRequestBus
-        AZ::Vector3 GetDimensions() override;
+        AZ::Vector3 GetDimensions() const override;
         void SetDimensions(const AZ::Vector3& dimensions) override;
-        AZ::Transform GetCurrentTransform() override;
-        AZ::Transform GetCurrentLocalTransform() override;
-        AZ::Vector3 GetBoxScale() override;
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
+        AZ::Transform GetCurrentLocalTransform() const override;
+        AZ::Transform GetManipulatorSpace() const override;
 
         // AZ::Render::MeshComponentNotificationBus
         void OnModelReady(const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset,

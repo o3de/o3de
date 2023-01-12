@@ -24,6 +24,7 @@ namespace EMStudio
     {
         Init();
         SetMotionEvent(motion, motionEvent);
+        connect(&m_eventDataEditor, &EventDataEditor::eventsChanged, this, &MotionEventEditor::SetMotionEvent);
     }
 
     void MotionEventEditor::Init()

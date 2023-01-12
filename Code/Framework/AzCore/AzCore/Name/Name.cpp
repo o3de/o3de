@@ -341,6 +341,7 @@ namespace AZ
                 ->Constructor()
                 ->Constructor<AZStd::string_view>()
                 ->Method("ToString", &Name::GetCStr)
+                ->Method("__repr__", &Name::GetCStr)
                 ->Method("Set", [](Name* thisPtr, AZStd::string_view name) { thisPtr->SetName(name); })
                 ->Method("IsEmpty", &Name::IsEmpty)
                 ->Method("Equal", static_cast<bool(Name::*)(const Name&)const>(&Name::operator==))

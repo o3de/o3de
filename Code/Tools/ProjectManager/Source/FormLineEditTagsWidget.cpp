@@ -121,6 +121,13 @@ namespace O3DE::ProjectManager
         refreshTagFrame();
     }
 
+    void FormLineEditTagsWidget::clear()
+    {
+        m_lineEdit->clear();
+        m_tags.clear();
+        refreshTagFrame();
+    }
+
     void FormLineEditTagsWidget::refreshTagFrame()
     {
         // cleanup the tag frame widget and re-add the tag list

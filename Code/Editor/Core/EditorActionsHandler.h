@@ -32,6 +32,8 @@ namespace AzToolsFramework
     class ToolBarManagerInterface;
 } // namespace AzToolsFramework
 
+class EditorViewportDisplayInfoHandler;
+
 class EditorActionsHandler
     : private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     , private AzToolsFramework::EditorEventsBus::Handler
@@ -79,6 +81,7 @@ private:
     // ViewportSettingsNotificationBus overrides ...
     void OnAngleSnappingChanged(bool enabled) override;
     void OnDrawHelpersChanged(bool enabled) override;
+    void OnGridShowingChanged(bool showing) override;
     void OnGridSnappingChanged(bool enabled) override;
     void OnIconsVisibilityChanged(bool enabled) override;
     void OnOnlyShowHelpersForSelectedEntitiesChanged(bool enabled) override;
@@ -87,8 +90,12 @@ private:
     void RefreshLayoutActions();
 
     // Recent Files
+    const char* m_levelExtension = nullptr;
+    int m_recentFileActionsCount = 0;
     bool IsRecentFileActionActive(int index);
+    bool IsRecentFileEntryValid(const QString& entry, const QString& gameFolderPath);
     void UpdateRecentFileActions();
+    void OpenLevelByRecentFileEntryIndex(int index);
 
     // Toolbox Macros
     void RefreshToolboxMacroActions();
@@ -113,6 +120,8 @@ private:
     CCryEditApp* m_cryEditApp;
     MainWindow* m_mainWindow;
     QtViewPaneManager* m_qtViewPaneManager;
+
+    EditorViewportDisplayInfoHandler* m_editorViewportDisplayInfoHandler = nullptr;
 
     AZStd::vector<AZStd::string> m_layoutMenuIdentifiers;
     AZStd::vector<AZStd::string> m_toolActionIdentifiers;

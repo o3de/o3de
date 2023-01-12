@@ -32,6 +32,9 @@ ly_add_target(
             .
             ${pal_dir}
             ${common_dir}
+    COMPILE_DEFINITIONS
+        PUBLIC
+            O3DE_STACK_CAPTURE_DEPTH=${O3DE_STACK_CAPTURE_DEPTH}
 )
 
 ly_add_target(
@@ -122,7 +125,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
-                AZ::AzTest
     )
 
     o3de_pal_dir(pal_tests_dir ${CMAKE_CURRENT_LIST_DIR}/Tests/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})

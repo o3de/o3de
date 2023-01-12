@@ -59,6 +59,14 @@ ly_create_alias(
         Gem::AWSMetrics
 )
 
+ly_create_alias(
+    NAME AWSMetrics.Unified
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSCore.Unified
+        Gem::AWSMetrics
+)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(
         NAME AWSMetrics.Tools

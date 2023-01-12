@@ -9,8 +9,10 @@
 #include <MultiplayerToolsSystemComponent.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/SimplePlayerSpawnerComponent.h>
 #include <Source/MultiplayerGem.h>
 #include <Source/MultiplayerSystemComponent.h>
+#include <Source/MultiplayerStatSystemComponent.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 
 namespace Multiplayer
@@ -22,7 +24,9 @@ namespace Multiplayer
             m_descriptors.end(),
             {
                 MultiplayerSystemComponent::CreateDescriptor(),
+                MultiplayerStatSystemComponent::CreateDescriptor(),
                 NetBindComponent::CreateDescriptor(),
+                SimplePlayerSpawnerComponent::CreateDescriptor(),
 #ifdef MULTIPLAYER_EDITOR
                 MultiplayerToolsSystemComponent::CreateDescriptor(),
 #endif
@@ -35,6 +39,7 @@ namespace Multiplayer
     {
         return AZ::ComponentTypeList{
             azrtti_typeid<MultiplayerSystemComponent>(),
+            azrtti_typeid<MultiplayerStatSystemComponent>(),
 #ifdef MULTIPLAYER_EDITOR
             azrtti_typeid<MultiplayerToolsSystemComponent>(),
 #endif

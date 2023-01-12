@@ -53,9 +53,6 @@ namespace AZ::Render
 
         m_filterParamBufferHandler = GpuBufferHandler(desc);
         
-        m_shadowmapAtlasSizeIndex = viewSrgLayout->FindShaderInputConstantIndex(AZ_NAME_LITERAL("m_shadowmapAtlasSize"));
-        m_invShadowmapAtlasSizeIndex = viewSrgLayout->FindShaderInputConstantIndex(AZ_NAME_LITERAL("m_invShadowmapAtlasSize"));
-
         CachePasses();
         EnableSceneNotification();
     }
@@ -71,12 +68,12 @@ namespace AZ::Render
         m_shadowProperties.Clear();
 
         m_projectedShadowmapsPasses.clear();
-        m_esmShadowmapsPasses.clear();
         
         for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
         {
             esmPass->SetEnabledComputation(false);
         }
+        m_esmShadowmapsPasses.clear();
     }
 
     
@@ -208,6 +205,14 @@ namespace AZ::Render
         m_deviceBufferNeedsUpdate = true;
     }
 
+    void ProjectedShadowFeatureProcessor::SetUseCachedShadows(ShadowId id, bool useCachedShadows)
+    {
+        AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetUseCachedShadows().");
+        ShadowProperty& shadowProperty = GetShadowPropertyFromShadowId(id);
+        shadowProperty.m_useCachedShadows = useCachedShadows;
+        m_shadowmapPassNeedsUpdate = true;
+    }
+
     void ProjectedShadowFeatureProcessor::SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor)
     {
         AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetShadowProperties().");
@@ -263,14 +268,8 @@ namespace AZ::Render
         esmData.m_n_f_n = nearDist / (farDist - nearDist);
         esmData.m_n_f = nearDist - farDist;
         esmData.m_f = farDist;
-
         esmData.m_isEnabled = FilterMethodIsEsm(shadowData);
         m_filterParameterNeedsUpdate = m_filterParameterNeedsUpdate || esmData.m_isEnabled;
-        
-        for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
-        {
-            esmPass->SetEnabledComputation(esmData.m_isEnabled);
-        }
 
         // Set depth bias matrix.
         const Matrix4x4& worldToLightClipMatrix = view->GetWorldToClipMatrix();
@@ -279,6 +278,11 @@ namespace AZ::Render
         
         shadowData.m_unprojectConstants[0] = view->GetViewToClipMatrix().GetRow(2).GetElement(2);
         shadowData.m_unprojectConstants[1] = view->GetViewToClipMatrix().GetRow(2).GetElement(3);
+
+        if (shadowProperty.m_useCachedShadows)
+        {
+            m_projectedShadowmapsPasses.front()->ForceRenderNextFrame(shadowProperty.m_shadowId.GetIndex());
+        }
 
         m_deviceBufferNeedsUpdate = true;
     }
@@ -300,18 +304,9 @@ namespace AZ::Render
 
         UpdateShadowView(shadowProperty);
     }
-
-    void ProjectedShadowFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* /*renderPipeline*/)
-    {
-        CachePasses();
-    }
-
-    void ProjectedShadowFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr /*renderPipeline*/)
-    {
-        CachePasses();
-    }
-
-    void ProjectedShadowFeatureProcessor::OnRenderPipelineRemoved( RPI::RenderPipeline* /*renderPipeline*/)
+        
+    void ProjectedShadowFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline,
+            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
         CachePasses();
     }
@@ -368,17 +363,20 @@ namespace AZ::Render
             return;
         }
 
-        if (m_shadowProperties.GetDataCount() == 0)
+        bool anyShadowsUseEsm = false;
+        for (const auto& shadowProperty : m_shadowProperties.GetDataVector())
         {
-            for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
+            FilterParameter& esmData = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
+            if (esmData.m_isEnabled)
             {
-                esmPass->SetEnabledComputation(false);
+                anyShadowsUseEsm = true;
+                break;
             }
-            return;
         }
+
         for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
         {
-            esmPass->SetEnabledComputation(true);
+            esmPass->SetEnabledComputation(anyShadowsUseEsm);
         }
     }
 
@@ -414,8 +412,8 @@ namespace AZ::Render
         if (m_shadowmapPassNeedsUpdate)
         {
             // Rebuild the shadow map sizes 
-            AZStd::vector<ProjectedShadowmapsPass::ShadowmapSizeWithIndices> shadowmapSizes;
-            shadowmapSizes.reserve(m_shadowProperties.GetDataCount());
+            AZStd::vector<ProjectedShadowmapsPass::ShadowPassProperties> shadowPassProperties;
+            shadowPassProperties.reserve(m_shadowProperties.GetDataCount());
             
             auto& shadowProperties = m_shadowProperties.GetDataVector();
             for (uint32_t i = 0; i < shadowProperties.size(); ++i)
@@ -424,14 +422,15 @@ namespace AZ::Render
                 uint16_t shadowIndex = shadowProperty.m_shadowId.GetIndex();
                 FilterParameter& filterData = m_shadowData.GetElement<FilterParamIndex>(shadowIndex);
 
-                ProjectedShadowmapsPass::ShadowmapSizeWithIndices& sizeWithIndices = shadowmapSizes.emplace_back();
-                sizeWithIndices.m_size = static_cast<ShadowmapSize>(filterData.m_shadowmapSize);
-                sizeWithIndices.m_shadowIndexInSrg = shadowIndex;
+                ProjectedShadowmapsPass::ShadowPassProperties& shadowPassPropertiesItem = shadowPassProperties.emplace_back();
+                shadowPassPropertiesItem.m_size = static_cast<ShadowmapSize>(filterData.m_shadowmapSize);
+                shadowPassPropertiesItem.m_shadowIndexInSrg = shadowIndex;
+                shadowPassPropertiesItem.m_isCached = shadowProperty.m_useCachedShadows;
             }
 
             for (ProjectedShadowmapsPass* shadowPass : m_projectedShadowmapsPasses)
             {
-                shadowPass->UpdateShadowmapSizes(shadowmapSizes);
+                shadowPass->UpdateShadowPassProperties(shadowPassProperties);
             }
 
             for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
@@ -466,6 +465,20 @@ namespace AZ::Render
             m_shadowBufferHandler.UpdateBuffer(m_shadowData.GetRawData<ShadowDataIndex>(), static_cast<uint32_t>(m_shadowData.GetSize()));
             m_deviceBufferNeedsUpdate = false;
         }
+
+        // Turn off cached esm shadow maps for next frame
+        for (const auto& shadowProperty : m_shadowProperties.GetDataVector())
+        {
+            if (shadowProperty.m_useCachedShadows)
+            {
+                FilterParameter& esmData = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
+                if (esmData.m_isEnabled != 0)
+                {
+                    esmData.m_isEnabled = false;
+                    m_filterParameterNeedsUpdate = true;
+                }
+            }
+        }
     }
     
     void ProjectedShadowFeatureProcessor::PrepareViews(const PrepareViewsPacket&, AZStd::vector<AZStd::pair<RPI::PipelineViewTag, RPI::ViewPtr>>& outViews)
@@ -480,6 +493,7 @@ namespace AZ::Render
                 for (uint32_t i = 0; i < shadowProperties.size(); ++i)
                 {
                     ShadowProperty& shadowProperty = shadowProperties.at(i);
+
                     uint16_t shadowIndex = shadowProperty.m_shadowId.GetIndex();
                     const FilterParameter& filterData = m_shadowData.GetElement<FilterParamIndex>(shadowIndex);
                     if (filterData.m_shadowmapSize == aznumeric_cast<uint32_t>(ShadowmapSize::None))

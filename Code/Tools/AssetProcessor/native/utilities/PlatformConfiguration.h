@@ -26,6 +26,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzToolsFramework/Asset/AssetUtils.h>
 #endif
+#include "IPathConversion.h"
 
 
 namespace AZ
@@ -65,7 +66,7 @@ namespace AssetProcessor
             int priority,
             bool critical,
             bool supportsCreateJobs,
-            AssetBuilderSDK::FilePatternMatcher patternMatcher, 
+            AssetBuilderSDK::FilePatternMatcher patternMatcher,
             const AZStd::string& version,
             const AZ::Data::AssetType& productAssetType,
             bool outputProductDependencies,
@@ -130,9 +131,12 @@ namespace AssetProcessor
     class PlatformConfiguration
         : public QObject
         , public RecognizerConfiguration
+        , public AZ::Interface<IPathConversion>::Registrar
     {
         Q_OBJECT
     public:
+        AZ_RTTI(PlatformConfiguration, "{9F0C465D-A3A6-417E-B69C-62CBD22FD950}", RecognizerConfiguration, IPathConversion);
+
         typedef QPair<QRegExp, QString> RCSpec;
         typedef QVector<RCSpec> RCSpecList;
 
@@ -193,6 +197,8 @@ namespace AssetProcessor
         //! Retrieve the scan folder at a given index.
         const AssetProcessor::ScanFolderInfo& GetScanFolderAt(int index) const;
 
+        const AssetProcessor::ScanFolderInfo* GetScanFolderById(AZ::s64 id) const override;
+
         //!  Manually add a scan folder.  Also used for testing.
         void AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting = false);
 
@@ -216,8 +222,10 @@ namespace AssetProcessor
         void AddMetaDataType(const QString& type, const QString& originalExtension);
 
         // ------------------- utility functions --------------------
-        ///! Checks to see whether the input file is an excluded file
+        //! Checks to see whether the input file is an excluded file, assumes input is absolute path.
         bool IsFileExcluded(QString fileName) const;
+        //! If you already have a relative path, this is a cheaper function to call:
+        bool IsFileExcludedRelPath(QString relPath) const;
 
         //! Given a file name, return a container that contains all matching recognizers
         //!
@@ -289,7 +297,8 @@ namespace AssetProcessor
 
         void PopulatePlatformsForScanFolder(AZStd::vector<AssetBuilderSDK::PlatformInfo>& platformsList, QStringList includeTagsList = QStringList(), QStringList excludeTagsList = QStringList());
 
-        void CacheIntermediateAssetsScanFolderId();
+        // uses const + mutability since its a cache.
+        void CacheIntermediateAssetsScanFolderId() const; 
         AZStd::optional<AZ::s64> GetIntermediateAssetsScanFolderId() const;
 
     protected:
@@ -317,7 +326,7 @@ namespace AssetProcessor
         QList<QPair<QString, QString> > m_metaDataFileTypes;
         QSet<QString> m_metaDataRealFiles;
         AZStd::vector<AzFramework::GemInfo> m_gemInfoList;
-        AZ::s64 m_intermediateAssetScanFolderId = -1; // Cached ID for intermediate scanfolder, for quick lookups
+        mutable AZ::s64 m_intermediateAssetScanFolderId = -1; // Cached ID for intermediate scanfolder, for quick lookups
 
         int m_minJobs = 1;
         int m_maxJobs = 3;

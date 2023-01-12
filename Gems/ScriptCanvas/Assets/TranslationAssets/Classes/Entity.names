@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetComponentName",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Component Name"
@@ -50,7 +49,6 @@
                 },
                 {
                     "base": "GetComponentType",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Component Type"
@@ -89,7 +87,6 @@
                 },
                 {
                     "base": "CreateComponent",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Component"
@@ -134,7 +131,6 @@
                 },
                 {
                     "base": "DestroyComponent",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Destroy Component"
@@ -173,7 +169,6 @@
                 },
                 {
                     "base": "FindComponentOfType",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Find Component Of Type"
@@ -212,7 +207,6 @@
                 },
                 {
                     "base": "SetComponentConfiguration",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Component Configuration"
@@ -257,7 +251,6 @@
                 },
                 {
                     "base": "IsValid",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Valid"
@@ -290,7 +283,6 @@
                 },
                 {
                     "base": "GetId",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetId"
@@ -324,7 +316,6 @@
                 },
                 {
                     "base": "GetOwningContextId",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetOwningContextId"
@@ -356,7 +347,6 @@
                 },
                 {
                     "base": "GetComponents",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Components"
@@ -389,7 +379,6 @@
                 },
                 {
                     "base": "FindAllComponentsOfType",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Find All Components Of Type"
@@ -428,7 +417,6 @@
                 },
                 {
                     "base": "GetComponentConfiguration",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Component Configuration"
@@ -473,7 +461,6 @@
                 },
                 {
                     "base": "SetName",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Name"
@@ -504,7 +491,6 @@
                 },
                 {
                     "base": "IsActivated",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Activated"
@@ -537,7 +523,6 @@
                 },
                 {
                     "base": "Activate",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Activate"
@@ -562,7 +547,6 @@
                 },
                 {
                     "base": "Deactivate",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Deactivate"
@@ -587,7 +571,6 @@
                 },
                 {
                     "base": "GetName",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Name"
@@ -620,7 +603,6 @@
                 },
                 {
                     "base": "Exists",
-                    "context": "Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Exists"

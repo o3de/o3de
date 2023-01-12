@@ -35,6 +35,7 @@ namespace O3DE::ProjectManager
         {
             ProjectManagerScreen::Projects,
             ProjectManagerScreen::CreateGem,
+            ProjectManagerScreen::EditGem,
             ProjectManagerScreen::GemCatalog,
             ProjectManagerScreen::Engine,
             ProjectManagerScreen::CreateProject,

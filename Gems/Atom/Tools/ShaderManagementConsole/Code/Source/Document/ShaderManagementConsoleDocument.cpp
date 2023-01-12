@@ -116,7 +116,6 @@ namespace ShaderManagementConsole
             return aznew ShaderManagementConsoleDocument(toolId, documentTypeInfo); };
         documentType.m_supportedExtensionsToOpen.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
         documentType.m_supportedExtensionsToSave.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
-        documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::ShaderAsset>());
         return documentType;
     }
 
@@ -241,11 +240,6 @@ namespace ShaderManagementConsole
         }
 
         m_shaderVariantListSourceDataBeforeEdit = {};
-        return true;
-    }
-
-    bool ShaderManagementConsoleDocument::CanSave() const
-    {
         return true;
     }
 

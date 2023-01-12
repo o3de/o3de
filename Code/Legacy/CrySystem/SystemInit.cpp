@@ -320,9 +320,6 @@ void CSystem::ShutdownFileSystem()
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
 {
-    LoadConfiguration(m_systemConfigName.c_str());
-    AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Loading system configuration from %s...", m_systemConfigName.c_str());
-
 #if defined(AZ_PLATFORM_ANDROID)
     AZ::Android::Utils::SetLoadFilesToMemory(m_sys_load_files_to_memory->GetString());
 #endif
@@ -693,25 +690,6 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         azConsole->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
     }
 
-    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
-    {
-        AZ::SettingsRegistryInterface::FixedValueString assetPlatform;
-        if (!AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetPlatform,
-            AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "assets"))
-        {
-            assetPlatform = AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
-            AZ_Warning(AZ_TRACE_SYSTEM_WINDOW, false, R"(A valid asset platform is missing in "%s/assets" key in the SettingsRegistry.)""\n"
-                R"(This typically done by setting the "assets" field within a .setreg file)""\n"
-                R"(A fallback of %s will be used.)",
-                AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey,
-                assetPlatform.c_str());
-        }
-
-        m_systemConfigName = "system_" AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER "_";
-        m_systemConfigName += assetPlatform.c_str();
-        m_systemConfigName += ".cfg";
-    }
-
 #if defined(WIN32) || defined(WIN64)
     // check OS version - we only want to run on XP or higher - talk to Martin Mittring if you want to change this
     {
@@ -918,8 +896,6 @@ AZ_POP_DISABLE_WARNING
         }
 
         {
-            // We have to load this file again since first time we did it without devmode
-            LoadConfiguration(m_systemConfigName.c_str());
             // Optional user defined overrides
             LoadConfiguration("user.cfg");
 
@@ -1067,13 +1043,6 @@ AZ_POP_DISABLE_WARNING
 
     // Execute any deferred commands that uses the CVar commands that were just registered
     AZ::Interface<AZ::IConsole>::Get()->ExecuteDeferredConsoleCommands();
-
-    // Verify that the Maestro Gem initialized the movie system correctly. This can be removed if and when Maestro is not a required Gem
-    if (gEnv->IsEditor() && !gEnv->pMovieSystem)
-    {
-        AZ_Assert(false, "Error initializing the Cinematic System. Please check that the Maestro Gem is enabled for this project.");
-        return false;
-    }
 
     if (ISystemEventDispatcher* systemEventDispatcher = GetISystemEventDispatcher())
     {
@@ -1224,11 +1193,7 @@ void CSystem::CreateSystemVars()
             "Default: Localization\n",
             CSystem::OnLocalizationFolderCVarChanged);
 
-#if (defined(WIN32) || defined(WIN64)) && defined(_DEBUG)
-    REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 2, 0, "Use or not use floating point exceptions.");
-#else // Float exceptions by default disabled for console builds.
     REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 0, 0, "Use or not use floating point exceptions.");
-#endif
 
     REGISTER_CVAR2("sys_update_profile_time", &g_cvars.sys_update_profile_time, 1.0f, 0, "Time to keep updates timings history for.");
     REGISTER_CVAR2("sys_no_crash_dialog", &g_cvars.sys_no_crash_dialog, m_bNoCrashDialog, VF_NULL, "Whether to disable the crash dialog window");

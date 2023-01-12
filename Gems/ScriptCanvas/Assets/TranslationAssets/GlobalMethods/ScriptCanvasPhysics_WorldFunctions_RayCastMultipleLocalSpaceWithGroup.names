@@ -5,14 +5,14 @@
             "context": "BehaviorMethod",
             "variant": "",
             "details": {
-                "name": "RayCast Multiple Local Space With Group",
+                "name": "Ray Cast Multiple Local Space With Group",
                 "category": "PhysX/World"
             },
             "methods": [
                 {
                     "base": "ScriptCanvasPhysics_WorldFunctions_RayCastMultipleLocalSpaceWithGroup",
                     "details": {
-                        "name": "RayCast Multiple Local Space With Group",
+                        "name": "Ray Cast Multiple Local Space With Group",
                         "tooltip": "Returns all entities hit by a ray cast in local space from the source entity in the specified direction"
                     },
                     "params": [
@@ -20,32 +20,35 @@
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
                                 "name": "Source",
-                                "tooltip": "Entity Unique Id"
+                                "tooltip": "Id for the entity used as the origin of the ray cast"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Direction"
+                                "name": "Direction",
+                                "tooltip": "The direction (in the space of the source entity) along which to perform the ray cast"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Distance"
+                                "name": "Distance",
+                                "tooltip": "Distance over which to perform the ray cast"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Collision Group"
+                                "name": "Collision Group",
+                                "tooltip": "Only report objects detected by the ray cast if this collision group would collide with them"
                             }
                         },
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
                                 "name": "Ignore",
-                                "tooltip": "Entity Unique Id"
+                                "tooltip": "Entity Id to be ignored by the ray cast"
                             }
                         }
                     ],
@@ -53,7 +56,8 @@
                         {
                             "typeid": "{E3B6686C-306E-5C7F-9274-196CC18E1284}",
                             "details": {
-                                "name": "Objects Hit"
+                                "name": "Objects Hit",
+                                "tooltip": "An array of scene query hits for the objects hit by the ray cast"
                             }
                         }
                     ]

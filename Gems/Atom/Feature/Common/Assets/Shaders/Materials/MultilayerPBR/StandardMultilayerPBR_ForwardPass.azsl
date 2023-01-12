@@ -484,13 +484,8 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         // [GFX TODO][ATOM-14592] This is not the right way to blend the normals. We need to use ReorientTangentSpaceNormal(), and that requires GetClearCoatInputs() to return the normal in TS instead of WS.
         surface.clearCoat.normal = BlendLayers(lightingInputLayer1.m_clearCoat.normal, lightingInputLayer2.m_clearCoat.normal, lightingInputLayer3.m_clearCoat.normal, blendWeights);
         surface.clearCoat.normal = normalize(surface.clearCoat.normal);
-
-        // manipulate base layer f0 if clear coat is enabled
-        // modify base layer's normal incidence reflectance
-        // for the derivation of the following equation please refer to:
-        // https://google.github.io/filament/Filament.md.html#materialsystem/clearcoatmodel/baselayermodification
-        float3 f0 = (1.0 - 5.0 * sqrt(surface.specularF0)) / (5.0 - sqrt(surface.specularF0));
-        surface.specularF0 = lerp(surface.specularF0, f0 * f0, surface.clearCoat.factor);
+        
+        ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
     }
 
     // Diffuse and Specular response (used in IBL calculations)

@@ -95,13 +95,6 @@ namespace AZ
 #endif
         }
 
-        void ImguiAtomSystemComponent::WaitForRender()
-        {
-#if defined(IMGUI_ENABLED)
-            ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::WaitForRenderToFinish);
-#endif
-        }
-
         void ImguiAtomSystemComponent::OnViewportSizeChanged([[maybe_unused]] AzFramework::WindowSize size)
         {
 #if defined(IMGUI_ENABLED)

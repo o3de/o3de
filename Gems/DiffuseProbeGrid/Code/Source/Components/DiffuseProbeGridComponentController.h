@@ -87,6 +87,8 @@ namespace AZ
             // returns the Aabb for this grid
             AZ::Aabb GetAabb() const;
 
+            void RegisterBoxChangedByGridHandler(AZ::Event<bool>::Handler& handler);
+
         private:
 
             AZ_DISABLE_COPY(DiffuseProbeGridComponentController);
@@ -124,6 +126,9 @@ namespace AZ
             // Update the baked texture assets from the configuration
             void UpdateBakedTextures();
 
+            // Computes the effective transform taking both the entity transform and the shape translation offset into account
+            AZ::Transform ComputeOverallTransform(const AZ::Transform& entityTransform) const;
+
             // box shape component, used for defining the outer extents of the probe area
             LmbrCentral::BoxShapeComponentRequests* m_boxShapeInterface = nullptr;
             LmbrCentral::ShapeComponentRequests* m_shapeBus = nullptr;
@@ -136,6 +141,9 @@ namespace AZ
             AZ::EntityId m_entityId;
             DiffuseProbeGridComponentConfig m_configuration;
             bool m_inShapeChangeHandler = false;
+
+            // event for the diffuse probe grid modifying the underlying box dimensions
+            AZ::Event<bool> m_boxChangedByGridEvent;
         };
     } // namespace Render
 } // namespace AZ

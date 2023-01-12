@@ -177,13 +177,13 @@ namespace AZ::Dom::Tests
 
     void DomTestFixture::SetUp()
     {
-        UnitTest::AllocatorsFixture::SetUp();
+        UnitTest::LeakDetectionFixture::SetUp();
         SetUpHarness();
     }
 
     void DomTestFixture::TearDown()
     {
         TearDownHarness();
-        UnitTest::AllocatorsFixture::TearDown();
+        UnitTest::LeakDetectionFixture::TearDown();
     }
 } // namespace AZ::Dom::Tests

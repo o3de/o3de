@@ -1046,7 +1046,7 @@ namespace UnitTest
 
 
 
-    TEST_F(AssetJobsFloodTest, DISABLED_ContainerCoreTest_BasicDependencyManagement_Success)
+    TEST_F(AssetJobsFloodTest, ContainerCoreTest_BasicDependencyManagement_Success)
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
@@ -1995,6 +1995,27 @@ namespace UnitTest
 
         CheckFinishedCreationsAndDestructions();
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
+    }
+
+    using AssetLoadingTest = AssetJobsFloodTest;
+
+    TEST_F(AssetLoadingTest, CreateAssetWithOutdatedAssetId_LegacyIdAddedAfterwards_UpgradesAndLoadsSuccessfully)
+    {
+        static constexpr AZ::Uuid MyOutdatedUuid{ "{30583432-95F0-4071-883E-114D57CD7CE1}" };
+
+        Asset<AssetWithAssetReference> asset;
+        asset.Create(MyOutdatedUuid);
+
+        EXPECT_EQ(asset.GetId().m_guid, MyOutdatedUuid);
+
+        m_assetHandlerAndCatalog->AddLegacyAssetId(MyOutdatedUuid, MyAsset1Id);
+
+        EXPECT_TRUE(asset.QueueLoad());
+        EXPECT_EQ(asset.GetId().m_guid, MyAsset1Id);
+
+        asset.BlockUntilLoadComplete();
+
+        EXPECT_TRUE(asset.IsReady());
     }
 
     /**

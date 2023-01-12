@@ -32,6 +32,7 @@ set(FILES
     EditorTransformComponentSelectionTests.cpp
     EditorVertexSelectionTests.cpp
     EditorViewportIconTests.cpp
+    EditorViewportHelperTests.cpp
     Entity/EditorEntityContextComponentTests.cpp
     Entity/EditorEntityHelpersTests.cpp
     Entity/EditorEntitySearchComponentTests.cpp
@@ -64,6 +65,7 @@ set(FILES
     ManipulatorBoundsTests.cpp
     ManipulatorCoreTests.cpp
     ManipulatorViewTests.cpp
+    MetadataManagerTests.cpp
     PerforceComponentTests.cpp
     PlatformAddressedAssetCatalogTests.cpp
     Prefab/Benchmark/Link/SingleInstanceMultiplePatchesBenchmarks.cpp
@@ -87,10 +89,17 @@ set(FILES
     Prefab/Benchmark/Spawnable/SpawnableBenchmarkFixture.cpp
     Prefab/Benchmark/Spawnable/SpawnAllEntitiesBenchmarks.cpp
     Prefab/Instance/InstanceDeserializationTests.cpp
+    Prefab/Link/PrefabLinkDomTestFixture.cpp
+    Prefab/Link/PrefabLinkDomTestFixture.h
+    Prefab/Link/PrefabLinkDomTests.cpp
     Prefab/PrefabFocus/PrefabFocusTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
+    Prefab/Overrides/PrefabOverridePublicInterfaceTests.cpp
+    Prefab/Overrides/PrefabOverrideTestFixture.cpp
+    Prefab/Overrides/PrefabOverrideTestFixture.h
     Prefab/PrefabDeleteTests.cpp
+    Prefab/PrefabDeleteAsOverrideTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabInstanceToTemplatePropagatorTests.cpp
@@ -110,6 +119,10 @@ set(FILES
     Prefab/PrefabTestUndoFixture.cpp
     Prefab/PrefabTestUndoFixture.h
     Prefab/PrefabTestUtils.h
+    Prefab/PrefabUndoAddEntityTestFixture.cpp
+    Prefab/PrefabUndoAddEntityTestFixture.h
+    Prefab/PrefabUndoAddEntityTests.cpp
+    Prefab/PrefabUndoDeleteTests.cpp
     Prefab/PrefabUndoLinkTests.cpp
     Prefab/PrefabUndoTests.cpp
     Prefab/PrefabUpdateInstancesTests.cpp

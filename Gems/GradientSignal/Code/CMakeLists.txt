@@ -52,6 +52,7 @@ ly_add_target(
 # Load the "Gem::GradientSignal" module in Clients and Servers
 ly_create_alias(NAME GradientSignal.Clients NAMESPACE Gem TARGETS Gem::GradientSignal)
 ly_create_alias(NAME GradientSignal.Servers NAMESPACE Gem TARGETS Gem::GradientSignal)
+ly_create_alias(NAME GradientSignal.Unified NAMESPACE Gem TARGETS Gem::GradientSignal)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     
@@ -75,6 +76,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 3rdParty::OpenImageIO
                 Gem::LmbrCentral.Editor
+                Gem::Atom_RPI.Edit
             PUBLIC
                 3rdParty::Qt::Widgets
                 AZ::AzCore
@@ -141,6 +143,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 AZ::AzTestShared
+                Gem::Atom_RPI.TestUtils.Static
                 Gem::GradientSignal.Static
                 Gem::LmbrCentral
                 Gem::LmbrCentral.Mocks

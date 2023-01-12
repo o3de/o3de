@@ -189,6 +189,8 @@ namespace AZ::Reflection
 
         virtual void Visit(bool value, const IAttributes& attributes);
 
+        virtual void Visit(char value, const IAttributes& attributes);
+
         virtual void Visit(AZ::s8 value, const IAttributes& attributes);
         virtual void Visit(AZ::s16 value, const IAttributes& attributes);
         virtual void Visit(AZ::s32 value, const IAttributes& attributes);
@@ -225,6 +227,8 @@ namespace AZ::Reflection
 
         virtual void Visit(bool& value, const IAttributes& attributes);
 
+        virtual void Visit(char& value, const IAttributes& attributes);
+
         virtual void Visit(AZ::s8& value, const IAttributes& attributes);
         virtual void Visit(AZ::s16& value, const IAttributes& attributes);
         virtual void Visit(AZ::s32& value, const IAttributes& attributes);
@@ -260,6 +264,8 @@ namespace AZ::Reflection
         IReadWriteToRead(IRead* reader) : m_reader(reader) {}
 
         void Visit(bool& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
+
+        void Visit(char& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
 
         void Visit(AZ::s8& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
         void Visit(AZ::s16& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }

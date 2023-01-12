@@ -19,6 +19,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class PrefabFocusPublicInterface;
+        class PrefabOverridePublicInterface;
         class PrefabPublicInterface;
     }; // namespace Prefab
 
@@ -56,10 +57,13 @@ namespace AzToolsFramework
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
+        Prefab::PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
 
         static bool IsLastVisibleChild(const QModelIndex& parent, const QModelIndex& child);
         static QModelIndex GetLastVisibleChild(const QModelIndex& parent);
         static QModelIndex Internal_GetLastVisibleChild(const QAbstractItemModel* model, const QModelIndex& index);
+
+        const QPixmap& GetOverrideImageForEntity(AZ::EntityId entityId) const;
 
         void PaintDescendantBorder(
             QPainter* painter,
@@ -69,11 +73,6 @@ namespace AzToolsFramework
             const QColor borderColor) const;
 
         static AzFramework::EntityContextId s_editorEntityContextId;
-
-        int m_prefabCapsuleRadius = 6;
-        int m_prefabBorderThickness = 2;
-        int m_prefabFileNameFontSize = 10;
-        int m_prefabEditIconSize = 16;
 
         QColor m_backgroundColor = QColor("#444444");
         QColor m_backgroundHoverColor = QColor("#5A5A5A");
@@ -85,5 +84,12 @@ namespace AzToolsFramework
         QString m_prefabEditIconPath = QString(":/Entity/prefab_edit.svg");
         QString m_prefabEditOpenIconPath = QString(":/Entity/prefab_edit_open.svg");
         QString m_prefabEditCloseIconPath = QString(":/Entity/prefab_edit_close.svg");
+
+        inline static const QPoint s_overrideImageOffset = QPoint(13, 12);
+        inline static const QSize s_overrideImageSize = QSize(7, 7);
+        QString m_editEntityOverrideImagePath = QString(":/Entity/entity_modified_as_override.svg");
+        QString m_addEntityOverrideImagePath = QString(":/Entity/entity_added_as_override.svg");
+        QPixmap m_editEntityOverrideImage;
+        QPixmap m_addEntityOverrideImage;
     };
 } // namespace AzToolsFramework
