@@ -1102,8 +1102,8 @@ try {
                         repositoryName = (repositoryUrl =~ /https:\/\/github.com\/(.*)\.git/)[0][1]
                         env.REPOSITORY_NAME = repositoryName
                         (projectName, pipelineName) = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
-                        if(!env.PROJECT_NAME.isEmpty) {
-                            echo "ProjectName now set to ${projectName}"
+                        if(env.PROJECT_NAME != projectName) {
+                            echo "Overriding ProjectName: ${projectName} -> ${env.PROJECT_NAME}"
                             projectName = env.PROJECT_NAME
                         }
                         env.PIPELINE_NAME = pipelineName
