@@ -32,10 +32,4 @@ namespace AzToolsFramework
         BoxManipulators m_linearManipulators; ///< Manipulators for editing box size.
         bool m_allowAsymmetricalEditing = false; ///< Whether moving individual faces independently is allowed.
     };
-
-    /// Calculates the position of the manipulator in its own reference frame.
-    /// Removes the effects of the manipulator local transform, and accounts for world transform scale in
-    /// the action local offset.
-    AZ::Vector3 GetPositionInManipulatorFrame(float worldUniformScale, const AZ::Transform& manipulatorLocalTransform,
-        const LinearManipulator::Action& action);
 } // namespace AzToolsFramework

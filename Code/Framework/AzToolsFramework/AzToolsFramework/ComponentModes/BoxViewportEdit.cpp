@@ -7,6 +7,7 @@
  */
 
 #include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
+#include <AzToolsFramework/ComponentModes/ViewportEditUtilities.h>
 #include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -145,13 +146,5 @@ namespace AzToolsFramework
                 linearManipulator.reset();
             }
         }
-    }
-
-    AZ::Vector3 GetPositionInManipulatorFrame(float worldUniformScale, const AZ::Transform& manipulatorLocalTransform,
-        const LinearManipulator::Action& action)
-    {
-        return manipulatorLocalTransform.GetInverse().TransformPoint(
-            action.m_start.m_localPosition +
-            action.m_current.m_localPositionOffset / AZ::GetClamp(worldUniformScale, AZ::MinTransformScale, AZ::MaxTransformScale));
     }
 } // namespace AzToolsFramework

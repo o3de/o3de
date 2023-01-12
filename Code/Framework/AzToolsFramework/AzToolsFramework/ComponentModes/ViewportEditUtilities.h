@@ -1,0 +1,20 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <AzToolsFramework/Manipulators/LinearManipulator.h>
+
+namespace AzToolsFramework
+{
+    //! Calculates the position of the manipulator in its own reference frame.
+    //! Removes the effects of the manipulator local transform, and accounts for world transform scale in
+    //! the action local offset.
+    AZ::Vector3 GetPositionInManipulatorFrame(float worldUniformScale, const AZ::Transform& manipulatorLocalTransform,
+        const LinearManipulator::Action& action);
+} // namespace AzToolsFramework

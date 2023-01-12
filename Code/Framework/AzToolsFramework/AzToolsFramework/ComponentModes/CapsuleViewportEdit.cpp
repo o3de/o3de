@@ -8,8 +8,8 @@
 
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportConstants.h>
-#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzToolsFramework/ComponentModes/CapsuleViewportEdit.h>
+#include <AzToolsFramework/ComponentModes/ViewportEditUtilities.h>
 
 namespace AzToolsFramework
 {

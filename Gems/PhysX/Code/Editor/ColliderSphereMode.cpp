@@ -13,7 +13,7 @@
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
-#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
+#include <AzToolsFramework/ComponentModes/ViewportEditUtilities.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzFramework/Viewport/ViewportColors.h>
