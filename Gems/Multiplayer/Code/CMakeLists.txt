@@ -189,7 +189,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Multiplayer.Debug ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME Multiplayer.Debug.Client ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         multiplayer_debug_files.cmake
@@ -210,8 +210,30 @@ ly_add_target(
             Gem::ImGui.Static
 )
 
+ly_add_target(
+    NAME Multiplayer.Debug ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        multiplayer_debug_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+            .
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AtomCore
+            AZ::AzFramework
+            AZ::AzNetworking
+            Gem::Atom_Feature_Common.Static
+            Gem::Multiplayer.Unified.Static
+            Gem::ImGui.Static
+)
+
 # The "Multiplayer" target is used by clients and servers, Debug is used only on clients.
-ly_create_alias(NAME Multiplayer.Clients NAMESPACE Gem TARGETS Gem::Multiplayer.Client Gem::Multiplayer.Debug)
+ly_create_alias(NAME Multiplayer.Clients NAMESPACE Gem TARGETS Gem::Multiplayer.Client Gem::Multiplayer.Debug.Client)
 ly_create_alias(NAME Multiplayer.Servers NAMESPACE Gem TARGETS Gem::Multiplayer.Server)
 ly_create_alias(NAME Multiplayer.Unified NAMESPACE Gem TARGETS Gem::Multiplayer Gem::Multiplayer.Debug)
 
