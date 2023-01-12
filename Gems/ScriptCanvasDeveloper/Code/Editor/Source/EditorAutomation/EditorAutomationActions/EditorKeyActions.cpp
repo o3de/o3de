@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/PlatformIncl.h>
+
 #include <QApplication>
 #include <QKeyEvent>
 #include <QWidget>
