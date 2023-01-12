@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactPythonTestTargetMeta.h>
 #include <TestImpactFramework/TestImpactTestSequence.h>
+
+#include <Artifact/Static/TestImpactPythonTestTargetMeta.h>
 
 namespace TestImpact
 {
