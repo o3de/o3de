@@ -1349,7 +1349,7 @@ namespace AzToolsFramework
             ExpandAncestors(entityId);
         }
 
-        if (!m_supressNextSelectEntity)
+        if (!m_suppressNextSelectEntity)
         {
             // notify observers
             emit SelectEntity(entityId, selected);
