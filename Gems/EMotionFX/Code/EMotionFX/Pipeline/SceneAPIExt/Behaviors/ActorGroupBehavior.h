@@ -50,7 +50,7 @@ namespace EMotionFX
                 }
 
                 // GraphMetaInfo
-                void GetAppliedPolicyNames(const AZ::SceneAPI::Containers::Scene& scene, AZStd::set<AZStd::string>& appliedPolicySet) const override;
+                void GetAppliedPolicyNames(AZStd::set<AZStd::string>& appliedPolicies, const AZ::SceneAPI::Containers::Scene& scene) const override;
 
             private:
                 AZ::SceneAPI::Events::ProcessingResult BuildDefault(AZ::SceneAPI::Containers::Scene& scene) const;

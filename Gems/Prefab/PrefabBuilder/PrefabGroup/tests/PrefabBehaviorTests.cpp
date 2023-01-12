@@ -146,7 +146,7 @@ namespace UnitTest
                 AZ::SceneAPI::Events::GraphMetaInfoBus::Handler::BusDisconnect();
             }
 
-            MOCK_CONST_METHOD2(GetAppliedPolicyNames, void(const AZ::SceneAPI::Containers::Scene&, AZStd::set<AZStd::string>&));
+            MOCK_CONST_METHOD2(GetAppliedPolicyNames, void(AZStd::set<AZStd::string>&, const AZ::SceneAPI::Containers::Scene&));
         };
 
         // Helpers
@@ -437,9 +437,9 @@ namespace UnitTest
         ::testing::NiceMock<MockGraphMetaInfoBus> mockGraphMetaInfoBus;
 
         ON_CALL(mockGraphMetaInfoBus, GetAppliedPolicyNames)
-            .WillByDefault([](const Containers::Scene&, AZStd::set<AZStd::string>& policySet)
+            .WillByDefault([](AZStd::set<AZStd::string>& appliedPolicies, const Containers::Scene&)
             {
-                policySet.insert("ActorGroupBehavior");
+                appliedPolicies.insert("ActorGroupBehavior");
             });
 
         ASSERT_TRUE(AZ::SettingsRegistry::Get());
@@ -485,9 +485,9 @@ namespace UnitTest
         ::testing::NiceMock<MockGraphMetaInfoBus> mockGraphMetaInfoBus;
 
         ON_CALL(mockGraphMetaInfoBus, GetAppliedPolicyNames)
-            .WillByDefault([](const Containers::Scene&, AZStd::set<AZStd::string>& policySet)
+            .WillByDefault([](AZStd::set<AZStd::string>& appliedPolicies, const Containers::Scene&)
             {
-                policySet.insert("ActorGroupBehavior");
+                appliedPolicies.insert("ActorGroupBehavior");
             });
 
         ASSERT_TRUE(AZ::SettingsRegistry::Get());

@@ -242,13 +242,13 @@ namespace EMotionFX
                 return actorGroup != manifestData.end();
             }
 
-            void ActorGroupBehavior::GetAppliedPolicyNames(const AZ::SceneAPI::Containers::Scene& scene, AZStd::set<AZStd::string>& appliedPolicySet) const
+            void ActorGroupBehavior::GetAppliedPolicyNames(AZStd::set<AZStd::string>& appliedPolicies, const AZ::SceneAPI::Containers::Scene& scene) const
             {
                 if (SceneHasActorGroup(scene))
                 {
                     AZStd::string policyName;
                     GetPolicyName(policyName);
-                    appliedPolicySet.insert(AZStd::move(policyName));
+                    appliedPolicies.insert(AZStd::move(policyName));
                 }
             }
 

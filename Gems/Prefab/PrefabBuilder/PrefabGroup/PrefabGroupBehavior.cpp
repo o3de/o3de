@@ -146,9 +146,9 @@ namespace AZ::SceneAPI::Behaviors
             settingsRegistry->Get(ignoreActors, s_PrefabGroupBehaviorIgnoreActorsKey);
             if (ignoreActors)
             {
-                AZStd::set<AZStd::string> appliedPolicySet;
-                GraphMetaInfoBus::Broadcast(&GraphMetaInfoBus::Events::GetAppliedPolicyNames, scene, appliedPolicySet);
-                if (appliedPolicySet.find("ActorGroupBehavior") != appliedPolicySet.end())
+                AZStd::set<AZStd::string> appliedPolicies;
+                GraphMetaInfoBus::Broadcast(&GraphMetaInfoBus::Events::GetAppliedPolicyNames, appliedPolicies, scene);
+                if (appliedPolicies.contains("ActorGroupBehavior"))
                 {
                     return Events::ProcessingResult::Ignored;
                 }
