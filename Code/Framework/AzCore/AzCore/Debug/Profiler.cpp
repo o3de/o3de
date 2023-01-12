@@ -15,6 +15,8 @@
 
 namespace AZ::Debug
 {
+    Profiler* ProfileScope::m_cachedProfiler = ProfileScope::InvalidCachedProfiler;
+
     AZStd::string GenerateOutputFile(const char* nameHint)
     {
         AZ::IO::FixedMaxPathString captureOutput = GetProfilerCaptureLocation();

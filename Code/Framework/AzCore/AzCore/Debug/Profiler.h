@@ -96,6 +96,10 @@ namespace AZ::Debug
 
     private:
         Budget* m_budget;
+
+        // Optimization to avoid calling Interface<Profiler>::Get
+        static constexpr Profiler* InvalidCachedProfiler = reinterpret_cast<Profiler*>(ULLONG_MAX);
+        static Profiler* m_cachedProfiler;
     };
 } // namespace AZ::Debug
 
