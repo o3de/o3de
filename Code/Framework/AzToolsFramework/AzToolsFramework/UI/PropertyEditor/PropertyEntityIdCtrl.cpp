@@ -117,15 +117,21 @@ namespace AzToolsFramework
             EditorPickModeRequestBus::Handler::BusConnect(pickModeEntityContextId);
             EditorEventsBus::Handler::BusConnect();
 
-            // replace the default input handler with one specific for dealing with
-            // entity selection in the viewport
-
-            EditorInteractionSystemViewportSelectionRequestBus::Event(
-                GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetHandler,
-                [](const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+            // Replace the default input handler with one specific for dealing with entity selection in the viewport,
+            // but only if we're not in component mode.
+            // If we're in component mode, we should continue to use the default handler and let the component mode handling
+            // manage the entity picking.
+            if (!AzToolsFramework::ComponentModeFramework::InComponentMode())
             {
-                    return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
-            });
+                EditorInteractionSystemViewportSelectionRequestBus::Event(
+                    GetEntityContextId(),
+                    &EditorInteractionSystemViewportSelection::SetHandler,
+                    [](const EditorVisibleEntityDataCacheInterface* entityDataCache,
+                       ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+                    {
+                        return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
+                    });
+            }
 
             if (!pickModeEntityContextId.IsNull())
             {
@@ -156,9 +162,13 @@ namespace AzToolsFramework
             EditorEventsBus::Handler::BusDisconnect();
             emit OnPickComplete();
 
-            // return to the default viewport editor selection
-            EditorInteractionSystemViewportSelectionRequestBus::Event(
-                GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetDefaultHandler);
+            // If we changed the handler to the pick handler (i.e. we're not in component mode),
+            // then return to the default viewport editor selection now that we're done picking.
+            if (!AzToolsFramework::ComponentModeFramework::InComponentMode())
+            {
+                EditorInteractionSystemViewportSelectionRequestBus::Event(
+                    GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetDefaultHandler);
+            }
 
             EditorPickModeNotificationBus::Broadcast(&EditorPickModeNotifications::OnEntityPickModeStopped);
         }
