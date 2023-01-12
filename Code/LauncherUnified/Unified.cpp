@@ -20,6 +20,6 @@ namespace O3DELauncher
 
     const char* GetLogFilename()
     {
-        return "@log@/Game.log";
+        return "@log@/Unified.log";
     }
 }
