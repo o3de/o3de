@@ -80,7 +80,7 @@ class PersistentStorage(ABC):
                     self._has_previous_last_commit_hash = self._this_commit_hash_last_commit_hash is not None
 
                     if self._has_previous_last_commit_hash:
-                        logger.info(f"Last commit hash '{self._this_commit_hash_last_commit_hash}' was used previously for this commit.")
+                        logger.info(f"Last commit hash '{self._this_commit_hash_last_commit_hash}' was used previously for the commit '{self._last_commit_hash}'.")
                     else:
                         logger.info(f"Prior sequence data found for this commit but it is empty (there was no coverage data available at that time).")
                 else:
