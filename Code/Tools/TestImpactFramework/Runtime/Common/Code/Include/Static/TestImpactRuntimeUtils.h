@@ -451,7 +451,7 @@ namespace TestImpact
     //! @param maxConcurrency The maximum concurrency being used for this sequence.
     //! @param policyState The policy state being used for the sequence.
     //! @param suiteSet The suites type used for this sequence.
-    //! @param suiteLabelExcludeSet The suite labels that will exclude any tests with any matching suite labels.
+    //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
     //! @param timer The timer to use for the test run timings.
     //! @param testRunner The test runner functor to use for each of the test runs.
     //! @param includedSelectedTestTargets The subset of test targets that were selected to run and not also fully excluded from running.

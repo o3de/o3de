@@ -135,7 +135,7 @@ namespace TestImpact
             //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
             //! @param policyState The policy state this sequence was executed under.
             //! @param suiteSet The suites from which the tests have been selected from.
-            //! @param suiteLabelExcludeSet The suite labels that will exclude any tests with any matching suite labels.
+            //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
             //! @param selectedTestRuns The target names of the selected test runs.
             //! @param selectedTestRunReport The report for the set of selected test runs.
             SequenceReportBase(
@@ -351,7 +351,7 @@ namespace TestImpact
             //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
             //! @param policyState The policy state this sequence was executed under.
             //! @param suiteSet The suites suite from which the tests have been selected from.
-            //! @param suiteLabelExcludeSet The suite labels that will exclude any tests with any matching suite labels.
+            //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
             //! @param selectedTestRuns The target names of the selected test runs.
             //! @param draftedTestRuns The target names of the drafted test runs.
             //! @param selectedTestRunReport The report for the set of selected test runs.
@@ -475,7 +475,7 @@ namespace TestImpact
             //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
             //! @param policyState The policy state this sequence was executed under.
             //! @param suiteSet The suites from which the tests have been selected from.
-            //! @param suiteLabelExcludeSet The suite labels that will exclude any tests with any matching suite labels.
+            //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
             //! @param selectedTestRuns The target names of the selected test runs.
             //! @param draftedTestRuns The target names of the drafted test runs.
             //! @param selectedTestRunReport The report for the set of selected test runs.
@@ -512,7 +512,7 @@ namespace TestImpact
             //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
             //! @param policyState The policy state this sequence was executed under.
             //! @param suiteSet The suites from which the tests have been selected from.
-            //! @param suiteLabelExcludeSet The suite labels that will exclude any tests with any matching suite labels.
+            //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
             //! @param selectedTestRuns The target names of the selected test runs.
             //! @param discardedTestRuns The target names of the discarded test runs.
             //! @param draftedTestRuns The target names of the drafted test runs.
