@@ -267,29 +267,23 @@ namespace TestImpact
     }
 
     template<typename TestEngineJob>
-    auto GenerateInstrumentedRunResult(const AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJob>>& engineJobs, Policy::IntegrityFailure integrityFailurePolicy)
+    AZStd::string GenerateIntegrityErrorString(const AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJob>>& engineJobs)
     {
-        const auto& [result, engineRuns] = engineJobs;
-
         // Now that we know the true result of successful jobs that return non-zero we can deduce if we have any integrity failures
         // where a test target ran and completed its tests without incident yet failed to produce coverage data
-        if (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
+        AZStd::string integrityErrors;
+        const auto& [result, engineRuns] = engineJobs;
+        for (const auto& engineRun : engineRuns)
         {
-            for (const auto& engineRun : engineRuns)
+            if (const auto testResult = engineRun.GetTestResult();
+                (testResult == Client::TestRunResult::AllTestsPass || testResult == Client::TestRunResult::TestFailures) && !engineRun.GetCoverge().has_value())
             {
-                if (const auto testResult = engineRun.GetTestResult();
-                    testResult == Client::TestRunResult::AllTestsPass || testResult == Client::TestRunResult::TestFailures)
-                {
-                    AZ_TestImpact_Eval(
-                        engineRun.GetCoverge().has_value(),
-                        TestEngineException,
-                        AZStd::string::format(
-                            "Test target %s completed its test run but failed to produce coverage data",
-                            engineRun.GetTestTarget()->GetName().c_str()));
-                }
+                integrityErrors += AZStd::string::format(
+                        "Test target %s completed its test run but failed to produce coverage data\n",
+                        engineRun.GetTestTarget()->GetName().c_str());
             }
         }
 
-        return AZStd::pair{ result, engineRuns };
+        return integrityErrors;
     }
 } // namespace TestImpact
