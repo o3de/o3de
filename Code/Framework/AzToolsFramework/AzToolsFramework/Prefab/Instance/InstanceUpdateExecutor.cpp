@@ -222,7 +222,7 @@ namespace AzToolsFramework
 
                         // Generates instance DOM for a given instance object from focused or root prefab template.
                         PrefabDom instanceDom;
-                        m_instanceDomGeneratorInterface->GenerateInstanceDom(instanceDom, *instanceToUpdate);
+                        m_instanceDomGeneratorInterface->GenerateInstanceDomFromTemplate(instanceDom, *instanceToUpdate);
 
                         if (!instanceDom.IsObject())
                         {

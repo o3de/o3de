@@ -56,11 +56,11 @@ namespace Benchmark
                         PrefabDom entityDomBefore;
                         InstanceToTemplateInterface* instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
                         AZ_Assert(instanceToTemplateInterface, "Could not retrieve instance of InstanceToTemplateInterface");
-                        instanceToTemplateInterface->GenerateDomForEntity(entityDomBefore, *(entity.get()));
+                        instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomBefore, *(entity.get()));
 
                         AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetWorldX, 10.0f);
                         PrefabDom entityDomAfter;
-                        instanceToTemplateInterface->GenerateDomForEntity(entityDomAfter, *(entity.get()));
+                        instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomAfter, *(entity.get()));
 
                         PrefabDom patch;
                         instanceToTemplateInterface->GeneratePatch(patch, entityDomBefore, entityDomAfter);

@@ -25,11 +25,17 @@ namespace AzToolsFramework
             AZ_RTTI(InstanceToTemplateInterface, "{9EF54D0F-0951-40B6-91AB-2EB55A322692}");
             virtual ~InstanceToTemplateInterface() = default;
 
-            //! Generates a prefab dom for the entity in its current state and places the result in generatedDom
-            virtual bool GenerateDomForEntity(PrefabDom& generatedEntityDom, const AZ::Entity& entity) = 0;
+            //! Generates an entity DOM for the entity in its current state by serializing the entity object.
+            //! @param[out] entityDom The output entity DOM that will be modified.
+            //! @param entity The given entity object.
+            //! @return True if the entity DOM is generated successfully and false otherwise.
+            virtual bool GenerateEntityDomBySerializing(PrefabDom& entityDom, const AZ::Entity& entity) = 0;
 
-            //! Generates a prefab dom for the instance in its current state and places the result in generatedDom
-            virtual bool GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Instance& instance) = 0;
+            //! Generates an instance DOM for the instance in its current state by serializing the instance object.
+            //! @param[out] instanceDom The output instance DOM that will be modified.
+            //! @param instance The given instance object.
+            //! @return True if the instance DOM is generated successfully and false otherwise.
+            virtual bool GenerateInstanceDomBySerializing(PrefabDom& instanceDom, const Instance& instance) = 0;
 
             //! Generates a patch using serialization system and places the result in generatedPatch
             virtual bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDomValue& initialState, const PrefabDomValue& modifiedState) = 0;

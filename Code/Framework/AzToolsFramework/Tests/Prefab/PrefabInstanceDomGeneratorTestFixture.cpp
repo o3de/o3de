@@ -107,7 +107,7 @@ namespace UnitTest
 
         // Create document with before change snapshot
         PrefabDom entityDomBeforeUpdate;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomBeforeUpdate, *childEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomBeforeUpdate, *childEntity);
 
         // Change the entity
         float prevXValue = 0.0f;
@@ -119,7 +119,7 @@ namespace UnitTest
 
         // Create document with after change snapshot
         PrefabDom entityDomAfterUpdate;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomAfterUpdate, *childEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomAfterUpdate, *childEntity);
 
         // Generate patch
         m_instanceToTemplateInterface->GeneratePatch(patchOut, entityDomBeforeUpdate, entityDomAfterUpdate);
@@ -187,7 +187,7 @@ namespace UnitTest
     {
         // Generate a prefab DOM for the provided instance
         PrefabDom generatedInstanceDom;
-        m_instanceDomGeneratorInterface->GenerateInstanceDom(generatedInstanceDom, instance);
+        m_instanceDomGeneratorInterface->GenerateInstanceDomFromTemplate(generatedInstanceDom, instance);
 
         // Create an instance from the generated prefab DOM for validation
         Instance instanceFromDom;
@@ -248,7 +248,7 @@ namespace UnitTest
     {
         // Generate an entity DOM for the provided entity
         PrefabDom generatedEntityDom;
-        m_instanceDomGeneratorInterface->GenerateEntityDom(generatedEntityDom, entity);
+        m_instanceDomGeneratorInterface->GenerateEntityDomFromTemplate(generatedEntityDom, entity);
         EXPECT_TRUE(generatedEntityDom.IsObject());
 
         // Create an entity from the generated entity DOM for validation
