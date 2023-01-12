@@ -43,8 +43,8 @@ namespace AZ
             m_allocator.deallocate(pageToDelete, sizeof(Page), AZStd::alignment_of<Page>::value);
         }
 
-        AZ_Warning("StableDynamicArray", occupiedPageCount == 0,
-            "StableDynamicArray is being deleted but there are still %zu outstanding handles on %zu pages. Handles that "
+        AZ_Warning("MultiIndexedStableDynamicArray", occupiedPageCount == 0,
+            "MultiIndexedStableDynamicArray is being deleted but there are still %zu outstanding handles on %zu pages. Handles that "
             "are not freed before MultiIndexedStableDynamicArray is removed will point to garbage memory.",
             orphanedItemCount, occupiedPageCount
         );
@@ -62,13 +62,13 @@ namespace AZ
         return emplace(AZStd::move(values...));
     }
 
-    template<size_t RowIndex, typename PageType, typename TupleType>
+    template<size_t RowIndex, typename... value_types, typename PageType, typename TupleType>
     static void ConstructElement(
         PageType* page,
         MultiIndexedStableDynamicArrayPageIndexType pageElementIndex,
         TupleType& valuesTuple)
     {
-        using DataType = AZStd::tuple_element_t<RowIndex, TupleType>;
+        using DataType = AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>;
         //DataType& item = page->GetItem<RowIndex>(pageElementIndex);
         //item = AZStd::get<RowIndex>(valuesTuple);
         DataType* item = page->GetItem<RowIndex>(pageElementIndex);
@@ -77,24 +77,23 @@ namespace AZ
     }
 
     
-    template<typename PageType, typename TupleType, size_t... Ints>
+    template<typename... value_types, typename PageType, typename ArgumentTuple, size_t... Ints>
     static void ConstructElementsInner(
         PageType* page,
         MultiIndexedStableDynamicArrayPageIndexType pageElementIndex,
-        TupleType& valuesTuple,
+        ArgumentTuple& argumentTuple,
         AZStd::index_sequence<Ints...>)
     {
-        (ConstructElement<Ints>(page, pageElementIndex, valuesTuple), ...);
+        (ConstructElement<Ints, value_types...>(page, pageElementIndex, argumentTuple), ...);
     }
 
-    template<size_t RowCount, typename PageType, typename TupleType>
+    template<size_t RowCount, typename...value_types, typename PageType, typename ArgumentTuple>
     static void ConstructElements(
-        PageType* page,
-        MultiIndexedStableDynamicArrayPageIndexType pageElementIndex, TupleType& valuesTuple
+        PageType* page, MultiIndexedStableDynamicArrayPageIndexType pageElementIndex, ArgumentTuple& argumentTuple
         )
     {
         constexpr auto tupleIndices = AZStd::make_index_sequence<RowCount>{};
-        ConstructElementsInner(page, pageElementIndex, valuesTuple, tupleIndices);
+        ConstructElementsInner<value_types...>(page, pageElementIndex, argumentTuple, tupleIndices);
         //using DataType = AZStd::tuple_element_t<RowIndices, AZStd::tuple<value_types...>>;
         //AZStd::tuple<value_types&...> itemReferences;
         //(void*)indexSequence;
@@ -129,19 +128,19 @@ namespace AZ
     }
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    auto MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::emplace(const value_types&... values) -> Handle
-    {        
-        using TupleType = AZStd::tuple<value_types...>;
-        TupleType argumentTuple{ values... };
-
-
+    template<class... Args>
+    auto MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::emplace(Args&&... args)
+        -> Handle
+    { 
+        using ArgumentTuple = AZStd::tuple<Args...>;
+        ArgumentTuple argumentTuple{ args... };
         // Try to find a page we can fit this in.
         while (m_firstAvailablePage)
         {
             MultiIndexedStableDynamicArrayPageIndexType pageElementIndex = m_firstAvailablePage->Reserve();
             if (pageElementIndex != MultiIndexedStableDynamicArrayInvalidPageIndex)
             {                    
-                ConstructElements<AZStd::tuple_size<TupleType>::value>(
+                ConstructElements<AZStd::tuple_size<ArgumentTuple>::value, value_types...>(
                     m_firstAvailablePage, pageElementIndex, argumentTuple);
 
                 ++m_itemCount;
@@ -172,7 +171,7 @@ namespace AZ
         
         MultiIndexedStableDynamicArrayPageIndexType pageElementIndex = m_firstAvailablePage->Reserve();
 
-        ConstructElements<AZStd::tuple_size<TupleType>::value>(m_firstAvailablePage, pageElementIndex, argumentTuple);
+        ConstructElements<AZStd::tuple_size<ArgumentTuple>::value, value_types...>(m_firstAvailablePage, pageElementIndex, argumentTuple);
 
         ++m_itemCount;
         return Handle(m_firstAvailablePage, pageElementIndex);

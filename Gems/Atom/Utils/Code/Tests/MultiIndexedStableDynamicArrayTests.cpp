@@ -569,7 +569,7 @@ namespace UnitTest
         AZ::MultiIndexedStableDynamicArrayHandle<TestElementsPerPage, MultiIndexedTestAllocator, TestItemImplementation> AcquireItem(
             uint32_t value)
         {
-            return m_testArray.emplace(TestItemImplementation{ static_cast<int>(value) });
+            return m_testArray.emplace(value);
         }
 
         void ReleaseItem(
@@ -613,13 +613,14 @@ namespace UnitTest
                 EXPECT_EQ(testItem->GetValue(), 123);
 
                 // The destination handle should be pointing to real data that can be modified
-                *destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>() = 789;
+                destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->SetValue(789);
                 EXPECT_EQ(destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->GetValue(), 789);
 
                 // One item was constructed, none destructed, one modified
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, 1);
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsDestructed, 0);
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsModified, 1);
+                destination.Free();
             }
             EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, MultiIndexedStableDynamicArrayHandleTests::s_testItemsDestructed);
         }
@@ -643,13 +644,14 @@ namespace UnitTest
                 EXPECT_EQ(destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->GetValue(), 123);
 
                 // The destination handle should be pointing to real data that can be modified
-                *destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>() = 789;
+                destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->SetValue(789);
                 EXPECT_EQ(destination.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->GetValue(), 789);
 
                 // Two items were constructed, one destructed, one modified
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, 2);
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsDestructed, 1);
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsModified, 1);
+                destination.Free();
             }
             EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, MultiIndexedStableDynamicArrayHandleTests::s_testItemsDestructed);
         }
@@ -672,6 +674,7 @@ namespace UnitTest
                 // One item was constructed and destructed
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, 1);
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsDestructed, 1);
+                destination.Free();
             }
             EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, MultiIndexedStableDynamicArrayHandleTests::s_testItemsDestructed);
         }
@@ -697,6 +700,7 @@ namespace UnitTest
                 // One item was constructed and destructed
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, 2);
                 EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsDestructed, 2);
+                destination.Free();
             }
             EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, MultiIndexedStableDynamicArrayHandleTests::s_testItemsDestructed);
         }
@@ -715,6 +719,7 @@ namespace UnitTest
                     EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsConstructed, 2);
                     EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsDestructed, 1);
                     EXPECT_EQ(MultiIndexedStableDynamicArrayHandleTests::s_testItemsModified, 0);
+                    destination.Free();
                 }
 
                 // Releasing the valid destination handle by letting it go out of scope should succeed
@@ -762,7 +767,7 @@ namespace UnitTest
         MultiIndexedStableDynamicArrayOwner owner;
         MultiIndexedTestItemHandle handle = owner.AcquireItem(1);
         int testValue = 12;
-        *handle.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>() = testValue;
+        handle.GetItem<TestMultiIndexedStableDynamicArrayRows::TestItemIndex>()->SetValue(testValue);
 
         // Self assignment should not invalidate the handle
         handle = AZStd::move(handle);

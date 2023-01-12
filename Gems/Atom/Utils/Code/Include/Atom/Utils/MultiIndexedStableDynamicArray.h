@@ -72,7 +72,8 @@ namespace AZ
         Handle insert(value_types&&... value);
 
         /// Reserves and copies an item of type T with provided args and returns a handle to it.
-        Handle emplace(const value_types&... values);
+        template<class... Args>
+        Handle emplace(Args&&... args);
 
         /// Destructs and frees the memory associated with a handle, then invalidates the handle.
         void erase(Handle& handle);
@@ -141,7 +142,7 @@ namespace AZ
         static constexpr size_t InvalidPage = AZStd::numeric_limits<size_t>::max();
         static constexpr uint64_t FullBits = 0xFFFFFFFFFFFFFFFFull;
         static constexpr size_t NumUint64_t = ElementsPerPage / 64;
-
+        using TupleType = AZStd::tuple<value_types...>;
         Page();
         ~Page() = default;
 
