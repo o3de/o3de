@@ -12,11 +12,16 @@ namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(BoxComponentMode, AZ::SystemAllocator, 0)
 
+    void BoxComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<BoxComponentMode>(context);
+    }
+
     BoxComponentMode::BoxComponentMode(
-        const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType)
+        const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType, bool allowAsymmetricalEditing)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
     {
-        m_boxEdit.Setup(entityComponentIdPair);
+        m_boxEdit.Setup(entityComponentIdPair, allowAsymmetricalEditing);
     }
 
     BoxComponentMode::~BoxComponentMode()

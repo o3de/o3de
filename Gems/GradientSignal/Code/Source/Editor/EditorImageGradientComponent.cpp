@@ -316,21 +316,28 @@ namespace GradientSignal
 
     void EditorImageGradientComponent::OnPaintModeBegin()
     {
+        m_configuration.m_numImageModificationsActive++;
+
+        // Forward the paint brush notification to the runtime component.
+        AzFramework::PaintBrushNotificationBus::Event(
+            { m_component.GetEntityId(), m_component.GetId() }, &AzFramework::PaintBrushNotificationBus::Events::OnPaintModeBegin);
+
         // While we're editing, we need to set all the configuration properties to read-only and refresh them.
         // Otherwise, the property changes could conflict with the current painted modifications.
-        m_configuration.m_imageModificationActive = true;
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
 
-        ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::StartImageModification);
     }
 
     void EditorImageGradientComponent::OnPaintModeEnd()
     {
-        ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::EndImageModification);
+        // Forward the paint brush notification to the runtime component.
+        AzFramework::PaintBrushNotificationBus::Event(
+            { m_component.GetEntityId(), m_component.GetId() }, &AzFramework::PaintBrushNotificationBus::Events::OnPaintModeEnd);
+
+        m_configuration.m_numImageModificationsActive--;
 
         // We're done editing, so set all the configuration properties back to writeable and refresh them.
-        m_configuration.m_imageModificationActive = false;
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
 
@@ -358,15 +365,17 @@ namespace GradientSignal
             { m_component.GetEntityId(), m_component.GetId() }, &AzFramework::PaintBrushNotificationBus::Events::OnBrushStrokeEnd);
     }
 
-    void EditorImageGradientComponent::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn)
+    void EditorImageGradientComponent::OnPaint(
+        const AZ::Color& color, const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn)
     {
         // Forward the paint brush notification to the runtime component.
         AzFramework::PaintBrushNotificationBus::Event(
             { m_component.GetEntityId(), m_component.GetId() }, &AzFramework::PaintBrushNotificationBus::Events::OnPaint,
-            dirtyArea, valueLookupFn, blendFn);
+            color, dirtyArea, valueLookupFn, blendFn);
     }
 
     void EditorImageGradientComponent::OnSmooth(
+        const AZ::Color& color,
         const AZ::Aabb& dirtyArea,
         ValueLookupFn& valueLookupFn,
         AZStd::span<const AZ::Vector3> valuePointOffsets,
@@ -375,10 +384,10 @@ namespace GradientSignal
         // Forward the paint brush notification to the runtime component.
         AzFramework::PaintBrushNotificationBus::Event(
             { m_component.GetEntityId(), m_component.GetId() }, &AzFramework::PaintBrushNotificationBus::Events::OnSmooth,
-            dirtyArea, valueLookupFn, valuePointOffsets, smoothFn);
+            color, dirtyArea, valueLookupFn, valuePointOffsets, smoothFn);
     }
 
-    AZ::Color EditorImageGradientComponent::OnGetColor(const AZ::Vector3& brushCenter)
+    AZ::Color EditorImageGradientComponent::OnGetColor(const AZ::Vector3& brushCenter) const
     {
         AZ::Color result;
 

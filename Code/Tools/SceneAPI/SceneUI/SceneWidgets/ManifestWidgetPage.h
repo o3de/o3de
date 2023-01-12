@@ -88,6 +88,10 @@ namespace AZ
                 // ManifestMetaInfoBus
                 void ObjectUpdated(const Containers::Scene& scene, const DataTypes::IManifestObject* target, void* sender) override;
 
+                void UpdateAddButtonStatus();
+
+                bool SetNodeReadOnlyStatus(const AzToolsFramework::InstanceDataNode* node);
+
                 AZStd::vector<AZ::Uuid> m_classTypeIds;
                 AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> m_objects;
                 QScopedPointer<Ui::ManifestWidgetPage> ui;

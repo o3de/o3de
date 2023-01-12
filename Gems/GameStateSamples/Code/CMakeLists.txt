@@ -51,4 +51,5 @@ ly_add_target(
 # Clients and Servers use the above module, and it contains assets so is needed by builders.
 ly_create_alias(NAME GameStateSamples.Clients  NAMESPACE Gem TARGETS Gem::GameStateSamples)
 ly_create_alias(NAME GameStateSamples.Servers  NAMESPACE Gem TARGETS Gem::GameStateSamples)
+ly_create_alias(NAME GameStateSamples.Unified  NAMESPACE Gem TARGETS Gem::GameStateSamples)
 ly_create_alias(NAME GameStateSamples.Builders NAMESPACE Gem TARGETS Gem::UiBasics.Builders Gem::LyShineExamples.Builders)

@@ -10,6 +10,11 @@
 #include <Tests/GradientSignalTestFixtures.h>
 #include <Tests/GradientSignalTestHelpers.h>
 
+#include <Atom/RPI.Public/Image/ImageSystem.h>
+#include <Atom/RPI.Public/RPISystem.h>
+#include <Common/RHI/Factory.h>
+#include <Common/RHI/Stubs.h>
+
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -93,17 +98,10 @@ namespace UnitTest
 
     void GradientSignalBaseFixture::SetupCoreSystems()
     {
-        // Using the AZ::RPI::MakeAssetHandler will both create the asset handlers,
-        // and register them with the AssetManager
-        m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::ImageMipChainAssetHandler>());
-        m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::StreamingImageAssetHandler>());
     }
 
     void GradientSignalBaseFixture::TearDownCoreSystems()
     {
-        // This will delete the asset handlers, which will unregister themselves on deletion
-        m_assetHandlers.clear();
-
         AzFramework::LegacyAssetEventBus::ClearQueuedEvents();
     }
 
@@ -415,6 +413,47 @@ namespace UnitTest
         ActivateEntity(entity.get());
         return entity;
     }
+
+    GradientSignalTest::GradientSignalTest()
+    {
+        // Even though this is an empty function, it needs to appear here so that the destruction code for the unique pointers
+        // is created here instead of inline wherever the GradientSignalTest class is used. This lets us keep the #includes for
+        // these Atom classes private to this file instead of exposing them outward through the header and requiring everything
+        // using this class to include the Atom libs as well.
+    }
+
+    GradientSignalTest::~GradientSignalTest()
+    {
+        // This also needs to appear here, even though it's an empty function.
+    }
+
+    void GradientSignalTest::SetUp()
+    {
+        SetupCoreSystems();
+
+        // Create a stub RHI for use by Atom
+        m_rhiFactory.reset(aznew UnitTest::StubRHI::Factory());
+
+        // Create the Atom RPISystem
+        AZ::RPI::RPISystemDescriptor rpiSystemDescriptor;
+        m_rpiSystem = AZStd::make_unique<AZ::RPI::RPISystem>();
+        m_rpiSystem->Initialize(rpiSystemDescriptor);
+
+        AZ::RPI::ImageSystemDescriptor imageSystemDescriptor;
+        m_imageSystem = AZStd::make_unique<AZ::RPI::ImageSystem>();
+        m_imageSystem->Init(imageSystemDescriptor);
+    }
+
+    void GradientSignalTest::TearDown()
+    {
+        m_imageSystem->Shutdown();
+        m_rpiSystem->Shutdown();
+        m_rpiSystem = nullptr;
+        m_rhiFactory = nullptr;
+
+        TearDownCoreSystems();
+    }
+
 
     void GradientSignalTest::TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId)
     {
