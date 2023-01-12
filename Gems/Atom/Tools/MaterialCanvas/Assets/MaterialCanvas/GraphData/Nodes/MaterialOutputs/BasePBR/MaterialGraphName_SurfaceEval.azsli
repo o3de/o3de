@@ -26,7 +26,7 @@ Surface EvaluateSurface_BasePBR(
     bool isFrontFace)
 {
     #define O3DE_MC_POSITION positionWS
-    #define O3DE_MC_UV(index) uvs[clamp(index, 0, UvSetCount-1];
+    #define O3DE_MC_UV(index) uvs[clamp(index, 0, UvSetCount-1)];
     #define O3DE_MC_NORMAL vertexNormal
     #define O3DE_MC_TANGENT tangent[0]
     #define O3DE_MC_BITANGENT bitangent[0]
