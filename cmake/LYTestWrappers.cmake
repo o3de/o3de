@@ -173,6 +173,9 @@ function(ly_add_test)
         list(APPEND final_labels ${ly_add_test_LABELS})
     endif()
 
+    # Allow TIAF to apply the label of supported test categories from being run by CTest 
+    o3de_test_impact_apply_test_labels(${ly_add_test_TEST_LIBRARY} final_labels)
+
     # labels expects a single param, of concatenated labels
     # this always has a value because ly_add_test_TEST_SUITE is automatically
     # filled in to be "main" if not specified.
@@ -274,10 +277,12 @@ function(ly_add_test)
         set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS ${test_target})
         set_property(GLOBAL PROPERTY LY_ALL_TESTS_${test_target}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
     endif()
-    # Add the test suite and timeout value to the test target params
+    # Add the test suite, timeout value and labels to the test target params
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TEST_SUITE}")
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TIMEOUT}")
-    # Store the params for this test target
+    string(REPLACE ";" "," flattened_labels "${final_labels}")
+    set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${flattened_labels}")
+    # Store the params and labels for this test target
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${test_target}_PARAMS ${LY_TEST_PARAMS})
 endfunction()
 
