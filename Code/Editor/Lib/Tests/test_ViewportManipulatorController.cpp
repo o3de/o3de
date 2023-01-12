@@ -27,6 +27,7 @@ namespace UnitTest
         void Disconnect();
 
         // EditorInteractionSystemViewportSelectionRequestBus overrides ...
+        const AzToolsFramework::EditorVisibleEntityDataCacheInterface* GetEntityDataCache() const override;
         void SetHandler(const AzToolsFramework::ViewportSelectionRequestsBuilderFn& interactionRequestsBuilder) override;
         void SetDefaultHandler() override;
         bool InternalHandleMouseViewportInteraction(const MouseInteractionEvent& mouseInteraction) override;
@@ -44,6 +45,11 @@ namespace UnitTest
     void EditorInteractionViewportSelectionFake::Disconnect()
     {
         AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::Handler::BusDisconnect();
+    }
+
+    const AzToolsFramework::EditorVisibleEntityDataCacheInterface* EditorInteractionViewportSelectionFake::GetEntityDataCache() const
+    {
+        return nullptr;
     }
 
     void EditorInteractionViewportSelectionFake::SetHandler(

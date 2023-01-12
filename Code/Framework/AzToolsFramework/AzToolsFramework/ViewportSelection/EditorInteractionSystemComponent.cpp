@@ -56,6 +56,12 @@ namespace AzToolsFramework
         return m_interactionRequests->InternalHandleMouseManipulatorInteraction(mouseInteraction);
     }
 
+    const EditorVisibleEntityDataCacheInterface* EditorInteractionSystemComponent::GetEntityDataCache() const
+    {
+        return m_entityDataCache.get();
+    }
+
+
     void EditorInteractionSystemComponent::SetHandler(
         const ViewportSelectionRequestsBuilderFn& interactionRequestsBuilder)
     {
