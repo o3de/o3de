@@ -1611,7 +1611,7 @@ namespace AssetProcessor
         auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
 
         // Only compute the intermediate assets folder path if we are going to search for and skip it.
-       
+
         if (skipIntermediateScanFolder)
         {
             if (m_intermediateAssetScanFolderId == -1)
@@ -1619,13 +1619,13 @@ namespace AssetProcessor
                 CacheIntermediateAssetsScanFolderId();
             }
         }
-        
+
         QString absolutePath; // avoid allocating memory repeatedly here by reusing absolutePath each scan folder.
         absolutePath.reserve(AZ_MAX_PATH_LEN);
 
         QFileInfo details(relativeName); // note that this does not actually hit the actual storage medium until you query something
         bool isAbsolute = details.isAbsolute(); // note that this looks at the file name string only, it does not hit storage.
-        
+
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
             const AssetProcessor::ScanFolderInfo& scanFolderInfo = m_scanFolders[pathIdx];
@@ -1879,16 +1879,11 @@ namespace AssetProcessor
 
     void PlatformConfiguration::AddGemScanFolders(const AZStd::vector<AzFramework::GemInfo>& gemInfoList)
     {
-        // Determine if a Gem is from the project.
-        // Cross-check gem paths against visited project gem paths.
-        // If the gem is project-relative, make adjustments to it's priority order.
-        // Registry Settings:
+        // Determine if a Gem is relative to the project. Cross-check gem paths against visited project gem paths.
+        // If the gem is project-relative, make adjustments to it's priority order based on registry settings:
         // /Amazon/AssetProcessor/Settings/GemScanFolderStartingPriorityOrder
-        //      The starting gem priority order
         // /Amazon/AssetProcessor/Settings/ProjectRelativeGemsScanFolderPriority
-        //      "none" - any project Gem scan folder priority will be incremented from the "GemScanFolderStartingPriorityOrder" value.
-        //      "lower" - each project Gem scan folder will be set to lower priority (higher numeric value) than the project scan folder.
-        //      "higher" - each project Gem scan folder will be set to higher priority (lower numeric value) than the project scan folder.
+        // See <o3de-root>/Registry/AssetProcessorPlatformConfig.setreg for more information.
 
         AZ::s64 gemStartingOrder = 100;
         AZStd::string projectGemPrioritySetting{};
