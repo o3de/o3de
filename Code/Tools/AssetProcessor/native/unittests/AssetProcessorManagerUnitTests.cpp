@@ -2975,7 +2975,7 @@ namespace AssetProcessor
 
         AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
     }
-    #if 1
+
     // This test verifies the fingerprint clearing command causes assets to reprocess.
     // It does this by processing assets once to setup. Then processes them a second time, to verify
     // they don't reprocess due to identical fingerprints. After that, it clears the fingerprint from the DB,
@@ -3091,6 +3091,5 @@ namespace AssetProcessor
 
         mockAppManager.BusDisconnect();
     }
-    #endif
 
 } // namespace AssetProcessor

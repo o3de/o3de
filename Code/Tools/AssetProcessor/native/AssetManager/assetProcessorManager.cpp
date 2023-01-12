@@ -379,6 +379,7 @@ namespace AssetProcessor
 
             if (absolutePath.isEmpty())
             {
+                response.m_isSuccess = false;
                 return;
             }
 
