@@ -78,36 +78,12 @@ namespace TestImpact
 
     AZStd::string SuiteSetAsString(const SuiteSet& suiteSet)
     {
-        AZStd::string suiteSetString;
-        size_t i = 1;
-        for (const auto& suite : suiteSet)
-        {
-            suiteSetString += suite;
-            if (i != suiteSet.size())
-            {
-                suiteSetString += "-";
-            }
-            i++;
-        }
-
-        return suiteSetString;
+        return ConcatenateContainerContentsAsString(suiteSet, "-");
     }
 
     AZStd::string SuiteLabelExcludeSetAsString(const SuiteLabelExcludeSet& suiteLabelExcludeSet)
     {
-        AZStd::string suiteLabelExcludeSetString;
-        size_t i = 1;
-        for (const auto& label : suiteLabelExcludeSet)
-        {
-            suiteLabelExcludeSetString += label;
-            if (i != suiteLabelExcludeSet.size())
-            {
-                suiteLabelExcludeSetString += "-";
-            }
-            i++;
-        }
-
-        return suiteLabelExcludeSetString;
+        return ConcatenateContainerContentsAsString(suiteLabelExcludeSet, "-");
     }
 
     AZStd::string SequenceReportTypeAsString(Client::SequenceReportType type)

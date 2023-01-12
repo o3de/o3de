@@ -56,6 +56,25 @@ namespace TestImpact
             file.Write(bytes.data(), bytes.size()), ExceptionType, AZStd::string::format("Couldn't write contents for file %s", path.c_str()));
     }
 
+    //! Returns a string of the concatenated container contents separated by the specified separator.
+    template<typename Container>
+    AZStd::string ConcatenateContainerContentsAsString(const Container& container, const AZStd::string& separator)
+    {
+        AZStd::string concatenatedString;
+        size_t i = 1;
+        for (const auto& value : container)
+        {
+            concatenatedString += value;
+            if (i != container.size())
+            {
+                concatenatedString += separator;
+            }
+            i++;
+        }
+
+        return concatenatedString;
+    }
+
     //! Delete the files that match the pattern from the specified directory.
     //! @param path The path to the directory to pattern match the files for deletion.
     //! @param pattern The pattern to match files for deletion.
