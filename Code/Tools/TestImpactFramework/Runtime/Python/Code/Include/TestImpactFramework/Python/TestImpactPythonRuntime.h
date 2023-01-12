@@ -32,7 +32,8 @@ namespace TestImpact
             const AZStd::optional<RepoPath>& dataFile,
             [[maybe_unused]] const AZStd::optional<RepoPath>& previousRunDataFile,
             const AZStd::vector<ExcludedTarget>& testsToExclude,
-            SuiteType suiteFilter,
+            const SuiteSet& suiteSet,
+            const SuiteLabelExcludeSet& suiteLabelExcludeSet,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::FailedTestCoverage failedTestCoveragePolicy,
             Policy::TestFailure testFailurePolicy,
@@ -151,7 +152,8 @@ namespace TestImpact
 
         PythonRuntimeConfig m_config;
         RepoPath m_sparTiaFile;
-        SuiteType m_suiteFilter;
+        SuiteSet m_suiteSet;
+        SuiteLabelExcludeSet m_suiteLabelExcludeSet;
         Policy::ExecutionFailure m_executionFailurePolicy;
         Policy::FailedTestCoverage m_failedTestCoveragePolicy;
         Policy::TestFailure m_testFailurePolicy;

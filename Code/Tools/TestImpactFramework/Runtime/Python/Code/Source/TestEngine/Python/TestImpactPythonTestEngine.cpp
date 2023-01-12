@@ -161,8 +161,7 @@ namespace TestImpact
         if (m_testRunnerPolicy == Policy::TestRunner::UseNullTestRunner)
         {
             // We don't delete the artifacts as they have been left by another test runner (e.g. ctest)
-            return GenerateInstrumentedRunResult(
-            RunTests(
+            const auto result = RunTests(
                 m_instrumentedNullTestRunner.get(),
                 jobInfos,
                 testTargets,
@@ -173,14 +172,24 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 callback,
-                std::nullopt),
-            integrityFailurePolicy);
+                std::nullopt);
+
+            if(const auto integrityErrors = GenerateIntegrityErrorString(result);
+                !integrityErrors.empty())
+            {
+                AZ_TestImpact_Eval(
+                        integrityFailurePolicy != Policy::IntegrityFailure::Abort,
+                        TestEngineException,
+                        integrityErrors);
+
+                AZ_Error("InstrumentedRun", false, integrityErrors.c_str());
+            }
+
+            return result;
         }
         else
         {
-            DeleteXmlArtifacts();
-            return GenerateInstrumentedRunResult(
-                RunTests(
+            const auto result = RunTests(
                     m_instrumentedTestRunner.get(),
                     jobInfos,
                     testTargets,
@@ -191,8 +200,20 @@ namespace TestImpact
                     testTargetTimeout,
                     globalTimeout,
                     callback,
-                    std::nullopt),
-                integrityFailurePolicy);
+                    std::nullopt);
+
+            if(const auto integrityErrors = GenerateIntegrityErrorString(result);
+                !integrityErrors.empty())
+            {
+                AZ_TestImpact_Eval(
+                        integrityFailurePolicy != Policy::IntegrityFailure::Abort,
+                        TestEngineException,
+                        integrityErrors);
+
+                AZ_Error("InstrumentedRun", false, integrityErrors.c_str());
+            }
+
+            return result;
         }
     }
 } // namespace TestImpact

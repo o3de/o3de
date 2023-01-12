@@ -15,7 +15,8 @@
 
 namespace TestImpact
 {
-    PythonTestTargetMetaMap PythonTestTargetMetaMapFactory(const AZStd::string& testListData, SuiteType suiteType)
+    PythonTestTargetMetaMap PythonTestTargetMetaMapFactory(
+        const AZStd::string& testListData, const SuiteSet& suiteSet, const SuiteLabelExcludeSet& suiteLabelExcludeSet)
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -29,7 +30,8 @@ namespace TestImpact
             "name",
             "timeout",
             "script",
-            "command"
+            "command",
+            "labels"
         };
 
         enum
@@ -43,7 +45,8 @@ namespace TestImpact
             NameKey,
             TimeoutKey,
             ScriptKey,
-            TestCommandKey
+            TestCommandKey,
+            SuiteLabelsKey
         };
 
         AZ_TestImpact_Eval(!testListData.empty(), ArtifactException, "Test meta-data cannot be empty");
@@ -61,12 +64,31 @@ namespace TestImpact
         {
             PythonTestTargetMeta testMeta;
             const auto testSuites = test[Keys[TestSuitesKey]].GetArray();
+            bool skipTest = false;
             for (const auto& suite : testSuites)
             {
                 // Check to see if this test target has the suite we're looking for
                 if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
-                    strcmp(SuiteTypeAsString(suiteType).c_str(), suiteName) == 0)
+                    suiteSet.contains(suiteName))
                 {
+                    const auto suiteLabels = suite[Keys[SuiteLabelsKey]].GetArray();
+                    for (const auto& label : suiteLabels)
+                    {
+                        const auto labelString = label.GetString();
+                        if (suiteLabelExcludeSet.contains(labelString))
+                        {
+                            skipTest = true;
+                            break;
+                        }
+
+                        testMeta.m_testTargetMeta.m_suiteMeta.m_labelSet.insert(labelString);
+                    }
+
+                    if (skipTest)
+                    {
+                        break;
+                    }
+
                     testMeta.m_testTargetMeta.m_namespace = test[Keys[NamespaceKey]].GetString();
                     testMeta.m_testTargetMeta.m_suiteMeta.m_name = suiteName;
                     testMeta.m_testTargetMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
@@ -75,7 +97,6 @@ namespace TestImpact
 
                     AZStd::string name = test[Keys[NameKey]].GetString();
                     AZ_TestImpact_Eval(!name.empty(), ArtifactException, "Test name field cannot be empty");
-                    //AZ_TestImpact_Eval(!testMeta.m_scriptPath.empty(), ArtifactException, "Test script field cannot be empty");
                     testMetas.emplace(AZStd::move(name), AZStd::move(testMeta));
                     break;
                 }
