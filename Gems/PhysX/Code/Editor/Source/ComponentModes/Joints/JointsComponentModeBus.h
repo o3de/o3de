@@ -20,6 +20,9 @@ namespace PhysX
         //! Set the current sub-mode.
         virtual void SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode) = 0;
 
+        //! Reset the current sub-mode.
+        virtual void ResetCurrentSubMode() = 0;
+
         //! Returns true if the sub-mode should be available for the current component.
         virtual bool IsCurrentSubModeAvailable(JointsComponentModeCommon::SubComponentModes::ModeType mode) = 0;
 

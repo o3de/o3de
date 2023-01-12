@@ -46,6 +46,7 @@ namespace PhysX
 
         // JointsComponentModeRequestBus overrides ...
         void SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode) override;
+        void ResetCurrentSubMode() override;
         bool IsCurrentSubModeAvailable(JointsComponentModeCommon::SubComponentModes::ModeType mode) override;
 
         // EditorBaseComponentMode ...
@@ -75,7 +76,6 @@ namespace PhysX
 
         bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         void SetupSubModes(const AZ::EntityComponentIdPair& entityComponentIdPair);
-        void ResetCurrentMode();
         void TeardownSubModes();
 
         AzToolsFramework::ViewportUi::ClusterId GetClusterId(ClusterGroups group);

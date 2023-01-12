@@ -785,6 +785,44 @@ namespace PhysX
                 }
             );
         }
+
+        // Reset Current Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.resetCurrentMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::ResetTitle;
+            actionProperties.m_description = SubModeData::ResetToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
+                        {
+                            auto componentModeCollectionInterface =
+                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                            componentModeCollectionInterface->EnumerateActiveComponents(
+                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                                {
+                                    JointsComponentModeRequestBus::Event(entityComponentIdPair, &JointsComponentModeRequests::ResetCurrentSubMode);
+                                }
+                            );
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "R");
+        }
     }
 
     void JointsComponentMode::BindActionsToModes()
@@ -808,6 +846,7 @@ namespace PhysX
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToSwingLimitsSubMode");
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToSnapPositionSubMode");
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToSnapRotationSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.resetCurrentMode");
     }
 
     void JointsComponentMode::BindActionsToMenus()
@@ -825,6 +864,7 @@ namespace PhysX
         menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSnapRotationSubMode", 6007);
         menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSwingLimitsSubMode", 6008);
         menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToTwistLimitsSubMode", 6009);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.resetCurrentMode", 6010);
     }
 
     void JointsComponentMode::Refresh()
@@ -982,8 +1022,9 @@ namespace PhysX
                 SubModeData::ResetTitle, SubModeData::ResetToolTip,
                 [this]()
                 {
-                    ResetCurrentMode();
-                });
+                    ResetCurrentSubMode();
+                }
+            );
             resetValuesAction.SetKeySequence(QKeySequence(Qt::Key_R));
             actions.emplace_back(resetValuesAction);
         }
@@ -1303,7 +1344,7 @@ namespace PhysX
         m_subMode = JointsComponentModeCommon::SubComponentModes::ModeType::Translation;
     }
 
-    void JointsComponentMode::ResetCurrentMode()
+    void JointsComponentMode::ResetCurrentSubMode()
     {
         const AZ::EntityComponentIdPair entityComponentIdPair = GetEntityComponentIdPair();
         m_subModes[m_subMode]->ResetValues(entityComponentIdPair);
