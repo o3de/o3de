@@ -40,4 +40,5 @@ ly_add_target(
 # the above module is for use in all application types except builders
 ly_create_alias(NAME TickBusOrderViewer.Servers  NAMESPACE Gem TARGETS Gem::TickBusOrderViewer)
 ly_create_alias(NAME TickBusOrderViewer.Clients  NAMESPACE Gem TARGETS Gem::TickBusOrderViewer)
+ly_create_alias(NAME TickBusOrderViewer.Unified  NAMESPACE Gem TARGETS Gem::TickBusOrderViewer)
 ly_create_alias(NAME TickBusOrderViewer.Tools    NAMESPACE Gem TARGETS Gem::TickBusOrderViewer)
