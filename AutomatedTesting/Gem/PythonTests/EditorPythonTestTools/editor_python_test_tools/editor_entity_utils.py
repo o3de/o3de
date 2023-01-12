@@ -17,6 +17,7 @@ import azlmbr
 import azlmbr.bus as bus
 import azlmbr.editor as editor
 import azlmbr.math as math
+import azlmbr.prefab as prefab
 
 # Helper file Imports
 from editor_python_test_tools.wait_utils import PrefabWaiter
@@ -749,6 +750,21 @@ class EditorEntity:
         assert self.id.isValid(), "A valid entity id is required to focus on its owning prefab."
         focus_prefab_result = azlmbr.prefab.PrefabFocusPublicRequestBus(bus.Broadcast, "FocusOnOwningPrefab", self.id)
         assert focus_prefab_result.IsSuccess(), f"Prefab operation 'FocusOnOwningPrefab' failed. Error: {focus_prefab_result.GetError()}"
+
+    def has_overrides(self) -> bool:
+        """
+        Validates if a given entity has overrides present. NOTE: This should only be used on an entity within a prefab
+        as this will currently always return as True on a container entity.
+        :return: True if overrides are present, False otherwise
+        """
+        return prefab.PrefabOverridePublicRequestBus(bus.Broadcast, "AreOverridesPresent", self.id)
+
+    def revert_overrides(self) -> bool:
+        """
+        Reverts overrides on a given entity if overrides are present
+        :return: True is overrides were detected and reverted, False otherwise
+        """
+        return prefab.PrefabOverridePublicRequestBus(bus.Broadcast, "RevertOverrides", self.id)
 
 
 class EditorLevelEntity:

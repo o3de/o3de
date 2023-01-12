@@ -19,13 +19,24 @@
                         "tooltip": "Signaled after Get AABB is invoked"
                     },
                     "details": {
-                        "name": "Get AABB"
+                        "name": "Get AABB",
+                        "tooltip": "Get the axis-aligned bounding box for the body"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the simulated body is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "AABB"
+                                "name": "AABB",
+                                "tooltip": "Axis-aligned bounding box for the body"
                             }
                         }
                     ]
@@ -41,13 +52,24 @@
                         "tooltip": "Signaled after IsPhysicsEnabled is invoked"
                     },
                     "details": {
-                        "name": "Is Physics Enabled"
+                        "name": "Is Physics Enabled",
+                        "tooltip": "Get whether physics is enabled for this body"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the simulated body is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Enabled"
+                                "name": "Enabled",
+                                "tooltip": "Whether physics is enabled for this body"
                             }
                         }
                     ]
@@ -63,7 +85,8 @@
                         "tooltip": "Signaled after RayCast is invoked"
                     },
                     "details": {
-                        "name": "Ray Cast"
+                        "name": "Ray Cast",
+                        "tooltip": "Perform a ray cast against only this body"
                     },
                     "params": [
                         {
@@ -78,7 +101,8 @@
                         {
                             "typeid": "{7A7201B9-67B5-438B-B4EB-F3EEBB78C617}",
                             "details": {
-                                "name": "Scene Query Hit"
+                                "name": "Scene Query Hit",
+                                "tooltip": "The result of the ray cast query"
                             }
                         }
                     ]
@@ -94,8 +118,18 @@
                         "tooltip": "Signaled after Disable Physics is invoked"
                     },
                     "details": {
-                        "name": "Disable Physics"
-                    }
+                        "name": "Disable Physics",
+                        "tooltip": "Set physics to be disabled for this body"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the simulated body is associated with"
+                            }
+                        }
+                    ]
                 },
                 {
                     "base": "EnablePhysics",
@@ -108,8 +142,18 @@
                         "tooltip": "Signaled after EnablePhysics is invoked"
                     },
                     "details": {
-                        "name": "Enable Physics"
-                    }
+                        "name": "Enable Physics",
+                        "tooltip": "Set physics to be enabled for this body"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the simulated body is associated with"
+                            }
+                        }
+                    ]
                 }
             ]
         }

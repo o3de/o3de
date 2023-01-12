@@ -200,8 +200,10 @@ namespace AZ::Dom
         explicit Value(uint16_t value);
         explicit Value(int32_t value);
         explicit Value(uint32_t value);
-        explicit Value(int64_t value);
-        explicit Value(uint64_t value);
+        explicit Value(long value);
+        explicit Value(unsigned long value);
+        explicit Value(long long value);
+        explicit Value(unsigned long long value);
         explicit Value(float value);
         explicit Value(double value);
         explicit Value(bool value);

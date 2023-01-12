@@ -10,6 +10,8 @@
 
 #include "AzAssetBrowserWindow.h"
 
+#include <AssetBrowser/Views/AssetBrowserTreeView.h>
+
 // AzToolsFramework
 #include <AzCore/Console/IConsole.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -310,6 +312,10 @@ void AzAssetBrowserWindow::RegisterViewClass()
     AzToolsFramework::ViewPaneOptions options;
     options.preferedDockingArea = Qt::LeftDockWidgetArea;
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(LyViewPane::AssetBrowser, LyViewPane::CategoryTools, options);
+
+    options.showInMenu = false;
+    const QString name = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
+    AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(qPrintable(name), LyViewPane::CategoryTools, options);
 }
 
 QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* parent)
@@ -318,6 +324,10 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
 
     // the listener is attached to the parent and will get cleaned up then
     return listener;
+}
+
+bool AzAssetBrowserWindow::TreeViewBelongsTo(AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView) {
+    return m_ui->m_assetBrowserTreeViewWidget == treeView;
 }
 
 void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)

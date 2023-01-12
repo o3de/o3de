@@ -24,11 +24,11 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzNetworking
-            Gem::Multiplayer
+            Gem::Multiplayer.Unified
         PRIVATE
             AZ::AzCore
             Gem::Atom_AtomBridge.Static
-            Gem::Multiplayer.Static
+            Gem::Multiplayer.Unified.Static
     AUTOGEN_RULES
         *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
         *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
@@ -54,3 +54,7 @@ if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
     set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_SERVER_PROJECTS AutomatedTesting)
 endif()
 
+# Add project to the list server projects to create the AutomatedTesting.UnifiedLauncher
+if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
+    set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_UNIFIED_PROJECTS AutomatedTesting)
+endif()

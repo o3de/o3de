@@ -357,8 +357,13 @@ namespace PhysX
         bool hit;
         {
             PHYSX_SCENE_READ_LOCK(GetScene());
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+            hit = physx::PxGeometryQuery::raycast(
+                start, unitDir, m_pxShape->getGeometry(), pose, worldSpaceRequest.m_distance, hitFlags, maxHits, &hitInfo);
+#else
             hit = physx::PxGeometryQuery::raycast(
                 start, unitDir, m_pxShape->getGeometry().any(), pose, worldSpaceRequest.m_distance, hitFlags, maxHits, &hitInfo);
+#endif
         }
 
         if (hit)
@@ -366,7 +371,7 @@ namespace PhysX
             // Fill actor and shape, as they won't be filled from PxGeometryQuery
             hitInfo.actor = static_cast<physx::PxRigidActor*>(m_attachedActor); // This cast is safe since GetHitFromPxHit() only uses PxActor:: functions
             hitInfo.shape = GetPxShape();
-            return SceneQueryHelpers::GetHitFromPxHit(hitInfo);
+            return SceneQueryHelpers::GetHitFromPxHit(hitInfo, hitInfo);
         }
         return AzPhysics::SceneQueryHit();
     }
@@ -394,13 +399,21 @@ namespace PhysX
     AZ::Aabb Shape::GetAabb(const AZ::Transform& worldTransform) const
     {
         PHYSX_SCENE_READ_LOCK(GetScene());
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry(), PxMathConvert(worldTransform) * m_pxShape->getLocalPose(), 1.0f));
+#else
         return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry().any(), PxMathConvert(worldTransform) * m_pxShape->getLocalPose(), 1.0f));
+#endif
     }
 
     AZ::Aabb Shape::GetAabbLocal() const
     {
         PHYSX_SCENE_READ_LOCK(GetScene());
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry(), m_pxShape->getLocalPose(), 1.0f));
+#else
         return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry().any(), m_pxShape->getLocalPose(), 1.0f));
+#endif
     }
 
     physx::PxScene* Shape::GetScene() const

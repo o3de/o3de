@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzFramework/PaintBrush/PaintBrush.h>
+#include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
 #include <GradientSignal/Components/ImageGradientModification.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
@@ -102,8 +103,8 @@ namespace GradientSignal
 
         // Non-serialized properties used by the Editor for display purposes.
 
-        //! True if we're currently modifying the image, false if not.
-        bool m_imageModificationActive = false;
+        //! The number of active image modification sessions.
+        int m_numImageModificationsActive = 0;
 
         //! Label to use for the image asset. This gets modified to show current asset loading/processing state.
         AZStd::string m_imageAssetPropertyLabel = "Image Asset";
@@ -120,6 +121,7 @@ namespace GradientSignal
         , private GradientRequestBus::Handler
         , private ImageGradientRequestBus::Handler
         , private ImageGradientModificationBus::Handler
+        , private AzFramework::PaintBrushNotificationBus::Handler
         , private GradientTransformNotificationBus::Handler
     {
     public:
@@ -162,27 +164,25 @@ namespace GradientSignal
         void StartImageModification() override;
         void EndImageModification() override;
         void GetPixelValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
-        void SetPixelValueByPosition(const AZ::Vector3& position, float value) override;
         void SetPixelValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values) override;
 
         void GetPixelIndicesForPositions(AZStd::span<const AZ::Vector3> positions, AZStd::span<PixelIndex> outIndices) const override;
         void GetPixelValuesByPixelIndex(AZStd::span<const PixelIndex> positions, AZStd::span<float> outValues) const override;
-        void SetPixelValueByPixelIndex(const PixelIndex& position, float value) override;
         void SetPixelValuesByPixelIndex(AZStd::span<const PixelIndex> positions, AZStd::span<const float> values) override;
 
-        void BeginBrushStroke(const AzFramework::PaintBrushSettings& brushSettings) override;
-        void EndBrushStroke() override;
-        bool IsInBrushStroke() const override;
-        void ResetBrushStrokeTracking() override;
-        void PaintToLocation(const AZ::Vector3& brushCenter, const AzFramework::PaintBrushSettings& brushSettings) override;
-        void SmoothToLocation(const AZ::Vector3& brushCenter, const AzFramework::PaintBrushSettings& brushSettings) override;
+        bool ImageIsModified() const;
 
-        AZStd::vector<float>* GetImageModificationBuffer();
-
+    protected:
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetImageAsset() const;
         void SetImageAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset);
 
-    protected:
+        AZStd::vector<float>* GetImageModificationBuffer();
+
+        // PaintBrushNotificationBus overrides...
+        void OnPaintModeBegin() override;
+        void OnPaintModeEnd() override;
+        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) const override;
+
         // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientTransform& newTransform) override;
 
@@ -261,14 +261,11 @@ namespace GradientSignal
         //! Temporary buffer for runtime modifications of the image data.
         AZStd::vector<float> m_modifiedImageData;
 
-        //! Logic for handling image modification requests from PaintBrush instances.
-        //! This is only created and active between StartImageModification / EndImageModification calls.
-        AZStd::unique_ptr<ImageGradientModifier> m_imageModifier;
+        //! Track whether or not any data has been modified.
+        bool m_imageIsModified = false;
 
-        //! An instance of a PaintBrush for image modifications that exists for use with the high-level paint APIs exposed
-        //! on the ImageGradientModificationBus. This is *only* used by the paint APIs on the bus - the Editor has its own instance
-        //! of a PaintBrush that it uses in conjunction with mouse tracking, manipulator drawing, etc.
-        //! This is only created and active between StartImageModification / EndImageModification calls.
-        AZStd::unique_ptr<AzFramework::PaintBrush> m_paintBrush;
+        //! Logic for handling image modification requests from PaintBrush instances.
+        //! This is only created and active between StartPaintSession / EndPaintSession calls.
+        AZStd::unique_ptr<ImageGradientModifier> m_imageModifier;
     };
 }
