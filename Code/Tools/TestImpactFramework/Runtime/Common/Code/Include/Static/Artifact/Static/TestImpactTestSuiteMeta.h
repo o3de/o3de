@@ -22,6 +22,6 @@ namespace TestImpact
     {
         AZStd::string m_name; //!< The name of the test suite.
         AZStd::chrono::milliseconds m_timeout = AZStd::chrono::milliseconds{ 0 }; //!< The timeout for the test suite time to run in.
-        SuiteLabelSet m_labelSet;
+        SuiteLabelSet m_labelSet; //!< The set of labels for this suite.
     };
 } // namespace TestImpact
