@@ -19,7 +19,6 @@ namespace AZ
     /// forward declarations
     struct MultiIndexedStableDynamicArrayMetrics;
 
-    template<size_t ElementsPerPage, class Allocator, typename... value_types>
     class MultiIndexedStableDynamicArrayHandle;
     
     using MultiIndexedStableDynamicArrayPageIndexType = size_t;
@@ -52,7 +51,7 @@ namespace AZ
 
         friend iterator;
         friend const_iterator;
-        friend MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>;
+        friend MultiIndexedStableDynamicArrayHandle;
 
         typedef Allocator allocator_type;
 
@@ -60,7 +59,7 @@ namespace AZ
 
     public:
 
-        using Handle = MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>;
+        using Handle = MultiIndexedStableDynamicArrayHandle;
 
         MultiIndexedStableDynamicArray() = default;
         explicit MultiIndexedStableDynamicArray(allocator_type allocator);
@@ -116,7 +115,8 @@ namespace AZ
         const_iterator cend() const;
 
         /// Access data via handle
-        //auto& GetElement(size_t rowIndex, Handle& handle);
+        template<size_t RowIndex>
+        AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>& GetData(Handle& handle);
 
     private:
 
@@ -192,7 +192,7 @@ namespace AZ
         iterator() = default;
         explicit iterator(Page* firstPage);
 
-        Handle operator*() const;
+        const this_type& operator*() const;
         template <size_t RowIndex>
         auto* GetItem() const;
 
@@ -248,7 +248,7 @@ namespace AZ
         pageIterator() = default;
         explicit pageIterator(Page* page);
 
-        Handle operator*() const;
+        const this_type& operator*() const;
         template<size_t RowIndex>
         auto* GetItem() const;
 
@@ -276,10 +276,10 @@ namespace AZ
     * quickly marked as free later. Since there is no ref counting, copy is not allowed, only move. When
     * a handle is used to free it's associated data it is marked as invalid.
     */
-    template<size_t ElementsPerPage, class Allocator, typename... value_types>
     class MultiIndexedStableDynamicArrayHandle
     {
-        friend class MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types>;
+        template<size_t ElementsPerPage, class Allocator, typename... value_types>
+        friend class MultiIndexedStableDynamicArray;
 
     public:
 
@@ -304,20 +304,18 @@ namespace AZ
         /// Returns true if this Handle doesn't contain a value (same as !IsValid()).
         bool IsNull() const;
 
-        /// Access the data associated with this handle from a particular row
-        template<size_t RowIndex>
-        auto* GetItem() const;
-
     private:
-
-        using PageType = typename MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::Page;
+        template<typename PageType>
         MultiIndexedStableDynamicArrayHandle(PageType* page, MultiIndexedStableDynamicArrayPageIndexType index);
 
         MultiIndexedStableDynamicArrayHandle(const MultiIndexedStableDynamicArrayHandle&) = delete;
 
         void Invalidate();
 
-        PageType* m_page = nullptr; ///< The page the data this Handle points to was allocated on.
+        using HandleDestructor = void (*)(void*);
+        /// Called for valid handles on delete so the underlying data can be removed from the StableDynamicArray
+        HandleDestructor m_destructorCallback = nullptr; 
+        void* m_page = nullptr; ///< The page the data this Handle points to was allocated on.
         MultiIndexedStableDynamicArrayPageIndexType m_index = MultiIndexedStableDynamicArrayInvalidPageIndex;
     };
     

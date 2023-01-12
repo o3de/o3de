@@ -69,8 +69,6 @@ namespace AZ
         TupleType& valuesTuple)
     {
         using DataType = AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>;
-        //DataType& item = page->GetItem<RowIndex>(pageElementIndex);
-        //item = AZStd::get<RowIndex>(valuesTuple);
         DataType* item = page->GetItem<RowIndex>(pageElementIndex);
         // must be copy constructable
         AZStd::Internal::construct<DataType*>::single(item, AZStd::get<RowIndex>(valuesTuple));
@@ -94,19 +92,12 @@ namespace AZ
     {
         constexpr auto tupleIndices = AZStd::make_index_sequence<RowCount>{};
         ConstructElementsInner<value_types...>(page, pageElementIndex, argumentTuple, tupleIndices);
-        //using DataType = AZStd::tuple_element_t<RowIndices, AZStd::tuple<value_types...>>;
-        //AZStd::tuple<value_types&...> itemReferences;
-        //(void*)indexSequence;
-        //((AZStd::get<RowIndices>(itemReferences) = page->GetItem<RowIndices>(pageElementIndex)), ...);
-        //((AZStd::get<RowIndices>(itemReferences) = AZStd::get<RowIndices>(AZStd::forward<AZStd::tuple<value_types...>>(valuesTuple))), ...);
     }
 
     template<typename TupleType, size_t RowIndex, typename PageType>
     static void DestructElement(PageType* page, MultiIndexedStableDynamicArrayPageIndexType pageElementIndex)
     {
         using DataType = AZStd::tuple_element_t<RowIndex, TupleType>;
-        //DataType& item = page->GetItem<RowIndex>(pageElementIndex);
-        //item.~DataType();
         DataType* item = page->GetItem<RowIndex>(pageElementIndex);
         item->~DataType();
     }
@@ -364,6 +355,14 @@ namespace AZ
         return page;
     }
 
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
+    template<size_t RowIndex>
+    auto MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::GetData(Handle& handle)
+        -> AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>&
+    {
+        Page* handlePage = static_cast<Page*>(handle.m_page);
+        return *handlePage->GetItem<RowIndex>(handle.m_index);
+    }
 
     // MultiIndexedStableDynamicArray::Page
 
@@ -458,10 +457,9 @@ namespace AZ
     }
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>
-        MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::iterator::operator*() const
+    auto MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::iterator::operator*() const -> const this_type&
     {
-        return MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>(m_page, m_itemIndex);
+        return *this;
     }
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
@@ -604,10 +602,9 @@ namespace AZ
     }
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...> MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::
-        pageIterator::operator*() const
+    auto MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::pageIterator::operator*() const -> const this_type&
     {
-        return MultiIndexedStableDynamicArrayHandle(m_page, m_itemIndex);
+        return *this;
     }
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
@@ -692,30 +689,32 @@ namespace AZ
     }
 
     // MultiIndexedStableDynamicArray::Handle
-
-    
-    template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>::MultiIndexedStableDynamicArrayHandle(
+    template<typename PageType>
+    MultiIndexedStableDynamicArrayHandle::MultiIndexedStableDynamicArrayHandle(
         PageType* page, MultiIndexedStableDynamicArrayPageIndexType index)
         : m_page(page)
         , m_index(index)
     {
+        // Store container type information in the non-capturing lambda callback so the Handle itself doesn't need it.
+        m_destructorCallback = [](void* typelessHandlePointer)
+        {
+            MultiIndexedStableDynamicArrayHandle* handle = static_cast<MultiIndexedStableDynamicArrayHandle*>(typelessHandlePointer);
+            static_cast<PageType*>(handle->m_page)->m_container->erase(*handle);
+        };        
     }
 
-    template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>::MultiIndexedStableDynamicArrayHandle(
+    MultiIndexedStableDynamicArrayHandle::MultiIndexedStableDynamicArrayHandle(
         MultiIndexedStableDynamicArrayHandle&& other)
     {
         *this = AZStd::move(other);
     }
 
-    template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>::~MultiIndexedStableDynamicArrayHandle()
+    MultiIndexedStableDynamicArrayHandle::~MultiIndexedStableDynamicArrayHandle()
     {
+        Free();
     }
 
-    template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    auto MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>::operator=(
+    auto MultiIndexedStableDynamicArrayHandle::operator=(
         MultiIndexedStableDynamicArrayHandle&& other)
         -> MultiIndexedStableDynamicArrayHandle&
     {
@@ -723,44 +722,35 @@ namespace AZ
         {
             Free();
             m_index = other.m_index;
+            m_destructorCallback = other.m_destructorCallback;
             m_page = other.m_page;
             other.Invalidate();
         }
         return *this;
     }
-    template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    void MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>::Free()
+
+    void MultiIndexedStableDynamicArrayHandle::Free()
     {
         if (IsValid())
         {
-            m_page->m_container->erase(*this);
+            m_destructorCallback(this);
         }
     }
 
-    template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    bool MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>::IsValid() const
+    bool MultiIndexedStableDynamicArrayHandle::IsValid() const
     {
         return m_index != MultiIndexedStableDynamicArrayInvalidPageIndex;
     }
 
-    template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    bool MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>::IsNull() const
+    bool MultiIndexedStableDynamicArrayHandle::IsNull() const
     {
         return m_index == MultiIndexedStableDynamicArrayInvalidPageIndex;
     }
 
-    template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    void MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>::Invalidate()
+    void MultiIndexedStableDynamicArrayHandle::Invalidate()
     {
         m_index = MultiIndexedStableDynamicArrayInvalidPageIndex;
+        m_destructorCallback = nullptr;
         m_page = nullptr;
     }
-
-    template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    template<size_t RowIndex>
-    auto* MultiIndexedStableDynamicArrayHandle<ElementsPerPage, Allocator, value_types...>::GetItem() const
-    {
-        return m_page->GetItem<RowIndex>(m_index);
-    }
-
 } // end namespace AZ
