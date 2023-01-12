@@ -74,9 +74,11 @@ namespace TestImpact
                     const auto suiteLabels = suite[Keys[SuiteLabelsKey]].GetArray();
                     for (const auto& label : suiteLabels)
                     {
+                        // Check to see if this test suite has a label in our exclude list
                         const auto labelString = label.GetString();
                         if (suiteLabelExcludeSet.contains(labelString))
                         {
+                            // Set the flag so we can break out of the parent loop
                             skipTest = true;
                             break;
                         }
