@@ -17,8 +17,9 @@ import sys
 
 from o3de import cmake, compatibility, manifest, project_properties, utils
 
-logger = logging.getLogger('o3de.enable_gem')
 logging.basicConfig(format=utils.LOG_FORMAT)
+logger = logging.getLogger('o3de.enable_gem')
+logger.setLevel(logging.INFO)
 
 
 def enable_gem_in_project(gem_name: str = None,

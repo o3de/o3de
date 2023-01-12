@@ -16,8 +16,9 @@ import pathlib
 
 from o3de import validation, utils, repo
 
-logger = logging.getLogger('o3de.manifest')
 logging.basicConfig(format=utils.LOG_FORMAT)
+logger = logging.getLogger('o3de.manifest')
+logger.setLevel(logging.INFO)
 
 # Directory methods
 
