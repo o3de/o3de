@@ -116,6 +116,9 @@ namespace Multiplayer
     AZ_CVAR(AZ::TimeMs, bg_captureTransportPeriod, AZ::TimeMs{1000}, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "How often in milliseconds to record transport metrics.");
 
+    AZ_CVAR(bool, sv_multithreadedConnectionUpdates, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "If true, the server will perform connection updates to clients on threads, which improves performance with large number of clients");
+
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         NetworkSpawnable::Reflect(context);
@@ -592,33 +595,31 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::UpdateConnections()
     {
-        if (GetAgentType() == MultiplayerAgentType::ClientServer || GetAgentType() == MultiplayerAgentType::DedicatedServer)
+        if (sv_multithreadedConnectionUpdates && (GetAgentType() == MultiplayerAgentType::ClientServer ||
+                                                  GetAgentType() == MultiplayerAgentType::DedicatedServer))
         {
             // Threaded update calls.
-            if (m_networkInterface->GetConnectionSet().GetConnectionCount() > 0)
+            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: UpdateConnections");
+
+            AZ::JobCompletion jobCompletion;
+
+            auto sendNetworkUpdates = [&jobCompletion](IConnection& connection)
             {
-                AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: UpdateConnections");
-
-                AZ::JobCompletion jobCompletion;
-
-                auto sendNetworkUpdates = [&jobCompletion](IConnection& connection)
-                {
-                    AZ::Job* job = AZ::CreateJobFunction([&connection]()
+                AZ::Job* job = AZ::CreateJobFunction([&connection]()
+                    {
+                        if (connection.GetUserData() != nullptr)
                         {
-                            if (connection.GetUserData() != nullptr)
-                            {
-                                IConnectionData* connectionData = static_cast<IConnectionData*>(connection.GetUserData());
-                                connectionData->Update();
-                            }
-                        }, true /*auto delete*/, nullptr);
+                            IConnectionData* connectionData = static_cast<IConnectionData*>(connection.GetUserData());
+                            connectionData->Update();
+                        }
+                    }, true /*auto delete*/, nullptr);
 
-                    job->SetDependent(&jobCompletion);
-                    job->Start();
-                };
+                job->SetDependent(&jobCompletion);
+                job->Start();
+            };
 
-                m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
-                jobCompletion.StartAndWaitForCompletion();
-            }
+            m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
+            jobCompletion.StartAndWaitForCompletion();
         }
         else // On clients (including the Editor) run in a single threaded mode to avoid issues in UI asset loading
         {
