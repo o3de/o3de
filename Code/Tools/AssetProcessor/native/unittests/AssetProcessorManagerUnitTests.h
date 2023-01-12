@@ -33,6 +33,8 @@ namespace AssetProcessor
         AZStd::string AbsProductPathToRelative(const QString& absolutePath);
         void VerifyProductPaths(const JobDetails& jobDetails);
 
+        void ProcessAssetBlockUntilComplete(QString& assetToProcess);
+
         QDir m_sourceRoot;
         QDir m_cacheRoot;
 

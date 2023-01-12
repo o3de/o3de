@@ -3241,6 +3241,11 @@ namespace AssetProcessor
 
     bool AssetDatabaseConnection::InsertFiles(FileDatabaseEntryContainer& entries)
     {
+        // Skip creating and committing a scoped transaction, if the entry list is empty.
+        if (entries.empty())
+        {
+            return true;
+        }
         ScopedTransaction transaction(m_databaseConnection);
 
         for (auto& entry : entries)

@@ -332,6 +332,7 @@ namespace AssetProcessor
         void ProcessFilesToExamineQueue();
         void CheckForIdle();
         void CheckMissingFiles();
+        void ProcessFingerprintClearRequest(AssetFingerprintClearRequest& request, AssetFingerprintClearResponse& response);
         void ProcessGetAssetJobsInfoRequest(AssetJobsInfoRequest& request, AssetJobsInfoResponse& response);
         void ProcessGetAssetJobLogRequest(const AssetJobLogRequest& request, AssetJobLogResponse& response);
         void ScheduleNextUpdate();

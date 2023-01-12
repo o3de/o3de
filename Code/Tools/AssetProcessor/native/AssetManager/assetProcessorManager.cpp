@@ -359,20 +359,27 @@ namespace AssetProcessor
 
     AssetFingerprintClearResponse AssetProcessorManager::ProcessFingerprintClearRequest(MessageData<AssetFingerprintClearRequest> messageData)
     {
-        SourceAssetReference sourceAsset;
         AssetFingerprintClearResponse response;
+        ProcessFingerprintClearRequest(*messageData.m_message, response);
+        return response;
+    }
 
-        if (QFileInfo(messageData.m_message->m_searchTerm.c_str()).isAbsolute())
+    void AssetProcessorManager::ProcessFingerprintClearRequest(
+        AssetFingerprintClearRequest& request, AssetFingerprintClearResponse& response)
+    {
+        SourceAssetReference sourceAsset;
+
+        if (QFileInfo(request.m_searchTerm.c_str()).isAbsolute())
         {
-            sourceAsset = SourceAssetReference(messageData.m_message->m_searchTerm.c_str());
+            sourceAsset = SourceAssetReference(request.m_searchTerm.c_str());
         }
         else
         {
-            QString absolutePath = m_platformConfig->FindFirstMatchingFile(messageData.m_message->m_searchTerm.c_str());
+            QString absolutePath = m_platformConfig->FindFirstMatchingFile(request.m_searchTerm.c_str());
 
             if (absolutePath.isEmpty())
             {
-                return response;
+                return;
             }
 
             sourceAsset = SourceAssetReference(absolutePath.toUtf8().constData());
@@ -385,12 +392,10 @@ namespace AssetProcessor
         if (!m_stateData->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source))
         {
             response.m_isSuccess = false;
-            return response;
+            return;
         }
 
         response.m_isSuccess = response.m_isSuccess && m_stateData->SetJobFingerprintsBySourceID(source.m_sourceID, 0);
-
-        return response;
     }
 
     //! A network request came in asking, for a given input asset, what the status is of any jobs related to that request
