@@ -68,9 +68,9 @@ class BaseTestImpact(ABC):
         self._suites = args.get(ARG_SUITES)
         self._label_excludes = args.get(ARG_LABEL_EXCLUDES)
 
-        # Compile the dash-separated concatenation of the ordered suites and labels to be used as a path component
-        self._suites_string = self._compile_multi_arg_string(self._suites)
-        self._label_excludes_string = self._compile_multi_arg_string(self._label_excludes)
+        # Compile the dash-separated concatenation of the ordered suites and labels to be used as path components
+        self._suites_string = self._compile_multi_value_arg_string(self._suites)
+        self._label_excludes_string = self._compile_multi_value_arg_string(self._label_excludes)
 
         self._config = self._parse_config_file(args.get(ARG_CONFIG))
         if not self._enabled:
@@ -141,15 +141,21 @@ class BaseTestImpact(ABC):
         args[ARG_REPORT] = self._report_file
         self._parse_arguments_to_runtime(args)
 
-    def _compile_multi_arg_string(self, multi_args):
-        num_args = len(multi_args)
-        multi_args_string = ""
-        for i in range(num_args):
-            multi_args_string += multi_args[i]
-            if i < num_args - 1:
-                multi_args_string += "-"
+    def _compile_multi_value_arg_string(self, multi_values):
+        """
+        Takes the multi values of a command line argument and returns a string with each value separated by a dash character.
 
-        return multi_args_string
+        @param multi_args: The multi values of the argument to compile as a dash-separated string.
+        """
+
+        num_values = len(multi_values)
+        multi_values_string = ""
+        for i in range(num_values):
+            multi_values_string += multi_values[i]
+            if i < num_values - 1:
+                multi_values_string += "-"
+
+        return multi_values_string
 
     def _parse_arguments_to_runtime(self, args):
         """

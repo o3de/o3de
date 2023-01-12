@@ -31,12 +31,12 @@ class PersistentStorageS3(PersistentStorage):
         """
         Initializes the persistent storage with the specified s3 bucket.
 
-        @param config:    The runtime config file to obtain the data file paths from.
-        @param suites_string:  The concatenated test suites string for which the historic data will be obtained for.
-        @param commit:    The commit hash for this build.
-        @param s3_bucket: The s3 bucket to use for storing nd retrieving historic data.
-        @param root_dir:  The root directory to use for the historic data object.
-        @branch branch:   The branch to retrieve the historic data for.
+        @param config:        The runtime config file to obtain the data file paths from.
+        @param suites_string: The concatenated test suites string for which the historic data will be obtained for.
+        @param commit:        The commit hash for this build.
+        @param s3_bucket:     The s3 bucket to use for storing nd retrieving historic data.
+        @param root_dir:      The root directory to use for the historic data object.
+        @branch branch:       The branch to retrieve the historic data for.
         """
 
         super().__init__(config, suites_string, commit, active_workspace, unpacked_coverage_data_file_path, previous_test_run_data_file_path, temp_workspace)
