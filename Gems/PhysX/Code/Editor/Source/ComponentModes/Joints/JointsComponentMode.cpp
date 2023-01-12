@@ -821,10 +821,10 @@ namespace PhysX
         menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToMaxTorqueSubMode", 6003);
         menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToDampingSubMode", 6004);
         menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToStiffnessSubMode", 6005);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToTwistLimitsSubMode", 6006);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSwingLimitsSubMode", 6007);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSnapPositionSubMode", 6008);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSnapRotationSubMode", 6009);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSnapPositionSubMode", 6006);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSnapRotationSubMode", 6007);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSwingLimitsSubMode", 6008);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToTwistLimitsSubMode", 6009);
     }
 
     void JointsComponentMode::Refresh()
