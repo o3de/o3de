@@ -788,30 +788,6 @@ namespace AZ
     //=========================================================================
     // Attribute
     //=========================================================================
-    template<class T>
-    EditContext::ClassBuilder*
-    EditContext::ClassBuilder::Attribute(Crc32 idCrc, T value)
-    {
-        if (!IsValid())
-        {
-            return this;
-        }
-
-        AZ_Assert(AZ::Internal::AttributeValueTypeClassChecker<T>::Check(m_classData->m_typeId, m_classData->m_azRtti), "Attribute (0x%08x) doesn't belong to '%s' class! You can't reference other classes!", idCrc, m_classData->m_name);
-        using ContainerType = AttributeContainerType<T>;
-        AZ_Assert(m_editElement, "You can attach attributes only to UiElements!");
-        if (m_editElement)
-        {
-            // Detect adding an EnumValue attribute to an enum which is reflected globally
-            const bool modifyingGlobalEnum = AZ::Internal::IsModifyingGlobalEnum(idCrc, *m_editElement);
-            AZ_Error("EditContext", !modifyingGlobalEnum, "You cannot add enum values to an enum which is globally reflected");
-            if (!modifyingGlobalEnum)
-            {
-                m_editElement->m_attributes.push_back(Edit::AttributePair(idCrc, aznew ContainerType(value)));
-            }
-        }
-        return this;
-    }
 
     namespace Edit
     {
@@ -825,6 +801,11 @@ namespace AZ
                 : m_value(static_cast<AZ::u64>(first))
                 , m_description(description)
             {
+            }
+
+            AZStd::pair<EnumType, AZStd::string> operator()() const
+            {
+                return { static_cast<EnumType>(m_value), m_description };
             }
 
             // Store using a u64 under the hood so this can be safely cast to any valid enum-range value
@@ -844,6 +825,105 @@ namespace AZ
             return enumValues;
         }
     } // namespace Edit
+
+    template <class T>
+    constexpr bool IsVectorOfEnumConstants_v = false;
+
+    template <class EnumType>
+    constexpr bool IsVectorOfEnumConstants_v<AZStd::vector<Edit::EnumConstant<EnumType>>> = true;
+
+    template <class T>
+    using InvocableReturnType = AZStd::conditional_t<AZStd::function_traits<T>::value, typename AZStd::function_traits<T>::return_type, T>;
+
+    template <class T>
+    constexpr bool IsInvocableThatReturnsVectorOfEnumConstants_v = IsVectorOfEnumConstants_v<InvocableReturnType<T>>;
+
+    template <class T>
+    struct EnumTypeFromVectorOfEnumConstants
+    {
+        using type = T;
+    };
+
+    template <class EnumType>
+    struct EnumTypeFromVectorOfEnumConstants<AZStd::vector<Edit::EnumConstant<EnumType>>>
+    {
+        using type = EnumType;
+    };
+
+    template <class T>
+    using EnumTypeFromVectorOfEnumConstants_t = typename EnumTypeFromVectorOfEnumConstants<T>::type;
+
+    // Calls invocable and replaces return type
+    template <class NewReturnType, class InvocableType>
+    struct ReplaceInvocableReturnType;
+
+    template <class NewReturnType, class OldReturnType, class... Args>
+    struct ReplaceInvocableReturnType<NewReturnType, OldReturnType(Args...)>
+    {
+        using type = NewReturnType(Args...);
+    };
+
+    template <class NewReturnType, class InvocableType>
+    using ReplaceInvocableReturnType_t = typename ReplaceInvocableReturnType<NewReturnType, InvocableType>::type;
+
+    template<class T>
+    EditContext::ClassBuilder*
+    EditContext::ClassBuilder::Attribute(Crc32 idCrc, T value)
+    {
+        if (!IsValid())
+        {
+            return this;
+        }
+
+        AZ_Assert(AZ::Internal::AttributeValueTypeClassChecker<T>::Check(m_classData->m_typeId, m_classData->m_azRtti), "Attribute (0x%08x) doesn't belong to '%s' class! You can't reference other classes!", idCrc, m_classData->m_name);
+        using ContainerType = AttributeContainerType<T>;
+
+        AZ_Assert(m_editElement, "You can attach attributes only to UiElements!");
+        if (m_editElement)
+        {
+            // Detect adding an EnumValue attribute to an enum which is reflected globally
+            const bool modifyingGlobalEnum = AZ::Internal::IsModifyingGlobalEnum(idCrc, *m_editElement);
+            AZ_Error("EditContext", !modifyingGlobalEnum, "You cannot add enum values to an enum which is globally reflected");
+            if (!modifyingGlobalEnum)
+            {
+                m_editElement->m_attributes.push_back(Edit::AttributePair(idCrc, aznew ContainerType(value)));
+
+                if constexpr (IsInvocableThatReturnsVectorOfEnumConstants_v<T>)
+                {
+                    if (idCrc == AZ::Edit::Attributes::EnumValues)
+                    {
+                        using EnumVectorType = AZStd::conditional_t<AZStd::function_traits<T>::value, typename AZStd::function_traits<T>::return_type, T>;
+                        using EnumType = EnumTypeFromVectorOfEnumConstants_t<EnumVectorType>;
+                        using FuncType = AZStd::conditional_t<AZStd::function_traits<T>::value, typename AZStd::function_traits<T>::function_type, T(T)>;
+                        using EnumValueWrapperFuncType = AZStd::function<ReplaceInvocableReturnType_t<AZStd::vector<AZStd::pair<EnumType, AZStd::string>>, FuncType>>;
+                        EnumValueWrapperFuncType EnumValuesWrapper = [value]([[maybe_unused]] auto&&... args) -> AZStd::vector<AZStd::pair<EnumType, AZStd::string>>
+                        {
+                            AZStd::vector<AZStd::pair<EnumType, AZStd::string>> genericValueVector;
+                            EnumVectorType enumConstantVector;
+                            if constexpr (AZStd::function_traits<T>::value)
+                            {
+                                enumConstantVector = AZStd::invoke(value, AZStd::forward<decltype(args)>(args)...);
+                            }
+                            else
+                            {
+                                enumConstantVector = value;
+                            }
+
+                            for (const Edit::EnumConstant<EnumType>& enumConstant : enumConstantVector)
+                            {
+                                genericValueVector.emplace_back(enumConstant());
+                            }
+
+                            return genericValueVector;
+                        };
+
+                        m_editElement->m_attributes.push_back(Edit::AttributePair(AZ::Edit::Attributes::GenericValueList, aznew AttributeInvocable(EnumValuesWrapper)));
+                    }
+                }
+            }
+        }
+        return this;
+    }
 
     //=========================================================================
     // EnumAttribute
