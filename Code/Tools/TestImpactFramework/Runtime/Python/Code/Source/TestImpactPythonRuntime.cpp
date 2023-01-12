@@ -320,7 +320,6 @@ namespace TestImpact
             return m_testEngine->InstrumentedRun(
                 testsTargets,
                 m_executionFailurePolicy,
-                m_integrationFailurePolicy,
                 m_testFailurePolicy,
                 m_targetOutputCapture,
                 testTargetTimeout,
@@ -438,7 +437,6 @@ namespace TestImpact
             return m_testEngine->InstrumentedRun(
                 testsTargets,
                 m_executionFailurePolicy,
-                m_integrationFailurePolicy,
                 m_testFailurePolicy,
                 m_targetOutputCapture,
                 testTargetTimeout,
@@ -593,7 +591,6 @@ namespace TestImpact
         const auto [result, testJobs] = m_testEngine->InstrumentedRun(
             includedTestTargets,
             m_executionFailurePolicy,
-            m_integrationFailurePolicy,
             m_testFailurePolicy,
             m_targetOutputCapture,
             testTargetTimeout,

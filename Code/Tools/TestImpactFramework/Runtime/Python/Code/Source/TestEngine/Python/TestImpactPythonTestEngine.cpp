@@ -149,7 +149,6 @@ namespace TestImpact
         InstrumentedRun(
         const AZStd::vector<const PythonTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
-        Policy::IntegrityFailure integrityFailurePolicy,
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
@@ -161,7 +160,7 @@ namespace TestImpact
         if (m_testRunnerPolicy == Policy::TestRunner::UseNullTestRunner)
         {
             // We don't delete the artifacts as they have been left by another test runner (e.g. ctest)
-            const auto result = RunTests(
+            return RunTests(
                 m_instrumentedNullTestRunner.get(),
                 jobInfos,
                 testTargets,
@@ -173,23 +172,10 @@ namespace TestImpact
                 globalTimeout,
                 callback,
                 std::nullopt);
-
-            if(const auto integrityErrors = GenerateIntegrityErrorString(result);
-                !integrityErrors.empty())
-            {
-                AZ_TestImpact_Eval(
-                        integrityFailurePolicy != Policy::IntegrityFailure::Abort,
-                        TestEngineException,
-                        integrityErrors);
-
-                AZ_Error("InstrumentedRun", false, integrityErrors.c_str());
-            }
-
-            return result;
         }
         else
         {
-            const auto result = RunTests(
+            return RunTests(
                     m_instrumentedTestRunner.get(),
                     jobInfos,
                     testTargets,
@@ -201,19 +187,6 @@ namespace TestImpact
                     globalTimeout,
                     callback,
                     std::nullopt);
-
-            if(const auto integrityErrors = GenerateIntegrityErrorString(result);
-                !integrityErrors.empty())
-            {
-                AZ_TestImpact_Eval(
-                        integrityFailurePolicy != Policy::IntegrityFailure::Abort,
-                        TestEngineException,
-                        integrityErrors);
-
-                AZ_Error("InstrumentedRun", false, integrityErrors.c_str());
-            }
-
-            return result;
         }
     }
 } // namespace TestImpact
