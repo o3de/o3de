@@ -108,7 +108,7 @@ def enable_gem_in_project(gem_name: str = None,
 
     # check compatibility
     if force:
-        logger.warning(f'Bypassing version compatibility check for {gem_json_data["gem_name"]}.')
+        logger.info(f'Bypassing version compatibility check for {gem_json_data["gem_name"]}.')
     else:
         # do not check compatibility if the project has not been registered with an engine 
         # because most gems depend on engine gems which would not be found 

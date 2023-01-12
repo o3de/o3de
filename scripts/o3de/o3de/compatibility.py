@@ -24,17 +24,17 @@ def get_project_engine_incompatible_objects(project_path:pathlib.Path, engine_pa
     :param engine_path: Optional path to the engine. If not specified, the current engine path is used
     """
     # use the specified engine path NOT necessarily engine the project is registered to
-    engine_path = engine_path if engine_path else manifest.get_this_engine_path()
+    engine_path = engine_path or manifest.get_this_engine_path()
     engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
     if not engine_json_data:
         logger.error(f'Failed to load engine.json data needed for compatibility check from {engine_path}. '
-            'Please verify the path is correct, the file exist and is formatted correctly.')
+            'Please verify the path is correct, the file exists and is formatted correctly.')
         return set('engine.json (missing)')
 
     project_json_data = manifest.get_project_json_data(project_path=project_path)
     if not project_json_data:
         logger.error(f'Failed to load project.json data needed for compatibility check from {project_path}. '
-            'Please verify the path is correct, the file exist and is formatted correctly.')
+            'Please verify the path is correct, the file exists and is formatted correctly.')
         return set('project.json (missing)')
 
     incompatible_objects = get_incompatible_objects_for_engine(project_json_data, engine_json_data)
@@ -66,7 +66,7 @@ def get_incompatible_gem_dependencies(gem_json_data:dict, all_gems_json_data:dic
     """
     # try to avoid gem compatibility checks which incur the cost of 
     # opening many gem.json files to get version information
-    gem_dependencies = gem_json_data.get('dependencies', None)
+    gem_dependencies = gem_json_data.get('dependencies')
     if not gem_dependencies:
         return set()
 
@@ -84,6 +84,7 @@ def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathli
     # early out if this project has no assigned engine
     engine_path = manifest.get_project_engine_path(project_path=project_path)
     if not engine_path:
+        logger.warning(f'Project at path {project_path} is not registered to an engine and compatibility cannot be checked.')
         return set()
 
     project_json_data = manifest.get_project_json_data(project_path=project_path)
@@ -126,15 +127,15 @@ def get_incompatible_objects_for_engine(object_json_data:dict, engine_json_data:
     :param object_json_data: the json data for the object 
     :param engine_json_data: the json data for the engine
     """
-    compatible_engines = object_json_data.get('compatible_engines','')
-    engine_api_version_specifiers = object_json_data.get('engine_api_dependencies','')
+    compatible_engines = object_json_data.get('compatible_engines')
+    engine_api_version_specifiers = object_json_data.get('engine_api_dependencies')
 
     # early out if there are no restrictions
     if not compatible_engines and not engine_api_version_specifiers:
         return set() 
 
     engine_name = engine_json_data['engine_name']
-    engine_version = engine_json_data.get('version','')
+    engine_version = engine_json_data.get('version')
 
     incompatible_objects = set()
     if compatible_engines:
@@ -148,7 +149,7 @@ def get_incompatible_objects_for_engine(object_json_data:dict, engine_json_data:
         incompatible_objects.add(f"{engine_name} {engine_version} does not match any version specifiers in the list of compatible engines: {compatible_engines}")
 
     if engine_api_version_specifiers:
-        engine_api_versions = engine_json_data.get('api_versions','')
+        engine_api_versions = engine_json_data.get('api_versions')
         if not engine_api_versions:
             # assume not compatible if no engine api version information is available
             return incompatible_objects.union(set(engine_api_version_specifiers))
@@ -194,7 +195,7 @@ def get_incompatible_gem_version_specifiers(gem_version_specifier_list:list, all
             # when no version specifier is provided we assume compatibility with any version
             continue
         
-        gem_version = all_gems_json_data[gem_name].get('version','')
+        gem_version = all_gems_json_data[gem_name].get('version')
         if gem_version and not has_compatible_version([gem_version_specifier], gem_name, gem_version):
             incompatible_gem_version_specifiers.add(f"{gem_version_specifier} (different version found ${gem_version})")
             continue
@@ -227,6 +228,7 @@ def has_compatible_version(name_and_version_specifier_list:list, object_name:str
     try:
         version = Version(object_version)
     except InvalidVersion as e:
+        logger.warning(f'Failed to parse version specifier {object_version}, please verify it is PEP 440 compatible.')
         return False
 
     for name_and_version_specifier in name_and_version_specifier_list:

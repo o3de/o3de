@@ -984,7 +984,7 @@ def add_parser_args(parser):
                         help='Remove entry.')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-f', '--force', action='store_true', default=False,
-                        help='For the update of the registration field being modified.')
+                        help='Force the update of the registration field being modified.')
     group.add_argument('-dry', '--dry-run', action='store_true', default=False,
                        help='Performs a dry run, reporting the result, but does not actually change anything.')
 
