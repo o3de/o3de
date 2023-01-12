@@ -47,7 +47,7 @@ namespace PhysX
         // JointsComponentModeRequestBus overrides ...
         void SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode) override;
         void ResetCurrentSubMode() override;
-        bool IsCurrentSubModeAvailable(JointsComponentModeCommon::SubComponentModes::ModeType mode) override;
+        bool IsCurrentSubModeAvailable(JointsComponentModeCommon::SubComponentModes::ModeType mode) const override;
 
         // EditorBaseComponentMode ...
         void Refresh() override;

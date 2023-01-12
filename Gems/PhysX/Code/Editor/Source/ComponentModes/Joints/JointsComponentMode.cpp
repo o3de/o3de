@@ -29,6 +29,46 @@ namespace PhysX
     static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
     static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
+    void SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType modeType)
+    {
+        auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+        AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+        componentModeCollectionInterface->EnumerateActiveComponents(
+            [modeType](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+            {
+                JointsComponentModeRequestBus::Event(
+                    entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode, modeType);
+            }
+        );
+    }
+
+    bool IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType modeType)
+    {
+        auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+        AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+        bool isComponentActive = false;
+        bool isAvailable = true;
+
+        componentModeCollectionInterface->EnumerateActiveComponents(
+            [&isComponentActive, &isAvailable, modeType](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+            {
+                isComponentActive = true;
+
+                bool isCurrentSubModeAvailable = false;
+                JointsComponentModeRequestBus::EventResult(
+                    isCurrentSubModeAvailable, entityComponentIdPair, &JointsComponentModeRequests::IsCurrentSubModeAvailable, modeType);
+
+                if (!isCurrentSubModeAvailable)
+                {
+                    isAvailable = false;
+                }
+            });
+
+        return isComponentActive && isAvailable;
+    }
+
     namespace SubModeData
     {
         const AZ::Crc32 SwitchToTranslationSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.switchtotranslationsubmode");
@@ -159,26 +199,7 @@ namespace PhysX
                 actionProperties,
                 []
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
-                        {
-                            auto componentModeCollectionInterface =
-                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                            componentModeCollectionInterface->EnumerateActiveComponents(
-                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                                {
-                                    JointsComponentModeRequestBus::Event(
-                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
-                                        JointsComponentModeCommon::SubComponentModes::ModeType::Translation);
-                                }
-                            );
-                        }
-                    );
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::Translation);
                 }
             );
 
@@ -199,26 +220,7 @@ namespace PhysX
                 actionProperties,
                 []
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
-                        {
-                            auto componentModeCollectionInterface =
-                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                            componentModeCollectionInterface->EnumerateActiveComponents(
-                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                                {
-                                    JointsComponentModeRequestBus::Event(
-                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
-                                        JointsComponentModeCommon::SubComponentModes::ModeType::Rotation);
-                                }
-                            );
-                        }
-                    );
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::Rotation);
                 }
             );
 
@@ -239,26 +241,7 @@ namespace PhysX
                 actionProperties,
                 []
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
-                        {
-                            auto componentModeCollectionInterface =
-                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                            componentModeCollectionInterface->EnumerateActiveComponents(
-                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                                {
-                                    JointsComponentModeRequestBus::Event(
-                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
-                                        JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce);
-                                }
-                            );
-                        }
-                    );
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce);
                 }
             );
 
@@ -266,32 +249,7 @@ namespace PhysX
                 actionIdentifier,
                 []()
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    bool isComponentActive = false;
-                    bool isAvailable = true;
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                        {
-                            isComponentActive = true;
-
-                            bool isCurrentSubModeAvailable = false;
-                            JointsComponentModeRequestBus::EventResult(
-                                isCurrentSubModeAvailable,
-                                entityComponentIdPair,
-                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
-                                JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce);
-
-                            if(!isCurrentSubModeAvailable)
-                            {
-                                isAvailable = false;
-                            }
-                        }
-                    );
-
-                    return isComponentActive && isAvailable;
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce);
                 }
             );
         }
@@ -310,26 +268,7 @@ namespace PhysX
                 actionProperties,
                 []
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
-                        {
-                            auto componentModeCollectionInterface =
-                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                            componentModeCollectionInterface->EnumerateActiveComponents(
-                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                                {
-                                    JointsComponentModeRequestBus::Event(
-                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
-                                        JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque);
-                                }
-                            );
-                        }
-                    );
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque);
                 }
             );
 
@@ -337,31 +276,7 @@ namespace PhysX
                 actionIdentifier,
                 []()
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    bool isComponentActive = false;
-                    bool isAvailable = true;
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                        {
-                            isComponentActive = true;
-
-                            bool isCurrentSubModeAvailable = false;
-                            JointsComponentModeRequestBus::EventResult(
-                                isCurrentSubModeAvailable,
-                                entityComponentIdPair,
-                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
-                                JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque);
-
-                            if (!isCurrentSubModeAvailable)
-                            {
-                                isAvailable = false;
-                            }
-                        });
-
-                    return isComponentActive && isAvailable;
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque);
                 }
             );
         }
@@ -380,26 +295,7 @@ namespace PhysX
                 actionProperties,
                 []
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
-                        {
-                            auto componentModeCollectionInterface =
-                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                            componentModeCollectionInterface->EnumerateActiveComponents(
-                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                                {
-                                    JointsComponentModeRequestBus::Event(
-                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
-                                        JointsComponentModeCommon::SubComponentModes::ModeType::Damping);
-                                }
-                            );
-                        }
-                    );
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::Damping);
                 }
             );
 
@@ -407,31 +303,7 @@ namespace PhysX
                 actionIdentifier,
                 []()
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    bool isComponentActive = false;
-                    bool isAvailable = true;
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                        {
-                            isComponentActive = true;
-
-                            bool isCurrentSubModeAvailable = false;
-                            JointsComponentModeRequestBus::EventResult(
-                                isCurrentSubModeAvailable,
-                                entityComponentIdPair,
-                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
-                                JointsComponentModeCommon::SubComponentModes::ModeType::Damping);
-
-                            if (!isCurrentSubModeAvailable)
-                            {
-                                isAvailable = false;
-                            }
-                        });
-
-                    return isComponentActive && isAvailable;
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::Damping);
                 }
             );
         }
@@ -450,26 +322,7 @@ namespace PhysX
                 actionProperties,
                 []
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
-                        {
-                            auto componentModeCollectionInterface =
-                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                            componentModeCollectionInterface->EnumerateActiveComponents(
-                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                                {
-                                    JointsComponentModeRequestBus::Event(
-                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
-                                        JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness);
-                                }
-                            );
-                        }
-                    );
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness);
                 }
             );
 
@@ -477,31 +330,7 @@ namespace PhysX
                 actionIdentifier,
                 []()
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    bool isComponentActive = false;
-                    bool isAvailable = true;
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                        {
-                            isComponentActive = true;
-
-                            bool isCurrentSubModeAvailable = false;
-                            JointsComponentModeRequestBus::EventResult(
-                                isCurrentSubModeAvailable,
-                                entityComponentIdPair,
-                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
-                                JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness);
-
-                            if (!isCurrentSubModeAvailable)
-                            {
-                                isAvailable = false;
-                            }
-                        });
-
-                    return isComponentActive && isAvailable;
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness);
                 }
             );
         }
@@ -520,26 +349,7 @@ namespace PhysX
                 actionProperties,
                 []
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
-                        {
-                            auto componentModeCollectionInterface =
-                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                            componentModeCollectionInterface->EnumerateActiveComponents(
-                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                                {
-                                    JointsComponentModeRequestBus::Event(
-                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
-                                        JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits);
-                                }
-                            );
-                        }
-                    );
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits);
                 }
             );
 
@@ -547,31 +357,7 @@ namespace PhysX
                 actionIdentifier,
                 []()
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    bool isComponentActive = false;
-                    bool isAvailable = true;
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                        {
-                            isComponentActive = true;
-
-                            bool isCurrentSubModeAvailable = false;
-                            JointsComponentModeRequestBus::EventResult(
-                                isCurrentSubModeAvailable,
-                                entityComponentIdPair,
-                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
-                                JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits);
-
-                            if (!isCurrentSubModeAvailable)
-                            {
-                                isAvailable = false;
-                            }
-                        });
-
-                    return isComponentActive && isAvailable;
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits);
                 }
             );
         }
@@ -590,26 +376,7 @@ namespace PhysX
                 actionProperties,
                 []
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
-                        {
-                            auto componentModeCollectionInterface =
-                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                            componentModeCollectionInterface->EnumerateActiveComponents(
-                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                                {
-                                    JointsComponentModeRequestBus::Event(
-                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
-                                        JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits);
-                                }
-                            );
-                        }
-                    );
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits);
                 }
             );
 
@@ -617,31 +384,7 @@ namespace PhysX
                 actionIdentifier,
                 []()
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    bool isComponentActive = false;
-                    bool isAvailable = true;
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                        {
-                            isComponentActive = true;
-
-                            bool isCurrentSubModeAvailable = false;
-                            JointsComponentModeRequestBus::EventResult(
-                                isCurrentSubModeAvailable,
-                                entityComponentIdPair,
-                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
-                                JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits);
-
-                            if (!isCurrentSubModeAvailable)
-                            {
-                                isAvailable = false;
-                            }
-                        });
-
-                    return isComponentActive && isAvailable;
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits);
                 }
             );
         }
@@ -660,26 +403,7 @@ namespace PhysX
                 actionProperties,
                 []
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
-                        {
-                            auto componentModeCollectionInterface =
-                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                            componentModeCollectionInterface->EnumerateActiveComponents(
-                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                                {
-                                    JointsComponentModeRequestBus::Event(
-                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
-                                        JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition);
-                                }
-                            );
-                        }
-                    );
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition);
                 }
             );
 
@@ -687,31 +411,7 @@ namespace PhysX
                 actionIdentifier,
                 []()
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    bool isComponentActive = false;
-                    bool isAvailable = true;
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                        {
-                            isComponentActive = true;
-
-                            bool isCurrentSubModeAvailable = false;
-                            JointsComponentModeRequestBus::EventResult(
-                                isCurrentSubModeAvailable,
-                                entityComponentIdPair,
-                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
-                                JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition);
-
-                            if (!isCurrentSubModeAvailable)
-                            {
-                                isAvailable = false;
-                            }
-                        });
-
-                    return isComponentActive && isAvailable;
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition);
                 }
             );
         }
@@ -730,26 +430,7 @@ namespace PhysX
                 actionProperties,
                 []
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
-                        {
-                            auto componentModeCollectionInterface =
-                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                            componentModeCollectionInterface->EnumerateActiveComponents(
-                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                                {
-                                    JointsComponentModeRequestBus::Event(
-                                        entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode,
-                                        JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation);
-                                }
-                            );
-                        }
-                    );
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation);
                 }
             );
 
@@ -757,31 +438,7 @@ namespace PhysX
                 actionIdentifier,
                 []()
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                    bool isComponentActive = false;
-                    bool isAvailable = true;
-
-                    componentModeCollectionInterface->EnumerateActiveComponents(
-                        [&isComponentActive, &isAvailable](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                        {
-                            isComponentActive = true;
-
-                            bool isCurrentSubModeAvailable = false;
-                            JointsComponentModeRequestBus::EventResult(
-                                isCurrentSubModeAvailable,
-                                entityComponentIdPair,
-                                &JointsComponentModeRequests::IsCurrentSubModeAvailable,
-                                JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation);
-
-                            if (!isCurrentSubModeAvailable)
-                            {
-                                isAvailable = false;
-                            }
-                        });
-
-                    return isComponentActive && isAvailable;
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation);
                 }
             );
         }
@@ -800,22 +457,14 @@ namespace PhysX
                 actionProperties,
                 []
                 {
-                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    auto componentModeCollectionInterface =
+                        AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
                     AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
 
                     componentModeCollectionInterface->EnumerateActiveComponents(
-                        [](const AZ::EntityComponentIdPair&, const AZ::Uuid&)
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
                         {
-                            auto componentModeCollectionInterface =
-                                AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
-                            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
-
-                            componentModeCollectionInterface->EnumerateActiveComponents(
-                                [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
-                                {
-                                    JointsComponentModeRequestBus::Event(entityComponentIdPair, &JointsComponentModeRequests::ResetCurrentSubMode);
-                                }
-                            );
+                            JointsComponentModeRequestBus::Event(entityComponentIdPair, &JointsComponentModeRequests::ResetCurrentSubMode);
                         }
                     );
                 }
@@ -1086,10 +735,9 @@ namespace PhysX
         }
     }
 
-    bool JointsComponentMode::IsCurrentSubModeAvailable(JointsComponentModeCommon::SubComponentModes::ModeType mode)
+    bool JointsComponentMode::IsCurrentSubModeAvailable(JointsComponentModeCommon::SubComponentModes::ModeType mode) const
     {
         return m_subModes.contains(mode);
-        
     }
 
     bool JointsComponentMode::HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)

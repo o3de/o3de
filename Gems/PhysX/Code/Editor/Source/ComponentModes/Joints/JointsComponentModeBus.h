@@ -24,7 +24,7 @@ namespace PhysX
         virtual void ResetCurrentSubMode() = 0;
 
         //! Returns true if the sub-mode should be available for the current component.
-        virtual bool IsCurrentSubModeAvailable(JointsComponentModeCommon::SubComponentModes::ModeType mode) = 0;
+        virtual bool IsCurrentSubModeAvailable(JointsComponentModeCommon::SubComponentModes::ModeType mode) const = 0;
 
     protected:
         ~JointsComponentModeRequests() = default;
