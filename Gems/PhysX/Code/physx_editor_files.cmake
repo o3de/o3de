@@ -106,6 +106,8 @@ set(FILES
     Editor/EditorJointConfiguration.h
     Editor/EditorViewportEntityPicker.cpp
     Editor/EditorViewportEntityPicker.h
+    Editor/KinematicWidget.cpp
+    Editor/KinematicWidget.h
 
     Editor/Source/Components/EditorSystemComponent.h
     Editor/Source/Components/EditorSystemComponent.cpp

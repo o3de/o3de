@@ -20,6 +20,8 @@
 #include <Source/NameConstants.h>
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>
+#include <AzFramework/Physics/PropertyTypes.h>
+#include <Editor/KinematicWidget.h>
 
 #include <LyViewPaneNames.h>
 
@@ -175,12 +177,17 @@ namespace PhysX
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_gravityEnabled,
                         "Gravity enabled", "When active, global gravity affects this rigid body.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetGravityVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_kinematic,
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AzPhysics::RigidBodyConfiguration::m_kinematic,
                         "Kinematic", "When active, the rigid body is not affected by gravity or other forces and is moved by script.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetKinematicVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled)
                         ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetKinematicTooltip)
-
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &AzPhysics::RigidBodyConfiguration::m_kinematicNew,
+                        "KinematicNew", "When active, the rigid body is not affected by gravity or other forces and is moved by script.")
+                        ->Attribute(AZ_CRC_CE("EditButton"), "hellko")
+                        //->ElementAttribute(AZ::Edit::UIHandlers::Handler, Physics::Edit::KinematicSelector) 
                     // Linear axis locking properties
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Linear Axis Locking")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)

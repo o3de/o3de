@@ -116,6 +116,7 @@ namespace Physics
             AzPhysics::CollisionLayers::Reflect(context);
             AzPhysics::CollisionGroups::Reflect(context);
             AzPhysics::CollisionConfiguration::Reflect(context);
+            //AzPhysics::Kinematic::Reflect(context);
             AzPhysics::CollisionEvent::Reflect(context);
             AzPhysics::TriggerEvent::Reflect(context);
             AzPhysics::SceneConfiguration::Reflect(context);
@@ -135,6 +136,14 @@ namespace Physics
             AzPhysics::SceneQuery::ReflectSceneQueryObjects(context);
             ReflectWindBus(context);
             ReflectCharacterBus(context);
+
+            /*if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
+            {
+                serializeContext->Enum<AzPhysics::Kinematic>()
+                    ->Version(1)
+                    ->Value("MaxTransfer", AzPhysics::Kinematic::A)
+                    ->Value("MemoryAlignment", AzPhysics::Kinematic::B);
+            }*/
         }
     }
 

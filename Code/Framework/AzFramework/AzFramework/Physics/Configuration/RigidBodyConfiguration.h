@@ -21,6 +21,48 @@ namespace AZ
 
 namespace AzPhysics
 {
+    //class Kinematic
+    //{
+    //public:
+    //    AZ_CLASS_ALLOCATOR_DECL;
+    //    AZ_TYPE_INFO(Kinematic, "{9B4159A7-F1E3-4C92-A0C2-C3863321B063}");
+    //    static void Reflect(AZ::ReflectContext* context);
+
+    //    static const Kinematic Default; //!< Default collision layer, 0.
+
+    //    //! Construct a layer with the given index.
+    //    //! @param index The index of the layer. Must be between 0 - CollisionLayers::MaxCollisionLayers. Default CollisionLayer::Default.
+    //    Kinematic(AZ::u8 index = Default.GetIndex());
+
+    //    //! Construct a layer with the given name.
+    //    //! This will lookup the layer name to retrieve the index. If not found will set the index to CollisionLayer::Default.
+    //    //! @param layername The name of the layer.
+    //    //Kinematic(const AZStd::string& layerName);
+
+    //    //! Get the index of this layer.
+    //    //! Index will be between 0 - CollisionLayers::MaxCollisionLayers
+    //    //! @return The layers index.
+    //    AZ::u8 GetIndex() const;
+
+    //    //! Set the index of this layer.
+    //    //! @param index The index to set. Must be between 0 - CollisionLayers::MaxCollisionLayers
+    //    void SetIndex(AZ::u8 index);
+
+    //    //! Get the Layer index represented as a bitmask.
+    //    //! @return A bitmask with the layer index bit toggled on.
+    //    //AZ::u64 GetMask() const;
+
+    //    bool operator==(const Kinematic& other) const;
+    //    bool operator!=(const Kinematic& other) const;
+
+    //private:
+    //    AZ::u8 m_index;
+    //};
+    enum class Kinematic2
+    {
+        A,
+        B
+    };
     //! Configuration used to Add Rigid bodies to a Scene.
     struct RigidBodyConfiguration
         : public AzPhysics::SimulatedBodyConfiguration
@@ -57,6 +99,7 @@ namespace AzPhysics
         bool m_interpolateMotion = false;
         bool m_gravityEnabled = true;
         bool m_kinematic = false;
+        Kinematic2 m_kinematicNew = Kinematic2::B;
         bool m_ccdEnabled = false; //!< Whether continuous collision detection is enabled.
         float m_ccdMinAdvanceCoefficient = 0.15f; //!< Coefficient affecting how granularly time is subdivided in CCD.
         bool m_ccdFrictionEnabled = false; //!< Whether friction is applied when resolving CCD collisions.
