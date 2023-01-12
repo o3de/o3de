@@ -21,11 +21,6 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace
-{
-    // the starting order in the file for gems.
-    const int g_gemStartingOrder = 100;
-}
 
 namespace AssetProcessor
 {
