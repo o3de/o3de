@@ -68,6 +68,7 @@ ly_add_target(
 # Clients and servers use the above EMotionFX module
 ly_create_alias(NAME EMotionFX.Clients NAMESPACE Gem TARGETS EMotionFX)
 ly_create_alias(NAME EMotionFX.Servers NAMESPACE Gem TARGETS EMotionFX)
+ly_create_alias(NAME EMotionFX.Unified NAMESPACE Gem TARGETS EMotionFX)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     

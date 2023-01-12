@@ -76,10 +76,12 @@ ly_add_target(
 # active in Clients or Servers by default, delete one of both of the following lines:
 ly_create_alias(NAME Compression.Clients NAMESPACE Gem TARGETS Gem::Compression)
 ly_create_alias(NAME Compression.Servers NAMESPACE Gem TARGETS Gem::Compression)
+ly_create_alias(NAME Compression.Unified NAMESPACE Gem TARGETS Gem::Compression)
 
 # For the Client and Server variants of Compression Gem, an alias to the Compression.API target will be made
 ly_create_alias(NAME Compression.Clients.API NAMESPACE Gem TARGETS Gem::Compression.API)
 ly_create_alias(NAME Compression.Servers.API NAMESPACE Gem TARGETS Gem::Compression.API)
+ly_create_alias(NAME Compression.Unified.API NAMESPACE Gem TARGETS Gem::Compression.API)
 
 # If we are on a host platform, we want to add the host tools targets like the Compression.Editor MODULE target
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
