@@ -388,7 +388,6 @@ void MainWindow::Activate()
     // Asset view
     m_sourceAssetTreeFilterModel = new AssetProcessor::SourceAssetTreeFilterModel(this);
     m_sourceModel = new AssetProcessor::SourceAssetTreeModel(m_sharedDbConnection, this);
-    m_sourceModel->Reset();
     m_sourceAssetTreeFilterModel->setSourceModel(m_sourceModel);
     ui->SourceAssetsTreeView->setModel(m_sourceAssetTreeFilterModel);
     ui->SourceAssetsTreeView->setColumnWidth(aznumeric_cast<int>(AssetTreeColumns::Extension), 80);
@@ -399,7 +398,6 @@ void MainWindow::Activate()
     m_intermediateAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
     m_intermediateModel = new AssetProcessor::SourceAssetTreeModel(m_sharedDbConnection, this);
     m_intermediateModel->SetOnlyShowIntermediateAssets();
-    m_intermediateModel->Reset();
     m_intermediateAssetTreeFilterModel->setSourceModel(m_intermediateModel);
     ui->IntermediateAssetsTreeView->setModel(m_intermediateAssetTreeFilterModel);
     connect(
@@ -411,7 +409,6 @@ void MainWindow::Activate()
 
     m_productAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
     m_productModel = new AssetProcessor::ProductAssetTreeModel(m_sharedDbConnection, this);
-    m_productModel->Reset();
     m_productAssetTreeFilterModel->setSourceModel(m_productModel);
     ui->ProductAssetsTreeView->setModel(m_productAssetTreeFilterModel);
     ui->ProductAssetsTreeView->setColumnWidth(aznumeric_cast<int>(AssetTreeColumns::Extension), 80);
@@ -493,6 +490,23 @@ void MainWindow::Activate()
         &MainWindow::ShowIncomingProductDependenciesContextMenu);
 
     SetupAssetSelectionCaching();
+    // the first time we open that panel we can refresh it.
+    m_connectionForResettingAssetsView = connect(
+        ui->dialogStack,
+        &QStackedWidget::currentChanged,
+        this,
+        [&](int index)
+        {
+            if (index == static_cast<int>(DialogStackIndex::Assets))
+            {
+                // the first time we show the asset window, reset the model since its so expensive to do on every startup
+                // and many times, the user does not even go to that panel.
+                m_sourceModel->Reset();
+                m_intermediateModel->Reset();
+                m_productModel->Reset();
+                QObject::disconnect(m_connectionForResettingAssetsView);
+            }
+        });
 
     //Log View
     m_loggingPanel = ui->LoggingPanel;

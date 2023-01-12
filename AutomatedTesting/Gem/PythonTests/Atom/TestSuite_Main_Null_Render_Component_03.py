@@ -12,7 +12,6 @@ from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.skipif(ly_test_tools.LINUX, reason="https://github.com/o3de/o3de/issues/13930")
 class TestAutomation(EditorTestSuite):
 
     @pytest.mark.test_case_id("C32078125")
@@ -36,6 +35,7 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_PostFXShapeWeightModifierAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_PostFxShapeWeightModifierAdded as test_module
 
+    @pytest.mark.skipif(ly_test_tools.LINUX, reason="https://github.com/o3de/o3de/issues/14008")
     @pytest.mark.test_case_id("C32078128")
     class AtomEditorComponents_ReflectionProbeAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_ReflectionProbeAdded as test_module

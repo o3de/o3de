@@ -177,6 +177,12 @@ namespace AzToolsFramework
             mouseInteraction);
     }
 
+    void PaintBrushManipulator::InvalidateImpl()
+    {
+        m_innerCircle->Invalidate(GetManipulatorManagerId());
+        m_outerCircle->Invalidate(GetManipulatorManagerId());
+    }
+
     void PaintBrushManipulator::SetView(
         AZStd::shared_ptr<ManipulatorViewProjectedCircle> innerCircle, AZStd::shared_ptr<ManipulatorViewProjectedCircle> outerCircle)
     {

@@ -41,13 +41,17 @@ easyprocess==0.2.8 \
     # via pyscreenshot
 exceptiongroup==1.0.4 \
     --hash=sha256:542adf9dea4055530d6e1279602fa5cb11dab2395fa650b8674eaec35fc4a828
-gitdb2==2.0.6 \
-    --hash=sha256:1b6df1433567a51a4a9c1a5a0de977aa351a405cc56d7d35f3388bad1f630350 \
-    --hash=sha256:96bbb507d765a7f51eb802554a9cfe194a174582f772e0d89f4e87288c288b7b \
+gitdb==4.0.10 \
+    --hash=sha256:6eb990b69df4e15bad899ea868dc46572c3f75339735663b81de79b06f17eb9a \
+    --hash=sha256:c286cf298426064079ed96a9e4a9d39e7f3e9bf15ba60701e95f5492f28415c7
     # via gitpython
-gitpython==2.1.15 \
-    --hash=sha256:23b4de99c5fc1564701301cead04e16aa3e47019034668327206d1b52e1e54f7 \
-    --hash=sha256:838c38d882a97b2fd146dbd4eb9baaf857cb65ebaa64e4c06fca48aaa491e1c6 \
+smmap==5.0.0 \
+    --hash=sha256:2aba19d6a040e78d8b09de5c57e96207b09ed71d8e55ce0959eeee6c8e190d94 \
+    --hash=sha256:c840e62059cd3be204b0c9c9f74be2c09d5648eddd4580d9314c3ecde0b30936
+    # via gitdb
+gitpython==3.1.30 \
+    --hash=sha256:769c2d83e13f5d938b7688479da374c4e3d49f71549aaf462b646db9602ea6f8 \
+    --hash=sha256:cd455b0000615c60e286208ba540271af9fe531fa6a87cc590a7298785ab2882 \
     # via -r requirements.in
 idna==2.9 \
     --hash=sha256:7588d1c14ae4c77d74036e8c22ff447b26d0fde8f007354fd48a7814db15b7cb \
@@ -313,14 +317,6 @@ six==1.13.0 \
     --hash=sha256:1f1b7d42e254082a9db6279deae68afb421ceba6158efa6131de7b3003ee93fd \
     --hash=sha256:30f610279e8b2578cab6db20741130331735c781b56053c59c4076da27f06b66 \
     # via -r .\requirements.txt, packaging, python-dateutil
-smmap2==3.0.1 \
-    --hash=sha256:0cb6ea470b1ad9a65a02ca7f4c7ae601861f7dd24a43812ca51cfca2892bb524 \
-    --hash=sha256:44cc8bdaf96442dbb9a8e2e14377d074b3d0eea292eee3c95c8c449b6c92c557 \
-    # via gitdb2
-smmap==3.0.5 \
-    --hash=sha256:7bfcf367828031dc893530a29cb35eb8c8f2d7c8f2d0989354d75d24c8573714 \
-    --hash=sha256:84c2751ef3072d4f6b2785ec7ee40244c6f45eb934d9e543e2c51f1bd3d54c50 \
-    # via smmap2
 urllib3==1.26.8 \
     --hash=sha256:000ca7f471a233c2251c6c7023ee85305721bfdf18621ebff4fd17a8653427ed \
     --hash=sha256:0e7c33d9a63e7ddfcb86780aac87befc2fbddf46c58dbb487e0855f7ceec283c \
