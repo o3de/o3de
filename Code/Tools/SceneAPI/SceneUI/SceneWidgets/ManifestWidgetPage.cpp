@@ -21,6 +21,7 @@
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
+#include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidgetPage.h>
@@ -472,7 +473,7 @@ namespace AZ
             void ManifestWidgetPage::AddObjects(AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>& objects)
             {
                 ManifestWidget* parent = ManifestWidget::FindRoot(this);
-                AZ_Assert(parent, "ManifestWidgetPage isn't docked in a ManifestWidget.");
+                AZ_Error(SceneAPI::Utilities::ErrorWindow, parent, "ManifestWidgetPage isn't docked in a ManifestWidget.");
                 if (!parent)
                 {
                     return;
@@ -491,9 +492,12 @@ namespace AZ
                     }
                     if (!manifest.AddEntry(object))
                     {
-                        AZ_Assert(false, "Unable to add new object to manifest.");
+                        AZ_Error(SceneAPI::Utilities::ErrorWindow, false, "Unable to add new object to manifest.");
                     }
-                    AddObject(object);
+                    else
+                    {
+                        AddObject(object);
+                    }
                 }
                 RefreshPage();
             }
