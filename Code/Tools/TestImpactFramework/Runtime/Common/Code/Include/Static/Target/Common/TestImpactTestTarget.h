@@ -31,7 +31,10 @@ namespace TestImpact
         //! Returns the namespace this test target resides in (if any).
         const AZStd::string& GetNamespace() const;
 
+        //! Returns the suite label set.
+        const SuiteLabelSet& GetSuiteLabelSet() const;
+
     private:
-        TestTargetMeta testTargetMeta;
+        TestTargetMeta m_testTargetMeta;
     };
 } // namespace TestImpact

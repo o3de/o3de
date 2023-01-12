@@ -38,12 +38,17 @@ namespace TestImpact
     class TestTargetExclusionList;
 
     //! Callback for a test sequence that isn't using test impact analysis to determine selected tests.
-    //! @parm suiteType The test suite to select tests from.
+    //! @parm suiteSet The test suites to select tests from.
+    //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
     //! @param tests The tests that will be run for this sequence.
-    using TestSequenceStartCallback = AZStd::function<void(SuiteType suiteType, const Client::TestRunSelection& tests)>;
+    using TestSequenceStartCallback = AZStd::function<void(
+        const SuiteSet& suiteSet,
+        const SuiteLabelExcludeSet& suiteLabelExcludeSet,
+        const Client::TestRunSelection& tests)>;
 
     //! Callback for a test sequence using test impact analysis.
-    //! @parm suiteType The test suite to select tests from.
+    //! @parm suiteSet The test suites suite to select tests from.
+    //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
     //! @param selectedTests The tests that have been selected for this run by test impact analysis.
     //! @param discardedTests The tests that have been rejected for this run by test impact analysis. 
     //! @param draftedTests The tests that have been drafted in for this run due to requirements outside of test impact analysis
@@ -52,13 +57,15 @@ namespace TestImpact
     //! These tests will be run with coverage instrumentation.
     //! @note discardedTests and draftedTests may contain overlapping tests.
     using ImpactAnalysisTestSequenceStartCallback = AZStd::function<void(
-        SuiteType suiteType,
+        const SuiteSet& suiteSet,
+        const SuiteLabelExcludeSet& suiteLabelExcludeSet,
         const Client::TestRunSelection& selectedTests,
         const AZStd::vector<AZStd::string>& discardedTests,
         const AZStd::vector<AZStd::string>& draftedTests)>;
 
     //! Callback for a test sequence using test impact analysis.
-    //! @parm suiteType The test suite to select tests from.
+    //! @parm suiteSet The test suites to select tests from.
+    //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
     //! @param selectedTests The tests that have been selected for this run by test impact analysis.
     //! @param discardedTests The tests that have been rejected for this run by test impact analysis.
     //! These tests will not be run without coverage instrumentation unless there is an entry in the draftedTests list.
@@ -67,7 +74,8 @@ namespace TestImpact
     //! to execute previously).
     //! @note discardedTests and draftedTests may contain overlapping tests.
     using SafeImpactAnalysisTestSequenceStartCallback = AZStd::function<void(
-        SuiteType suiteType,
+        const SuiteSet& suiteSet,
+        const SuiteLabelExcludeSet& suiteLabelExcludeSet,
         const Client::TestRunSelection& selectedTests,
         const Client::TestRunSelection& discardedTests,
         const AZStd::vector<AZStd::string>& draftedTests)>;
