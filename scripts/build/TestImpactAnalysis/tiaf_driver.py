@@ -11,12 +11,16 @@ import mars_utils
 import sys
 import pathlib
 import traceback
-import re
 from test_impact import NativeTestImpact, PythonTestImpact
 from tiaf_logger import get_logger
 
 logger = get_logger(__file__)
 
+class PruneAndSortMultiValues(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+            # Remove the suite duplicates and sort alphabetically
+            values = sorted(set(values), key = lambda x: x[1])
+            setattr(namespace, self.dest, values)
 
 def parse_args():
     def valid_file_path(value):
@@ -99,9 +103,20 @@ def parse_args():
 
     # Test suite
     parser.add_argument(
-        '--suite',
-        help="Test suite to run",
-        required=True
+        '--suites',
+        help="Test suites to run",
+        nargs='+',
+        action=PruneAndSortMultiValues,
+        required=True,
+    )
+
+    # Test label excludes
+    parser.add_argument(
+        '--label-excludes',
+        help="Test suite labels to exclude if matched",
+        nargs='+',
+        action=PruneAndSortMultiValues,
+        required=False
     )
 
     # Test failure policy
@@ -191,6 +206,11 @@ def main(args: dict):
     try:
         tiaf_class = SUPPORTED_RUNTIMES[args.pop("runtime_type")]
         tiaf = tiaf_class(args)
+
+        if not tiaf.enabled:
+            logger.info("TIAF has been disabled for this runtime type.")
+            sys.exit(0)
+
         tiaf_result = tiaf.run()
         if args.get('mars_index_prefix'):
             logger.info("Transmitting report to MARS...")
