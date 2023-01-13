@@ -1872,7 +1872,7 @@ namespace AssetProcessor
 
     void PlatformConfiguration::AddGemScanFolders(const AZStd::vector<AzFramework::GemInfo>& gemInfoList)
     {
-        // If the gem is project-relative, make adjustments to it's priority order based on registry settings:
+        // If the gem is project-relative, make adjustments to its priority order based on registry settings:
         // /Amazon/AssetProcessor/Settings/GemScanFolderStartingPriorityOrder
         // /Amazon/AssetProcessor/Settings/ProjectRelativeGemsScanFolderPriority
         // See <o3de-root>/Registry/AssetProcessorPlatformConfig.setreg for more information.
