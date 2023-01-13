@@ -60,15 +60,34 @@ namespace AZ
         {
             Device& device = GetDevice();
             AZStd::vector<const Scope*> mergedScopes;
+            const Scope* scopePrev = nullptr;
+            const Scope* scopeNext = nullptr;
+            const AZStd::vector<RHI::Scope*>& scopes = frameGraph.GetScopes();
+
 #if defined(AZ_FORCE_CPU_GPU_INSYNC)
             // Forces all scopes to issue a dedicated merged scope group with one command list.
             // This will ensure that the Execute is done on only one scope and if an error happens
             // we can be sure about the work gpu was working on before the crash.
-            for (const RHI::Scope* scopeBase : frameGraph.GetScopes())
+            for (auto it = scopes.begin(); it != scopes.end(); ++it)
             {
-                mergedScopes.push_back(static_cast<const Scope*>(scopeBase));
-                FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
-                multiScopeContextGroup->Init(device, AZStd::move(mergedScopes));           
+                const Scope& scope = *static_cast<const Scope*>(*it);
+                auto nextIter = it + 1;
+                scopeNext = nextIter != scopes.end() ? static_cast<const Scope*>(*nextIter) : nullptr;
+                const bool subpassGroup = (scopeNext && scopeNext->GetFrameGraphGroupId() == scope.GetFrameGraphGroupId()) ||
+                                          (scopePrev && scopePrev->GetFrameGraphGroupId() == scope.GetFrameGraphGroupId());
+                
+                if (subpassGroup)
+                {
+                    FrameGraphExecuteGroup* scopeContextGroup = AddGroup<FrameGraphExecuteGroup>();
+                    scopeContextGroup->Init(device, scope, 1, GetJobPolicy());
+                }
+                else
+                {
+                    mergedScopes.push_back(&scope);
+                    FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
+                    multiScopeContextGroup->Init(device, AZStd::move(mergedScopes));
+                }
+                scopePrev = &scope;
             }
 #else
             
@@ -76,9 +95,6 @@ namespace AZ
             uint32_t mergedGroupCost = 0;
             uint32_t mergedSwapchainCount = 0;
 
-            const Scope* scopePrev = nullptr;
-            const Scope* scopeNext = nullptr;
-            const AZStd::vector<RHI::Scope*>& scopes = frameGraph.GetScopes();
             for (auto it = scopes.begin(); it != scopes.end(); ++it)
             {
                 const Scope& scope = *static_cast<const Scope*>(*it);
