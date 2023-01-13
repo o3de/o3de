@@ -293,10 +293,8 @@ namespace UnitTest
 
         AZ::IO::Path engineRootPath;
         m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-        AZ::IO::Path carPrefabFilepath(engineRootPath);
-        carPrefabFilepath.Append(carPrefabName);
-        AZ::IO::Path wheelPrefabFilepath(engineRootPath);
-        wheelPrefabFilepath.Append(wheelPrefabName);
+        AZ::IO::Path carPrefabFilepath = engineRootPath / carPrefabName;
+        AZ::IO::Path wheelPrefabFilepath = engineRootPath / wheelPrefabName;
 
         // Create Car prefab hierarchy
         AZ::EntityId tireEntityId = CreateEditorEntityUnderRoot(tireEntityName);
@@ -349,7 +347,7 @@ namespace UnitTest
 
         // Find the Wheel instance under the focused Car instance
         AZ::EntityId wheelInstanceContainerIdInFocusedCar;
-        auto focusedCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(focusedCarContainerId);
+        InstanceOptionalReference focusedCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(focusedCarContainerId);
         focusedCarInstance->get().GetNestedInstances(
             [&wheelInstanceContainerIdInFocusedCar, wheelInstanceAliasInFocusedCar](AZStd::unique_ptr<Instance>& nestedInstance)
             {
@@ -364,5 +362,14 @@ namespace UnitTest
         // Focus on the Wheel instance
         focusResult = prefabFocusPublicInterface->FocusOnOwningPrefab(wheelInstanceContainerIdInFocusedCar);
         EXPECT_TRUE(focusResult.IsSuccess());
+
+        // Propagate changes after the focus change
+        ProcessDeferredUpdates();
+
+        // Verify that the parent of the wheel container entity is valid
+        AZ::EntityId focusedWheelContainerId = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+        AZ::EntityId parentEntityId;
+        AZ::TransformBus::EventResult(parentEntityId, focusedWheelContainerId, &AZ::TransformInterface::GetParentId);
+        EXPECT_TRUE(parentEntityId.IsValid());
     }
 } // namespace UnitTest
