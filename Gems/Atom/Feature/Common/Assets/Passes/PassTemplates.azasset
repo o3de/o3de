@@ -551,7 +551,7 @@
             {
                 "Name": "WhiteBalanceTemplate",
                 "Path": "Passes/WhiteBalance.pass"
-             }
+            },
             {
                 "Name": "VignetteTemplate",
                 "Path": "Passes/Vignette.pass"
