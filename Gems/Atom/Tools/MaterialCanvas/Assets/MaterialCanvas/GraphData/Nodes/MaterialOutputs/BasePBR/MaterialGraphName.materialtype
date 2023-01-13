@@ -1,8 +1,6 @@
 {
-    "description": "Material Type with properties used to define Base PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
+    "description": "MaterialGraphName Material Type Template.",
     "version": 1,
-    "propertyLayout": {
-    },
     "shaders": [
         {
             "file": "./MaterialGraphName_ForwardPass.shader",

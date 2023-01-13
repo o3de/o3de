@@ -3,7 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{9E670370-6832-483A-8195-B35E8DF0863C}",
+        "id": "{B352A2E4-D6A6-4178-9406-57716051024F}",
         "category": "Material Outputs",
         "title": "Base PBR",
         "titlePaletteName": "MaterialOutputNodeTitlePalette",

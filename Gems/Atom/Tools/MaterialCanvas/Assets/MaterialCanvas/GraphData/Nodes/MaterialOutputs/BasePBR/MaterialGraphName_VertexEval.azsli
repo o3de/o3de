@@ -31,7 +31,7 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     float3 vertexNormal, vertexTangent, vertexBitangent;
     ConstructTBN(normal, tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
 
-    #define O3DE_MC_POSITION IN.m_position
+    #define O3DE_MC_POSITION position
     #define O3DE_MC_UV(index) (index == 0 ? uv0 : uv1);
     #define O3DE_MC_NORMAL vertexNormal
     #define O3DE_MC_TANGENT vertexTangent

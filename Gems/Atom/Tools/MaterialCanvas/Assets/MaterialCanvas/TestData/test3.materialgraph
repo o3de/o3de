@@ -88,6 +88,17 @@
                         },
                         {
                             "Key": {
+                                "m_name": "inEnableNormal"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": false
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
                                 "m_name": "inEnablePunctualLights"
                             },
                             "Value": {
@@ -138,7 +149,18 @@
                         },
                         {
                             "Key": {
-                                "m_name": "inEmissive"
+                                "m_name": "inMetallic"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 0.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inNormal"
                             },
                             "Value": {
                                 "m_value": {
@@ -148,17 +170,6 @@
                                         0.0,
                                         0.0
                                     ]
-                                }
-                            }
-                        },
-                        {
-                            "Key": {
-                                "m_name": "inMetallic"
-                            },
-                            "Value": {
-                                "m_value": {
-                                    "$type": "float",
-                                    "Value": 0.0
                                 }
                             }
                         },
