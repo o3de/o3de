@@ -40,7 +40,7 @@ ly_add_target(
 # the above module is for use in clients and servers
 ly_create_alias(NAME ScriptEvents.Clients NAMESPACE Gem TARGETS Gem::ScriptEvents)
 ly_create_alias(NAME ScriptEvents.Servers NAMESPACE Gem TARGETS Gem::ScriptEvents)
-
+ly_create_alias(NAME ScriptEvents.Unified NAMESPACE Gem TARGETS Gem::ScriptEvents)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(

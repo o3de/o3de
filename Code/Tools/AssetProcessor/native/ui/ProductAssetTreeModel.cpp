@@ -61,6 +61,12 @@ namespace AssetProcessor
             return;
         }
 
+        if (!m_root)
+        {
+            // no need to update the model if the root hasn't been created via ResetModel()
+            return;
+        }
+
         // Model changes need to be run on the main thread.
         AZ::SystemTickBus::QueueFunction([&, entry]()
         {
@@ -128,6 +134,12 @@ namespace AssetProcessor
             return;
         }
 
+        if (!m_root)
+        {
+            // we haven't reset the model yet, which means all of this will happen when we do.
+            return;
+        }
+
         // UI changes need to be done on the main thread.
         AZ::SystemTickBus::QueueFunction([&, productId]()
         {
@@ -139,6 +151,12 @@ namespace AssetProcessor
     {
         if (ap_disableAssetTreeView)
         {
+            return;
+        }
+
+        if (!m_root)
+        {
+            // we haven't reset the model yet, which means all of this will happen when we do.
             return;
         }
 

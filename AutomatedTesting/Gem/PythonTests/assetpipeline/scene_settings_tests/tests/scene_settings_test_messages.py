@@ -112,6 +112,21 @@ class Test_Messages:
         "Ignore Y-Axis Transition checkbox count is incorrect."
     )
 
+    scene_settings_add_button_initially_disabled = (
+        "Add procedural prefab group button initially disabled due to existing prefab group.",
+        "Add procedural prefab group button not initially disabled."
+    )
+    
+    scene_settings_add_button_enabled = (
+        "Add procedural prefab group button enabled correctly when group removed.",
+        "Add procedural prefab group button not enabled when group removed."
+    )
+
+    scene_settings_add_button_disabled_after_adding = (
+        "Add procedural prefab group button disabled correctly when group added.",
+        "Add procedural prefab group button not disabled when group added."
+    )
+
     scene_settings_base_mesh_group_enabled = (
         "The base mesh group is enabled.",
         "The base mesh group is disabled, but should be enabled."
@@ -136,3 +151,4 @@ class Test_Messages:
         "The expected mesh group was found.",
         "The expected mesh group was not found."
     )
+

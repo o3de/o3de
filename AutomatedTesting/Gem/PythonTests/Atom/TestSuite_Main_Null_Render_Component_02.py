@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import pytest
 
+import ly_test_tools
 from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 
 
@@ -37,6 +38,7 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_LookModificationAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_LookModificationAdded as test_module
 
+    @pytest.mark.skipif(ly_test_tools.LINUX, reason="https://github.com/o3de/o3de/issues/14007")
     @pytest.mark.test_case_id("C32078123")
     class AtomEditorComponents_MaterialAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_MaterialAdded as test_module
