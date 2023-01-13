@@ -39,7 +39,7 @@ namespace AtomToolsFramework
     
     void PreviewRendererSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("RPISystem", 0xf2add773));
+        dependent.push_back(AZ_CRC_CE("RPISystem"));
     }
 
     void PreviewRendererSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
