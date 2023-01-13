@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_StandardPBR(IN, isFrontFace)
+#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_MaterialGraphName(IN, isFrontFace)
 #endif
 
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli>
@@ -23,7 +23,7 @@
 
 #include <Atom/Features/Debug.azsli>
 
-PixelGeometryData EvaluatePixelGeometry_StandardPBR(
+PixelGeometryData EvaluatePixelGeometry_MaterialGraphName(
     inout float4 positionSV,
     float3 positionWS,
     float3 normal,
@@ -49,7 +49,7 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, bool isFrontFace)
+PixelGeometryData EvaluatePixelGeometry_MaterialGraphName(inout VsOutput IN, bool isFrontFace)
 {
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
@@ -57,7 +57,7 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, bool isFr
     float3 vertexNormal, vertexTangent, vertexBitangent;
     ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
 
-    return EvaluatePixelGeometry_StandardPBR(
+    return EvaluatePixelGeometry_MaterialGraphName(
         IN.position,
         IN.worldPosition,
         vertexNormal,

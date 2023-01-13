@@ -12,12 +12,12 @@
 // EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
 //
 #ifndef EvaluateVertexGeometry
-#define EvaluateVertexGeometry(IN)      EvaluateVertexGeometry_BasePBR(IN)
+#define EvaluateVertexGeometry(IN)      EvaluateVertexGeometry_MaterialGraphName(IN)
 #endif
 
 #include <Atom/RPI/TangentSpace.azsli>
 
-VsOutput EvaluateVertexGeometry_BasePBR(
+VsOutput EvaluateVertexGeometry_MaterialGraphName(
     float3 position,
     float3 normal,
     float4 tangent,
@@ -25,17 +25,14 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     float2 uv1)
 {
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
-
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(normal, tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    float bitangent = cross(normal, (float3)tangent);
 
     #define O3DE_MC_POSITION position
     #define O3DE_MC_UV(index) (index == 0 ? uv0 : uv1);
-    #define O3DE_MC_NORMAL vertexNormal
-    #define O3DE_MC_TANGENT vertexTangent
-    #define O3DE_MC_BITANGENT vertexBitangent
+    #define O3DE_MC_NORMAL normal
+    #define O3DE_MC_TANGENT tangent
+    #define O3DE_MC_BITANGENT bitangent
     #define O3DE_MC_WORLD_POSITION worldPosition
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
@@ -50,7 +47,6 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     #undef O3DE_MC_WORLD_POSITION
 
     VsOutput output;
-
     output.worldPosition = (float3)worldPosition + (float3)inPositionOffset;
     output.position = mul(ViewSrg::m_viewProjectionMatrix, float4(output.worldPosition, 1.0));
     output.uvs[0] = uv0;
@@ -60,9 +56,9 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     return output;
 }
 
-VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN)
+VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN)
 {
-    return EvaluateVertexGeometry_BasePBR(
+    return EvaluateVertexGeometry_MaterialGraphName(
         IN.position,
         IN.normal,
         IN.tangent,

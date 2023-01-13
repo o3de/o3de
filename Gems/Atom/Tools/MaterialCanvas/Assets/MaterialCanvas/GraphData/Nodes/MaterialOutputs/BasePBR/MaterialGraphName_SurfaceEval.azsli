@@ -12,12 +12,12 @@
 // used in your shader. Simply #define EvaluateSurface to your custom definition before including this file
 //
 #ifndef EvaluateSurface
-#define EvaluateSurface(geoData)        EvaluateSurface_BasePBR(geoData)
+#define EvaluateSurface(geoData)        EvaluateSurface_MaterialGraphName(geoData)
 #endif
 
 #include <Atom/Features/MatrixUtility.azsli>
 
-Surface EvaluateSurface_BasePBR(
+Surface EvaluateSurface_MaterialGraphName(
     float3 positionWS,
     float3 vertexNormal,
     float3 tangents[UvSetCount],
@@ -54,13 +54,12 @@ Surface EvaluateSurface_BasePBR(
     surface.roughnessLinear = inRoughness;
     surface.SetAlbedoAndSpecularF0(inBaseColor, inSpecularF0Factor, inMetallic);
     surface.CalculateRoughnessA();
-
     return surface;
 }
 
-Surface EvaluateSurface_BasePBR(PixelGeometryData geoData)
+Surface EvaluateSurface_MaterialGraphName(PixelGeometryData geoData)
 {
-    return EvaluateSurface_BasePBR(
+    return EvaluateSurface_MaterialGraphName(
         geoData.positionWS,
         geoData.vertexNormal,
         geoData.tangents,

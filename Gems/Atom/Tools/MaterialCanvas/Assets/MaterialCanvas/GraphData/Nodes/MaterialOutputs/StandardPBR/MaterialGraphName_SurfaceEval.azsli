@@ -12,13 +12,13 @@
 // used in your shader. Simply #define EvaluateSurface to your custom definition before including this file
 //
 #ifndef EvaluateSurface
-#define EvaluateSurface(geoData)        EvaluateSurface_StandardPBR(geoData)
+#define EvaluateSurface(geoData)        EvaluateSurface_MaterialGraphName(geoData)
 #endif
 
 #include <Atom/Features/PBR/LightingOptions.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
 
-Surface EvaluateSurface_StandardPBR(
+Surface EvaluateSurface_MaterialGraphName(
     float3 positionWS,
     float3 vertexNormal,
     float3 tangents[UvSetCount],
@@ -37,10 +37,10 @@ Surface EvaluateSurface_StandardPBR(
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor, inEmissive, inAlpha, inDiffuseAmbientOcclusion, inSpecularOcclusion, inClearCoatFactor, inClearCoatRoughness, inClearCoatNormal, 
     float3 inNormal = vertexNormal;
     float3 inBaseColor = {1.0, 1.0, 1.0};
-    float3 inEmissive = {0.0, 0.0, 0.0};
     float inMetallic = 0.0;
     float inRoughness = 0.0;
     float inSpecularF0Factor = 0.0;
+    float3 inEmissive = {0.0, 0.0, 0.0};
     float inAlpha = 1.0;
     float inDiffuseAmbientOcclusion = 1.0;
     float inSpecularOcclusion = 1.0;
@@ -100,9 +100,9 @@ Surface EvaluateSurface_StandardPBR(
     return surface;
 }
 
-Surface EvaluateSurface_StandardPBR(PixelGeometryData geoData)
+Surface EvaluateSurface_MaterialGraphName(PixelGeometryData geoData)
 {
-    return EvaluateSurface_StandardPBR(
+    return EvaluateSurface_MaterialGraphName(
         geoData.positionWS,
         geoData.vertexNormal,
         geoData.tangents,

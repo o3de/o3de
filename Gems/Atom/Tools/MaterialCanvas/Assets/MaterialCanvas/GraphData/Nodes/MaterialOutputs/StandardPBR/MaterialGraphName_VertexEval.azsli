@@ -12,12 +12,12 @@
 // EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
 //
 #ifndef EvaluateVertexGeometry
-#define EvaluateVertexGeometry(IN)      EvaluateVertexGeometry_StandardPBR(IN)
+#define EvaluateVertexGeometry(IN)      EvaluateVertexGeometry_MaterialGraphName(IN)
 #endif
 
 #include <Atom/RPI/TangentSpace.azsli>
 
-VsOutput EvaluateVertexGeometry_StandardPBR(
+VsOutput EvaluateVertexGeometry_MaterialGraphName(
     float3 position,
     float3 normal,
     float4 tangent,
@@ -59,9 +59,9 @@ VsOutput EvaluateVertexGeometry_StandardPBR(
     return output;
 }
 
-VsOutput EvaluateVertexGeometry_StandardPBR(VsInput IN)
+VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN)
 {
-    return EvaluateVertexGeometry_StandardPBR(
+    return EvaluateVertexGeometry_MaterialGraphName(
         IN.position,
         IN.normal,
         IN.tangent,
