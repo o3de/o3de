@@ -185,14 +185,14 @@ namespace UnitTest
     void PrefabInstanceDomGeneratorTestFixture::GenerateAndValidateInstanceDom(
         const Instance& instance, EntityAlias entityAlias, float expectedValue)
     {
-        // Generate a prefab DOM for the provided instance
-        PrefabDom generatedInstanceDom;
-        m_instanceDomGeneratorInterface->GenerateInstanceDomFromTemplate(generatedInstanceDom, instance);
+        // Gets a copy of an instance DOM for the provided instance
+        PrefabDom instanceDomFromTemplate;
+        m_instanceDomGeneratorInterface->GetInstanceDomFromTemplate(instanceDomFromTemplate, instance);
 
         // Create an instance from the generated prefab DOM for validation
         Instance instanceFromDom;
         ASSERT_TRUE(PrefabDomUtils::LoadInstanceFromPrefabDom(
-            instanceFromDom, generatedInstanceDom, PrefabDomUtils::LoadFlags::UseSelectiveDeserialization));
+            instanceFromDom, instanceDomFromTemplate, PrefabDomUtils::LoadFlags::UseSelectiveDeserialization));
 
         // Verify that the worldX value of the provided child entity is coming from the correct template
         EntityOptionalReference childEntity = FindEntityInInstanceHierarchy(instanceFromDom, entityAlias);
@@ -248,7 +248,7 @@ namespace UnitTest
     {
         // Generate an entity DOM for the provided entity
         PrefabDom generatedEntityDom;
-        m_instanceDomGeneratorInterface->GenerateEntityDomFromTemplate(generatedEntityDom, entity);
+        m_instanceDomGeneratorInterface->GetEntityDomFromTemplate(generatedEntityDom, entity);
         EXPECT_TRUE(generatedEntityDom.IsObject());
 
         // Create an entity from the generated entity DOM for validation

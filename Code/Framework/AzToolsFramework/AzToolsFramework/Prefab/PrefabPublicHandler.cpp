@@ -815,7 +815,7 @@ namespace AzToolsFramework
             }
 
             PrefabDom beforeState;
-            m_instanceDomGeneratorInterface->GenerateEntityDomFromTemplate(beforeState, *entity);
+            m_instanceDomGeneratorInterface->GetEntityDomFromTemplate(beforeState, *entity);
             AZ::EntityId beforeParentId;
             m_prefabUndoCache.Retrieve(entityId, beforeParentId);
 

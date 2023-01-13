@@ -54,7 +54,7 @@ namespace AzToolsFramework
             if (parentEntityId == focusedInstance.GetContainerEntityId())
             {
                 PrefabDom parentEntityDomBeforeAddingEntity;
-                m_instanceDomGeneratorInterface->GenerateEntityDomFromTemplate(parentEntityDomBeforeAddingEntity, parentEntity);
+                m_instanceDomGeneratorInterface->GetEntityDomFromTemplate(parentEntityDomBeforeAddingEntity, parentEntity);
 
                 if (parentEntityDomBeforeAddingEntity.IsNull())
                 {

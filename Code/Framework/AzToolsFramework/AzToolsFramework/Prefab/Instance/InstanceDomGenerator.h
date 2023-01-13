@@ -33,21 +33,21 @@ namespace AzToolsFramework
             void RegisterInstanceDomGeneratorInterface();
             void UnregisterInstanceDomGeneratorInterface();
 
-            //! Generates an instance DOM for a given instance object from template based on the currently focused instance.
+            //! Gets a copy of instance DOM for a given instance object from template based on the currently focused instance.
             //! If the given instance is descendant of the focused instance, instance DOM stored in focused
             //! template DOM is used; otherwise, the instance DOM stored in the root template DOM is used.
             //! Note: Link id would be valid in the generated DOM only if the given instance is a proper descendant
             //! of the focused or root instance.
             //! @param[out] instanceDom The output instance DOM that will be modified. It must be empty so that it can be filled.
             //! @param instance The given instance object.
-            void GenerateInstanceDomFromTemplate(PrefabDom& instanceDom, const Instance& instance) const override;
+            void GetInstanceDomFromTemplate(PrefabDom& instanceDom, const Instance& instance) const override;
 
-            //! Generates an entity DOM for a given entity object from template based on the currently focused instance.
+            //! Gets a copy of entity DOM for a given entity object from template based on the currently focused instance.
             //! If the owning instance of the given entity is descendant of the focused instance, entity DOM stored in focused
             //! template DOM is used; otherwise, the entity DOM stored in the root template DOM is used.
             //! @param[out] entityDom The output entity DOM that will be modified. It must be empty so that it can be filled.
             //! @param entity The given entity object.
-            void GenerateEntityDomFromTemplate(PrefabDom& entityDom, const AZ::Entity& entity) const override;
+            void GetEntityDomFromTemplate(PrefabDom& entityDom, const AZ::Entity& entity) const override;
 
         private:
             //! Given an instance and its DOM, updates the container entity in the DOM with the one seen
