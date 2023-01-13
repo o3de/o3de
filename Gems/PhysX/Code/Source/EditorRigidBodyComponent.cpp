@@ -183,7 +183,7 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled)
                         ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetKinematicTooltip)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
+                        Physics::Edit::KinematicSelector,
                         &AzPhysics::RigidBodyConfiguration::m_kinematicNew,
                         "KinematicNew", "When active, the rigid body is not affected by gravity or other forces and is moved by script.")
                         ->Attribute(AZ_CRC_CE("EditButton"), "hellko")

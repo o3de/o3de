@@ -25,14 +25,14 @@ namespace PhysX
     {
         class KinematicWidget
             : public QObject
-            , public AzToolsFramework::PropertyHandler<AzPhysics::Kinematic2, ComboBoxEditButtonPair>
+            , public AzToolsFramework::PropertyHandler<bool, ComboBoxEditButtonPair>
         {
             Q_OBJECT
 
         public:
             AZ_CLASS_ALLOCATOR(KinematicWidget, AZ::SystemAllocator, 0);
 
-            KinematicWidget();
+            KinematicWidget() = default;
 
             AZ::u32 GetHandlerName() const override;
             QWidget* CreateGUI(QWidget* parent) override;
@@ -47,9 +47,6 @@ namespace PhysX
                 size_t index, widget_t* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
 
         private:
-            /*AzPhysics::CollisionGroups::Id GetGroupFromName(const AZStd::string& groupName);
-            AZStd::string GetNameFromGroup(const AzPhysics::CollisionGroups::Id& groupId);
-            AZStd::vector<AZStd::string> GetGroupNames();*/
             void OnEditButtonClicked();
         };
     } // namespace Editor

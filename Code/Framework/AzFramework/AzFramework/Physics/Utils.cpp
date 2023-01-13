@@ -137,13 +137,13 @@ namespace Physics
             ReflectWindBus(context);
             ReflectCharacterBus(context);
 
-            /*if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
             {
-                serializeContext->Enum<AzPhysics::Kinematic>()
+                serializeContext->Enum<AzPhysics::Kinematic2>()
                     ->Version(1)
-                    ->Value("MaxTransfer", AzPhysics::Kinematic::A)
-                    ->Value("MemoryAlignment", AzPhysics::Kinematic::B);
-            }*/
+                    ->Value("MaxTransfer", AzPhysics::Kinematic2::A)
+                    ->Value("MemoryAlignment", AzPhysics::Kinematic2::B);
+            }
         }
     }
 

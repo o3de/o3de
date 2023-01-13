@@ -108,6 +108,9 @@ set(FILES
     Editor/EditorViewportEntityPicker.h
     Editor/KinematicWidget.cpp
     Editor/KinematicWidget.h
+    Editor/KinematicDescriptionDialog.cpp
+    Editor/KinematicDescriptionDialog.h
+    Editor/KinematicDescriptionDialog.ui
 
     Editor/Source/Components/EditorSystemComponent.h
     Editor/Source/Components/EditorSystemComponent.cpp
