@@ -629,13 +629,16 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             def project_path = readFile file: 'projectpath'
             PlatformRm('projectpath')
             project_path = project_path.trim()
+
             echo "project_path = ${project_path}"
             def project_dir = new File("${project_path}")
             echo "project_dir = ${project_dir}"
             def root = new File("${workspace}/${ENGINE_REPOSITORY_NAME}")
             echo "root = ${root}"
-            def relPath= new File( root.toURI().relativize( project_dir.toURI() ).toString() )
+
+            def relPath = root.toPath().relativize( project_dir.toPath() ).toFile()
             echo "relPath = ${relPath}"
+
             env.CMAKE_LY_PROJECTS = relPath
             echo "env.CMAKE_LY_PROJECTS = ${env.CMAKE_LY_PROJECTS}"
         }
