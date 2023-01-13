@@ -65,4 +65,4 @@ endif()
 
 ly_create_alias(NAME TextureAtlas.Servers  NAMESPACE Gem TARGETS Gem::TextureAtlas)
 ly_create_alias(NAME TextureAtlas.Clients  NAMESPACE Gem TARGETS Gem::TextureAtlas)
-
+ly_create_alias(NAME TextureAtlas.Unified  NAMESPACE Gem TARGETS Gem::TextureAtlas)

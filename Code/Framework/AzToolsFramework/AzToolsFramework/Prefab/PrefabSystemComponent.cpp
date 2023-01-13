@@ -81,6 +81,7 @@ namespace AzToolsFramework
             PrefabFocusHandler::Reflect(context);
             PrefabLoader::Reflect(context);
             PrefabSystemScriptingHandler::Reflect(context);
+            PrefabOverridePublicHandler::Reflect(context);
 
             if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
             {
@@ -845,7 +846,7 @@ namespace AzToolsFramework
 
             if (linkPatches && linkPatches->get().IsArray() && !(linkPatches->get().Empty()))
             {
-                newLink.AddPatchesToLink(linkPatches.value());
+                newLink.SetLinkPatches(linkPatches.value());
             }
 
             //update the target template dom to have the proper values for the source template dom

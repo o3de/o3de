@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "SetAssetPath",
-                    "context": "SimpleAssetReferenceBase",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Asset Path"

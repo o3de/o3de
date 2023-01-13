@@ -119,7 +119,7 @@ namespace EMotionFX
                 m_collidersWidget->Update(GetActor(), GetNode(), PhysicsSetup::ColliderConfigType::SimulatedObjectCollider, nodeConfig->m_shapes, serializeContext);
                 m_content->show();
                 m_collidersWidget->show();
-                m_widgetCount = 1 + nodeConfig->m_shapes.size();
+                m_widgetCount = static_cast<int>(1 + nodeConfig->m_shapes.size()); // on Mac unsigned long (size_t) can't silent downcast to int, added static_cast
             }
             else
             {

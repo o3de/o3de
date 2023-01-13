@@ -13,8 +13,8 @@ namespace LmbrCentral
     AZ_CLASS_ALLOCATOR_IMPL(EditorAxisAlignedBoxShapeComponentMode, AZ::SystemAllocator, 0)
 
     EditorAxisAlignedBoxShapeComponentMode::EditorAxisAlignedBoxShapeComponentMode(
-        const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
-        : BoxComponentMode(entityComponentIdPair, componentType)
+        const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType, bool allowAsymmetricalEditing)
+        : BoxComponentMode(entityComponentIdPair, componentType, allowAsymmetricalEditing)
     {
     }
 
