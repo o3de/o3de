@@ -45,6 +45,8 @@ namespace AzToolsFramework
         void Refresh() override;
         AZStd::string GetComponentModeName() const override;
         AZ::Uuid GetComponentModeType() const override;
+        bool HandleMouseInteraction(
+            const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
 
         constexpr static const char* const DimensionsTooltip = "Switch to dimensions mode";
         constexpr static const char* const TranslationOffsetTooltip = "Switch to translation offset mode";

@@ -23,16 +23,16 @@ namespace AzToolsFramework
         , m_entityComponentIdPair(entityComponentIdPair)
         , m_allowAsymmetricalEditing(allowAsymmetricalEditing)
     {
-        m_subModes[static_cast<size_t>(SubMode::Dimensions)] = AZStd::make_unique<BoxViewportEdit>();
+        m_subModes[static_cast<AZ::u32>(SubMode::Dimensions)] = AZStd::make_unique<BoxViewportEdit>(m_allowAsymmetricalEditing);
         if (m_allowAsymmetricalEditing)
         {
-            m_subModes[static_cast<size_t>(SubMode::TranslationOffset)] = AZStd::make_unique<ShapeTranslationOffsetViewportEdit>();
+            m_subModes[static_cast<AZ::u32>(SubMode::TranslationOffset)] = AZStd::make_unique<ShapeTranslationOffsetViewportEdit>();
             SetupCluster();
             SetCurrentMode(SubMode::Dimensions);
         }
         else
         {
-            m_subModes[static_cast<size_t>(SubMode::Dimensions)]->Setup(entityComponentIdPair);
+            m_subModes[static_cast<AZ::u32>(SubMode::Dimensions)]->Setup(entityComponentIdPair);
         }
     }
 
@@ -56,7 +56,7 @@ namespace AzToolsFramework
 
     BoxComponentMode::~BoxComponentMode()
     {
-        m_subModes[static_cast<size_t>(m_subMode)]->Teardown();
+        m_subModes[static_cast<AZ::u32>(m_subMode)]->Teardown();
         if (m_allowAsymmetricalEditing)
         {            
             ViewportUi::ViewportUiRequestBus::Event(
@@ -67,7 +67,7 @@ namespace AzToolsFramework
 
     void BoxComponentMode::Refresh()
     {
-        m_subModes[static_cast<size_t>(m_subMode)]->UpdateManipulators();
+        m_subModes[static_cast<AZ::u32>(m_subMode)]->UpdateManipulators();
     }
 
     AZStd::string BoxComponentMode::GetComponentModeName() const
@@ -88,18 +88,18 @@ namespace AzToolsFramework
             &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
             ViewportUi::Alignment::TopLeft);
 
-        m_buttonIds[static_cast<size_t>(SubMode::Dimensions)] =
+        m_buttonIds[static_cast<AZ::u32>(SubMode::Dimensions)] =
             RegisterClusterButton(ViewportUi::DefaultViewportId, m_clusterId, "Scale", DimensionsTooltip);
-        m_buttonIds[static_cast<size_t>(SubMode::TranslationOffset)] =
+        m_buttonIds[static_cast<AZ::u32>(SubMode::TranslationOffset)] =
             RegisterClusterButton(ViewportUi::DefaultViewportId, m_clusterId, "Move", TranslationOffsetTooltip);
 
         const auto onJointLimitButtonClicked = [this](ViewportUi::ButtonId buttonId)
         {
-            if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::Dimensions)])
+            if (buttonId == m_buttonIds[static_cast<AZ::u32>(SubMode::Dimensions)])
             {
                 SetCurrentMode(SubMode::Dimensions);
             }
-            else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::TranslationOffset)])
+            else if (buttonId == m_buttonIds[static_cast<AZ::u32>(SubMode::TranslationOffset)])
             {
                 SetCurrentMode(SubMode::TranslationOffset);
             }
@@ -116,8 +116,8 @@ namespace AzToolsFramework
     void BoxComponentMode::SetCurrentMode(SubMode mode)
     {
         AZ_Assert(mode < SubMode::NumModes, "Submode not found:%d", static_cast<AZ::u32>(mode));
-        m_subModes[static_cast<size_t>(m_subMode)]->Teardown();
-        const auto modeIndex = static_cast<size_t>(mode);
+        m_subModes[static_cast<AZ::u32>(m_subMode)]->Teardown();
+        const auto modeIndex = static_cast<AZ::u32>(mode);
         AZ_Assert(modeIndex < m_buttonIds.size(), "Invalid mode index %i.", modeIndex);
         m_subMode = mode;
         m_subModes[modeIndex]->Setup(m_entityComponentIdPair);
@@ -130,5 +130,21 @@ namespace AzToolsFramework
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton,
             m_clusterId,
             m_buttonIds[modeIndex]);
+    }
+
+    bool BoxComponentMode::HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    {
+        if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Wheel &&
+            mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl())
+        {
+            const int direction = MouseWheelDelta(mouseInteraction) > 0.0f ? -1 : 1;
+            AZ::u32 currentModeIndex = static_cast<AZ::u32>(m_subMode);
+            AZ::u32 numSubModes = static_cast<AZ::u32>(SubMode::NumModes);
+            AZ::u32 nextModeIndex = (currentModeIndex + numSubModes + direction) % m_subModes.size();
+            SubMode nextMode = static_cast<SubMode>(nextModeIndex);
+            SetCurrentMode(nextMode);
+            return true;
+        }
+        return false;
     }
 } // namespace AzToolsFramework
