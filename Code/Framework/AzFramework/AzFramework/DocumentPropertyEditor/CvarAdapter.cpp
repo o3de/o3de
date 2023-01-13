@@ -21,10 +21,36 @@ namespace AZ::DocumentPropertyEditor
             , m_commandInvokedHandler(
                   [adapter, this](AZStd::string_view command, const AZ::ConsoleCommandContainer&, AZ::ConsoleFunctorFlags, AZ::ConsoleInvokedFrom)
                   {
-                      (void)command;
-                      if (!m_performingCommand)
+                      if (!m_performingCommand && !command.empty())
                       {
-                          adapter->NotifyResetDocument();
+                          auto commandFunctor = AZ::Interface<AZ::IConsole>::Get()->FindCommand(command);
+                          if (commandFunctor)
+                          {
+                              // find the path to the existing editor
+                              Dom::Path path;
+                              const auto& existingContents = adapter->GetContents();
+
+                              for (size_t rowIndex = 0, numRows = existingContents.ArraySize(); rowIndex < numRows; ++ rowIndex)
+                              {
+                                  const auto& rowValue = existingContents.ArrayAt(rowIndex);
+                                  auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(rowValue.ArrayAt(0)).value_or("");
+                                  if (labelString == command)
+                                  {
+                                      path.Push(rowIndex);
+                                      path.Push(1);
+                                      break;
+                                  }
+                              }
+
+                              if (!path.IsEmpty())
+                              {
+                                  AdapterBuilder builder;
+                                  BuildEditorForCvar(builder, commandFunctor);
+                                  auto newEditor = builder.FinishAndTakeResult();
+                                  adapter->NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(path, newEditor) });
+                              }
+                          }
+                          // adapter->NotifyResetDocument();
                       }
                   })
         {
