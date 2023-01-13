@@ -29,6 +29,11 @@ public:
         m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
         AZ::SettingsRegistry::Register(m_settingsRegistry.get());
 
+        m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+        m_registrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
+        m_settingsRegistry->SetContext(m_serializeContext.get());
+        m_settingsRegistry->SetContext(m_registrationContext.get());
+
         AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
         auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
         AZ::IO::FixedMaxPath enginePath;
@@ -66,36 +71,42 @@ public:
         m_fileIOMock.reset();
 
         AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+
+        m_registrationContext.reset();
+        m_serializeContext.reset();
+        m_settingsRegistry.reset();
     }
 
 
-    void ReflectTypes(AZ::JsonRegistrationContext* registrationContext, AZ::SerializeContext* serializeContext)
+    void ReflectTypes()
     {
-        AZ::JsonSystemComponent::Reflect(registrationContext);
+        AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
 
         // PatternMatcher is defined in SceneCore. Avoid loading the dynamic-link library in the test by
         // just binding the class for serialization.
-        serializeContext->Class<AZ::SceneAPI::SceneCore::PatternMatcher>();
-        AZ::SceneProcessingConfig::SoftNameSetting::Reflect(serializeContext);
-        AZ::SceneProcessingConfig::NodeSoftNameSetting::Reflect(serializeContext);
-        AZ::SceneProcessingConfig::FileSoftNameSetting::Reflect(serializeContext);
+        m_serializeContext->Class<AZ::SceneAPI::SceneCore::PatternMatcher>();
+        AZ::SceneProcessingConfig::SoftNameSetting::Reflect(m_serializeContext.get());
+        AZ::SceneProcessingConfig::NodeSoftNameSetting::Reflect(m_serializeContext.get());
+        AZ::SceneProcessingConfig::FileSoftNameSetting::Reflect(m_serializeContext.get());
     }
 
-    void RemoveReflectedTypes(AZ::JsonRegistrationContext* registrationContext, AZ::SerializeContext* serializeContext)
+    void RemoveReflectedTypes()
     {
-        serializeContext->EnableRemoveReflection();
-        AZ::SceneProcessingConfig::FileSoftNameSetting::Reflect(serializeContext);
-        AZ::SceneProcessingConfig::NodeSoftNameSetting::Reflect(serializeContext);
-        AZ::SceneProcessingConfig::SoftNameSetting::Reflect(serializeContext);
-        serializeContext->Class<AZ::SceneAPI::SceneCore::PatternMatcher>();
-        serializeContext->DisableRemoveReflection();
+        m_serializeContext->EnableRemoveReflection();
+        AZ::SceneProcessingConfig::FileSoftNameSetting::Reflect(m_serializeContext.get());
+        AZ::SceneProcessingConfig::NodeSoftNameSetting::Reflect(m_serializeContext.get());
+        AZ::SceneProcessingConfig::SoftNameSetting::Reflect(m_serializeContext.get());
+        m_serializeContext->Class<AZ::SceneAPI::SceneCore::PatternMatcher>();
+        m_serializeContext->DisableRemoveReflection();
 
-        registrationContext->EnableRemoveReflection();
-        AZ::JsonSystemComponent::Reflect(registrationContext);
-        registrationContext->DisableRemoveReflection();
+        m_registrationContext->EnableRemoveReflection();
+        AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
+        m_registrationContext->DisableRemoveReflection();
     }
 
     AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
+    AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
+    AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
     AZStd::unique_ptr<::testing::NiceMock<AZ::IO::MockFileIOBase>> m_fileIOMock;
     AZ::IO::FileIOBase* m_prevFileIO = nullptr;
 };
@@ -233,11 +244,7 @@ TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameS
     )JSON";
     m_settingsRegistry->MergeSettings(settings, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
 
-    AZStd::unique_ptr<AZ::SerializeContext> serializeContext = AZStd::make_unique<AZ::SerializeContext>();
-    AZStd::unique_ptr<AZ::JsonRegistrationContext> registrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
-    m_settingsRegistry->SetContext(serializeContext.get());
-    m_settingsRegistry->SetContext(registrationContext.get());
-    ReflectTypes(registrationContext.get(), serializeContext.get());
+    ReflectTypes();
 
     AZ::SceneProcessingConfig::SceneProcessingConfigSystemComponent sceneProcessingConfigSystemComponent;
     sceneProcessingConfigSystemComponent.Activate();
@@ -252,7 +259,7 @@ TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameS
 
     sceneProcessingConfigSystemComponent.Deactivate();
 
-    RemoveReflectedTypes(registrationContext.get(), serializeContext.get());
+    RemoveReflectedTypes();
 }
 
 TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameSettings_IgnoreDuplicateSoftNameSettings)
@@ -295,13 +302,10 @@ TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameS
     )JSON";
     m_settingsRegistry->MergeSettings(settings, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
 
-    AZStd::unique_ptr<AZ::SerializeContext> serializeContext = AZStd::make_unique<AZ::SerializeContext>();
-    AZStd::unique_ptr<AZ::JsonRegistrationContext> registrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
-    m_settingsRegistry->SetContext(serializeContext.get());
-    m_settingsRegistry->SetContext(registrationContext.get());
-    ReflectTypes(registrationContext.get(), serializeContext.get());
+    ReflectTypes();
 
     AZ_TEST_START_TRACE_SUPPRESSION;
+    // Expect to get one error when adding duplicate soft name settings
     AZ::SceneProcessingConfig::SceneProcessingConfigSystemComponent sceneProcessingConfigSystemComponent;
     AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     sceneProcessingConfigSystemComponent.Activate();
@@ -316,7 +320,7 @@ TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameS
 
     sceneProcessingConfigSystemComponent.Deactivate();
 
-    RemoveReflectedTypes(registrationContext.get(), serializeContext.get());
+    RemoveReflectedTypes();
 }
 
 TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameSettings_DefaultSoftNameSettings)

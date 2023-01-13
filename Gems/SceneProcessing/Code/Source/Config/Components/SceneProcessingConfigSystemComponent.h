@@ -90,6 +90,10 @@ namespace AZ
 
             void PopulateDefaultSoftNameSettings();
 
+            template<class SoftNameSettingsType>
+            void AddSoftNameSettingsFromSettingResitry(
+                AZ::SettingsRegistryInterface* settingsRegistry, AZStd::string_view settingRegistryKey);
+
             void LoadScriptSettings();
 
             static void ReflectSceneModule(ReflectContext* context, const AZStd::unique_ptr<DynamicModuleHandle>& module);

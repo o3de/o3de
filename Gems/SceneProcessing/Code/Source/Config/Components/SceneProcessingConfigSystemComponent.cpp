@@ -49,27 +49,8 @@ namespace AZ
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             if (settingsRegistry)
             {
-                AZStd::vector<NodeSoftNameSetting*> nodeSoftNameSettings;
-                settingsRegistry->GetObject(nodeSoftNameSettings, AssetProcessorDefaultNodeSoftNameSettingsKey);
-                for (NodeSoftNameSetting* nodeSoftNameSetting : nodeSoftNameSettings)
-                {
-                    if (!AddSoftName(nodeSoftNameSetting))
-                    {
-                        delete nodeSoftNameSetting;
-                        nodeSoftNameSetting = nullptr;
-                    }
-                }
-
-                AZStd::vector<FileSoftNameSetting*> fileSoftNameSettings;
-                settingsRegistry->GetObject(fileSoftNameSettings, AssetProcessorDefaultFileSoftNameSettingsKey);
-                for (FileSoftNameSetting* fileSoftNameSetting : fileSoftNameSettings)
-                {
-                    if (!AddSoftName(fileSoftNameSetting))
-                    {
-                        delete fileSoftNameSetting;
-                        fileSoftNameSetting = nullptr;
-                    }
-                }
+                AddSoftNameSettingsFromSettingResitry<NodeSoftNameSetting>(settingsRegistry, AssetProcessorDefaultNodeSoftNameSettingsKey);
+                AddSoftNameSettingsFromSettingResitry<FileSoftNameSetting>(settingsRegistry, AssetProcessorDefaultFileSoftNameSettingsKey);
             }
 
             if (m_softNames.empty())
@@ -86,6 +67,22 @@ namespace AZ
                 // cause only animations to be exported from the source scene file even if there's other data available.
                 m_softNames.push_back(aznew FileSoftNameSetting("_anim", SceneAPI::SceneCore::PatternMatcher::MatchApproach::PostFix, "Ignore", false,
                     { FileSoftNameSetting::GraphType(SceneAPI::DataTypes::IAnimationData::TYPEINFO_Name()) }));
+            }
+        }
+
+        template<class SoftNameSettingsType>
+        void SceneProcessingConfigSystemComponent::AddSoftNameSettingsFromSettingResitry(
+            AZ::SettingsRegistryInterface* settingsRegistry, AZStd::string_view settingRegistryKey)
+        {
+            AZStd::vector<SoftNameSettingsType*> softNameSettings;
+            settingsRegistry->GetObject(softNameSettings, settingRegistryKey);
+            for (SoftNameSettingsType* softNameSetting : softNameSettings)
+            {
+                if (!AddSoftName(softNameSetting))
+                {
+                    delete softNameSetting;
+                    softNameSetting = nullptr;
+                }
             }
         }
 
