@@ -7,19 +7,21 @@
  */
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzToolsFramework/ComponentModes/BaseViewportEdit.h>
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
 
 namespace AzToolsFramework
 {
     //! Wraps translation manipulators for editing shape translation offsets.
-    class ShapeTranslationOffsetViewportEdit
+    class ShapeTranslationOffsetViewportEdit : public BaseViewportEdit
     {
     public:
         ShapeTranslationOffsetViewportEdit() = default;
 
-        void Setup(const AZ::EntityComponentIdPair& entityComponentIdPair);
-        void Teardown();
-        void UpdateManipulators();
+        // BaseViewportEdit overrides ...
+        void Setup(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
+        void Teardown() override;
+        void UpdateManipulators() override;
 
     private:
         AZ::EntityComponentIdPair m_entityComponentIdPair;

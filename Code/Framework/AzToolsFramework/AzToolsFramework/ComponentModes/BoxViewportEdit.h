@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzToolsFramework/ComponentModes/BaseViewportEdit.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 
 namespace AzToolsFramework
@@ -17,14 +18,15 @@ namespace AzToolsFramework
 
     /// Wraps 6 linear manipulators, providing a viewport experience for 
     /// modifying the extents of a box
-    class BoxViewportEdit
+    class BoxViewportEdit : public BaseViewportEdit
     {
     public:
         BoxViewportEdit(bool allowAsymmetricalEditing = false);
 
-        void Setup(const AZ::EntityComponentIdPair& entityComponentIdPair);
-        void Teardown();
-        void UpdateManipulators();
+        // BaseViewportEdit overrides ...
+        void Setup(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
+        void Teardown() override;
+        void UpdateManipulators() override;
 
     private:
         AZ::EntityComponentIdPair m_entityComponentIdPair;

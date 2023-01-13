@@ -14,6 +14,7 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
+#include <AzToolsFramework/Manipulators/ShapeOffsetManipulatorRequestBus.h>
 
 namespace LmbrCentral
 {
@@ -22,6 +23,7 @@ namespace LmbrCentral
         : public EditorBaseShapeComponent
         , private AzFramework::EntityDebugDisplayEventBus::Handler
         , private AzToolsFramework::BoxManipulatorRequestBus::Handler
+        , private AzToolsFramework::ShapeOffsetManipulatorRequestBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorAxisAlignedBoxShapeComponent, EditorAxisAlignedBoxShapeComponentTypeId, EditorBaseShapeComponent);
@@ -58,10 +60,12 @@ namespace LmbrCentral
         // AzToolsFramework::BoxManipulatorRequestBus
         AZ::Vector3 GetDimensions() const override;
         void SetDimensions(const AZ::Vector3& dimensions) override;
-        AZ::Vector3 GetTranslationOffset() const override;
-        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
         AZ::Transform GetCurrentLocalTransform() const override;
         AZ::Transform GetManipulatorSpace() const override;
+        
+        // AzToolsFramework::ShapeOffsetManipulatorRequestBus overrides ...
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
 
         void ConfigurationChanged();        
 

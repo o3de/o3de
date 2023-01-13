@@ -26,7 +26,7 @@ namespace AzToolsFramework
         m_subModes[static_cast<size_t>(SubMode::Dimensions)] = AZStd::make_unique<BoxViewportEdit>();
         if (m_allowAsymmetricalEditing)
         {
-            m_subModes[static_cast<size_t>(SubMode::TranslationOffset)] = AZStd::make_unique<BoxViewportEdit>();
+            m_subModes[static_cast<size_t>(SubMode::TranslationOffset)] = AZStd::make_unique<ShapeTranslationOffsetViewportEdit>();
             SetupCluster();
             SetCurrentMode(SubMode::Dimensions);
         }

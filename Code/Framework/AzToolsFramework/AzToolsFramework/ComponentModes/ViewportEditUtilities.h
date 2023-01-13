@@ -15,6 +15,7 @@ namespace AzToolsFramework
     //! Calculates the position of the manipulator in its own reference frame.
     //! Removes the effects of the manipulator local transform, and accounts for world transform scale in
     //! the action local offset.
+    template<typename T>
     AZ::Vector3 GetPositionInManipulatorFrame(float worldUniformScale, const AZ::Transform& manipulatorLocalTransform,
-        const LinearManipulator::Action& action);
+        const T& action);    
 } // namespace AzToolsFramework

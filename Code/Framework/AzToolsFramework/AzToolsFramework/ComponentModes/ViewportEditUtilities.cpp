@@ -10,11 +10,12 @@
 
 namespace AzToolsFramework
 {
+    template <typename T>
     AZ::Vector3 GetPositionInManipulatorFrame(float worldUniformScale, const AZ::Transform& manipulatorLocalTransform,
-        const LinearManipulator::Action& action)
+        const T& action)
     {
         return manipulatorLocalTransform.GetInverse().TransformPoint(
             action.m_start.m_localPosition +
-            action.m_current.m_localPositionOffset / AZ::GetClamp(worldUniformScale, AZ::MinTransformScale, AZ::MaxTransformScale));
+            action.LocalPositionOffset() / AZ::GetClamp(worldUniformScale, AZ::MinTransformScale, AZ::MaxTransformScale));
     }
 } // namespace AzToolsFramework

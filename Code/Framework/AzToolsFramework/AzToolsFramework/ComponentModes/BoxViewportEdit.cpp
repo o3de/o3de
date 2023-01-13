@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
+#include <AzToolsFramework/Manipulators/ShapeOffsetManipulatorRequestBus.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportConstants.h>
@@ -122,11 +123,11 @@ namespace AzToolsFramework
                         const AZ::Vector3 transformedAxis = nonUniformScale * boxLocalTransform.TransformVector(action.m_fixed.m_axis);
                         const AZ::Vector3 translationOffsetDelta = 0.5f * (newAxisLength - oldAxisLength) * transformedAxis;
                         AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
-                        BoxManipulatorRequestBus::EventResult(
-                            translationOffset, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetTranslationOffset);
-                        BoxManipulatorRequestBus::Event(
+                        ShapeOffsetManipulatorRequestBus::EventResult(
+                            translationOffset, entityComponentIdPair, &ShapeOffsetManipulatorRequestBus::Events::GetTranslationOffset);
+                        ShapeOffsetManipulatorRequestBus::Event(
                             entityComponentIdPair,
-                            &BoxManipulatorRequestBus::Events::SetTranslationOffset,
+                            &ShapeOffsetManipulatorRequestBus::Events::SetTranslationOffset,
                             translationOffset + translationOffsetDelta);
                     }
 

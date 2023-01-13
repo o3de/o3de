@@ -57,7 +57,7 @@ namespace AzToolsFramework
         ViewportUi::ButtonId m_dimensionsButtonId; 
         ViewportUi::ButtonId m_translationOffsetButtonId;
         AZStd::array<ViewportUi::ButtonId, 2> m_buttonIds;
-        AZStd::array<AZStd::unique_ptr<BoxViewportEdit>, 2> m_subModes;
+        AZStd::array<AZStd::unique_ptr<BaseViewportEdit>, 2> m_subModes;
         SubMode m_subMode = SubMode::Dimensions;
         bool m_allowAsymmetricalEditing = false;
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_modeSelectionHandler;
