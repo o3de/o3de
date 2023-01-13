@@ -621,18 +621,6 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 processed_repos = NoControlFile(COMMIT_REPOSITORY_NAME, processed_repos)
             }
         }
-
-        dir(ENGINE_REPOSITORY_NAME) {
-            def ext = ''
-            if(env.IS_UNIX) {
-                ext = '.sh'
-            }
-            PlatformSh("scripts/o3de${ext} register-show --project-name ${projectName} > projectpath", "Get the project path")
-            env.CMAKE_LY_PROJECTS = readFile file: 'projectpath'
-            env.CMAKE_LY_PROJECTS = env.CMAKE_LY_PROJECTS.trim()
-            PlatformRm('projectpath')
-            echo "env.CMAKE_LY_PROJECTS = ${env.CMAKE_LY_PROJECTS}"
-        }
     }
 }
 
@@ -1225,6 +1213,19 @@ try {
                     def envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                     envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                     envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
+
+                    dir(ENGINE_REPOSITORY_NAME) {
+                        def ext = ''
+                        if(env.IS_UNIX) {
+                            ext = '.sh'
+                        }
+                        PlatformSh("scripts/o3de${ext} register-show --project-name ${projectName} > projectpath", "Get the project path")
+                        envVars['CMAKE_LY_PROJECTS'] = readFile file: 'projectpath'
+                        envVars['CMAKE_LY_PROJECTS'] = envVars['CMAKE_LY_PROJECTS'].trim()
+                        PlatformRm('projectpath')
+                        echo "envVars['CMAKE_LY_PROJECTS'] = ${envVars['CMAKE_LY_PROJECTS']}"
+                    }
+
                     someBuildHappened = true
                     buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
                 }
