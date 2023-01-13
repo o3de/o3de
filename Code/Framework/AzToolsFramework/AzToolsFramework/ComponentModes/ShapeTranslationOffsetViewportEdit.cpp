@@ -11,7 +11,7 @@
 #include <AzToolsFramework/ComponentModes/ShapeTranslationOffsetViewportEdit.h>
 #include <AzToolsFramework/ComponentModes/ViewportEditUtilities.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
-#include <AzToolsFramework/Manipulators/ShapeOffsetManipulatorRequestBus.h>
+#include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 
 namespace AzToolsFramework
 {
@@ -19,39 +19,38 @@ namespace AzToolsFramework
     {
         m_entityComponentIdPair = entityComponentIdPair;
 
-        AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(worldTransform, entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+        AZ::Transform manipulatorSpace = AZ::Transform::CreateIdentity();
+        ShapeManipulatorRequestBus::EventResult(
+            manipulatorSpace, m_entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetManipulatorSpace);
 
         AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(
             nonUniformScale, entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequestBus::Events::GetScale);
 
         AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
-        ShapeOffsetManipulatorRequestBus::EventResult(
-            translationOffset, entityComponentIdPair, &ShapeOffsetManipulatorRequestBus::Events::GetTranslationOffset);
+        ShapeManipulatorRequestBus::EventResult(
+            translationOffset, entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetTranslationOffset);
 
         m_translationManipulators = AZStd::make_shared<AzToolsFramework::TranslationManipulators>(
-        AzToolsFramework::TranslationManipulators::Dimensions::Three, worldTransform, nonUniformScale);
+        AzToolsFramework::TranslationManipulators::Dimensions::Three, manipulatorSpace, nonUniformScale);
 
         m_translationManipulators->SetLocalTransform(AZ::Transform::CreateTranslation(translationOffset));
         m_translationManipulators->SetLineBoundWidth(AzToolsFramework::ManipulatorLineBoundWidth());
         m_translationManipulators->AddEntityComponentIdPair(m_entityComponentIdPair);
         AzToolsFramework::ConfigureTranslationManipulatorAppearance3d(m_translationManipulators.get());
 
-        auto mouseMoveHandlerFn = [this,
-                                   transformScale{ m_translationManipulators->GetSpace().GetUniformScale() }
-                                   /*nonUniformScale{m_translationManipulators->GetNonUniformScale()}*/](const auto& action)
+        auto mouseMoveHandlerFn = [this, transformScale{ m_translationManipulators->GetSpace().GetUniformScale() }](const auto& action)
         {
             AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
-            ShapeOffsetManipulatorRequestBus::EventResult(
-                translationOffset, m_entityComponentIdPair, &ShapeOffsetManipulatorRequestBus::Events::GetTranslationOffset);
+            ShapeManipulatorRequestBus::EventResult(
+                translationOffset, m_entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetTranslationOffset);
 
             const AZ::Transform manipulatorLocalTransform = AZ::Transform::CreateTranslation(translationOffset);
             const AZ::Vector3 manipulatorPosition = GetPositionInManipulatorFrame(transformScale, manipulatorLocalTransform, action);
 
-            ShapeOffsetManipulatorRequestBus::Event(
+            ShapeManipulatorRequestBus::Event(
                 m_entityComponentIdPair,
-                &ShapeOffsetManipulatorRequestBus::Events::SetTranslationOffset,
+                &ShapeManipulatorRequestBus::Events::SetTranslationOffset,
                 translationOffset + manipulatorPosition);
 
             UpdateManipulators();
@@ -71,18 +70,19 @@ namespace AzToolsFramework
 
     void ShapeTranslationOffsetViewportEdit::UpdateManipulators()
     {
-        AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(worldTransform, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+        AZ::Transform manipulatorSpace = AZ::Transform::CreateIdentity();
+        ShapeManipulatorRequestBus::EventResult(
+            manipulatorSpace, m_entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetManipulatorSpace);
 
         AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(
             nonUniformScale, m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequestBus::Events::GetScale);
 
         AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
-        ShapeOffsetManipulatorRequestBus::EventResult(
-            translationOffset, m_entityComponentIdPair, &ShapeOffsetManipulatorRequestBus::Events::GetTranslationOffset);
+        ShapeManipulatorRequestBus::EventResult(
+            translationOffset, m_entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetTranslationOffset);
 
-        m_translationManipulators->SetSpace(worldTransform);
+        m_translationManipulators->SetSpace(manipulatorSpace);
         m_translationManipulators->SetLocalTransform(AZ::Transform::CreateTranslation(translationOffset));
         m_translationManipulators->SetNonUniformScale(nonUniformScale);
         m_translationManipulators->SetBoundsDirty();

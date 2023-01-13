@@ -65,7 +65,7 @@ namespace LmbrCentral
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusConnect(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
-        AzToolsFramework::ShapeOffsetManipulatorRequestBus::Handler::BusConnect(
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
 
         // ComponentMode
@@ -79,7 +79,7 @@ namespace LmbrCentral
     {
         m_componentModeDelegate.Disconnect();
 
-        AzToolsFramework::ShapeOffsetManipulatorRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusDisconnect();
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         m_aaboxShape.Deactivate();

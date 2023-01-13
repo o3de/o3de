@@ -247,7 +247,7 @@ set(FILES
     Manipulators/ScaleManipulators.h
     Manipulators/SelectionManipulator.cpp
     Manipulators/SelectionManipulator.h
-    Manipulators/ShapeOffsetManipulatorRequestBus.h
+    Manipulators/ShapeManipulatorRequestBus.h
     Manipulators/SplineHoverSelection.h
     Manipulators/SplineHoverSelection.cpp
     Manipulators/SplineSelectionManipulator.h

@@ -13,7 +13,7 @@
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
-#include <AzToolsFramework/Manipulators/ShapeOffsetManipulatorRequestBus.h>
+#include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportConstants.h>
@@ -37,8 +37,8 @@ namespace AzToolsFramework
     void BoxViewportEdit::UpdateManipulators()
     {
         AZ::Transform manipulatorSpace = AZ::Transform::CreateIdentity();
-        BoxManipulatorRequestBus::EventResult(
-            manipulatorSpace, m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetManipulatorSpace);
+        ShapeManipulatorRequestBus::EventResult(
+            manipulatorSpace, m_entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetManipulatorSpace);
 
         AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(
@@ -123,11 +123,11 @@ namespace AzToolsFramework
                         const AZ::Vector3 transformedAxis = nonUniformScale * boxLocalTransform.TransformVector(action.m_fixed.m_axis);
                         const AZ::Vector3 translationOffsetDelta = 0.5f * (newAxisLength - oldAxisLength) * transformedAxis;
                         AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
-                        ShapeOffsetManipulatorRequestBus::EventResult(
-                            translationOffset, entityComponentIdPair, &ShapeOffsetManipulatorRequestBus::Events::GetTranslationOffset);
-                        ShapeOffsetManipulatorRequestBus::Event(
+                        ShapeManipulatorRequestBus::EventResult(
+                            translationOffset, entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetTranslationOffset);
+                        ShapeManipulatorRequestBus::Event(
                             entityComponentIdPair,
-                            &ShapeOffsetManipulatorRequestBus::Events::SetTranslationOffset,
+                            &ShapeManipulatorRequestBus::Events::SetTranslationOffset,
                             translationOffset + translationOffsetDelta);
                     }
 

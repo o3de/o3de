@@ -28,8 +28,6 @@ namespace AzToolsFramework
         virtual void SetDimensions(const AZ::Vector3& dimensions) = 0;
         //! Get the transform of the box relative to the entity.
         virtual AZ::Transform GetCurrentLocalTransform() const = 0;
-        //! Get the space in which the manipulators are defined.
-        virtual AZ::Transform GetManipulatorSpace() const = 0;
 
     protected:
         ~BoxManipulatorRequests() = default;
