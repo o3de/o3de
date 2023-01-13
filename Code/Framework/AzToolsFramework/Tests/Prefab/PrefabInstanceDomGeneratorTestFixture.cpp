@@ -107,7 +107,7 @@ namespace UnitTest
 
         // Create document with before change snapshot
         PrefabDom entityDomBeforeUpdate;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomBeforeUpdate, *childEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomBeforeUpdate, *childEntity);
 
         // Change the entity
         float prevXValue = 0.0f;
@@ -119,7 +119,7 @@ namespace UnitTest
 
         // Create document with after change snapshot
         PrefabDom entityDomAfterUpdate;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomAfterUpdate, *childEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomAfterUpdate, *childEntity);
 
         // Generate patch
         m_instanceToTemplateInterface->GeneratePatch(patchOut, entityDomBeforeUpdate, entityDomAfterUpdate);
@@ -185,14 +185,14 @@ namespace UnitTest
     void PrefabInstanceDomGeneratorTestFixture::GenerateAndValidateInstanceDom(
         const Instance& instance, EntityAlias entityAlias, float expectedValue)
     {
-        // Generate a prefab DOM for the provided instance
-        PrefabDom generatedInstanceDom;
-        m_instanceDomGeneratorInterface->GenerateInstanceDom(generatedInstanceDom, instance);
+        // Gets a copy of an instance DOM for the provided instance
+        PrefabDom instanceDomFromTemplate;
+        m_instanceDomGeneratorInterface->GetInstanceDomFromTemplate(instanceDomFromTemplate, instance);
 
         // Create an instance from the generated prefab DOM for validation
         Instance instanceFromDom;
         ASSERT_TRUE(PrefabDomUtils::LoadInstanceFromPrefabDom(
-            instanceFromDom, generatedInstanceDom, PrefabDomUtils::LoadFlags::UseSelectiveDeserialization));
+            instanceFromDom, instanceDomFromTemplate, PrefabDomUtils::LoadFlags::UseSelectiveDeserialization));
 
         // Verify that the worldX value of the provided child entity is coming from the correct template
         EntityOptionalReference childEntity = FindEntityInInstanceHierarchy(instanceFromDom, entityAlias);
@@ -248,7 +248,7 @@ namespace UnitTest
     {
         // Generate an entity DOM for the provided entity
         PrefabDom generatedEntityDom;
-        m_instanceDomGeneratorInterface->GenerateEntityDom(generatedEntityDom, entity);
+        m_instanceDomGeneratorInterface->GetEntityDomFromTemplate(generatedEntityDom, entity);
         EXPECT_TRUE(generatedEntityDom.IsObject());
 
         // Create an entity from the generated entity DOM for validation
