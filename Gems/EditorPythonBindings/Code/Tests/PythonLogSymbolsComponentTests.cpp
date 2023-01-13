@@ -185,7 +185,7 @@ namespace UnitTest
         intParam.m_typeId = AZ::AzTypeInfo<AZ::s8>::Uuid(); // Uuid for a supported type
         intParam.m_traits = AZ::BehaviorParameter::TR_NONE;
 
-        AZStd::string_view result = pythonLogSymbolsComponent.FetchPythonTypeWrapper(intParam);
+        AZStd::string result = pythonLogSymbolsComponent.FetchPythonTypeWrapper(intParam);
         EXPECT_EQ(result, "int");
     }
 
@@ -197,7 +197,7 @@ namespace UnitTest
         voidParam.m_typeId = AZ::Uuid("{9B3E8886-B749-418E-A696-6D7E9EB4D691}"); // A random Uuid
         voidParam.m_traits = AZ::BehaviorParameter::TR_NONE;
         
-        AZStd::string_view result = m_pythonLogSymbolsComponent.FetchPythonTypeWrapper(voidParam);
+        AZStd::string result = m_pythonLogSymbolsComponent.FetchPythonTypeWrapper(voidParam);
         EXPECT_EQ(result, "None");
     }
 }
