@@ -442,7 +442,7 @@ namespace AZ
                 capture->m_readback->SetCallback(
                     AZStd::bind(&FrameCaptureSystemComponent::CaptureAttachmentCallback, this, AZStd::placeholders::_1));
 
-                AZ_Assert(!imagePath.empty(), "The image path must present if the callback is not assigned.");
+                AZ_Assert(!imagePath.empty(), "The image path must be provided if the callback is not assigned.");
                 capture->m_outputFilePath = ResolvePath(imagePath);
             }
 
