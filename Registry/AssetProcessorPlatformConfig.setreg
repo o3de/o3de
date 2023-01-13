@@ -154,8 +154,9 @@
                     "order": 40000
                 },
 
-                // Configurable starting prioirity for all Gem scan folders to use.
+                // Configurable starting priority for all Gem scan folders to use.
                 // Each Gem scan folder added will increment this.
+                // NOTE: Each successive gem priority will be lower than the last.
                 "GemScanFolderStartingPriorityOrder": 100,
 
                 // Control how project-relative Gem scan folders are prioritized against the project's main scan folder (key: "Project/Assets", alias: @PROJECTROOT@).

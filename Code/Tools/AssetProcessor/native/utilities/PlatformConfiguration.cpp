@@ -619,6 +619,9 @@ namespace AssetProcessor
 
     const char AssetConfigPlatformDir[] = "AssetProcessorConfig/";
     const char AssetProcessorPlatformConfigFileName[] = "AssetProcessorPlatformConfig.ini";
+    constexpr const char* ProjectScanFolderKey = "Project/Assets";
+    constexpr const char* GemStartingPriorityOrderKey = "/GemScanFolderStartingPriorityOrder";
+    constexpr const char* ProjectRelativeGemPriorityKey = "/ProjectRelativeGemsScanFolderPriority";
 
     PlatformConfiguration::PlatformConfiguration(QObject* pParent)
         : QObject(pParent)
@@ -1325,7 +1328,7 @@ namespace AssetProcessor
     {
         auto mainProjectScanFolder = FindScanFolder([](const AssetProcessor::ScanFolderInfo& scanFolderInfo) -> bool
             {
-                return scanFolderInfo.GetPortableKey() == "Project/Assets";
+                return scanFolderInfo.GetPortableKey() == ProjectScanFolderKey;
             });
         if (mainProjectScanFolder)
         {
@@ -1457,9 +1460,8 @@ namespace AssetProcessor
     const AssetProcessor::ScanFolderInfo* PlatformConfiguration::FindScanFolder(
         AZStd::function<bool(const AssetProcessor::ScanFolderInfo&)> predicate) const
     {
-        const AssetProcessor::ScanFolderInfo* result = AZStd::ranges::find_if(m_scanFolders, predicate);
-
-        return result != m_scanFolders.end() ? result : nullptr;
+        auto resultIt = AZStd::ranges::find_if(m_scanFolders, predicate);
+        return resultIt != m_scanFolders.end() ? &(*resultIt) : nullptr;
     }
 
     const AssetProcessor::ScanFolderInfo* PlatformConfiguration::GetScanFolderById(AZ::s64 id) const
@@ -1818,14 +1820,10 @@ namespace AssetProcessor
     //! Given a scan folder path, get its complete info
     const AssetProcessor::ScanFolderInfo* PlatformConfiguration::GetScanFolderByPath(const QString& scanFolderPath) const
     {
-        for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
-        {
-            if (m_scanFolders[pathIdx].ScanPath() == scanFolderPath)
+        return FindScanFolder([&scanFolderPath](const AssetProcessor::ScanFolderInfo& scanFolder)
             {
-                return &m_scanFolders[pathIdx];
-            }
-        }
-        return nullptr;
+                return scanFolder.ScanPath() == scanFolderPath;
+            });
     }
 
     int PlatformConfiguration::GetMinJobs() const
@@ -1874,7 +1872,6 @@ namespace AssetProcessor
 
     void PlatformConfiguration::AddGemScanFolders(const AZStd::vector<AzFramework::GemInfo>& gemInfoList)
     {
-        // Determine if a Gem is relative to the project. Cross-check gem paths against visited project gem paths.
         // If the gem is project-relative, make adjustments to it's priority order based on registry settings:
         // /Amazon/AssetProcessor/Settings/GemScanFolderStartingPriorityOrder
         // /Amazon/AssetProcessor/Settings/ProjectRelativeGemsScanFolderPriority
@@ -1882,27 +1879,19 @@ namespace AssetProcessor
 
         AZ::s64 gemStartingOrder = 100;
         AZStd::string projectGemPrioritySetting{};
-        AZStd::vector<AZ::IO::Path> projectGemPaths{};
+        const AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
         int pathCount = 0;
 
         const int projectScanOrder = GetProjectScanFolderOrder();
 
-        auto const settingsRegistry = AZ::SettingsRegistry::Get();
-        if (settingsRegistry != nullptr)
+        if (auto const settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
             settingsRegistry->Get(gemStartingOrder,
-                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + "/GemScanFolderStartingPriorityOrder");
+                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + GemStartingPriorityOrderKey);
 
             settingsRegistry->Get(projectGemPrioritySetting,
-                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + "/ProjectRelativeGemsScanFolderPriority");
+                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + ProjectRelativeGemPriorityKey);
             AZStd::to_lower(projectGemPrioritySetting.begin(), projectGemPrioritySetting.end());
-
-            auto projectGemCallback = [&projectGemPaths]([[maybe_unused]] AZStd::string_view manifestObjectKey,
-                [[maybe_unused]] AZStd::string_view manifestObjectName, AZStd::string_view manifestRootPath)
-            {
-                projectGemPaths.push_back(AZ::IO::Path{ manifestRootPath });
-            };
-            AZ::SettingsRegistryMergeUtils::VisitProjectGems(*settingsRegistry, projectGemCallback);
         }
 
         auto GetGemFolderOrder = [&](bool isProjectRelativeGem) -> int
@@ -1935,7 +1924,7 @@ namespace AssetProcessor
                 const AZ::IO::Path& absoluteSourcePath = gemElement.m_absoluteSourcePaths[sourcePathIndex];
                 QString gemAbsolutePath = QString::fromUtf8(absoluteSourcePath.c_str(), aznumeric_cast<int>(absoluteSourcePath.Native().size())); // this is an absolute path!
 
-                bool isProjectGem = AZStd::find(projectGemPaths.begin(), projectGemPaths.end(), absoluteSourcePath) != projectGemPaths.end();
+                const bool isProjectGem = absoluteSourcePath.IsRelativeTo(projectPath);
 
                 // Append the index of the source path array element to make a unique portable key is created for each path of a gem
                 AZ::Uuid gemNameUuid = AZ::Uuid::CreateName((gemElement.m_gemName + AZStd::to_string(sourcePathIndex)).c_str());
