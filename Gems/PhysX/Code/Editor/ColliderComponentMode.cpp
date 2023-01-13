@@ -53,7 +53,7 @@ namespace PhysX
         AZ_Assert(actionManagerInterface, "ColliderComponentMode - could not get ActionManagerInterface on RegisterActions.");
 
         auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
-        AZ_Assert(hotKeyManagerInterface, "EditorVertexSelection - could not get HotKeyManagerInterface on RegisterActions.");
+        AZ_Assert(hotKeyManagerInterface, "ColliderComponentMode - could not get HotKeyManagerInterface on RegisterActions.");
 
         // Set Offset Sub-Mode
         {
@@ -179,7 +179,7 @@ namespace PhysX
     void ColliderComponentMode::BindActionsToModes()
     {
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        AZ_Assert(actionManagerInterface, "ColliderComponentMode - could not get ActionManagerInterface on RegisterActions.");
+        AZ_Assert(actionManagerInterface, "ColliderComponentMode - could not get ActionManagerInterface on BindActionsToModes.");
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
