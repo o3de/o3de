@@ -10,6 +10,8 @@
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Memory/AllocatorInstance.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzCore/std/allocator_stateless.h>
 #include <AzCore/std/containers/span.h>
@@ -618,7 +620,8 @@ namespace AZ
     // [9/15/2009]
     //=========================================================================
     PoolSchema::PoolSchema()
-        : m_impl(nullptr)
+        : m_impl(new (AZStd::stateless_allocator().allocate(sizeof(PoolSchemaImpl), AZStd::alignment_of<PoolSchemaImpl>::value))
+                 PoolSchemaImpl())
     {
     }
 
@@ -639,14 +642,7 @@ namespace AZ
     //=========================================================================
     bool PoolSchema::Create()
     {
-        AZ_Assert(m_impl == nullptr, "PoolSchema already created!");
-        if (m_impl == nullptr)
-        {
-            m_impl =
-                reinterpret_cast<PoolSchemaImpl*>(AZStd::stateless_allocator().allocate(sizeof(PoolSchemaImpl), alignof(PoolSchemaImpl)));
-            new (m_impl) PoolSchemaImpl();
-        }
-        return (m_impl != nullptr);
+        return true;
     }
 
     //=========================================================================
@@ -844,9 +840,10 @@ namespace AZ
     // [9/15/2009]
     //=========================================================================
     ThreadPoolSchema::ThreadPoolSchema(GetThreadPoolData getThreadPoolData, SetThreadPoolData setThreadPoolData)
-        : m_impl(nullptr)
-        , m_threadPoolGetter(getThreadPoolData)
+        : m_threadPoolGetter(getThreadPoolData)
         , m_threadPoolSetter(setThreadPoolData)
+        , m_impl(new (AZStd::stateless_allocator().allocate(sizeof(ThreadPoolSchemaImpl), AZStd::alignment_of<ThreadPoolSchemaImpl>::value))
+                     ThreadPoolSchemaImpl(m_threadPoolGetter, m_threadPoolSetter))
     {
     }
 
@@ -867,16 +864,7 @@ namespace AZ
     //=========================================================================
     bool ThreadPoolSchema::Create()
     {
-        AZ_Assert(m_impl == nullptr, "PoolSchema already created!");
-        if (m_impl == nullptr)
-        {
-            // We use the AZStd::stateless_allocator for the allocation of this object to prevent it from showing up as a leak
-            // in other allocators.
-            m_impl = reinterpret_cast<ThreadPoolSchemaImpl*>(
-                AZStd::stateless_allocator().allocate(sizeof(ThreadPoolSchemaImpl), AZStd::alignment_of<ThreadPoolSchemaImpl>::value));
-            new (m_impl) ThreadPoolSchemaImpl(m_threadPoolGetter, m_threadPoolSetter);
-        }
-        return (m_impl != nullptr);
+        return true;
     }
 
     //=========================================================================

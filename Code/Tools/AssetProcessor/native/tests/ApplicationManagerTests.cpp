@@ -77,25 +77,6 @@ namespace UnitTests
 
     using BatchApplicationManagerTest = UnitTest::LeakDetectionFixture;
 
-    TEST_F(BatchApplicationManagerTest, FileCreatedOnDisk_ShowsUpInFileCache)
-    {
-        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
-        AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
-
-        int argc = 0;
-
-        auto m_applicationManager = AZStd::make_unique<MockBatchApplicationManager>(&argc, nullptr);
-        m_applicationManager->InitFileStateCache();
-
-        auto* fileStateCache = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
-
-        ASSERT_TRUE(fileStateCache);
-
-        EXPECT_FALSE(fileStateCache->Exists((assetRootDir / "test").c_str()));
-        UnitTestUtils::CreateDummyFile((assetRootDir / "test").c_str());
-        EXPECT_TRUE(fileStateCache->Exists((assetRootDir / "test").c_str()));
-    }
-
     TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread)
     {
         AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());

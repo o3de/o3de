@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "Overlaps",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Overlaps"
@@ -48,7 +47,6 @@
                 },
                 {
                     "base": "SurfaceArea",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SurfaceArea"
@@ -80,7 +78,6 @@
                 },
                 {
                     "base": "ToSphere",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToSphere"
@@ -112,7 +109,6 @@
                 },
                 {
                     "base": "FromOBB",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromOBB"
@@ -144,7 +140,6 @@
                 },
                 {
                     "base": "Translate",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Translate"
@@ -182,7 +177,6 @@
                 },
                 {
                     "base": "ContainsVector3",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ContainsVector3"
@@ -220,7 +214,6 @@
                 },
                 {
                     "base": "Distance",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Distance"
@@ -258,7 +251,6 @@
                 },
                 {
                     "base": "FromPoint",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromPoint"
@@ -290,7 +282,6 @@
                 },
                 {
                     "base": "Null",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Null"
@@ -314,7 +305,6 @@
                 },
                 {
                     "base": "YExtent",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke YExtent"
@@ -346,7 +336,6 @@
                 },
                 {
                     "base": "Clamp",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Clamp"
@@ -384,7 +373,6 @@
                 },
                 {
                     "base": "ContainsAABB",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ContainsAABB"
@@ -422,7 +410,6 @@
                 },
                 {
                     "base": "Expand",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Expand"
@@ -460,7 +447,6 @@
                 },
                 {
                     "base": "Extents",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Extents"
@@ -492,7 +478,6 @@
                 },
                 {
                     "base": "FromCenterHalfExtents",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromCenterHalfExtents"
@@ -530,7 +515,6 @@
                 },
                 {
                     "base": "GetMin",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetMin"
@@ -562,7 +546,6 @@
                 },
                 {
                     "base": "ApplyTransform",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ApplyTransform"
@@ -600,7 +583,6 @@
                 },
                 {
                     "base": "Center",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Center"
@@ -632,7 +614,6 @@
                 },
                 {
                     "base": "FromMinMax",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromMinMax"
@@ -670,7 +651,6 @@
                 },
                 {
                     "base": "IsFinite",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsFinite"
@@ -702,7 +682,6 @@
                 },
                 {
                     "base": "IsValid",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsValid"
@@ -734,7 +713,6 @@
                 },
                 {
                     "base": "GetMax",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetMax"
@@ -766,7 +744,6 @@
                 },
                 {
                     "base": "XExtent",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke XExtent"
@@ -798,7 +775,6 @@
                 },
                 {
                     "base": "AddPoint",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddPoint"
@@ -836,7 +812,6 @@
                 },
                 {
                     "base": "AddAABB",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddAABB"
@@ -874,7 +849,6 @@
                 },
                 {
                     "base": "FromCenterRadius",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromCenterRadius"
@@ -912,7 +886,6 @@
                 },
                 {
                     "base": "ZExtent",
-                    "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ZExtent"

@@ -111,6 +111,7 @@ set(FILES
     Editor/Source/Components/EditorSystemComponent.cpp
     Editor/Source/ComponentModes/Joints/JointsComponentMode.h
     Editor/Source/ComponentModes/Joints/JointsComponentMode.cpp
+    Editor/Source/ComponentModes/Joints/JointsComponentModeBus.h
     Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.h
     Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.cpp
     Editor/Source/ComponentModes/PhysXSubComponentModeBase.h

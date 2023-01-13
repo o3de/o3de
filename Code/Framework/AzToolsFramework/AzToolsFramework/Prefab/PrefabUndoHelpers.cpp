@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntityAsOverride.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoDelete.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoDeleteAsOverride.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoEntityOverrides.h>
 
 namespace AzToolsFramework
 {
@@ -104,6 +105,17 @@ namespace AzToolsFramework
                 state->Redo();
             }
 
+            void UpdateEntitiesAsOverrides(
+                const AZStd::vector<const AZ::Entity*>& entityList,
+                Instance& owningInstance,
+                const Instance& focusedInstance,
+                UndoSystem::URSequencePoint* undoBatch)
+            {
+                PrefabUndoEntityOverrides* state = aznew PrefabUndoEntityOverrides("Undo Updating Entity List As Override");
+                state->SetParent(undoBatch);
+                state->CaptureAndRedo(entityList, owningInstance, focusedInstance);
+            }
+
             void DeleteEntities(
                 const AZStd::vector<AZStd::string>& entityAliasPathList,
                 const AZStd::vector<const AZ::Entity*> parentEntityList,
@@ -121,12 +133,9 @@ namespace AzToolsFramework
                 const AZStd::vector<AZStd::string>& instanceAliasPathList,
                 const AZStd::vector<const AZ::Entity*> parentEntityList,
                 Instance& owningInstance,
-                Instance& focusedInstance,
+                const Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch)
             {
-                AZ_Assert(&owningInstance != &focusedInstance,
-                    "DeleteEntitiesAndPrefabsAsOverride does not support source template editing.");
-
                 PrefabUndoDeleteAsOverride* deleteUndoAsOverrideState =
                     aznew PrefabUndoDeleteAsOverride("Undo Deleting Entities and Prefab Instances As Override");
                 deleteUndoAsOverrideState->SetParent(undoBatch);
