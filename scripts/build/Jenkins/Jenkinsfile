@@ -440,44 +440,42 @@ def ExecuteControlFile(controlFile, repoName, processed_repos) {
         ext = '.sh'
     }
 
-    dir(ENGINE_REPOSITORY_NAME) {
-        //register all the objects specified in this controlFile
-        if(controlFile.REGISTER_ENGINES) {
-            echo 'REGISTER_ENGINES'
-            controlFile.REGISTER_ENGINES.each { engineName ->
-                PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repoName}/${engineName} || ver>nul", "Registering engine in ${workspace}/${repoName}/${engineName}")
-            }
+    //register all the objects specified in this controlFile
+    if(controlFile.REGISTER_ENGINES) {
+        echo 'REGISTER_ENGINES'
+        controlFile.REGISTER_ENGINES.each { engineName ->
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --engine-path ${workspace}/${repoName}/${engineName} || ver>nul", "Registering engine in ${workspace}/${repoName}/${engineName}")
         }
-        if(controlFile.REGISTER_PROJECTS) {
-            echo 'REGISTER_PROJECTS'
-            controlFile.REGISTER_PROJECTS.each { projectName ->
-                PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repoName}/${projectName} || ver>nul", "Registering project in ${workspace}/${repoName}/${projectName}")
-            }
+    }
+    if(controlFile.REGISTER_PROJECTS) {
+        echo 'REGISTER_PROJECTS'
+        controlFile.REGISTER_PROJECTS.each { projectName ->
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --project-path ${workspace}/${repoName}/${projectName} || ver>nul", "Registering project in ${workspace}/${repoName}/${projectName}")
         }
-        if(controlFile.REGISTER_GEMS) {
-            echo 'REGISTER_GEMS'
-            controlFile.REGISTER_GEMS.each { gemName ->
-                PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repoName}/${gemName} || ver>nul", "Registering gem in ${workspace}/${repoName}/${gemName}")
-            }
+    }
+    if(controlFile.REGISTER_GEMS) {
+        echo 'REGISTER_GEMS'
+        controlFile.REGISTER_GEMS.each { gemName ->
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --gem-path ${workspace}/${repoName}/${gemName} || ver>nul", "Registering gem in ${workspace}/${repoName}/${gemName}")
         }
-        if(controlFile.REGISTER_TEMPLATES) {
-            echo 'REGISTER_TEMPLATES'
-            controlFile.REGISTER_TEMPLATES.each { templateName ->
-                PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repoName}/${templateName} || ver>nul", "Registering template in ${workspace}/${repoName}/${templateName}")
-            }
+    }
+    if(controlFile.REGISTER_TEMPLATES) {
+        echo 'REGISTER_TEMPLATES'
+        controlFile.REGISTER_TEMPLATES.each { templateName ->
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --template-path ${workspace}/${repoName}/${templateName} || ver>nul", "Registering template in ${workspace}/${repoName}/${templateName}")
         }
-        if(controlFile.REGISTER_RESTRICTED) {
-            echo 'REGISTER_RESTRICTED'
-            controlFile.REGISTER_RESTRICTED.each { restrictedName ->
-                PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repoName}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repoName}/${restrictedName}")
-            }
+    }
+    if(controlFile.REGISTER_RESTRICTED) {
+        echo 'REGISTER_RESTRICTED'
+        controlFile.REGISTER_RESTRICTED.each { restrictedName ->
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --restricted-path ${workspace}/${repoName}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repoName}/${restrictedName}")
         }
-        //enable all gems specified in the control file
-        if(controlFile.ENABLE_GEMS) {
-            echo 'ENABLE_GEMS'
-            controlFile.ENABLE_GEMS.each { gemName ->
-                PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${env.PROJECT_NAME} || ver>nul", "Enabling ${workspace}/${repoName}/${gemName} for ${env.PROJECT_NAME}")
-            }
+    }
+    //enable all gems specified in the control file
+    if(controlFile.ENABLE_GEMS) {
+        echo 'ENABLE_GEMS'
+        controlFile.ENABLE_GEMS.each { gemName ->
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${env.PROJECT_NAME} || ver>nul", "Enabling ${workspace}/${repoName}/${gemName} for ${env.PROJECT_NAME}")
         }
     }
 
@@ -1214,17 +1212,15 @@ try {
                     envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                     envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
 
-                    dir(ENGINE_REPOSITORY_NAME) {
-                        def ext = ''
-                        if(env.IS_UNIX) {
-                            ext = '.sh'
-                        }
-                        PlatformSh("scripts/o3de${ext} register-show --project-name ${projectName} > projectpath", "Get the project path")
-                        envVars['CMAKE_LY_PROJECTS'] = readFile file: 'projectpath'
-                        envVars['CMAKE_LY_PROJECTS'] = envVars['CMAKE_LY_PROJECTS'].trim()
-                        PlatformRm('projectpath')
-                        echo "envVars['CMAKE_LY_PROJECTS'] = ${envVars['CMAKE_LY_PROJECTS']}"
+                    def ext = ''
+                    if(env.IS_UNIX) {
+                        ext = '.sh'
                     }
+                    PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register-show --project-name ${projectName} > projectpath", "Get the project path")
+                    envVars['CMAKE_LY_PROJECTS'] = readFile file: 'projectpath'
+                    envVars['CMAKE_LY_PROJECTS'] = envVars['CMAKE_LY_PROJECTS'].trim()
+                    PlatformRm('projectpath')
+                    echo "envVars['CMAKE_LY_PROJECTS'] = ${envVars['CMAKE_LY_PROJECTS']}"
 
                     someBuildHappened = true
                     buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
