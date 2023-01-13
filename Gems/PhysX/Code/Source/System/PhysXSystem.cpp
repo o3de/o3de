@@ -122,7 +122,7 @@ namespace PhysX
             AZStd::string::format("%.*s.json", AZ_STRING_ARG(PerformanceLogCategory));
         AZStd::to_lower(fileExtension.begin(), fileExtension.end());
         m_performanceCollector = AZStd::make_unique<AZ::Debug::PerformanceCollector>(
-            logCategory, 
+            logCategory,
             performanceMetrics,
             [](AZ::u32)
             {
