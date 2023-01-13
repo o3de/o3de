@@ -630,7 +630,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             PlatformRm('projectpath')
             project_path = project_path.trim()
             echo "project_path = ${project_path}"
-            def project_dir = new File("${projectpath}")
+            def project_dir = new File("${project_path}")
             echo "project_dir = ${project_dir}"
             def root = new File("${workspace}/${ENGINE_REPOSITORY_NAME}")
             echo "root = ${root}"
