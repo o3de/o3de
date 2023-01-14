@@ -144,13 +144,11 @@ namespace EMotionFX
                             motionEvent.SetParameterString(twoStringEventData->GetParameters().c_str(), twoStringEventData->GetParameters().size());
                             break;
                         }
-                    }
-                    for (const auto& eventData : emfxInfo.m_event->GetEventDatas())
-                    {
+
                         if (const EMotionFX::EventDataFloatArray* floatArrayEventData =
                                 azrtti_cast<const EMotionFX::EventDataFloatArray*>(eventData.get()))
                         {
-                            motionEvent.m_eventTypeName = floatArrayEventData->GetSubject();
+                            motionEvent.m_eventTypeName = floatArrayEventData->GetSubject().c_str();
                             const AZStd::string parameterString = floatArrayEventData->DataToString();
                             motionEvent.SetParameterString(parameterString.c_str(), parameterString.size());
                             break;
@@ -1013,4 +1011,4 @@ namespace EMotionFX
 
 #endif // EMOTIONFXANIMATION_EDITOR
     }
-}
+} // namespace EMotionFX

@@ -79,7 +79,7 @@ namespace EMotionFX
             {
                 result += ",";
             }
-            result += AZStd::string::format("%.2f");
+            result += AZStd::string::format("%.2f", m_floats[i]);
         }
         return result;
     }

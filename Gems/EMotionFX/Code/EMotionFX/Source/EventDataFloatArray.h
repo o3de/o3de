@@ -18,6 +18,11 @@ namespace AZ
 
 namespace EMotionFX
 {
+    /**
+     * The EventDataFloatArray is a type of event data that holds an array of float. The float array is not fixed sized, so it's easy
+     * to add and remove elements that make this event type fit for variaty needs.
+     * The event data is serialized to motion event as a string, with floats data structed like "n0,n1,n2...n" with comma as a spliter.
+     */
     class EMFX_API EventDataFloatArray
         : public EventData
     {
@@ -30,14 +35,14 @@ namespace EMotionFX
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ_INLINE const char* GetSubject() const { return m_subject.c_str();}
+        AZ_INLINE const AZStd::string& GetSubject() const { return m_subject;}
         AZ_INLINE float GetElement(size_t index) const;
         AZStd::string DataToString() const;
 
         bool Equal(const EventData& rhs, bool ignoreEmptyFields = false) const override;
 
     private:
-        AZStd::string m_subject;
-        AZStd::vector<float> m_floats;
+        AZStd::string m_subject;                    // This can be used as the name of the event.
+        AZStd::vector<float> m_floats;              // The actual data of floats.
     };
-}
+} // namespace EMotionFX

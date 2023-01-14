@@ -68,7 +68,7 @@ namespace EMStudio
             ->DataElement(AZ::Edit::UIHandlers::Default, &MotionEventPreset::m_color, "Color", "Color to use for events that use this preset")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ->DataElement(
-                AZ::Edit::UIHandlers::MultiLineEdit, &MotionEventPreset::m_comment, "Comment", "Leave comment to describe this event data preset.")
+                AZ::Edit::UIHandlers::MultiLineEdit, &MotionEventPreset::m_comment, "Comment", "Leave a comment to describe this event data preset.")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ;
     }
