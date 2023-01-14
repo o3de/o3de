@@ -282,9 +282,11 @@ class TestsAssetBundlerBatch(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C16877175")
     @pytest.mark.test_case_id("C16877177")
-    @pytest.mark.skip(reason="")
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14062")
     def test_CreateMultiPlatformBundles_ValidContents(self, workspace, bundler_batch_helper, asset_processor, ap_setup_fixture):
         """
+        Skip reason: O3DE/O3DE#14062 and O3DE/O3DE#14060
+
         Creates bundles using the same asset list and compares that they are created equally. Also
         validates that platform bundles exclude/include an expected file. (excluded for WIN, included for MAC)
 
