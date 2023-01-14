@@ -245,34 +245,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 ## Periodic Tests ##
 
     ly_add_pytest(
-        NAME APTests.AssetBundler
-        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_bundler_batch_tests.py
-        TEST_SERIAL 
-        TEST_SUITE periodic
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            AZ::AssetBundlerBatch
-    )
-
-    ly_add_pytest(
         NAME APTests.MissingDependency
         PATH ${CMAKE_CURRENT_LIST_DIR}/missing_dependency_tests.py
         TEST_SERIAL 
         TEST_SUITE periodic
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessorBatch
-    )
-
-    ly_add_pytest(
-        NAME APTests.BundleMode
-        PATH ${CMAKE_CURRENT_LIST_DIR}/bundle_mode_tests.py
-        TEST_SERIAL
-        TEST_SUITE periodic
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            AZ::AssetBundlerBatch
-            Legacy::Editor
-            AutomatedTesting.Assets
     )
 
 endif()
