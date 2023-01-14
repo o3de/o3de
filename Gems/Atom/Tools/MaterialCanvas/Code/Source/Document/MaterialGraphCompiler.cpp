@@ -424,10 +424,10 @@ namespace MaterialCanvas
         switch (score)
         {
         case 4:
-            // Skipping color to vector conversions that they export as the correct type with the material type.
+            // Skipping color to vector conversions so that they export as the correct type with the material type.
             return slotValue.is<AZ::Color>() ? slotValue : ConvertToVector<AZ::Vector4>(slotValue);
         case 3:
-            // Skipping color to vector conversions that they export as the correct type with the material type.
+            // Skipping color to vector conversions so that they export as the correct type with the material type.
             return slotValue.is<AZ::Color>() ? slotValue : ConvertToVector<AZ::Vector3>(slotValue);
         case 2:
             return ConvertToVector<AZ::Vector2>(slotValue);
