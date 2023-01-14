@@ -893,6 +893,13 @@ namespace AzToolsFramework
                   {
                     AZ::IO::Path path = fullSourceFolderNameInCallback.c_str();
                     path /= "New Folder";
+
+                    AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                        AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                        &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                        path.c_str(),
+                        AZ::Crc32());
+
                     if (!AZ::IO::SystemFile::Exists(path.c_str()))
                     {
                         AZ::IO::SystemFile::CreateDir(path.c_str());

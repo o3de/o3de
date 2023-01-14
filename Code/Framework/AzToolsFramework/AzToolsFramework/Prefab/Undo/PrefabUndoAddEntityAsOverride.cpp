@@ -60,7 +60,7 @@ namespace AzToolsFramework
                 parentEntityAliasPathForPatch;
 
             PrefabDom parentEntityDomAfterAddingEntity;
-            m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAddingEntity, parentEntity);
+            m_instanceToTemplateInterface->GenerateEntityDomBySerializing(parentEntityDomAfterAddingEntity, parentEntity);
 
             TemplateId focusedTemplateId = focusedInstance.GetTemplateId();
             PrefabDom& focusedTemplateDom =
@@ -82,7 +82,7 @@ namespace AzToolsFramework
                 entityAliasPathPrefixForPatch + newEntityAliasPath;
 
             PrefabDom newEntityDom;
-            m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, newEntity);
+            m_instanceToTemplateInterface->GenerateEntityDomBySerializing(newEntityDom, newEntity);
             PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPathForPatch);
 
             const LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();

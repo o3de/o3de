@@ -109,6 +109,7 @@ endif()
 # Clients and servers use the AtomTressFX module
 ly_create_alias(NAME AtomTressFX.Clients NAMESPACE Gem TARGETS Gem::AtomTressFX)
 ly_create_alias(NAME AtomTressFX.Servers NAMESPACE Gem TARGETS Gem::AtomTressFX)
+ly_create_alias(NAME AtomTressFX.Unified NAMESPACE Gem TARGETS Gem::AtomTressFX)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 

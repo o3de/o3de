@@ -1,11 +1,18 @@
 {
     "entries": [
         {
+            "base": "GetOnCollisionBeginEvent",
+            "context": "AZEventHandler",
+            "details": {
+                "name": "Get On Collision Begin Event"
+            }
+        },
+        {
             "base": "On Collision Begin event",
             "context": "AZEventHandler",
             "variant": "",
             "details": {
-                "name": "On Collision Begin event"
+                "name": "On Collision Begin Event"
             },
             "slots": [
                 {

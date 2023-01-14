@@ -37,6 +37,7 @@ namespace AzToolsFramework
             , m_instanceName(AZStd::move(other.m_instanceName))
             , m_prefabSystemComponentInterface(AZStd::move(other.m_prefabSystemComponentInterface))
             , m_linkPatchesTree(AZStd::move(other.m_linkPatchesTree))
+            , m_patchIndexCounter(AZStd::move(other.m_patchIndexCounter))
         {
             other.m_prefabSystemComponentInterface = nullptr;
         }
@@ -56,6 +57,7 @@ namespace AzToolsFramework
                     "It is a requirement for the Link class. Check that it is being correctly initialized.");
                 other.m_prefabSystemComponentInterface = nullptr;
                 m_linkPatchesTree = AZStd::move(other.m_linkPatchesTree);
+                m_patchIndexCounter = AZStd::move(other.m_patchIndexCounter);
             }
             return *this;
         }
@@ -81,7 +83,7 @@ namespace AzToolsFramework
             }
         }
 
-        void Link::AddPatchesToLink(const PrefabDom& patches)
+        void Link::SetLinkPatches(const PrefabDom& patches)
         {
             RebuildLinkPatchesTree(patches);
         }
@@ -155,6 +157,11 @@ namespace AzToolsFramework
         bool Link::AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree)
         {
             return m_linkPatchesTree.OverwritePath(path, AZStd::move(subTree));
+        }
+
+        void Link::AddOverrides(const PrefabDomValue& patches)
+        {
+            AddLinkPatchesToTree(patches);
         }
 
         PrefabDomPath Link::GetInstancePath() const
@@ -284,7 +291,15 @@ namespace AzToolsFramework
 
         void Link::RebuildLinkPatchesTree(const PrefabDomValue& patches)
         {
+            // Remove all patches in tree and reset index counter for new patches.
             m_linkPatchesTree.Clear();
+            m_patchIndexCounter = 0u;
+
+            AddLinkPatchesToTree(patches);
+        }
+
+        void Link::AddLinkPatchesToTree(const PrefabDomValue& patches)
+        {
             if (patches.IsArray())
             {
                 rapidjson::GenericArray patchesArray = patches.GetArray();
@@ -293,11 +308,11 @@ namespace AzToolsFramework
                     PrefabDom patchEntry;
                     patchEntry.CopyFrom(patchesArray[i], patchEntry.GetAllocator());
 
-                    auto path = patchEntry.FindMember("path");
-                    if (path != patchEntry.MemberEnd())
+                    auto pathIter = patchEntry.FindMember("path");
+                    if (pathIter != patchEntry.MemberEnd())
                     {
-                        AZ::Dom::Path domPath(path->value.GetString());
-                        PrefabOverrideMetadata overrideMetadata(AZStd::move(patchEntry), i);
+                        AZ::Dom::Path domPath(pathIter->value.GetString());
+                        PrefabOverrideMetadata overrideMetadata(AZStd::move(patchEntry), m_patchIndexCounter++);
                         m_linkPatchesTree.SetValue(domPath, AZStd::move(overrideMetadata));
                     }
                 }

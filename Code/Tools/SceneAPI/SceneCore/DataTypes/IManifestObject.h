@@ -10,11 +10,16 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
     namespace SceneAPI
     {
+        namespace Containers
+        {
+            class SceneManifest;
+        }
         namespace DataTypes
         {
             class IManifestObject
@@ -26,6 +31,10 @@ namespace AZ
                 virtual ~IManifestObject() = 0;
                 virtual void OnUserAdded() {};
                 virtual void OnUserRemoved() const {};
+                // Some manifest objects cause other manifest objects to be created.
+                // When those manifest objects are removed, the added manifest objects should be removed, too.
+                virtual void GetManifestObjectsToRemoveOnRemoved(
+                    AZStd::vector<const IManifestObject*>& /*toRemove*/, const Containers::SceneManifest& /*manifest*/) const {}
             };
 
             inline void IManifestObject::Reflect(AZ::ReflectContext* context)

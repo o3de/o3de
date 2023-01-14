@@ -25,7 +25,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             Gem::AWSCore
-            Gem::Multiplayer.Static
+            Gem::Multiplayer.Unified.Static
             3rdParty::AWSNativeSDK::GameLiftClient
 )
 
@@ -88,7 +88,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 Gem::AWSCore
                 Gem::AWSGameLift.Client.Static
-                Gem::Multiplayer.Static
+                Gem::Multiplayer.Unified.Static
                 3rdParty::AWSNativeSDK::GameLiftClient
                 AZ::AWSNativeSDKTestLibs
     )

@@ -86,17 +86,27 @@ namespace AzFramework
         //! 2. The listener calls the paintbrush value callback for each position in the region that it cares about.
         //! 3. The paintbrush responds with the specific painted values for each of those positions based on the brush shape and settings.
         //! 4. The listener uses the blendFn to blend values together using the paint brush blending method.
+        //! @param color The color of the paint stroke, including opacity
         //! @param dirtyArea The AABB of the area that has been painted in.
         //! @param valueLookupFn The paintbrush value callback to use to get the intensities / opacities / valid flags for
         //! specific positions.
         //! @param blendFn The paintbrush callback to use to blend values together.
-        virtual void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn) = 0;
+        virtual void OnPaint(
+            [[maybe_unused]] const AZ::Color& color,
+            [[maybe_unused]] const AZ::Aabb& dirtyArea,
+            [[maybe_unused]] ValueLookupFn& valueLookupFn,
+            [[maybe_unused]] BlendFn& blendFn)
+        {
+        }
 
         //! Notifies listeners that the paintbrush eyedropper has requested a color from a point.
         //! This will get called in each frame that the paintbrush continues its brush stroke and the brush has moved.
         //! @param brushCenterPoint the point to get the color from.
         //! @return The color stored in the data source at that point.
-        virtual AZ::Color OnGetColor([[maybe_unused]] const AZ::Vector3& brushCenterPoint) = 0;
+        virtual AZ::Color OnGetColor([[maybe_unused]] const AZ::Vector3& brushCenterPoint) const
+        {
+            return AZ::Color(0.0f, 0.0f, 0.0f, 1.0f);
+        }
 
         //! Notifies listeners that the paintbrush is smoothing a region.
         //! This will get called in each frame that the paintbrush continues to smooth and the brush has moved.
@@ -107,14 +117,20 @@ namespace AzFramework
         //! 3. The paintbrush responds with the specific brush values for each of those positions based on the brush shape and settings.
         //! 4. The listener gets an NxN set of values around each valid brush position.
         //! 4. The listener uses the smoothFn to smooth those values together using the paint brush smoothing method.
+        //! @param color The color of the paint stroke, including opacity
         //! @param dirtyArea The AABB of the area that has been painted in.
         //! @param valueLookupFn The paintbrush value callback to use to get the intensities / opacities / valid flags for
         //! specific positions.
         //! @param valuePointOffsets A vector of relative positional offsets to use for looking up all the values to pass into smoothFn
         //! @param smoothFn The paintbrush callback to use to smooth values together.
         virtual void OnSmooth(
-            const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn,
-            AZStd::span<const AZ::Vector3> valuePointOffsets, SmoothFn& smoothFn) = 0;
+            [[maybe_unused]] const AZ::Color& color,
+            [[maybe_unused]] const AZ::Aabb& dirtyArea,
+            [[maybe_unused]] ValueLookupFn& valueLookupFn,
+            [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
+            [[maybe_unused]] SmoothFn& smoothFn)
+        {
+        }
     };
 
     using PaintBrushNotificationBus = AZ::EBus<PaintBrushNotifications>;

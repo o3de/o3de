@@ -223,12 +223,12 @@ namespace UnitTest
 
         // Capture the before and after for setting the reference property
         PrefabDom entityDomBeforeUpdate;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomBeforeUpdate, *newEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomBeforeUpdate, *newEntity);
 
         newComponent->m_entityIdProperty = referencedEntity->GetId();
 
         PrefabDom entityDomAfterUpdate;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomAfterUpdate, *newEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomAfterUpdate, *newEntity);
 
         PrefabDom patch;
         m_instanceToTemplateInterface->GeneratePatch(patch, entityDomBeforeUpdate, entityDomAfterUpdate);

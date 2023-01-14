@@ -32,6 +32,9 @@ namespace PhysX
         /// Sets the current sub collider component mode.
         /// @param mode The new mode to set.
         virtual void SetCurrentMode(SubMode mode) = 0;
+
+        /// Resets the current sub collider component mode's UI.
+        virtual void ResetCurrentMode() = 0;
     };
 
     //! Provides access to Component Mode specific UI options
