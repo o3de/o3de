@@ -19,13 +19,11 @@ set(FILES
     LocalizationManagerBus.h
     LocalizationManagerBus.inl
     ILog.h
-    IMaterial.h
     IMiniLog.h
     IMovieSystem.h
     IRenderAuxGeom.h
     IRenderer.h
     ISerialize.h
-    IShader.h
     ISplines.h
     ISystem.h
     ITexture.h

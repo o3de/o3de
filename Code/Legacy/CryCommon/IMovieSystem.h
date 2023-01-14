@@ -32,7 +32,6 @@ struct IMovieSystem;
 struct IKey;
 class XmlNodeRef;
 struct ISplineInterpolator;
-struct ILightAnimWrapper;
 
 namespace AZ
 {

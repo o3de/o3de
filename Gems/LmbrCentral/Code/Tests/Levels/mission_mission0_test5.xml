@@ -1,8 +1,0 @@
-<Mission Name="Mission0" Description="" Time="13:30" PlayerEquipPack="" MusicScript="" Script="" CGFCount="3">
- <MiniMap CenterX="512" CenterY="512" ExtendsX="512" ExtendsY="512" TexWidth="1024" TexHeight="1024"/>
- <Weapons>
-  <Used />
-  <Ammo />
- </Weapons>
- <Objects />
-</Mission>

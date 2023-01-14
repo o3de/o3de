@@ -45,7 +45,6 @@
 #include <Cinematics/AnimPostFXNode.h>
 #include <Cinematics/EventNode.h>
 #include <Cinematics/LayerNode.h>
-#include <Cinematics/MaterialNode.h>
 #include <Cinematics/ShadowsSetupNode.h>
 
 namespace Maestro
@@ -180,7 +179,6 @@ namespace Maestro
         CAnimPostFXNode::Reflect(context);
         CAnimEventNode::Reflect(context);
         CLayerNode::Reflect(context);
-        CAnimMaterialNode::Reflect(context);
         CShadowsSetupNode::Reflect(context);
     }
 

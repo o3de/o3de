@@ -66,7 +66,6 @@ set(FILES
     Source/Cinematics/CVarNode.cpp
     Source/Cinematics/EventNode.cpp
     Source/Cinematics/LayerNode.cpp
-    Source/Cinematics/MaterialNode.cpp
     Source/Cinematics/SceneNode.cpp
     Source/Cinematics/ScriptVarNode.cpp
     Source/Cinematics/AnimAZEntityNode.h
@@ -78,7 +77,6 @@ set(FILES
     Source/Cinematics/CVarNode.h
     Source/Cinematics/EventNode.h
     Source/Cinematics/LayerNode.h
-    Source/Cinematics/MaterialNode.h
     Source/Cinematics/SceneNode.h
     Source/Components/SequenceComponent.h
     Source/Components/SequenceComponent.cpp

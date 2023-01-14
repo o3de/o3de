@@ -11,7 +11,6 @@
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <smartptr.h>
-#include <IMaterial.h>
 
 namespace LmbrCentral
 {

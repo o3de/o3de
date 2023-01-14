@@ -1,4 +1,0 @@
-<ObjectTemplates>
-	<Entity SuperType="StdEntity" Category="Entity" ToolTip="Entity"/>
-	<TagPoint SuperType="StdTagPoint" Category="AI"  ToolTip="Tag point"/>
-</ObjectTemplates>
