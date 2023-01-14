@@ -142,20 +142,29 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::OnDocumentOpened(const AZ::Uuid& documentId)
     {
-        AtomToolsFramework::GraphCompilerRequestBus::Event(
-            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
+        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/GraphCompiler/EnableCompileOnOpen", true))
+        {
+            AtomToolsFramework::GraphCompilerRequestBus::Event(
+                documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
+        }
     }
 
     void MaterialCanvasApplication::OnDocumentSaved(const AZ::Uuid& documentId)
     {
-        AtomToolsFramework::GraphCompilerRequestBus::Event(
-            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
+        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/GraphCompiler/EnableCompileOnSave", true))
+        {
+            AtomToolsFramework::GraphCompilerRequestBus::Event(
+                documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
+        }
     }
 
     void MaterialCanvasApplication::OnDocumentUndoStateChanged(const AZ::Uuid& documentId)
     {
-        AtomToolsFramework::GraphCompilerRequestBus::Event(
-            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
+        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/GraphCompiler/EnableCompileOnEdit", true))
+        {
+            AtomToolsFramework::GraphCompilerRequestBus::Event(
+                documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
+        }
     }
 
     void MaterialCanvasApplication::OnDocumentClosed(const AZ::Uuid& documentId)

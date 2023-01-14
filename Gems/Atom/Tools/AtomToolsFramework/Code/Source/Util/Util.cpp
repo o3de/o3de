@@ -831,6 +831,16 @@ namespace AtomToolsFramework
             addUtilFunc(behaviorContext->Method("GetPathWithoutAlias", GetPathWithoutAlias, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetPathWithAlias", GetPathWithAlias, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetPathsInSourceFoldersMatchingWildcard", GetPathsInSourceFoldersMatchingWildcard, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_bool", GetSettingsValue<bool>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_bool", SetSettingsValue<bool>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_s64", GetSettingsValue<AZ::s64>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_s64", SetSettingsValue<AZ::s64>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_u64", GetSettingsValue<AZ::u64>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_u64", SetSettingsValue<AZ::u64>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_double", GetSettingsValue<double>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_double", SetSettingsValue<double>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_string", GetSettingsValue<AZStd::string>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_string", SetSettingsValue<AZStd::string>, nullptr, ""));
         }
     }
 } // namespace AtomToolsFramework
