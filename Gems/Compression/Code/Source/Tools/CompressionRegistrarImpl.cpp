@@ -57,8 +57,8 @@ namespace Compression
     bool CompressionRegistrarImpl::RegisterCompressionInterface(CompressionAlgorithmId compressionAlgorithmId, ICompressionInterface& compressionInterface)
     {
         // Create a temporary CompressionInterfacePtr with a custom deleter that does NOT delete the compressionInterface reference
-        // On success, the the CompressionInterfacePtr is stored in the compression interface array and will not the reference to the input compressionInterface
-        // when the compressionInterface is unregistered
+        // On success, the the CompressionInterfacePtr is stored in the compression interface array
+        // and will not delete the reference to registered interface
         return RegisterCompressionInterfaceImpl(compressionAlgorithmId, CompressionInterfacePtr{ &compressionInterface, CompressionInterfaceDeleter{false} }).IsSuccess();
     }
 
@@ -75,7 +75,7 @@ namespace Compression
         if (compressionIter != m_compressionInterfaces.end())
         {
             // The compression interface has been found using the compression interface id,
-            // so second registration cannot be done
+            // so another registration cannot be done
             return AZ::Failure(AZStd::move(compressionInterfacePtr));
         }
 
@@ -98,7 +98,7 @@ namespace Compression
         if (auto compressionIter = FindCompressionInterfaceImpl(compressionAlgorithmId);
             compressionIter != m_compressionInterfaces.end())
         {
-            // Remove the CompressionInterface
+            // Remove the compressionInterface
             m_compressionInterfaces.erase(compressionIter);
             return true;
         }

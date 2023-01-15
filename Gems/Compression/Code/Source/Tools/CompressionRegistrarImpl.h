@@ -69,10 +69,10 @@ namespace Compression
         using IdToCompressionInterfaceMap = AZStd::vector<CompressionIdIndexEntry>;
 
         //! Searches within the compression interface array for the compression interface registered with the specified id
-        //! @param algorithmId Unique Id of compression interface to locate
+        //! @param compressionAlgorithmId Unique Id of compression interface to locate
         //! @return iterator pointing the compression interface registered with the specified CompressionAlgorithmId
         //! NOTE: It is responsibility of the caller to lock the compression interface mutex to protect the search
-        typename IdToCompressionInterfaceMap::const_iterator FindCompressionInterfaceImpl(CompressionAlgorithmId) const;
+        typename IdToCompressionInterfaceMap::const_iterator FindCompressionInterfaceImpl(CompressionAlgorithmId compressionAlgorithmId) const;
 
 
         //! Contains the registered compression interfaces

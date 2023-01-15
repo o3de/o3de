@@ -72,12 +72,12 @@ namespace Compression
 
 
         //! Registers decompression interface and takes ownership of it if registration is successful
-        //! @param algorithmId Unique id to associate with decompression interface
+        //! @param compressionAlgorithmId Unique id to associate with decompression interface
         //! @param decompressionInterface decompression interface to register
         //! @return Success outcome if the decompression interface was successfully registered
         //! Otherwise, a failure outcome with the decompression interface is forward back to the caller
         virtual AZ::Outcome<void, AZStd::unique_ptr<IDecompressionInterface>> RegisterDecompressionInterface(
-            CompressionAlgorithmId algorithmId, AZStd::unique_ptr<IDecompressionInterface>) = 0;
+            CompressionAlgorithmId compressionAlgorithmId, AZStd::unique_ptr<IDecompressionInterface> decompressionInterface) = 0;
 
 
         //! Registers decompression interface, but does not take ownership of it
@@ -85,27 +85,27 @@ namespace Compression
         //! matches the input decompression interface, then registration does not occur
         //!
         //! Registers decompression interface, but does not take ownership of it
-        //! @param algorithmId Unique id to associate with decompression interface
+        //! @param compressionAlgorithmId Unique id to associate with decompression interface
         //! @param decompressionInterface decompression interface to register
         //! @return true if the ICompressionInterface was successfully registered
-        virtual bool RegisterDecompressionInterface(CompressionAlgorithmId algorithmId, IDecompressionInterface&) = 0;
+        virtual bool RegisterDecompressionInterface(CompressionAlgorithmId compressionAlgorithmId, IDecompressionInterface& decompressionInterface) = 0;
 
         //! Unregisters the decompression interface with the specified id
         //!
         //! @param decompressionAlgorithmId unique Id that identifies the decompression interface
         //! @return true if the unregistration is successful
-        virtual bool UnregisterDecompressionInterface(CompressionAlgorithmId algorithmId) = 0;
+        virtual bool UnregisterDecompressionInterface(CompressionAlgorithmId compressionAlgorithmId) = 0;
 
         //! Queries the decompression interface with the decompression algorithmd Id
-        //! @param decompressionAlgorithmId unique Id of decompression interface to query
+        //! @param compressionAlgorithmId unique Id of decompression interface to query
         //! @return pointer to the decompression tnterface or nullptr if not found
-        [[nodiscard]] virtual IDecompressionInterface* FindDecompressionInterface(CompressionAlgorithmId) const = 0;
+        [[nodiscard]] virtual IDecompressionInterface* FindDecompressionInterface(CompressionAlgorithmId compressionAlgorithmId) const = 0;
 
 
         //! Return true if there is an decompression interface registered with the specified id
-        //! @param algorithmId CompressionAlgorithmId to determine if an decompression interface is registered
+        //! @param compressionAlgorithmId CompressionAlgorithmId to determine if an decompression interface is registered
         //! @return bool indicating if there is an decompression interface with the id registered
-        [[nodiscard]] virtual bool IsRegistered(CompressionAlgorithmId) const = 0;
+        [[nodiscard]] virtual bool IsRegistered(CompressionAlgorithmId compressionAlgorithmId) const = 0;
     };
 
     using DecompressionRegistrar = AZ::Interface<DecompressionRegistrarInterface>;
