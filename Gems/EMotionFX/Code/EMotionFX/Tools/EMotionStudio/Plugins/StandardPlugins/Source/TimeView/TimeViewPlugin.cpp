@@ -1309,6 +1309,8 @@ namespace EMStudio
                     element->SetIsVisible(false);
                 }
             }
+
+            m_motionEventWidget->ReInit();
         }
 
         // update the time view plugin
