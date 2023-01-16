@@ -64,11 +64,14 @@ namespace AzToolsFramework
         //! Returns the actions that we want any Component Mode using the Paint Brush Manipulator to support.
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl();
 
+        //! Initializes the actions that we want any Component Mode using the Paint Brush Manipulator to support.
+        static void RegisterActions();
+
         //! Adjusts the size of the paintbrush
-        void AdjustSize(float sizeDelta);
+        static void AdjustSize(float sizeDelta);
 
         //! Adjusts the paintbrush hardness percent
-        void AdjustHardnessPercent(float hardnessPercentDelta);
+        static void AdjustHardnessPercent(float hardnessPercentDelta);
 
     private:
         void InvalidateImpl() override;

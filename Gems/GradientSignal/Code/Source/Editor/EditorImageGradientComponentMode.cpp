@@ -8,6 +8,10 @@
 
 #include <AzCore/Component/TransformBus.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -28,6 +32,8 @@
 
 namespace GradientSignal
 {
+    static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
+
     //! Class that tracks the data for undoing/redoing a paint stroke.
     class PaintBrushUndoBuffer : public AzToolsFramework::UndoSystem::URSequencePoint
     {
@@ -139,6 +145,44 @@ namespace GradientSignal
         m_brushManipulator.reset();
 
         ImageGradientModificationNotificationBus::Handler::BusDisconnect();
+    }
+
+    void EditorImageGradientComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<EditorImageGradientComponentMode>(context);
+    }
+
+    void EditorImageGradientComponentMode::RegisterActions()
+    {
+        AzToolsFramework::PaintBrushManipulator::RegisterActions();
+    }
+
+    void EditorImageGradientComponentMode::BindActionsToModes()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorImageGradientComponentMode - could not get ActionManagerInterface on BindActionsToModes.");
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        AZStd::string modeIdentifier = AZStd::string::format(
+            "o3de.context.mode.%s", serializeContext->FindClassData(azrtti_typeid<EditorImageGradientComponentMode>())->m_name);
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.increaseSize");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.decreaseSize");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.increaseHardness");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.decreaseHardness");
+    }
+
+    void EditorImageGradientComponentMode::BindActionsToMenus()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "EditorImageGradientComponentMode - could not get MenuManagerInterface on BindActionsToMenus.");
+
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseSize", 6000);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseSize", 6001);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseHardness", 6002);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseHardness", 6003);
     }
 
     AZStd::vector<AzToolsFramework::ActionOverride> EditorImageGradientComponentMode::PopulateActionsImpl()

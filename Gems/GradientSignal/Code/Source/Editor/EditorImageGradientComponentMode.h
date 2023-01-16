@@ -25,8 +25,16 @@ namespace GradientSignal
         , private ImageGradientModificationNotificationBus::Handler
     {
     public:
+        AZ_RTTI(EditorImageGradientComponentMode, "{49957D52-F1C3-4C34-AA84-7661BC418AB2}", EditorBaseComponentMode)
+
         EditorImageGradientComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         ~EditorImageGradientComponentMode() override;
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        static void RegisterActions();
+        static void BindActionsToModes();
+        static void BindActionsToMenus();
 
         // EditorBaseComponentMode overrides...
         void Refresh() override;

@@ -9,6 +9,8 @@
 #include <AzCore/Math/Geometry2DUtils.h>
 #include <AzCore/std/sort.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
@@ -58,6 +60,8 @@ namespace AzToolsFramework
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The number of meters to raycast to look for a valid surface to paint onto.");
+
+    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 
     namespace
     {
@@ -310,7 +314,7 @@ namespace AzToolsFramework
                 .SetTip(PaintbrushIncreaseSizeDesc)
                 .SetEntityComponentIdPair(m_ownerEntityComponentId)
                 .SetCallback(
-                    [this]()
+                    []()
                     {
                         AdjustSize(ed_paintBrushSizeAdjustAmount);
                     }),
@@ -321,7 +325,7 @@ namespace AzToolsFramework
                 .SetTip(PaintbrushDecreaseSizeDesc)
                 .SetEntityComponentIdPair(m_ownerEntityComponentId)
                 .SetCallback(
-                    [this]()
+                    []()
                     {
                         AdjustSize(-ed_paintBrushSizeAdjustAmount);
                     }),
@@ -332,7 +336,7 @@ namespace AzToolsFramework
                 .SetTip(PaintbrushIncreaseHardnessDesc)
                 .SetEntityComponentIdPair(m_ownerEntityComponentId)
                 .SetCallback(
-                    [this]()
+                    []()
                     {
                         AdjustHardnessPercent(ed_paintBrushHardnessPercentAdjustAmount);
                     }),
@@ -343,11 +347,104 @@ namespace AzToolsFramework
                 .SetTip(PaintbrushDecreaseHardnessDesc)
                 .SetEntityComponentIdPair(m_ownerEntityComponentId)
                 .SetCallback(
-                    [this]()
+                    []()
                     {
                         AdjustHardnessPercent(-ed_paintBrushHardnessPercentAdjustAmount);
                     }),
         };
+    }
+
+    void PaintBrushManipulator::RegisterActions()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "PaintBrushManipulator - could not get ActionManagerInterface on RegisterActions.");
+
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        AZ_Assert(hotKeyManagerInterface, "PaintBrushManipulator - could not get HotKeyManagerInterface on RegisterActions.");
+
+        // Increase Paintbrush Size
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.paintBrushManipulator.increaseSize";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = PaintbrushIncreaseSizeTitle;
+            actionProperties.m_description = PaintbrushIncreaseSizeDesc;
+            actionProperties.m_category = "PaintBrush Manipulator";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    AdjustSize(ed_paintBrushSizeAdjustAmount);
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "]");
+        }
+
+        // Decrease Paintbrush Size
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.paintBrushManipulator.decreaseSize";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = PaintbrushDecreaseSizeTitle;
+            actionProperties.m_description = PaintbrushDecreaseSizeDesc;
+            actionProperties.m_category = "PaintBrush Manipulator";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    AdjustSize(-ed_paintBrushSizeAdjustAmount);
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "[");
+        }
+
+        // Increase Paintbrush Hardness
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.paintBrushManipulator.increaseHardness";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = PaintbrushIncreaseHardnessTitle;
+            actionProperties.m_description = PaintbrushIncreaseHardnessDesc;
+            actionProperties.m_category = "PaintBrush Manipulator";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    AdjustHardnessPercent(ed_paintBrushHardnessPercentAdjustAmount);
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "}");
+        }
+
+        // Decrease Paintbrush Size
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.paintBrushManipulator.decreaseHardness";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = PaintbrushDecreaseHardnessTitle;
+            actionProperties.m_description = PaintbrushDecreaseHardnessDesc;
+            actionProperties.m_category = "PaintBrush Manipulator";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    AdjustHardnessPercent(-ed_paintBrushHardnessPercentAdjustAmount);
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "{");
+        }
     }
 
     void PaintBrushManipulator::AdjustSize(float sizeDelta)

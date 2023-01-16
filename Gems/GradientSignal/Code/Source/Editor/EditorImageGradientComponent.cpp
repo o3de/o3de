@@ -14,6 +14,8 @@ namespace GradientSignal
 {
     void EditorImageGradientComponent::Reflect(AZ::ReflectContext* context)
     {
+        EditorImageGradientComponentMode::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorImageGradientComponent, AzToolsFramework::Components::EditorComponentBase>()
