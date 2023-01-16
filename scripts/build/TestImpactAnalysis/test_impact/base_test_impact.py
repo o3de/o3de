@@ -152,7 +152,7 @@ class BaseTestImpact(ABC):
         for argument in RuntimeArgs:
             value = args.get(argument.driver_argument)
             if value:
-                self._runtime_args.append(f"{argument.runtime_arg}{value if isinstance(value, str) else ','.join(value)}") 
+                self._runtime_args.append(f"{argument.runtime_arg}{','.join(value) if isinstance(value, list) else value}") 
                 logger.info(f"{argument.message}{value}")
 
     def _handle_historic_data(self):
