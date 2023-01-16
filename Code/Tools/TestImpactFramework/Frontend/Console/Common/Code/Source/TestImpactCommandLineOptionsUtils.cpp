@@ -17,7 +17,7 @@ namespace TestImpact
     {
         AZStd::set<AZStd::string> values;
         if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
-            numSwitchValues)
+            numSwitchValues > 0)
         {
             for (size_t i = 0; i < numSwitchValues; i++)
             {
@@ -31,7 +31,7 @@ namespace TestImpact
     AZStd::optional<RepoPath> ParsePathOption(const AZStd::string& optionName, const AZ::CommandLine& cmd)
     {  
         if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
-            numSwitchValues)
+            numSwitchValues > 0)
         {
             AZ_TestImpact_Eval(
                 numSwitchValues == 1,
@@ -53,7 +53,7 @@ namespace TestImpact
     AZStd::optional<size_t> ParseUnsignedIntegerOption(const AZStd::string& optionName, const AZ::CommandLine& cmd)
     {
         if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
-            numSwitchValues)
+            numSwitchValues > 0)
         {
             AZ_TestImpact_Eval(
                 numSwitchValues == 1,

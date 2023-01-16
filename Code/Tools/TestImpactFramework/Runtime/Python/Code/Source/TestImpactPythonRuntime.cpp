@@ -301,10 +301,10 @@ namespace TestImpact
         const AZStd::unordered_set<const PythonTestTarget*> selectedTestTargetSet(selectedTestTargets.begin(), selectedTestTargets.end());
 
         // Unlike native test impact analysis, python test impact analysis can have tests with no coverage so we cannot simply
-        // draft in tests without coverage (i.e. for native, new tests, or tests that have yet to successfully execute in previous
-        // runs). Instead, the python test selector will run all parent test target tests when a new python test is added. What we
-        // should do in future versions (for both native and python) is draft in any previous failing tests. For now, we will leave
-        // the drafted set empty.
+        // draft in tests without coverage (i.e. new tests, or tests that have yet to successfully execute in previous runs).
+        // Instead, the python test selector will run all parent test target tests when a new python test is added. What we
+        // should do in future versions (for both native and python) is draft in any previous failing tests. For now, we will
+        // leave the drafted set empty.
         AZStd::vector<const TestTarget*> draftedTestTargets;
 
         // The subset of selected test targets that are not on the configuration's exclude list and those that are
@@ -320,7 +320,6 @@ namespace TestImpact
             return m_testEngine->InstrumentedRun(
                 testsTargets,
                 m_executionFailurePolicy,
-                m_integrationFailurePolicy,
                 m_testFailurePolicy,
                 m_targetOutputCapture,
                 testTargetTimeout,
@@ -438,7 +437,6 @@ namespace TestImpact
             return m_testEngine->InstrumentedRun(
                 testsTargets,
                 m_executionFailurePolicy,
-                m_integrationFailurePolicy,
                 m_testFailurePolicy,
                 m_targetOutputCapture,
                 testTargetTimeout,
@@ -593,7 +591,6 @@ namespace TestImpact
         const auto [result, testJobs] = m_testEngine->InstrumentedRun(
             includedTestTargets,
             m_executionFailurePolicy,
-            m_integrationFailurePolicy,
             m_testFailurePolicy,
             m_targetOutputCapture,
             testTargetTimeout,

@@ -103,7 +103,7 @@ namespace TestImpact
         //! Returns the filter for test suites that will be allowed to be run.
         const SuiteSet& GetSuiteSet() const;
 
-        //! Returns the test suite label exclude set that will be used to exclude any test targets with any matching suite labesl.#
+        //! Returns the test suite label exclude set that will be used to exclude any test targets with any matching suite labels.
         const SuiteLabelExcludeSet& GetSuiteLabelExcludeSet() const;
 
         //! Returns the tests to exclude from this run of TIAF (if any).

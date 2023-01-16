@@ -9,6 +9,7 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>
+#include <Artifact/Factory/TestImpactTestTargetMetaMapFactoryUtils.h>
 #include <Artifact/TestImpactArtifactException.h>
 
 #include <AzCore/JSON/document.h>
@@ -67,54 +68,43 @@ namespace TestImpact
         for (const auto& test : tests)
         {
             NativeTestTargetMeta testMeta;
+            AZStd::string name = test[Keys[NameKey]].GetString();
+            AZ_TestImpact_Eval(!name.empty(), ArtifactException, "Test name field cannot be empty");
+            testMeta.m_testTargetMeta.m_namespace = test[Keys[Namespacekey]].GetString();
+
+            if (const auto buildTypeString = test[Keys[LaunchMethodKey]].GetString(); strcmp(buildTypeString, Keys[TestRunnerKey]) == 0)
+            {
+                testMeta.m_launchMeta.m_launchMethod = LaunchMethod::TestRunner;
+            }
+            else if (strcmp(buildTypeString, Keys[StandAloneKey]) == 0)
+            {
+                testMeta.m_launchMeta.m_launchMethod = LaunchMethod::StandAlone;
+            }
+            else
+            {
+                throw(ArtifactException("Unexpected test build type"));
+            }
+
             const auto testSuites = test[Keys[TestSuitesKey]].GetArray();
-            bool skipTest = false;
             for (const auto& suite : testSuites)
             {
-                // Check to see if this test target has the suite we're looking for
+                // Check to see if this test target has a suite we're looking for (first suite to
+                // match will be "the" suite for this test)
                 if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
                     suiteSet.contains(suiteName))
                 {
-                    const auto suiteLabels = suite[Keys[SuiteLabelsKey]].GetArray();
-                    for (const auto& label : suiteLabels)
+                    if (auto labelSet = ExtractTestSuiteLabelSet(suite[Keys[SuiteLabelsKey]].GetArray(), suiteLabelExcludeSet);
+                        labelSet.has_value())
                     {
-                        const auto labelString = label.GetString();
-                        if (suiteLabelExcludeSet.contains(labelString))
-                        {
-                            skipTest = true;
-                            break;
-                        }
-
-                        testMeta.m_testTargetMeta.m_suiteMeta.m_labelSet.insert(labelString);
+                        testMeta.m_testTargetMeta.m_suiteMeta.m_labelSet = AZStd::move(labelSet.value());
+                        testMeta.m_testTargetMeta.m_suiteMeta.m_name = suiteName;
+                        testMeta.m_testTargetMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
+                        testMeta.m_launchMeta.m_customArgs = suite[Keys[CommandKey]].GetString();
+                        testMetas.emplace(AZStd::move(name), AZStd::move(testMeta));
                     }
 
-                    if (skipTest)
-                    {
-                        break;
-                    }
-
-                    testMeta.m_testTargetMeta.m_namespace = test[Keys[Namespacekey]].GetString();
-                    testMeta.m_testTargetMeta.m_suiteMeta.m_name = suiteName;
-                    testMeta.m_testTargetMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
-                    testMeta.m_launchMeta.m_customArgs = suite[Keys[CommandKey]].GetString();
-
-                    if (const auto buildTypeString = test[Keys[LaunchMethodKey]].GetString();
-                        strcmp(buildTypeString, Keys[TestRunnerKey]) == 0)
-                    {
-                        testMeta.m_launchMeta.m_launchMethod = LaunchMethod::TestRunner;
-                    }
-                    else if (strcmp(buildTypeString, Keys[StandAloneKey]) == 0)
-                    {
-                        testMeta.m_launchMeta.m_launchMethod = LaunchMethod::StandAlone;
-                    }
-                    else
-                    {
-                        throw(ArtifactException("Unexpected test build type"));
-                    }
-
-                    AZStd::string name = test[Keys[NameKey]].GetString();
-                    AZ_TestImpact_Eval(!name.empty(), ArtifactException, "Test name field cannot be empty");
-                    testMetas.emplace(AZStd::move(name), AZStd::move(testMeta));
+                    // We either have one matching suite or the suite contians a label in the exclude set so we will break
+                    // out of the suite loop
                     break;
                 }
             }
