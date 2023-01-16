@@ -43,6 +43,7 @@
 
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
+#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderComponent.h>
 #include <Builders/LevelBuilder/LevelBuilderComponent.h>
 #include <Builders/LuaBuilder/LuaBuilderComponent.h>
@@ -121,20 +122,31 @@ namespace LmbrCentral
     {
         EditorSplineComponentMode::RegisterActions();
         EditorTubeShapeComponentMode::RegisterActions();
+        if (IsShapeComponentTranslationEnabled())
+        {
+            AzToolsFramework::BoxComponentMode::RegisterActions();
+        }
     }
 
     void LmbrCentralEditorModule::OnActionContextModeBindingHook()
     {
         EditorSplineComponentMode::BindActionsToModes();
         EditorTubeShapeComponentMode::BindActionsToModes();
+        if (IsShapeComponentTranslationEnabled())
+        {
+            AzToolsFramework::BoxComponentMode::BindActionsToModes();
+        }
     }
 
     void LmbrCentralEditorModule::OnMenuBindingHook()
     {
         EditorSplineComponentMode::BindActionsToMenus();
         EditorTubeShapeComponentMode::BindActionsToMenus();
+        if (IsShapeComponentTranslationEnabled())
+        {
+            AzToolsFramework::BoxComponentMode::BindActionsToMenus();
+        }
     }
-
 } // namespace LmbrCentral
 
 AZ_DECLARE_MODULE_CLASS(Gem_LmbrCentralEditor, LmbrCentral::LmbrCentralEditorModule)

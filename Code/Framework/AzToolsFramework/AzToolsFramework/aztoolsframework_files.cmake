@@ -639,6 +639,7 @@ set(FILES
     ComponentModes/BoxViewportEdit.cpp
     ComponentModes/CapsuleViewportEdit.h
     ComponentModes/CapsuleViewportEdit.cpp
+    ComponentModes/ShapeComponentModeBus.h
     ComponentModes/ShapeTranslationOffsetViewportEdit.h
     ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
     ComponentModes/ViewportEditUtilities.h
