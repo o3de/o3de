@@ -119,6 +119,7 @@ namespace MaterialCanvas
         m_window.reset();
         m_viewportSettingsSystem.reset();
         m_graphContext.reset();
+        m_graphCompilerManager.reset();
         m_dynamicNodeManager.reset();
 
         ApplyShaderBuildSettings();
@@ -138,43 +139,6 @@ namespace MaterialCanvas
     void MaterialCanvasApplication::FactoryRegistered()
     {
         ApplyShaderBuildSettings();
-    }
-
-    void MaterialCanvasApplication::OnDocumentOpened(const AZ::Uuid& documentId)
-    {
-        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/GraphCompiler/EnableCompileOnOpen", true))
-        {
-            AtomToolsFramework::GraphCompilerRequestBus::Event(
-                documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
-        }
-    }
-
-    void MaterialCanvasApplication::OnDocumentSaved(const AZ::Uuid& documentId)
-    {
-        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/GraphCompiler/EnableCompileOnSave", true))
-        {
-            AtomToolsFramework::GraphCompilerRequestBus::Event(
-                documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
-        }
-    }
-
-    void MaterialCanvasApplication::OnDocumentUndoStateChanged(const AZ::Uuid& documentId)
-    {
-        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/GraphCompiler/EnableCompileOnEdit", true))
-        {
-            AtomToolsFramework::GraphCompilerRequestBus::Event(
-                documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
-        }
-    }
-
-    void MaterialCanvasApplication::OnDocumentClosed(const AZ::Uuid& documentId)
-    {
-        m_graphCompilerMap.erase(documentId);
-    }
-
-    void MaterialCanvasApplication::OnDocumentDestroyed(const AZ::Uuid& documentId)
-    {
-        m_graphCompilerMap.erase(documentId);
     }
 
     void MaterialCanvasApplication::InitDynamicNodeManager()
@@ -289,6 +253,8 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::InitMaterialGraphDocumentType()
     {
+        m_graphCompilerManager.reset(aznew AtomToolsFramework::GraphCompilerManager(m_toolId));
+
         // Acquiring default Material Canvas document type info so that it can be customized before registration
         auto documentTypeInfo = AtomToolsFramework::GraphDocument::BuildDocumentTypeInfo(
             "Material Graph",
@@ -304,7 +270,10 @@ namespace MaterialCanvas
         {
             m_window->AddDocumentTab(
                 documentId, aznew AtomToolsFramework::GraphDocumentView(toolId, documentId, m_graphViewSettingsPtr, m_window.get()));
-            m_graphCompilerMap.emplace(documentId, AZStd::make_unique<MaterialGraphCompiler>(toolId, documentId));
+
+            // Create and register a material graph compiler for this document with the graph compiler manager. The manager will monitor
+            // document notifications, process queued graph compiler requests, and report status of generated files from the AP.
+            m_graphCompilerManager->RegisterGraphCompiler(documentId, aznew MaterialGraphCompiler(toolId, documentId));
             return true;
         };
 
@@ -343,6 +312,7 @@ namespace MaterialCanvas
             { "shader" },
             {},
             AZStd::any(AZ::RPI::ShaderSourceData()),
+
             AZ::RPI::ShaderSourceData::TYPEINFO_Uuid()); // Supplying ID because it is not included in the JSON file
 
         documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId)

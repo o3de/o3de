@@ -60,9 +60,9 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
 
     with Tracer() as error_tracer:
         # Disable automatic material and shader generation when opening graphs.
-        azlmbr.atomtools.util.SetSettingsValue_bool("/O3DE/Atom/MaterialCanvas/GraphCompiler/EnableCompileOnOpen", False)
-        azlmbr.atomtools.util.SetSettingsValue_bool("/O3DE/Atom/MaterialCanvas/GraphCompiler/EnableCompileOnSave", False)
-        azlmbr.atomtools.util.SetSettingsValue_bool("/O3DE/Atom/MaterialCanvas/GraphCompiler/EnableCompileOnEdit", False)
+        azlmbr.atomtools.util.SetSettingsValue_bool("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnOpen", False)
+        azlmbr.atomtools.util.SetSettingsValue_bool("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave", False)
+        azlmbr.atomtools.util.SetSettingsValue_bool("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit", False)
 
         # Set constants before starting test steps.
         test_1_material_graph = os.path.join(atom_tools_utils.MATERIALCANVAS_GRAPH_PATH, "test1.materialgraph")

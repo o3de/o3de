@@ -96,6 +96,7 @@ set(FILES
     Source/Graph/DynamicNode/DynamicNodeUtil.cpp
 
     Include/AtomToolsFramework/Graph/GraphCompiler.h
+    Include/AtomToolsFramework/Graph/GraphCompilerManager.h
     Include/AtomToolsFramework/Graph/GraphCompilerNotificationBus.h
     Include/AtomToolsFramework/Graph/GraphCompilerRequestBus.h
     Include/AtomToolsFramework/Graph/GraphDocument.h
@@ -106,6 +107,7 @@ set(FILES
     Include/AtomToolsFramework/Graph/GraphViewConstructPresets.h
     Include/AtomToolsFramework/Graph/GraphViewSettings.h
     Source/Graph/GraphCompiler.cpp
+    Source/Graph/GraphCompilerManager.cpp
     Source/Graph/GraphDocument.cpp
     Source/Graph/GraphDocumentView.cpp
     Source/Graph/GraphUtil.cpp

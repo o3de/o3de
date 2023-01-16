@@ -37,14 +37,6 @@ namespace MaterialCanvas
         // Convert the template file path into a save file path based on the document name.
         AZStd::string GetOutputPathFromTemplatePath(const AZStd::string& templatePath) const;
 
-        // Find and replace a whole word or symbol using regular expressions.
-        void ReplaceSymbolsInContainer(
-            const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container) const;
-
-        void ReplaceSymbolsInContainer(
-            const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols,
-            AZStd::vector<AZStd::string>& container) const;
-
         // Functions assisting with conversions between different vector and scalar types. Functions like these will eventually be moved out
         // of the document class so that they can be registered more flexibly and extensively.
         unsigned int GetVectorSize(const AZStd::any& slotValue) const;

@@ -161,17 +161,17 @@ namespace MaterialCanvas
                   "placed in the user/Registry folder for the current project.",
                   false),
               AtomToolsFramework::CreateSettingsPropertyValue(
-                  "/O3DE/Atom/MaterialCanvas/GraphCompiler/EnableCompileOnOpen",
+                  "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnOpen",
                   "Enable Compile On Open",
                   "If enabled, shaders and materials will automatically be generated whenever a material graph is opened.",
                   true),
               AtomToolsFramework::CreateSettingsPropertyValue(
-                  "/O3DE/Atom/MaterialCanvas/GraphCompiler/EnableCompileOnSave",
+                  "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave",
                   "Enable Compile On Save",
                   "If enabled, shaders and materials will automatically be generated whenever a material graph is saved.",
                   true),
               AtomToolsFramework::CreateSettingsPropertyValue(
-                  "/O3DE/Atom/MaterialCanvas/GraphCompiler/EnableCompileOnEdit",
+                  "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit",
                   "Enable Compile On Edit",
                   "If enabled, shaders and materials will automatically be generated whenever a material graph is edited.",
                   true),

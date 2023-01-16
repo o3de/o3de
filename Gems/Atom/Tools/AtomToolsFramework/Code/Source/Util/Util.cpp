@@ -21,6 +21,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/string/regex.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
@@ -97,6 +98,24 @@ namespace AtomToolsFramework
         }
 
         return defaultValue;
+    }
+
+    void ReplaceSymbolsInContainer(const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container)
+    {
+        const AZStd::regex findRegex(findText);
+        for (auto& sourceText : container)
+        {
+            sourceText = AZStd::regex_replace(sourceText, findRegex, replaceText);
+        }
+    }
+
+    void ReplaceSymbolsInContainer(
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols, AZStd::vector<AZStd::string>& container)
+    {
+        for (const auto& substitutionSymbolPair : substitutionSymbols)
+        {
+            ReplaceSymbolsInContainer(substitutionSymbolPair.first, substitutionSymbolPair.second, container);
+        }
     }
 
     AZStd::string GetSymbolNameFromText(const AZStd::string& text)

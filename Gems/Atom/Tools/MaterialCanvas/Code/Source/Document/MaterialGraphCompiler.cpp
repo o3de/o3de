@@ -86,8 +86,6 @@ namespace MaterialCanvas
         AtomToolsFramework::GraphDocumentRequestBus::EventResult(
             graphName, m_documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::GetGraphName);
 
-        m_slotValueTable.clear();
-
         // All slots and nodes will be visited to collect all of the unique include paths.
         AZStd::set<AZStd::string> includePaths;
 
@@ -148,14 +146,16 @@ namespace MaterialCanvas
             // Template files for material types will be processed in their own pass Because they require special handling and need to be
             // saved before material file templates to not trigger asset processor dependency errors.
             AZStd::vector<TemplateFileData> templateFileDataVec;
+            templateFileDataVec.reserve(templatePaths.size());
+
             for (const auto& templatePath : templatePaths)
             {
-                TemplateFileData templateFileData;
-                templateFileData.m_inputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
-                templateFileData.m_outputPath = GetOutputPathFromTemplatePath(templateFileData.m_inputPath);
-                if (!templateFileData.m_outputPath.ends_with(".materialtype"))
+                if (!templatePath.ends_with(".materialtype"))
                 {
                     // Attempt to load the template file to do symbol substitution and inject code or data
+                    TemplateFileData templateFileData;
+                    templateFileData.m_inputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
+                    templateFileData.m_outputPath = GetOutputPathFromTemplatePath(templateFileData.m_inputPath);
                     if (!templateFileData.Load())
                     {
                         CompileGraphFailed();
@@ -170,7 +170,7 @@ namespace MaterialCanvas
             for (auto& templateFileData : templateFileDataVec)
             {
                 // Substitute all references to the placeholder graph name with one generated from the document name
-                ReplaceSymbolsInContainer("MaterialGraphName", graphName, templateFileData.m_lines);
+                AtomToolsFramework::ReplaceSymbolsInContainer("MaterialGraphName", graphName, templateFileData.m_lines);
 
                 // Inject include files found while traversing the graph into any include file blocks in the template.
                 templateFileData.ReplaceLinesInBlock(
@@ -181,6 +181,7 @@ namespace MaterialCanvas
                         // Include file paths will need to be converted to include statements.
                         AZStd::vector<AZStd::string> includeStatements;
                         includeStatements.reserve(includePaths.size());
+
                         for (const auto& path : includePaths)
                         {
                             // TODO Replace relative path reference function
@@ -220,6 +221,8 @@ namespace MaterialCanvas
             // This will also keep track of nodes with instructions and data that contribute to the final shader code. The list of
             // contributing nodes will be used to exclude unused material inputs from generated SRGs and material types.
             AZStd::vector<GraphModel::ConstNodePtr> instructionNodesForAllBlocks;
+            instructionNodesForAllBlocks.reserve(templateFileDataVec.size());
+
             for (auto& templateFileData : templateFileDataVec)
             {
                 templateFileData.ReplaceLinesInBlock(
@@ -283,14 +286,14 @@ namespace MaterialCanvas
             // Process material type template files, injecting properties from material input nodes.
             for (const auto& templatePath : templatePaths)
             {
-                // Remove any aliases to resolve the absolute path to the template file
-                const AZStd::string templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
-                const AZStd::string templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
-                if (!templateOutputPath.ends_with(".materialtype"))
+                if (!templatePath.ends_with(".materialtype"))
                 {
                     continue;
                 }
 
+                // Remove any aliases to resolve the absolute path to the template file
+                const AZStd::string templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
+                const AZStd::string templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
                 if (!BuildMaterialTypeFromTemplate(currentNode, instructionNodesForAllBlocks, templateInputPath, templateOutputPath))
                 {
                     CompileGraphFailed();
@@ -330,25 +333,6 @@ namespace MaterialCanvas
         AZ::StringFunc::Replace(templateOutputPath, "MaterialGraphName", graphName.c_str());
 
         return templateOutputPath;
-    }
-
-    void MaterialGraphCompiler::ReplaceSymbolsInContainer(
-        const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container) const
-    {
-        const AZStd::regex findRegex(findText);
-        for (auto& sourceText : container)
-        {
-            sourceText = AZStd::regex_replace(sourceText, findRegex, replaceText);
-        }
-    }
-
-    void MaterialGraphCompiler::ReplaceSymbolsInContainer(
-        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols, AZStd::vector<AZStd::string>& container) const
-    {
-        for (const auto& substitutionSymbolPair : substitutionSymbols)
-        {
-            ReplaceSymbolsInContainer(substitutionSymbolPair.first, substitutionSymbolPair.second, container);
-        }
     }
 
     unsigned int MaterialGraphCompiler::GetVectorSize(const AZStd::any& slotValue) const
@@ -678,10 +662,10 @@ namespace MaterialCanvas
         {
             AtomToolsFramework::CollectDynamicNodeSettings(slotConfig.m_settings, "instructions", instructionsForSlot);
 
-            ReplaceSymbolsInContainer(substitutionSymbols, instructionsForSlot);
-            ReplaceSymbolsInContainer("SLOTNAME", GetSymbolNameFromSlot(slot), instructionsForSlot);
-            ReplaceSymbolsInContainer("SLOTTYPE", GetAzslTypeFromSlot(slot), instructionsForSlot);
-            ReplaceSymbolsInContainer("SLOTVALUE", GetAzslValueFromSlot(slot), instructionsForSlot);
+            AtomToolsFramework::ReplaceSymbolsInContainer(substitutionSymbols, instructionsForSlot);
+            AtomToolsFramework::ReplaceSymbolsInContainer("SLOTNAME", GetSymbolNameFromSlot(slot), instructionsForSlot);
+            AtomToolsFramework::ReplaceSymbolsInContainer("SLOTTYPE", GetAzslTypeFromSlot(slot), instructionsForSlot);
+            AtomToolsFramework::ReplaceSymbolsInContainer("SLOTVALUE", GetAzslValueFromSlot(slot), instructionsForSlot);
         }
 
         return instructionsForSlot;
@@ -775,7 +759,7 @@ namespace MaterialCanvas
                 // Gather and perform substitutions on instructions embedded directly in the node.
                 AZStd::vector<AZStd::string> instructionsForNode;
                 AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "instructions", instructionsForNode);
-                ReplaceSymbolsInContainer(substitutionSymbols, instructionsForNode);
+                AtomToolsFramework::ReplaceSymbolsInContainer(substitutionSymbols, instructionsForNode);
 
                 // Gather and perform substitutions on instructions contained in property slots.
                 AZStd::vector<AZStd::string> instructionsForPropertySlots;
@@ -865,11 +849,11 @@ namespace MaterialCanvas
         {
             AtomToolsFramework::CollectDynamicNodeSettings(slotConfig.m_settings, "materialPropertySrgMember", materialPropertySrgMemberForSlot);
 
-            ReplaceSymbolsInContainer(substitutionSymbols, materialPropertySrgMemberForSlot);
-            ReplaceSymbolsInContainer("STANDARD_SRG_MEMBER", GetAzslSrgMemberFromSlot(node, slotConfig), materialPropertySrgMemberForSlot);
-            ReplaceSymbolsInContainer("SLOTNAME", GetSymbolNameFromSlot(slot), materialPropertySrgMemberForSlot);
-            ReplaceSymbolsInContainer("SLOTTYPE", GetAzslTypeFromSlot(slot), materialPropertySrgMemberForSlot);
-            ReplaceSymbolsInContainer("SLOTVALUE", GetAzslValueFromSlot(slot), materialPropertySrgMemberForSlot);
+            AtomToolsFramework::ReplaceSymbolsInContainer(substitutionSymbols, materialPropertySrgMemberForSlot);
+            AtomToolsFramework::ReplaceSymbolsInContainer("STANDARD_SRG_MEMBER", GetAzslSrgMemberFromSlot(node, slotConfig), materialPropertySrgMemberForSlot);
+            AtomToolsFramework::ReplaceSymbolsInContainer("SLOTNAME", GetSymbolNameFromSlot(slot), materialPropertySrgMemberForSlot);
+            AtomToolsFramework::ReplaceSymbolsInContainer("SLOTTYPE", GetAzslTypeFromSlot(slot), materialPropertySrgMemberForSlot);
+            AtomToolsFramework::ReplaceSymbolsInContainer("SLOTVALUE", GetAzslValueFromSlot(slot), materialPropertySrgMemberForSlot);
         }
 
         return materialPropertySrgMemberForSlot;
@@ -901,7 +885,7 @@ namespace MaterialCanvas
                 AZStd::vector<AZStd::string> materialPropertySrgMembersForNode;
                 AtomToolsFramework::CollectDynamicNodeSettings(
                     nodeConfig.m_settings, "materialPropertySrgMember", materialPropertySrgMembersForNode);
-                ReplaceSymbolsInContainer(substitutionSymbols, materialPropertySrgMembersForNode);
+                AtomToolsFramework::ReplaceSymbolsInContainer(substitutionSymbols, materialPropertySrgMembersForNode);
 
                 AtomToolsFramework::VisitDynamicNodeSlotConfigs(
                     nodeConfig,
@@ -1199,6 +1183,7 @@ namespace MaterialCanvas
         {
             // Tokenize the entire template file into individual lines that can be evaluated, removed, replaced, and have
             // content injected between them
+            m_lines.reserve(1000);
             AZ::StringFunc::Tokenize(result.GetValue(), m_lines, '\n', true, true);
             AZ_TracePrintf_IfTrue(
                 "MaterialGraphCompiler", IsCompileLoggingEnabled(), "Loading template file succeeded: %s\n", m_inputPath.c_str());

@@ -12,12 +12,13 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
+#include <AtomToolsFramework/Graph/GraphCompilerManager.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <Document/MaterialGraphCompiler.h>
 #include <GraphModel/Model/GraphContext.h>
 #include <Window/MaterialCanvasMainWindow.h>
 
-namespace MaterialCanvas
+    namespace MaterialCanvas
 {
     //! The main application class for Material Canvas, setting up top level systems, document types, and the main window. 
     class MaterialCanvasApplication
@@ -52,13 +53,6 @@ namespace MaterialCanvas
         // AZ::RHI::FactoryManagerNotificationBus::Handler overrides...
         void FactoryRegistered() override;
 
-        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
-        void OnDocumentOpened(const AZ::Uuid& documentId) override;
-        void OnDocumentSaved(const AZ::Uuid& documentId) override;
-        void OnDocumentUndoStateChanged(const AZ::Uuid& documentId) override;
-        void OnDocumentClosed(const AZ::Uuid& documentId) override;
-        void OnDocumentDestroyed(const AZ::Uuid& documentId) override;
-
         void InitDynamicNodeManager();
         void InitDynamicNodeEditData();
         void InitSharedGraphContext();
@@ -74,7 +68,7 @@ namespace MaterialCanvas
         AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
         AZStd::unique_ptr<AtomToolsFramework::DynamicNodeManager> m_dynamicNodeManager;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
+        AZStd::shared_ptr<AtomToolsFramework::GraphCompilerManager> m_graphCompilerManager;
         AtomToolsFramework::GraphViewSettingsPtr m_graphViewSettingsPtr;
-        AZStd::unordered_map<AZ::Uuid, AZStd::unique_ptr<MaterialGraphCompiler>> m_graphCompilerMap;
     };
 } // namespace MaterialCanvas

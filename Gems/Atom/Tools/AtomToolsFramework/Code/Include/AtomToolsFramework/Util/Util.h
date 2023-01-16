@@ -86,6 +86,13 @@ namespace AtomToolsFramework
     //! @returns The first nonempty string or the default value
     AZStd::string GetFirstNonEmptyString(const AZStd::vector<AZStd::string>& values, const AZStd::string& defaultValue = {});
 
+    // Find and replace a whole word or symbol using regular expressions.
+    void ReplaceSymbolsInContainer(
+        const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container);
+
+    void ReplaceSymbolsInContainer(
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols, AZStd::vector<AZStd::string>& container);
+
     //! Converts input text into a code-friendly symbol name, removing special characters and replacing whitespace with underscores.
     //! @param text Input text that will be converted into a symbol name
     //! @returns the symbol name generated from the text
