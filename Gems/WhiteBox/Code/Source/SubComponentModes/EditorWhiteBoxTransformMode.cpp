@@ -18,6 +18,7 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Manipulators/LinearManipulator.h>
 #include <Manipulators/ManipulatorManager.h>
@@ -45,8 +46,6 @@ namespace WhiteBox
     const constexpr char* SwitchToTranslationModeDesc = "Switch to Translation Mode";
     const constexpr char* SwitchToRotationModeDesc = "Switch to Rotation Mode";
     const constexpr char* SwitchToScaleModeDesc = "Switch to Scale Mode";
-
-    static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
     static void SetViewportUiClusterActiveButton(
         AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)
@@ -264,9 +263,9 @@ namespace WhiteBox
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "WhiteBoxTransformMode - could not get MenuManagerInterface on BindActionsToMenus.");
 
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.translation", 6000);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.rotation", 6001);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.scale", 6002);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.translation", 6000);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.rotation", 6001);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.scale", 6002);
     }
 
     void TransformMode::DestroyManipulators()

@@ -14,11 +14,10 @@
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 
 static constexpr AZStd::string_view ComponentModeChangedUpdaterIdentifier = "o3de.updater.onComponentModeChanged";
-
-static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
 namespace AzToolsFramework
 {
@@ -127,10 +126,10 @@ namespace AzToolsFramework
             m_menuManagerInterface,
             "ComponentModeActionHandler - could not get MenuManagerInterface on ComponentModeActionHandler OnMenuBindingHook.");
 
-        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 3000);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::EditMenuIdentifier, 3000);
         // Component Mode Actions should be located between these two separators.
-        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 10000);
-        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.componentMode.end", 10001);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::EditMenuIdentifier, 10000);
+        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.componentMode.end", 10001);
     }
 
     void ComponentModeActionHandler::ActiveComponentModeChanged(const AZ::Uuid& componentType)

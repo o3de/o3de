@@ -26,11 +26,10 @@
 #include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 
 namespace PhysX
 {
-    static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
-
     namespace
     {
         //! Uri's for shortcut actions.
@@ -198,10 +197,10 @@ namespace PhysX
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "ColliderComponentMode - could not get MenuManagerInterface on BindActionsToMenus.");
 
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.colliderComponentMode.setOffsetSubMode", 6000);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.colliderComponentMode.setRotationSubMode", 6001);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.colliderComponentMode.setResizeSubMode", 6002);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.colliderComponentMode.resetCurrentMode", 6003);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.colliderComponentMode.setOffsetSubMode", 6000);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.colliderComponentMode.setRotationSubMode", 6001);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.colliderComponentMode.setResizeSubMode", 6002);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.colliderComponentMode.resetCurrentMode", 6003);
     }
 
     ColliderComponentMode::ColliderComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
