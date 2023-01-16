@@ -32,7 +32,9 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 
 #include <AzQtComponents/Components/Style.h>
 
@@ -49,8 +51,6 @@
 #include "QtViewPaneManager.h"
 #include "EditorViewportWidget.h"
 #include <Editor/EditorViewportSettings.h>
-
-static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 
 static constexpr AZStd::string_view ViewportDisplayInfoStateChangedUpdaterIdentifier = "o3de.updater.onViewportDisplayInfoStateChanged";
 
@@ -311,7 +311,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_iconPath = ":/Menu/resolution.svg";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -328,7 +328,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_iconPath = ":/Menu/menu.svg";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -345,7 +345,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_iconPath = ":/Menu/debug.svg";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [viewportTitleDlg = m_viewportTitleDlg]
@@ -371,7 +371,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Debug Information";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [viewportTitleDlg = m_viewportTitleDlg]
@@ -397,7 +397,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Debug Information";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [viewportTitleDlg = m_viewportTitleDlg]
@@ -423,7 +423,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Debug Information";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [viewportTitleDlg = m_viewportTitleDlg]
@@ -449,7 +449,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Debug Information";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [viewportTitleDlg = m_viewportTitleDlg]
@@ -481,7 +481,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Size Ratio";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [this, w = width, h = height]
@@ -497,7 +497,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Size Ratio";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [&]
@@ -530,7 +530,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Size Resolution";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [&, w = width, h = height]
@@ -546,7 +546,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Size Resolution";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [this]

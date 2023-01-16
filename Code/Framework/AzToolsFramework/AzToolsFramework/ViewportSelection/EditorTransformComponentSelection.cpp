@@ -25,6 +25,7 @@
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
@@ -49,7 +50,6 @@
 #include <QApplication>
 #include <QRect>
 
-static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 static constexpr AZStd::string_view EditModifyModesMenuIdentifier = "o3de.menu.editor.edit.modify.modes";
 static constexpr AZStd::string_view TransformModeChangedUpdaterIdentifier = "o3de.updater.onTransformModeChanged";
@@ -2546,7 +2546,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []()
@@ -2580,7 +2580,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()
@@ -2613,7 +2613,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()
@@ -2670,7 +2670,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()
@@ -2733,7 +2733,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [&]()
@@ -2757,7 +2757,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]
@@ -2792,7 +2792,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()
@@ -2838,7 +2838,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [showHide]()
@@ -2860,7 +2860,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [showHide]()
@@ -2884,7 +2884,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []()
@@ -2940,7 +2940,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [lockUnlock]()
@@ -2964,7 +2964,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [lockUnlock]()
@@ -2986,7 +2986,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []()
@@ -3022,7 +3022,7 @@ namespace AzToolsFramework
             actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()
@@ -3055,7 +3055,7 @@ namespace AzToolsFramework
             actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()
@@ -3088,7 +3088,7 @@ namespace AzToolsFramework
             actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()

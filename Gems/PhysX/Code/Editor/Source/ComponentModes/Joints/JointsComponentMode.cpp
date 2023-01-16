@@ -13,6 +13,7 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <Editor/EditorJointConfiguration.h>
 #include <Editor/Source/ComponentModes/Joints/JointsSubComponentModeAngleCone.h>
 #include <Editor/Source/ComponentModes/Joints/JointsSubComponentModeAnglePair.h>
@@ -26,7 +27,6 @@ namespace PhysX
 {
     AZ_CLASS_ALLOCATOR_IMPL(JointsComponentMode, AZ::SystemAllocator, 0);
 
-    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
     static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
     void SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType modeType)
@@ -194,7 +194,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -215,7 +215,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -236,7 +236,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -263,7 +263,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -290,7 +290,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -317,7 +317,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -344,7 +344,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -371,7 +371,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -398,7 +398,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -425,7 +425,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -452,7 +452,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []

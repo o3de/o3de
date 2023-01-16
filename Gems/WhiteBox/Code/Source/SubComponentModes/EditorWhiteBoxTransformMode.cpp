@@ -17,6 +17,7 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Manipulators/LinearManipulator.h>
 #include <Manipulators/ManipulatorManager.h>
@@ -45,7 +46,6 @@ namespace WhiteBox
     const constexpr char* SwitchToRotationModeDesc = "Switch to Rotation Mode";
     const constexpr char* SwitchToScaleModeDesc = "Switch to Scale Mode";
 
-    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
     static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
     static void SetViewportUiClusterActiveButton(
@@ -159,7 +159,7 @@ namespace WhiteBox
             actionProperties.m_category = "White Box Component Mode - Transform";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -191,7 +191,7 @@ namespace WhiteBox
             actionProperties.m_category = "White Box Component Mode - Transform";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -223,7 +223,7 @@ namespace WhiteBox
             actionProperties.m_category = "White Box Component Mode - Transform";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []

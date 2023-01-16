@@ -16,6 +16,7 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkLoader.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 
@@ -48,8 +49,6 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QWidget>
-
-static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 
 static constexpr AZStd::string_view AngleSnappingStateChangedUpdaterIdentifier = "o3de.updater.onAngleSnappingStateChanged";
 static constexpr AZStd::string_view DrawHelpersStateChangedUpdaterIdentifier = "o3de.updater.onViewportDrawHelpersStateChanged";
@@ -213,7 +212,7 @@ void EditorActionsHandler::OnActionContextRegistrationHook()
     AzToolsFramework::ActionContextProperties contextProperties;
     contextProperties.m_name = "O3DE Editor";
 
-    m_actionManagerInterface->RegisterActionContext("", EditorMainWindowActionContextIdentifier, contextProperties, m_mainWindow);
+    m_actionManagerInterface->RegisterActionContext("", EditorActionContext::MainWindowContextIdentifier, contextProperties, m_mainWindow);
 }
 
 void EditorActionsHandler::OnActionUpdaterRegistrationHook()
@@ -253,7 +252,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -278,7 +277,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -315,7 +314,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [&, index]
@@ -349,7 +348,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [&]
@@ -383,7 +382,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.file.save", actionProperties,
+            EditorActionContext::MainWindowContextIdentifier, "o3de.action.file.save", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnFileSave();
@@ -405,7 +404,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.file.saveAs", actionProperties,
+            EditorActionContext::MainWindowContextIdentifier, "o3de.action.file.saveAs", actionProperties,
             []
             {
                 CCryEditDoc* pDoc = GetIEditor()->GetDocument();
@@ -427,7 +426,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -459,7 +458,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -481,7 +480,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Platform";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [qtViewPaneManager = m_qtViewPaneManager]
@@ -501,7 +500,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -524,7 +523,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -546,7 +545,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -567,7 +566,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Project";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             "o3de.action.editor.exit",
             actionProperties,
             [=]
@@ -588,7 +587,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             "o3de.action.edit.undo",
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -620,7 +619,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             "o3de.action.edit.redo",
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -654,7 +653,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -685,7 +684,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -715,7 +714,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -744,7 +743,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -766,7 +765,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -792,7 +791,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -825,7 +824,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -857,7 +856,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -888,7 +887,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -914,7 +913,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -937,7 +936,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -964,7 +963,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -988,7 +987,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -1021,7 +1020,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [qtViewPaneManager = m_qtViewPaneManager]
@@ -1044,7 +1043,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [&]
@@ -1072,7 +1071,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [this]
@@ -1095,7 +1094,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [this]
@@ -1118,7 +1117,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [this]
@@ -1142,7 +1141,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -1165,7 +1164,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -1193,7 +1192,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_iconPath = ":/Menu/helpers.svg";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -1223,7 +1222,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "View";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -1253,7 +1252,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "View";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -1280,7 +1279,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "View";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -1299,7 +1298,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.tutorials", actionProperties,
+            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.tutorials", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationTutorials();
@@ -1314,7 +1313,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.documentation.o3de", actionProperties,
+            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.documentation.o3de", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationO3DE();
@@ -1329,7 +1328,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.documentation.gamelift", actionProperties,
+            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.documentation.gamelift", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationGamelift();
@@ -1344,7 +1343,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.documentation.releasenotes", actionProperties,
+            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.documentation.releasenotes", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationReleaseNotes();
@@ -1359,7 +1358,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.resources.gamedevblog", actionProperties,
+            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.resources.gamedevblog", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationGameDevBlog();
@@ -1374,7 +1373,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.resources.forums", actionProperties,
+            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.resources.forums", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationForums();
@@ -1389,7 +1388,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.resources.awssupport", actionProperties,
+            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.resources.awssupport", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationAWSSupport();
@@ -1404,7 +1403,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.abouto3de", actionProperties,
+            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.abouto3de", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnAppAbout();
@@ -1421,7 +1420,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -2230,7 +2229,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                 actionProperties.m_hideFromMenusWhenDisabled = false;
 
                 m_actionManagerInterface->RegisterAction(
-                    EditorMainWindowActionContextIdentifier,
+                    EditorActionContext::MainWindowContextIdentifier,
                     actionIdentifier,
                     actionProperties,
                     [layout = layoutName, this]
@@ -2254,7 +2253,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                 actionProperties.m_hideFromMenusWhenDisabled = false;
 
                 m_actionManagerInterface->RegisterAction(
-                    EditorMainWindowActionContextIdentifier,
+                    EditorActionContext::MainWindowContextIdentifier,
                     actionIdentifier,
                     actionProperties,
                     [layout = layoutName, this]
@@ -2278,7 +2277,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                 actionProperties.m_hideFromMenusWhenDisabled = false;
 
                 m_actionManagerInterface->RegisterAction(
-                    EditorMainWindowActionContextIdentifier,
+                    EditorActionContext::MainWindowContextIdentifier,
                     actionIdentifier,
                     actionProperties,
                     [layout = layoutName, this]
@@ -2302,7 +2301,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                 actionProperties.m_hideFromMenusWhenDisabled = false;
 
                 m_actionManagerInterface->RegisterAction(
-                    EditorMainWindowActionContextIdentifier,
+                    EditorActionContext::MainWindowContextIdentifier,
                     actionIdentifier,
                     actionProperties,
                     [layout = layoutName, this]
@@ -2354,7 +2353,7 @@ void EditorActionsHandler::RefreshToolboxMacroActions()
                 actionProperties.m_hideFromMenusWhenDisabled = false;
 
                 m_actionManagerInterface->RegisterAction(
-                    EditorMainWindowActionContextIdentifier,
+                    EditorActionContext::MainWindowContextIdentifier,
                     toolboxMacroActionIdentifier,
                     actionProperties,
                     [macro]
@@ -2410,7 +2409,7 @@ void EditorActionsHandler::RefreshToolActions()
             actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 toolActionIdentifier,
                 actionProperties,
                 [viewpaneManager = m_qtViewPaneManager, viewpaneName = viewpane.m_name]
@@ -2458,7 +2457,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         auto outcome = m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [index]
@@ -2516,7 +2515,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [index]

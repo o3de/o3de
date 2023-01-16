@@ -17,6 +17,7 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
@@ -61,7 +62,6 @@ namespace std
 
 namespace AzToolsFramework
 {
-    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
     static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
     static const char* const s_duplicateVerticesTitle = "Duplicate Vertices";
@@ -92,7 +92,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Vertex Selection";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -122,7 +122,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Vertex Selection";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -152,7 +152,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Vertex Selection";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []

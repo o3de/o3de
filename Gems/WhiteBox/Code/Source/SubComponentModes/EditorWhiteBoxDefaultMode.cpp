@@ -20,6 +20,7 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <QKeySequence>
 #include <QLayout>
@@ -48,7 +49,6 @@ namespace WhiteBox
     static const char* const HideEdgeUndoRedoDesc = "Hide an edge to merge two connected polygons together";
     static const char* const HideVertexUndoRedoDesc = "Hide a vertex to merge two connected edges together";
 
-    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
     static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
     static constexpr AZStd::string_view WhiteBoxDefaultSelectionChangeUpdaterIdentifier = "o3de.updater.onWhiteBoxDefaultComponentModeSelectionChanged";
 
@@ -172,7 +172,7 @@ namespace WhiteBox
             actionProperties.m_category = "White Box Component Mode - Default";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -232,7 +232,7 @@ namespace WhiteBox
             actionProperties.m_category = "White Box Component Mode - Default";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []

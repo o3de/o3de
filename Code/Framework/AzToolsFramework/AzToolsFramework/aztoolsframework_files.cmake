@@ -152,6 +152,9 @@ set(FILES
     ContainerEntity/ContainerEntityNotificationBus.h
     ContainerEntity/ContainerEntitySystemComponent.cpp
     ContainerEntity/ContainerEntitySystemComponent.h
+    Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h
+    Editor/ActionManagerIdentifiers/EditorFileMenuActionsIdentifiers.h
+    Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h
     Editor/ActionManagerUtils.cpp
     Editor/ActionManagerUtils.h
     Editor/EditorContextMenuBus.h

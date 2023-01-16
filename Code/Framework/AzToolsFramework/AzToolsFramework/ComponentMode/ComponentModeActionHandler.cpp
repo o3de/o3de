@@ -13,9 +13,8 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
-
-static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 
 static constexpr AZStd::string_view ComponentModeChangedUpdaterIdentifier = "o3de.updater.onComponentModeChanged";
 
@@ -57,7 +56,7 @@ namespace AzToolsFramework
             [&](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
             {
                 AZStd::string modeIdentifier = AZStd::string::format("o3de.context.mode.%s", classData->m_name);
-                m_actionManagerInterface->RegisterActionContextMode(EditorMainWindowActionContextIdentifier, modeIdentifier);
+                m_actionManagerInterface->RegisterActionContextMode(EditorActionContext::MainWindowContextIdentifier, modeIdentifier);
                 m_componentModeToActionContextModeMap.emplace(classData->m_typeId, AZStd::move(modeIdentifier));
 
                 return true;
@@ -92,7 +91,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Component Modes";
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -191,7 +190,7 @@ namespace AzToolsFramework
 
     void ComponentModeActionHandler::ChangeToMode(const AZStd::string& modeIdentifier)
     {
-        m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, modeIdentifier);
+        m_actionManagerInterface->SetActiveActionContextMode(EditorActionContext::MainWindowContextIdentifier, modeIdentifier);
         m_actionManagerInterface->TriggerActionUpdater(ComponentModeChangedUpdaterIdentifier);
     }
 
