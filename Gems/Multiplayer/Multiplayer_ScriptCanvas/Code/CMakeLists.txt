@@ -18,8 +18,9 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PUBLIC
-            Gem::Multiplayer.Static
             Gem::ScriptCanvas
+        PRIVATE
+            Gem::Multiplayer.Common.Static
     AUTOGEN_RULES
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
@@ -44,6 +45,7 @@ ly_add_target(
 
 # By default, the above module is used by all application types, however, the module depends at runtime to ScriptCanvas
 # and the dependency needs to be different per application type
+ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas)
 ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas)
 ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas)
 ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas.Editor)

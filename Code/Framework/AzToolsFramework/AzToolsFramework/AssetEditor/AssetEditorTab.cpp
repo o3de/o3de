@@ -192,8 +192,8 @@ namespace AzToolsFramework
             mainLayout->addWidget(m_header);
             m_header->show();
 
-            m_propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-            mainLayout->addWidget(m_propertyEditor);
+            propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+            mainLayout->addWidget(propertyEditor);
 
             setLayout(mainLayout);
 

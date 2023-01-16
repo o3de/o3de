@@ -48,5 +48,9 @@ namespace Multiplayer
 } // namespace Multiplayer
 
 #if !defined(MULTIPLAYER_EDITOR)
+#if defined(AZ_MONOLITHIC_BUILD)
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Client, Multiplayer::MultiplayerModule);
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Server, Multiplayer::MultiplayerModule);
+#endif
 AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer, Multiplayer::MultiplayerModule);
 #endif

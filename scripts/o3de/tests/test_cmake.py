@@ -7,10 +7,6 @@
 #
 
 import io
-import json
-import logging
-import unittest.mock
-
 import pytest
 import pathlib
 from unittest.mock import patch

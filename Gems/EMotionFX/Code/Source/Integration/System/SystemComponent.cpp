@@ -28,6 +28,7 @@
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
 #include <EMotionFX/Source/TwoStringEventData.h>
 #include <EMotionFX/Source/EventDataFootIK.h>
+#include <EMotionFX/Source/EventDataFloatArray.h>
 #include <EMotionFX/Source/MotionEvent.h>
 #include <EMotionFX/Source/AnimGraphNodeGroup.h>
 #include <EMotionFX/Source/MotionEventTable.h>
@@ -141,6 +142,15 @@ namespace EMotionFX
                         {
                             motionEvent.m_eventTypeName = twoStringEventData->GetSubject().c_str();
                             motionEvent.SetParameterString(twoStringEventData->GetParameters().c_str(), twoStringEventData->GetParameters().size());
+                            break;
+                        }
+
+                        if (const EMotionFX::EventDataFloatArray* floatArrayEventData =
+                                azrtti_cast<const EMotionFX::EventDataFloatArray*>(eventData.get()))
+                        {
+                            motionEvent.m_eventTypeName = floatArrayEventData->GetSubject().c_str();
+                            const AZStd::string parameterString = floatArrayEventData->DataToString();
+                            motionEvent.SetParameterString(parameterString.c_str(), parameterString.size());
                             break;
                         }
                     }
@@ -326,6 +336,7 @@ namespace EMotionFX
             EMotionFX::EventDataSyncable::Reflect(context);
             EMotionFX::TwoStringEventData::Reflect(context);
             EMotionFX::EventDataFootIK::Reflect(context);
+            EMotionFX::EventDataFloatArray::Reflect(context);
 
             EMotionFX::Recorder::Reflect(context);
 
@@ -1000,4 +1011,4 @@ namespace EMotionFX
 
 #endif // EMOTIONFXANIMATION_EDITOR
     }
-}
+} // namespace EMotionFX
