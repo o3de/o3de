@@ -113,8 +113,8 @@ def parse_args():
     # Test label excludes
     parser.add_argument(
         '--label-excludes',
-        help="Test suite labels to exclude if matched",
-        nargs='+',
+        help="CTest suite labels to exclude if matched",
+        nargs='*',
         action=PruneAndSortMultiValues,
         required=False
     )
