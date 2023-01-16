@@ -12,6 +12,9 @@
 #include <Atom/RPI.Public/ViewportContextManager.h>
 #include <Atom/RPI.Public/View.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AZ
 {
     namespace RPI
@@ -346,12 +349,18 @@ namespace AZ
         void ViewportContext::UpdatePipelineView(uint32_t viewIndex)
         {
             ViewPtr pipelineView = m_viewGroup->GetView(static_cast<ViewType>(viewIndex));
-            if (!pipelineView || !m_rootScene)
+            if (!pipelineView)
             {
                 return;
             }
 
             auto& pipeline = m_currentPipelines[viewIndex];
+            if (!m_rootScene)
+            {
+                pipelineView.reset();
+                //m_viewGroup.reset();
+                return;
+            }
 
             if (!pipeline)
             {
@@ -416,3 +425,6 @@ namespace AZ
         }
     } // namespace RPI
 } // namespace AZ
+
+#pragma optimize("", on)
+#pragma inline_depth()

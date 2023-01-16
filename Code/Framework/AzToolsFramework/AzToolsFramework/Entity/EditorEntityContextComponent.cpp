@@ -207,7 +207,7 @@ namespace AzToolsFramework
     //=========================================================================
     void EditorEntityContextComponent::ResetEditorContext()
     {
-        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnContextReset);
+        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::PrepareForContextReset);
 
         if (m_isRunningGame)
         {
@@ -216,6 +216,8 @@ namespace AzToolsFramework
         }
 
         ResetContext();
+
+        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnContextReset);
     }
 
     //=========================================================================

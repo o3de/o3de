@@ -21,6 +21,9 @@
 #include <Atom/RPI.Public/View.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace Camera
 {
     namespace ClassConverters
@@ -320,3 +323,5 @@ namespace Camera
     }
 } //namespace Camera
 
+#pragma optimize("", on)
+#pragma inline_depth()

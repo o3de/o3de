@@ -143,7 +143,8 @@ private:
     {
         Editor,
         Starting,
-        Started
+        Started,
+        Stopping
     };
 
     enum class KeyPressedState
@@ -420,10 +421,10 @@ private:
 
     // The default view group created for the viewport context, which is used as the "Editor Camera".
     // The group contains stereoscopic and non-stereoscopic views.
-    AZ::RPI::ViewGroupPtr m_defaultViewGroup;
+    //AZ::RPI::ViewGroupPtr m_defaultViewGroup;
 
     // The name to set on the viewport context when this viewport widget is set as the active one
-    AZ::Name m_defaultViewportContextName;
+    //AZ::Name m_defaultViewportContextName; // removing this made things worse...
 
     // DO NOT USE THIS! It exists only to satisfy the signature of the base class method GetViewTm
     mutable Matrix34 m_viewTmStorage;

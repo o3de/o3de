@@ -10,6 +10,9 @@
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AZ
 {
     namespace RPI
@@ -200,8 +203,15 @@ namespace AZ
                 AZ_Assert(false, "Attempted to rename ViewportContext \"%s\" to \"%s\", but \"%s\" is already assigned to another ViewportContext", viewportContext->m_name.GetCStr(), newContextName.GetCStr(), newContextName.GetCStr());
                 return;
             }
-            GetOrCreateViewStackForContext(newContextName);
+            //GetOrCreateViewStackForContext(newContextName);
+
+            auto viewGroupIt = m_viewportViews.find(viewportContext->GetName());
+            auto existingViewGroup = *viewGroupIt;
+            m_viewportViews.erase(viewGroupIt);
+
             viewportContext->m_name = newContextName;
+            m_viewportViews[newContextName] = existingViewGroup.second;
+
             UpdateViewForContext(newContextName);
             // Ensure anyone listening on per-name viewport size updates gets notified.
             ViewportContextNotificationBus::Event(newContextName, &ViewportContextNotificationBus::Events::OnViewportSizeChanged, viewportContext->GetViewportSize());
@@ -353,3 +363,6 @@ namespace AZ
         }
     } // namespace RPI
 } // namespace AZ
+
+#pragma optimize("", on)
+#pragma inline_depth()

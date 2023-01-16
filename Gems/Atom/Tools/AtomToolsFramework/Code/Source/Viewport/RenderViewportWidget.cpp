@@ -25,6 +25,9 @@
 #include <QWindow>
 #include <QMouseEvent>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AtomToolsFramework
 {
     RenderViewportWidget::RenderViewportWidget(QWidget* parent, bool shouldInitializeViewportContext)
@@ -473,3 +476,6 @@ namespace AtomToolsFramework
         return false;
     }
 } //namespace AtomToolsFramework
+
+#pragma optimize("", on)
+#pragma inline_depth()

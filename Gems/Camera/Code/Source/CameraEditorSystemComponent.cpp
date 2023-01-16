@@ -29,6 +29,9 @@
 #include <QAction>
 #include <QMenu>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace Camera
 {
     void CameraEditorSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -168,3 +171,6 @@ namespace Camera
         RegisterViewportCameraSelectorWindow();
     }
 }
+
+#pragma optimize("", on)
+#pragma inline_depth()

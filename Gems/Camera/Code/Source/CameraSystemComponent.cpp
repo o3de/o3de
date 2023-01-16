@@ -16,6 +16,9 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace Camera
 {
     void CameraSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -111,3 +114,6 @@ namespace Camera
         m_activeView = activeView;
     }
 } // namespace Camera
+
+#pragma optimize("", on)
+#pragma inline_depth()

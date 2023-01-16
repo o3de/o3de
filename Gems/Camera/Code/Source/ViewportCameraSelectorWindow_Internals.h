@@ -53,7 +53,12 @@ namespace Camera
             void OnCameraAdded(const AZ::EntityId& cameraId) override;
             void OnCameraRemoved(const AZ::EntityId& cameraId) override;
 
+            void ConnectCameraNotificationBus();
+            void DisconnecCameraNotificationBus();
+
             QModelIndex GetIndexForEntityId(const AZ::EntityId entityId);
+
+            void Reset();
 
         private:
             AZStd::vector<CameraListItem> m_cameraItems;
@@ -62,7 +67,7 @@ namespace Camera
 
             //Value to check that is the first time that we remove a camera before adding a new one.
             //So we can update m_lastActiveCamera properly
-            bool m_firstEntry = true;
+            //bool m_firstEntry = true;
         };
 
         struct ViewportCameraSelectorWindow
@@ -76,19 +81,19 @@ namespace Camera
 
             void currentChanged(const QModelIndex& current, const QModelIndex& previous) override;
 
-            //////////////////////////////////////////////////////////////////////////
-            /// EditorCameraNotificationBus::Handler
+            // EditorCameraNotificationBus overrides ...
             void OnViewportViewEntityChanged(const AZ::EntityId& newViewId) override;
 
-            //////////////////////////////////////////////////////////////////////////
-            /// AzToolsFramework::EditorEntityContextRequestBus::Handler
-            // make sure we can only use this window while in Edit mode
-            void OnStartPlayInEditor() override;
+            // AzToolsFramework::EditorEntityContextNotificationBus overrides ...
+            void OnStartPlayInEditorBegin() override;
             void OnStopPlayInEditor() override;
+            void PrepareForContextReset() override;
+            void OnContextReset() override;
 
-            void mouseMoveEvent(QMouseEvent*) override;
+            // QListView overrides ...
             void mouseDoubleClickEvent(QMouseEvent* event) override;
             QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) override;
+
             QModelIndex GetPreviousIndex() const;
             QModelIndex GetNextIndex() const;
 

@@ -10,6 +10,9 @@
 #include <Atom/RPI.Public/ViewGroup.h>
 #include <AzCore/Debug/Trace.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AZ::RPI
 {
     ViewGroup::ViewGroup()
@@ -256,3 +259,6 @@ namespace AZ::RPI
         return true;
     }
 } // namespace AZ::RPI
+
+#pragma optimize("", on)
+#pragma inline_depth()
