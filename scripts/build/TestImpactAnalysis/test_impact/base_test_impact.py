@@ -69,11 +69,12 @@ class BaseTestImpact(ABC):
         self._label_excludes = args.get(ARG_LABEL_EXCLUDES)
 
         # Compile the dash-separated concatenation of the ordered suites and labels to be used as path components
-        self._suites_string = self._compile_multi_value_arg_string(self._suites)
-        self._label_excludes_string = self._compile_multi_value_arg_string(self._label_excludes)
+        self._suites_string = "-".join(self._suites)
+        self._label_excludes_string = "-".join(self._label_excludes)
 
         self._config = self._parse_config_file(args.get(ARG_CONFIG))
         if not self._enabled:
+            logger.info(f"TIAF is disabled.")
             return
 
         # Initialize branches
@@ -141,22 +142,6 @@ class BaseTestImpact(ABC):
         args[ARG_REPORT] = self._report_file
         self._parse_arguments_to_runtime(args)
 
-    def _compile_multi_value_arg_string(self, multi_values):
-        """
-        Takes the multi values of a command line argument and returns a string with each value separated by a dash character.
-
-        @param multi_args: The multi values of the argument to compile as a dash-separated string.
-        """
-
-        num_values = len(multi_values)
-        multi_values_string = ""
-        for i in range(num_values):
-            multi_values_string += multi_values[i]
-            if i < num_values - 1:
-                multi_values_string += "-"
-
-        return multi_values_string
-
     def _parse_arguments_to_runtime(self, args):
         """
         Fetches the relevant keys from the provided dictionary, and applies the values of the arguments(or applies them as a flag) to our runtime_args list.
@@ -167,10 +152,7 @@ class BaseTestImpact(ABC):
         for argument in RuntimeArgs:
             value = args.get(argument.driver_argument)
             if value:
-                if type(value) == list:
-                    self._runtime_args.append(f"{argument.runtime_arg}{','.join(value)}")
-                else:
-                    self._runtime_args.append(f"{argument.runtime_arg}{value}")
+                self._runtime_args.append(f"{argument.runtime_arg}{value if isinstance(value, str) else ','.join(value)}") 
                 logger.info(f"{argument.message}{value}")
 
     def _handle_historic_data(self):
