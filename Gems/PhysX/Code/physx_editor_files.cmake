@@ -73,8 +73,6 @@ set(FILES
     Editor/CollisionFilteringWidget.cpp
     Editor/PropertyTypes.h
     Editor/PropertyTypes.cpp
-    Editor/EditorClassConverters.cpp
-    Editor/EditorClassConverters.h
     Editor/PvdWidget.h
     Editor/PvdWidget.cpp
     Editor/DocumentationLinkWidget.h
