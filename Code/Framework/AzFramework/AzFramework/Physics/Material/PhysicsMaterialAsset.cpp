@@ -20,11 +20,10 @@ namespace Physics
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<Physics::MaterialAsset, AZ::Data::AssetData>()
-                ->Version(5)
+                ->Version(6)
                 ->Field("MaterialType", &MaterialAsset::m_materialType)
                 ->Field("Version", &MaterialAsset::m_version)
                 ->Field("MaterialProperties", &MaterialAsset::m_materialProperties)
-                ->Field("LegacyPhysicsMaterialId", &MaterialAsset::m_legacyPhysicsMaterialId)
                 ;
 
             serializeContext->RegisterGenericType<AZ::Data::Asset<MaterialAsset>>();
@@ -66,15 +65,5 @@ namespace Physics
     const MaterialAsset::MaterialProperties& MaterialAsset::GetMaterialProperties() const
     {
         return m_materialProperties;
-    }
-
-    PhysicsLegacy::MaterialId MaterialAsset::GetLegacyPhysicsMaterialId() const
-    {
-        return m_legacyPhysicsMaterialId;
-    }
-
-    void MaterialAsset::SetLegacyPhysicsMaterialId(PhysicsLegacy::MaterialId legacyPhysicsMaterialId)
-    {
-        m_legacyPhysicsMaterialId = legacyPhysicsMaterialId;
     }
 } // namespace Physics
