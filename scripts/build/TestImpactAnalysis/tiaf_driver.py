@@ -225,9 +225,7 @@ def main(args: dict):
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         logger.error(f"Exception caught by TIAF driver: '{e}'.")
         traceback.print_exc()
-    finally:
-        # This will not gate the AR run - replace with result.return_code if you wish to enable gating.
-        sys.exit(0)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
