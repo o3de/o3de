@@ -24,9 +24,10 @@ namespace TestImpact
 
         namespace Output
         {
-            void TestSuiteFilter(SuiteType filter)
+            void TestSuiteSet(const SuiteSet& suiteSet, const SuiteLabelExcludeSet& suiteLabelExcludeSet)
             {
-                std::cout << "Test suite filter: " << SuiteTypeAsString(filter).c_str() << "\n";
+                std::cout << "Test suite set: " << SuiteSetAsString(suiteSet).c_str() << "\n";
+                std::cout << "Test suite label exclude set: " << SuiteLabelExcludeSetAsString(suiteLabelExcludeSet).c_str() << "\n";
             }
 
             void ImpactAnalysisTestSelection(size_t numSelectedTests, size_t numDiscardedTests, size_t numExcludedTests, size_t numDraftedTests)
@@ -114,28 +115,29 @@ namespace TestImpact
             }
         }
 
-        void TestSequenceStartCallback(SuiteType suiteType, const Client::TestRunSelection& selectedTests)
+        void TestSequenceStartCallback(const SuiteSet& suiteSet, const SuiteLabelExcludeSet& suiteLabelExcludeSet, const Client::TestRunSelection& selectedTests)
         {
-            Output::TestSuiteFilter(suiteType);
+            Output::TestSuiteSet(suiteSet, suiteLabelExcludeSet);
             std::cout << selectedTests.GetNumIncludedTestRuns() << " tests selected, " << selectedTests.GetNumExcludedTestRuns()
                       << " excluded.\n";
 
             PrintDivider();
         }
 
-        void TestSequenceCompleteCallback(SuiteType suiteType, const Client::TestRunSelection& selectedTests)
+        void TestSequenceCompleteCallback(const SuiteSet& suiteSet, const SuiteLabelExcludeSet& suiteLabelExcludeSet, const Client::TestRunSelection& selectedTests)
         {
-            Output::TestSuiteFilter(suiteType);
+            Output::TestSuiteSet(suiteSet, suiteLabelExcludeSet);
             std::cout << selectedTests.GetNumIncludedTestRuns() << " tests selected, " << selectedTests.GetNumExcludedTestRuns() << " excluded.\n";
         }
 
         void ImpactAnalysisTestSequenceStartCallback(
-            SuiteType suiteType,
+            const SuiteSet& suiteSet,
+            const SuiteLabelExcludeSet& suiteLabelExcludeSet,
             const Client::TestRunSelection& selectedTests,
             const AZStd::vector<AZStd::string>& discardedTests,
             const AZStd::vector<AZStd::string>& draftedTests)
         {
-            Output::TestSuiteFilter(suiteType);
+            Output::TestSuiteSet(suiteSet, suiteLabelExcludeSet);
             Output::ImpactAnalysisTestSelection(
                 selectedTests.GetTotalNumTests(), discardedTests.size(), selectedTests.GetNumExcludedTestRuns(), draftedTests.size());
 
@@ -143,12 +145,13 @@ namespace TestImpact
         }
 
         void SafeImpactAnalysisTestSequenceStartCallback(
-            SuiteType suiteType,
+            const SuiteSet& suiteSet,
+            const SuiteLabelExcludeSet& suiteLabelExcludeSet,
             const Client::TestRunSelection& selectedTests,
             const Client::TestRunSelection& discardedTests,
             const AZStd::vector<AZStd::string>& draftedTests)
         {
-            Output::TestSuiteFilter(suiteType);
+            Output::TestSuiteSet(suiteSet, suiteLabelExcludeSet);
             Output::ImpactAnalysisTestSelection(
                 selectedTests.GetTotalNumTests(),
                 discardedTests.GetTotalNumTests(),

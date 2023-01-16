@@ -25,10 +25,14 @@
 
 namespace TestImpact
 {
-    PythonTestTargetMetaMap ReadPythonTestTargetMetaMapFile(SuiteType suiteFilter, const RepoPath& testTargetMetaConfigFile, const AZStd::string& buildType)
+    PythonTestTargetMetaMap ReadPythonTestTargetMetaMapFile(
+        const SuiteSet& suiteSet,
+        const SuiteLabelExcludeSet& suiteLabelExcludeSet,
+        const RepoPath& testTargetMetaConfigFile,
+        const AZStd::string& buildType)
     {
         const auto masterTestListData = ReadFileContents<RuntimeException>(testTargetMetaConfigFile);
-        auto testTargetMetaMap = PythonTestTargetMetaMapFactory(masterTestListData, suiteFilter);
+        auto testTargetMetaMap = PythonTestTargetMetaMapFactory(masterTestListData, suiteSet, suiteLabelExcludeSet);
         for (auto& [name, meta] : testTargetMetaMap)
         {
             meta.m_scriptMeta.m_testCommand = AZStd::regex_replace(meta.m_scriptMeta.m_testCommand, AZStd::regex("\\$\\<CONFIG\\>"), buildType);
@@ -42,7 +46,8 @@ namespace TestImpact
         const AZStd::optional<RepoPath>& dataFile,
         [[maybe_unused]] const AZStd::optional<RepoPath>& previousRunDataFile,
         const AZStd::vector<ExcludedTarget>& testsToExclude,
-        SuiteType suiteFilter,
+        const SuiteSet& suiteSet,
+        const SuiteLabelExcludeSet& suiteLabelExcludeSet,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
         Policy::TestFailure testFailurePolicy,
@@ -50,7 +55,8 @@ namespace TestImpact
         Policy::TargetOutputCapture targetOutputCapture,
         Policy::TestRunner testRunnerPolicy)
         : m_config(AZStd::move(config))
-        , m_suiteFilter(suiteFilter)
+        , m_suiteSet(suiteSet)
+        , m_suiteLabelExcludeSet(suiteLabelExcludeSet)
         , m_executionFailurePolicy(executionFailurePolicy)
         , m_failedTestCoveragePolicy(failedTestCoveragePolicy)
         , m_testFailurePolicy(testFailurePolicy)
@@ -62,7 +68,8 @@ namespace TestImpact
         auto targetDescriptors = ReadTargetDescriptorFiles(m_config.m_commonConfig.m_buildTargetDescriptor);
         auto buildTargets = CompilePythonTargetLists(
             AZStd::move(targetDescriptors),
-            ReadPythonTestTargetMetaMapFile(suiteFilter, m_config.m_commonConfig.m_testTargetMeta.m_metaFile, m_config.m_commonConfig.m_meta.m_buildConfig));
+            ReadPythonTestTargetMetaMapFile(
+                m_suiteSet, m_suiteLabelExcludeSet, m_config.m_commonConfig.m_testTargetMeta.m_metaFile, m_config.m_commonConfig.m_meta.m_buildConfig));
         auto&& [productionTargets, testTargets] = buildTargets;
         m_buildTargets = AZStd::make_unique<BuildTargetList<ProductionTarget, TestTarget>>(
             AZStd::move(testTargets), AZStd::move(productionTargets));
@@ -102,7 +109,7 @@ namespace TestImpact
             }
             else
             {
-                m_sparTiaFile = m_config.m_workspace.m_active.m_root / RepoPath(SuiteTypeAsString(m_suiteFilter)) /
+                m_sparTiaFile = m_config.m_workspace.m_active.m_root / RepoPath(SuiteSetAsString(m_suiteSet)) /
                     m_config.m_workspace.m_active.m_sparTiaFile;
             }
 
@@ -140,8 +147,8 @@ namespace TestImpact
             AZ_Printf(
                 LogCallSite,
                 AZStd::string::format(
-                    "No test impact analysis data found for suite '%s' at %s\n",
-                    SuiteTypeAsString(m_suiteFilter).c_str(),
+                    "No test impact analysis data found for suites '%s' at %s\n",
+                    SuiteSetAsString(m_suiteSet).c_str(),
                     m_sparTiaFile.c_str())
                     .c_str());
         }
@@ -240,7 +247,7 @@ namespace TestImpact
         // Inform the client that the sequence is about to start
         if (testSequenceStartCallback.has_value())
         {
-            (*testSequenceStartCallback)(m_suiteFilter, selectedTests);
+            (*testSequenceStartCallback)(m_suiteSet, m_suiteLabelExcludeSet, selectedTests);
         }
 
         // Run the test targets and collect the test run results
@@ -261,7 +268,8 @@ namespace TestImpact
             testTargetTimeout,
             globalTimeout,
             GenerateSequencePolicyState(),
-            m_suiteFilter,
+            m_suiteSet,
+            m_suiteLabelExcludeSet,
             selectedTests,
             GenerateTestRunReport(result, testRunTimer.GetStartTimePointRelative(sequenceTimer), testRunDuration, testJobs));
 
@@ -286,21 +294,18 @@ namespace TestImpact
     {
         const Timer sequenceTimer;
 
-        AZStd::vector<const TestTarget*> draftedTestTargets;
-        if (!HasImpactAnalysisData())
-        {
-            const auto notCovered = m_dynamicDependencyMap->GetNotCoveringTests();
-            for (const auto& testTarget : notCovered)
-            {
-                if (!m_testTargetExcludeList->IsTestTargetFullyExcluded(testTarget))
-                {
-                    draftedTestTargets.push_back(testTarget);
-                }
-            }
-        }
-
         // The test targets that were selected for the change list by the dynamic dependency map and the test targets that were not
         const auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargets(changeList, testPrioritizationPolicy);
+
+        // Set of selected tests so we can prune from drafted tests to avoid duplicate runs
+        const AZStd::unordered_set<const PythonTestTarget*> selectedTestTargetSet(selectedTestTargets.begin(), selectedTestTargets.end());
+
+        // Unlike native test impact analysis, python test impact analysis can have tests with no coverage so we cannot simply
+        // draft in tests without coverage (i.e. new tests, or tests that have yet to successfully execute in previous runs).
+        // Instead, the python test selector will run all parent test target tests when a new python test is added. What we
+        // should do in future versions (for both native and python) is draft in any previous failing tests. For now, we will
+        // leave the drafted set empty.
+        AZStd::vector<const TestTarget*> draftedTestTargets;
 
         // The subset of selected test targets that are not on the configuration's exclude list and those that are
         const auto [includedSelectedTestTargets, excludedSelectedTestTargets] =
@@ -315,7 +320,6 @@ namespace TestImpact
             return m_testEngine->InstrumentedRun(
                 testsTargets,
                 m_executionFailurePolicy,
-                m_integrationFailurePolicy,
                 m_testFailurePolicy,
                 m_targetOutputCapture,
                 testTargetTimeout,
@@ -341,7 +345,8 @@ namespace TestImpact
             return ImpactAnalysisTestSequenceWrapper(
                 1,
                 GenerateImpactAnalysisSequencePolicyState(testPrioritizationPolicy, dynamicDependencyMapPolicy),
-                m_suiteFilter,
+                m_suiteSet,
+                m_suiteLabelExcludeSet,
                 sequenceTimer,
                 instrumentedTestRun,
                 includedSelectedTestTargets,
@@ -360,7 +365,8 @@ namespace TestImpact
             return ImpactAnalysisTestSequenceWrapper(
                 1,
                 GenerateImpactAnalysisSequencePolicyState(testPrioritizationPolicy, dynamicDependencyMapPolicy),
-                m_suiteFilter,
+                m_suiteSet,
+                m_suiteLabelExcludeSet,
                 sequenceTimer,
                 instrumentedTestRun,
                 includedSelectedTestTargets,
@@ -415,7 +421,7 @@ namespace TestImpact
         // Inform the client that the sequence is about to start
         if (testSequenceStartCallback.has_value())
         {
-            (*testSequenceStartCallback)(m_suiteFilter, selectedTests, discardedTests, draftedTests);
+            (*testSequenceStartCallback)(m_suiteSet, m_suiteLabelExcludeSet, selectedTests, discardedTests, draftedTests);
         }
 
         // We share the test run complete handler between the selected, discarded and drafted test runs as to present them together as one
@@ -431,7 +437,6 @@ namespace TestImpact
             return m_testEngine->InstrumentedRun(
                 testsTargets,
                 m_executionFailurePolicy,
-                m_integrationFailurePolicy,
                 m_testFailurePolicy,
                 m_targetOutputCapture,
                 testTargetTimeout,
@@ -521,7 +526,8 @@ namespace TestImpact
             testTargetTimeout,
             globalTimeout,
             GenerateSafeImpactAnalysisSequencePolicyState(testPrioritizationPolicy),
-            m_suiteFilter,
+            m_suiteSet,
+            m_suiteLabelExcludeSet,
             selectedTests,
             discardedTests,
             draftedTests,
@@ -577,7 +583,7 @@ namespace TestImpact
         // Inform the client that the sequence is about to start
         if (testSequenceStartCallback.has_value())
         {
-            (*testSequenceStartCallback)(m_suiteFilter, selectedTests);
+            (*testSequenceStartCallback)(m_suiteSet, m_suiteLabelExcludeSet, selectedTests);
         }
 
         // Run the test targets and collect the test run results
@@ -585,7 +591,6 @@ namespace TestImpact
         const auto [result, testJobs] = m_testEngine->InstrumentedRun(
             includedTestTargets,
             m_executionFailurePolicy,
-            m_integrationFailurePolicy,
             m_testFailurePolicy,
             m_targetOutputCapture,
             testTargetTimeout,
@@ -599,7 +604,8 @@ namespace TestImpact
             testTargetTimeout,
             globalTimeout,
             GenerateSequencePolicyState(),
-            m_suiteFilter,
+            m_suiteSet,
+            m_suiteLabelExcludeSet,
             selectedTests,
             GenerateTestRunReport(result, testRunTimer.GetStartTimePointRelative(sequenceTimer), testRunDuration, testJobs));
 
