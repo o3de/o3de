@@ -13,7 +13,6 @@ namespace TestImpact
     std::optional<SuiteLabelSet> ExtractTestSuiteLabelSet(
         const rapidjson_ly::GenericArray<true, rapidjson_ly::Value>& suiteLabels, const SuiteLabelExcludeSet& suiteLabelExcludeSet)
     {
-        constexpr auto requiresTiafLabel = "REQUIRES_tiaf";
         SuiteLabelSet labelSet;
         for (const auto& label : suiteLabels)
         {
@@ -27,6 +26,6 @@ namespace TestImpact
         }
 
         // Only test suite labels that contain the TIAF requirement label
-        return labelSet.contains(requiresTiafLabel) ? std::optional<SuiteLabelSet>{ labelSet } : AZStd::nullopt;
+        return labelSet.contains(RequiresTiafLabel) ? std::optional<SuiteLabelSet>{ labelSet } : AZStd::nullopt;
     }
 } // namespace TestImpact
