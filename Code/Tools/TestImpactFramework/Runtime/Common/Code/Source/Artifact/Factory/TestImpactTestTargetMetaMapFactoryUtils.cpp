@@ -16,7 +16,7 @@ namespace TestImpact
         SuiteLabelSet labelSet;
         for (const auto& label : suiteLabels)
         {
-            const auto labelString = label.GetString();
+            const auto labelString = label.GetString(); 
             if (suiteLabelExcludeSet.contains(labelString))
             {
                 return AZStd::nullopt;
@@ -25,6 +25,7 @@ namespace TestImpact
             labelSet.insert(labelString);
         }
 
-        return labelSet;
+        // Only test suite labels that contain the TIAF requirement label
+        return labelSet.contains(RequiresTiafLabel) ? std::optional<SuiteLabelSet>{ labelSet } : AZStd::nullopt;
     }
 } // namespace TestImpact

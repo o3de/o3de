@@ -9,12 +9,14 @@
 # Path to test instrumentation binary
 set(O3DE_TEST_IMPACT_INSTRUMENTATION_BIN "" CACHE PATH "Path to test impact framework instrumentation binary")
 
+# Label to add to test for them to be included in TIAF
+set(REQUIRES_TIAF_LABEL "REQURIES_tiaf")
+
 # Test impact analysis opt-in for native test targets
-set(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED FALSE CACHE BOOL "Whether to enable native C++ test targets for test impact analysis (otherwise, CTest will be used to run these targets).")
+set(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED FALSE CACHE BOOL "Whether to enable native C++ test targets with the REQUIRES_TIAF_LABEL label for test impact analysis (otherwise, CTest will be used to run these targets).")
 
 # Test impact analysis opt-in for Python test targets
-#set(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED FALSE CACHE BOOL "Whether to enable Python test targets for test impact analysis (otherwise, CTest will be used to run these targets).")
-set(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED TRUE)
+set(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED FALSE CACHE BOOL "Whether to enable Python test targets with the REQUIRES_TIAF_LABEL label for test impact analysis (otherwise, CTest will be used to run these targets).")
 
 # If we are not provided a path to the Instrumentation bin,
 # set LY_TEST_IMPACT to false so that our tests don't get added
@@ -50,17 +52,17 @@ endif()
 # \arg:TEST_LABELS The existing test labels list that the TIAF label will be appended to
 function(o3de_test_impact_apply_test_labels TEST_FRAMEWORK TEST_LABELS)
     if("${TEST_FRAMEWORK}" STREQUAL "pytest" OR "${TEST_FRAMEWORK}" STREQUAL "pytest_editor")
-        if(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
-            set(label REQUIRES_tiaf)
+        if(NOT O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
+            set(remove_tiaf_label ON)
         endif()
     elseif("${TEST_FRAMEWORK}" STREQUAL "googletest" OR "${TEST_FRAMEWORK}" STREQUAL "googlebenchmark")
-        if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED)
-            set(label REQUIRES_tiaf)
+        if(NOT O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED)
+            set(remove_tiaf_label ON)
         endif()
     endif()
     
-    if(label)
-        list(APPEND ${TEST_LABELS} ${label})
+    if(remove_tiaf_label)
+        list(REMOVE_ITEM TEST_LABELS REQUIRES_TIAF_LABEL)
         set(${TEST_LABELS} ${${TEST_LABELS}} PARENT_SCOPE)
     endif()
 endfunction()

@@ -636,8 +636,7 @@ endfunction()
 #! ly_test_impact_post_step: runs the post steps to be executed after all other cmake scripts have been executed.
 function(ly_test_impact_post_step)
     if(NOT O3DE_TEST_IMPACT_ACTIVE)
-        message("TIAF is disabled, no post step will be performed.")
-        return()
+        message("TIAF is deactivated but configs and meta-data will still be generated.")
     endif()
 
     # Clean temporary and persistent directories
