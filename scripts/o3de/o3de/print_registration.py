@@ -79,7 +79,7 @@ def print_gems(verbose: int = 0) -> int:
 
 
 def print_external_subdirectories(verbose: int = 0) -> int:
-    external_subdirs_data = manifest.get_all_external_subdirectories()
+    external_subdirs_data = manifest.get_all_external_subdirectories(gems_json_data_by_path=dict())
     print(f'External Subdirectories:\n{json.dumps(external_subdirs_data, indent=4)}')
     return 0
 

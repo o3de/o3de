@@ -77,7 +77,7 @@ namespace AZ
             allocatorDescriptor.m_pageSizeInBytes = DefaultConstantBufferPageSize;
             allocatorDescriptor.m_bindFlags = AZ::RHI::BufferBindFlags::Constant;
             allocatorDescriptor.m_getHeapMemoryUsageFunction = [this]() { return &m_argumentBufferConstantsAllocatorMemoryUsage; };
-            allocatorDescriptor.m_recycleOnCollect = true;
+            allocatorDescriptor.m_recycleOnCollect = false;
             m_argumentBufferConstantsAllocator.Init(allocatorDescriptor);
              
             allocatorDescriptor.m_getHeapMemoryUsageFunction = [this]() { return &m_argumentBufferAllocatorMemoryUsage; };

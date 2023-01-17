@@ -28,7 +28,7 @@ namespace AzToolsFramework
 
     bool MetadataManager::GetValue(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId)
     {
-        rapidjson_ly::Document value;
+        rapidjson::Document value;
 
         if (!GetJson(file, key, value))
         {
@@ -41,12 +41,12 @@ namespace AzToolsFramework
         return resultCode.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted;
     }
 
-    bool MetadataManager::GetJson(AZ::IO::PathView file, AZStd::string_view key, rapidjson_ly::Document& outValue)
+    bool MetadataManager::GetJson(AZ::IO::PathView file, AZStd::string_view key, rapidjson::Document& outValue)
     {
         auto path = ToMetadataPath(file);
 
         // Make a JSONPath pointer and validate it
-        rapidjson_ly::Pointer pointer(key.data(), key.length());
+        rapidjson::Pointer pointer(key.data(), key.length());
 
         if (!pointer.IsValid())
         {
@@ -84,21 +84,21 @@ namespace AzToolsFramework
         auto& document = result.GetValue();
 
         // Use the pointer to find the value we're trying to read
-        rapidjson_ly::Value* value = pointer.Get(document);
+        rapidjson::Value* value = pointer.Get(document);
 
         if (!value)
         {
             return false;
         }
 
-        outValue = rapidjson_ly::Document(); // Make sure to release any existing memory if the document happens to be non-empty
-        outValue.CopyFrom(*value, document.GetAllocator());
+        outValue = rapidjson::Document(); // Make sure to release any existing memory if the document happens to be non-empty
+        outValue.CopyFrom(*value, outValue.GetAllocator());
         return true;
     }
 
     bool MetadataManager::GetValueVersion(AZ::IO::PathView file, AZStd::string_view key, int& version)
     {
-        rapidjson_ly::Document value;
+        rapidjson::Document value;
         if (!GetJson(file, key, value))
         {
             return false;
@@ -137,8 +137,8 @@ namespace AzToolsFramework
         auto path = ToMetadataPath(file);
 
         // Make a JSONPath pointer and validate it
-        rapidjson_ly::Pointer pointer(key.data(), key.length());
-        rapidjson_ly::Pointer versionPointer(MetadataVersionKey);
+        rapidjson::Pointer pointer(key.data(), key.length());
+        rapidjson::Pointer versionPointer(MetadataVersionKey);
 
         if (!pointer.IsValid())
         {
@@ -155,7 +155,7 @@ namespace AzToolsFramework
         // Otherwise, just start a new, blank document
         auto result = AZ::JsonSerializationUtils::ReadJsonFile(path.Native());
 
-        rapidjson_ly::Document document;
+        rapidjson::Document document;
 
         if (result)
         {
@@ -208,11 +208,11 @@ namespace AzToolsFramework
         };
 
         // Encode the version into JSON
-        rapidjson_ly::Value serializedVersion;
+        rapidjson::Value serializedVersion;
         AZ::JsonSerialization::Store(serializedVersion, document.GetAllocator(), &MetadataVersion, nullptr, azrtti_typeid<int>(), settings);
 
         // Encode the value into JSON
-        rapidjson_ly::Value serializedValue;
+        rapidjson::Value serializedValue;
         auto resultCode = AZ::JsonSerialization::Store(serializedValue, document.GetAllocator(), inValue, nullptr, typeId, settings);
 
         // Try to insert the version of the type being serialized into the serialized data
@@ -230,10 +230,10 @@ namespace AzToolsFramework
             }
             else
             {
-                rapidjson_ly::Value versionValue;
+                rapidjson::Value versionValue;
                 versionValue.SetInt(currentVersion);
                 serializedValue.GetObject().AddMember(
-                    rapidjson_ly::Value(MetadataObjectVersionField, document.GetAllocator()).Move(), versionValue, document.GetAllocator());
+                    rapidjson::Value(MetadataObjectVersionField, document.GetAllocator()).Move(), versionValue, document.GetAllocator());
             }
         }
 
@@ -242,11 +242,11 @@ namespace AzToolsFramework
             // Create the file version JSON entry in the document and store the encoded value
             // This will update the saved version to the current version
             // Note that this is the version of the entire saved document (the metadata version), not the version of the type being saved
-            rapidjson_ly::Value& versionStore = versionPointer.Create(document, document.GetAllocator());
+            rapidjson::Value& versionStore = versionPointer.Create(document, document.GetAllocator());
             versionStore = AZStd::move(serializedVersion);
 
             // Create the user JSON entry in the document and store the encoded value
-            rapidjson_ly::Value& store = pointer.Create(document, document.GetAllocator());
+            rapidjson::Value& store = pointer.Create(document, document.GetAllocator());
             store = AZStd::move(serializedValue);
 
             // Save JSON to disk

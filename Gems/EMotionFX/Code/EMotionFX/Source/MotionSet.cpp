@@ -602,6 +602,10 @@ namespace EMotionFX
     {
 #if defined(EMFX_DEVELOPMENT_BUILD)
         m_isOwnedByRuntime = isOwnedByRuntime;
+        for (MotionSet* set : m_childSets)
+        {
+            set->SetIsOwnedByRuntime(isOwnedByRuntime);
+        }
 #else
         AZ_UNUSED(isOwnedByRuntime);
 #endif

@@ -75,6 +75,7 @@ ly_add_target(
 # use the PhysX module in clients and servers:
 ly_create_alias(NAME PhysX.Clients NAMESPACE Gem TARGETS Gem::PhysX)
 ly_create_alias(NAME PhysX.Servers NAMESPACE Gem TARGETS Gem::PhysX)
+ly_create_alias(NAME PhysX.Unified NAMESPACE Gem TARGETS Gem::PhysX)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
@@ -228,13 +229,4 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAME Gem::PhysX.Editor.Tests
         )
     endif()
-    
-    ly_add_target_files(
-        TARGETS
-            ${testTargets}
-        FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/RagdollConfiguration.xml
-        OUTPUT_SUBDIRECTORY
-            Test.Assets/Gems/PhysX/Code/Tests
-            )
 endif()
