@@ -54,7 +54,7 @@ targetProjects = ["AutomatedTesting"]
 
 @pytest.fixture
 def local_resources(request, workspace, ap_setup_fixture):
-    # Test-level asset folder. Directory contains a subfolder for each test (i.e. C1234567)
+    """ Test-level asset folder. Directory contains a sub-folder for each test (i.e. C1234567) """
     ap_setup_fixture["tests_dir"] = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -69,6 +69,7 @@ class TestsAssetBundlerBatch(object):
 
     @staticmethod
     def ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture):
+        """Helper: Prepares the test environment; copies test files to the project in the current root, then runs AP."""
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], test_folder_name, use_current_root=True)
         ap_result, _ = asset_processor.batch_process(platforms="pc,mac")
         assert ap_result, "Asset Processor failed to process test assets."
@@ -202,7 +203,7 @@ class TestsAssetBundlerBatch(object):
         2. Create a bundle with the asset list and without a bundle settings file
         3. Create a bundle with the asset list and a bundle settings file
         4. Validate calling bundle doesn't perform destructive overwrite without --allowOverwrites
-        5. Calling bundle again with --alowOverwrites performs destructive overwrite
+        5. Calling bundle again with --allowOverwrites performs destructive overwrite
         6. Validate contents of original bundle and overwritten bundle
         """
         test_folder_name = "asset_bundler_test_assets"
@@ -739,7 +740,7 @@ class TestsAssetBundlerBatch(object):
             # End generate_compare_command()
 
             def verify_asset_list_contents(expected: str, output_asset_list: str) -> None:
-                # Compare relative paths from inside 'expected' and 'output_asset_list' (last output file from cmd)
+                """Helper: Compare relative paths from inside 'expected' and 'output_asset_list' (last output file from cmd)"""
                 expected_paths = []
                 actual_paths = []
                 for rel_path in helper.get_asset_relative_paths(expected):
@@ -753,7 +754,7 @@ class TestsAssetBundlerBatch(object):
             # End verify_asset_list_contents()
 
             def run_compare_command_and_verify(platform_arg: str, expect_pc_output: bool, expect_mac_output: bool) -> None:
-
+                """Helper: Adds the platform suffixes to each expected output, builds and runs the compare commands. """
                 # Expected asset list to equal result of comparison
                 expected_pc_asset_list = None
                 expected_mac_asset_list = None

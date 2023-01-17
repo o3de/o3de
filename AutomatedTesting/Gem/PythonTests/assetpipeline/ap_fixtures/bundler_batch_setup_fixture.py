@@ -213,7 +213,7 @@ def bundler_batch_setup_fixture(request, workspace, ap_setup_fixture, asset_proc
                 yield node.attrib["value"]
 
         @staticmethod
-        def get_seed_relative_paths_for_platform(seed_file: str, platform_flags : int) -> str:
+        def get_seed_relative_paths_for_platform(seed_file: str, platform_flags: int) -> list[str]:
             """Iterates all asset relative paths in the [seed_file] which match the platform flags"""
             assert seed_file.endswith(".seed"), f"file {seed_file} is not a seed file"
             # Get value from all XML nodes who are grandchildren of all Class tags and have
@@ -224,7 +224,7 @@ def bundler_batch_setup_fixture(request, workspace, ap_setup_fixture, asset_proc
             root = data.getroot()
             seedFileRootNode = root.find("Class")
             for seedFileInfoNode in seedFileRootNode.findall("*"):
-                if (int(seedFileInfoNode.find('./Class[@field="platformFlags"]').attrib["value"]) & platform_flags ):
+                if (int(seedFileInfoNode.find('./Class[@field="platformFlags"]').attrib["value"]) & platform_flags):
                     pathHint = seedFileInfoNode.find('./Class[@field="pathHint"]').attrib["value"]
                     seedFileListContents.append(pathHint)
             return seedFileListContents
@@ -239,7 +239,6 @@ def bundler_batch_setup_fixture(request, workspace, ap_setup_fixture, asset_proc
             for node in (ET.parse(asset_list_file).getroot().findall(
                     r"./Class/Class/Class/*[@field='assetRelativePath']")):
                 yield node.attrib["value"]
-
 
         @staticmethod
         def get_dependent_bundle_names(manifest_file: str) -> str:
@@ -260,8 +259,8 @@ def bundler_batch_setup_fixture(request, workspace, ap_setup_fixture, asset_proc
             return f'{split[0]}_{platform_name}.{split[1]}'
 
         @staticmethod
-        def extract_file_content(bundle_file: str, file_name_to_extract: str) -> str:
-            """Extract the contents of a single file from a bundle"""
+        def extract_file_content(bundle_file: str, file_name_to_extract: str) -> bytes:
+            """Extract the contents of a single file from a bundle as a ByteString."""
 
             with zipfile.ZipFile(bundle_file) as bundle_zip:
                 with bundle_zip.open(file_name_to_extract, "r") as extracted_file:
@@ -283,7 +282,7 @@ def bundler_batch_setup_fixture(request, workspace, ap_setup_fixture, asset_proc
 
         @staticmethod
         def get_platform_flag(platform_name: str) -> int:
-            """ Helper tp fetch the platform flag from a provided platform name. """
+            """ Helper to fetch the platform flag from a provided platform name. """
             platform_flags = {
                 "pc": 1,
                 "android": 2,
@@ -392,4 +391,4 @@ def bundler_batch_setup_fixture(request, workspace, ap_setup_fixture, asset_proc
 
     bundler_batch_fixture.platform_values = bundler_batch_fixture._get_platform_flags()
 
-    return bundler_batch_fixture # Return the fixture
+    return bundler_batch_fixture  # Return the fixture
