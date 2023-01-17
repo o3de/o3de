@@ -454,6 +454,7 @@ namespace UnitTest
     class TestEntityPropertyEditor : public AzToolsFramework::EntityPropertyEditor
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestEntityPropertyEditor, AZ::SystemAllocator)
         void InvalidatePropertyDisplay(PropertyModificationRefreshLevel level) override;
         bool m_invalidatePropertyDisplayCalled = false;
     };

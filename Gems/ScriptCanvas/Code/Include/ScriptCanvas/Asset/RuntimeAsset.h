@@ -133,6 +133,7 @@ namespace ScriptCanvas
         : public AZ::Data::AssetData
     {
     public:
+        AZ_CLASS_ALLOCATOR(RuntimeAsset, AZ::SystemAllocator)
         AZ_RTTI(RuntimeAsset, "{3E2AC8CD-713F-453E-967F-29517F331784}", AZ::Data::AssetData);
 
         static const char* GetFileExtension() { return "scriptcanvas_compiled"; }

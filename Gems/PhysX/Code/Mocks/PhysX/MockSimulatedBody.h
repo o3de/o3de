@@ -15,6 +15,7 @@ namespace UnitTest
     class MockSimulatedBody : public AzPhysics::SimulatedBody
     {
     public:
+        AZ_CLASS_ALLOCATOR(MockSimulatedBody, AZ::SystemAllocator)
         MOCK_CONST_METHOD0(GetAabb, AZ::Aabb ());
         MOCK_CONST_METHOD0(GetEntityId, AZ::EntityId ());
         MOCK_CONST_METHOD0(GetNativePointer, void* ());

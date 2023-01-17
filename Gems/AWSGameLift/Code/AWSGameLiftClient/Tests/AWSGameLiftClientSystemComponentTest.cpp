@@ -44,6 +44,7 @@ class TestAWSGameLiftClientSystemComponent
     : public AWSGameLiftClientSystemComponent
 {
 public:
+    AZ_CLASS_ALLOCATOR(TestAWSGameLiftClientSystemComponent, AZ::SystemAllocator)
     TestAWSGameLiftClientSystemComponent()
     {
         m_gameliftClientManagerMockPtr = nullptr;

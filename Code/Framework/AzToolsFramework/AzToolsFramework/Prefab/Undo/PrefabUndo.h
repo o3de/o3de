@@ -67,6 +67,7 @@ namespace AzToolsFramework
             : public PrefabUndoBase
         {
         public:
+            AZ_CLASS_ALLOCATOR(PrefabUndoInstanceLink, AZ::SystemAllocator)
             enum class LinkStatus
             {
                 ADD,

@@ -17,6 +17,7 @@ class AWSScriptBehaviorLambdaNotificationBusHandlerMock
     : public AWSScriptBehaviorLambdaNotificationBusHandler
 {
 public:
+    AZ_CLASS_ALLOCATOR(AWSScriptBehaviorLambdaNotificationBusHandlerMock, AZ::SystemAllocator)
     AWSScriptBehaviorLambdaNotificationBusHandlerMock()
     {
         AWSScriptBehaviorLambdaNotificationBus::Handler::BusConnect();

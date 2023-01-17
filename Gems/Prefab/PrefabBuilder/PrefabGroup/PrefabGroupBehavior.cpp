@@ -63,6 +63,7 @@ namespace AZ::SceneAPI::Behaviors
         , public Events::AssetImportRequestBus::Handler
         , public Events::ManifestMetaInfoBus::Handler
     {
+        AZ_CLASS_ALLOCATOR(PrefabGroupBehavior, AZ::SystemAllocator)
         using PreExportEventContextFunction = AZStd::function<Events::ProcessingResult(Events::PreExportEventContext&)>;
         PreExportEventContextFunction m_preExportEventContextFunction;
         AZ::Prefab::PrefabGroupAssetHandler m_prefabGroupAssetHandler;

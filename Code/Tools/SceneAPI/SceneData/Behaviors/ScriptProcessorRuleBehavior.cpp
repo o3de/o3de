@@ -185,6 +185,7 @@ namespace AZ::SceneAPI::Behaviors
     struct ScriptProcessorRuleBehavior::EventHandler final
         : public AZ::SceneAPI::SceneCore::ExportingComponent
     {
+        AZ_CLASS_ALLOCATOR(ScriptProcessorRuleBehavior::EventHandler, AZ::SystemAllocator)
         using PreExportEventContextFunction = AZStd::function<bool(Events::PreExportEventContext&)>;
         PreExportEventContextFunction m_preExportEventContextFunction;
 

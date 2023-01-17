@@ -56,6 +56,7 @@ namespace AZ
             : public DisplayMapperFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(AcesDisplayMapperFeatureProcessor, AZ::SystemAllocator)
             enum OutputDeviceTransformFlags
             {
                 AlterSurround = 0x1, // Apply gamma adjustment to compensate for dim surround

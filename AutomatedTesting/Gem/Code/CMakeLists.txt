@@ -41,6 +41,8 @@ ly_create_alias(NAME AutomatedTesting.Builders NAMESPACE Gem TARGETS Gem::Automa
 ly_create_alias(NAME AutomatedTesting.Tools    NAMESPACE Gem TARGETS Gem::AutomatedTesting)
 ly_create_alias(NAME AutomatedTesting.Clients  NAMESPACE Gem TARGETS Gem::AutomatedTesting)
 ly_create_alias(NAME AutomatedTesting.Servers  NAMESPACE Gem TARGETS Gem::AutomatedTesting)
+ly_create_alias(NAME AutomatedTesting.Unified  NAMESPACE Gem TARGETS Gem::AutomatedTesting)
+
 
 ################################################################################
 # Gem dependencies

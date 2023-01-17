@@ -22,6 +22,7 @@ namespace AZ
         {
             using Base = AssetHandler<StreamingImageAsset>;
         public:
+            AZ_CLASS_ALLOCATOR(StreamingImageAssetHandler, AZ::SystemAllocator)
             virtual ~StreamingImageAssetHandler();
             
             Data::AssetHandler::LoadResult LoadAssetData(
