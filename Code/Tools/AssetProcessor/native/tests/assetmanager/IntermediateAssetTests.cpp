@@ -59,8 +59,8 @@ namespace UnitTests
         ASSERT_EQ(builders.size(), 1);
 
         auto builderUuid = builders[0].m_busId;
-        auto sourceUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(m_testFilePath.c_str()));
-        auto actualIntermediateUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(MakePath("test.stage2", true).c_str()));
+        auto sourceUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(m_testFilePath.c_str())).GetValueOr(AZ::Uuid());
+        auto actualIntermediateUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(MakePath("test.stage2", true).c_str())).GetValueOr(AZ::Uuid());
         auto uuidFormat = AZStd::string::format(
             AZ_STRING_FORMAT ":" AZ_STRING_FORMAT ":%d",
             AZ_STRING_ARG(sourceUuid.ToFixedString()),
