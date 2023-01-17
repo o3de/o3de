@@ -134,12 +134,6 @@ namespace LmbrCentral
         BoxShapeComponentRequestsBus::Event(entity->GetId(), &BoxShapeComponentRequests::SetBoxDimensions, boxDimensions);
     }
 
-    void SetComponentSubMode(AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode subMode)
-    {
-        AzToolsFramework::ShapeComponentModeRequestBus::Event(
-            entityComponentIdPair, &AzToolsFramework::ShapeComponentModeRequests::SetCurrentMode, subMode);
-    }
-
     TEST_F(EditorBoxShapeComponentManipulatorFixture, BoxShapeNonUniformScaleSymmetricalDimensionManipulatorsScaleCorrectly)
     {
         // a rotation which rotates the x-axis to (0.8, 0.6, 0)

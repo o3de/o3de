@@ -58,4 +58,10 @@ namespace LmbrCentral
             translationOffset, entity->GetId(), &LmbrCentral::ShapeComponentRequests::GetTranslationOffset);
         EXPECT_THAT(translationOffset, UnitTest::IsCloseTolerance(expectedTranslationOffset, ManipulatorTolerance));
     }
+
+    void SetComponentSubMode(AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode subMode)
+    {
+        AzToolsFramework::ShapeComponentModeRequestBus::Event(
+            entityComponentIdPair, &AzToolsFramework::ShapeComponentModeRequests::SetCurrentMode, subMode);
+    }
 } // namespace LmbrCentral

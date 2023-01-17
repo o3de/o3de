@@ -26,6 +26,7 @@ namespace LmbrCentral
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_editorSphereShapeComponentDescriptor;
 
         AZ::Entity* m_entity = nullptr;
+        AZ::EntityComponentIdPair m_entityComponentIdPair;
     };
 
     void EditorAxisAlignedBoxShapeComponentFixture::SetUpEditorFixtureImpl()
@@ -48,7 +49,8 @@ namespace LmbrCentral
 
         UnitTest::CreateDefaultEditorEntity("AxisAlignedBoxShapeComponentEntity", &m_entity);
         m_entity->Deactivate();
-        m_entity->CreateComponent(EditorAxisAlignedBoxShapeComponentTypeId);
+        m_entityComponentIdPair =
+            AZ::EntityComponentIdPair(m_entity->GetId(), m_entity->CreateComponent(EditorAxisAlignedBoxShapeComponentTypeId)->GetId());
         m_entity->Activate();
     }
 
@@ -75,7 +77,7 @@ namespace LmbrCentral
         BoxShapeComponentRequestsBus::Event(entity->GetId(), &BoxShapeComponentRequests::SetBoxDimensions, boxDimensions);
     }
 
-    TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, AxisAlignedBoxShapeSymmetricalEditingManipulatorsScaleCorrectly)
+    TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, AxisAlignedBoxShapeSymmetricalDimensionManipulatorsScaleCorrectly)
     {
         const AZ::Transform transform(AZ::Vector3(7.0f, 5.0f, -2.0f), AZ::Quaternion::CreateIdentity(), 0.5f);
         const AZ::Vector3 translationOffset(-4.0f, -4.0f, 3.0f);
@@ -98,7 +100,7 @@ namespace LmbrCentral
         ExpectBoxDimensions(m_entity, AZ::Vector3(4.0f, 4.0f, 3.0f));
     }
 
-    TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, AxisAlignedBoxShapeAsymmetricalEditingManipulatorsScaleCorrectly)
+    TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, AxisAlignedBoxShapeAsymmetricalDimensionManipulatorsScaleCorrectly)
     {
         const AZ::Transform transform(AZ::Vector3(2.0f, 4.0f, -7.0f), AZ::Quaternion::CreateIdentity(), 1.5f);
         const AZ::Vector3 translationOffset(-5.0f, 3.0f, 1.0f);
@@ -147,6 +149,31 @@ namespace LmbrCentral
         ExpectBoxDimensions(m_entity, AZ::Vector3(3.0f, 3.0f, 4.0f));
         // the offset should have changed because the editing was asymmetrical
         ExpectTranslationOffset(m_entity, translationOffset + AZ::Vector3::CreateAxisX(0.5f));
+    }
+
+    TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, AxisAlignedBoxShapeTranslationOffsetManipulatorsScaleCorrectly)
+    {
+        const AZ::Transform boxTransform(AZ::Vector3(-5.0f, 2.0f, 2.0f), AZ::Quaternion(0.3f, 0.3f, 0.1f, 0.9f), 1.5f);
+        const AZ::Vector3 translationOffset(3.0f, 1.0f, -4.0f);
+        const AZ::Vector3 boxDimensions(1.0f, 4.0f, 2.0f);
+        SetUpAxisAlignedBoxShapeComponent(m_entity, boxTransform, translationOffset, boxDimensions);
+        EnterComponentMode(m_entity, EditorAxisAlignedBoxShapeComponentTypeId);
+        SetComponentSubMode(m_entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode::TranslationOffset);
+
+        // position the camera so it is looking horizontally at the box
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, -10.0f, -3.0f)));
+
+        // position in world space which should allow grabbing the box's z translation offset manipulator
+        const AZ::Vector3 worldStart(-0.5f, 3.5f, -3.0f);
+
+        // position in world space to move to 
+        const AZ::Vector3 worldEnd(-0.5f, 3.5f, -1.5f);
+
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
+
+        ExpectTranslationOffset(m_entity, translationOffset + AZ::Vector3::CreateAxisZ());
     }
 }
 

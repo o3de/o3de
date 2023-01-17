@@ -7,12 +7,14 @@
  */
 
 #pragma once
+
+#include <AZTestShared/Utils/Utils.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
 #include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ViewportInteraction.h>
-#include <AZTestShared/Utils/Utils.h>
+#include <AzToolsFramework/ComponentModes/ShapeComponentModeBus.h>
 
 namespace LmbrCentral
 {
@@ -25,6 +27,9 @@ namespace LmbrCentral
         AzToolsFramework::ViewportInteraction::KeyboardModifier::None);
 
     void EnterComponentMode(AZ::Entity* entity, const AZ::Uuid& componentType);
+
+    void SetComponentSubMode(
+        AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode subMode);
 
     void ExpectBoxDimensions(AZ::Entity* entity, const AZ::Vector3& expectedBoxDimensions);
 
