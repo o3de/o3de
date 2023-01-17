@@ -244,7 +244,6 @@ namespace Camera
         {
             if (current.row() != previous.row())
             {
-                bool lockCameraMovement = false;
                 QScopedValueRollback<bool> rb(m_ignoreViewportViewEntityChanged, true);
 
                 const AZ::EntityId entityId = selectionModel()->currentIndex().data(Qt::CameraIdRole).value<AZ::EntityId>();
@@ -260,8 +259,7 @@ namespace Camera
                     }
                 }
 
-                EditorCameraRequests::Bus::Broadcast(
-                    &EditorCameraRequests::SetViewAndMovementLockFromEntityPerspective, entityId, lockCameraMovement);
+                EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, entityId);
             }
         }
 
@@ -294,9 +292,7 @@ namespace Camera
 
         void ViewportCameraSelectorWindow::PrepareForContextReset()
         {
-            const bool unused = false;
-            EditorCameraRequests::Bus::Broadcast(
-                &EditorCameraRequests::SetViewAndMovementLockFromEntityPerspective, AZ::EntityId(), unused);
+            EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, AZ::EntityId());
         }
 
         void ViewportCameraSelectorWindow::OnContextReset()

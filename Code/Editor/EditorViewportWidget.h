@@ -237,7 +237,6 @@ private:
 
     // Camera::EditorCameraRequestBus overrides ...
     void SetViewFromEntityPerspective(const AZ::EntityId& entityId) override;
-    void SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, bool lockCameraMovement) override;
     AZ::EntityId GetCurrentViewEntityId() override;
     bool GetActiveCameraPosition(AZ::Vector3& cameraPos) override;
     AZStd::optional<AZ::Transform> GetActiveCameraTransform() override;
@@ -301,8 +300,7 @@ private:
     void SetDefaultCamera();
     void SetSelectedCamera();
     bool IsSelectedCamera() const;
-    void SetComponentCamera(const AZ::EntityId& entityId);
-    void SetEntityAsCamera(const AZ::EntityId& entityId, bool lockCameraMovement = false);
+    void SetEntityAsCamera(const AZ::EntityId& entityId);
     void SetFirstComponentCamera();
     void PostCameraSet();
     // This switches the active camera to the next one in the list of (default, all custom cams).
@@ -364,7 +362,7 @@ private:
     KeyPressedState m_pressedKeyState = KeyPressedState::AllUp;
 
     // The last camera matrix of the default editor camera, used when switching back to editor camera to restore the right TM
-    Matrix34 m_defaultViewTM;
+    //Matrix34 m_defaultViewTM;
 
     // The name to use for the default editor camera
     const QString m_defaultViewName;

@@ -153,9 +153,15 @@ namespace AZ::ViewportHelpers
     };
 } // namespace AZ::ViewportHelpers
 
-//////////////////////////////////////////////////////////////////////////
-// EditorViewportWidget
-//////////////////////////////////////////////////////////////////////////
+static void MarkCameraEntityDirty(const AZ::EntityId entityId)
+{
+    AzToolsFramework::UndoSystem::URSequencePoint* undoBatch = nullptr;
+    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+        undoBatch, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "EditorCameraComponentEntityChange");
+    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
+    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::EndUndoBatch);
+}
 
 EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     : QtViewport(parent)
@@ -165,7 +171,7 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     // need this to be set in order to allow for language switching on Windows
     setAttribute(Qt::WA_InputMethodEnabled);
 
-    m_defaultViewTM.SetIdentity();
+    //m_defaultViewTM.SetIdentity();
 
     if (GetIEditor()->GetViewManager()->GetSelectedViewport() == nullptr)
     {
@@ -508,11 +514,6 @@ void EditorViewportWidget::Update()
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::PostCameraSet()
 {
-    if (m_viewPane)
-    {
-        m_viewPane->OnFOVChanged(GetFOV());
-    }
-
     // CryLegacy notify
     GetIEditor()->Notify(eNotify_CameraChanged);
 
@@ -558,6 +559,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         {
             if (GetIEditor()->GetViewManager()->GetGameViewport() == this)
             {
+                if (m_viewEntityId.IsValid())
+                {
+                    MarkCameraEntityDirty(m_viewEntityId);
+                }
+
                 m_preGameModeViewTM = GetViewTM();
                 // this should only occur for the main viewport and no others.
                 ShowCursor();
@@ -1160,7 +1166,7 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
             {
                 if (isChecked)
                 {
-                    SetComponentCamera(entityId);
+                    SetEntityAsCamera(entityId);
                 }
                 else
                 {
@@ -1777,11 +1783,7 @@ void EditorViewportWidget::SetDefaultCamera()
     }
 
     // Update camera matrix according to near / far values
-    // Only update if the editor camera is the active view
-    if (m_viewSourceType == ViewSourceType::None)
-    {
-        SetDefaultCameraNearFar();
-    }
+    SetDefaultCameraNearFar();
 
     // push the default view as the active view
     if (auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
@@ -1798,26 +1800,6 @@ void EditorViewportWidget::SetDefaultCamera()
             atomViewportRequests->PushViewGroup(contextName, viewGroup);
         }
     }
-
-    // check to see if we have an existing last known location for this level
-    auto* viewBookmarkInterface = AZ::Interface<AzToolsFramework::ViewBookmarkInterface>::Get();
-    if (const AZStd::optional<AzToolsFramework::ViewBookmark> lastKnownLocationBookmark = viewBookmarkInterface->LoadLastKnownLocation();
-        lastKnownLocationBookmark.has_value())
-    {
-        m_defaultViewTM.SetTranslation(Vec3(lastKnownLocationBookmark->m_position));
-        m_defaultViewTM.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(SandboxEditor::CameraRotation(
-            AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetX()), AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetZ())))));
-    }
-    else
-    {
-        // set the default editor camera position and orientation if there was no last known location
-        const AZ::Vector2 pitchYawDegrees = m_editorViewportSettings.DefaultEditorCameraOrientation();
-        m_defaultViewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
-        m_defaultViewTM.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(
-            SandboxEditor::CameraRotation(AZ::DegToRad(pitchYawDegrees.GetX()), AZ::DegToRad(pitchYawDegrees.GetY())))));
-    }
-
-    SetViewTM(m_defaultViewTM);
 
     PostCameraSet();
 }
@@ -1860,15 +1842,9 @@ AZ::RPI::ViewPtr EditorViewportWidget::GetCurrentAtomView() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::SetComponentCamera(const AZ::EntityId& entityId)
+void EditorViewportWidget::SetEntityAsCamera(const AZ::EntityId& entityId)
 {
     SetViewFromEntityPerspective(entityId);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::SetEntityAsCamera(const AZ::EntityId& entityId, bool lockCameraMovement)
-{
-    SetViewAndMovementLockFromEntityPerspective(entityId, lockCameraMovement);
 }
 
 void EditorViewportWidget::SetFirstComponentCamera()
@@ -1881,7 +1857,7 @@ void EditorViewportWidget::SetFirstComponentCamera()
     {
         entityId = results.values[0];
     }
-    SetComponentCamera(entityId);
+    SetEntityAsCamera(entityId);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1898,7 +1874,7 @@ void EditorViewportWidget::SetSelectedCamera()
         {
             if (AZStd::find(cameraList.values.begin(), cameraList.values.end(), entityId) != cameraList.values.end())
             {
-                SetComponentCamera(entityId);
+                SetEntityAsCamera(entityId);
             }
         }
     }
@@ -1949,7 +1925,7 @@ void EditorViewportWidget::CycleCamera()
                 ++currentCameraIterator;
                 if (currentCameraIterator != results.values.end())
                 {
-                    SetComponentCamera(*currentCameraIterator);
+                    SetEntityAsCamera(*currentCameraIterator);
                     break;
                 }
             }
@@ -1966,14 +1942,7 @@ void EditorViewportWidget::CycleCamera()
 
 void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& entityId)
 {
-    SetViewAndMovementLockFromEntityPerspective(entityId, false);
-}
-
-void EditorViewportWidget::SetViewAndMovementLockFromEntityPerspective(
-    const AZ::EntityId& entityId, [[maybe_unused]] bool lockCameraMovement)
-{
     // This is an editor event, so is only serviced during edit mode, not play game mode
-    //
     if (m_playInEditorState != PlayInEditorState::Editor)
     {
         AZ_Warning(
@@ -1981,7 +1950,10 @@ void EditorViewportWidget::SetViewAndMovementLockFromEntityPerspective(
         return;
     }
 
-    AZ_Assert(lockCameraMovement == false, "SetViewAndMovementLockFromEntityPerspective with lockCameraMovement == true not supported");
+    if (m_viewEntityId.IsValid())
+    {
+        MarkCameraEntityDirty(m_viewEntityId);
+    }
 
     if (entityId.IsValid())
     {
@@ -1989,7 +1961,6 @@ void EditorViewportWidget::SetViewAndMovementLockFromEntityPerspective(
     }
     else
     {
-        // The default camera
         SetDefaultCamera();
     }
 }
@@ -2060,6 +2031,27 @@ void EditorViewportWidget::OnRootPrefabInstanceLoaded()
 {
     // set the camera position once we know the entire scene (level) has finished loading
     SetDefaultCamera();
+
+    Matrix34 defaultView = Matrix34::CreateIdentity();
+    // check to see if we have an existing last known location for this level
+    auto* viewBookmarkInterface = AZ::Interface<AzToolsFramework::ViewBookmarkInterface>::Get();
+    if (const AZStd::optional<AzToolsFramework::ViewBookmark> lastKnownLocationBookmark = viewBookmarkInterface->LoadLastKnownLocation();
+        lastKnownLocationBookmark.has_value())
+    {
+        defaultView.SetTranslation(Vec3(lastKnownLocationBookmark->m_position));
+        defaultView.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(SandboxEditor::CameraRotation(
+            AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetX()), AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetZ())))));
+    }
+    else
+    {
+        // set the default editor camera position and orientation if there was no last known location
+        const AZ::Vector2 pitchYawDegrees = m_editorViewportSettings.DefaultEditorCameraOrientation();
+        defaultView.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
+        defaultView.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(
+            SandboxEditor::CameraRotation(AZ::DegToRad(pitchYawDegrees.GetX()), AZ::DegToRad(pitchYawDegrees.GetY())))));
+    }
+
+    SetViewTM(defaultView);
 }
 
 void EditorViewportWidget::OnStartPlayInEditor()
