@@ -124,14 +124,23 @@ namespace AZ::SceneAPI::SceneData
                 ->Field("prefabDomData", &PrefabGroup::m_prefabDomData);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
+
+            const char* prefabTooltip = "The prefab group controls the generation of default procedural prefabs. "
+                "This includes the generation of necessary mesh groups to construct the prefab. "
+                "Removing this group will disable the default procedural prefab and remove the mesh groups used by that prefab. "
+                "This group does not control the generation of non-default procedural prefabs, those must be disabled in the script that generates them.";
+
             if (editContext)
             {
-                editContext->Class<PrefabGroup>("Prefab group", "Configure actor data exporting.")
+                editContext->Class<PrefabGroup>("Prefab group", prefabTooltip)
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute("AutoExpand", true)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                         ->Attribute(AZ::Edit::Attributes::Max, 1)
-                        ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider");
+                        ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
+                    ->UIElement(AZ::Edit::UIHandlers::MultiLineEdit, "", prefabTooltip)
+                        ->Attribute(AZ::Edit::Attributes::ValueText, "The prefab group controls the generation of default procedural prefabs.")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true);
             }
         }
 
