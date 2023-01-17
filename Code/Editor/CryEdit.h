@@ -203,7 +203,6 @@ public:
     void OnViewSwitchToGame();
     void OnViewSwitchToGameFullScreen();
     void OnViewDeploy();
-    void DeleteSelectedEntities(bool includeDescendants);
     void OnMoveObject();
     void OnRenameObj();
     void OnUndo();
