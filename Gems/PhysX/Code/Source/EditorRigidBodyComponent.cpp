@@ -132,7 +132,7 @@ namespace PhysX
         if (serializeContext)
         {
             serializeContext->Class<EditorRigidBodyConfiguration, AzPhysics::RigidBodyConfiguration>()
-                ->Version(2)
+                ->Version(1)
                 ->Field("Debug Draw Center of Mass", &EditorRigidBodyConfiguration::m_centerOfMassDebugDraw)
             ;
 
