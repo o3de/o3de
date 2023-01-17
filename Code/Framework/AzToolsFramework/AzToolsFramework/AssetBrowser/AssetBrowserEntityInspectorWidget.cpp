@@ -21,12 +21,11 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         AssetBrowserEntityInspectorWidget::AssetBrowserEntityInspectorWidget(QWidget* parent)
-        :QWidget(parent)
+            : QWidget(parent)
         {
             setLayout(new QVBoxLayout);
             m_previewerFrame = new PreviewerFrame;
             layout()->addWidget(m_previewerFrame);
-
 
             AssetBrowserPreviewRequestBus::Handler::BusConnect();
         }

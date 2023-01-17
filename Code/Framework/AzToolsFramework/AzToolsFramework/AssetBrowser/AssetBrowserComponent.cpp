@@ -87,8 +87,6 @@ namespace AzToolsFramework
                     HandleFileInfoNotification(buffer, bufferSize);
                 });
             }
-
-            m_inspectorWidget = new AssetBrowserEntityInspectorWidget();
         }
 
         void AssetBrowserComponent::Deactivate()
