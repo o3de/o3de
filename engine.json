@@ -1,8 +1,15 @@
 {
     "engine_name": "o3de",
     "restricted": "o3de",
-    "FileVersion": 1,
-    "O3DEVersion": "0.1.0.0",
+    "display_version":"00.00",
+    "version":"1.0.0",
+    "api_versions": {
+        "editor":"1.0.0",
+        "framework":"1.0.0",
+        "launcher":"1.0.0",
+        "tools":"1.0.0"
+    },
+    "FileVersion": 2,
     "O3DECopyrightYear": 2021,
     "O3DEBuildNumber": 0,
     "external_subdirectories": [

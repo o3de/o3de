@@ -135,7 +135,7 @@ namespace AWSMetrics
     {
     public:
         // Size for each test metrics event will be 180 bytes.
-        static constexpr int TestMetricsEventSizeInBytes = 180;
+        static constexpr int TestMetricsEventSizeInBytes = 178;
         static constexpr int MbToBytes = 1000000;
         static constexpr int DefaultFlushPeriodInSeconds = 1;
         static constexpr int MaxNumMetricsEvents = 10;

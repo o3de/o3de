@@ -23,9 +23,10 @@ namespace O3DE::ProjectManager
 
         // from engine.json
         QString m_version;
+        QString m_displayVersion;
         QString m_name;
-        QString m_thirdPartyPath;
 
+        QString m_thirdPartyPath;
         QString m_path;
 
         // from o3de_manifest.json

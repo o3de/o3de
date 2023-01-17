@@ -1,8 +1,10 @@
 {
     "engine_name": "@LY_VERSION_ENGINE_NAME@",
     "restricted_name": "o3de",
-    "FileVersion": 1,
-    "O3DEVersion": "@LY_VERSION_STRING@",
+    "display_version": "@LY_DISPLAY_VERSION_STRING@",
+    "version": "@LY_VERSION_STRING@",
+    "api_versions": @LY_INSTALL_API_VERSIONS@,
+    "FileVersion": 2,
     "O3DECopyrightYear": @LY_VERSION_COPYRIGHT_YEAR@,
     "O3DEBuildNumber": @LY_VERSION_BUILD_NUMBER@,
     "external_subdirectories": [@LY_INSTALL_EXTERNAL_SUBDIRS@],

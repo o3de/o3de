@@ -399,7 +399,18 @@ namespace O3DE::ProjectManager
             auto engineData = m_manifest.attr("get_engine_json_data")(pybind11::none(), enginePath);
             if (pybind11::isinstance<pybind11::dict>(engineData))
             {
-                engineInfo.m_version = Py_To_String_Optional(engineData, "O3DEVersion", "0.0.0.0");
+                if (engineData.contains("version"))
+                {
+                    engineInfo.m_version = Py_To_String_Optional(engineData, "version", "0.0.0");
+                    engineInfo.m_displayVersion = Py_To_String_Optional(engineData, "display_version", "0.0.0");
+                }
+                else
+                {
+                    // maintain for backwards compatibility with older file formats
+                    engineInfo.m_version = Py_To_String_Optional(engineData, "O3DEVersion", "0.0.0");
+                    engineInfo.m_displayVersion = engineInfo.m_version;
+                }
+
                 engineInfo.m_name = Py_To_String_Optional(engineData, "engine_name", "O3DE");
                 engineInfo.m_path = Py_To_String(enginePath);
 

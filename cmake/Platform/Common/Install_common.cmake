@@ -490,6 +490,9 @@ function(ly_setup_cmake_install)
     endforeach()
     list(JOIN relative_templates ",\n${indent}" LY_INSTALL_TEMPLATES)
 
+    # Read the "api_versions" key from the source engine.json
+    o3de_read_json_key(LY_INSTALL_API_VERSIONS ${LY_ROOT_FOLDER}/engine.json "api_versions")
+
     configure_file(${LY_ROOT_FOLDER}/cmake/install/engine.json.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json @ONLY)
 
     ly_install(FILES
