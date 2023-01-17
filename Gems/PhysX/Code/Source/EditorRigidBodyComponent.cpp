@@ -16,7 +16,6 @@
 #include <Editor/Source/Components/EditorSystemComponent.h>
 #include <Source/RigidBodyComponent.h>
 #include <Editor/InertiaPropertyHandler.h>
-#include <Editor/EditorClassConverters.h>
 #include <Source/NameConstants.h>
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>

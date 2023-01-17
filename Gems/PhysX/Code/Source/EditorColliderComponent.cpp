@@ -21,7 +21,6 @@
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <Editor/EditorClassConverters.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <Source/BoxColliderComponent.h>
