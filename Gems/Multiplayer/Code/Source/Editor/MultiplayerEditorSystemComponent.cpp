@@ -59,7 +59,7 @@ namespace Multiplayer
     AZ_CVAR(AZ::CVarFixedString, editorsv_serveraddr, AZ::CVarFixedString(LocalHost), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the server to connect to");
     AZ_CVAR(AZ::CVarFixedString, editorsv_rhi_override, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Override the default rendering hardware interface (rhi) when launching the Editor server. For example, you may be running an Editor using 'dx12', but want to launch a headless server using 'null'. If empty the server will launch using the same rhi as the Editor.");
-    AZ_CVAR(uint16_t, editorsv_max_connection_attempts, 15, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+    AZ_CVAR(uint16_t, editorsv_max_connection_attempts, 5, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "The maximum times the editor will attempt to connect to the server. Time between attempts is increased based on the number of failed attempts.");
 
     AZ_CVAR(bool, editorsv_print_server_logs, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
