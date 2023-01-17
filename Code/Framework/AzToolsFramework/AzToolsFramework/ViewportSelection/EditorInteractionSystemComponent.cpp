@@ -61,7 +61,6 @@ namespace AzToolsFramework
         return m_entityDataCache.get();
     }
 
-
     void EditorInteractionSystemComponent::SetHandler(
         const ViewportSelectionRequestsBuilderFn& interactionRequestsBuilder)
     {

@@ -1092,6 +1092,11 @@ void OutlinerWidget::OnEntityPickModeStarted()
     // make sure to enable it while in pick mode.
     if (!isEnabled())
     {
+        AZ_Assert(
+            AzToolsFramework::ComponentModeFramework::InComponentMode(),
+            "Unexpectedly starting pick mode with a disabled UI while not in component mode. This likely means that "
+            "the outliner will not re-disable itself after pick mode correctly. Fix the code in OnEntityPickModeStarted/Stopped to "
+            "account for this new case.");
         EnableUi(true);
     }
 

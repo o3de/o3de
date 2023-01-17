@@ -104,6 +104,6 @@ namespace AzToolsFramework
 
         AzFramework::PaintBrush m_paintBrush;
 
-        AZStd::unique_ptr<EditorPickEntitySelectionHelper> m_pickEntitySelectionMode;
+        AZStd::optional<EditorPickEntitySelectionHelper> m_pickEntitySelectionMode;
     };
 } // namespace AzToolsFramework

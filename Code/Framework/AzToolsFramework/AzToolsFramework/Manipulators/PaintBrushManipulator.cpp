@@ -408,7 +408,7 @@ namespace AzToolsFramework
 
         auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get();
 
-        m_pickEntitySelectionMode = AZStd::make_unique<EditorPickEntitySelectionHelper>(entityDataCache, viewportEditorModeTracker);
+        m_pickEntitySelectionMode.emplace(entityDataCache, viewportEditorModeTracker);
 
         ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
             &ComponentModeFramework::ComponentModeSystemRequests::RefreshActions);
