@@ -355,6 +355,15 @@ namespace AZ
             }
 
             const TShaderInputDescriptor& shaderInputImage = GetLayout()->GetShaderInput(inputIndex);
+
+            if (!imageView)
+            {
+                AZ_Error("ShaderResourceGroupData", false,
+                    "Image Array Input '%s[%d]' is null.",
+                    shaderInputImage.m_name.GetCStr(), arrayIndex);
+                return false;
+            }
+
             const ImageViewDescriptor& imageViewDescriptor = imageView->GetDescriptor();
             const Image& image = imageView->GetImage();
             const ImageDescriptor& imageDescriptor = image.GetDescriptor();
