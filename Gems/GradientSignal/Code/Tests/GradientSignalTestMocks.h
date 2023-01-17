@@ -208,6 +208,7 @@ namespace UnitTest
     class MockGradientSignal : public GradientSignal::PerlinGradientComponent
     {
     public:
+        AZ_CLASS_ALLOCATOR(MockGradientSignal, AZ::SystemAllocator)
         MockGradientSignal(const GradientSignal::PerlinGradientConfig& configuration) :
             GradientSignal::PerlinGradientComponent(configuration)
         {

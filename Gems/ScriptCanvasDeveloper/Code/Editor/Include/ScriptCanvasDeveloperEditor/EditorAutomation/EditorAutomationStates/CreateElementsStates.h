@@ -23,6 +23,7 @@ namespace ScriptCanvas::Developer
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(CreateNodeFromPaletteState, AZ::SystemAllocator)
         enum class CreationType
         {
             ScenePosition,
@@ -58,6 +59,7 @@ namespace ScriptCanvas::Developer
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(CreateCategoryFromNodePaletteState, AZ::SystemAllocator)
 
         CreateCategoryFromNodePaletteState(GraphCanvas::NodePaletteWidget* paletteWidget, AutomationStateModelId categoryId, AutomationStateModelId scenePoint, AutomationStateModelId outputId = "");
         ~CreateCategoryFromNodePaletteState() override = default;
@@ -84,6 +86,7 @@ namespace ScriptCanvas::Developer
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(CreateNodeFromContextMenuState, AZ::SystemAllocator)
         enum class CreationType
         {
             ScenePosition,
@@ -119,6 +122,7 @@ namespace ScriptCanvas::Developer
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(CreateNodeFromProposalState, AZ::SystemAllocator)
         CreateNodeFromProposalState(const QString& nodeName, AutomationStateModelId endpointId, AutomationStateModelId scenePointId = "", AutomationStateModelId nodeOutputId = "", AutomationStateModelId connectionOutputId = "");
         ~CreateNodeFromProposalState() override = default;
 
@@ -148,6 +152,7 @@ namespace ScriptCanvas::Developer
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(CreateGroupState, AZ::SystemAllocator)
         CreateGroupState(GraphCanvas::EditorId editorId, CreateGroupAction::CreationType creationType = CreateGroupAction::CreationType::Hotkey, AutomationStateModelId outputId = "");
         ~CreateGroupState() override = default;
 

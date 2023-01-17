@@ -21,6 +21,7 @@ namespace AzToolsFramework::Prefab
         : public UndoSystem::URSequencePoint
     {
     public:
+        AZ_CLASS_ALLOCATOR(PrefabFocusUndo, AZ::SystemAllocator)
         explicit PrefabFocusUndo(const AZStd::string& undoOperationName);
 
         bool Changed() const override;

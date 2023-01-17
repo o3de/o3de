@@ -39,6 +39,7 @@ namespace Terrain
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(TerrainFeatureProcessor, AZ::SystemAllocator)
         AZ_RTTI(TerrainFeatureProcessor, "{D7DAC1F9-4A9F-4D3C-80AE-99579BF8AB1C}", AZ::RPI::FeatureProcessor);
         AZ_DISABLE_COPY_MOVE(TerrainFeatureProcessor);
         AZ_FEATURE_PROCESSOR(TerrainFeatureProcessor);
