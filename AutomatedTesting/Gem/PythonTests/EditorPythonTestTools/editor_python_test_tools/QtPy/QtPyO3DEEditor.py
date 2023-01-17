@@ -7,9 +7,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Object to house all the Qt Objects used when testing and manipulating the O3DE UI
 """
 import pyside_utils
-from editor_python_test_tools.QtPyCommon import QtPyCommon
-from editor_python_test_tools.QtPyScriptCanvasEditor import QtPyScriptCanvasEditor
-from editor_python_test_tools.QtPyAssetEditor import QtPyAssetEditor
+from editor_python_test_tools.QtPy.QtPyCommon import QtPyCommon
+from editor_python_test_tools.QtPy.QtPyScriptCanvasEditor import QtPyScriptCanvasEditor
+from editor_python_test_tools.QtPy.QtPyAssetEditor import QtPyAssetEditor
 import azlmbr.legacy.general as general
 from editor_python_test_tools.utils import TestHelper
 from consts.asset_editor import (ASSET_EDITOR_UI)
