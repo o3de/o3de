@@ -78,6 +78,7 @@ namespace AZ
             struct Descriptor
                 : public Heap::Descriptor
             {
+                AZ_CLASS_ALLOCATOR(Descriptor, AZ::SystemAllocator)
                 HeapAllocationParameters m_allocationParameters;
             };
 

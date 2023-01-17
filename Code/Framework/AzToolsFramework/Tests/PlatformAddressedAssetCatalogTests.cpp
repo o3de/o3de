@@ -161,6 +161,7 @@ namespace UnitTest
     class PlatformAddressedAssetCatalogMessageTest : public AzToolsFramework::PlatformAddressedAssetCatalog
     {
     public:
+        AZ_CLASS_ALLOCATOR(PlatformAddressedAssetCatalogMessageTest, AZ::SystemAllocator)
         PlatformAddressedAssetCatalogMessageTest(AzFramework::PlatformId platformId) :  AzToolsFramework::PlatformAddressedAssetCatalog(platformId)
         {
 

@@ -302,6 +302,7 @@ namespace AssetUtilities
         : public AssetBuilderSDK::FilePatternMatcher
     {
     public:
+        AZ_CLASS_ALLOCATOR(BuilderFilePatternMatcher, AZ::SystemAllocator)
         BuilderFilePatternMatcher() = default;
         BuilderFilePatternMatcher(const BuilderFilePatternMatcher& copy);
         BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID);

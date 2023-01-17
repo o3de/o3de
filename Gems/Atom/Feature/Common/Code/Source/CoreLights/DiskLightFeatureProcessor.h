@@ -27,6 +27,7 @@ namespace AZ
             : public DiskLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(DiskLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::DiskLightFeatureProcessor, "{F69C0188-2C1C-47A5-8187-17433C34AC2B}", AZ::Render::DiskLightFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);

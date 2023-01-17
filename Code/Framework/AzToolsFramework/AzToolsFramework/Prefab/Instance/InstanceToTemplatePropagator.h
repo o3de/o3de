@@ -28,8 +28,8 @@ namespace AzToolsFramework
             void RegisterInstanceToTemplateInterface();
             void UnregisterInstanceToTemplateInterface();
 
-            bool GenerateDomForEntity(PrefabDom& generatedEntityDom, const AZ::Entity& entity) override;
-            bool GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Prefab::Instance& instance) override;
+            bool GenerateEntityDomBySerializing(PrefabDom& entityDom, const AZ::Entity& entity) override;
+            bool GenerateInstanceDomBySerializing(PrefabDom& instanceDom, const Instance& instance) override;
             bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDomValue& initialState, const PrefabDomValue& modifiedState) override;
             bool GeneratePatchForLink(PrefabDom& generatedPatch, const PrefabDom& initialState,
                 const PrefabDom& modifiedState, LinkId linkId) override;

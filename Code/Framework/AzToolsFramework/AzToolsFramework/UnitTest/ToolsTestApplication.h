@@ -17,6 +17,7 @@ namespace UnitTest
         : public AzToolsFramework::ToolsApplication
     {
     public:
+        AZ_CLASS_ALLOCATOR(ToolsTestApplication, AZ::SystemAllocator)
         explicit ToolsTestApplication(AZStd::string applicationName);
         ToolsTestApplication(AZStd::string applicationName, int argc, char** argv);
         void SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations) override;

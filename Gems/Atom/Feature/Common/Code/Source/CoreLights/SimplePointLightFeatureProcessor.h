@@ -25,6 +25,7 @@ namespace AZ
             : public SimplePointLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(SimplePointLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::SimplePointLightFeatureProcessor, "{310CE42A-FAD1-4778-ABF5-0DE04AC92246}", AZ::Render::SimplePointLightFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);

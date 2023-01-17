@@ -24,6 +24,7 @@
 struct MockAsset
     : public AZ::Data::AssetData
 {
+    AZ_CLASS_ALLOCATOR(MockAsset, AZ::SystemAllocator)
     AZ_RTTI(MockAsset, "{D1E5A5DA-89D3-4B1F-8194-3E84CA6991DF}", AZ::Data::AssetData);
 
     static void Reflect(AZ::ReflectContext* reflection)

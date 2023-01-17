@@ -20,6 +20,7 @@ namespace AZ
         {
             using Base = RHI::BufferPoolDescriptor;
         public:
+            AZ_CLASS_ALLOCATOR(BufferPoolDescriptor, SystemAllocator)
             AZ_RTTI(BufferPoolDescriptor, "728C4498-2FEC-43F5-9E88-410B93E7CAD7", Base);
             BufferPoolDescriptor();
             static void Reflect(AZ::ReflectContext* context);

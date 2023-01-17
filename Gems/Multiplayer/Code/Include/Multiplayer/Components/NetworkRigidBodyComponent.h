@@ -61,9 +61,12 @@ namespace Multiplayer
         NetworkRigidBodyComponentController(NetworkRigidBodyComponent& parent);
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+#if AZ_TRAIT_SERVER
         void HandleSendApplyImpulse(AzNetworking::IConnection* invokingConnection, const AZ::Vector3& impulse, const AZ::Vector3& worldPoint) override;
+
     private:
         void OnTransformUpdate();
         AZ::TransformChangedEvent::Handler m_transformChangedHandler;
+#endif
     };
 } // namespace Multiplayer

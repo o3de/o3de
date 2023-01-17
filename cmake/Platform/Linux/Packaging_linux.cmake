@@ -33,6 +33,8 @@ set(package_dependencies
     libxcb-xinput-dev                       # For mouse input
     zlib1g-dev
     mesa-common-dev
+    libunwind-dev
+    pkg-config
 )
 list(JOIN package_dependencies "," CPACK_DEBIAN_PACKAGE_DEPENDS)
 

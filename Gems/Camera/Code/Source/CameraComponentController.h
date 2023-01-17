@@ -32,6 +32,7 @@ namespace Camera
     struct CameraComponentConfig final
         : public AZ::ComponentConfig
     {
+        AZ_CLASS_ALLOCATOR(CameraComponentConfig, AZ::SystemAllocator)
         AZ_RTTI(CameraComponentConfig, "{064A5D64-8688-4188-B3DE-C80CE4BB7558}", AZ::ComponentConfig);
 
         static void Reflect(AZ::ReflectContext* context);

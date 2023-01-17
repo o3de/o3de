@@ -22,6 +22,7 @@ namespace AZ::SerializeContextTools
         : public AzToolsFramework::ToolsApplication
     {
     public:
+        AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator)
         Application(int argc, char** argv, AZ::IO::FileDescriptorCapturer* stdoutCapturer = {});
         ~Application() override = default;
 

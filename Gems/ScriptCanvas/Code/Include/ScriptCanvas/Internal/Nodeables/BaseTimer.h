@@ -30,6 +30,7 @@ namespace ScriptCanvas
                 SCRIPTCANVAS_NODE(BaseTimer)
 
             public:
+                AZ_CLASS_ALLOCATOR(BaseTimer, AZ::SystemAllocator)
 
                 enum TimeUnits
                 {
