@@ -465,10 +465,13 @@ namespace AzToolsFramework
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "PaintBrushManipulator - could not get MenuManagerInterface on BindActionsToMenus.");
 
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseSize", 6000);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseSize", 6001);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseHardness", 6002);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseHardness", 6003);
+        int baseSortKey = 6000; // arbitrary starting sort number
+
+        // leave space between entries in case something wants to add menu items in-between
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseSize", baseSortKey);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseSize", baseSortKey + 10);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseHardness", baseSortKey + 20);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseHardness", baseSortKey + 30);
     }
 
     void PaintBrushManipulator::AdjustSize(float sizeDelta)
