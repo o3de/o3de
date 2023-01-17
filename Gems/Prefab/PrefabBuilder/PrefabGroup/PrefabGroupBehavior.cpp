@@ -63,6 +63,7 @@ namespace AZ::SceneAPI::Behaviors
         , public Events::AssetImportRequestBus::Handler
         , public Events::ManifestMetaInfoBus::Handler
     {
+        AZ_CLASS_ALLOCATOR(PrefabGroupBehavior, AZ::SystemAllocator)
         using PreExportEventContextFunction = AZStd::function<Events::ProcessingResult(Events::PreExportEventContext&)>;
         PreExportEventContextFunction m_preExportEventContextFunction;
         AZ::Prefab::PrefabGroupAssetHandler m_prefabGroupAssetHandler;
@@ -93,6 +94,8 @@ namespace AZ::SceneAPI::Behaviors
             return m_preExportEventContextFunction(context);
         }
 
+        Events::ProcessingResult UpdateSceneForPrefabGroup(Containers::Scene& scene, ManifestAction action);
+
         // AssetImportRequest
         Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action, RequestingApplication requester) override;
         Events::ProcessingResult PrepareForAssetLoading(Containers::Scene& scene, RequestingApplication requester) override;
@@ -103,6 +106,7 @@ namespace AZ::SceneAPI::Behaviors
 
         // ManifestMetaInfoBus
         void GetCategoryAssignments(AZ::SceneAPI::Events::ManifestMetaInfo::CategoryRegistrationList& categories, const Containers::Scene& scene) override;
+        void InitializeObject(const Containers::Scene& scene, DataTypes::IManifestObject& target) override;
     };
 
     Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::PrepareForAssetLoading(
@@ -123,12 +127,10 @@ namespace AZ::SceneAPI::Behaviors
         categories.emplace_back("Procedural Prefab", SceneData::PrefabGroup::TYPEINFO_Uuid());
     }
 
-    Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateManifest(
+    Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateSceneForPrefabGroup(
         Containers::Scene& scene,
-        ManifestAction action,
-        [[maybe_unused]] RequestingApplication requester)
+        ManifestAction action)
     {
-        // this toggle makes constructing default mesh groups and a prefab optional
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
         {
             bool createDefaultPrefab = true;
@@ -197,9 +199,7 @@ namespace AZ::SceneAPI::Behaviors
 
         AZStd::optional<AZ::SceneAPI::PrefabGroupRequests::ManifestUpdates> manifestUpdates;
         AZ::SceneAPI::PrefabGroupEventBus::BroadcastResult(
-            manifestUpdates,
-            &AZ::SceneAPI::PrefabGroupEventBus::Events::GeneratePrefabGroupManifestUpdates,
-            scene);
+            manifestUpdates, &AZ::SceneAPI::PrefabGroupEventBus::Events::GeneratePrefabGroupManifestUpdates, scene);
 
         if (!manifestUpdates)
         {
@@ -213,6 +213,28 @@ namespace AZ::SceneAPI::Behaviors
             scene.GetManifest().AddEntry(update);
         }
         return Events::ProcessingResult::Success;
+    }
+
+    Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateManifest(
+        Containers::Scene& scene,
+        ManifestAction action,
+        [[maybe_unused]] RequestingApplication requester)
+    {
+        return UpdateSceneForPrefabGroup(scene, action);
+    }
+
+    void PrefabGroupBehavior::ExportEventHandler::InitializeObject(const Containers::Scene& scene, DataTypes::IManifestObject& target)
+    {
+        if (!target.RTTI_IsTypeOf(PrefabGroup::TYPEINFO_Uuid()))
+        {
+            return;
+        }
+        AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> manifestUpdates;
+        AZ::SceneAPI::PrefabGroupEventBus::BroadcastResult(
+            manifestUpdates, &AZ::SceneAPI::PrefabGroupEventBus::Events::GenerateDefaultPrefabMeshGroups, scene);
+
+        Events::ManifestMetaInfoBus::Broadcast(&Events::ManifestMetaInfoBus::Events::AddObjects, manifestUpdates);
+        
     }
 
     //
