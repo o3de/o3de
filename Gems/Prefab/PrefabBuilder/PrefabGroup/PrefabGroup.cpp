@@ -104,16 +104,6 @@ namespace AZ::SceneAPI::SceneData
         return {};
     }
 
-    void PrefabGroup::SetCreateProceduralPrefab(bool createProceduralPrefab)
-    {
-        m_createProceduralPrefab = createProceduralPrefab;
-    }
-
-    bool PrefabGroup::GetCreateProceduralPrefab() const
-    {
-        return m_createProceduralPrefab;
-    }
-
     void PrefabGroup::Reflect(ReflectContext* context)
     {
         SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
@@ -126,13 +116,12 @@ namespace AZ::SceneAPI::SceneData
                 ->Version(1);
 
             serializeContext->Class<PrefabGroup, DataTypes::IPrefabGroup>()
-                ->Version(2) // added createProceduralPrefab
+                ->Version(3) // added createProceduralPrefab
                 ->Field("name", &PrefabGroup::m_name)
                 ->Field("nodeSelectionList", &PrefabGroup::m_nodeSelectionList)
                 ->Field("rules", &PrefabGroup::m_rules)
                 ->Field("id", &PrefabGroup::m_id)
-                ->Field("prefabDomData", &PrefabGroup::m_prefabDomData)
-                ->Field("createProceduralPrefab", &PrefabGroup::m_createProceduralPrefab);
+                ->Field("prefabDomData", &PrefabGroup::m_prefabDomData);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
@@ -142,11 +131,7 @@ namespace AZ::SceneAPI::SceneData
                         ->Attribute("AutoExpand", true)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                         ->Attribute(AZ::Edit::Attributes::Max, 1)
-                        ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
-                    ->DataElement(0,
-                        &PrefabGroup::m_createProceduralPrefab,
-                        "Create default procedural prefab?",
-                        "If this flag is true then the default procedural prefab will be generated.");
+                        ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider");
             }
         }
 

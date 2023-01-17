@@ -58,8 +58,6 @@ namespace AZ::SceneAPI::SceneData
         void SetId(Uuid id);
         void SetName(AZStd::string name);
         void SetPrefabDom(AzToolsFramework::Prefab::PrefabDom prefabDom);
-        void SetCreateProceduralPrefab(bool createProceduralPrefab);
-        bool GetCreateProceduralPrefab() const;
 
     private:
         SceneNodeSelectionList m_nodeSelectionList;
