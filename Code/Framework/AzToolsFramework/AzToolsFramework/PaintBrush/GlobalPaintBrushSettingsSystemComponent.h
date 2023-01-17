@@ -35,10 +35,10 @@ namespace AzToolsFramework
         // GlobalPaintBrushSettingsRequestBus overrides...
         GlobalPaintBrushSettings* GetSettingsPointerForPropertyEditor() override;
         GlobalPaintBrushSettings GetSettings() const override;
-        AzFramework::PaintBrushMode GetBrushMode() const override;
-        void SetBrushMode(AzFramework::PaintBrushMode brushMode) override;
-        AzFramework::PaintBrushColorMode GetBrushColorMode() const override;
-        void SetBrushColorMode(AzFramework::PaintBrushColorMode colorMode) override;
+        PaintBrushMode GetBrushMode() const override;
+        void SetBrushMode(PaintBrushMode brushMode) override;
+        PaintBrushColorMode GetBrushColorMode() const override;
+        void SetBrushColorMode(PaintBrushColorMode colorMode) override;
         float GetSize() const override;
         AZStd::pair<float, float> GetSizeRange() const override;
         AZ::Color GetColor() const override;

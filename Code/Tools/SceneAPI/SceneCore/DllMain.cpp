@@ -41,6 +41,7 @@
 #include <SceneAPI/SceneCore/DataTypes/Rules/ILodRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ISkeletonProxyRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IScriptProcessorRule.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/IUnmodifiableRule.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IAnimationData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBlendShapeData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
@@ -166,6 +167,7 @@ namespace AZ
                     context->Class<AZ::SceneAPI::DataTypes::ILodRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::ISkeletonProxyRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::IScriptProcessorRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
+                    context->Class<AZ::SceneAPI::DataTypes::IUnmodifiableRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     // Register graph data interfaces
                     context->Class<AZ::SceneAPI::DataTypes::IAnimationData, AZ::SceneAPI::DataTypes::IGraphObject>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::IBlendShapeData, AZ::SceneAPI::DataTypes::IGraphObject>()->Version(1);

@@ -1045,7 +1045,7 @@ def assetprocessorbatch_check_output(workspace, project=None, platforms=None, ex
     try:
         output_list = subprocess.check_output(param_list).decode('utf-8')
         if not no_split:
-            output_list = output_list.split("\r\n")
+            output_list = output_list.splitlines()
         if log_info:
             logger.info(f'AssetProcessorBatch output:\n{output_list}')
         return output_list
@@ -1055,7 +1055,7 @@ def assetprocessorbatch_check_output(workspace, project=None, platforms=None, ex
         # This will sometimes be due to expected asset processing errors - we'll return the output and let the tests
         # decide what to do
         if not no_split:
-            return e.output.decode('utf-8').split("\r\n")
+            return e.output.decode('utf-8').splitlines()
         return e.output.decode('utf-8')
     except FileNotFoundError as e:
         logger.error(f"File Not Found - Failed to call {ap_path} from LyTestTools with error {e}")

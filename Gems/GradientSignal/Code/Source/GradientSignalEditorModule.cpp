@@ -29,6 +29,7 @@
 #include <GradientSignal/Editor/GradientPreviewer.h>
 #include <GradientSignal/Editor/EditorGradientBakerComponent.h>
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
+#include <GradientSignal/Editor/PaintableImageAssetHelper.h>
 #include <UI/GradientPreviewDataWidget.h>
 
 namespace GradientSignal
@@ -72,6 +73,7 @@ namespace GradientSignal
     void GradientSignalEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         GradientPreviewer::Reflect(context);
+        ImageCreatorUtils::PaintableImageAssetHelper<EditorImageGradientComponent, EditorImageGradientComponentMode>::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {

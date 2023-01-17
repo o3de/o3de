@@ -25,6 +25,7 @@ namespace AZ
             : public QuadLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(QuadLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::QuadLightFeatureProcessor, "{F1E50245-5F05-475E-857F-221FB17C7E45}", AZ::Render::QuadLightFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);

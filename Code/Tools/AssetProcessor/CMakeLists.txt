@@ -272,6 +272,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(NAME AZ::AssetProcessor.Tests.Periodic
         TARGET AZ::AssetProcessor.Tests 
         TEST_SUITE periodic)
+    # Sandbox the tests that fail intermittently
+    ly_add_googletest(NAME AZ::AssetProcessor.Tests.Sandbox
+        TARGET AZ::AssetProcessor.Tests 
+        TEST_SUITE sandbox)
 
     ly_add_googlebenchmark(
         NAME AZ::AssetProcessor.Benchmarks

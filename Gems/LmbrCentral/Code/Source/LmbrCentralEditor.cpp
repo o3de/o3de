@@ -49,7 +49,6 @@
 #include <Builders/SliceBuilder/SliceBuilderComponent.h>
 #include <Builders/TranslationBuilder/TranslationBuilderComponent.h>
 #include "Builders/CopyDependencyBuilder/CopyDependencyBuilderComponent.h"
-#include <Builders/DependencyBuilder/DependencyBuilderComponent.h>
 
 namespace LmbrCentral
 {
@@ -85,7 +84,6 @@ namespace LmbrCentral
             EditorRandomTimedSpawnerComponent::CreateDescriptor(),
             EditorSpawnerComponent::CreateDescriptor(),            
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
-            DependencyBuilder::DependencyBuilderComponent::CreateDescriptor(),
             LevelBuilder::LevelBuilderComponent::CreateDescriptor(),
             SliceBuilder::BuilderPluginComponent::CreateDescriptor(),
             TranslationBuilder::BuilderPluginComponent::CreateDescriptor(),

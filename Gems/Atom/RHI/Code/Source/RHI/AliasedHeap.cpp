@@ -65,8 +65,8 @@ namespace AZ
                     m_barrierTracker = CreateBarrierTrackerInternal();
 
                     HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(HeapMemoryLevel::Device);
-                    heapMemoryUsage.m_residentInBytes = descriptor.m_budgetInBytes;
-                    heapMemoryUsage.m_reservedInBytes = descriptor.m_budgetInBytes;
+                    heapMemoryUsage.m_usedResidentInBytes = descriptor.m_budgetInBytes;
+                    heapMemoryUsage.m_totalResidentInBytes = descriptor.m_budgetInBytes;
 
                     m_cache.SetCapacity(descriptor.m_cacheSize);
 

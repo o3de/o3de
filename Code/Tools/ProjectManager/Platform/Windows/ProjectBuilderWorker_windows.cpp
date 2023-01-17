@@ -29,11 +29,12 @@ namespace O3DE::ProjectManager
         const QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
         const QString gameLauncherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
         const QString serverLauncherTargetName = m_projectInfo.m_projectName + ".ServerLauncher";
+        const QString unifiedLauncherTargetName = m_projectInfo.m_projectName + ".UnifiedLauncher";
 
         return AZ::Success(QStringList{ ProjectCMakeCommand,
                                         "--build", targetBuildPath,
                                         "--config", "profile",
-                                        "--target", gameLauncherTargetName, serverLauncherTargetName, ProjectCMakeBuildTargetEditor });
+                                        "--target", gameLauncherTargetName, serverLauncherTargetName, unifiedLauncherTargetName, ProjectCMakeBuildTargetEditor });
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(const QString& pidToKill) const

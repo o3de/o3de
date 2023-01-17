@@ -20,8 +20,8 @@ namespace AZ
         // The 2-bit indices represent the following:
         // 00 - use color0
         // 01 - use color1
-        // 10 - use 2/3 color0 and 1/3 color1
-        // 11 - use 1/3 color0 and 2/3 color1
+        // 10 - if color0 > color1, use 2/3 color0 and 1/3 color1, else use 1/2 color0 and 1/2 color1
+        // 11 - if color0 > color1, use 1/3 color0 and 2/3 color1, else use transparent black
         struct BC1Block
         {
             uint16_t m_color0;
@@ -78,11 +78,13 @@ namespace AZ
                     return extractColor(m_color1);
                     break;
                 case 2:
-                    // Index 2 uses 2/3 of color 0 and 1/3 of color 1
-                    return extractColor(m_color0).Lerp(extractColor(m_color1), (1.0f / 3.0f));
+                    // Index 2 either uses 2/3 of color 0 and 1/3 of color 1 or 1/2 of color 0 and 1/2 of color 1
+                    return (m_color0 > m_color1) ? extractColor(m_color0).Lerp(extractColor(m_color1), (1.0f / 3.0f))
+                                                    : extractColor(m_color0).Lerp(extractColor(m_color1), (1.0f / 2.0f));
                 case 3:
-                    // Index 3 uses 1/3 of color 0 and 2/3 of color 1
-                    return extractColor(m_color0).Lerp(extractColor(m_color1), (2.0f / 3.0f));
+                    // Index 3 either uses 1/3 of color 0 and 2/3 of color 1 or transparent black
+                    return (m_color0 > m_color1) ? extractColor(m_color0).Lerp(extractColor(m_color1), (2.0f / 3.0f))
+                                                    : AZ::Color::CreateZero();
                 }
 
                 return AZ::Color::CreateZero();

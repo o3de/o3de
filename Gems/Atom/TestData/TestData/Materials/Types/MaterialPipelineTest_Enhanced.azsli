@@ -30,6 +30,24 @@
     COMMON_OPTIONS_OCCLUSION()
     COMMON_OPTIONS_EMISSIVE()
     COMMON_OPTIONS_DETAIL_MAPS()
+    COMMON_OPTIONS_PARALLAX()
+    
+    bool ShouldHandleParallax()
+    {
+        // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
+        return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useHeightmap;
+    }
+
+    bool NeedsTangentFrame()
+    {
+        return ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture) || o_detail_normal_useTexture;
+    }
+    
+    // Callback function for ParallaxMapping.azsli
+    DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+    {
+        return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+    }
 
     #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexEval.azsli>
@@ -39,6 +57,46 @@
 
     #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_SurfaceData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_SurfaceEval.azsli>
+    
+#elif MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
+
+    COMMON_OPTIONS_PARALLAX()
+        
+    bool ShouldHandleParallax()
+    {
+        // TODO(MaterialPipeline): This is the same as the other ShouldHandleParallax() above, needs to be factored out
+        bool canHandleParallax = !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useHeightmap;
+
+        // The depth pass shaders need to calculate parallax when the result could affect the depth buffer, or when
+        // parallax could affect texel clipping.
+        return canHandleParallax && (o_parallax_enablePixelDepthOffset || o_opacity_mode == OpacityMode::Cutout);
+    }
+
+    bool NeedsTangentFrame()
+    {
+        return ShouldHandleParallax();
+    }
+    
+    // Callback function for ParallaxMapping.azsli
+    DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+    {
+        return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+    }
+    
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
+    
+    // For cases where the pixel stage is only calculating geometry (like alpha clipping and parallax PDO), we can use StandardPBR_PixelGeometryData
+    // instead of EnhancedPBR_PixelGeometryData because the detail-layer UVS are the only difference and those aren't used for clipping or depth.
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryEval.azsli>
+    
+    #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli"
+
+    void EvaluateSurface(PixelGeometryData geoData)
+    {
+        GetAlphaAndClip(geoData.uvs);
+    }
 
 #else
 

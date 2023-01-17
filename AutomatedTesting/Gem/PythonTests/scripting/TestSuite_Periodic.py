@@ -60,6 +60,26 @@ class TestAutomationQtPyTests(TestAutomationBase):
         from . import ScriptCanvas_TwoComponents_InteractSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    def test_ScriptCanvas_TwoEntities_UseSimultaneously(self, request, workspace, editor, launcher_platform):
+        from . import ScriptCanvas_TwoComponents_InteractSuccessfully as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage(self, request, workspace, editor, launcher_platform):
+        from . import ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, workspace, editor, launcher_platform):
+        from . import ScriptEvents_Default_SendReceiveSuccessfully as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_ScriptEvents_HappyPath_SendReceiveAcrossMultiple(self, request, workspace, editor, launcher_platform):
+        from . import ScriptEvents_HappyPath_SendReceiveAcrossMultiple as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_ScriptEvents_ReturnSetType_Successfully(self, request, workspace, editor, launcher_platform):
+        from . import ScriptEvents_ReturnSetType_Successfully as test_module
+        self._run_test(request, workspace, editor, test_module)
+
     """
     od3e/o3de#13481
     This test fails in multi test. QCheckbox state change does not trigger table changes like in hydra/editor test run
@@ -67,6 +87,7 @@ class TestAutomationQtPyTests(TestAutomationBase):
         from . import ScriptEvent_AddRemoveMethod_UpdatesInSC as test_module
         self._run_test(request, workspace, editor, test_module)
     """
+
 
 @pytest.mark.REQUIRES_gpu
 @pytest.mark.SUITE_periodic
@@ -95,15 +116,6 @@ class TestAutomation(TestAutomationBase):
         from . import NodePalette_HappyPath_ClearSelection as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptCanvas_TwoEntities_UseSimultaneously(self, request, workspace, editor, launcher_platform, project, level):
-        def teardown():
-            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        request.addfinalizer(teardown)
-        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import ScriptCanvas_TwoEntities_UseSimultaneously as test_module
-        self._run_test(request, workspace, editor, test_module)
 
     def test_ScriptEvent_HappyPath_CreatedWithoutError(self, request, workspace, editor, launcher_platform, project):
         def teardown():
@@ -178,41 +190,6 @@ class TestScriptCanvasTests(object):
             TEST_DIRECTORY,
             editor,
             "ScriptEvent_AddRemoveMethod_UpdatesInSC.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
-
-    def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, editor, launcher_platform):
-
-        expected_lines = [
-            "Successfully created test entity",
-            "Successfully entered game mode",
-            "Successfully found expected message",
-            "Successfully exited game mode",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptEvents_Default_SendReceiveSuccessfully.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
-    def test_ScriptEvents_ReturnSetType_Successfully(self, request, editor, launcher_platform):
-
-        expected_lines = [
-            "Successfully created test entity",
-            "Successfully entered game mode",
-            "Successfully found expected message",
-            "Successfully exited game mode",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptEvents_ReturnSetType_Successfully.py",
             expected_lines,
             auto_test_mode=False,
             timeout=60,
@@ -386,43 +363,6 @@ class TestScriptCanvasTests(object):
             TEST_DIRECTORY,
             editor,
             "ScriptEvents_AllParamDatatypes_CreationSuccess.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
-
-    def test_ScriptEvents_HappyPath_SendReceiveAcrossMultiple(self, request, workspace, editor, launcher_platform):
-        expected_lines = [
-            "Successfully created Entity",
-            "Successfully entered game mode",
-            "Successfully found expected message",
-            "Successfully exited game mode",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptEvents_HappyPath_SendReceiveAcrossMultiple.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
-
-    def test_ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage(self, request, workspace, editor, launcher_platform):
-        expected_lines = [
-            "Successfully found controller entity",
-            "Successfully found activated entity",
-            "Successfully found deactivated entity",
-            "Start states set up successfully",
-            "Successfully entered game mode",
-            "Successfully found expected prints",
-            "Successfully exited game mode",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage.py",
             expected_lines,
             auto_test_mode=False,
             timeout=60,

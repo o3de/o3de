@@ -79,14 +79,14 @@ namespace AzToolsFramework
 
     AZStd::shared_ptr<PaintBrushManipulator> PaintBrushManipulator::MakeShared(
         const AZ::Transform& worldFromLocal,
-        const AZ::EntityComponentIdPair& entityComponentIdPair, AzFramework::PaintBrushColorMode colorMode)
+        const AZ::EntityComponentIdPair& entityComponentIdPair, PaintBrushColorMode colorMode)
     {
         return AZStd::shared_ptr<PaintBrushManipulator>(aznew PaintBrushManipulator(worldFromLocal, entityComponentIdPair, colorMode));
     }
 
     PaintBrushManipulator::PaintBrushManipulator(
         const AZ::Transform& worldFromLocal,
-        const AZ::EntityComponentIdPair& entityComponentIdPair, AzFramework::PaintBrushColorMode colorMode)
+        const AZ::EntityComponentIdPair& entityComponentIdPair, PaintBrushColorMode colorMode)
         : m_paintBrush(entityComponentIdPair)
     {
         m_ownerEntityComponentId = entityComponentIdPair;
@@ -140,7 +140,7 @@ namespace AzToolsFramework
     {
         const float outerRadius = settings.GetSize() / 2.0f;
 
-        if (settings.GetBrushMode() == AzFramework::PaintBrushMode::Eyedropper)
+        if (settings.GetBrushMode() == PaintBrushMode::Eyedropper)
         {
             // For the eyedropper, we'll set the inner radius to an arbitrarily small percentage of the full brush size to help
             // visualize that we're only picking from the very center of the brush.
@@ -175,6 +175,12 @@ namespace AzToolsFramework
             GetManipulatorManagerId(), managerState, GetManipulatorId(),
             { GetSpace(), GetNonUniformScale(), AZ::Vector3::CreateZero(), mouseOver }, debugDisplay, cameraState,
             mouseInteraction);
+    }
+
+    void PaintBrushManipulator::InvalidateImpl()
+    {
+        m_innerCircle->Invalidate(GetManipulatorManagerId());
+        m_outerCircle->Invalidate(GetManipulatorManagerId());
     }
 
     void PaintBrushManipulator::SetView(
@@ -272,13 +278,13 @@ namespace AzToolsFramework
 
             switch (brushSettings.GetBrushMode())
             {
-            case AzFramework::PaintBrushMode::Paintbrush:
+            case PaintBrushMode::Paintbrush:
                 m_paintBrush.PaintToLocation(brushCenter, brushSettings);
                 break;
-            case AzFramework::PaintBrushMode::Smooth:
+            case PaintBrushMode::Smooth:
                 m_paintBrush.SmoothToLocation(brushCenter, brushSettings);
                 break;
-            case AzFramework::PaintBrushMode::Eyedropper:
+            case PaintBrushMode::Eyedropper:
                 {
                     AZ::Color eyedropperColor = m_paintBrush.UseEyedropper(brushCenter);
 

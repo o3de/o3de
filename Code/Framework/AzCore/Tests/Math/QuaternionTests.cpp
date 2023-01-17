@@ -283,7 +283,7 @@ namespace UnitTest
 
     TEST(MATH_Quaternion, ToEulerDegrees)
     {
-        float halfAngle = 0.5f *  Constants::QuarterPi;
+        float halfAngle = 0.5f * AZ::Constants::QuarterPi;
         float sin = sinf(halfAngle);
         float cos = cosf(halfAngle);
         AZ::Quaternion testQuat = AZ::Quaternion::CreateFromVector3AndValue(sin * AZ::Vector3::CreateAxisX(), cos);
@@ -297,16 +297,16 @@ namespace UnitTest
     TEST(MATH_Quaternion, ToEulerRadians)
     {
         constexpr float getEulerRadiansEpsilon = 0.001f;
-        float halfAngle = 0.5f *  Constants::HalfPi;
+        float halfAngle = 0.5f * AZ::Constants::HalfPi;
         float sin = sinf(halfAngle);
         float cos = cosf(halfAngle);
 
         AZ::Quaternion testQuat = AZ::Quaternion::CreateFromVector3AndValue(sin * AZ::Vector3::CreateAxisY(), cos);
         AZ::Vector3 resultVector = testQuat.GetEulerRadians();
-        EXPECT_NEAR(Constants::HalfPi, static_cast<float>(resultVector.GetY()), getEulerRadiansEpsilon);
+        EXPECT_NEAR(AZ::Constants::HalfPi, resultVector.GetY(), getEulerRadiansEpsilon);
 
         resultVector = ConvertQuaternionToEulerRadians(testQuat);
-        EXPECT_NEAR(Constants::HalfPi, static_cast<float>(resultVector.GetY()), getEulerRadiansEpsilon);
+        EXPECT_NEAR(AZ::Constants::HalfPi, resultVector.GetY(), getEulerRadiansEpsilon);
     }
 
     using QuaternionEulerFixture = ::testing::TestWithParam<AZ::Quaternion>;
@@ -367,28 +367,28 @@ namespace UnitTest
         const AZ::Vector3 testDegrees(45.0f, 45.0f, 45.0f);
         AZ::Quaternion testQuat;
         testQuat.SetFromEulerDegrees(testDegrees);
-        EXPECT_THAT(testQuat, IsCloseTolerance(AZ::Quaternion(0.46193981170654296875f, 0.1913417130708694458f, 0.46193981170654296875f, 0.73253774642944335938f), 0.0000001f));
+        EXPECT_THAT(testQuat, IsCloseTolerance(AZ::Quaternion(0.46193981170654296875f, 0.1913417130708694458f, 0.46193981170654296875f, 0.73253774642944335938f), 1e-6f));
     }
 
     TEST(MATH_Quaternion, FromEulerRadians)
     {
-        const AZ::Vector3 testRadians(Constants::QuarterPi, Constants::QuarterPi, Constants::QuarterPi);
+        const AZ::Vector3 testRadians(AZ::Constants::QuarterPi, AZ::Constants::QuarterPi, AZ::Constants::QuarterPi);
         AZ::Quaternion testQuat;
         testQuat.SetFromEulerRadians(testRadians);
-        EXPECT_THAT(testQuat, IsCloseTolerance(AZ::Quaternion(0.46193981170654296875f, 0.1913417130708694458f, 0.46193981170654296875f, 0.73253774642944335938f), 0.0000001f));
+        EXPECT_THAT(testQuat, IsCloseTolerance(AZ::Quaternion(0.46193981170654296875f, 0.1913417130708694458f, 0.46193981170654296875f, 0.73253774642944335938f), 1e-6f));
     }
 
 
     TEST(MATH_Quaternion, FromAxisAngle)
     {
-        AZ::Quaternion q10 = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), Constants::QuarterPi);
-        EXPECT_THAT(q10, IsClose(AZ::Quaternion::CreateRotationZ(Constants::QuarterPi)));
+        AZ::Quaternion q10 = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), AZ::Constants::QuarterPi);
+        EXPECT_THAT(q10, IsClose(AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi)));
 
-        q10 = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), Constants::HalfPi);
-        EXPECT_THAT(q10, IsClose(AZ::Quaternion::CreateRotationY(Constants::HalfPi)));
+        q10 = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::HalfPi);
+        EXPECT_THAT(q10, IsClose(AZ::Quaternion::CreateRotationY(AZ::Constants::HalfPi)));
 
-        q10 = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), Constants::TwoPi / 3.0f);
-        EXPECT_THAT(q10, IsClose(AZ::Quaternion::CreateRotationX(Constants::TwoPi / 3.0f)));
+        q10 = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::TwoPi / 3.0f);
+        EXPECT_THAT(q10, IsClose(AZ::Quaternion::CreateRotationX(AZ::Constants::TwoPi / 3.0f)));
     }
 
     TEST(MATH_Quaternion, ToAxisAngle)
@@ -553,32 +553,32 @@ namespace UnitTest
         MATH_Quaternion,
         AngleRadianTestFixtureXYZ,
         ::testing::Values(
-            EulerTestArgs{ AZ::Vector3(Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, 0, Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, AZ::Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, 0, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
 
-            EulerTestArgs{ AZ::Vector3(-Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(-Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, -Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(-Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, 0, -Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(-Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, -AZ::Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(-AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, 0, -AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(-AZ::Constants::QuarterPi) },
 
-            EulerTestArgs{ AZ::Vector3(Constants::QuarterPi, Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationX(Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationY(Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, Constants::QuarterPi, Constants::QuarterPi), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(Constants::QuarterPi, 0, Constants::QuarterPi), AZ::Quaternion::CreateRotationX(Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi)},
+            EulerTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, AZ::Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, AZ::Constants::QuarterPi, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, 0, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi)},
                 
-            EulerTestArgs{ AZ::Vector3(Constants::HalfPi, 0, Constants::QuarterPi), 
-                AZ::Quaternion::CreateRotationX(Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi)},
-            EulerTestArgs{ AZ::Vector3(-Constants::QuarterPi, -Constants::HalfPi, Constants::QuarterPi), 
-                AZ::Quaternion::CreateRotationX(-Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationY(-Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi)},
-            EulerTestArgs{ AZ::Vector3(-Constants::QuarterPi, Constants::HalfPi, Constants::TwoOverPi), 
-                AZ::Quaternion::CreateRotationX(-Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationY(Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationZ(Constants::TwoOverPi)}
+            EulerTestArgs{ AZ::Vector3(AZ::Constants::HalfPi, 0, AZ::Constants::QuarterPi), 
+                AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi) *
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi)},
+            EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, -AZ::Constants::HalfPi, AZ::Constants::QuarterPi), 
+                AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationY(-AZ::Constants::HalfPi) *
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi)},
+            EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, AZ::Constants::HalfPi, AZ::Constants::TwoOverPi), 
+                AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationY(AZ::Constants::HalfPi) *
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::TwoOverPi)}
                 ));
 
     using AngleRadianTestFixtureYXZ = ::testing::TestWithParam<EulerTestArgs>;
@@ -599,32 +599,32 @@ namespace UnitTest
         MATH_Quaternion,
         AngleRadianTestFixtureYXZ,
         ::testing::Values(
-            EulerTestArgs{ AZ::Vector3(Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, 0, Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, AZ::Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, 0, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
 
-            EulerTestArgs{ AZ::Vector3(-Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(-Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, -Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(-Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, 0, -Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(-Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, -AZ::Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(-AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, 0, -AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(-AZ::Constants::QuarterPi) },
 
-            EulerTestArgs{ AZ::Vector3(Constants::QuarterPi, Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationX(Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, Constants::QuarterPi, Constants::QuarterPi), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(Constants::QuarterPi, 0, Constants::QuarterPi), AZ::Quaternion::CreateRotationX(Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi)},
+            EulerTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, AZ::Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, AZ::Constants::QuarterPi, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, 0, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi)},
 
-            EulerTestArgs{ AZ::Vector3(Constants::HalfPi, 0, Constants::QuarterPi), 
-                AZ::Quaternion::CreateRotationX(Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi)},
-            EulerTestArgs{ AZ::Vector3(-Constants::QuarterPi, -Constants::HalfPi, Constants::QuarterPi), 
-                AZ::Quaternion::CreateRotationY(-Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationX(-Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi)},
-            EulerTestArgs{ AZ::Vector3(-Constants::QuarterPi, Constants::HalfPi, Constants::TwoOverPi), 
-                AZ::Quaternion::CreateRotationY(Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationX(-Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationZ(Constants::TwoOverPi)}
+            EulerTestArgs{ AZ::Vector3(AZ::Constants::HalfPi, 0, AZ::Constants::QuarterPi), 
+                AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi) *
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi)},
+            EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, -AZ::Constants::HalfPi, AZ::Constants::QuarterPi), 
+                AZ::Quaternion::CreateRotationY(-AZ::Constants::HalfPi) *
+                AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi)},
+            EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, AZ::Constants::HalfPi, AZ::Constants::TwoOverPi), 
+                AZ::Quaternion::CreateRotationY(AZ::Constants::HalfPi) *
+                AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::TwoOverPi)}
                 
         ));
 
@@ -646,32 +646,32 @@ namespace UnitTest
         MATH_Quaternion,
         AngleRadianTestFixtureZYX,
         ::testing::Values(
-            EulerTestArgs{ AZ::Vector3(Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, 0, Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, AZ::Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, 0, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
 
-            EulerTestArgs{ AZ::Vector3(-Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(-Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, -Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(-Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, 0, -Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(-Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, -AZ::Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(-AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, 0, -AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(-AZ::Constants::QuarterPi) },
 
-            EulerTestArgs{ AZ::Vector3(Constants::QuarterPi, Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationX(Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(0, Constants::QuarterPi, Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationY(Constants::QuarterPi) },
-            EulerTestArgs{ AZ::Vector3(Constants::QuarterPi, 0, Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationX(Constants::QuarterPi)},
+            EulerTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, AZ::Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(0, AZ::Constants::QuarterPi, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, 0, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi)},
                 
-            EulerTestArgs{ AZ::Vector3(Constants::HalfPi, 0, Constants::QuarterPi), 
-                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationX(Constants::HalfPi)},
-            EulerTestArgs{ AZ::Vector3(-Constants::QuarterPi, -Constants::HalfPi, Constants::QuarterPi), 
-                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationY(-Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationX(-Constants::QuarterPi)},
-            EulerTestArgs{ AZ::Vector3(-Constants::QuarterPi, Constants::HalfPi, Constants::TwoOverPi), 
-                AZ::Quaternion::CreateRotationZ(Constants::TwoOverPi) *
-                AZ::Quaternion::CreateRotationY(Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationX(-Constants::QuarterPi)}
+            EulerTestArgs{ AZ::Vector3(AZ::Constants::HalfPi, 0, AZ::Constants::QuarterPi), 
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi)},
+            EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, -AZ::Constants::HalfPi, AZ::Constants::QuarterPi), 
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationY(-AZ::Constants::HalfPi) *
+                AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi)},
+            EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, AZ::Constants::HalfPi, AZ::Constants::TwoOverPi), 
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::TwoOverPi) *
+                AZ::Quaternion::CreateRotationY(AZ::Constants::HalfPi) *
+                AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi)}
         ));
 
 } // namespace UnitTest

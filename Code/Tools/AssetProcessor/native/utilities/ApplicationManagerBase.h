@@ -119,6 +119,8 @@ public:
 
     void Rescan();
 
+    void FastScan();
+
     bool IsAssetProcessorManagerIdle() const override;
     bool CheckFullIdle();
 

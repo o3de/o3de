@@ -31,6 +31,7 @@ endif()
 ################################################################################
 # Initialize
 ################################################################################
+include(CTest)
 include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)

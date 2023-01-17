@@ -20,6 +20,7 @@ namespace AZ
             : public DiffuseGlobalIlluminationFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(DiffuseGlobalIlluminationFeatureProcessor, SystemAllocator)
             AZ_RTTI(AZ::Render::DiffuseGlobalIlluminationFeatureProcessor, "{14F7DF46-AA2C-49EF-8A2C-0A7CB7390BB7}", AZ::Render::DiffuseGlobalIlluminationFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);

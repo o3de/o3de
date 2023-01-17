@@ -178,6 +178,8 @@ namespace PhysX
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_kinematic,
                         "Kinematic", "When active, the rigid body is not affected by gravity or other forces and is moved by script.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetKinematicVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled)
+                        ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetKinematicTooltip)
 
                     // Linear axis locking properties
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Linear Axis Locking")
@@ -212,7 +214,8 @@ namespace PhysX
                         "CCD enabled", "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
                         "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX configuration.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCcdVisibility)
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
+                        ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetCcdTooltip)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzPhysics::RigidBodyConfiguration::CcdReadOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdMinAdvanceCoefficient,
                         "Min advance coefficient", "Lower values reduce clipping but can affect simulation smoothness.")

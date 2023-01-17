@@ -74,11 +74,6 @@ namespace AzToolsFramework
 
         static AzFramework::EntityContextId s_editorEntityContextId;
 
-        int m_prefabCapsuleRadius = 6;
-        int m_prefabBorderThickness = 2;
-        int m_prefabFileNameFontSize = 10;
-        int m_prefabEditIconSize = 16;
-
         QColor m_backgroundColor = QColor("#444444");
         QColor m_backgroundHoverColor = QColor("#5A5A5A");
         QColor m_backgroundSelectedColor = QColor("#656565");

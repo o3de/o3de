@@ -47,6 +47,10 @@ namespace AzToolsFramework
 
         void AssetBrowserFilterModel::SetFilter(FilterConstType filter)
         {
+            if (m_filter.data())
+            {
+                disconnect(m_filter.data(), &AssetBrowserEntryFilter::updatedSignal, this, &AssetBrowserFilterModel::filterUpdatedSlot);
+            }
             connect(filter.data(), &AssetBrowserEntryFilter::updatedSignal, this, &AssetBrowserFilterModel::filterUpdatedSlot);
             m_filter = filter;
             m_invalidateFilter = true;

@@ -156,6 +156,20 @@ class PrefabInstance:
             if entity.get_name() == name:
                 return entity
 
+    def get_child_entity_by_name(self, name: str) -> EditorEntity:
+        """
+        Returns the first child entity in the current prefab instance with the given name. Will search from the
+        container entity root through all children.
+        :param name: The name of the child entity to find
+        :return: EditorEntity if entity found, else None
+        """
+        search_filter = azlmbr.entity.SearchFilter()
+        search_filter.names = [name]
+        search_filter.roots = [self.container_entity.id]
+        search_filter.names_are_root_based = False
+        found_entities = azlmbr.entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
+        return EditorEntity(found_entities[0]) if found_entities else None
+
 
 # This is a helper class which contains some of the useful information about a prefab template.
 class Prefab:

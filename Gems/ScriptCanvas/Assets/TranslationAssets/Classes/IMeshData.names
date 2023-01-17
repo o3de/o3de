@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetUnitSizeInMeters",
-                    "context": "IMeshData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Unit Size In Meters"
@@ -34,7 +33,6 @@
                 },
                 {
                     "base": "GetOriginalUnitSizeInMeters",
-                    "context": "IMeshData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Original Unit Size In Meters"

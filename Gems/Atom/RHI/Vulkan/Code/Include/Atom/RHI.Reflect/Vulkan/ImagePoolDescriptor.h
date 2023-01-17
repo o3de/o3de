@@ -20,6 +20,7 @@ namespace AZ
         {
             using Base = RHI::ImagePoolDescriptor;
         public:
+            AZ_CLASS_ALLOCATOR(ImagePoolDescriptor, SystemAllocator)
             AZ_RTTI(ImagePoolDescriptor, "12CD3885-F2B7-40FF-87F1-03EF57749328", Base);
             ImagePoolDescriptor();
             static void Reflect(AZ::ReflectContext* context);

@@ -324,6 +324,8 @@ set(FILES
     Source/AnimGraphTriggerAction.h
     Source/AnimGraphParameterAction.cpp
     Source/AnimGraphParameterAction.h
+    Source/AnimGraphSimpleStateAction.cpp
+    Source/AnimGraphSimpleStateAction.h
     Source/AnimGraphVector2Condition.cpp
     Source/AnimGraphVector2Condition.h
     Source/AnimGraphFollowerParameterAction.cpp
@@ -336,6 +338,8 @@ set(FILES
     Source/EventData.h
     Source/EventDataFootIK.cpp
     Source/EventDataFootIK.h
+    Source/EventDataFloatArray.h
+    Source/EventDataFloatArray.cpp
     Source/EventDataSyncable.cpp
     Source/EventDataSyncable.h
     Source/EventHandler.cpp
