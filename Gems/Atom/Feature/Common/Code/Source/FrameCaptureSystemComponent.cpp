@@ -589,11 +589,6 @@ namespace AZ
             }
 
             AZStd::scoped_lock<CaptureHandle> scope_lock(captureHandle);
-            CaptureState* captureState = captureHandle.GetCaptureState();
-            AZ_Assert(
-                captureState,
-                "ScreenshotPreparation should have created a ready capture state "
-                "if the capture handle is valid.");
 
             m_inProgressCaptures.push_back(captureHandle);
             return captureHandle.GetCaptureStateIndex();
