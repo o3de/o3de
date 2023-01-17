@@ -37,7 +37,7 @@ namespace AZ::DocumentPropertyEditor
         {
             if (!pathEntry.IsIndex())
             {
-                // RowFilterAdapter only affect index entries, pass other types through
+                // RowFilterAdapter only affects index entries, pass other types through
                 filterPath.Push(pathEntry);
             }
             else
@@ -92,7 +92,7 @@ namespace AZ::DocumentPropertyEditor
         {
             if (!pathEntry.IsIndex())
             {
-                // RowFilterAdapter only affect index entries, pass other types through
+                // RowFilterAdapter only affects index entries, pass other types through
                 sourcePath.Push(pathEntry);
             }
             else

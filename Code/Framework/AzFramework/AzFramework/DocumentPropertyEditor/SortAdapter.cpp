@@ -39,15 +39,6 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
-    template <typename IteratorType>
-    void IncrementIterator(IteratorType iter, size_t distance)
-    {
-        for (size_t index = 0; index < distance; ++index)
-        {
-            ++iter;
-        }
-    }
-
     Dom::Path RowSortAdapter::MapPath(const Dom::Path& path, bool mapToSource)
     {
         if (!m_sortActive)
@@ -64,13 +55,13 @@ namespace AZ::DocumentPropertyEditor
             if (pathEntry.IsIndex())
             {
                 bool found = false;
-                for (auto element : AZStd::views::zip(currNode->m_indexSortedChildren, currNode->m_adapterSortedChildren))
+                for (auto [indexSortedNode, adapterSortedNode] : AZStd::views::zip(currNode->m_indexSortedChildren, currNode->m_adapterSortedChildren))
                 {
-                    const SortInfoNode* comparisonNode = (mapToSource ? AZStd::get<1>(element) : AZStd::get<0>(element).get());
+                    const SortInfoNode* comparisonNode = (mapToSource ? adapterSortedNode : indexSortedNode.get());
                     if (comparisonNode->m_domIndex == pathEntry.GetIndex())
                     {
                         // set the mapped entry
-                        const auto mappedIndex = (mapToSource ? AZStd::get<0>(element)->m_domIndex : AZStd::get<1>(element)->m_domIndex);
+                        const auto mappedIndex = (mapToSource ? indexSortedNode->m_domIndex : adapterSortedNode->m_domIndex);
                         mappedPath.Push(mappedIndex);
                         currNode = comparisonNode;
                         found = true;

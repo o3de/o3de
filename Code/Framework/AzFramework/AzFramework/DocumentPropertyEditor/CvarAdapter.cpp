@@ -21,6 +21,7 @@ namespace AZ::DocumentPropertyEditor
             , m_commandInvokedHandler(
                   [adapter, this](AZStd::string_view command, const AZ::ConsoleCommandContainer&, AZ::ConsoleFunctorFlags, AZ::ConsoleInvokedFrom)
                   {
+                      // look up the command being performed and rebuild its editor
                       if (!m_performingCommand && !command.empty())
                       {
                           auto commandFunctor = AZ::Interface<AZ::IConsole>::Get()->FindCommand(command);
@@ -36,6 +37,7 @@ namespace AZ::DocumentPropertyEditor
                                   auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(rowValue.ArrayAt(0)).value_or("");
                                   if (labelString == command)
                                   {
+                                      // found the command at column 0, the editor must be at column 1
                                       path.Push(rowIndex);
                                       path.Push(1);
                                       break;
@@ -44,13 +46,13 @@ namespace AZ::DocumentPropertyEditor
 
                               if (!path.IsEmpty())
                               {
+                                  // rebuild and replace the editor with one with the correct value
                                   AdapterBuilder builder;
                                   BuildEditorForCvar(builder, commandFunctor);
                                   auto newEditor = builder.FinishAndTakeResult();
                                   adapter->NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(path, newEditor) });
                               }
                           }
-                          // adapter->NotifyResetDocument();
                       }
                   })
         {
