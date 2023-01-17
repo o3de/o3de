@@ -52,6 +52,7 @@ namespace AzToolsFramework
         {
             m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->Setup(entityComponentIdPair);
         }
+        ShapeComponentModeRequestBus::Handler::BusConnect(m_entityComponentIdPair);
     }
 
     AZStd::vector<AzToolsFramework::ActionOverride> BoxComponentMode::PopulateActionsImpl()
@@ -241,6 +242,7 @@ namespace AzToolsFramework
 
     BoxComponentMode::~BoxComponentMode()
     {
+        ShapeComponentModeRequestBus::Handler::BusDisconnect();
         m_subModes[static_cast<AZ::u32>(m_subMode)]->Teardown();
         if (m_allowAsymmetricalEditing)
         {
