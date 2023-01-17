@@ -17,6 +17,7 @@
 #include <Document/MaterialGraphCompiler.h>
 #include <GraphModel/Model/GraphContext.h>
 #include <Window/MaterialCanvasMainWindow.h>
+#include <AtomToolsFramework/Graph/GraphTemplateFileDataCache.h>
 
     namespace MaterialCanvas
 {
@@ -69,6 +70,7 @@
         AZStd::unique_ptr<AtomToolsFramework::DynamicNodeManager> m_dynamicNodeManager;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
         AZStd::shared_ptr<AtomToolsFramework::GraphCompilerManager> m_graphCompilerManager;
+        AZStd::shared_ptr<AtomToolsFramework::GraphTemplateFileDataCache> m_graphTemplateFileDataCache;
         AtomToolsFramework::GraphViewSettingsPtr m_graphViewSettingsPtr;
     };
 } // namespace MaterialCanvas

@@ -18,6 +18,7 @@
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
 #include <AtomToolsFramework/Graph/GraphDocumentRequestBus.h>
+#include <AtomToolsFramework/Graph/GraphTemplateFileDataCacheRequestBus.h>
 #include <AtomToolsFramework/Graph/GraphUtil.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
@@ -145,22 +146,29 @@ namespace MaterialCanvas
             // details provided by the graph. None of the files generated from this node will be saved until they have all been processed.
             // Template files for material types will be processed in their own pass Because they require special handling and need to be
             // saved before material file templates to not trigger asset processor dependency errors.
-            AZStd::vector<TemplateFileData> templateFileDataVec;
-            templateFileDataVec.reserve(templatePaths.size());
+            AZStd::list<AtomToolsFramework::GraphTemplateFileData> templateFileDataVec;
 
             for (const auto& templatePath : templatePaths)
             {
                 if (!templatePath.ends_with(".materialtype"))
                 {
-                    // Attempt to load the template file to do symbol substitution and inject code or data
-                    TemplateFileData templateFileData;
-                    templateFileData.m_inputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
-                    templateFileData.m_outputPath = GetOutputPathFromTemplatePath(templateFileData.m_inputPath);
-                    if (!templateFileData.Load())
+                    const AZStd::string templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
+
+                    // Attempts to load original template source file data, which will be copied and used for insertions, substitutions, and
+                    // code generation.
+                    AtomToolsFramework::GraphTemplateFileData templateFileData;
+                    AtomToolsFramework::GraphTemplateFileDataCacheRequestBus::EventResult(
+                        templateFileData,
+                        m_toolId,
+                        &AtomToolsFramework::GraphTemplateFileDataCacheRequestBus::Events::Load,
+                        templateInputPath);
+
+                    if (!templateFileData.IsLoaded())
                     {
                         CompileGraphFailed();
                         return false;
                     }
+
                     templateFileDataVec.emplace_back(AZStd::move(templateFileData));
                 }
             }
@@ -170,14 +178,16 @@ namespace MaterialCanvas
             for (auto& templateFileData : templateFileDataVec)
             {
                 // Substitute all references to the placeholder graph name with one generated from the document name
-                AtomToolsFramework::ReplaceSymbolsInContainer("MaterialGraphName", graphName, templateFileData.m_lines);
+                templateFileData.ReplaceSymbol("MaterialGraphName", graphName);
 
                 // Inject include files found while traversing the graph into any include file blocks in the template.
                 templateFileData.ReplaceLinesInBlock(
                     "O3DE_GENERATED_INCLUDES_BEGIN",
                     "O3DE_GENERATED_INCLUDES_END",
-                    [&includePaths, &templateFileData]([[maybe_unused]] const AZStd::string& blockHeader)
+                    [&includePaths, &templateFileData, this]([[maybe_unused]] const AZStd::string& blockHeader)
                     {
+                        const auto& templateOutputPath = GetOutputPathFromTemplatePath(templateFileData.GetPath());
+
                         // Include file paths will need to be converted to include statements.
                         AZStd::vector<AZStd::string> includeStatements;
                         includeStatements.reserve(includePaths.size());
@@ -188,7 +198,7 @@ namespace MaterialCanvas
                             // The relative path reference function will only work for include files in the same gem.
                             includeStatements.push_back(AZStd::string::format(
                                 "#include <%s>;",
-                                AtomToolsFramework::GetPathToExteralReference(templateFileData.m_outputPath, path).c_str()));
+                                AtomToolsFramework::GetPathToExteralReference(templateOutputPath, path).c_str()));
                         }
                         return includeStatements;
                     });
@@ -257,16 +267,17 @@ namespace MaterialCanvas
                 const AZStd::regex patternRegex(pattern, AZStd::regex::flag_type::icase);
                 for (const auto& templateFileData : templateFileDataVec)
                 {
-                    if (AZStd::regex_match(templateFileData.m_outputPath, patternRegex))
+                    if (AZStd::regex_match(templateFileData.GetPath(), patternRegex))
                     {
-                        if (!templateFileData.Save())
+                        const auto& templateOutputPath = GetOutputPathFromTemplatePath(templateFileData.GetPath());
+                        if (!templateFileData.Save(templateOutputPath))
                         {
                             return false;
                         }
 
                         AzFramework::AssetSystemRequestBus::Broadcast(
-                            &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, templateFileData.m_outputPath);
-                        m_generatedFiles.push_back(templateFileData.m_outputPath);
+                            &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, templateOutputPath);
+                        m_generatedFiles.push_back(templateOutputPath);
                     }
                 }
                 return true;
@@ -321,7 +332,6 @@ namespace MaterialCanvas
     {
         AZStd::string templateInputFileName;
         AZ::StringFunc::Path::GetFullFileName(templateInputPath.c_str(), templateInputFileName);
-        AZ::StringFunc::Replace(templateInputFileName, ".template", "");
 
         AZStd::string templateOutputPath = GetGraphPath();
         AZ::StringFunc::Path::ReplaceFullName(templateOutputPath, templateInputFileName.c_str());
@@ -1171,115 +1181,6 @@ namespace MaterialCanvas
                     }
                 }
             }
-        }
-    }
-
-    bool MaterialGraphCompiler::TemplateFileData::Load()
-    {
-        AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "Loading template file: %s\n", m_inputPath.c_str());
-
-        // Attempt to load the template file to do symbol substitution and inject any code or data
-        if (auto result = AZ::Utils::ReadFile(m_inputPath))
-        {
-            // Tokenize the entire template file into individual lines that can be evaluated, removed, replaced, and have
-            // content injected between them
-            m_lines.reserve(1000);
-            AZ::StringFunc::Tokenize(result.GetValue(), m_lines, '\n', true, true);
-            AZ_TracePrintf_IfTrue(
-                "MaterialGraphCompiler", IsCompileLoggingEnabled(), "Loading template file succeeded: %s\n", m_inputPath.c_str());
-            return true;
-        }
-
-        AZ_Error("MaterialGraphCompiler", false, "Loading template file failed: %s\n", m_inputPath.c_str());
-        return false;
-    }
-
-    bool MaterialGraphCompiler::TemplateFileData::Save() const
-    {
-        AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "Saving generated file: %s\n", m_outputPath.c_str());
-
-        AZStd::string templateOutputText;
-        AZ::StringFunc::Join(templateOutputText, m_lines, '\n');
-        templateOutputText += '\n';
-
-        // Save the file generated from the template to the same folder as the graph.
-        if (AZ::Utils::WriteFile(templateOutputText, m_outputPath).IsSuccess())
-        {
-            AZ_TracePrintf_IfTrue(
-                "MaterialGraphCompiler", IsCompileLoggingEnabled(), "Saving generated file succeeded: %s\n", m_outputPath.c_str());
-            return true;
-        }
-
-        AZ_Error("MaterialGraphCompiler", false, "Saving generated file failed: %s\n", m_outputPath.c_str());
-        return false;
-    }
-
-    void MaterialGraphCompiler::TemplateFileData::ReplaceLinesInBlock(
-        const AZStd::string& blockBeginToken, const AZStd::string& blockEndToken, const LineGenerationFn& lineGenerationFn)
-    {
-        AZ_TracePrintf_IfTrue(
-            "MaterialGraphCompiler",
-            IsCompileLoggingEnabled(),
-            "Inserting %s lines into template file: %s\n",
-            blockBeginToken.c_str(),
-            m_inputPath.c_str());
-
-        auto blockBeginItr = AZStd::find_if(
-            m_lines.begin(),
-            m_lines.end(),
-            [&blockBeginToken](const AZStd::string& line)
-            {
-                return AZ::StringFunc::Contains(line, blockBeginToken);
-            });
-
-        while (blockBeginItr != m_lines.end())
-        {
-            AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "*blockBegin: %s\n", (*blockBeginItr).c_str());
-
-            // We have to insert one line at a time because AZStd::vector does not include a standard
-            // range insert that returns an iterator
-            const auto& linesToInsert = lineGenerationFn(*blockBeginItr);
-            for (const auto& lineToInsert : linesToInsert)
-            {
-                ++blockBeginItr;
-                blockBeginItr = m_lines.insert(blockBeginItr, lineToInsert);
-
-                AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "lineToInsert: %s\n", lineToInsert.c_str());
-            }
-
-            if (linesToInsert.empty())
-            {
-                AZ_TracePrintf_IfTrue(
-                    "MaterialGraphCompiler", IsCompileLoggingEnabled(), "Nothing was generated. This block will remain unmodified.\n");
-            }
-
-            ++blockBeginItr;
-
-            // From the last line that was inserted, locate the end of the insertion block
-            auto blockEndItr = AZStd::find_if(
-                blockBeginItr,
-                m_lines.end(),
-                [&blockEndToken](const AZStd::string& line)
-                {
-                    return AZ::StringFunc::Contains(line, blockEndToken);
-                });
-
-            AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "*blockEnd: %s\n", (*blockEndItr).c_str());
-
-            if (!linesToInsert.empty())
-            {
-                // If any new lines were inserted, erase pre-existing lines the template might have had between the begin and end blocks
-                blockEndItr = m_lines.erase(blockBeginItr, blockEndItr);
-            }
-
-            // Search for another insertion point
-            blockBeginItr = AZStd::find_if(
-                blockEndItr,
-                m_lines.end(),
-                [&blockBeginToken](const AZStd::string& line)
-                {
-                    return AZ::StringFunc::Contains(line, blockBeginToken);
-                });
         }
     }
 } // namespace MaterialCanvas

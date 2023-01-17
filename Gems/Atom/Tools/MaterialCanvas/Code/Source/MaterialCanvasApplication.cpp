@@ -120,6 +120,7 @@ namespace MaterialCanvas
         m_viewportSettingsSystem.reset();
         m_graphContext.reset();
         m_graphCompilerManager.reset();
+        m_graphTemplateFileDataCache.reset();
         m_dynamicNodeManager.reset();
 
         ApplyShaderBuildSettings();
@@ -254,6 +255,7 @@ namespace MaterialCanvas
     void MaterialCanvasApplication::InitMaterialGraphDocumentType()
     {
         m_graphCompilerManager.reset(aznew AtomToolsFramework::GraphCompilerManager(m_toolId));
+        m_graphTemplateFileDataCache.reset(aznew AtomToolsFramework::GraphTemplateFileDataCache(m_toolId));
 
         // Acquiring default Material Canvas document type info so that it can be customized before registration
         auto documentTypeInfo = AtomToolsFramework::GraphDocument::BuildDocumentTypeInfo(

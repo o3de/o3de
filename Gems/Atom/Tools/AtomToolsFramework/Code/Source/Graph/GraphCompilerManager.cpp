@@ -7,6 +7,7 @@
  */
 
 #include <AtomToolsFramework/Graph/GraphCompilerManager.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/RTTI.h>
 
 namespace AtomToolsFramework
