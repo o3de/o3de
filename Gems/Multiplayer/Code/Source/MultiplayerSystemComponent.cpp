@@ -27,6 +27,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
@@ -272,16 +273,29 @@ namespace Multiplayer
         if (auto console = AZ::Interface<AZ::IConsole>::Get())
         {
             m_consoleCommandHandler.Connect(console->GetConsoleCommandInvokedEvent());
-
-            if (cl_connect_onstartup)
-            {
-                console->PerformCommand("connect");
-            }
         }
 
         if (bg_captureTransportMetrics)
         {
             m_metricsEvent.Enqueue(bg_captureTransportPeriod, true);
+        }
+
+        // If this client wants to connect on startup, wait for all the system components to activate, and then call connect.
+        // Connecting too soon causes a "version mismatch" because all of the system components haven't registered their multiplayer components.
+        if (cl_connect_onstartup)
+        {
+            if (const auto settingsRegistry = AZ::SettingsRegistry::Get())
+            {
+                AZ::ComponentApplicationLifecycle::RegisterHandler(
+                    *settingsRegistry,
+                    m_componentApplicationLifecycleHandler,
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
+                    {
+                        this->Connect(LocalHost, cl_serverport);
+                    },
+                    "SystemComponentsActivated",
+                    /*autoRegisterEvent*/ true);
+            }
         }
     }
 

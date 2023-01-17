@@ -57,6 +57,7 @@ namespace AZ
             static const char* Group;
 
             AZ_RTTI(StreamingImageAsset, "{3C96A826-9099-4308-A604-7B19ADBF8761}", ImageAsset);
+            AZ_CLASS_ALLOCATOR(StreamingImageAsset , AZ::SystemAllocator)
 
             static void Reflect(ReflectContext* context);
 

@@ -18,6 +18,7 @@ namespace GraphCanvas
         : public EditorContextMenu
     {
     public:
+        AZ_CLASS_ALLOCATOR(ConnectionContextMenu, AZ::SystemAllocator)
         ConnectionContextMenu(EditorId editorId, QWidget* parent = nullptr);
         ~ConnectionContextMenu() override = default;
         

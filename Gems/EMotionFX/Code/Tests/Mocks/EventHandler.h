@@ -15,6 +15,7 @@ namespace EMotionFX
         : public EventHandler
     {
     public:
+        AZ_CLASS_ALLOCATOR(EventHandler, EventHandlerAllocator)
         MOCK_METHOD1(OnEvent, void(const EventInfo& eventInfo));
         MOCK_CONST_METHOD0(GetHandledEventTypes, const AZStd::vector<EventTypes>());
         MOCK_METHOD2(OnPlayMotion, void(Motion* motion, PlayBackInfo* info));

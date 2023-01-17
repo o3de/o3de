@@ -55,6 +55,7 @@ namespace EMotionFX
         : public AzFramework::Application
     {
     public:
+        AZ_CLASS_ALLOCATOR(ComponentFixtureApp, AZ::SystemAllocator)
 
         ComponentFixtureApp()
         {

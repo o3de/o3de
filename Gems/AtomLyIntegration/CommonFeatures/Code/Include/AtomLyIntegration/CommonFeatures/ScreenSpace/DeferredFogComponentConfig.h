@@ -36,6 +36,7 @@ namespace AZ
             friend class EditorDeferredFogComponent;
 
         public:
+            AZ_CLASS_ALLOCATOR(DeferredFogComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::DeferredFogComponentConfig, "{3C2671FE-6027-4A1E-907B-F7E2B1B64F7B}", AZ::ComponentConfig );
 
             static void Reflect(ReflectContext* context);

@@ -28,6 +28,7 @@ namespace GraphModelIntegration
         , protected GraphControllerNotificationBus::MultiHandler
     {
     public:
+        AZ_CLASS_ALLOCATOR(EditorMainWindow, AZ::SystemAllocator)
         explicit EditorMainWindow(GraphCanvas::AssetEditorWindowConfig* config, QWidget* parent = nullptr);
         ~EditorMainWindow() override;
 

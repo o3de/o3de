@@ -51,6 +51,7 @@ namespace LegacyFramework
     {
         /// Create application, if systemEntityFileName is NULL, we will create with default settings.
     public:
+        AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator)
 
         using CoreMessageBus::Handler::Run;
         virtual int Run(const ApplicationDesc& desc);

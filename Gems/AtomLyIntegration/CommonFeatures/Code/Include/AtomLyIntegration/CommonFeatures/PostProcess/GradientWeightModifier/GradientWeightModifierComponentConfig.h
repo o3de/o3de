@@ -19,6 +19,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(GradientWeightModifierComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::GradientWeightModifierComponentConfig, "{03CF0D7B-6763-4196-B329-7E247EBEDEF8}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

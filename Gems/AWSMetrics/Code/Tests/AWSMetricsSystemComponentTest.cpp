@@ -21,6 +21,7 @@ namespace AWSMetrics
         : public AWSMetricsSystemComponent
     {
     public:
+        AZ_CLASS_ALLOCATOR(AWSMetricsSystemComponentMock, AZ::SystemAllocator)
         void InitMock()
         {
             AWSMetricsSystemComponent::Init();
