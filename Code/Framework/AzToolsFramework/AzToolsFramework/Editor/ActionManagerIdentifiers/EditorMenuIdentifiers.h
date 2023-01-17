@@ -12,8 +12,11 @@
 
 namespace EditorMenu
 {
+    // Editor main window top MenuBar
     static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
 
+    // File menus and sub-menus
+    // Some of the sub-menus are also shown elsewhere
     static constexpr AZStd::string_view FileMenuIdentifier = "o3de.menu.editor.file";
     static constexpr AZStd::string_view RecentFilesMenuIdentifier = "o3de.menu.editor.file.recent";
     static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
@@ -35,4 +38,13 @@ namespace EditorMenu
     static constexpr AZStd::string_view HelpMenuIdentifier = "o3de.menu.editor.help";
     static constexpr AZStd::string_view HelpDocumentationMenuIdentifier = "o3de.menu.editor.help.documentation";
     static constexpr AZStd::string_view HelpGameDevResourcesMenuIdentifier = "o3de.menu.editor.help.gamedevresources";
+
+    // Viewport menus and sub-menus
+    static constexpr AZStd::string_view ViewportCameraMenuIdentifier = "o3de.menu.editor.viewport.camera";
+    static constexpr AZStd::string_view ViewportHelpersMenuIdentifier = "o3de.menu.editor.viewport.helpers";
+    static constexpr AZStd::string_view ViewportDebugInfoMenuIdentifier = "o3de.menu.editor.viewport.debugInfo";
+    static constexpr AZStd::string_view ViewportSizeMenuIdentifier = "o3de.menu.editor.viewport.size";
+    static constexpr AZStd::string_view ViewportSizeRatioMenuIdentifier = "o3de.menu.editor.viewport.size.ratio";
+    static constexpr AZStd::string_view ViewportSizeResolutionMenuIdentifier = "o3de.menu.editor.viewport.size.resolution";
+    static constexpr AZStd::string_view ViewportOptionsMenuIdentifier = "o3de.menu.editor.viewport.options";
 }

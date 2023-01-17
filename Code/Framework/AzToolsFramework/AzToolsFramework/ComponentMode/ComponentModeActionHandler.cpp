@@ -13,11 +13,10 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
-
-static constexpr AZStd::string_view ComponentModeChangedUpdaterIdentifier = "o3de.updater.onComponentModeChanged";
 
 namespace AzToolsFramework
 {
@@ -65,7 +64,7 @@ namespace AzToolsFramework
 
     void ComponentModeActionHandler::OnActionUpdaterRegistrationHook()
     {
-        m_actionManagerInterface->RegisterActionUpdater(ComponentModeChangedUpdaterIdentifier);
+        m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::ComponentModeChangedUpdaterIdentifier);
     }
 
     void ComponentModeActionHandler::OnActionRegistrationHook()
@@ -190,7 +189,7 @@ namespace AzToolsFramework
     void ComponentModeActionHandler::ChangeToMode(const AZStd::string& modeIdentifier)
     {
         m_actionManagerInterface->SetActiveActionContextMode(EditorActionContext::MainWindowContextIdentifier, modeIdentifier);
-        m_actionManagerInterface->TriggerActionUpdater(ComponentModeChangedUpdaterIdentifier);
+        m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::ComponentModeChangedUpdaterIdentifier);
     }
 
 } // namespace AzToolsFramework
