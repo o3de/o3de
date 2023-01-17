@@ -92,8 +92,8 @@ function(update_pip_requirements requirements_file_path unique_name)
     message(VERBOSE "pip output: ${PIP_OUT}")
 
     if (NOT ${PIP_RESULT} EQUAL 0)
-        message(CHECK_FAIL "Failed to fetch / update python dependencies: ${PIP_OUT} - use CMAKE_MESSAGE_LOG_LEVEL to VERBOSE for more information")
-        message(FATAL_ERROR "some python dependencies failed to install/download.  This will likely cause errors further down the line, stopping.")
+        message(CHECK_FAIL "Failed to fetch / update python dependencies from ${requirements_file_path}\nPip install log:\n${PIP_OUT}")
+        message(FATAL_ERROR "The above failure will cause errors later - stopping now.  Check the output log (above) for details.")
     else()
         string(FIND "${PIP_OUT}" "Installing collected packages" NEW_PACKAGES_INSTALLED)
 

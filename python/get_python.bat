@@ -61,13 +61,13 @@ if ERRORLEVEL 1 (
 echo calling PIP to install requirements...
 call "%CMD_DIR%\pip.cmd" install -r "%CMD_DIR%/requirements.txt" --disable-pip-version-check --no-warn-script-location
 if ERRORLEVEL 1 (
-    echo Pip install on the requirements.txt returned a non-zero exit code.  Check the log!
+    echo Failed to install the packages listed in %CMD_DIR%\requirements.txt.  Check the log above!
     EXIT /b 1
 )
 
 call "%CMD_DIR%\pip.cmd" install -e "%CMD_DIR%/../scripts/o3de" --disable-pip-version-check --no-warn-script-location --no-deps
 if ERRORLEVEL 1 (
-    echo pip install on the o3de package returned a non-zero exit code.  Check the log!
+    echo Failed to install %CMD_DIR%\..\scripts\o3de into python.  Check the log above!
     EXIT /b 1
 )
 

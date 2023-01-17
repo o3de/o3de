@@ -23,14 +23,14 @@ install_dependencies () {
     $DIR/pip.sh install -r $DIR/requirements.txt --disable-pip-version-check --no-warn-script-location
     retVal=$?
     if [ $retVal -ne 0 ]; then
-        echo Pip install on the requirements.txt returned a non-zero exit code.  Check the log!
+        echo "Failed to install the packages listed in $DIR/requirements.txt.  Check the log above!"
         return $retVal
     fi
 
     $DIR/pip.sh install -e $DIR/../scripts/o3de --no-deps --disable-pip-version-check  --no-warn-script-location
     retVal=$?
     if [ $retVal -ne 0 ]; then
-        echo pip install on the o3de package returned a non-zero exit code.  Check the log!
+        echo "Failed to install $DIR/../scripts/o3de into python.  Check the log above!"
         return $retVal
     fi
 }
