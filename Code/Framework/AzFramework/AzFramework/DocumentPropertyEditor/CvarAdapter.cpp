@@ -195,7 +195,7 @@ namespace AZ::DocumentPropertyEditor
         bool BuildEditorForCvar(AdapterBuilder& builder, ConsoleFunctorBase* functor)
         {
             // Check all possible type IDs for our supported types and try to create a property editor
-            return TryBuildNumericEditor<int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, float, double>(
+            return TryBuildNumericEditor<AZ::s8, AZ::u8, AZ::s16, AZ::u16, AZ::s32, AZ::u32, AZ::s64, AZ::u64, float, double>(
                        builder, functor) ||
                 TryBuildStringEditor(builder, functor) || TryBuildMathVectorEditor<AZ::Vector2, 2, Nodes::Vector2>(builder, functor) ||
                 TryBuildMathVectorEditor<AZ::Vector3, 3, Nodes::Vector3>(builder, functor) ||
