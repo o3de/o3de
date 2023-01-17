@@ -15,6 +15,7 @@
 #include <Editor/KinematicWidget.h>
 #include <Editor/ConfigurationWindowBus.h>
 #include <LyViewPaneNames.h>
+#include <Editor/KinematicDescriptionDialog.h>
 
 namespace PhysX
 {
@@ -36,7 +37,8 @@ namespace PhysX
             picker->GetEditButton()->setToolTip("Open Kinematic Dialog");
 
             connect(picker->GetEditButton(), &QToolButton::clicked, this, &KinematicWidget::OnEditButtonClicked);
-
+            widgetComboBox = comboBox;
+            
             return picker;
         }
 
@@ -71,14 +73,14 @@ namespace PhysX
         bool KinematicWidget::ReadValuesIntoGUI(
             [[maybe_unused]] size_t index,
             widget_t* GUI,
-            const property_t& instance,
+            [[maybe_unused]] const property_t& instance,
             [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
         {
-            bool val = instance;
+            //bool val = instance;
 
             auto comboBox = GUI->GetComboBox();
             comboBox->blockSignals(true);
-            comboBox->setCurrentIndex(val ? 1 : 0);
+            comboBox->setCurrentIndex(instance == AzPhysics::Kinematic2::A ? 1 : 0);
             comboBox->blockSignals(false);
 
             return false;
@@ -86,20 +88,19 @@ namespace PhysX
 
         void KinematicWidget::OnEditButtonClicked()
         {
-            // Open configuration window
-            AzToolsFramework::EditorRequestBus::Broadcast(
-                &AzToolsFramework::EditorRequests::OpenViewPane, LyViewPane::PhysXConfigurationEditor);
+            //// Open configuration window
+            //AzToolsFramework::EditorRequestBus::Broadcast(
+            //    &AzToolsFramework::EditorRequests::OpenViewPane, LyViewPane::PhysXConfigurationEditor);
 
-            // Set to collision layers tab
-            ConfigurationWindowRequestBus::Broadcast(&ConfigurationWindowRequests::ShowCollisionLayersTab);
+            //// Set to collision layers tab
+            //ConfigurationWindowRequestBus::Broadcast(&ConfigurationWindowRequests::ShowCollisionLayersTab);
 
-          /*     QWidget* mainWindow = nullptr;
-            +AzToolsFramework::EditorRequestBus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::GetMainWindow);
-            + +KinematicDescriptionDialog kinematicDialog("hi", 2, mainWindow);
-            +kinematicDialog.exec();
-            +
-        }
-        * /*/
+            QWidget* mainWindow = nullptr;
+            AzToolsFramework::EditorRequestBus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::GetMainWindow);
+            KinematicDescriptionDialog kinematicDialog("hi", 2, mainWindow);
+            kinematicDialog.exec();
+            //widgetComboBox->setCurrentIndex(0);
+             
 
         }
     } // namespace Editor

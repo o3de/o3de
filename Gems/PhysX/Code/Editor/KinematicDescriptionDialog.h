@@ -14,35 +14,31 @@
 class QTreeView;
 
 namespace Ui {
-    class FilesAlreadyExistDialog;
+    class KinematicDescriptionDialog;
 }
 
-class FilesAlreadyExistDialog
+class KinematicDescriptionDialog
     : public QDialog
 {
     Q_OBJECT
 
 public:
-    FilesAlreadyExistDialog(QString message, int numberOfFiles, QWidget* parent = nullptr);
-    ~FilesAlreadyExistDialog();
-
-Q_SIGNALS:
-    void OverWriteFiles();
-    void KeepBothFiles();
-    void SkipCurrentProcess();
-    void CancelAllProcesses();
-    void ApplyActionToAllFiles(bool result);
-
-public Q_SLOTS:
-    void DoSkipCurrentProcess();
-    void DoOverwrite();
-    void DoKeepBoth();
-    void DoApplyActionToAllFiles();
+    KinematicDescriptionDialog(QString message, int numberOfFiles, QWidget* parent = nullptr);
+    ~KinematicDescriptionDialog();
+//
+//Q_SIGNALS:
+//    void valueChanged(bool newValue);
+//
+//public Q_SLOTS:
+//    void setValue(bool val);
+//
+//protected Q_SLOTS:
+//    void onChildComboBoxValueChange(int value);
 
 private:
     void InitializeButtons();
     void UpdateMessage(QString message);
-    void UpdateCheckBoxState(int numberOfFiles);
-    void closeEvent(QCloseEvent* ev) override;
-    QScopedPointer<Ui::FilesAlreadyExistDialog> m_ui;
+    //void UpdateCheckBoxState(int numberOfFiles);
+    //void closeEvent(QCloseEvent* ev) override;
+    QScopedPointer<Ui::KinematicDescriptionDialog> m_ui;
 };

@@ -25,7 +25,7 @@ namespace PhysX
     {
         class KinematicWidget
             : public QObject
-            , public AzToolsFramework::PropertyHandler<bool, ComboBoxEditButtonPair>
+            , public AzToolsFramework::PropertyHandler<AzPhysics::Kinematic2, ComboBoxEditButtonPair>
         {
             Q_OBJECT
 
@@ -48,6 +48,7 @@ namespace PhysX
 
         private:
             void OnEditButtonClicked();
+            QComboBox* widgetComboBox= nullptr;
         };
     } // namespace Editor
 } // namespace PhysX
