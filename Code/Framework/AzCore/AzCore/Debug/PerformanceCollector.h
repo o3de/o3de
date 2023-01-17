@@ -99,11 +99,11 @@ namespace AZ::Debug
         //! and performance capture for as many batches.
         void UpdateNumberOfCaptureBatches(AZ::u32 newValue);
 
-        const AZ::IO::Path& GetOutputFilePath() { return m_outputFilePath;  }
+        const AZ::IO::Path& GetOutputFilePath() const { return m_outputFilePath;  }
 
-        const AZStd::string& GetOutputDataBuffer() { return m_outputDataBuffer; }
+        const AZStd::string& GetOutputDataBuffer() const { return m_outputDataBuffer; }
 
-        const AZStd::string& GetFileExtension() { return m_fileExtension; }
+        const AZStd::string& GetFileExtension() const { return m_fileExtension; }
 
     private:
         //! A helper function that loops across all statistics in @m_statisticsManager
