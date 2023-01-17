@@ -114,6 +114,7 @@ namespace UnitTest
         : public AWSGameLift::AWSGameLiftServerSystemComponent
     {
     public:
+        AZ_CLASS_ALLOCATOR(AWSGameLiftServerSystemComponentMock, AZ::SystemAllocator)
         AWSGameLiftServerSystemComponentMock()
         {
             SetGameLiftServerManager(AZStd::make_unique<NiceMock<AWSGameLiftServerManagerMock>>());

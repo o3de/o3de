@@ -35,6 +35,11 @@ namespace Terrain
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
     }
 
+    namespace TerrainSrgInputs
+    {
+        static const char* const Textures("m_textures");
+    }
+
     void TerrainFeatureProcessor::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -55,6 +60,8 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Initialize()
     {
+        m_imageArrayHandler = AZStd::make_shared<AZ::Render::BindlessImageArrayHandler>();
+
         auto sceneSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetSceneSrgLayout();
 
         // Load the terrain material asynchronously
@@ -69,7 +76,7 @@ namespace Terrain
         }
 
         OnTerrainDataChanged(
-            AZ::Aabb::CreateNull(), TerrainDataChangedMask(TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings));
+            AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings);
         m_meshManager.Initialize(*GetParentScene());
     }
 
@@ -125,7 +132,7 @@ namespace Terrain
     
     void TerrainFeatureProcessor::OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        if ((dataChangedMask & TerrainDataChangedMask::Settings) != 0)
+        if ((dataChangedMask & TerrainDataChangedMask::Settings) == TerrainDataChangedMask::Settings)
         {
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                 m_zBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightBounds);
@@ -223,13 +230,22 @@ namespace Terrain
 
         if (m_terrainSrg)
         {
+            if (m_imageArrayHandler->IsInitialized())
+            {
+                m_imageArrayHandler->UpdateSrgIndices(m_terrainSrg, AZ::Name(TerrainSrgInputs::Textures));
+            }
+            else
+            {
+                m_imageArrayHandler->Initialize(m_terrainSrg, AZ::Name(TerrainSrgInputs::Textures));
+            }
+
             if (m_macroMaterialManager.IsInitialized())
             {
                 m_macroMaterialManager.UpdateSrgIndices(m_terrainSrg);
             }
             else
             {
-                m_macroMaterialManager.Initialize(m_terrainSrg);
+                m_macroMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg);
             }
             
             if (m_detailMaterialManager.IsInitialized())
@@ -238,7 +254,7 @@ namespace Terrain
             }
             else if(m_materialInstance)
             {
-                m_detailMaterialManager.Initialize(m_terrainSrg, m_materialInstance);
+                m_detailMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg, m_materialInstance);
             }
 
             if (m_clipmapManager.IsClipmapEnabled())
@@ -256,6 +272,7 @@ namespace Terrain
         }
         else
         {
+            m_imageArrayHandler->Reset();
             m_macroMaterialManager.Reset();
             m_detailMaterialManager.Reset();
             if (m_clipmapManager.IsClipmapEnabled())
@@ -312,6 +329,11 @@ namespace Terrain
                         m_clipmapManager.Update(cameraPosition, GetParentScene(), m_terrainSrg);
                     }
                 }
+            }
+            if (m_imageArrayHandler->IsInitialized())
+            {
+                bool result [[maybe_unused]] = m_imageArrayHandler->UpdateSrg(m_terrainSrg);
+                AZ_Error(TerrainFPName, result, "Failed to set image view unbounded array into shader resource group.");
             }
 
             if (m_meshManager.IsInitialized())

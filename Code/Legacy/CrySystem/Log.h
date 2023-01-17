@@ -176,8 +176,6 @@ private: // -------------------------------------------------------------------
     string m_assetScopeString;
 #endif
 
-    ICVar*                 m_pLogIncludeTime;                                       //
-
     IConsole*          m_pConsole;                                                      //
 
     struct SLogHistoryItem

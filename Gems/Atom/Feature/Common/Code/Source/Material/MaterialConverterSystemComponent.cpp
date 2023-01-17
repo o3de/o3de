@@ -175,8 +175,13 @@ namespace AZ
             applyOptionalPropertiesFunc("metallic", "useTexture", materialData.GetUseMetallicMap());
 
             handleTexture("roughness", "textureMap", SceneAPI::DataTypes::IMaterialData::TextureMapType::Roughness);
-            applyOptionalPropertiesFunc("roughness", "factor", materialData.GetRoughnessFactor());
             applyOptionalPropertiesFunc("roughness", "useTexture", materialData.GetUseRoughnessMap());
+            // Both PBR material and non-PBR material can have the RoughnessFactor property
+            AZStd::optional<float> roughness = materialData.GetRoughnessFactor();
+            if (roughness.has_value())
+            {
+                sourceData.SetPropertyValue(Name{"roughness.factor"}, roughness.value());
+            }
 
             handleTexture("emissive", "textureMap", SceneAPI::DataTypes::IMaterialData::TextureMapType::Emissive);
             sourceData.SetPropertyValue(Name{"emissive.color"}, toColor(materialData.GetEmissiveColor()));

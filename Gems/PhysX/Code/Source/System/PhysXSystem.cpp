@@ -280,15 +280,15 @@ namespace PhysX
             return sceneHandle;
         }
 
-        if (m_sceneList.size() < std::numeric_limits<AzPhysics::SceneIndex>::max()) //add a new scene if it is under the limit
+        if (m_sceneList.size() < AzPhysics::MaxNumberOfScenes) //add a new scene if it is under the limit
         {
             const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), static_cast<AzPhysics::SceneIndex>(m_sceneList.size()));
             m_sceneList.emplace_back(AZStd::make_unique<PhysXScene>(config, sceneHandle));
             m_sceneAddedEvent.Signal(sceneHandle);
             return sceneHandle;
         }
-        AZ_Warning("Physx", false, "Scene Limit reached[%d], unable to add new scene [%s]",
-            std::numeric_limits<AzPhysics::SceneIndex>::max(),
+        AZ_Warning("Physx", false, "Scene Limit reached[%u], unable to add new scene [%s]",
+            AzPhysics::MaxNumberOfScenes,
             config.m_sceneName.c_str());
         return AzPhysics::InvalidSceneHandle;
     }
@@ -455,13 +455,7 @@ namespace PhysX
         m_physXSdk.m_cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_physXSdk.m_foundation, cookingParams);
 
         // Set up CPU dispatcher
-#if defined(AZ_PLATFORM_LINUX)
-        // Temporary workaround for linux. At the moment using AzPhysXCpuDispatcher results in an assert at
-        // PhysX mutex indicating it must be unlocked only by the thread that has already acquired lock.
-        m_cpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
-#else
         m_cpuDispatcher = PhysXCpuDispatcherCreate();
-#endif
 
         PxSetProfilerCallback(&m_pxAzProfilerCallback);
     }

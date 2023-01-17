@@ -63,6 +63,7 @@ namespace AZ::SceneAPI::Behaviors
         , public Events::AssetImportRequestBus::Handler
         , public Events::ManifestMetaInfoBus::Handler
     {
+        AZ_CLASS_ALLOCATOR(PrefabGroupBehavior, AZ::SystemAllocator)
         using PreExportEventContextFunction = AZStd::function<Events::ProcessingResult(Events::PreExportEventContext&)>;
         PreExportEventContextFunction m_preExportEventContextFunction;
         AZ::Prefab::PrefabGroupAssetHandler m_prefabGroupAssetHandler;
@@ -203,7 +204,8 @@ namespace AZ::SceneAPI::Behaviors
 
         if (!manifestUpdates)
         {
-            return Events::ProcessingResult::Failure;
+            AZ_Warning("prefab", false, "Scene doesn't contain IMeshData, add at least 1 IMeshData to generate Manifest Updates");
+            return Events::ProcessingResult::Ignored;
         }
 
         // update manifest if there were no errors

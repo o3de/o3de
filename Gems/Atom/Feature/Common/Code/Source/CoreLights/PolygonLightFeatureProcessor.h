@@ -26,6 +26,7 @@ namespace AZ
             : public PolygonLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(PolygonLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::PolygonLightFeatureProcessor, "{59E4245F-AD7B-4181-B80A-1B973A50B4C8}", AZ::Render::PolygonLightFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);

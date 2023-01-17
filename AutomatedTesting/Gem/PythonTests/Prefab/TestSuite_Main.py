@@ -136,20 +136,3 @@ class TestAutomation(EditorTestSuite):
 
     class test_ReparentEntity_UnderEntityHierarchies(EditorBatchedTest):
         from .tests.reparent_prefab import ReparentEntity_UnderEntityHierarchies as test_module
-
-
-@pytest.mark.SUITE_main
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomationOverrides(EditorTestSuite):
-
-    # These tests will execute with prefab overrides enabled
-    EditorTestSuite.global_extra_cmdline_args.append("--regset=O3DE/Preferences/Prefabs/EnableOverridesUx=true")
-
-    # Overrides Tests
-
-    class test_EditEntity_UnderImmediateInstance(EditorBatchedTest):
-        from .tests.overrides import EditEntity_UnderImmediateInstance as test_module
-
-    class test_EditEntity_UnderNestedInstance(EditorBatchedTest):
-        from .tests.overrides import EditEntity_UnderNestedInstance as test_module

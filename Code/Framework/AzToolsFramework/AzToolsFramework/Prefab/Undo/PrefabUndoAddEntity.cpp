@@ -45,7 +45,7 @@ namespace AzToolsFramework
                 static_cast<AZ::u64>(newEntityId));
 
             PrefabDom parentEntityDomAfterAddingEntity;
-            m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAddingEntity, parentEntity);
+            m_instanceToTemplateInterface->GenerateEntityDomBySerializing(parentEntityDomAfterAddingEntity, parentEntity);
 
             // If the parent is the focused container entity, we need to fetch from root template rather than
             // retrieving from the focused template. The focused containter entity DOM in focused template does
@@ -54,7 +54,7 @@ namespace AzToolsFramework
             if (parentEntityId == focusedInstance.GetContainerEntityId())
             {
                 PrefabDom parentEntityDomBeforeAddingEntity;
-                m_instanceDomGeneratorInterface->GenerateEntityDom(parentEntityDomBeforeAddingEntity, parentEntity);
+                m_instanceDomGeneratorInterface->GetEntityDomFromTemplate(parentEntityDomBeforeAddingEntity, parentEntity);
 
                 if (parentEntityDomBeforeAddingEntity.IsNull())
                 {
@@ -94,7 +94,7 @@ namespace AzToolsFramework
             }
 
             PrefabDom newEntityDom;
-            m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, newEntity);
+            m_instanceToTemplateInterface->GenerateEntityDomBySerializing(newEntityDom, newEntity);
             PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPath);
             PrefabUndoUtils::AppendRemovePatch(m_undoPatch, newEntityAliasPath);
 

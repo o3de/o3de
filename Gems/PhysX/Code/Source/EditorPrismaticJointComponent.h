@@ -42,7 +42,7 @@ namespace PhysX
         // PhysX::EditorJointRequestBus overrides ...
         float GetLinearValue(const AZStd::string& parameterName) override;
         LinearLimitsFloatPair GetLinearValuePair(const AZStd::string& parameterName) override;
-        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> GetSubComponentModesState() override;
+        AZStd::vector<JointsComponentModeCommon::SubModeParameterState> GetSubComponentModesState() override;
         void SetBoolValue(const AZStd::string& parameterName, bool value) override;
         void SetLinearValue(const AZStd::string& parameterName, float value) override;
         void SetLinearValuePair(const AZStd::string& parameterName, const LinearLimitsFloatPair& valuePair) override;
@@ -54,5 +54,6 @@ namespace PhysX
 
         bool m_linearLimitFlag = false;
         EditorJointLimitLinearPairConfig m_linearLimit;
+        JointMotorProperties m_motorConfiguration;
     };
 } // namespace PhysX

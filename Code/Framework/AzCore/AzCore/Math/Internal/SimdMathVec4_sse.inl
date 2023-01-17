@@ -35,19 +35,22 @@ namespace AZ
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::FromVec1(Vec1::FloatArgType value)
         {
-            return value;
+            // Coming from a Vec1 the last 3 elements could be garbage.
+            return Sse::SplatFirst(value); // {value.x, value.x, value.x, value.x}
         }
 
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::FromVec2(Vec2::FloatArgType value)
         {
-            return value;
+            // Coming from a Vec2 the last 2 elements could be garbage.
+            return Sse::ReplaceFourth(Sse::ReplaceThird(value, 0.0f), 0.0f); // {value.x, value.x, 0.0f, 0.0f}
         }
 
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::FromVec3(Vec3::FloatArgType value)
         {
-            return value;
+            // Coming from a Vec3 the last element could be garbage.
+            return Sse::ReplaceFourth(value, 0.0f); // {value.x, value.y, value.z, 0.0f}
         }
 
 

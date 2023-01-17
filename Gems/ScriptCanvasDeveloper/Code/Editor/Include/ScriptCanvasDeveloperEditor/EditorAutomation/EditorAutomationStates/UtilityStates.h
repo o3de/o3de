@@ -43,6 +43,7 @@ namespace ScriptCanvas::Developer
         : public CustomActionState
     {        
     public:
+        AZ_CLASS_ALLOCATOR(FindNodePosition, AZ::SystemAllocator)
         FindNodePosition(AutomationStateModelId nodeId, AutomationStateModelId outputId, FindPositionOffsets offsets = FindPositionOffsets());
         ~FindNodePosition() override = default;
 
@@ -68,6 +69,7 @@ namespace ScriptCanvas::Developer
         : public CustomActionState
     {
     public:
+        AZ_CLASS_ALLOCATOR(FindGroupPosition, AZ::SystemAllocator)
         FindGroupPosition(AutomationStateModelId groupId, AutomationStateModelId outputId, FindPositionOffsets offsets = FindPositionOffsets());
         ~FindGroupPosition() override = default;
 
@@ -89,6 +91,7 @@ namespace ScriptCanvas::Developer
         : public CustomActionState
     {
     public:
+        AZ_CLASS_ALLOCATOR(FindEndpointOfTypeState, AZ::SystemAllocator)
 
         FindEndpointOfTypeState(AutomationStateModelId targetNodeId, AutomationStateModelId outputId, GraphCanvas::ConnectionType connectionType, GraphCanvas::SlotType slotType, int slotNumber = 0);
         ~FindEndpointOfTypeState() override = default;
@@ -113,6 +116,7 @@ namespace ScriptCanvas::Developer
         : public CustomActionState
     {
     public:
+        AZ_CLASS_ALLOCATOR(GetLastConnection, AZ::SystemAllocator)
         GetLastConnection(AutomationStateModelId targetEndpoint, AutomationStateModelId outputId);
         ~GetLastConnection() override = default;
 
@@ -131,6 +135,7 @@ namespace ScriptCanvas::Developer
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(DeleteVariableRowFromPaletteState, AZ::SystemAllocator)
 
         DeleteVariableRowFromPaletteState(int row);
         ~DeleteVariableRowFromPaletteState() override = default;
@@ -155,6 +160,7 @@ namespace ScriptCanvas::Developer
         : public CustomActionState
     {
     public:
+        AZ_CLASS_ALLOCATOR(CheckIsInGroup, AZ::SystemAllocator)
         CheckIsInGroup(AutomationStateModelId sceneMemberId, AutomationStateModelId groupId, bool expectResult, AZStd::string stateName = "");
         ~CheckIsInGroup() override = default;
 
@@ -175,6 +181,7 @@ namespace ScriptCanvas::Developer
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(TriggerHotKey, AZ::SystemAllocator)
         TriggerHotKey(QChar hotkey, AZStd::string stateId = "");
         ~TriggerHotKey() override = default;
 

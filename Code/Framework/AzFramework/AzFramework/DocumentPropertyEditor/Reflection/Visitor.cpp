@@ -14,6 +14,10 @@ namespace AZ::Reflection
     {
     }
 
+    void IRead::Visit(char, const IAttributes&)
+    {
+    }
+
     void IRead::Visit(AZ::s8, const IAttributes&)
     {
     }
@@ -91,6 +95,10 @@ namespace AZ::Reflection
     }
 
     void IReadWrite::Visit(bool&, const IAttributes&)
+    {
+    }
+
+    void IReadWrite::Visit(char&, const IAttributes&)
     {
     }
 
