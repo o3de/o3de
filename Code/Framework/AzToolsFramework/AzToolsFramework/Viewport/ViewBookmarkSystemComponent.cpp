@@ -7,16 +7,19 @@
  */
 
 #include <Viewport/ViewBookmarkSystemComponent.h>
+#include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 
 namespace AzToolsFramework
 {
     void ViewBookmarkSystemComponent::Activate()
     {
         m_viewBookmarkLoader.RegisterViewBookmarkInterface();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void ViewBookmarkSystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         m_viewBookmarkLoader.UnregisterViewBookmarkInterface();
     }
 
@@ -31,6 +34,16 @@ namespace AzToolsFramework
     void ViewBookmarkSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("ViewBookmarkSystem"));
+    }
+
+    void ViewBookmarkSystemComponent::OnActionRegistrationHook()
+    {
+        PaintBrushManipulator::RegisterActions();
+    }
+
+    void ViewBookmarkSystemComponent::OnMenuBindingHook()
+    {
+        PaintBrushManipulator::BindActionsToMenus();
     }
 
 } // namespace AzToolsFramework

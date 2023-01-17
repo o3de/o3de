@@ -9,13 +9,16 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <Viewport/LocalViewBookmarkLoader.h>
 
 namespace AzToolsFramework
 {
     //! @class ViewBookmarkSystemComponent
     //! @brief System Component that holds functionality for the ViewBookmarks
-    class ViewBookmarkSystemComponent final : public AZ::Component
+    class ViewBookmarkSystemComponent final
+        : public AZ::Component
+        , public AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(ViewBookmarkSystemComponent, "{FDD852BA-5F9E-4676-B121-D4B2FDEA7F55}");
@@ -30,6 +33,10 @@ namespace AzToolsFramework
 
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+
+        // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionRegistrationHook() override;
+        void OnMenuBindingHook() override;
 
     private:
         //! Used for loading/saving View Bookmarks.

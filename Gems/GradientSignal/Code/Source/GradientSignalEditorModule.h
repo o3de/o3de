@@ -39,9 +39,7 @@ namespace GradientSignal
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         // ActionManagerRegistrationNotificationBus overrides ...
-        void OnActionRegistrationHook() override;
         void OnActionContextModeBindingHook() override;
-        void OnMenuBindingHook() override;
 
     private:
         // AZ::Component

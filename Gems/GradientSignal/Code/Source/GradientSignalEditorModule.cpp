@@ -111,19 +111,9 @@ namespace GradientSignal
     {
     }
 
-    void GradientSignalEditorSystemComponent::OnActionRegistrationHook()
-    {
-        EditorImageGradientComponentMode::RegisterActions();
-    }
-
     void GradientSignalEditorSystemComponent::OnActionContextModeBindingHook()
     {
         EditorImageGradientComponentMode::BindActionsToModes();
-    }
-
-    void GradientSignalEditorSystemComponent::OnMenuBindingHook()
-    {
-        EditorImageGradientComponentMode::BindActionsToMenus();
     }
 
     void GradientSignalEditorSystemComponent::Activate()

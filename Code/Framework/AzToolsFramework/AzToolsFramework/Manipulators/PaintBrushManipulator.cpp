@@ -11,6 +11,7 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
@@ -62,6 +63,7 @@ namespace AzToolsFramework
         "The number of meters to raycast to look for a valid surface to paint onto.");
 
     static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
+    static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
     namespace
     {
@@ -445,6 +447,28 @@ namespace AzToolsFramework
 
             hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "{");
         }
+    }
+
+    void PaintBrushManipulator::BindActionsToMode(AZStd::string_view modeIdentifier)
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "PaintBrushManipulator - could not get ActionManagerInterface on RegisterActions.");
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.increaseSize");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.decreaseSize");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.increaseHardness");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.decreaseHardness");
+    }
+
+    void PaintBrushManipulator::BindActionsToMenus()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "PaintBrushManipulator - could not get MenuManagerInterface on BindActionsToMenus.");
+
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseSize", 6000);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseSize", 6001);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseHardness", 6002);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseHardness", 6003);
     }
 
     void PaintBrushManipulator::AdjustSize(float sizeDelta)
