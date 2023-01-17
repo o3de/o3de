@@ -32,6 +32,8 @@
 
 namespace GradientSignal
 {
+    AZ_CLASS_ALLOCATOR_IMPL(EditorImageGradientComponentMode, AZ::SystemAllocator)
+
     static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
     //! Class that tracks the data for undoing/redoing a paint stroke.

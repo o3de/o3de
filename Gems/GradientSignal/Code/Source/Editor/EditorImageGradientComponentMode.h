@@ -25,6 +25,7 @@ namespace GradientSignal
         , private ImageGradientModificationNotificationBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR_DECL
         AZ_RTTI(EditorImageGradientComponentMode, "{49957D52-F1C3-4C34-AA84-7661BC418AB2}", EditorBaseComponentMode)
 
         EditorImageGradientComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);

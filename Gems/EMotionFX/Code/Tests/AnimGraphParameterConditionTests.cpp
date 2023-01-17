@@ -23,6 +23,7 @@ namespace EMotionFX
         : public EmptyAnimGraph
     {
     public:
+        AZ_CLASS_ALLOCATOR(ParamConditionAnimGraph, AnimGraphAllocator)
         ParamConditionAnimGraph()
         {
             AddParameter(aznew FloatSliderParameter("P0"));

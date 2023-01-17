@@ -33,6 +33,7 @@ namespace AZ
         {
         public:
             virtual ~ShaderResourceGroupPoolDescriptor() = default;
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPoolDescriptor, SystemAllocator)
             AZ_RTTI(ShaderResourceGroupPoolDescriptor, "{7074E7D1-B98D-48C7-8622-D6635CAEFBB4}");
             static void Reflect(AZ::ReflectContext* context);
 

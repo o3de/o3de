@@ -56,6 +56,7 @@ namespace GraphModelIntegrationTest
         : public GraphModel::Node
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestNode, AZ::SystemAllocator)
         AZ_RTTI(TestNode, "{C51A8CE2-229A-4807-9173-96CF730C6C2B}", Node);
 
         using TestNodePtr = AZStd::shared_ptr<TestNode>;
@@ -77,6 +78,7 @@ namespace GraphModelIntegrationTest
         : public GraphModel::Node
     {
     public:
+        AZ_CLASS_ALLOCATOR(ExtendableSlotsNode, AZ::SystemAllocator)
         AZ_RTTI(ExtendableSlotsNode, "{5670CFB9-EE42-456D-B1AE-CACC55EC0967}", Node);
 
         using ExtendableSlotsNodePtr = AZStd::shared_ptr<ExtendableSlotsNode>;
@@ -98,6 +100,7 @@ namespace GraphModelIntegrationTest
         : public GraphModel::Node
     {
     public:
+        AZ_CLASS_ALLOCATOR(BadNode, AZ::SystemAllocator)
         AZ_RTTI(BadNode, "{8ECC580C-1AFC-4D66-863D-72AC9971CEC8}", Node);
 
         using BadNodePtr = AZStd::shared_ptr<BadNode>;

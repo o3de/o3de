@@ -119,6 +119,7 @@ namespace AZ
             : public DirectionalLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(DirectionalLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::DirectionalLightFeatureProcessor, "61610178-8DAA-4BF2-AF17-597F20D527DD", AZ::Render::DirectionalLightFeatureProcessorInterface);
 
             struct CascadeSegment

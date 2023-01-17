@@ -45,6 +45,7 @@ class PropertyAssetDirectorySelectionCtrl
     : public AzToolsFramework::PropertyAssetCtrl
 {
 public:
+    AZ_CLASS_ALLOCATOR(PropertyAssetDirectorySelectionCtrl, AZ::SystemAllocator)
     PropertyAssetDirectorySelectionCtrl(QWidget *pParent = NULL)
         : PropertyAssetCtrl(pParent) {}
     AzToolsFramework::AssetBrowser::AssetSelectionModel GetAssetSelectionModel() override;

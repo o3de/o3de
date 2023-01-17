@@ -164,6 +164,7 @@ namespace AssetBundler
     {
         Q_OBJECT
     public:
+        AZ_CLASS_ALLOCATOR(ApplicationManager, AZ::SystemAllocator)
         explicit ApplicationManager(int* argc, char*** argv, QObject* parent = 0);
         virtual ~ApplicationManager();
 
