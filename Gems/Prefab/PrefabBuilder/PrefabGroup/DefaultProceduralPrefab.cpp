@@ -363,7 +363,6 @@ namespace AZ::SceneAPI
             const NodeDataMap& nodeDataMap) const
     {
         const auto meshNodeIndex = nodeData.m_meshIndex;
-        const auto propertyDataIndex = nodeData.m_propertyMapIndex;
 
         const auto& graph = scene.GetGraph();
         const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
