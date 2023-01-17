@@ -47,6 +47,7 @@ ly_add_target(
 # the above module is for use in all client/server types 
 ly_create_alias(NAME SurfaceData.Servers  NAMESPACE Gem TARGETS Gem::SurfaceData)
 ly_create_alias(NAME SurfaceData.Clients  NAMESPACE Gem TARGETS Gem::SurfaceData)
+ly_create_alias(NAME SurfaceData.Unified  NAMESPACE Gem TARGETS Gem::SurfaceData)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
