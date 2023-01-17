@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			  xsi:noNamespaceSchemaLocation="../../AutoGen/ScriptCanvasNodeable.xsd">
     <Class Name="DespawnNodeable"
         QualifiedName="Nodeables::Spawning::DespawnNodeable"
         PreferredClassName="Despawn"
@@ -8,7 +9,7 @@
         Namespace="ScriptCanvas"
         Description="Despawns a selected prefab">
 
-        <Input Name="Request Despawn" OutputName="Despawn Requested">
+        <Input Name="Request Despawn" OutputName="Despawn Requested" Description="">
             <Parameter Name="SpawnTicket" Type="AzFramework::EntitySpawnTicket" Description="Ticket instance assosiated with spawnable asset."/>
         </Input>
 

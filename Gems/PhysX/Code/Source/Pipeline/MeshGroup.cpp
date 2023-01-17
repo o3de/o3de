@@ -594,7 +594,7 @@ namespace PhysX
                 serializeContext
             )
             {
-                serializeContext->Class<MeshGroup, AZ::SceneAPI::DataTypes::ISceneNodeGroup>()->Version(4, &MeshGroup::VersionConverter)
+                serializeContext->Class<MeshGroup, AZ::SceneAPI::DataTypes::ISceneNodeGroup>()->Version(5, &MeshGroup::VersionConverter)
                     ->Field("id", &MeshGroup::m_id)
                     ->Field("name", &MeshGroup::m_name)
                     ->Field("NodeSelectionList", &MeshGroup::m_nodeSelectionList)
@@ -605,8 +605,6 @@ namespace PhysX
                     ->Field("DecomposeMeshes", &MeshGroup::m_decomposeMeshes)
                     ->Field("ConvexDecompositionParams", &MeshGroup::m_convexDecompositionParams)
                     ->Field("PhysicsMaterialSlots", &MeshGroup::m_physicsMaterialSlots)
-                    ->Field("MaterialSlots", &MeshGroup::m_legacyMaterialSlots)
-                    ->Field("PhysicsMaterials", &MeshGroup::m_legacyPhysicsMaterials)
                     ->Field("rules", &MeshGroup::m_rules);
 
                 if (
