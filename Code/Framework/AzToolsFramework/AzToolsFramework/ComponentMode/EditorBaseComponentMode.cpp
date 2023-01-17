@@ -32,12 +32,12 @@ namespace AzToolsFramework
             }
 
             ComponentModeRequestBus::Handler::BusConnect(m_entityComponentIdPair);
-            ToolsApplicationNotificationBus::Handler::BusConnect();
+            Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         }
 
         EditorBaseComponentMode::~EditorBaseComponentMode()
         {
-            ToolsApplicationNotificationBus::Handler::BusDisconnect();
+            Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
             ComponentModeRequestBus::Handler::BusDisconnect();
         }
 
@@ -49,7 +49,7 @@ namespace AzToolsFramework
             }
         }
 
-        void EditorBaseComponentMode::AfterUndoRedo()
+        void EditorBaseComponentMode::OnPrefabInstancePropagationEnd()
         {
             Refresh();
         }

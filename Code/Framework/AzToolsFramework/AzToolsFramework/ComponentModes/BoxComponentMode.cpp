@@ -324,6 +324,16 @@ namespace AzToolsFramework
 
     void BoxComponentMode::ResetCurrentMode()
     {
+        UndoSystem::URSequencePoint* undoBatch = nullptr;
+        ToolsApplicationRequests::Bus::BroadcastResult(
+            undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "Reset box component sub mode");
+        ToolsApplicationRequests::Bus::Broadcast(
+            &ToolsApplicationRequests::Bus::Events::AddDirtyEntity, m_entityComponentIdPair.GetEntityId());
+        m_subModes[static_cast<AZ::u32>(m_subMode)]->ResetValues();
+        m_subModes[static_cast<AZ::u32>(m_subMode)]->UpdateManipulators();
+        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+        ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
     }
 
     bool BoxComponentMode::HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)

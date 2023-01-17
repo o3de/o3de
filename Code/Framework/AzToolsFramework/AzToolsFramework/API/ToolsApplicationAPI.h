@@ -124,6 +124,8 @@ namespace AzToolsFramework
 
         /*!
          * Fired just after applying a requested undo or redo operation.
+         * Note that prefab propagation will not have occurred at this point, so data may not yet be updated.
+         * Consider listening to OnPrefabInstancePropagationEnd on PrefabPublicNotificationBus instead.
          */
         virtual void AfterUndoRedo() {}
 

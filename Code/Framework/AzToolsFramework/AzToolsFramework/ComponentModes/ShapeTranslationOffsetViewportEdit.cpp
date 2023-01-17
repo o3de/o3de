@@ -87,4 +87,10 @@ namespace AzToolsFramework
         m_translationManipulators->SetNonUniformScale(nonUniformScale);
         m_translationManipulators->SetBoundsDirty();
     }
+
+    void ShapeTranslationOffsetViewportEdit::ResetValues()
+    {
+        ShapeManipulatorRequestBus::Event(
+            m_entityComponentIdPair, &ShapeManipulatorRequestBus::Events::SetTranslationOffset, AZ::Vector3::CreateZero());
+    }
 } // namespace AzToolsFramework

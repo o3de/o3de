@@ -27,6 +27,7 @@ namespace AzToolsFramework
         void Setup(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
         void Teardown() override;
         void UpdateManipulators() override;
+        void ResetValues() override;
 
     private:
         AZ::EntityComponentIdPair m_entityComponentIdPair;

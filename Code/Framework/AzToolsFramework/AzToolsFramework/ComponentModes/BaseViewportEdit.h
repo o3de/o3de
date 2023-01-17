@@ -19,5 +19,6 @@ namespace AzToolsFramework
         virtual void Setup(const AZ::EntityComponentIdPair& entityComponentIdPair) = 0;
         virtual void Teardown() = 0;
         virtual void UpdateManipulators() = 0;
+        virtual void ResetValues() = 0;
     };
 } // namespace AzToolsFramework

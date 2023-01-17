@@ -152,4 +152,10 @@ namespace AzToolsFramework
             }
         }
     }
+
+    void BoxViewportEdit::ResetValues()
+    {
+        BoxManipulatorRequestBus::Event(
+            m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::SetDimensions, AZ::Vector3::CreateOne());
+    }
 } // namespace AzToolsFramework

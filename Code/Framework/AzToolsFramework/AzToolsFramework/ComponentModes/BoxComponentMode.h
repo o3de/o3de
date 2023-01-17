@@ -17,7 +17,7 @@ namespace AzToolsFramework
 {
     class LinearManipulator;
 
-    /// The specific ComponentMode responsible for handling box editing.
+    //! The specific ComponentMode responsible for handling box editing.
     class BoxComponentMode
         : public ComponentModeFramework::EditorBaseComponentMode
         , public ShapeComponentModeRequestBus::Handler
