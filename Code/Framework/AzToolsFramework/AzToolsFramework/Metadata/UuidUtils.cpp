@@ -34,13 +34,6 @@ namespace AzToolsFramework
 
         if (metadataInterface->GetValue(absoluteFilePath, UuidKey, entry) && !entry.m_uuid.IsNull())
         {
-            AZ_Error(
-                "UuidUtil",
-                false,
-                "File `" AZ_STRING_FORMAT "` already has a UUID assigned (" AZ_STRING_FORMAT ").  New UUID (" AZ_STRING_FORMAT ") will not be assigned.",
-                AZ_STRING_ARG(absoluteFilePath.Native()),
-                AZ_STRING_ARG(entry.m_uuid.ToFixedString()),
-                AZ_STRING_ARG(uuid.ToFixedString()));
             return false;
         }
 
