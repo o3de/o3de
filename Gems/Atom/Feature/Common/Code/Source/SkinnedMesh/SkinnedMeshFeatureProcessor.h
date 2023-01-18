@@ -95,6 +95,7 @@ namespace AZ
             bool m_alreadyCreatedMorphTargetScopeThisFrame = false;
 
             AZStd::mutex m_dispatchItemMutex;
+            MeshFeatureProcessor* m_meshFeatureProcessor;
 
         };
     } // namespace Render

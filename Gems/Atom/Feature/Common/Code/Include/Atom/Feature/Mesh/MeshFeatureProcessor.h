@@ -16,6 +16,7 @@
 
 #include <AtomCore/std/parallel/concurrency_checker.h>
 
+#include <Atom/RHI/FreeListAllocator.h>
 #include <Atom/RHI/TagBitRegistry.h>
 
 #include <Atom/RPI.Public/Culling.h>
@@ -28,6 +29,7 @@
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
+#include <Atom/Utils/MultiIndexedStableDynamicArray.h>
 
 #include <Mesh/MeshInstanceManager.h>
 
@@ -40,6 +42,27 @@ namespace AZ
         class TransformServiceFeatureProcessor;
         class RayTracingFeatureProcessor;
         class ReflectionProbeFeatureProcessor;
+        class MeshFeatureProcessor;
+        namespace MeshFP
+        {
+            struct MeshDataIndicesForLod
+            {
+                uint32_t m_startIndex = 0;
+                uint32_t m_count = 0;
+            };
+            using InstanceIndicesByLod = AZStd::fixed_vector<MeshDataIndicesForLod, RPI::ModelLodAsset::LodCountMax>;
+            struct EndCullingData
+            {
+                TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
+                InstanceIndicesByLod m_instanceIndicesByLod;
+            };
+
+            struct MeshData
+            {
+                uint32_t m_instanceGroupIndex = AZStd::numeric_limits<uint32_t>::max();
+                TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
+            };
+        }
 
         class ModelDataInstance
             : public MaterialAssignmentNotificationBus::MultiHandler
@@ -48,6 +71,8 @@ namespace AZ
             friend class MeshLoader;
 
         public:
+            ModelDataInstance([[maybe_unused]] int i){ /* hack to fool the compiler */ };
+            AZ_DEFAULT_COPY_MOVE(ModelDataInstance);
             const Data::Instance<RPI::Model>& GetModel() { return m_model; }
             const RPI::Cullable& GetCullable() { return m_cullable; }
 
@@ -83,10 +108,19 @@ namespace AZ
                 ModelDataInstance* m_parent = nullptr;
             };
 
-            void DeInit(MeshInstanceManager& meshInstanceManager, RayTracingFeatureProcessor* rayTracingFeatureProcessor);
+            void DeInit(
+                MeshFeatureProcessor* meshFeatureProcessor,
+                MeshFP::EndCullingData* endCullingData,
+                MeshInstanceManager& meshInstanceManager,
+                RayTracingFeatureProcessor* rayTracingFeatureProcessor);
             void QueueInit(const Data::Instance<RPI::Model>& model);
-            void Init(MeshInstanceManager& meshInstanceManager);
-            void BuildDrawPacketList(MeshInstanceManager& meshInstanceManager, size_t modelLodIndex);
+            void Init(
+                MeshFeatureProcessor* meshFeatureProcessor,
+                MeshFP::EndCullingData* endCullingData,
+                MeshInstanceManager& meshInstanceManager);
+            void BuildDrawPacketList(
+                MeshFeatureProcessor* meshFeatureProcessor,
+                MeshFP::EndCullingData* endCullingData, MeshInstanceManager& meshInstanceManager, size_t modelLodIndex);
             void SetRayTracingData(
                 RayTracingFeatureProcessor* rayTracingFeatureProcessor,
                 TransformServiceFeatureProcessor* transformServiceFeatureProcessor);
@@ -94,15 +128,20 @@ namespace AZ
             void SetIrradianceData(RayTracingFeatureProcessor::SubMesh& subMesh,
                     const Data::Instance<RPI::Material> material, const Data::Instance<RPI::Image> baseColorImage);
             void SetSortKey(
+                MeshFeatureProcessor* meshFeatureProcessor,
+                MeshFP::EndCullingData* endCullingData, 
                 MeshInstanceManager& meshInstanceManager,
                 RayTracingFeatureProcessor* rayTracingFeatureProcessor,
                 RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
-            void UpdateDrawPackets(MeshInstanceManager& meshInstanceManager, bool forceUpdate = false);
-            void BuildCullable(MeshInstanceManager& meshInstanceManager);
-            void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);
+            void UpdateDrawPackets(bool forceUpdate = false);
+            void BuildCullable(
+                MeshFeatureProcessor* meshFeatureProcessor,
+                MeshFP::EndCullingData* endCullingData,
+                MeshInstanceManager& meshInstanceManager);
+            void UpdateCullBounds(MeshFeatureProcessor* meshFeatureProcessor, MeshFP::EndCullingData* endCullingData, const TransformServiceFeatureProcessor* transformService);
             void UpdateObjectSrg(
                 ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor,
                 TransformServiceFeatureProcessor* transformServiceFeatureProcessor);
@@ -114,7 +153,8 @@ namespace AZ
             // MaterialAssignmentNotificationBus overrides
             void OnRebuildMaterialInstance() override;
 
-            AZStd::vector<AZStd::vector<uint32_t>> m_instanceIndicesByLod;
+            MeshFP::MeshDataIndicesForLod m_meshDataIndices;
+
             RPI::MeshDrawPacketLods m_drawPacketListsByLod;
 
             RPI::Cullable m_cullable;
@@ -227,6 +267,8 @@ namespace AZ
             bool GetVisible(const MeshHandle& meshHandle) const override;
             void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) override;
 
+            const RPI::Cullable* GetCullable(const MeshHandle& meshHandle);
+
             RHI::Ptr <FlagRegistry> GetShaderOptionFlagRegistry();
 
             // called when reflection probes are modified in the editor so that meshes can re-evaluate their probes
@@ -234,6 +276,8 @@ namespace AZ
 
             void ReportShaderOptionFlags(const AZ::ConsoleCommandContainer& arguments);
 
+            MeshFP::MeshDataIndicesForLod AcquireMeshIndices(uint32_t lodCount, uint32_t meshCount);
+            void ReleaseMeshIndices(MeshFP::MeshDataIndicesForLod meshDataIndices);
         private:
             MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
 
@@ -250,8 +294,25 @@ namespace AZ
             void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
                         
             AZStd::concurrency_checker m_meshDataChecker;
-            StableDynamicArray<ModelDataInstance> m_modelData;
+
+        public:
+            enum ModelDataIndex
+            {
+                Instance = 0,
+                EndCullingData
+            };
+        private:
+            MultiIndexedStableDynamicArray<512, AZStd::allocator, Render::ModelDataInstance, MeshFP::EndCullingData> m_modelData;
+
+        public:
+            AZStd::vector<uint64_t> m_meshData;
+
+        private:
+            AZStd::mutex m_meshDataMutex;
+            RHI::FreeListAllocator m_meshDataAllocator;
             MeshInstanceManager m_meshInstanceManager;
+            // TODO: handle this in a better way, but for now we're using this to iterate over each instance group exactly once
+            AZStd::unordered_set<uint32_t> m_instanceGroupIndices;
             TransformServiceFeatureProcessor* m_transformService;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             ReflectionProbeFeatureProcessor* m_reflectionProbeFeatureProcessor = nullptr;

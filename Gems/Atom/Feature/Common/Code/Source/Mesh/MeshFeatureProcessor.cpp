@@ -37,7 +37,6 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Name/NameDictionary.h>
 
-#pragma optimize("", off)
 namespace AZ
 {
     namespace Render
@@ -133,7 +132,16 @@ namespace AZ
                         .c_str());
             }
 
-            
+            RHI::FreeListAllocator::Descriptor allocatorDescriptor;
+            allocatorDescriptor.m_alignmentInBytes = 1;
+            // TODO: make this variable in some way
+            allocatorDescriptor.m_capacityInBytes = 100000;
+            allocatorDescriptor.m_policy = RHI::FreeListAllocatorPolicy::BestFit;
+            allocatorDescriptor.m_garbageCollectLatency = 60;
+            m_meshDataAllocator.Init(allocatorDescriptor);
+
+            // Pre-allocate memory for mesh data
+            m_meshData.resize(allocatorDescriptor.m_capacityInBytes);
         }
 
         void MeshFeatureProcessor::Deactivate()
@@ -165,7 +173,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                return meshHandle->m_objectId;
+                return m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_objectId;
             }
 
             return TransformServiceFeatureProcessorInterface::ObjectId::Null;
@@ -178,67 +186,132 @@ namespace AZ
             AZ::Job* parentJob = packet.m_parentJob;
             AZStd::concurrency_check_scope scopeCheck(m_meshDataChecker);
 
+            // This is a really awful way to iterate over instance groups...
+            const auto perInstanceGroupJobLambda = [&]() -> void
+            {
+                m_instanceGroupIndices.clear();
+                RPI::Scene* scene = GetParentScene();
+                for (auto& modelDataIter : m_modelData)
+                {
+                    MeshFP::EndCullingData* endCullingData = modelDataIter.GetItem<ModelDataIndex::EndCullingData>();
+                    //ModelDataInstance* modelData = modelDataIter.GetItem<ModelDataIndex::Instance>();
+                    //auto model = modelData->GetModel();
+                    for (auto& meshDataIndices : endCullingData->m_instanceIndicesByLod)
+                    {
+                        for (uint32_t meshDataIndex = meshDataIndices.m_startIndex;
+                             meshDataIndex < meshDataIndices.m_startIndex + meshDataIndices.m_count;
+                             ++meshDataIndex)
+                        {
+                            uint32_t instanceIndex = static_cast<uint32_t>(m_meshData[meshDataIndex] & 0xFFFFFFFF);
+                            m_instanceGroupIndices.insert(instanceIndex);
+                        }
+                    }
+                }
+
+                for (uint32_t instanceIndex : m_instanceGroupIndices)
+                {
+                    MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
+                    RPI::MeshDrawPacket& drawPacket = instanceData.m_drawPacket;
+                    if (drawPacket.Update(*scene, m_forceRebuildDrawPackets))
+                    {
+                        instanceData.m_drawSrgInstanceDataIndices.clear();
+                        // We're going to need an index for m_instanceOffset every frame for each draw item, so cache those here
+                        for (auto& drawSrg : drawPacket.GetDrawSrgs())
+                        {
+                            RHI::ShaderInputConstantIndex drawSrgIndexInstanceOffsetIndex =
+                                drawSrg->FindShaderInputConstantIndex(s_m_instanceDataOffset_Name);
+
+                            instanceData.m_drawSrgInstanceDataIndices.push_back(drawSrgIndexInstanceOffsetIndex);
+                        }
+                    }
+                }
+            };
+
             const auto iteratorRanges = m_modelData.GetParallelRanges();
             AZ::JobCompletion jobCompletion;
+            AZStd::vector<Job*> updateJobQueue;
             for (const auto& iteratorRange : iteratorRanges)
             {
-                const auto jobLambda = [&]() -> void
+                const auto initJobLambda = [&]() -> void
                 {
                     AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: Job");
 
                     for (auto meshDataIter = iteratorRange.first; meshDataIter != iteratorRange.second; ++meshDataIter)
                     {
-                        if (!meshDataIter->m_model)
+                        ModelDataInstance* modelDataInstance = meshDataIter.GetItem<ModelDataIndex::Instance>();
+                        MeshFP::EndCullingData* endCullingData = meshDataIter.GetItem<ModelDataIndex::EndCullingData>();
+                        if (!modelDataInstance->m_model)
                         {
-                            continue;   // model not loaded yet
+                            continue; // model not loaded yet
                         }
 
-                        if (!meshDataIter->m_visible)
+                        if (!modelDataInstance->m_visible)
                         {
                             continue;
                         }
 
-                        if (meshDataIter->m_needsInit)
+                        if (modelDataInstance->m_needsInit)
                         {
-                            meshDataIter->Init(m_meshInstanceManager);
+                            modelDataInstance->Init(this, endCullingData, m_meshInstanceManager);
                         }
 
-                        if (meshDataIter->m_objectSrgNeedsUpdate)
+                        if (modelDataInstance->m_objectSrgNeedsUpdate)
                         {
-                            meshDataIter->UpdateObjectSrg(m_reflectionProbeFeatureProcessor, m_transformService);
+                            modelDataInstance->UpdateObjectSrg(m_reflectionProbeFeatureProcessor, m_transformService);
                         }
 
-                        if (meshDataIter->m_needsSetRayTracingData)
+                        if (modelDataInstance->m_needsSetRayTracingData)
                         {
-                            meshDataIter->SetRayTracingData(m_rayTracingFeatureProcessor, m_transformService);
+                            modelDataInstance->SetRayTracingData(m_rayTracingFeatureProcessor, m_transformService);
                         }
 
-                        // [GFX TODO] [ATOM-1357] Currently all of the draw packets have to be checked for material ID changes because
-                        // material properties can impact which actual shader is used, which impacts the SRG in the draw packet.
-                        // This is scheduled to be optimized so the work is only done on draw packets that need it instead of having
-                        // to check every one.
-                        meshDataIter->UpdateDrawPackets(m_meshInstanceManager, m_forceRebuildDrawPackets);
-
-                        if (meshDataIter->m_cullableNeedsRebuild)
+                        if (!r_enableHardwareInstancing)
                         {
-                            meshDataIter->BuildCullable(m_meshInstanceManager);
-                        }
-
-                        if (meshDataIter->m_cullBoundsNeedsUpdate)
-                        {
-                            meshDataIter->UpdateCullBounds(m_transformService);
+                            // [GFX TODO] [ATOM-1357] Currently all of the draw packets have to be checked for material ID changes because
+                            // material properties can impact which actual shader is used, which impacts the SRG in the draw packet.
+                            // This is scheduled to be optimized so the work is only done on draw packets that need it instead of having
+                            // to check every one.
+                            modelDataInstance->UpdateDrawPackets(m_forceRebuildDrawPackets);
                         }
                     }
                 };
-                Job* executeGroupJob = aznew JobFunction<decltype(jobLambda)>(jobLambda, true, nullptr); // Auto-deletes
+
+                const auto updateJobLambda = [&]() -> void
+                {
+                    AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: Job");
+
+                    for (auto meshDataIter = iteratorRange.first; meshDataIter != iteratorRange.second; ++meshDataIter)
+                    {
+                        ModelDataInstance* modelDataInstance = meshDataIter.GetItem<ModelDataIndex::Instance>();
+                        MeshFP::EndCullingData* endCullingData = meshDataIter.GetItem<ModelDataIndex::EndCullingData>();
+
+                        if (!modelDataInstance->m_model)
+                        {
+                            continue; // model not loaded yet
+                        }
+
+                        if (modelDataInstance->m_cullableNeedsRebuild)
+                        {
+                            modelDataInstance->BuildCullable(this, endCullingData, m_meshInstanceManager);
+                        }
+
+                        if (modelDataInstance->m_cullBoundsNeedsUpdate)
+                        {
+                            modelDataInstance->UpdateCullBounds(this, endCullingData, m_transformService);
+                        }
+                    }
+                };
+                Job* executeInitGroupJob = aznew JobFunction<decltype(initJobLambda)>(initJobLambda, true, nullptr); // Auto-deletes
+                Job* executeUpdateGroupJob = aznew JobFunction<decltype(updateJobLambda)>(updateJobLambda, true, nullptr); // Auto-deletes
+                updateJobQueue.push_back(executeUpdateGroupJob);
                 if (parentJob)
                 {
-                    parentJob->StartAsChild(executeGroupJob);
+                    parentJob->StartAsChild(executeInitGroupJob);
                 }
                 else
                 {
-                    executeGroupJob->SetDependent(&jobCompletion);
-                    executeGroupJob->Start();
+                    executeUpdateGroupJob->SetDependent(&jobCompletion);
+                    executeUpdateGroupJob->Start();
                 }
             }
             {
@@ -251,6 +324,20 @@ namespace AZ
                 {
                     jobCompletion.StartAndWaitForCompletion();
                 }
+
+                // Now that the init stage is complete, run the instance draw packet update
+                Job* perInstanceGroupJob =
+                    aznew JobFunction<decltype(perInstanceGroupJobLambda)>(perInstanceGroupJobLambda, true, nullptr); // Auto-deletes
+                perInstanceGroupJob->StartAndWaitForCompletion();
+
+                // Now that that is done, execute the update jobs
+                AZ::JobCompletion updateJobCompletion;
+                for (Job* updateJob : updateJobQueue)
+                {
+                    updateJob->SetDependent(&updateJobCompletion);
+                    updateJob->Start();
+                }
+                updateJobCompletion.StartAndWaitForCompletion();
             }
 
             m_forceRebuildDrawPackets = false;
@@ -317,17 +404,25 @@ namespace AZ
                     visibleInstanceIndices.reserve(instanceBufferCount);
                     for (const RPI::VisiblityEntryProperties& visibilityEntry : visibilityList)
                     {
-                        const ModelDataInstance* modelData = reinterpret_cast<const ModelDataInstance*>(visibilityEntry.m_userData);
-                        uint32_t modelLodIndex = visibilityEntry.m_lodIndex;
-                        for (uint32_t instanceIndex : modelData->m_instanceIndicesByLod[modelLodIndex])
+                        const uint64_t* meshData = reinterpret_cast<const uint64_t*>(visibilityEntry.m_userData);
+                        const uint64_t* meshCountAndOffset = meshData + visibilityEntry.m_lodIndex;
+                        uint32_t meshOffset = static_cast<uint32_t>(*meshCountAndOffset & 0xFFFFFFFF);
+                        uint32_t meshCount = static_cast<uint32_t>(*meshCountAndOffset >> 32);
                         {
-                            MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
+                            for (uint32_t meshDataIndex = meshOffset; meshDataIndex < meshOffset + meshCount;
+                                 ++meshDataIndex)
+                            {
+                                uint64_t encodedObjectIdAndInstanceIndex = m_meshData[meshDataIndex];
+                                uint32_t instanceIndex = static_cast<uint32_t>(encodedObjectIdAndInstanceIndex & 0xFFFFFFFF);
+                                uint32_t objectId = static_cast<uint32_t>(encodedObjectIdAndInstanceIndex >> 32);
+                                MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
 
-                            // The per-instance data is just the objectId, which is used to look up the object transform
-                            // After this first pass, we will accumulate all the per-instance data into one buffer for the view,
-                            // sorted by the instance key so that all data for any objects instanced together is contiguous
-                            instanceData.m_perViewInstanceData[view.get()].push_back(modelData->m_objectId.GetIndex());
-                            visibleInstanceIndices.insert(instanceIndex);
+                                // The per-instance data is just the objectId, which is used to look up the object transform
+                                // After this first pass, we will accumulate all the per-instance data into one buffer for the view,
+                                // sorted by the instance key so that all data for any objects instanced together is contiguous
+                                instanceData.m_perViewInstanceData[view.get()].push_back(objectId);
+                                visibleInstanceIndices.insert(instanceIndex);
+                            }
                         }
                     }
 
@@ -415,9 +510,10 @@ namespace AZ
             if (!r_enablePerMeshShaderOptionFlags && m_enablePerMeshShaderOptionFlags && !r_enableHardwareInstancing)
             {
                 // Per mesh shader option flags was on, but now turned off, so reset all the shader options.
-                for (auto& model : m_modelData)
+                for (auto modelHandle : m_modelData)
                 {
-                    for (RPI::MeshDrawPacketList& drawPacketList : model.m_drawPacketListsByLod)
+                    ModelDataInstance* model = modelHandle.GetItem<ModelDataIndex::Instance>();
+                    for (RPI::MeshDrawPacketList& drawPacketList : model->m_drawPacketListsByLod)
                     {
                         for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
                         {
@@ -430,15 +526,16 @@ namespace AZ
                             drawPacket.Update(*GetParentScene(), true);
                         }
                     }
-                    model.m_cullable.m_shaderOptionFlags = 0;
-                    model.m_cullable.m_prevShaderOptionFlags = 0;
-                    model.m_cullableNeedsRebuild = true;
+                    model->m_cullable.m_shaderOptionFlags = 0;
+                    model->m_cullable.m_prevShaderOptionFlags = 0;
+                    model->m_cullableNeedsRebuild = true;
 
                     // [GHI-13619]
                     // Update the draw packets on the cullable, since we just set a shader item.
                     // BuildCullable is a bit overkill here, this could be reduced to just updating the drawPacket specific info
                     // It's also going to cause m_cullableNeedsUpdate to be set, which will execute next frame, which we don't need
-                    model.BuildCullable(m_meshInstanceManager);
+                    MeshFP::EndCullingData* endCullingData = modelHandle.GetItem<ModelDataIndex::EndCullingData>();
+                    model->BuildCullable(this, endCullingData,m_meshInstanceManager);
                 }
             }
 
@@ -446,32 +543,34 @@ namespace AZ
 
             if (m_enablePerMeshShaderOptionFlags)
             {
-                for (auto& model : m_modelData)
+                for (auto modelHandle : m_modelData)
                 {
-                    if (model.m_cullable.m_prevShaderOptionFlags != model.m_cullable.m_shaderOptionFlags)
+                    ModelDataInstance* model = modelHandle.GetItem<ModelDataIndex::Instance>();
+                    if (model->m_cullable.m_prevShaderOptionFlags != model->m_cullable.m_shaderOptionFlags)
                     {
                         // Per mesh shader option flags have changed, so rebuild the draw packet with the new shader options.
-                        for (RPI::MeshDrawPacketList& drawPacketList : model.m_drawPacketListsByLod)
+                        for (RPI::MeshDrawPacketList& drawPacketList : model->m_drawPacketListsByLod)
                         {
                             for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
                             {
                                 m_flagRegistry->VisitTags(
                                     [&](AZ::Name shaderOption, FlagRegistry::TagType tag)
                                     {
-                                        bool shaderOptionValue = (model.m_cullable.m_shaderOptionFlags & tag.GetIndex()) > 0;
+                                        bool shaderOptionValue = (model->m_cullable.m_shaderOptionFlags & tag.GetIndex()) > 0;
                                         drawPacket.SetShaderOption(shaderOption, AZ::RPI::ShaderOptionValue(shaderOptionValue));
                                     }
                                 );
                                 drawPacket.Update(*GetParentScene(), true);
                             }
                         }
-                        model.m_cullableNeedsRebuild = true;
+                        model->m_cullableNeedsRebuild = true;
 
                         // [GHI-13619]
                         // Update the draw packets on the cullable, since we just set a shader item.
                         // BuildCullable is a bit overkill here, this could be reduced to just updating the drawPacket specific info
                         // It's also going to cause m_cullableNeedsUpdate to be set, which will execute next frame, which we don't need
-                        model.BuildCullable(m_meshInstanceManager);
+                        MeshFP::EndCullingData* endCullingData = modelHandle.GetItem<ModelDataIndex::EndCullingData>();
+                        model->BuildCullable(this, endCullingData, m_meshInstanceManager);
                     }
                 }
             }
@@ -487,11 +586,13 @@ namespace AZ
                 m_reportShaderOptionFlags = false;
                 PrintShaderOptionFlags();
             }
-            for (auto& model : m_modelData)
+            for (auto modelHandle : m_modelData)
             {
-                model.m_cullable.m_prevShaderOptionFlags = model.m_cullable.m_shaderOptionFlags.exchange(0);
-                model.m_cullable.m_flags = model.m_isAlwaysDynamic ? m_meshMovedFlag.GetIndex() : 0;
+                ModelDataInstance* model = modelHandle.GetItem<ModelDataIndex::Instance>();
+                model->m_cullable.m_prevShaderOptionFlags = model->m_cullable.m_shaderOptionFlags.exchange(0);
+                model->m_cullable.m_flags = model->m_isAlwaysDynamic ? m_meshMovedFlag.GetIndex() : 0;
             }
+            m_meshDataAllocator.GarbageCollect();
         }
 
 
@@ -502,18 +603,21 @@ namespace AZ
             AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: AcquireMesh");
 
             // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during insertion
-            MeshHandle meshDataHandle = m_modelData.emplace();
+            MeshHandle meshDataHandle = m_modelData.emplace((int)0);
+            ModelDataInstance& modelDataInstance = m_modelData.GetData<ModelDataIndex::Instance>(meshDataHandle);
+            modelDataInstance.m_descriptor = descriptor;
+            modelDataInstance.m_scene = GetParentScene();
+            modelDataInstance.m_materialAssignments = materials;
+            modelDataInstance.m_objectId = m_transformService->ReserveObjectId();
+            modelDataInstance.m_rayTracingUuid = AZ::Uuid::CreateRandom();
+            modelDataInstance.m_originalModelAsset = descriptor.m_modelAsset;
+            modelDataInstance.m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &modelDataInstance);
+            modelDataInstance.m_isAlwaysDynamic = descriptor.m_isAlwaysDynamic;
 
-            meshDataHandle->m_descriptor = descriptor;
-            meshDataHandle->m_scene = GetParentScene();
-            meshDataHandle->m_materialAssignments = materials;
-            meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
-            meshDataHandle->m_rayTracingUuid = AZ::Uuid::CreateRandom();
-            meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
-            meshDataHandle->m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
-            meshDataHandle->m_isAlwaysDynamic = descriptor.m_isAlwaysDynamic;
+            modelDataInstance.UpdateMaterialChangeIds();
 
-            meshDataHandle->UpdateMaterialChangeIds();
+            MeshFP::EndCullingData& endCullingData = m_modelData.GetData<ModelDataIndex::EndCullingData>(meshDataHandle);
+            endCullingData.m_objectId = modelDataInstance.m_objectId;
 
             return meshDataHandle;
         }
@@ -533,9 +637,10 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_meshLoader.reset();
-                meshHandle->DeInit(m_meshInstanceManager, m_rayTracingFeatureProcessor);
-                m_transformService->ReleaseObjectId(meshHandle->m_objectId);
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_meshLoader.reset();
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle)
+                    .DeInit(this, &m_modelData.GetData<ModelDataIndex::EndCullingData>(meshHandle), m_meshInstanceManager, m_rayTracingFeatureProcessor);
+                m_transformService->ReleaseObjectId(m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_objectId);
 
                 AZStd::concurrency_check_scope scopeCheck(m_meshDataChecker);
                 m_modelData.erase(meshHandle);
@@ -549,7 +654,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                MeshHandle clone = AcquireMesh(meshHandle->m_descriptor, meshHandle->m_materialAssignments);
+                MeshHandle clone = AcquireMesh(m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_descriptor, m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_materialAssignments);
                 return clone;
             }
             return MeshFeatureProcessor::MeshHandle();
@@ -557,14 +662,14 @@ namespace AZ
 
         Data::Instance<RPI::Model> MeshFeatureProcessor::GetModel(const MeshHandle& meshHandle) const
         {
-            return meshHandle.IsValid() ? meshHandle->m_model : nullptr;
+            return meshHandle.IsValid() ? m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_model : nullptr;
         }
 
         Data::Asset<RPI::ModelAsset> MeshFeatureProcessor::GetModelAsset(const MeshHandle& meshHandle) const
         {
             if (meshHandle.IsValid())
             {
-                return meshHandle->m_originalModelAsset;
+                return m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_originalModelAsset;
             }
 
             return {};
@@ -572,20 +677,20 @@ namespace AZ
         
         const RPI::MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
         {
-            return meshHandle.IsValid() ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
+            return meshHandle.IsValid() ? m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_drawPacketListsByLod : m_emptyDrawPacketLods;
         }
 
         const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& MeshFeatureProcessor::GetObjectSrgs(const MeshHandle& meshHandle) const
         {
             static AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>> staticEmptyList;
-            return meshHandle.IsValid() ? meshHandle->m_objectSrgList : staticEmptyList;
+            return meshHandle.IsValid() ? m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_objectSrgList : staticEmptyList;
         }
 
         void MeshFeatureProcessor::QueueObjectSrgForCompile(const MeshHandle& meshHandle) const
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_objectSrgNeedsUpdate = true;
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_objectSrgNeedsUpdate = true;
             }
         }
 
@@ -602,34 +707,38 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                if (meshHandle->m_model)
+                if (m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_model)
                 {
-                    Data::Instance<RPI::Model> model = meshHandle->m_model;
-                    meshHandle->DeInit(m_meshInstanceManager, m_rayTracingFeatureProcessor);
-                    meshHandle->m_materialAssignments = materials;
-                    meshHandle->QueueInit(model);
+                    Data::Instance<RPI::Model> model = m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_model;
+                    m_modelData.GetData<ModelDataIndex::Instance>(meshHandle)
+                        .DeInit(this,
+                            &m_modelData.GetData<ModelDataIndex::EndCullingData>(meshHandle),
+                            m_meshInstanceManager,
+                            m_rayTracingFeatureProcessor);
+                    m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_materialAssignments = materials;
+                    m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).QueueInit(model);
                 }
                 else
                 {
-                    meshHandle->m_materialAssignments = materials;
+                    m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_materialAssignments = materials;
                 }
 
-                meshHandle->UpdateMaterialChangeIds();
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).UpdateMaterialChangeIds();
 
-                meshHandle->m_objectSrgNeedsUpdate = true;
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_objectSrgNeedsUpdate = true;
             }
         }
 
         const MaterialAssignmentMap& MeshFeatureProcessor::GetMaterialAssignmentMap(const MeshHandle& meshHandle) const
         {
-            return meshHandle.IsValid() ? meshHandle->m_materialAssignments : DefaultMaterialAssignmentMap;
+            return meshHandle.IsValid() ? m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_materialAssignments : DefaultMaterialAssignmentMap;
         }
 
         void MeshFeatureProcessor::ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler)
         {
             if (meshHandle.IsValid())
             {
-                handler.Connect(meshHandle->m_meshLoader->GetModelChangedEvent());
+                handler.Connect(m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_meshLoader->GetModelChangedEvent());
             }
         }
 
@@ -637,17 +746,17 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                ModelDataInstance& modelData = *meshHandle;
+                ModelDataInstance& modelData = m_modelData.GetData<ModelDataIndex::Instance>(meshHandle);
                 modelData.m_cullBoundsNeedsUpdate = true;
                 modelData.m_objectSrgNeedsUpdate = true;
                 modelData.m_cullable.m_flags = modelData.m_cullable.m_flags | m_meshMovedFlag.GetIndex();
 
-                m_transformService->SetTransformForId(meshHandle->m_objectId, transform, nonUniformScale);
+                m_transformService->SetTransformForId(m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_objectId, transform, nonUniformScale);
 
                 // ray tracing data needs to be updated with the new transform
                 if (m_rayTracingFeatureProcessor)
                 {
-                    m_rayTracingFeatureProcessor->SetMeshTransform(meshHandle->m_rayTracingUuid, transform, nonUniformScale);
+                    m_rayTracingFeatureProcessor->SetMeshTransform(m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_rayTracingUuid, transform, nonUniformScale);
                 }
             }
         }
@@ -656,7 +765,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                ModelDataInstance& modelData = *meshHandle;
+                ModelDataInstance& modelData = m_modelData.GetData<ModelDataIndex::Instance>(meshHandle);
                 modelData.m_aabb = localAabb;
                 modelData.m_cullBoundsNeedsUpdate = true;
                 modelData.m_objectSrgNeedsUpdate = true;
@@ -667,7 +776,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                return meshHandle->m_aabb;
+                return m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_aabb;
             }
             else
             {
@@ -680,7 +789,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                return m_transformService->GetTransformForId(meshHandle->m_objectId);
+                return m_transformService->GetTransformForId(m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_objectId);
             }
             else
             {
@@ -693,7 +802,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                return m_transformService->GetNonUniformScaleForId(meshHandle->m_objectId);
+                return m_transformService->GetNonUniformScaleForId(m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_objectId);
             }
             else
             {
@@ -706,7 +815,12 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->SetSortKey(m_meshInstanceManager, m_rayTracingFeatureProcessor, sortKey);
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle)
+                    .SetSortKey(this,
+                        &m_modelData.GetData<ModelDataIndex::EndCullingData>(meshHandle),
+                        m_meshInstanceManager,
+                        m_rayTracingFeatureProcessor,
+                        sortKey);
             }
         }
 
@@ -714,7 +828,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                return meshHandle->GetSortKey();
+                return m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).GetSortKey();
             }
             else
             {
@@ -727,7 +841,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->SetMeshLodConfiguration(meshLodConfig);
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).SetMeshLodConfiguration(meshLodConfig);
             }
         }
 
@@ -735,7 +849,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                return meshHandle->GetMeshLodConfiguration();
+                return m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).GetMeshLodConfiguration();
             }
             else
             {
@@ -748,7 +862,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_isAlwaysDynamic = isAlwaysDynamic;
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_isAlwaysDynamic = isAlwaysDynamic;
             }
         }
 
@@ -759,21 +873,21 @@ namespace AZ
                 AZ_Assert(false, "Invalid mesh handle");
                 return false;
             }
-            return meshHandle->m_isAlwaysDynamic;
+            return m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_isAlwaysDynamic;
         }
 
         void MeshFeatureProcessor::SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps)
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
                 if (excludeFromReflectionCubeMaps)
                 {
-                    meshHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
+                    m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
                 }
                 else
                 {
-                    meshHandle->m_cullable.m_cullData.m_hideFlags &= ~RPI::View::UsageReflectiveCubeMap;
+                    m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_cullable.m_cullData.m_hideFlags &= ~RPI::View::UsageReflectiveCubeMap;
                 }
             }
         }
@@ -783,22 +897,22 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 // update the ray tracing data based on the current state and the new state
-                if (rayTracingEnabled && !meshHandle->m_descriptor.m_isRayTracingEnabled)
+                if (rayTracingEnabled && !m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_descriptor.m_isRayTracingEnabled)
                 {
                     // add to ray tracing
-                    meshHandle->m_needsSetRayTracingData = true;
+                    m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_needsSetRayTracingData = true;
                 }
-                else if (!rayTracingEnabled && meshHandle->m_descriptor.m_isRayTracingEnabled)
+                else if (!rayTracingEnabled && m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_descriptor.m_isRayTracingEnabled)
                 {
                     // remove from ray tracing
                     if (m_rayTracingFeatureProcessor)
                     {
-                        m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_rayTracingUuid);
+                        m_rayTracingFeatureProcessor->RemoveMesh(m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_rayTracingUuid);
                     }
                 }
 
                 // set new state
-                meshHandle->m_descriptor.m_isRayTracingEnabled = rayTracingEnabled;
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_descriptor.m_isRayTracingEnabled = rayTracingEnabled;
             }
         }
 
@@ -806,7 +920,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                return meshHandle->m_descriptor.m_isRayTracingEnabled;
+                return m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_descriptor.m_isRayTracingEnabled;
             }
             else
             {
@@ -819,7 +933,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                return meshHandle->m_visible;
+                return m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_visible;
             }
             return false;
         }
@@ -828,17 +942,17 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->SetVisible(visible);
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).SetVisible(visible);
 
-                if (m_rayTracingFeatureProcessor && meshHandle->m_descriptor.m_isRayTracingEnabled)
+                if (m_rayTracingFeatureProcessor && m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_descriptor.m_isRayTracingEnabled)
                 {
                     // always remove from ray tracing first
-                    m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_rayTracingUuid);
+                    m_rayTracingFeatureProcessor->RemoveMesh(m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_rayTracingUuid);
 
                     // now add if it's visible
                     if (visible)
                     {
-                        meshHandle->m_needsSetRayTracingData = true;
+                        m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_needsSetRayTracingData = true;
                     }
                 }
             }
@@ -848,18 +962,30 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_descriptor.m_useForwardPassIblSpecular = useForwardPassIblSpecular;
-                meshHandle->m_objectSrgNeedsUpdate = true;
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_descriptor.m_useForwardPassIblSpecular = useForwardPassIblSpecular;
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_objectSrgNeedsUpdate = true;
 
-                if (meshHandle->m_model)
+                if (m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_model)
                 {
-                    const size_t modelLodCount = meshHandle->m_model->GetLodCount();
+                    const size_t modelLodCount = m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_model->GetLodCount();
                     for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
                     {
-                        meshHandle->BuildDrawPacketList(m_meshInstanceManager, modelLodIndex);
+                        m_modelData.GetData<ModelDataIndex::Instance>(meshHandle)
+                            .BuildDrawPacketList(this,
+                                &m_modelData.GetData<ModelDataIndex::EndCullingData>(meshHandle),
+                                m_meshInstanceManager, modelLodIndex);
                     }
                 }
             }
+        }
+        
+        const RPI::Cullable* MeshFeatureProcessor::GetCullable(const MeshHandle& meshHandle)
+        {
+            if (meshHandle.IsValid())
+            {
+                return &m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_cullable;
+            }
+            return nullptr;
         }
 
         RHI::Ptr<MeshFeatureProcessor::FlagRegistry> MeshFeatureProcessor::GetShaderOptionFlagRegistry()
@@ -885,11 +1011,12 @@ namespace AZ
         void MeshFeatureProcessor::UpdateMeshReflectionProbes()
         {
             // we need to rebuild the Srg for any meshes that are using the forward pass IBL specular option
-            for (auto& meshInstance : m_modelData)
+            for (auto meshHandle : m_modelData)
             {
-                if (meshInstance.m_descriptor.m_useForwardPassIblSpecular)
+                ModelDataInstance* meshInstance = meshHandle.GetItem<ModelDataIndex::Instance>();
+                if (meshInstance->m_descriptor.m_useForwardPassIblSpecular)
                 {
-                    meshInstance.m_objectSrgNeedsUpdate = true;
+                    meshInstance->m_objectSrgNeedsUpdate = true;
                 }
             }
         }
@@ -897,6 +1024,21 @@ namespace AZ
         void MeshFeatureProcessor::ReportShaderOptionFlags([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
         {
             m_reportShaderOptionFlags = true;
+        }
+
+        MeshFP::MeshDataIndicesForLod MeshFeatureProcessor::AcquireMeshIndices(uint32_t lodCount, uint32_t meshCount)
+        {
+            AZStd::lock_guard<AZStd::mutex> guard(m_meshDataMutex);
+            MeshFP::MeshDataIndicesForLod result;
+            result.m_startIndex = static_cast<uint32_t>(m_meshDataAllocator.Allocate(lodCount + meshCount, 1).m_ptr);
+            result.m_count = meshCount;
+            return result;
+        }
+
+        void MeshFeatureProcessor::ReleaseMeshIndices(MeshFP::MeshDataIndicesForLod meshDataIndices)
+        {
+            AZStd::lock_guard<AZStd::mutex> guard(m_meshDataMutex);
+            m_meshDataAllocator.DeAllocate(RHI::VirtualAddress(static_cast<uintptr_t>(meshDataIndices.m_startIndex)));
         }
 
         void MeshFeatureProcessor::PrintShaderOptionFlags()
@@ -918,9 +1060,10 @@ namespace AZ
 
             AZStd::map<uint32_t, uint32_t> flagStats;
 
-            for (auto& model : m_modelData)
+            for (auto modelHandle : m_modelData)
             {
-                ++flagStats[model.m_cullable.m_shaderOptionFlags.load()];
+                ModelDataInstance* model = modelHandle.GetItem<ModelDataIndex::Instance>();
+                ++flagStats[model->m_cullable.m_shaderOptionFlags.load()];
             }
 
             for (auto [flag, references] : flagStats)
@@ -1079,7 +1222,7 @@ namespace AZ
             }
         }
 
-        void ModelDataInstance::DeInit(MeshInstanceManager& meshInstanceManager, RayTracingFeatureProcessor* rayTracingFeatureProcessor)
+        void ModelDataInstance::DeInit(MeshFeatureProcessor* meshFeatureProcessor, MeshFP::EndCullingData* endCullingData, MeshInstanceManager& meshInstanceManager, RayTracingFeatureProcessor* rayTracingFeatureProcessor)
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
@@ -1101,14 +1244,20 @@ namespace AZ
             else
             {
                 // Release the instance indices
-                for (auto& lodInstanceIndexList : m_instanceIndicesByLod)
+                for (auto& meshDataIndices : endCullingData->m_instanceIndicesByLod)
                 {
-                    for (auto& instanceIndex : lodInstanceIndexList)
                     {
-                        meshInstanceManager.RemoveInstance(instanceIndex);
+                        for (uint32_t meshDataIndex = meshDataIndices.m_startIndex;
+                             meshDataIndex < meshDataIndices.m_startIndex + meshDataIndices.m_count;
+                             ++meshDataIndex)
+                        {
+                            uint64_t encodedInstanceIndex = meshFeatureProcessor->m_meshData[meshDataIndex];
+                            meshInstanceManager.RemoveInstance(static_cast<uint32_t>(encodedInstanceIndex & 0xFFFFFFFF));
+                        }
+                        meshFeatureProcessor->ReleaseMeshIndices(meshDataIndices);
                     }
                 }
-                m_instanceIndicesByLod.clear();
+                endCullingData->m_instanceIndicesByLod.clear();
             }
             m_materialAssignments.clear();
             m_materialChangeIds.clear();
@@ -1123,7 +1272,8 @@ namespace AZ
             m_aabb = m_model->GetModelAsset()->GetAabb();
         }
 
-        void ModelDataInstance::Init(MeshInstanceManager& meshInstanceManager)
+        void ModelDataInstance::Init(
+            MeshFeatureProcessor* meshFeatureProcessor, MeshFP::EndCullingData* endCullingData, MeshInstanceManager& meshInstanceManager)
         {
             const size_t modelLodCount = m_model->GetLodCount();
 
@@ -1134,12 +1284,30 @@ namespace AZ
             }
             else
             {
-                m_instanceIndicesByLod.resize(modelLodCount);
+                endCullingData->m_instanceIndicesByLod.resize(modelLodCount);
             }
 
+            uint32_t totalMeshCount = 0;
             for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
             {
-                BuildDrawPacketList(meshInstanceManager, modelLodIndex);
+                RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
+                totalMeshCount += static_cast<uint32_t>(modelLod.GetMeshes().size());
+            }
+            m_meshDataIndices = meshFeatureProcessor->AcquireMeshIndices(static_cast<uint32_t>(modelLodCount), totalMeshCount);
+            uint32_t meshOffset = m_meshDataIndices.m_startIndex + static_cast<uint32_t>(modelLodCount);
+            for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
+            {
+                // We're going to encode two things into the lod entry from the mesh data
+                // The offset to the start of the lod, and the mesh count for that lod
+                // This way, culling can know where the data is and how many meshes there are, without
+                // needing to fetch any data from the model data instance
+                RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
+                uint64_t meshCount = static_cast<uint64_t>(modelLod.GetMeshes().size());
+                uint64_t encodedMeshOffsetAndCount = meshCount << 32;
+                encodedMeshOffsetAndCount |= meshOffset;
+                meshFeatureProcessor->m_meshData[m_meshDataIndices.m_startIndex + modelLodIndex] = encodedMeshOffsetAndCount;
+                meshOffset += static_cast<uint32_t>(meshCount);
+                BuildDrawPacketList(meshFeatureProcessor, endCullingData, meshInstanceManager, modelLodIndex);
             }
 
             for(auto& objectSrg : m_objectSrgList)
@@ -1170,7 +1338,9 @@ namespace AZ
             m_needsInit = false;
         }
 
-        void ModelDataInstance::BuildDrawPacketList(MeshInstanceManager& meshInstanceManager, size_t modelLodIndex)
+        void ModelDataInstance::BuildDrawPacketList(
+            MeshFeatureProcessor* meshFeatureProcessor,
+            MeshFP::EndCullingData* endCullingData, MeshInstanceManager& meshInstanceManager, size_t modelLodIndex)
         {
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
@@ -1183,11 +1353,14 @@ namespace AZ
             }
             else
             {
-                AZStd::vector<uint32_t>& meshInstanceIndices = m_instanceIndicesByLod[modelLodIndex];
-                meshInstanceIndices.clear();
-                meshInstanceIndices.reserve(meshCount);
+                MeshFP::MeshDataIndicesForLod& meshInstanceIndices = endCullingData->m_instanceIndicesByLod[modelLodIndex];
+                meshInstanceIndices.m_startIndex = static_cast<uint32_t>(meshFeatureProcessor->m_meshData[m_meshDataIndices.m_startIndex + modelLodIndex] & 0xFFFFFFFF);
+                meshInstanceIndices.m_count = static_cast<uint32_t>(meshCount);
             }
-
+            uint64_t encodedMeshDataStartForLod =
+                meshFeatureProcessor->m_meshData[m_meshDataIndices.m_startIndex + static_cast<uint32_t>(modelLodIndex)];
+            uint32_t meshDataStartForLod = static_cast<uint32_t>(encodedMeshDataStartForLod & 0xFFFFFFFF);
+            // Get the offset for the lod
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
                 const RPI::ModelLod::Mesh& mesh = modelLod.GetMeshes()[meshIndex];
@@ -1267,8 +1440,10 @@ namespace AZ
                     key.m_stencilRef = stencilRef;
                     key.m_sortKey = m_sortKey;
                     index = meshInstanceManager.AddInstance(key);
-
-                    m_instanceIndicesByLod[modelLodIndex].push_back(index.m_index);
+                    [[maybe_unused]]MeshFP::MeshDataIndicesForLod& meshInstanceIndices = endCullingData->m_instanceIndicesByLod[modelLodIndex];
+                    uint64_t encodedObjectIdAndInstanceIndex = static_cast<uint64_t>(m_objectId.GetIndex()) << 32;
+                    encodedObjectIdAndInstanceIndex |= index.m_index;
+                    meshFeatureProcessor->m_meshData[meshDataStartForLod + meshIndex] = encodedObjectIdAndInstanceIndex;
                 }
 
                 // We're dealing with a new, uninitialized draw packet, so we need to initialize it
@@ -1761,6 +1936,8 @@ namespace AZ
         }
 
         void ModelDataInstance::SetSortKey(
+            MeshFeatureProcessor* meshFeatureProcessor,
+            MeshFP::EndCullingData* endCullingData,
             MeshInstanceManager& meshInstanceManager, RayTracingFeatureProcessor* rayTracingFeatureProcessor, RHI::DrawItemSortKey sortKey)
         {
             RHI::DrawItemSortKey previousSortKey = m_sortKey;
@@ -1788,7 +1965,7 @@ namespace AZ
 
                         // DeInit/ReInit is overkill (destroys and re-creates ray-tracing data)
                         // but it works for now since SetSortKey is infrequent
-                        DeInit(meshInstanceManager, rayTracingFeatureProcessor);
+                        DeInit(meshFeatureProcessor, endCullingData, meshInstanceManager, rayTracingFeatureProcessor);
                         QueueInit(model);
                     }
                 }
@@ -1810,50 +1987,22 @@ namespace AZ
             return m_cullable.m_lodData.m_lodConfiguration;
         }
 
-        void ModelDataInstance::UpdateDrawPackets(MeshInstanceManager& meshInstanceManager, bool forceUpdate /*= false*/)
+        void ModelDataInstance::UpdateDrawPackets(bool forceUpdate /*= false*/)
         {
-            if (!r_enableHardwareInstancing)
+            for (auto& drawPacketList : m_drawPacketListsByLod)
             {
-                for (auto& drawPacketList : m_drawPacketListsByLod)
+                for (auto& drawPacket : drawPacketList)
                 {
-                    for (auto& drawPacket : drawPacketList)
+                    if (drawPacket.Update(*m_scene, forceUpdate))
                     {
-                        if (drawPacket.Update(*m_scene, forceUpdate))
-                        {
-                            m_cullableNeedsRebuild = true;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // TODO Eventually, this should be split into a separate function that operates on a per-instance basis
-                // instead of a per-ModelDataInstance basis, but since the initial commit uses a unique key to prevent
-                // anything from actually being instanced, we can still treat this like per-ModelDataInstance data
-                for (const auto& instanceIndexList : m_instanceIndicesByLod)
-                {
-                    for (const auto& instanceIndex : instanceIndexList)
-                    {
-                        MeshInstanceData& instanceData = meshInstanceManager[instanceIndex];
-                        RPI::MeshDrawPacket& drawPacket = instanceData.m_drawPacket;
-                        if (drawPacket.Update(*m_scene, forceUpdate))
-                        {
-                            m_cullableNeedsRebuild = true;
-                            instanceData.m_drawSrgInstanceDataIndices.clear();
-                            // We're going to need an index for m_instanceOffset every frame for each draw item, so cache those here
-                            for (auto& drawSrg : drawPacket.GetDrawSrgs())
-                            {
-                                RHI::ShaderInputConstantIndex drawSrgIndexInstanceOffsetIndex = drawSrg->FindShaderInputConstantIndex(s_m_instanceDataOffset_Name);
-
-                                instanceData.m_drawSrgInstanceDataIndices.push_back(drawSrgIndexInstanceOffsetIndex);
-                            }
-                        }
+                        m_cullableNeedsRebuild = true;
                     }
                 }
             }
         }
 
-        void ModelDataInstance::BuildCullable(MeshInstanceManager& meshInstanceManager)
+        void ModelDataInstance::BuildCullable(
+            MeshFeatureProcessor* meshFeatureProcessor, MeshFP::EndCullingData* endCullingData, MeshInstanceManager& meshInstanceManager)
         {
             AZ_Assert(m_cullableNeedsRebuild, "This function only needs to be called if the cullable to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
@@ -1909,7 +2058,9 @@ namespace AZ
                     }
                     else
                     {
-                        rhiDrawPacket = meshInstanceManager[m_instanceIndicesByLod[lodIndex][meshIndex]].m_drawPacket.GetRHIDrawPacket();
+                        uint32_t meshDataIndex = endCullingData->m_instanceIndicesByLod[lodIndex].m_startIndex + static_cast<uint32_t>(meshIndex);
+                        //uint32_t meshDataIndex = meshFeatureProcessor->m_meshData[m_meshDataIndices.m_startIndex + lodIndex];
+                        rhiDrawPacket = meshInstanceManager[meshFeatureProcessor->m_meshData[meshDataIndex] & 0xFFFFFFFF].m_drawPacket.GetRHIDrawPacket();
                     }
 
                     if (rhiDrawPacket)
@@ -1936,7 +2087,10 @@ namespace AZ
             m_cullBoundsNeedsUpdate = true;
         }
 
-        void ModelDataInstance::UpdateCullBounds(const TransformServiceFeatureProcessor* transformService)
+        void ModelDataInstance::UpdateCullBounds(
+            MeshFeatureProcessor* meshFeatureProcessor,
+            [[maybe_unused]] MeshFP::EndCullingData* endCullingData,
+            const TransformServiceFeatureProcessor* transformService)
         {
             AZ_Assert(m_cullBoundsNeedsUpdate, "This function only needs to be called if the culling bounds need to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
@@ -1966,7 +2120,7 @@ namespace AZ
             {
                 // Let the MeshFeatureProcessor submit the work
                 m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Visibility_List;
-                m_cullable.m_cullData.m_optionalMeshFeatureProcessorData = this;
+                m_cullable.m_cullData.m_optionalMeshFeatureProcessorData = &meshFeatureProcessor->m_meshData[m_meshDataIndices.m_startIndex];
             }
             m_scene->GetCullingScene()->RegisterOrUpdateCullable(m_cullable);
 
@@ -2136,5 +2290,3 @@ namespace AZ
         }
     } // namespace Render
 } // namespace AZ
-
-#pragma optimize("", on)

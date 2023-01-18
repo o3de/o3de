@@ -49,7 +49,7 @@ namespace AZ
         void SkinnedMeshFeatureProcessor::Activate()
         {
             m_statsCollector = AZStd::make_unique<SkinnedMeshStatsCollector>(this);
-
+            m_meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
             EnableSceneNotification();
         }
 
@@ -192,72 +192,33 @@ namespace AZ
                     renderProxy.m_instance->m_model->WaitForUpload();
                 }
 
-                ModelDataInstance& modelDataInstance = **renderProxy.m_meshHandle;
-                const RPI::Cullable& cullable = modelDataInstance.GetCullable();
-
-                for (const RPI::ViewPtr& viewPtr : packet.m_views)
+                const RPI::Cullable* cullable = m_meshFeatureProcessor->GetCullable(*renderProxy.m_meshHandle);
+                if (cullable)
                 {
-                    RPI::View* view = viewPtr.get();
-                    const Matrix4x4& viewToClip = view->GetViewToClipMatrix();
-
-                    //[GFX_TODO][ATOM-13564]:
-                    // Option 1)
-                    //  store the lastVisibleFrameIndex and lowestLodIndex (or a bitfield of the visible lods) on the Cullable,
-                    //  ** run this code *after* culling is done **, use the cached info to decide what to dispatch here
-                    // Option 2)
-                    //  add a separate visibility entry for each skinned object to the IVisibilitySystem (with a different type flag),
-                    //  ensure the entries are kept in sync with the corresponding mesh entry
-                    //  do the enumeration for each view, keep track of the lowest lod for each entry,
-                    //  and submit the appropriate dispatch item
-
-                    switch (cullable.m_lodData.m_lodConfiguration.m_lodType)
+                    for (const RPI::ViewPtr& viewPtr : packet.m_views)
                     {
-                    case RPI::Cullable::LodType::SpecificLod:
-                    {
-                        AZStd::lock_guard lock(m_dispatchItemMutex);
-                        auto lodIndex = cullable.m_lodData.m_lodConfiguration.m_lodOverride;
-                        
-                        for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& skinnedMeshDispatchItem : renderProxy.m_dispatchItemsByLod[lodIndex])
+                        RPI::View* view = viewPtr.get();
+                        const Matrix4x4& viewToClip = view->GetViewToClipMatrix();
+
+                        //[GFX_TODO][ATOM-13564]:
+                        // Option 1)
+                        //  store the lastVisibleFrameIndex and lowestLodIndex (or a bitfield of the visible lods) on the Cullable,
+                        //  ** run this code *after* culling is done **, use the cached info to decide what to dispatch here
+                        // Option 2)
+                        //  add a separate visibility entry for each skinned object to the IVisibilitySystem (with a different type flag),
+                        //  ensure the entries are kept in sync with the corresponding mesh entry
+                        //  do the enumeration for each view, keep track of the lowest lod for each entry,
+                        //  and submit the appropriate dispatch item
+
+                        switch (cullable->m_lodData.m_lodConfiguration.m_lodType)
                         {
-                            // Add one skinning dispatch item for each mesh in the lod
-                            if (skinnedMeshDispatchItem->IsEnabled())
-                            {
-                                m_skinningDispatches.insert(&skinnedMeshDispatchItem->GetRHIDispatchItem());
-                            }
-                        }
-                        
-                        for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
-                        {
-                            const MorphTargetDispatchItem* dispatchItem = renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
-                            if (dispatchItem && dispatchItem->GetWeight() > AZ::Constants::FloatEpsilon)
-                            {
-                                m_morphTargetDispatches.insert(&dispatchItem->GetRHIDispatchItem());
-                            }
-                        }
-                    }
-                    break;
-                    case RPI::Cullable::LodType::ScreenCoverage:
-                    default:
-                        //the [1][1] element of a perspective projection matrix stores cot(FovY/2) (equal to 2*nearPlaneDistance/nearPlaneHeight),
-                        //which is used to determine the (vertical) projected size in screen space
-                        const float yScale = viewToClip.GetElement(1, 1);
-                        const bool isPerspective = viewToClip.GetElement(3, 3) == 0.f;
-                        const Vector3 cameraPos = view->GetViewToWorldMatrix().GetTranslation();
-
-                        const Vector3 pos = cullable.m_cullData.m_boundingSphere.GetCenter();
-
-                        const float approxScreenPercentage = RPI::ModelLodUtils::ApproxScreenPercentage(
-                            pos, cullable.m_lodData.m_lodSelectionRadius, cameraPos, yScale, isPerspective);
-
-                        for (size_t lodIndex = 0; lodIndex < cullable.m_lodData.m_lods.size(); ++lodIndex)
-                        {
-                            const RPI::Cullable::LodData::Lod& lod = cullable.m_lodData.m_lods[lodIndex];
-
-                            //Note that this supports overlapping lod ranges (to support cross-fading lods, for example)
-                            if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
+                        case RPI::Cullable::LodType::SpecificLod:
                             {
                                 AZStd::lock_guard lock(m_dispatchItemMutex);
-                                for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& skinnedMeshDispatchItem : renderProxy.m_dispatchItemsByLod[lodIndex])
+                                auto lodIndex = cullable->m_lodData.m_lodConfiguration.m_lodOverride;
+
+                                for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& skinnedMeshDispatchItem :
+                                     renderProxy.m_dispatchItemsByLod[lodIndex])
                                 {
                                     // Add one skinning dispatch item for each mesh in the lod
                                     if (skinnedMeshDispatchItem->IsEnabled())
@@ -266,17 +227,66 @@ namespace AZ
                                     }
                                 }
 
-                                for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
+                                for (size_t morphTargetIndex = 0;
+                                     morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size();
+                                     morphTargetIndex++)
                                 {
-                                    const MorphTargetDispatchItem* dispatchItem = renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
+                                    const MorphTargetDispatchItem* dispatchItem =
+                                        renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
                                     if (dispatchItem && dispatchItem->GetWeight() > AZ::Constants::FloatEpsilon)
                                     {
                                         m_morphTargetDispatches.insert(&dispatchItem->GetRHIDispatchItem());
                                     }
                                 }
                             }
+                            break;
+                        case RPI::Cullable::LodType::ScreenCoverage:
+                        default:
+                            // the [1][1] element of a perspective projection matrix stores cot(FovY/2) (equal to
+                            // 2*nearPlaneDistance/nearPlaneHeight), which is used to determine the (vertical) projected size in screen
+                            // space
+                            const float yScale = viewToClip.GetElement(1, 1);
+                            const bool isPerspective = viewToClip.GetElement(3, 3) == 0.f;
+                            const Vector3 cameraPos = view->GetViewToWorldMatrix().GetTranslation();
+
+                            const Vector3 pos = cullable->m_cullData.m_boundingSphere.GetCenter();
+
+                            const float approxScreenPercentage = RPI::ModelLodUtils::ApproxScreenPercentage(
+                                pos, cullable->m_lodData.m_lodSelectionRadius, cameraPos, yScale, isPerspective);
+
+                            for (size_t lodIndex = 0; lodIndex < cullable->m_lodData.m_lods.size(); ++lodIndex)
+                            {
+                                const RPI::Cullable::LodData::Lod& lod = cullable->m_lodData.m_lods[lodIndex];
+
+                                // Note that this supports overlapping lod ranges (to support cross-fading lods, for example)
+                                if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
+                                {
+                                    AZStd::lock_guard lock(m_dispatchItemMutex);
+                                    for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& skinnedMeshDispatchItem :
+                                         renderProxy.m_dispatchItemsByLod[lodIndex])
+                                    {
+                                        // Add one skinning dispatch item for each mesh in the lod
+                                        if (skinnedMeshDispatchItem->IsEnabled())
+                                        {
+                                            m_skinningDispatches.insert(&skinnedMeshDispatchItem->GetRHIDispatchItem());
+                                        }
+                                    }
+
+                                    for (size_t morphTargetIndex = 0;
+                                         morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size();
+                                         morphTargetIndex++)
+                                    {
+                                        const MorphTargetDispatchItem* dispatchItem =
+                                            renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
+                                        if (dispatchItem && dispatchItem->GetWeight() > AZ::Constants::FloatEpsilon)
+                                        {
+                                            m_morphTargetDispatches.insert(&dispatchItem->GetRHIDispatchItem());
+                                        }
+                                    }
+                                }
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
             }

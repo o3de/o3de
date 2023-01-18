@@ -11,6 +11,7 @@
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
+#include <Atom/Utils/StableDynamicArray.h>
 #include <AtomCore/Instance/Instance.h>
 
 namespace AZ

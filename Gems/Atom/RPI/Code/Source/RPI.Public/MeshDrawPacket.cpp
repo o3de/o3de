@@ -175,10 +175,13 @@ namespace AZ
             drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
             drawPacketBuilder.AddShaderResourceGroup(m_material->GetRHIShaderResourceGroup());
 
-            // We build the list of used shaders in a local list rather than m_activeShaders so that
+            // We build the list of used shaders, drawSrgs, etc. in a local list rather than m_activeShaders so that
             // if DoUpdate() fails it won't modify any member data.
             MeshDrawPacket::ShaderList shaderList;
             shaderList.reserve(m_activeShaders.size());
+            AZStd::fixed_vector<Data::Instance<ShaderResourceGroup>, RHI::DrawPacketBuilder::DrawItemCountMax> drawSrgs;
+            RootConstantsLayoutList rootConstantsLayouts;
+            rootConstantsLayouts.reserve(m_rootConstantsLayouts.size());
 
             // We have to keep a list of these outside the loops that collect all the shaders because the DrawPacketBuilder
             // keeps pointers to StreamBufferViews until DrawPacketBuilder::End() is called. And we use a fixed_vector to guarantee
@@ -311,9 +314,9 @@ namespace AZ
                     return false;
                 }
 
-                m_rootConstantsLayouts.push_back(pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout());
+                rootConstantsLayouts.push_back(pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout());
                 // TODO: This assumes all draw items will have the same root constant layout
-                AZStd::vector<uint8_t> constants(m_rootConstantsLayouts.back()->GetDataSize());
+                AZStd::vector<uint8_t> constants(rootConstantsLayouts.back()->GetDataSize());
                 drawPacketBuilder.SetRootConstants(constants);
                 RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 drawRequest.m_listTag = drawListTag;
@@ -324,7 +327,7 @@ namespace AZ
                 if (drawSrg)
                 {
                     drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
-                    m_perDrawSrgs.push_back(drawSrg);
+                    drawSrgs.push_back(drawSrg);
                 }
 
                 if (materialPipelineName != MaterialPipelineNone)
@@ -374,6 +377,8 @@ namespace AZ
             if (m_drawPacket)
             {
                 m_activeShaders = shaderList;
+                m_perDrawSrgs = drawSrgs;
+                m_rootConstantsLayouts = rootConstantsLayouts;
                 m_materialSrg = m_material->GetRHIShaderResourceGroup();
                 return true;
             }
