@@ -39,7 +39,10 @@ namespace AZ
         void CommandListBase::SetSamplePositions(const RHI::MultisampleState& multisampleState)
         {
             if (multisampleState.m_customPositionsCount == m_baseState.m_customSamplePositions.m_customPositionsCount &&
-                ::memcmp(multisampleState.m_customPositions.data(), m_baseState.m_customSamplePositions.m_customPositions.data(), sizeof(decltype(multisampleState.m_customPositions)::value_type)) == 0 &&
+                ::memcmp(
+                    multisampleState.m_customPositions.data(),
+                    m_baseState.m_customSamplePositions.m_customPositions.data(),
+                    sizeof(decltype(multisampleState.m_customPositions)::value_type) * multisampleState.m_customPositionsCount) == 0 &&
                 multisampleState.m_samples == m_baseState.m_customSamplePositions.m_samples)
             {
                 return;
