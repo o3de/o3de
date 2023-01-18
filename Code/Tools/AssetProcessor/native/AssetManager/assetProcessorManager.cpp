@@ -1544,7 +1544,7 @@ namespace AssetProcessor
                     if (legacySourceAssetId != assetId)
                     {
                         legacySourceAssetIds.emplace(legacySourceAssetId);
-                        message.m_legacyAssetIds.push_back(legacySourceAssetId);
+                        message.m_legacyAssetIds.push_back(AZStd::move(legacySourceAssetId));
                     }
                 }
 
@@ -2665,12 +2665,12 @@ namespace AssetProcessor
         // to account for this, we check if the canonical path to the cache root is not the same as the path we are running at
         // if they are different, incoming files may need a fixup that involves replacing their canonical paths (de-symlinked)
         // with the paths we expect (symlinked).
-        
+
         QString canonicalRootDir = AssetUtilities::NormalizeFilePath(m_cacheRootDir.canonicalPath());
-        
+
         // we only need to do a fixup if the root dir is not the same as the canonical root dir.
         bool needCanonicalFixup = canonicalRootDir != m_cacheRootDir.canonicalPath();
-        
+
         FileExamineContainer swapped;
         m_filesToExamine.swap(swapped); // makes it okay to call CheckSource(...)
 
@@ -2701,7 +2701,7 @@ namespace AssetProcessor
             QString normalizedPath = examineFile.m_fileName;
              // debug-only check to make sure our assumption about normalization is correct.
             Q_ASSERT(normalizedPath == AssetUtilities::NormalizeFilePath(normalizedPath));
-            
+
             if (needCanonicalFixup)
             {
                 if (normalizedPath.startsWith(canonicalRootDir))
