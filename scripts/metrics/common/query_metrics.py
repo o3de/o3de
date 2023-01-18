@@ -93,17 +93,47 @@ def query_csvs(test_case_ids=None, test_case_metrics=None):
     :param test_case_ids: the desired test case ids
     :param test_case_metrics: the desired test case metrics
     """
-    desired_data = []
+    query_results = []
     for downloaded_csv in DOWNLOADED_FILES:
         with open(downloaded_csv, 'r') as csv_file:
             reader = csv.reader(csv_file)
+            parsed_header_row = False
+            desired_columns = []
             for row in reader:
+
+                # Get desired columns if test_case_metrics were passed
+                if not parsed_header_row:
+                    if test_case_metrics is not None:
+                        for column_index, column_header in enumerate(row):
+                            if column_header in test_case_metrics:
+                                desired_columns.append(column_index)
+                    parsed_header_row = True
+
+                # Actually get the data
                 if test_case_ids is not None and row[0] in test_case_ids:
-                    print("Found relevant row: " + str(row))
+                    query_results.append(_parse_row(test_case_metrics, row, desired_columns))
                 elif test_case_ids is None:
-                    print("Found relevant row: " + str(row))
+                    query_results.append(_parse_row(test_case_metrics, row, desired_columns))
+                    print("row " + str(row))
             csv_file.close()
-    return desired_data
+    return query_results
+
+
+def _parse_row(test_case_metrics, row, desired_columns):
+    """
+    Queries the desired information from the downloaded csvs
+    :param test_case_metrics: the desired test case metrics
+    :param row: the row being parsed
+    :param desired_columns: the columns to include
+    """
+    row_to_add = []
+    if test_case_metrics is not None:
+        for column_number in desired_columns:
+            row_to_add.append(row[int(column_number)])
+        pass
+    else:
+        row_to_add = row
+    return row_to_add
 
 
 if __name__ == '__main__':
