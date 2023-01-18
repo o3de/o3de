@@ -75,50 +75,61 @@ namespace AZ
             {
                 if (shaderRead)
                 {
-                    m_readIndex =
-                        device.GetBindlessArgumentBuffer().AttachReadBuffer(m_memoryView.GetGpuAddress<id<MTLBuffer>>(),
-                                                                            static_cast<uint32_t>(m_memoryView.GetOffset()));
+                    m_readIndex = device.GetBindlessArgumentBuffer().AttachReadBuffer(*this);
                 }
 
                 if (shaderReadWrite)
                 {
-                    m_readWriteIndex =
-                        device.GetBindlessArgumentBuffer().AttachReadWriteBuffer(m_memoryView.GetGpuAddress<id<MTLBuffer>>(),
-                                                                                 static_cast<uint32_t>(m_memoryView.GetOffset()));
+                    m_readWriteIndex = device.GetBindlessArgumentBuffer().AttachReadWriteBuffer(*this);
                 }
             }
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode BufferView::InvalidateInternal()
+        RHI::ResultCode ImageView::InvalidateInternal()
         {
-            ShutdownInternal();
-            return InitInternal(GetDevice(), GetResource());
+            ReleaseViews();
+            RHI::ResultCode initResult = InitInternal(GetDevice(), GetResource());
+            if (initResult != RHI::ResultCode::Success)
+            {
+                ReleaseBindlessIndices();
+            }
+            return initResult;
         }
-        
-        void BufferView::ShutdownInternal()
+
+        void BufferView::ReleaseViews()
         {
             auto& device = static_cast<Device&>(GetDevice());
-            if(m_memoryView.IsValid())
+            if (m_memoryView.IsValid())
             {
                 device.QueueForRelease(m_memoryView);
                 m_memoryView = {};
-                if (m_readIndex != ~0u)
-                {
-                    device.GetBindlessArgumentBuffer().DetachReadImage(m_readIndex);
-                }
-
-                if (m_readWriteIndex != ~0u)
-                {
-                    device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
-                }
             }
-
-            if(m_imageBufferMemoryView.IsValid())
+            if (m_imageBufferMemoryView.IsValid())
             {
                 device.QueueForRelease(m_imageBufferMemoryView);
                 m_imageBufferMemoryView = {};
             }
+        }
+
+        void BufferView::ReleaseBindlessIndices()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+
+            if (m_readIndex != InvalidBindlessIndex)
+            {
+                device.GetBindlessArgumentBuffer().DetachReadImage(m_readIndex);
+            }
+            if (m_readWriteIndex != InvalidBindlessIndex)
+            {
+                device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
+            }
+        }
+
+        void BufferView::ShutdownInternal()
+        {
+            ReleaseView();
+            ReleaseBindlessIndices();
         }
     
         const MemoryView& BufferView::GetMemoryView() const

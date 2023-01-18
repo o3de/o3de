@@ -137,13 +137,22 @@ namespace AZ::Metal
         return RHI::ResultCode::Success;
     }
 
-    uint32_t BindlessArgumentBuffer::AttachReadImage(id <MTLTexture> mtlTexture)
+    uint32_t BindlessArgumentBuffer::AttachReadImage(ImageView& imageView)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
-        RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
-        AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
-        uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
+
+        uint32_t heapIndex = imageView.GetBindlessReadIndex();
+        if (heapIndex == ImageView::InvalidBindlessIndex)
+        {
+            uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
+            RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
+            heapIndex = static_cast<uint32_t>(address.m_ptr);
+        }
+
+        MemoryView& memoryView = imageView.GetMemoryView();
+        id <MTLTexture> mtlTexture = memoryView.GetGpuAddress<id<MTLTexture>>();
+
         if (m_unboundedArraySupported)
         {
             m_bindlessTextureArgBuffer->UpdateTextureView(mtlTexture, heapIndex);
@@ -155,13 +164,22 @@ namespace AZ::Metal
         return heapIndex;
     }
     
-    uint32_t BindlessArgumentBuffer::AttachReadWriteImage(id <MTLTexture> mtlTexture)
+    uint32_t BindlessArgumentBuffer::AttachReadWriteImage(ImageView& imageView)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
-        RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
-        AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
-        uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
+
+        uint32_t heapIndex = imageView.GetBindlessReadWriteIndex();
+        if (heapIndex == ImageView::InvalidBindlessIndex)
+        {
+            uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
+            RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
+            heapIndex = static_cast<uint32_t>(address.m_ptr);
+        }
+
+        MemoryView& memoryView = imageView.GetMemoryView();
+        id <MTLTexture> mtlTexture = memoryView.GetGpuAddress<id<MTLTexture>>();
+
         if (m_unboundedArraySupported)
         {
             m_bindlessRWTextureArgBuffer->UpdateTextureView(mtlTexture, heapIndex);
@@ -173,13 +191,23 @@ namespace AZ::Metal
         return heapIndex;
     }
     
-    uint32_t BindlessArgumentBuffer::AttachReadBuffer(id <MTLBuffer> mtlBuffer, uint32_t offset)
+    uint32_t BindlessArgumentBuffer::AttachReadBuffer(BufferView& bufferView)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
-        RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
-        AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
-        uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
+
+        uint32_t heapIndex = bufferView.GetBindlessReadIndex();
+        if (heapIndex == BufferView::InvalidBindlessIndex)
+        {
+            uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
+            RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
+            heapIndex = static_cast<uint32_t>(address.m_ptr);
+        }
+
+        MemoryView& memoryView = bufferView.GetMemoryView();
+        id <MTLBuffer> mtlBuffer = memoryView.GetGpuAddress<id<MTLBuffer>>();
+        uint32_t offset = memoryView.GetOffset();
+
         if (m_unboundedArraySupported)
         {
             m_bindlessBufferArgBuffer->UpdateBufferView(mtlBuffer, offset, heapIndex);
@@ -191,13 +219,23 @@ namespace AZ::Metal
         return heapIndex;
     }
 
-    uint32_t BindlessArgumentBuffer::AttachReadWriteBuffer(id <MTLBuffer> mtlBuffer, uint32_t offset)
+    uint32_t BindlessArgumentBuffer::AttachReadWriteBuffer(BufferView& bufferView, uint32_t offset)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
-        RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
-        AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
-        uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
+
+        uint32_t heapIndex = bufferView.GetBindlessReadWriteIndex();
+        if (heapIndex == BufferView::InvalidBindlessIndex)
+        {
+            uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
+            RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
+            heapIndex = static_cast<uint32_t>(address.m_ptr);
+        }
+
+        MemoryView& memoryView = bufferView.GetMemoryView();
+        id <MTLBuffer> mtlBuffer = memoryView.GetGpuAddress<id<MTLBuffer>>();
+        uint32_t offset = memoryView.GetOffset();
+
         if (m_unboundedArraySupported)
         {
             m_bindlessRWBufferArgBuffer->UpdateBufferView(mtlBuffer, offset, heapIndex);

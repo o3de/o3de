@@ -29,16 +29,16 @@ namespace AZ
             RHI::Ptr<ArgumentBuffer> GetBindlessArgbuffer() const;
 
             //! Add/Update a read only image pointer to the global bindless heap 
-            uint32_t AttachReadImage(id <MTLTexture> mtlTexture);
+            uint32_t AttachReadImage(ImageView& imageView);
 
             //! Add/Update a read write image pointer to the global bindless heap 
-            uint32_t AttachReadWriteImage(id <MTLTexture> mtlTexture);
+            uint32_t AttachReadWriteImage(ImageView& imageView);
 
             //! Add/Update a read only buffer pointer to the global bindless heap 
-            uint32_t AttachReadBuffer(id <MTLBuffer> mtlTexture, uint32_t offfset);
+            uint32_t AttachReadBuffer(BufferView& bufferView);
 
             //! Add/Update a read write buffer pointer to the global bindless heap 
-            uint32_t AttachReadWriteBuffer(id <MTLBuffer> mtlTexture, uint32_t offfset);
+            uint32_t AttachReadWriteBuffer(BufferView& bufferView);
 
             //! Remove the index associated with a read only image descriptor from the free list allocator
             void DetachReadImage(uint32_t index);
