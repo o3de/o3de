@@ -12,7 +12,7 @@
 
 namespace AzToolsFramework
 {
-    //! Bus used to communicate with component mode
+    //! Bus used to communicate with shape component mode.
     class ShapeComponentModeRequests
         : public AZ::EntityComponentBus
     {
@@ -28,7 +28,7 @@ namespace AzToolsFramework
         virtual SubMode GetCurrentMode() = 0;
 
         //! Sets the current shape component mode sub mode.
-        //! @param mode The new mode to set.
+        //! @param mode The new sub mode to set.
         virtual void SetCurrentMode(SubMode mode) = 0;
 
         //! Resets the UI for the current shape component mode sub mode.

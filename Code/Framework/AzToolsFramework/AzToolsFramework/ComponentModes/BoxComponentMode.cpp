@@ -7,7 +7,6 @@
  */
 
 #include "BoxComponentMode.h"
-#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
@@ -104,10 +103,10 @@ namespace AzToolsFramework
     void BoxComponentMode::RegisterActions()
     {
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        AZ_Assert(actionManagerInterface, "ColliderComponentMode - could not get ActionManagerInterface on RegisterActions.");
+        AZ_Assert(actionManagerInterface, "BoxComponentMode - could not get ActionManagerInterface on RegisterActions.");
 
         auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
-        AZ_Assert(hotKeyManagerInterface, "EditorVertexSelection - could not get HotKeyManagerInterface on RegisterActions.");
+        AZ_Assert(hotKeyManagerInterface, "BoxComponentMode - could not get HotKeyManagerInterface on RegisterActions.");
 
         // Dimensions sub-mode
         {
@@ -200,7 +199,7 @@ namespace AzToolsFramework
     void BoxComponentMode::BindActionsToModes()
     {
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        AZ_Assert(actionManagerInterface, "ColliderComponentMode - could not get ActionManagerInterface on RegisterActions.");
+        AZ_Assert(actionManagerInterface, "BoxComponentMode - could not get ActionManagerInterface on RegisterActions.");
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
@@ -208,19 +207,19 @@ namespace AzToolsFramework
         AZStd::string modeIdentifier =
             AZStd::string::format("o3de.context.mode.%s", serializeContext->FindClassData(azrtti_typeid<BoxComponentMode>())->m_name);
 
-        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.colliderComponentMode.setDimensionsSubMode");
-        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.colliderComponentMode.setTranslationOffsetSubMode");
-        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.colliderComponentMode.resetCurrentMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.boxComponentMode.setDimensionsSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.boxComponentMode.setTranslationOffsetSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.boxComponentMode.resetCurrentMode");
     }
 
     void BoxComponentMode::BindActionsToMenus()
     {
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-        AZ_Assert(menuManagerInterface, "ColliderComponentMode - could not get MenuManagerInterface on BindActionsToMenus.");
+        AZ_Assert(menuManagerInterface, "BoxComponentMode - could not get MenuManagerInterface on BindActionsToMenus.");
 
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.colliderComponentMode.setDimensionsSubMode", 6000);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.colliderComponentMode.setTranslationOffsetSubMode", 6001);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.colliderComponentMode.resetCurrentMode", 6002);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.boxComponentMode.setDimensionsSubMode", 6000);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.boxComponentMode.setTranslationOffsetSubMode", 6001);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.boxComponentMode.resetCurrentMode", 6002);
     }
 
     static ViewportUi::ButtonId RegisterClusterButton(
@@ -280,7 +279,7 @@ namespace AzToolsFramework
         m_buttonIds[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::TranslationOffset)] =
             RegisterClusterButton(ViewportUi::DefaultViewportId, m_clusterId, "Move", TranslationOffsetTooltip);
 
-        const auto onJointLimitButtonClicked = [this](ViewportUi::ButtonId buttonId)
+        const auto onButtonClicked = [this](ViewportUi::ButtonId buttonId)
         {
             if (buttonId == m_buttonIds[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)])
             {
@@ -292,7 +291,7 @@ namespace AzToolsFramework
             }
         };
 
-        m_modeSelectionHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onJointLimitButtonClicked);
+        m_modeSelectionHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId,
             &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,

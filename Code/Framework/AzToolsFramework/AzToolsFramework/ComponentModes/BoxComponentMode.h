@@ -59,8 +59,6 @@ namespace AzToolsFramework
         void SetupCluster();
 
         ViewportUi::ClusterId m_clusterId; //! Id for viewport cluster used to switch between modes.
-        ViewportUi::ButtonId m_dimensionsButtonId;
-        ViewportUi::ButtonId m_translationOffsetButtonId;
         AZStd::array<ViewportUi::ButtonId, 2> m_buttonIds;
         AZStd::array<AZStd::unique_ptr<BaseViewportEdit>, 2> m_subModes;
         ShapeComponentModeRequests::SubMode m_subMode = ShapeComponentModeRequests::SubMode::Dimensions;

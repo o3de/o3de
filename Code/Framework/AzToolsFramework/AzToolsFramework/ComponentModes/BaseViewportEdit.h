@@ -10,7 +10,7 @@
 
 namespace AzToolsFramework
 {
-    //! Base class for objects using in sub component modes which use viewport editing.
+    //! Base class for objects used in sub component modes which use viewport editing.
     class BaseViewportEdit
     {
     public:
