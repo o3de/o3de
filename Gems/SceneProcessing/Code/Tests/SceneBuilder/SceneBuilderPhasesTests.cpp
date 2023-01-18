@@ -40,6 +40,7 @@ class ComponentSingleton
     : public AZ::ComponentDescriptorDefault<ComponentType>
 {
 public:
+    AZ_CLASS_ALLOCATOR(ComponentSingleton, AZ::SystemAllocator)
     AZ::Component* CreateComponent() override { return m_component; }
     void SetComponent(ComponentType* c) { m_component = c; }
 private:

@@ -8,10 +8,10 @@ Object to house all the Qt Objects used when testing and manipulating the Script
 """
 from PySide2 import QtWidgets
 import pyside_utils
-from editor_python_test_tools.QtPyCommon import QtPyCommon
-from editor_python_test_tools.QtPyScriptCanvasVariableManager import QtPyScriptCanvasVariableManager
-from editor_python_test_tools.QtPyScriptCanvasNodePalette import QtPyScriptCanvasNodePalette
-from editor_python_test_tools.QtPyScriptCanvasNodeInspector import QtPyScriptCanvasNodeInspector
+from editor_python_test_tools.QtPy.QtPyCommon import QtPyCommon
+from editor_python_test_tools.QtPy.QtPyScriptCanvasVariableManager import QtPyScriptCanvasVariableManager
+from editor_python_test_tools.QtPy.QtPyScriptCanvasNodePalette import QtPyScriptCanvasNodePalette
+from editor_python_test_tools.QtPy.QtPyScriptCanvasNodeInspector import QtPyScriptCanvasNodeInspector
 from consts.scripting import (SCRIPT_CANVAS_UI)
 
 

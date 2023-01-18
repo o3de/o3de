@@ -25,6 +25,7 @@ namespace PassCanvas
         , private AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(PassCanvasApplication, AZ::SystemAllocator)
         AZ_TYPE_INFO(PassCanvas::PassCanvasApplication, "{792D3C47-F380-44BC-B47D-621D8C526360}");
 
         using Base = AtomToolsFramework::AtomToolsDocumentApplication;

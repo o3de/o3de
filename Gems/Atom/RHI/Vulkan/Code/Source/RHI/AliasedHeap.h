@@ -33,6 +33,7 @@ namespace AZ
             struct Descriptor
                 : public RHI::AliasedHeapDescriptor
             {
+                AZ_CLASS_ALLOCATOR(Descriptor, SystemAllocator)
                 uint32_t m_memoryTypeMask = 0;
                 VkMemoryPropertyFlags m_memoryFlags = 0;
             };            

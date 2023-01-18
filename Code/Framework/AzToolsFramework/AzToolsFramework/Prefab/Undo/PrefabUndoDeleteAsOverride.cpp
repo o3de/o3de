@@ -116,7 +116,7 @@ namespace AzToolsFramework
                     }
 
                     PrefabDom parentEntityDomAfterRemovingChildren;
-                    m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterRemovingChildren, *parentEntity);
+                    m_instanceToTemplateInterface->GenerateEntityDomBySerializing(parentEntityDomAfterRemovingChildren, *parentEntity);
 
                     PrefabUndoUtils::AppendUpdateEntityPatch(
                         m_redoPatch,

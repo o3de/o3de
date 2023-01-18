@@ -54,6 +54,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
+            AZ_CLASS_ALLOCATOR(RayTracingFeatureProcessor, AZ::SystemAllocator)
 
             AZ_RTTI(AZ::Render::RayTracingFeatureProcessor, "{5017EFD3-A996-44B0-9ED2-C47609A2EE8D}", AZ::RPI::FeatureProcessor);
 
