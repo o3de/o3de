@@ -524,8 +524,13 @@ AZ::EntityId UiCanvasComponent::FindElementEntityIdByName(const LyShine::NameTyp
 void UiCanvasComponent::FindElementsByName(const LyShine::NameType& name, LyShine::EntityArray& result)
 {
     // find all elements with the given name
-    EBUS_EVENT_ID(m_rootElement, UiElementBus, FindDescendantElements,
-        [&name](const AZ::Entity* entity) { return name == entity->GetName(); },
+    UiElementBus::Event(
+        m_rootElement,
+        &UiElementBus::Events::FindDescendantElements,
+        [&name](const AZ::Entity* entity)
+        {
+            return name == entity->GetName();
+        },
         result);
 }
 
@@ -549,8 +554,7 @@ AZ::Entity* UiCanvasComponent::FindElementByHierarchicalName(const LyShine::Name
         {
             // '/' not found, use whole remaining string
             AZ::Entity* entity = nullptr;
-            EBUS_EVENT_ID_RESULT(entity, currentEntity->GetId(), UiElementBus,
-                FindChildByName, name.substr(lastPos));
+            UiElementBus::EventResult(entity, currentEntity->GetId(), &UiElementBus::Events::FindChildByName, name.substr(lastPos));
             currentEntity = entity;
 
             if (currentEntity)
@@ -563,8 +567,8 @@ AZ::Entity* UiCanvasComponent::FindElementByHierarchicalName(const LyShine::Name
         {
             // use the part of the string between lastPos and pos (between the '/' characters)
             AZ::Entity* entity = nullptr;
-            EBUS_EVENT_ID_RESULT(entity, currentEntity->GetId(), UiElementBus,
-                FindChildByName, name.substr(lastPos, pos - lastPos));
+            UiElementBus::EventResult(
+                entity, currentEntity->GetId(), &UiElementBus::Events::FindChildByName, name.substr(lastPos, pos - lastPos));
             currentEntity = entity;
             lastPos = pos + 1;
         }
@@ -584,8 +588,7 @@ void UiCanvasComponent::FindElements(AZStd::function<bool(const AZ::Entity*)> pr
 AZ::Entity* UiCanvasComponent::PickElement(AZ::Vector2 point)
 {
     AZ::Entity* element = nullptr;
-    EBUS_EVENT_ID_RESULT(element, m_rootElement,
-        UiElementBus, FindFrontmostChildContainingPoint, point, m_isLoadedInGame);
+    UiElementBus::EventResult(element, m_rootElement, &UiElementBus::Events::FindFrontmostChildContainingPoint, point, m_isLoadedInGame);
     return element;
 }
 
@@ -593,8 +596,8 @@ AZ::Entity* UiCanvasComponent::PickElement(AZ::Vector2 point)
 LyShine::EntityArray UiCanvasComponent::PickElements(const AZ::Vector2& bound0, const AZ::Vector2& bound1)
 {
     LyShine::EntityArray elements;
-    EBUS_EVENT_ID_RESULT(elements, m_rootElement,
-        UiElementBus, FindAllChildrenIntersectingRect, bound0, bound1, m_isLoadedInGame);
+    UiElementBus::EventResult(
+        elements, m_rootElement, &UiElementBus::Events::FindAllChildrenIntersectingRect, bound0, bound1, m_isLoadedInGame);
     return elements;
 }
 
@@ -1610,7 +1613,8 @@ void UiCanvasComponent::ActiveChanged(AZ::EntityId m_newActiveInteractable, bool
 void UiCanvasComponent::OnUiAnimationEvent(EUiAnimationEvent uiAnimationEvent, IUiAnimSequence* pAnimSequence)
 {
     // Queue the event to prevent deletions during the canvas update
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiAnimationNotificationBus, OnUiAnimationEvent, uiAnimationEvent, pAnimSequence->GetName());
+    UiAnimationNotificationBus::QueueEvent(
+        GetEntityId(), &UiAnimationNotificationBus::Events::OnUiAnimationEvent, uiAnimationEvent, pAnimSequence->GetName());
 
     // Stop listening to events
     if ((uiAnimationEvent == EUiAnimationEvent::eUiAnimationEvent_Stopped) || (uiAnimationEvent == EUiAnimationEvent::eUiAnimationEvent_Aborted))
@@ -1622,7 +1626,8 @@ void UiCanvasComponent::OnUiAnimationEvent(EUiAnimationEvent uiAnimationEvent, I
 void UiCanvasComponent::OnUiTrackEvent(AZStd::string eventName, AZStd::string valueName, IUiAnimSequence* pAnimSequence)
 {
     // Queue the event to prevent deletions during the canvas update
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiAnimationNotificationBus, OnUiTrackEvent, eventName, valueName, pAnimSequence->GetName());
+    UiAnimationNotificationBus::QueueEvent(
+        GetEntityId(), &UiAnimationNotificationBus::Events::OnUiTrackEvent, eventName, valueName, pAnimSequence->GetName());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3570,8 +3575,14 @@ AZStd::vector<AZ::EntityId> UiCanvasComponent::GetEntityIdsOfElementAndDescendan
     entitiesInPrefab.push_back(entity->GetId());
 
     LyShine::EntityArray descendantEntities;
-    EBUS_EVENT_ID(entity->GetId(), UiElementBus, FindDescendantElements,
-        [](const AZ::Entity*) { return true; }, descendantEntities);
+    UiElementBus::Event(
+        entity->GetId(),
+        &UiElementBus::Events::FindDescendantElements,
+        [](const AZ::Entity*)
+        {
+            return true;
+        },
+        descendantEntities);
 
     for (auto descendant : descendantEntities)
     {

@@ -776,8 +776,12 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
     FileHelpers::SourceControlAddOrEdit(sourceAssetPathName.c_str(), this);
 
     bool saveSuccessful = false;
-    EBUS_EVENT_ID_RESULT(saveSuccessful, canvasMetadata.m_canvasEntityId, UiCanvasBus, SaveToXml,
-        assetIdPathname.c_str(), sourceAssetPathName.c_str());
+    UiCanvasBus::EventResult(
+        saveSuccessful,
+        canvasMetadata.m_canvasEntityId,
+        &UiCanvasBus::Events::SaveToXml,
+        assetIdPathname.c_str(),
+        sourceAssetPathName.c_str());
 
     if (saveSuccessful)
     {
@@ -840,12 +844,13 @@ bool EditorWindow::SaveSlice(UiCanvasMetadata& canvasMetadata)
     // make a list that contains the top-level instanced entity plus all of its descendants
     AzToolsFramework::EntityIdList allEntitiesInLocalInstance;
     allEntitiesInLocalInstance.push_back(sliceEntityId);
-    EBUS_EVENT_ID(sliceEntityId, UiElementBus, CallOnDescendantElements,
+    UiElementBus::Event(
+        sliceEntityId,
+        &UiElementBus::Events::CallOnDescendantElements,
         [&allEntitiesInLocalInstance](const AZ::EntityId id)
         {
             allEntitiesInLocalInstance.push_back(id);
-        }
-    );
+        });
 
     const AZ::Outcome<void, AZStd::string> outcome = GetSliceManager()->QuickPushSliceInstance(sliceAddress, allEntitiesInLocalInstance);
 
@@ -1906,12 +1911,13 @@ void EditorWindow::UpdateChangedStatusOnAssetChange(const AzFramework::EntityCon
         // m_children member of the parent will have changed.
         AzToolsFramework::EntityIdList allEntitiesInLocalInstance;
         allEntitiesInLocalInstance.push_back(sliceEntityId);
-        EBUS_EVENT_ID(sliceEntityId, UiElementBus, CallOnDescendantElements,
+        UiElementBus::Event(
+            sliceEntityId,
+            &UiElementBus::Events::CallOnDescendantElements,
             [&allEntitiesInLocalInstance](const AZ::EntityId id)
             {
                 allEntitiesInLocalInstance.push_back(id);
-            }
-        );
+            });
 
         // test if there are any overrides for the slice instance
         bool hasOverrides = AzToolsFramework::SliceUtilities::DoEntitiesHaveOverrides( allEntitiesInLocalInstance );

@@ -860,10 +860,10 @@ void HierarchyWidget::DropMimeDataAssets(const QMimeData* mimeData,
                     UiElementBus::EventResult(parentEntityId, element->GetId(), &UiElementBus::Events::GetParentEntityId);
 
                     AZStd::string uniqueName;
-                    EBUS_EVENT_ID_RESULT(uniqueName,
+                    UiCanvasBus::EventResult(
+                        uniqueName,
                         GetEditorWindow()->GetCanvas(),
-                        UiCanvasBus,
-                        GetUniqueChildName,
+                        &UiCanvasBus::Events::GetUniqueChildName,
                         parentEntityId,
                         entityName,
                         nullptr);

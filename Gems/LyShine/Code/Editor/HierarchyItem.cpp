@@ -51,13 +51,13 @@ HierarchyItem::HierarchyItem(EditorWindow* editWindow,
         HierarchyItem* parentHierarchyItem = HierarchyItem::RttiCast(&parent);
         if (parentHierarchyItem)
         {
-            EBUS_EVENT_ID_RESULT(element, parentHierarchyItem->GetEntityId(), UiElementBus,
-                CreateChildElement, label.toStdString().c_str());
+            UiElementBus::EventResult(
+                element, parentHierarchyItem->GetEntityId(), &UiElementBus::Events::CreateChildElement, label.toStdString().c_str());
         }  
         else
         {
-            EBUS_EVENT_ID_RESULT(element, editWindow->GetCanvas(), UiCanvasBus,
-                CreateChildElement, label.toStdString().c_str());
+            UiCanvasBus::EventResult(
+                element, editWindow->GetCanvas(), &UiCanvasBus::Events::CreateChildElement, label.toStdString().c_str());
         }
 
         if (element->GetState() == AZ::Entity::State::Active)

@@ -284,8 +284,13 @@ bool UiMaskComponent::IsPointMasked(AZ::Vector2 point)
 
             // get any descendants of the child mask element that have visual components
             LyShine::EntityArray childMaskElements;
-            EBUS_EVENT_ID(m_childMaskElement, UiElementBus, FindDescendantElements, 
-                [](const AZ::Entity* descendant) { return UiVisualBus::FindFirstHandler(descendant->GetId()) != nullptr; },
+            UiElementBus::Event(
+                m_childMaskElement,
+                &UiElementBus::Events::FindDescendantElements,
+                [](const AZ::Entity* descendant)
+                {
+                    return UiVisualBus::FindFirstHandler(descendant->GetId()) != nullptr;
+                },
                 childMaskElements);
 
             // if the point is in any of their rects then it is not masked out
@@ -461,8 +466,13 @@ UiMaskComponent::EntityComboBoxVec UiMaskComponent::PopulateChildEntityList()
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;
-    EBUS_EVENT_ID(GetEntityId(), UiElementBus, FindDescendantElements,
-        []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+    UiElementBus::Event(
+        GetEntityId(),
+        &UiElementBus::Events::FindDescendantElements,
+        []([[maybe_unused]] const AZ::Entity* entity)
+        {
+            return true;
+        },
         matchingElements);
 
     // add their names to the StringList and their IDs to the id list

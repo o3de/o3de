@@ -274,8 +274,13 @@ void UiDropdownComponent::InGamePostActivate()
     UiElementBus::EventResult(m_baseParent, m_content, &UiElementBus::Events::GetParentEntityId);
 
     // Get a list of all our submenus (content descendants that have a dropdown component)
-    EBUS_EVENT_ID(m_content, UiElementBus, FindDescendantElements,
-        [](const AZ::Entity* entity) { return UiDropdownBus::FindFirstHandler(entity->GetId()) != nullptr; },
+    UiElementBus::Event(
+        m_content,
+        &UiElementBus::Events::FindDescendantElements,
+        [](const AZ::Entity* entity)
+        {
+            return UiDropdownBus::FindFirstHandler(entity->GetId()) != nullptr;
+        },
         m_submenus);
 }
 

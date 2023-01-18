@@ -1003,8 +1003,14 @@ bool UiScrollBoxComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractab
             interactableContainer, GetEntityId(), &UiElementBus::Events::FindParentInteractableSupportingDrag, startPoint);
 
         // if there was a parent interactable offer them the opportunity to become the active interactable
-        EBUS_EVENT_ID_RESULT(result, interactableContainer, UiInteractableBus,
-            OfferDragHandOff, currentActiveInteractable, startPoint, currentPoint, dragThreshold);
+        UiInteractableBus::EventResult(
+            result,
+            interactableContainer,
+            &UiInteractableBus::Events::OfferDragHandOff,
+            currentActiveInteractable,
+            startPoint,
+            currentPoint,
+            dragThreshold);
     }
 
     return result;
@@ -1412,8 +1418,13 @@ UiScrollBoxComponent::EntityComboBoxVec UiScrollBoxComponent::PopulateChildEntit
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;
-    EBUS_EVENT_ID(GetEntityId(), UiElementBus, FindDescendantElements,
-        []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+    UiElementBus::Event(
+        GetEntityId(),
+        &UiElementBus::Events::FindDescendantElements,
+        []([[maybe_unused]] const AZ::Entity* entity)
+        {
+            return true;
+        },
         matchingElements);
 
     // add their names to the StringList and their IDs to the id list
@@ -1449,7 +1460,9 @@ UiScrollBoxComponent::EntityComboBoxVec UiScrollBoxComponent::PopulateScrollBarE
     AZ::EntityId canvasEntityId;
     UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     LyShine::EntityArray scrollBarElements;
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, FindElements,
+    UiCanvasBus::Event(
+        canvasEntityId,
+        &UiCanvasBus::Events::FindElements,
         [this, orientation](const AZ::Entity* entity)
         {
             bool isScroller = false;
@@ -1760,8 +1773,14 @@ void UiScrollBoxComponent::CheckForDragOrHandOffToParent(AZ::Vector2 point)
     {
         // offer the parent draggable the chance to become the active interactable
         bool handOff = false;
-        EBUS_EVENT_ID_RESULT(handOff, parentDraggable, UiInteractableBus,
-            OfferDragHandOff, GetEntityId(), m_pressedPoint, point, containedDragThreshold);
+        UiInteractableBus::EventResult(
+            handOff,
+            parentDraggable,
+            &UiInteractableBus::Events::OfferDragHandOff,
+            GetEntityId(),
+            m_pressedPoint,
+            point,
+            containedDragThreshold);
 
         if (handOff)
         {

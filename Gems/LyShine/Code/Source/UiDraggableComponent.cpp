@@ -125,7 +125,7 @@ bool UiDraggableComponent::HandleEnterPressed(bool& shouldStayActive)
             m_isDragging = true;
             m_dragState = DragState::Normal;
 
-            EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDraggableNotificationBus, OnDragStart, point);
+            UiDraggableNotificationBus::QueueEvent(GetEntityId(), &UiDraggableNotificationBus::Events::OnDragStart, point);
 
             m_hoverDropTarget.SetInvalid();
 
@@ -232,7 +232,7 @@ void UiDraggableComponent::InputPositionUpdate(AZ::Vector2 point)
                     m_isDragging = true;
                     m_dragState = DragState::Normal;
 
-                    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDraggableNotificationBus, OnDragStart, point);
+                    UiDraggableNotificationBus::QueueEvent(GetEntityId(), &UiDraggableNotificationBus::Events::OnDragStart, point);
 
                     m_hoverDropTarget.SetInvalid();
                 }
@@ -281,7 +281,7 @@ bool UiDraggableComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractab
             // start the drag
             m_isDragging = true;
             m_dragState = DragState::Normal;
-            EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDraggableNotificationBus, OnDragStart, currentPoint);
+            UiDraggableNotificationBus::QueueEvent(GetEntityId(), &UiDraggableNotificationBus::Events::OnDragStart, currentPoint);
             m_hoverDropTarget.SetInvalid();
 
             // Send the OnDrag and any OnDropHoverStart immediately so that it doesn't require another frame to
@@ -363,7 +363,7 @@ void UiDraggableComponent::SetAsProxy(AZ::EntityId originalDraggableId, AZ::Vect
     // start the drag on the proxy
     m_isDragging = true;
     m_dragState = DragState::Normal;
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDraggableNotificationBus, OnDragStart, point);
+    UiDraggableNotificationBus::QueueEvent(GetEntityId(), &UiDraggableNotificationBus::Events::OnDragStart, point);
     m_hoverDropTarget.SetInvalid();
 
     // Send the OnDrag and any OnDropHoverStart immediately so that it doesn't require another frame to
@@ -646,7 +646,7 @@ void UiDraggableComponent::DoDrag(AZ::Vector2 viewportPoint, bool ignoreInteract
     }
 
     // Send the OnDrag notification
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDraggableNotificationBus, OnDrag, viewportPoint);
+    UiDraggableNotificationBus::QueueEvent(GetEntityId(), &UiDraggableNotificationBus::Events::OnDrag, viewportPoint);
 
     AZ::EntityId dropEntity = GetDropTargetUnderDraggable(viewportPoint, ignoreInteractables);
 
@@ -683,7 +683,7 @@ void UiDraggableComponent::EndDragOperation(AZ::Vector2 viewportPoint, bool igno
         AZ::EntityId dropEntity = GetDropTargetUnderDraggable(viewportPoint, ignoreInteractables);
 
         // send a drag end notification
-        EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDraggableNotificationBus, OnDragEnd, viewportPoint);
+        UiDraggableNotificationBus::QueueEvent(GetEntityId(), &UiDraggableNotificationBus::Events::OnDragEnd, viewportPoint);
 
         // If there was a drop target under the cursor then send it a message to handle this draggable being dropped on it
         if (dropEntity.IsValid())

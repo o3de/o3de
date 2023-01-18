@@ -75,19 +75,19 @@ void UiDropTargetComponent::SetOnDropActionName(const LyShine::ActionName& actio
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiDropTargetComponent::HandleDropHoverStart(AZ::EntityId draggable)
 {
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDropTargetNotificationBus, OnDropHoverStart, draggable);
+    UiDropTargetNotificationBus::QueueEvent(GetEntityId(), &UiDropTargetNotificationBus::Events::OnDropHoverStart, draggable);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiDropTargetComponent::HandleDropHoverEnd(AZ::EntityId draggable)
 {
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDropTargetNotificationBus, OnDropHoverEnd, draggable);
+    UiDropTargetNotificationBus::QueueEvent(GetEntityId(), &UiDropTargetNotificationBus::Events::OnDropHoverEnd, draggable);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiDropTargetComponent::HandleDrop(AZ::EntityId draggable)
 {
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDropTargetNotificationBus, OnDrop, draggable);
+    UiDropTargetNotificationBus::QueueEvent(GetEntityId(), &UiDropTargetNotificationBus::Events::OnDrop, draggable);
 
     // Check to see if the draggable is a proxy
     bool isProxy = false;
@@ -245,7 +245,10 @@ LyShine::EntityArray UiDropTargetComponent::GetNavigableDropTargets(AZ::EntityId
     AZ::EntityId canvasEntityId;
     UiElementBus::EventResult(canvasEntityId, entityId, &UiElementBus::Events::GetCanvasEntityId);
     LyShine::EntityArray navigableElements;
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, FindElements,
+
+    UiCanvasBus::Event(
+        canvasEntityId,
+        &UiCanvasBus::Events::FindElements,
         [entityId](const AZ::Entity* entity)
         {
             bool navigable = false;

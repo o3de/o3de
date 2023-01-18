@@ -240,16 +240,14 @@ bool UiEditorEntityContext::SaveCanvasEntityToStreamForGame(AZ::Entity* canvasEn
     AZ_Assert(exportCanvasEntity, "Failed to create target entity \"%s\" for export.",
         sourceCanvasEntity->GetName().c_str());
 
-    EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, PreExportEntity,
-        *sourceCanvasEntity,
-        *exportCanvasEntity);
+    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::PreExportEntity, *sourceCanvasEntity, *exportCanvasEntity);
 
     // Export entity representing the canvas, which has only runtime components.
     AZ::Utils::SaveObjectToStream<AZ::Entity>(stream, streamType, exportCanvasEntity);
 
-    EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, PostExportEntity,
-        *sourceCanvasEntity,
-        *exportCanvasEntity);
+    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::PostExportEntity, *sourceCanvasEntity, *exportCanvasEntity);
 
     return true;
 }

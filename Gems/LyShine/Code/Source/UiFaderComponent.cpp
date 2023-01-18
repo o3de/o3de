@@ -375,7 +375,7 @@ void UiFaderComponent::CompleteFade()
 {
     SetFadeValueInternal(m_fadeTarget);
     // Queue the OnFadeComplete event to prevent deletions during the canvas update
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiFaderNotificationBus, OnFadeComplete);
+    UiFaderNotificationBus::QueueEvent(GetEntityId(), &UiFaderNotificationBus::Events::OnFadeComplete);
     m_isFading = false;
 
     // Disconnect from UpdateBus

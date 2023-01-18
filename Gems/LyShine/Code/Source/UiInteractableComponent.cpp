@@ -180,8 +180,14 @@ void UiInteractableComponent::InputPositionUpdate(AZ::Vector2 point)
 
             // offer the parent draggable the chance to become the active interactable
             bool handOff = false;
-            EBUS_EVENT_ID_RESULT(handOff, parentDraggable, UiInteractableBus,
-                OfferDragHandOff, GetEntityId(), m_pressedPoint, point, containedDragThreshold);
+            UiInteractableBus::EventResult(
+                handOff,
+                parentDraggable,
+                &UiInteractableBus::Events::OfferDragHandOff,
+                GetEntityId(),
+                m_pressedPoint,
+                point,
+                containedDragThreshold);
 
             if (handOff)
             {
@@ -692,7 +698,7 @@ void UiInteractableComponent::TriggerPressedAction()
     }
 
     // Queue the event to prevent deletions during the input event
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiInteractableNotificationBus, OnPressed);
+    UiInteractableNotificationBus::QueueEvent(GetEntityId(), &UiInteractableNotificationBus::Events::OnPressed);
 
     // Tell any action listeners about the event
     if (!m_pressedActionName.empty())
@@ -700,7 +706,7 @@ void UiInteractableComponent::TriggerPressedAction()
         AZ::EntityId canvasEntityId;
         UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         // Queue the event to prevent deletions during the input event
-        EBUS_QUEUE_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_pressedActionName);
+        UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_pressedActionName);
     }
 }
 
@@ -714,7 +720,7 @@ void UiInteractableComponent::TriggerReleasedAction()
     }
 
     // Queue the event to prevent deletions during the input event
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiInteractableNotificationBus, OnReleased);
+    UiInteractableNotificationBus::QueueEvent(GetEntityId(), &UiInteractableNotificationBus::Events::OnReleased);
 
     // Tell any action listeners about the event
     if (!m_releasedActionName.empty())
@@ -722,7 +728,8 @@ void UiInteractableComponent::TriggerReleasedAction()
         AZ::EntityId canvasEntityId;
         UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         // Queue the event to prevent deletions during the input event
-        EBUS_QUEUE_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_releasedActionName);
+        UiCanvasNotificationBus::QueueEvent(
+            canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_releasedActionName);
     }
 }
 
@@ -750,7 +757,9 @@ LyShine::EntityArray UiInteractableComponent::GetNavigableInteractables(AZ::Enti
     AZ::EntityId canvasEntityId;
     UiElementBus::EventResult(canvasEntityId, entityId, &UiElementBus::Events::GetCanvasEntityId);
     LyShine::EntityArray navigableElements;
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, FindElements,
+    UiCanvasBus::Event(
+        canvasEntityId,
+        &UiCanvasBus::Events::FindElements,
         [entityId](const AZ::Entity* entity)
         {
             bool navigable = false;

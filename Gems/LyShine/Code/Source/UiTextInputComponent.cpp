@@ -50,8 +50,13 @@ namespace
     {
         // Get a list of all descendant elements that support the UiTextBus
         LyShine::EntityArray matchingElements;
-        EBUS_EVENT_ID(entity, UiElementBus, FindDescendantElements,
-            [](const AZ::Entity* descendant) { return UiTextBus::FindFirstHandler(descendant->GetId()) != nullptr; },
+        UiElementBus::Event(
+            entity,
+            &UiElementBus::Events::FindDescendantElements,
+            [](const AZ::Entity* descendant)
+            {
+                return UiTextBus::FindFirstHandler(descendant->GetId()) != nullptr;
+            },
             matchingElements);
 
         // add their names to the StringList and their IDs to the id list
@@ -1153,8 +1158,14 @@ void UiTextInputComponent::CheckForDragOrHandOffToParent(AZ::Vector2 point)
     {
         // offer the parent draggable the chance to become the active interactable
         bool handOff = false;
-        EBUS_EVENT_ID_RESULT(handOff, parentDraggable, UiInteractableBus,
-            OfferDragHandOff, GetEntityId(), m_pressedPoint, point, containedDragThreshold);
+        UiInteractableBus::EventResult(
+            handOff,
+            parentDraggable,
+            &UiInteractableBus::Events::OfferDragHandOff,
+            GetEntityId(),
+            m_pressedPoint,
+            point,
+            containedDragThreshold);
 
         if (handOff)
         {
@@ -1183,7 +1194,9 @@ void UiTextInputComponent::UpdateDisplayedTextFunction()
     {
         // Use a lambda here so we can easily access our instance to retrieve the
         // currently configured replacement character
-        EBUS_EVENT_ID(m_textEntity, UiTextBus, SetDisplayedTextFunction,
+        UiTextBus::Event(
+            m_textEntity,
+            &UiTextBus::Events::SetDisplayedTextFunction,
             [this](const AZStd::string& originalText)
             {
                 // NOTE: this assumes the uint32_t can be interpreted as a wchar_t, it seems to

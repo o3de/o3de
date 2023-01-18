@@ -136,8 +136,13 @@ void UiLayoutManager::AddToRecomputeLayoutList(AZ::EntityId entityId)
 
         // Remove element's children from the list
         LyShine::EntityArray descendants;
-        EBUS_EVENT_ID(entityId, UiElementBus, FindDescendantElements,
-            []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+        UiElementBus::Event(
+            entityId,
+            &UiElementBus::Events::FindDescendantElements,
+            []([[maybe_unused]] const AZ::Entity* entity)
+            {
+                return true;
+            },
             descendants);
 
         m_elementsToRecomputeLayout.remove_if(

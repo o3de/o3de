@@ -227,9 +227,9 @@ namespace SerializeHelpers
 
         // Fixup the created entities, we do this before adding the top level element to the parent so that
         // MakeUniqueChileName works correctly
-        EBUS_EVENT_ID(canvasEntityId,
-            UiCanvasBus,
-            FixupCreatedEntities,
+        UiCanvasBus::Event(
+            canvasEntityId,
+            &UiCanvasBus::Events::FixupCreatedEntities,
             validatedListOfNewlyCreatedTopLevelElements,
             isCopyOperation,
             parent);
@@ -238,12 +238,7 @@ namespace SerializeHelpers
         for (auto entity : validatedListOfNewlyCreatedTopLevelElements)
         {
             // add this new entity as a child of the parent (insertionPoint or root)
-            EBUS_EVENT_ID(canvasEntityId,
-                UiCanvasBus,
-                AddElement,
-                entity,
-                parent,
-                insertBefore);
+            UiCanvasBus::Event(canvasEntityId, &UiCanvasBus::Events::AddElement, entity, parent, insertBefore);
         }
 
         // if a list of entities was passed then add all the entities that we added
@@ -277,8 +272,13 @@ namespace SerializeHelpers
             entitiesToSerialize.m_entityRestoreInfos.push_back(sliceRestoreInfo);
 
             LyShine::EntityArray childElements;
-            EBUS_EVENT_ID(element->GetId(), UiElementBus, FindDescendantElements,
-                []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+            UiElementBus::Event(
+                element->GetId(),
+                &UiElementBus::Events::FindDescendantElements,
+                []([[maybe_unused]] const AZ::Entity* entity)
+                {
+                    return true;
+                },
                 childElements);
 
             for (auto child : childElements)

@@ -199,8 +199,13 @@ UiDropdownOptionComponent::EntityComboBoxVec UiDropdownOptionComponent::Populate
     AZ::EntityId canvasEntityId;
     UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     LyShine::EntityArray dropdowns;
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, FindElements,
-        [](const AZ::Entity* entity) { return UiDropdownBus::FindFirstHandler(entity->GetId()) != nullptr; },
+    UiCanvasBus::Event(
+        canvasEntityId,
+        &UiCanvasBus::Events::FindElements,
+        [](const AZ::Entity* entity)
+        {
+            return UiDropdownBus::FindFirstHandler(entity->GetId()) != nullptr;
+        },
         dropdowns);
 
     // Sort the elements by name

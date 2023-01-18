@@ -196,11 +196,11 @@ bool UiButtonComponent::HandleReleasedCommon(const AZ::Vector2& point)
             AZ::EntityId canvasEntityId;
             UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
             // Queue the event to prevent deletions during the input event
-            EBUS_QUEUE_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_actionName);
+            UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_actionName);
         }
 
         // Queue the event to prevent deletions during the input event
-        EBUS_QUEUE_EVENT_ID(GetEntityId(), UiButtonNotificationBus, OnButtonClick);
+        UiButtonNotificationBus::QueueEvent(GetEntityId(), &UiButtonNotificationBus::Events::OnButtonClick);
     }
 
     m_isPressed = false;

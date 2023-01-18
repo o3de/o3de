@@ -868,8 +868,13 @@ UiTooltipDisplayComponent::EntityComboBoxVec UiTooltipDisplayComponent::Populate
 
     // Get a list of all descendant elements that support the UiTextBus
     LyShine::EntityArray matchingElements;
-    EBUS_EVENT_ID(GetEntityId(), UiElementBus, FindDescendantElements,
-        [](const AZ::Entity* entity) { return UiTextBus::FindFirstHandler(entity->GetId()) != nullptr; },
+    UiElementBus::Event(
+        GetEntityId(),
+        &UiElementBus::Events::FindDescendantElements,
+        [](const AZ::Entity* entity)
+        {
+            return UiTextBus::FindFirstHandler(entity->GetId()) != nullptr;
+        },
         matchingElements);
 
     // add their names to the StringList and their IDs to the id list

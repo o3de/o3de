@@ -249,15 +249,25 @@ void UiDynamicLayoutComponent::SetPrototypeElementActive(bool active)
             prototypeEntity->Activate();
 
             // Have to get children after it is Activated since it will not be connected to bus before that
-            EBUS_EVENT_ID(prototypeEntity->GetId(), UiElementBus, FindDescendantElements,
-                [](const AZ::Entity*) { return true; },
+            UiElementBus::Event(
+                prototypeEntity->GetId(),
+                &UiElementBus::Events::FindDescendantElements,
+                [](const AZ::Entity*)
+                {
+                    return true;
+                },
                 descendantElements);
         }
         else
         {
             // Have to get children before it is Deactivated since it will not be connected to bus after that
-            EBUS_EVENT_ID(prototypeEntity->GetId(), UiElementBus, FindDescendantElements,
-                [](const AZ::Entity*) { return true; },
+            UiElementBus::Event(
+                prototypeEntity->GetId(),
+                &UiElementBus::Events::FindDescendantElements,
+                [](const AZ::Entity*)
+                {
+                    return true;
+                },
                 descendantElements);
 
             prototypeEntity->Deactivate();

@@ -914,8 +914,13 @@ UiScrollBarComponent::EntityComboBoxVec UiScrollBarComponent::PopulateChildEntit
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;
-    EBUS_EVENT_ID(GetEntityId(), UiElementBus, FindDescendantElements,
-        []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+    UiElementBus::Event(
+        GetEntityId(),
+        &UiElementBus::Events::FindDescendantElements,
+        []([[maybe_unused]] const AZ::Entity* entity)
+        {
+            return true;
+        },
         matchingElements);
 
     // add their names to the StringList and their IDs to the id list
@@ -1001,8 +1006,14 @@ bool UiScrollBarComponent::CheckForDragOrHandOffToParent(AZ::EntityId currentAct
     else if (parentDraggable.IsValid())
     {
         // offer the parent draggable the chance to become the active interactable
-        EBUS_EVENT_ID_RESULT(handOffDone, parentDraggable, UiInteractableBus,
-            OfferDragHandOff, currentActiveInteractable, startPoint, currentPoint, containedDragThreshold);
+        UiInteractableBus::EventResult(
+            handOffDone,
+            parentDraggable,
+            &UiInteractableBus::Events::OfferDragHandOff,
+            currentActiveInteractable,
+            startPoint,
+            currentPoint,
+            containedDragThreshold);
 
         if (handOffDone)
         {
