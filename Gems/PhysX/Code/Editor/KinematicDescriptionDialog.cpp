@@ -7,29 +7,27 @@
  */
 
 #include "KinematicDescriptionDialog.h"
-#include "EditorDefs.h"
-
-// Qt
-#include <QPushButton>
-#include <QStyle>
-
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <Editor/ui_KinematicDescriptionDialog.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
-constexpr AZStd::string_view dynamicDescription = "With <b>Dynamic</b> rigid bodies, you can physics forces "
+static constexpr AZStd::string_view dynamicDescription = "With <b>Dynamic</b> rigid bodies, you can physics forces "
                                                   "(gravity, collision, etc.) to control the movement and "
                                                   "position of the object.";
 
-constexpr AZStd::string_view kinematicDescription = "With <b>Kinematic</b> rigid bodies, you can use Transform to "
+static constexpr AZStd::string_view kinematicDescription = "With <b>Kinematic</b> rigid bodies, you can use Transform to "
                                                     "control the movement and position of the object. ";
 
-constexpr AZStd::string_view moveWithCode = "Move with code";
-constexpr AZStd::string_view moveManually = "Move manually";
-constexpr AZStd::string_view collisions = "Collisions";
-constexpr AZStd::string_view gravity = "Gravity";
+static constexpr AZStd::string_view moveWithCode = "Move with code";
+static constexpr AZStd::string_view moveManually = "Move manually";
+static constexpr AZStd::string_view collisions = "Collisions";
+static constexpr AZStd::string_view gravity = "Gravity";
 
+static constexpr AZStd::string_view impactIcon = "<img src=\":/stylesheet/img/16x16/impact.svg\"/>";
+static constexpr AZStd::string_view gravityIcon = "<img src=\":/stylesheet/img/16x16/gravity.svg\"/>";
+static constexpr AZStd::string_view moveManuallyIcon = "<img src=\":/stylesheet/img/16x16/move_manually.svg\"/>";
+static constexpr AZStd::string_view moveWithCodeIcon = "<img src=\":/stylesheet/img/16x16/move_with_code.svg\"/>";
 
 KinematicDescriptionDialog::KinematicDescriptionDialog(bool kinematicSetting, QWidget* parent)
     : QDialog(parent)
@@ -55,45 +53,8 @@ void KinematicDescriptionDialog::InitializeButtons()
 
     m_kinematicSetting ? m_ui->kinematicRadioButton->setChecked(true) : m_ui->dynamicRadioButton->setChecked(true);
 
+    // running OnButtonClicked manually to get initial border highlight
     OnButtonClicked();
-}
-
-void KinematicDescriptionDialog::UpdateDialogText()
-{
-    if (m_kinematicSetting)
-    {
-        m_ui->kinematicRadioButton->setChecked(true);
-
-        m_ui->selectedDescriptionLabel->setText(AZStd::string(kinematicDescription).c_str());
-
-        m_ui->validLabel1->setText(AZStd::string(moveWithCode).c_str());
-        m_ui->validLabel2->setText(AZStd::string(moveManually).c_str());
-        m_ui->validIcon1->setText("<img src=\":/stylesheet/img/16x16/move_with_code.svg\"/>");
-        m_ui->validIcon2->setText("<img src=\":/stylesheet/img/16x16/move_manually.svg\"/>");
-
-        m_ui->invalidLabel1->setText(AZStd::string(collisions).c_str());
-        m_ui->invalidLabel2->setText(AZStd::string(gravity).c_str());
-        m_ui->invalidIcon1->setText("<img src=\":/stylesheet/img/16x16/impact.svg\"/>");
-        m_ui->invalidIcon2->setText("<img src=\":/stylesheet/img/16x16/gravity.svg\"/>");
-    }
-    else
-    {
-        m_ui->dynamicRadioButton->setChecked(true);
-
-        m_ui->selectedDescriptionLabel->setText(AZStd::string(dynamicDescription).c_str());
-
-        m_ui->validLabel1->setText(AZStd::string(collisions).c_str());
-        m_ui->validLabel2->setText(AZStd::string(gravity).c_str());
-        m_ui->validIcon1->setText("<img src=\":/stylesheet/img/16x16/impact.svg\"/>");
-        m_ui->validIcon2->setText("<img src=\":/stylesheet/img/16x16/gravity.svg\"/>");
-        
-        m_ui->invalidLabel1->setText(AZStd::string(moveWithCode).c_str());
-        m_ui->invalidLabel2->setText(AZStd::string(moveManually).c_str());
-        m_ui->invalidIcon1->setText("<img src=\":/stylesheet/img/16x16/move_with_code.svg\"/>");
-        m_ui->invalidIcon2->setText("<img src=\":/stylesheet/img/16x16/move_manually.svg\"/>");
-
-
-    }
 }
 
 void KinematicDescriptionDialog::OnButtonClicked()
@@ -117,9 +78,40 @@ void KinematicDescriptionDialog::OnButtonClicked()
     UpdateDialogText();
 }
 
-bool KinematicDescriptionDialog::GetResult() const
+void KinematicDescriptionDialog::UpdateDialogText()
 {
-    return m_kinematicSetting;
+    if (m_kinematicSetting)
+    {
+        m_ui->kinematicRadioButton->setChecked(true);
+
+        m_ui->selectedDescriptionLabel->setText(AZStd::string(kinematicDescription).c_str());
+
+        m_ui->validLabel1->setText(AZStd::string(moveWithCode).c_str());
+        m_ui->validLabel2->setText(AZStd::string(moveManually).c_str());
+        m_ui->validIcon1->setText(AZStd::string(moveWithCodeIcon).c_str());
+        m_ui->validIcon2->setText(AZStd::string(moveManuallyIcon).c_str());
+
+        m_ui->invalidLabel1->setText(AZStd::string(collisions).c_str());
+        m_ui->invalidLabel2->setText(AZStd::string(gravity).c_str());
+        m_ui->invalidIcon1->setText(AZStd::string(impactIcon).c_str());
+        m_ui->invalidIcon2->setText(AZStd::string(gravityIcon).c_str());
+    }
+    else
+    {
+        m_ui->dynamicRadioButton->setChecked(true);
+
+        m_ui->selectedDescriptionLabel->setText(AZStd::string(dynamicDescription).c_str());
+
+        m_ui->validLabel1->setText(AZStd::string(collisions).c_str());
+        m_ui->validLabel2->setText(AZStd::string(gravity).c_str());
+        m_ui->validIcon1->setText(AZStd::string(impactIcon).c_str());
+        m_ui->validIcon2->setText(AZStd::string(gravityIcon).c_str());
+        
+        m_ui->invalidLabel1->setText(AZStd::string(moveWithCode).c_str());
+        m_ui->invalidLabel2->setText(AZStd::string(moveManually).c_str());
+        m_ui->invalidIcon1->setText(AZStd::string(moveWithCodeIcon).c_str());
+        m_ui->invalidIcon2->setText(AZStd::string(moveManuallyIcon).c_str());
+    }
 }
 
 #include <moc_KinematicDescriptionDialog.cpp>

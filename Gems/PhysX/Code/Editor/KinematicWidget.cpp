@@ -6,16 +6,11 @@
  *
  */
 
-#include <AzCore/Interface/Interface.h>
-#include <AzFramework/Physics/CollisionBus.h>
-#include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
-#include <AzFramework/Physics/PhysicsSystem.h>
+#include <Editor/KinematicWidget.h>
+#include <Editor/KinematicDescriptionDialog.h>
+
 #include <AzFramework/Physics/PropertyTypes.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <Editor/KinematicWidget.h>
-#include <Editor/ConfigurationWindowBus.h>
-#include <LyViewPaneNames.h>
-#include <Editor/KinematicDescriptionDialog.h>
 
 namespace PhysX
 {

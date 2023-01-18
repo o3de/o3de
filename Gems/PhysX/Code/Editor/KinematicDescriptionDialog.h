@@ -27,13 +27,13 @@ public:
     KinematicDescriptionDialog(bool kinematicSetting, QWidget* parent = nullptr);
     ~KinematicDescriptionDialog();
 
-    bool GetResult() const;
+    bool GetResult() const { return m_kinematicSetting; }
 
 private:
     void OnButtonClicked();
     void InitializeButtons();
     void UpdateDialogText();
-    QScopedPointer<Ui::KinematicDescriptionDialog> m_ui;
 
+    QScopedPointer<Ui::KinematicDescriptionDialog> m_ui;
     bool m_kinematicSetting;
 };

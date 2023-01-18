@@ -177,7 +177,7 @@ namespace PhysX
                         "Gravity enabled", "When active, global gravity affects this rigid body.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetGravityVisibility)
                     ->DataElement(Physics::Edit::KinematicSelector, &AzPhysics::RigidBodyConfiguration::m_kinematic,
-                        "Kinematic", "When active, the rigid body is not affected by gravity or other forces and is moved by script.")
+                        "Type", "Determines how the movement/position of the rigid body is controlled.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetKinematicVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled)
                         ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetKinematicTooltip)

@@ -10,13 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzFramework/Physics/Collision/CollisionGroups.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEnumComboBoxCtrl.hxx>
 #include <Editor/ComboBoxEditButtonPair.h>
-#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
-#include <AzCore/RTTI/AttributeReader.h>
-#include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
 #endif
 
 namespace PhysX
