@@ -374,11 +374,16 @@ namespace AZ
                         return ConvertSampleLocation(item);
                     });
 
-                    info.rasterizationSamples = ConvertSampleCount(static_cast<uint16_t>(multisampleState.m_customPositionsCount));
+                    AZ_Assert(
+                        multisampleState.m_customPositionsCount >= static_cast<uint32_t>(info.rasterizationSamples),
+                        "Sample locations is smaller than rasterization samples %d < %d",
+                        static_cast<int>(multisampleState.m_customPositionsCount),
+                        static_cast<int>(info.rasterizationSamples));
+
                     VkSampleLocationsInfoEXT sampleLocations = {};
                     sampleLocations.sType = VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT;
                     sampleLocations.sampleLocationGridSize = VkExtent2D{ 1, 1 };
-                    sampleLocations.sampleLocationsCount = multisampleState.m_customPositionsCount;
+                    sampleLocations.sampleLocationsCount = info.rasterizationSamples;
                     sampleLocations.sampleLocationsPerPixel = info.rasterizationSamples;
                     sampleLocations.pSampleLocations = m_customSampleLocations.data();
 
