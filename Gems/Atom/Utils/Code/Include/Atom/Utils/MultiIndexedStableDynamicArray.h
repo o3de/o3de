@@ -116,7 +116,7 @@ namespace AZ
 
         /// Access data via handle
         template<size_t RowIndex>
-        AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>& GetData(Handle& handle);
+        AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>& GetData(const Handle& handle) const;
 
     private:
 
@@ -280,7 +280,6 @@ namespace AZ
     {
         template<size_t ElementsPerPage, class Allocator, typename... value_types>
         friend class MultiIndexedStableDynamicArray;
-
     public:
 
         /// Default constructor creates an invalid handle.

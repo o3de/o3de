@@ -357,7 +357,7 @@ namespace AZ
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     template<size_t RowIndex>
-    auto MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::GetData(Handle& handle)
+    auto MultiIndexedStableDynamicArray<ElementsPerPage, Allocator, value_types...>::GetData(const Handle& handle) const
         -> AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>&
     {
         Page* handlePage = static_cast<Page*>(handle.m_page);
@@ -690,7 +690,7 @@ namespace AZ
 
     // MultiIndexedStableDynamicArray::Handle
     template<typename PageType>
-    MultiIndexedStableDynamicArrayHandle::MultiIndexedStableDynamicArrayHandle(
+    inline MultiIndexedStableDynamicArrayHandle::MultiIndexedStableDynamicArrayHandle(
         PageType* page, MultiIndexedStableDynamicArrayPageIndexType index)
         : m_page(page)
         , m_index(index)
@@ -703,18 +703,18 @@ namespace AZ
         };        
     }
 
-    MultiIndexedStableDynamicArrayHandle::MultiIndexedStableDynamicArrayHandle(
+    inline MultiIndexedStableDynamicArrayHandle::MultiIndexedStableDynamicArrayHandle(
         MultiIndexedStableDynamicArrayHandle&& other)
     {
         *this = AZStd::move(other);
     }
 
-    MultiIndexedStableDynamicArrayHandle::~MultiIndexedStableDynamicArrayHandle()
+    inline MultiIndexedStableDynamicArrayHandle::~MultiIndexedStableDynamicArrayHandle()
     {
         Free();
     }
 
-    auto MultiIndexedStableDynamicArrayHandle::operator=(
+    inline auto MultiIndexedStableDynamicArrayHandle::operator=(
         MultiIndexedStableDynamicArrayHandle&& other)
         -> MultiIndexedStableDynamicArrayHandle&
     {
@@ -729,7 +729,7 @@ namespace AZ
         return *this;
     }
 
-    void MultiIndexedStableDynamicArrayHandle::Free()
+    inline void MultiIndexedStableDynamicArrayHandle::Free()
     {
         if (IsValid())
         {
@@ -737,17 +737,17 @@ namespace AZ
         }
     }
 
-    bool MultiIndexedStableDynamicArrayHandle::IsValid() const
+    inline bool MultiIndexedStableDynamicArrayHandle::IsValid() const
     {
         return m_index != MultiIndexedStableDynamicArrayInvalidPageIndex;
     }
 
-    bool MultiIndexedStableDynamicArrayHandle::IsNull() const
+    inline bool MultiIndexedStableDynamicArrayHandle::IsNull() const
     {
         return m_index == MultiIndexedStableDynamicArrayInvalidPageIndex;
     }
 
-    void MultiIndexedStableDynamicArrayHandle::Invalidate()
+    inline void MultiIndexedStableDynamicArrayHandle::Invalidate()
     {
         m_index = MultiIndexedStableDynamicArrayInvalidPageIndex;
         m_destructorCallback = nullptr;
