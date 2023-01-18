@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+//#include <AzCore/base.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
@@ -25,7 +26,7 @@ namespace PhysX
     {
         class KinematicWidget
             : public QObject
-            , public AzToolsFramework::PropertyHandler<AzPhysics::Kinematic2, ComboBoxEditButtonPair>
+            , public AzToolsFramework::PropertyHandler<bool, ComboBoxEditButtonPair>
         {
             Q_OBJECT
 
@@ -36,11 +37,6 @@ namespace PhysX
 
             AZ::u32 GetHandlerName() const override;
             QWidget* CreateGUI(QWidget* parent) override;
-            bool IsDefaultHandler() const override;
-
-            void ConsumeAttribute(
-                widget_t* widget, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
-
             void WriteGUIValuesIntoProperty(
                 size_t index, widget_t* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
             bool ReadValuesIntoGUI(
@@ -48,7 +44,8 @@ namespace PhysX
 
         private:
             void OnEditButtonClicked();
-            QComboBox* widgetComboBox= nullptr;
+
+            QComboBox* m_widgetComboBox= nullptr;
         };
     } // namespace Editor
 } // namespace PhysX

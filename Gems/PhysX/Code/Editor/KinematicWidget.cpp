@@ -30,34 +30,29 @@ namespace PhysX
         {
             widget_t* picker = new widget_t(parent);
 
-            auto comboBox = picker->GetComboBox();
-            comboBox->addItem("Default");
-            comboBox->addItem("Kinematic");
+            connect(
+                picker,
+                &ComboBoxEditButtonPair::valueChanged,
+                this,
+                [picker]()
+                {
+                    AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                        &AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::RequestWrite, picker);
+                    AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                        &AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, picker);
+                });
 
-            picker->GetEditButton()->setToolTip("Open Kinematic Dialog");
+            auto comboBox = picker->GetComboBox();
+            comboBox->addItem("Dynamic");
+            comboBox->addItem("Kinematic");
+            comboBox->setEnabled(false);
+
+            picker->GetEditButton()->setToolTip("Open rigid body dialog for more info on the motion types");
 
             connect(picker->GetEditButton(), &QToolButton::clicked, this, &KinematicWidget::OnEditButtonClicked);
-            widgetComboBox = comboBox;
-            
+            m_widgetComboBox = comboBox;
+
             return picker;
-        }
-
-        bool KinematicWidget::IsDefaultHandler() const
-        {
-            return false;
-        }
-
-        void KinematicWidget::ConsumeAttribute(
-            widget_t* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, [[maybe_unused]] const char* debugName)
-        {
-            if (attrib == AZ::Edit::Attributes::ReadOnly)
-            {
-                bool value = false;
-                if (attrValue->Read<bool>(value))
-                {
-                    GUI->setEnabled(!value);
-                }
-            }
         }
 
         void KinematicWidget::WriteGUIValuesIntoProperty(
@@ -76,11 +71,9 @@ namespace PhysX
             [[maybe_unused]] const property_t& instance,
             [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
         {
-            //bool val = instance;
-
             auto comboBox = GUI->GetComboBox();
             comboBox->blockSignals(true);
-            comboBox->setCurrentIndex(instance == AzPhysics::Kinematic2::A ? 1 : 0);
+            comboBox->setCurrentIndex(instance ? 1 : 0);
             comboBox->blockSignals(false);
 
             return false;
@@ -88,20 +81,22 @@ namespace PhysX
 
         void KinematicWidget::OnEditButtonClicked()
         {
-            //// Open configuration window
-            //AzToolsFramework::EditorRequestBus::Broadcast(
-            //    &AzToolsFramework::EditorRequests::OpenViewPane, LyViewPane::PhysXConfigurationEditor);
-
-            //// Set to collision layers tab
-            //ConfigurationWindowRequestBus::Broadcast(&ConfigurationWindowRequests::ShowCollisionLayersTab);
-
             QWidget* mainWindow = nullptr;
             AzToolsFramework::EditorRequestBus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::GetMainWindow);
-            KinematicDescriptionDialog kinematicDialog("hi", 2, mainWindow);
-            kinematicDialog.exec();
-            //widgetComboBox->setCurrentIndex(0);
-             
+            KinematicDescriptionDialog kinematicDialog(m_widgetComboBox->currentIndex() == 1, mainWindow);
 
+            int dialogResult = kinematicDialog.exec();
+            if (dialogResult == QDialog::Accepted)
+            {
+                if (kinematicDialog.GetResult())
+                {
+                    m_widgetComboBox->setCurrentIndex(1);
+                }
+                else
+                {
+                    m_widgetComboBox->setCurrentIndex(0);
+                }
+            }
         }
     } // namespace Editor
 

@@ -29,6 +29,27 @@ namespace PhysX
 
             layout->addWidget(m_comboBox);
             layout->addWidget(m_editButton);
+
+            connect(m_comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onChildComboBoxValueChange(int)));
+        }
+
+        bool ComboBoxEditButtonPair::value() const 
+        {
+            return m_comboBox->currentIndex() == 1;
+            
+        }
+        void ComboBoxEditButtonPair::setValue(bool value) 
+        {
+            m_comboBox->blockSignals(true);
+            m_comboBox->setCurrentIndex(value ? 1 : 0);
+            m_comboBox->blockSignals(false);
+
+        }
+
+        void ComboBoxEditButtonPair::onChildComboBoxValueChange(int value)
+        {
+            emit valueChanged(value == 0 ? false : true);
+            
         }
 
         QComboBox* ComboBoxEditButtonPair::GetComboBox()
@@ -42,3 +63,5 @@ namespace PhysX
         }
     }
 }
+
+#include <Editor/moc_ComboBoxEditButtonPair.cpp>

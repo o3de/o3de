@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>KinematicDescriptionDialog</class>
- <widget class="QWidget" name="KinematicDescriptionDialog">
+ <widget class="QDialog" name="KinematicDescriptionDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -48,7 +48,7 @@
     <number>16</number>
    </property>
    <property name="topMargin">
-    <number>16</number>
+    <number>10</number>
    </property>
    <property name="rightMargin">
     <number>16</number>
@@ -81,7 +81,7 @@
          <property name="title">
           <string/>
          </property>
-         <widget class="QGroupBox" name="groupBox_3">
+         <widget class="QGroupBox" name="dynamicBox">
           <property name="geometry">
            <rect>
             <x>0</x>
@@ -105,8 +105,11 @@
              <height>21</height>
             </rect>
            </property>
+           <property name="styleSheet">
+            <string notr="true">border: none;</string>
+           </property>
            <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Default&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Dynamic&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
           <widget class="QLabel" name="label_3">
@@ -114,9 +117,12 @@
             <rect>
              <x>10</x>
              <y>30</y>
-             <width>271</width>
+             <width>281</width>
              <height>61</height>
             </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border: none;</string>
            </property>
            <property name="text">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Used when physics are applied and automated forces are needed to move assets.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -126,7 +132,7 @@
            </property>
           </widget>
          </widget>
-         <widget class="QGroupBox" name="groupBox_4">
+         <widget class="QGroupBox" name="kinematicBox">
           <property name="geometry">
            <rect>
             <x>0</x>
@@ -136,7 +142,8 @@
            </rect>
           </property>
           <property name="styleSheet">
-           <string notr="true">background-color: rgb(51, 51, 51);</string>
+           <string notr="true">background-color: rgb(51, 51, 51);
+</string>
           </property>
           <property name="title">
            <string/>
@@ -150,6 +157,9 @@
              <height>21</height>
             </rect>
            </property>
+           <property name="styleSheet">
+            <string notr="true">border: none;</string>
+           </property>
            <property name="text">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Kinematic&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -159,12 +169,12 @@
             <rect>
              <x>10</x>
              <y>30</y>
-             <width>261</width>
+             <width>281</width>
              <height>61</height>
             </rect>
            </property>
            <property name="styleSheet">
-            <string notr="true"/>
+            <string notr="true">border: none;</string>
            </property>
            <property name="text">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Used when manually moving an object with code or Script Canvas, using Transform.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -186,7 +196,7 @@
           <property name="title">
            <string/>
           </property>
-          <widget class="QRadioButton" name="radioButton">
+          <widget class="QRadioButton" name="dynamicRadioButton">
            <property name="geometry">
             <rect>
              <x>20</x>
@@ -195,11 +205,14 @@
              <height>21</height>
             </rect>
            </property>
+           <property name="styleSheet">
+            <string notr="true">border: none;</string>
+           </property>
            <property name="text">
             <string/>
            </property>
           </widget>
-          <widget class="QRadioButton" name="radioButton_2">
+          <widget class="QRadioButton" name="kinematicRadioButton">
            <property name="geometry">
             <rect>
              <x>20</x>
@@ -208,11 +221,17 @@
              <height>21</height>
             </rect>
            </property>
+           <property name="styleSheet">
+            <string notr="true">border: none;</string>
+           </property>
            <property name="text">
             <string/>
            </property>
           </widget>
          </widget>
+         <zorder>kinematicBox</zorder>
+         <zorder>dynamicBox</zorder>
+         <zorder>groupBox_5</zorder>
         </widget>
        </item>
        <item>
@@ -225,7 +244,7 @@
            <property name="title">
             <string/>
            </property>
-           <widget class="QLabel" name="label_6">
+           <widget class="QLabel" name="selectedDescriptionLabel">
             <property name="geometry">
              <rect>
               <x>20</x>
@@ -235,17 +254,17 @@
              </rect>
             </property>
             <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;With&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt; Default&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; rigid bodies, you can apply forces (gravity, collisions, etc.) to control the movement and position of the object.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;With&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt; Dynamic&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; rigid bodies, you can apply forces (gravity, collisions, etc.) to control the movement and position of the object.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="wordWrap">
              <bool>true</bool>
             </property>
            </widget>
-           <widget class="QLabel" name="label_7">
+           <widget class="QLabel" name="valid">
             <property name="geometry">
              <rect>
               <x>20</x>
-              <y>90</y>
+              <y>100</y>
               <width>47</width>
               <height>21</height>
              </rect>
@@ -260,8 +279,8 @@
            <widget class="QLabel" name="label_8">
             <property name="geometry">
              <rect>
-              <x>167</x>
-              <y>90</y>
+              <x>170</x>
+              <y>100</y>
               <width>47</width>
               <height>21</height>
              </rect>
@@ -273,11 +292,11 @@
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Invalid&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_9">
+           <widget class="QLabel" name="validLabel1">
             <property name="geometry">
              <rect>
-              <x>30</x>
-              <y>120</y>
+              <x>50</x>
+              <y>130</y>
               <width>111</width>
               <height>21</height>
              </rect>
@@ -285,12 +304,15 @@
             <property name="text">
              <string>Move with code</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+            </property>
            </widget>
-           <widget class="QLabel" name="label_10">
+           <widget class="QLabel" name="validLabel2">
             <property name="geometry">
              <rect>
-              <x>30</x>
-              <y>140</y>
+              <x>50</x>
+              <y>160</y>
               <width>111</width>
               <height>21</height>
              </rect>
@@ -298,48 +320,40 @@
             <property name="text">
              <string>Move manually</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+            </property>
            </widget>
-           <widget class="QLabel" name="label_11">
+           <widget class="QLabel" name="invalidLabel1">
             <property name="geometry">
              <rect>
-              <x>177</x>
-              <y>120</y>
-              <width>81</width>
+              <x>190</x>
+              <y>130</y>
+              <width>101</width>
               <height>21</height>
              </rect>
             </property>
             <property name="text">
              <string>Collision</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+            </property>
            </widget>
-           <widget class="QLabel" name="label_12">
+           <widget class="QLabel" name="invalidLabel2">
             <property name="geometry">
              <rect>
-              <x>177</x>
-              <y>140</y>
-              <width>81</width>
+              <x>190</x>
+              <y>160</y>
+              <width>101</width>
               <height>21</height>
              </rect>
             </property>
             <property name="text">
              <string>Gravity</string>
             </property>
-           </widget>
-           <widget class="Line" name="line">
-            <property name="geometry">
-             <rect>
-              <x>130</x>
-              <y>90</y>
-              <width>20</width>
-              <height>71</height>
-             </rect>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">color:rgb(255, 255, 255);
-background: none</string>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
             </property>
            </widget>
            <widget class="QFrame" name="frame">
@@ -353,7 +367,7 @@ background: none</string>
             </property>
             <property name="styleSheet">
              <string notr="true">background-color: rgb(51, 51, 51);
-border: none;</string>
+</string>
             </property>
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
@@ -361,12 +375,87 @@ border: none;</string>
             <property name="frameShadow">
              <enum>QFrame::Raised</enum>
             </property>
+            <widget class="Line" name="line">
+             <property name="geometry">
+              <rect>
+               <x>120</x>
+               <y>90</y>
+               <width>20</width>
+               <height>81</height>
+              </rect>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">color: rgb(136, 136, 136);
+border-right: 1px solid  rgb(136, 136, 136); </string>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+            <widget class="QLabel" name="invalidIcon2">
+             <property name="geometry">
+              <rect>
+               <x>150</x>
+               <y>140</y>
+               <width>31</width>
+               <height>31</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/gravityIcon.svg&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="invalidIcon1">
+             <property name="geometry">
+              <rect>
+               <x>150</x>
+               <y>110</y>
+               <width>31</width>
+               <height>31</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Assets/Editor/Icons/ImpactIcon.svg&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="validIcon1">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>110</y>
+               <width>31</width>
+               <height>31</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Assets/Editor/Icons/MoveWithCodeIcon.svg&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+            <widget class="QLabel" name="validIcon2">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>140</y>
+               <width>31</width>
+               <height>31</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Assets/Editor/Icons/MoveManuallyIcon.svg&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
            </widget>
-           <widget class="QPushButton" name="acceptButton">
+           <widget class="QPushButton" name="saveButton">
             <property name="geometry">
              <rect>
               <x>50</x>
-              <y>220</y>
+              <y>230</y>
               <width>121</width>
               <height>23</height>
              </rect>
@@ -384,11 +473,11 @@ border: none;</string>
              <bool>true</bool>
             </property>
            </widget>
-           <widget class="QPushButton" name="cancelButton_2">
+           <widget class="QPushButton" name="cancelButton">
             <property name="geometry">
              <rect>
               <x>180</x>
-              <y>220</y>
+              <y>230</y>
               <width>121</width>
               <height>23</height>
              </rect>
@@ -400,17 +489,37 @@ border: none;</string>
              <bool>false</bool>
             </property>
            </widget>
+           <widget class="QPushButton" name="pushButton">
+            <property name="geometry">
+             <rect>
+              <x>60</x>
+              <y>80</y>
+              <width>75</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+              <normaloff>:/stylesheet/img/in_progress.gif</normaloff>:/stylesheet/img/in_progress.gif</iconset>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
            <zorder>frame</zorder>
-           <zorder>label_6</zorder>
-           <zorder>label_7</zorder>
+           <zorder>selectedDescriptionLabel</zorder>
+           <zorder>valid</zorder>
            <zorder>label_8</zorder>
-           <zorder>label_9</zorder>
-           <zorder>label_10</zorder>
-           <zorder>label_11</zorder>
-           <zorder>label_12</zorder>
-           <zorder>line</zorder>
-           <zorder>acceptButton</zorder>
-           <zorder>cancelButton_2</zorder>
+           <zorder>validLabel1</zorder>
+           <zorder>validLabel2</zorder>
+           <zorder>invalidLabel1</zorder>
+           <zorder>invalidLabel2</zorder>
+           <zorder>saveButton</zorder>
+           <zorder>cancelButton</zorder>
+           <zorder>pushButton</zorder>
           </widget>
          </item>
         </layout>
@@ -421,6 +530,42 @@ border: none;</string>
    </item>
   </layout>
  </widget>
- <resources/>
- <connections/>
+ <resources>
+  <include location="../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc"/>
+  <include location="Source/PhysX.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>saveButton</sender>
+   <signal>clicked()</signal>
+   <receiver>KinematicDescriptionDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>435</x>
+     <y>286</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>320</x>
+     <y>153</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>KinematicDescriptionDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>565</x>
+     <y>286</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>320</x>
+     <y>153</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

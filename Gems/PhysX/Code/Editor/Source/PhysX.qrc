@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file  alias="gravityIcon.svg">../../../Assets/Editor/Icons/GravityIcon.svg</file>
+        <file alias="impactIcon.svg">../../../Assets/Editor/Icons/ImpactIcon.svg</file>
+        <file alias="moveManuallyIcon.svg">../../../Assets/Editor/Icons/MoveManuallyIcon.svg</file>
+        <file alias="moveWithCodeIcon.svg">../../../Assets/Editor/Icons/MoveWithCodeIcon.svg</file>
+    </qresource>
+</RCC>

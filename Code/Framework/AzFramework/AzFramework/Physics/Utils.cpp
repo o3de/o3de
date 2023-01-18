@@ -136,14 +136,6 @@ namespace Physics
             AzPhysics::SceneQuery::ReflectSceneQueryObjects(context);
             ReflectWindBus(context);
             ReflectCharacterBus(context);
-
-            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
-            {
-                serializeContext->Enum<AzPhysics::Kinematic2>()
-                    ->Version(1)
-                    ->Value("MaxTransfer", AzPhysics::Kinematic2::A)
-                    ->Value("MemoryAlignment", AzPhysics::Kinematic2::B);
-            }
         }
     }
 

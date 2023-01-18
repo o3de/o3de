@@ -16,7 +16,6 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptContext.h>
-//#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AzPhysics
 {
@@ -127,37 +126,6 @@ namespace AzPhysics
         "configuration. <b>CCD cannot be enabled if the rigid body is kinematic, set the rigid body as non-kinematic"
         "to allow changes to be made.</b>";
 
-     /*void Kinematic::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<Kinematic>()->Version(1)->Field("Index", &Kinematic::m_index);
-        }
-    }
-
-    Kinematic::Kinematic(AZ::u8 index)
-        : m_index(index)
-    {
-        AZ_Assert(
-            m_index < CollisionLayers::MaxCollisionLayers,
-            "Index is too large. Valid values are 0-%d",
-            CollisionLayers::MaxCollisionLayers - 1);
-    }
-
-    const Kinematic Kinematic::Default = 0;
-    AZ::u8 Kinematic::GetIndex() const
-    {
-        return m_index;
-    }
-
-    void Kinematic::SetIndex(AZ::u8 index)
-    {
-        AZ_Assert(
-            m_index < CollisionLayers::MaxCollisionLayers,
-            "Index is too large. Valid values are 0-%d",
-            CollisionLayers::MaxCollisionLayers - 1);
-        m_index = index;
-    }*/
     AZ_CLASS_ALLOCATOR_IMPL(RigidBodyConfiguration, AZ::SystemAllocator, 0);
 
     void RigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
@@ -165,7 +133,8 @@ namespace AzPhysics
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RigidBodyConfiguration, AzPhysics::SimulatedBodyConfiguration>()
-                ->Version(5, &Internal::RigidBodyVersionConverter)
+                ->Version(6, &Internal::RigidBodyVersionConverter)
+                ->Field("Kinematic", &RigidBodyConfiguration::m_kinematic)
                 ->Field("Initial linear velocity", &RigidBodyConfiguration::m_initialLinearVelocity)
                 ->Field("Initial angular velocity", &RigidBodyConfiguration::m_initialAngularVelocity)
                 ->Field("Linear damping", &RigidBodyConfiguration::m_linearDamping)
@@ -174,8 +143,6 @@ namespace AzPhysics
                 ->Field("Start Asleep", &RigidBodyConfiguration::m_startAsleep)
                 ->Field("Interpolate Motion", &RigidBodyConfiguration::m_interpolateMotion)
                 ->Field("Gravity Enabled", &RigidBodyConfiguration::m_gravityEnabled)
-                ->Field("Kinematic", &RigidBodyConfiguration::m_kinematic)
-                ->Field("KinematicNew", &RigidBodyConfiguration::m_kinematicNew)
                 ->Field("CCD Enabled", &RigidBodyConfiguration::m_ccdEnabled)
                 ->Field("Compute Mass", &RigidBodyConfiguration::m_computeMass)
                 ->Field("Lock Linear X", &RigidBodyConfiguration::m_lockLinearX)

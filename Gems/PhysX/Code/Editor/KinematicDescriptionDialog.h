@@ -9,6 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QDialog>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #endif
 
 class QTreeView;
@@ -23,22 +24,16 @@ class KinematicDescriptionDialog
     Q_OBJECT
 
 public:
-    KinematicDescriptionDialog(QString message, int numberOfFiles, QWidget* parent = nullptr);
+    KinematicDescriptionDialog(bool kinematicSetting, QWidget* parent = nullptr);
     ~KinematicDescriptionDialog();
-//
-//Q_SIGNALS:
-//    void valueChanged(bool newValue);
-//
-//public Q_SLOTS:
-//    void setValue(bool val);
-//
-//protected Q_SLOTS:
-//    void onChildComboBoxValueChange(int value);
+
+    bool GetResult() const;
 
 private:
+    void OnButtonClicked();
     void InitializeButtons();
-    void UpdateMessage(QString message);
-    //void UpdateCheckBoxState(int numberOfFiles);
-    //void closeEvent(QCloseEvent* ev) override;
+    void UpdateDialogText();
     QScopedPointer<Ui::KinematicDescriptionDialog> m_ui;
+
+    bool m_kinematicSetting;
 };

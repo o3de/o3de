@@ -21,11 +21,24 @@ namespace PhysX
         class ComboBoxEditButtonPair
             : public QWidget
         {
+            Q_OBJECT
+
         public:
             explicit ComboBoxEditButtonPair(QWidget* parent);
 
             QComboBox* GetComboBox();
             QToolButton* GetEditButton();
+
+            bool value() const;
+
+        signals:
+            void valueChanged(bool newValue);
+
+        public slots:
+            void setValue(bool val);
+
+        protected slots:
+            void onChildComboBoxValueChange(int value);
 
         private:
             QComboBox* m_comboBox = nullptr;
