@@ -24,6 +24,7 @@
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
+#include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 
 // Editor
 #include "AzAssetBrowser/AzAssetBrowserRequestHandler.h"
@@ -40,6 +41,8 @@ AZ_CVAR(bool, ed_useWIPAssetBrowserDesign, false, nullptr, AZ::ConsoleFunctorFla
 //! When the Asset Browser window is resized to be less than this many pixels in width
 //! the layout changes to accomodate its narrow state better. See AzAssetBrowserWindow::SetNarrowMode
 static constexpr int s_narrowModeThreshold = 700;
+
+using namespace AzToolsFramework::AssetBrowser;
 
 namespace AzToolsFramework
 {
@@ -154,9 +157,104 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
         m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
-    }
 
-    m_ui->m_thumbnailView->SetPreviewerFrame(m_ui->m_previewerFrame);
+        connect(
+            m_ui->m_thumbnailView,
+            &AssetBrowserThumbnailView::entryClicked,
+            this,
+            [this](const AssetBrowserEntry* entry)
+            {
+                if (entry && entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                {
+                    m_ui->m_previewerFrame->Display(entry);
+                }
+            });
+        connect(
+            m_ui->m_thumbnailView,
+            &AssetBrowserThumbnailView::entryDoubleClicked,
+            this,
+            [this](const AssetBrowserEntry* entry)
+            {
+                if (!m_ui->m_assetBrowserTreeViewWidget)
+                {
+                    return;
+                }
+
+                if (!entry)
+                {
+                    return;
+                }
+
+                if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
+                {
+                    return;
+                }
+
+                if (!m_assetBrowserModel)
+                {
+                    return;
+                }
+
+                if (!m_filterModel.data())
+                {
+                    return;
+                }
+
+                QModelIndex indexForEntry;
+                m_assetBrowserModel->GetEntryIndex(const_cast<AssetBrowserEntry*>(entry), indexForEntry);
+
+                if (!indexForEntry.isValid())
+                {
+                    return;
+                }
+
+                auto selectionModel = m_ui->m_assetBrowserTreeViewWidget->selectionModel();
+                auto targetIndex = m_filterModel.data()->mapFromSource(indexForEntry);
+
+                selectionModel->select(targetIndex, QItemSelectionModel::ClearAndSelect);
+
+                auto targetIndexAncestor = targetIndex.parent();
+                while (targetIndexAncestor.isValid())
+                {
+                    m_ui->m_assetBrowserTreeViewWidget->expand(targetIndexAncestor);
+                    targetIndexAncestor = targetIndexAncestor.parent();
+                }
+
+                m_ui->m_assetBrowserTreeViewWidget->scrollTo(targetIndex);
+            });
+
+        connect(
+            m_ui->m_thumbnailView,
+            &AssetBrowserThumbnailView::showInFolderTriggered,
+            this,
+            [this](const AssetBrowserEntry* entry)
+            {
+                if (!entry)
+                {
+                    return;
+                }
+
+                if (!entry->GetParent())
+                {
+                    return;
+                }
+
+                m_ui->m_searchWidget->ClearStringFilter();
+
+                QModelIndex indexForEntry;
+                m_assetBrowserModel->GetEntryIndex(const_cast<AssetBrowserEntry*>(entry->GetParent()), indexForEntry);
+
+                if (!indexForEntry.isValid())
+                {
+                    return;
+                }
+
+                auto selectionModel = m_ui->m_assetBrowserTreeViewWidget->selectionModel();
+                auto targetIndex = m_filterModel.data()->mapFromSource(indexForEntry);
+
+                selectionModel->select(targetIndex, QItemSelectionModel::ClearAndSelect);
+            });
+    }
 
     if (!ed_useWIPAssetBrowserDesign)
     {
@@ -226,6 +324,15 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             {
                 CurrentIndexChangedSlot(selected.indexes()[0]);
             }
+        });
+
+    connect(
+        m_ui->m_assetBrowserTreeViewWidget,
+        &QAbstractItemView::clicked,
+        this,
+        [this](const QModelIndex&)
+        {
+            m_ui->m_searchWidget->ClearStringFilter();
         });
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
@@ -488,6 +595,24 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
     {
         m_ui->m_assetBrowserTableViewWidget->setVisible(hasFilter);
         m_ui->m_assetBrowserTreeViewWidget->setVisible(!hasFilter);
+    }
+
+    if (hasFilter)
+    {
+        m_ui->m_assetBrowserTreeViewWidget->selectionModel()->select(
+            m_ui->m_assetBrowserTreeViewWidget->model()->index(0, 0, {}), QItemSelectionModel::ClearAndSelect);
+    }
+
+    if (ed_useNewAssetBrowserTableView)
+    {
+        if (hasFilter)
+        {
+            auto thumbnailWidget = m_ui->m_thumbnailView->GetThumbnailViewWidget();
+            if (thumbnailWidget)
+            {
+                thumbnailWidget->setRootIndex(thumbnailWidget->model()->index(0, 0, {}));
+            }
+        }
     }
 }
 
