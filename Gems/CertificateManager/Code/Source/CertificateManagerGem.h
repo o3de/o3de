@@ -20,6 +20,7 @@ namespace CertificateManager
         , public FileDataSourceCreationBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(CertificateManagerModule, AZ::SystemAllocator)
         AZ_RTTI(CertificateManagerModule,"{11C0C40E-3576-4AFD-A708-B1EE70DF907B}",CryHooksModule);
 
         CertificateManagerModule();

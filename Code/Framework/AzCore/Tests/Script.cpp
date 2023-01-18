@@ -267,6 +267,7 @@ namespace UnitTest
     class BehaviorDerivedTestClass : public BehaviorTestClass
     {
     public:
+        AZ_CLASS_ALLOCATOR(BehaviorDerivedTestClass, AZ::SystemAllocator)
         AZ_RTTI(BehaviorDerivedTestClass, "{dba8a4e3-8fab-4223-94a6-874c6cff88e5}", BehaviorTestClass);
         int m_data;
 

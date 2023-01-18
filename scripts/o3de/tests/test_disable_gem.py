@@ -7,7 +7,6 @@
 #
 
 import json
-
 import pytest
 import pathlib
 from unittest.mock import patch
@@ -15,9 +14,30 @@ from unittest.mock import patch
 from o3de import cmake, disable_gem, enable_gem
 
 
+TEST_ENGINE_JSON_PAYLOAD = '''
+{
+    "engine_name": "o3de",
+    "version": "0.0.0",
+    "restricted_name": "o3de",
+    "FileVersion": 1,
+    "O3DEVersion": "0.0.0",
+    "O3DECopyrightYear": 2021,
+    "O3DEBuildNumber": 0,
+    "external_subdirectories": [
+        "Gems/TestGem2"
+    ],
+    "projects": [
+    ],
+    "templates": [
+        "Templates/MinimalProject"
+    ]
+}
+'''
+
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
     "project_name": "TestProject",
+    "version": "0.0.0",
     "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
     "license": "What license TestProject uses goes here: i.e. https://opensource.org/licenses/MIT",
     "display_name": "TestProject",
@@ -39,6 +59,7 @@ TEST_PROJECT_JSON_PAYLOAD = '''
 TEST_GEM_JSON_PAYLOAD = '''
 {
     "gem_name": "TestGem",
+    "version": "0.0.0",
     "display_name": "TestGem",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
@@ -92,6 +113,7 @@ def init_disable_gem_data(request):
         def __init__(self):
             self.project_data = json.loads(TEST_PROJECT_JSON_PAYLOAD)
             self.gem_data = json.loads(TEST_GEM_JSON_PAYLOAD)
+            self.engine_data = json.loads(TEST_ENGINE_JSON_PAYLOAD)
     request.cls.disable_gem = DisableGemData()
 
 
@@ -110,11 +132,13 @@ class TestDisableGemCommand:
 
         project_gem_dependencies = []
 
-        def get_registered_path(project_name: str = None, gem_name: str = None) -> pathlib.Path or None:
+        def get_registered_path(engine_name: str = None, project_name: str = None, gem_name: str = None) -> pathlib.Path or None:
             if project_name:
                 return project_path
             elif gem_name:
                 return gem_path
+            elif engine_name:
+                return pathlib.PurePath('o3de')
             return None
 
         def save_o3de_manifest(new_project_data: dict, manifest_path: pathlib.Path = None) -> bool:
@@ -130,8 +154,12 @@ class TestDisableGemCommand:
         def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
             return self.disable_gem.project_data
 
-        def get_gem_json_data(gem_path: pathlib.Path, project_path: pathlib.Path):
+        def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
+                            project_path: pathlib.Path = None) -> dict or None:
             return self.disable_gem.gem_data
+
+        def get_engine_json_data(engine_name:str = None, engine_path:pathlib.Path = None):
+            return self.disable_gem.engine_data
 
         def get_project_gems(project_path: pathlib.Path):
             return [pathlib.Path(gem_path).resolve()] if gem_registered_with_project else []
@@ -155,6 +183,7 @@ class TestDisableGemCommand:
                 patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_patch, \
                 patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as load_o3de_manifest_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch,\
+                patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch,\
                 patch('o3de.manifest.get_registered', side_effect=get_registered_path) as get_registered_patch,\
                 patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as get_gem_json_data_patch,\
                 patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_gem_json_data_patch,\
@@ -174,7 +203,7 @@ class TestDisableGemCommand:
             assert enable_gem.enable_gem_in_project(gem_path=gem_path, project_path=project_path) == 0
 
             # Check that the gem is enabled
-            gem_json = get_gem_json_data(gem_path, project_path)
+            gem_json = get_gem_json_data(gem_path=gem_path, project_path=project_path)
             project_json = get_project_json_data(project_path=project_path)
             enabled_gems_list = cmake.get_enabled_gems(project_path / "Gem/enabled_gems.cmake")
             assert gem_json.get('gem_name', '') in enabled_gems_list
@@ -191,7 +220,7 @@ class TestDisableGemCommand:
             assert result == expected_result
 
             # Refresh the enabled_gems list and check for removal of the gem
-            gem_json = get_gem_json_data(gem_path, project_path)
+            gem_json = get_gem_json_data(gem_path=gem_path, project_path=project_path)
             project_json = get_project_json_data(project_path=project_path)
             enabled_gems_list = cmake.get_enabled_gems(project_path / "Gem/enabled_gems.cmake")
             assert gem_json.get('gem_name', '') not in enabled_gems_list

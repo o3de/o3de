@@ -38,6 +38,7 @@ namespace AtomToolsFramework
         , protected AZ::UserSettingsOwnerRequestBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(AtomToolsApplication, AZ::SystemAllocator)
         AZ_TYPE_INFO(AtomTools::AtomToolsApplication, "{A0DF25BA-6F74-4F11-9F85-0F99278D5986}");
         AZ_DISABLE_COPY_MOVE(AtomToolsApplication);
 
