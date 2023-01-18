@@ -149,16 +149,20 @@ namespace AzToolsFramework
 
         // sizeHint for this horizontal layout is the sum of the preferred widths,
         // and the maximum of the preferred heights
-        for (int layoutIndex = 0; layoutIndex < count(); ++layoutIndex)
+        for (int layoutIndex = 0, numItems = count(); layoutIndex < numItems; ++layoutIndex)
         {
             auto widgetSizeHint = itemAt(layoutIndex)->sizeHint();
             cumulativeWidth += widgetSizeHint.width();
-            preferredHeight = AZStd::max(widgetSizeHint.height(), preferredHeight);
+
+            if (widgetSizeHint.height() > preferredHeight)
+            {
+                preferredHeight = widgetSizeHint.height();
+            }
         }
 
-        m_cachedLayoutSize = QSize(cumulativeWidth, preferredHeight);
-
-        return { cumulativeWidth, preferredHeight };
+        m_cachedLayoutSize.setWidth(cumulativeWidth);
+        m_cachedLayoutSize.setHeight(preferredHeight);
+        return m_cachedLayoutSize;
     }
 
     QSize DPELayout::minimumSize() const
