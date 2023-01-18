@@ -1761,13 +1761,18 @@ namespace AssetProcessor
 
         // first, check for an EXACT match.  If there's an exact match, this must be the one returned!
         // this is to catch the case where the actual path of a scan folder is fed in to this.
+
+        // because exact matches are preferred over less exact, we first check exact matches:
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
             QString scanFolderName = m_scanFolders[pathIdx].ScanPath();
-            if (normalized.compare(scanFolderName, Qt::CaseInsensitive) == 0)
+            if (scanFolderName.length() == normalized.length())
             {
-                // if its an exact match, we're basically done
-                return &m_scanFolders[pathIdx];
+                if (normalized.compare(scanFolderName, Qt::CaseInsensitive) == 0)
+                {
+                    // if its an exact match, we're basically done
+                    return &m_scanFolders[pathIdx];
+                }
             }
         }
 

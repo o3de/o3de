@@ -219,6 +219,9 @@ AzFramework::RenderGeometry::RayResult TerrainRaycastContext::RayIntersect(
             // by the terrain system.
             rayIntersectionResult.m_worldNormal = m_terrainSystem.GetNormal(
                 rayIntersectionResult.m_worldPosition, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
+
+            // Return the distance in world space instead of in ray distance space.
+            rayIntersectionResult.m_distance = rayIntersectionResult.m_worldPosition.GetDistance(ray.m_startWorldPosition);
             break;
         }
 

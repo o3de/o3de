@@ -22,6 +22,7 @@ ly_add_target(
 # clients and servers use the above module.
 ly_create_alias(NAME CustomAssetExample.Clients NAMESPACE Gem TARGETS CustomAssetExample)
 ly_create_alias(NAME CustomAssetExample.Servers NAMESPACE Gem TARGETS CustomAssetExample)
+ly_create_alias(NAME CustomAssetExample.Unified NAMESPACE Gem TARGETS CustomAssetExample)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(

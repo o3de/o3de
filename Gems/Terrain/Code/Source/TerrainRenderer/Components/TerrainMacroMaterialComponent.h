@@ -112,6 +112,9 @@ namespace Terrain
         void OnPaintModeEnd() override;
         AZ::Color OnGetColor(const AZ::Vector3& brushCenter) const override;
 
+        static inline constexpr uint32_t InvalidMipLevel = AZStd::numeric_limits<uint32_t>::max();
+
+        uint32_t GetHighestLoadedMipLevel() const;
         void CreateMacroColorImageModificationBuffer();
         void DestroyMacroColorImageModificationBuffer();
         bool MacroColorModificationBufferIsActive() const;
