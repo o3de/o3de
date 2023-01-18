@@ -791,10 +791,12 @@ namespace AZ
 
     namespace Edit
     {
-        template<class EnumType>
+        template <class EnumType>
         struct EnumConstant
         {
             AZ_TYPE_INFO(EnumConstant, "{4CDFEE70-7271-4B27-833B-F8F72AA64C40}");
+
+            using UnderlyingType = AZStd::RemoveEnumT<EnumType>;
 
             EnumConstant() {}
             EnumConstant(EnumType first, AZStd::string_view description)
@@ -803,9 +805,9 @@ namespace AZ
             {
             }
 
-            AZStd::pair<EnumType, AZStd::string> operator()() const
+            AZStd::pair<UnderlyingType, AZStd::string> operator()() const
             {
-                return { static_cast<EnumType>(m_value), m_description };
+                return { static_cast<UnderlyingType>(m_value), m_description };
             }
 
             // Store using a u64 under the hood so this can be safely cast to any valid enum-range value
@@ -892,13 +894,23 @@ namespace AZ
                 {
                     if (idCrc == AZ::Edit::Attributes::EnumValues)
                     {
-                        using EnumVectorType = AZStd::conditional_t<AZStd::function_traits<T>::value, typename AZStd::function_traits<T>::return_type, T>;
+                        using EnumVectorType = AZStd::conditional_t<
+                            AZStd::function_traits<T>::value,
+                            typename AZStd::function_traits<T>::return_type,
+                            T>;
                         using EnumType = EnumTypeFromVectorOfEnumConstants_t<EnumVectorType>;
-                        using FuncType = AZStd::conditional_t<AZStd::function_traits<T>::value, typename AZStd::function_traits<T>::function_type, T(T)>;
-                        using EnumValueWrapperFuncType = AZStd::function<ReplaceInvocableReturnType_t<AZStd::vector<AZStd::pair<EnumType, AZStd::string>>, FuncType>>;
-                        EnumValueWrapperFuncType EnumValuesWrapper = [value]([[maybe_unused]] auto&&... args) -> AZStd::vector<AZStd::pair<EnumType, AZStd::string>>
+                        using FuncType = AZStd::conditional_t<
+                            AZStd::function_traits<T>::value,
+                            typename AZStd::function_traits<T>::function_type,
+                            T(T)>;
+                        using EnumValueWrapperFuncType = AZStd::function<ReplaceInvocableReturnType_t<
+                            AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>>,
+                            FuncType>>;
+
+                        EnumValueWrapperFuncType EnumValuesWrapper = [value]([[maybe_unused]] auto&&... args)
+                            -> AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>>
                         {
-                            AZStd::vector<AZStd::pair<EnumType, AZStd::string>> genericValueVector;
+                            AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>> genericValueVector;
                             EnumVectorType enumConstantVector;
                             if constexpr (AZStd::function_traits<T>::value)
                             {
@@ -917,7 +929,8 @@ namespace AZ
                             return genericValueVector;
                         };
 
-                        m_editElement->m_attributes.push_back(Edit::AttributePair(AZ::Edit::Attributes::GenericValueList, aznew AttributeInvocable(EnumValuesWrapper)));
+                        m_editElement->m_attributes.push_back(
+                            Edit::AttributePair(AZ::Edit::Attributes::GenericValueList, aznew AttributeInvocable(EnumValuesWrapper)));
                     }
                 }
             }
@@ -944,11 +957,18 @@ namespace AZ
         if (!isReflectedGlobally)
         {
             const Edit::EnumConstant<T> internalValue(value, description);
-            using ContainerType = Edit::AttributeData<Edit::EnumConstant<T>>;
+            using EnumConstantAttritbuteDataType = Edit::AttributeData<Edit::EnumConstant<T>>;
+            using GenericValueAttributeDataType = Edit::AttributeData<AZStd::pair<AZStd::RemoveEnumT<T>, AZStd::string>>;
             AZ_Assert(m_editElement, "You can attach attributes only to UiElements!");
             if (m_editElement)
             {
-                m_editElement->m_attributes.push_back(Edit::AttributePair(AZ::Edit::InternalAttributes::EnumValue, aznew ContainerType(internalValue)));
+                m_editElement->m_attributes.push_back(
+                    Edit::AttributePair(AZ::Edit::InternalAttributes::EnumValue, aznew EnumConstantAttritbuteDataType(internalValue)));
+
+                m_editElement->m_attributes.push_back(Edit::AttributePair(
+                    AZ::Edit::Attributes::GenericValue,
+                    aznew GenericValueAttributeDataType(AZStd::pair<AZStd::RemoveEnumT<T>, AZStd::string>{
+                        static_cast<AZStd::RemoveEnumT<T>>(internalValue.m_value), internalValue.m_description })));
             }
         }
         return this;
