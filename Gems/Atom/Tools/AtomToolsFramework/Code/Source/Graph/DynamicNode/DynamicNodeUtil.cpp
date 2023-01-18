@@ -8,6 +8,7 @@
 
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace AtomToolsFramework
 {
@@ -91,6 +92,43 @@ namespace AtomToolsFramework
         {
             container.insert(container.end(), settingsItr->second.begin(), settingsItr->second.end());
         }
+    }
+
+    AZStd::string GetSettingValueByName(
+        const DynamicNodeSettingsMap& settings, const AZStd::string& settingName, const AZStd::string& defaultValue)
+    {
+        for (const auto& settingsPair : settings)
+        {
+            if (AZ::StringFunc::Equal(settingsPair.first, settingName))
+            {
+                for (const auto& value : settingsPair.second)
+                {
+                    if (!value.empty())
+                    {
+                        return value;
+                    }
+                }
+            }
+        }
+        return defaultValue;
+    }
+
+    bool FindSettingWithValue(const DynamicNodeSettingsMap& settings, const AZStd::string& settingName, const AZStd::string& flag)
+    {
+        for (const auto& settingsPair : settings)
+        {
+            if (AZ::StringFunc::Equal(settingsPair.first, settingName))
+            {
+                for (const auto& value : settingsPair.second)
+                {
+                    if (AZ::StringFunc::Equal(value, flag))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     AZStd::vector<AZStd::string> GetRegisteredDataTypeNames()

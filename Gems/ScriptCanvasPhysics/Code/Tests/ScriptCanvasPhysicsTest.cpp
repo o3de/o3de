@@ -151,6 +151,7 @@ namespace ScriptCanvasPhysicsTests
         : public AzPhysics::SimulatedBody
     {
     public:
+        AZ_CLASS_ALLOCATOR(MockSimulatedBody, AZ::SystemAllocator)
         MOCK_CONST_METHOD0(GetEntityId, AZ::EntityId());
         MOCK_CONST_METHOD0(GetTransform, AZ::Transform());
         MOCK_METHOD1(SetTransform, void(const AZ::Transform& transform));
@@ -166,6 +167,7 @@ namespace ScriptCanvasPhysicsTests
         : public Physics::Shape
     {
     public:
+        AZ_CLASS_ALLOCATOR(MockShape, AZ::SystemAllocator)
         MOCK_METHOD1(SetMaterial, void(const AZStd::shared_ptr<Physics::Material>& material));
         MOCK_CONST_METHOD0(GetMaterial, AZStd::shared_ptr<Physics::Material>());
         MOCK_METHOD1(SetCollisionLayer, void(const AzPhysics::CollisionLayer& layer));
