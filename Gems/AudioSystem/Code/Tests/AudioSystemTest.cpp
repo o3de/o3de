@@ -47,15 +47,11 @@ class AudioSystemTestEnvironment
     : public AZ::Test::ITestEnvironment
 {
 public:
-    AZ_TEST_CLASS_ALLOCATOR(AudioSystemTestEnvironment)
-
     ~AudioSystemTestEnvironment() override = default;
 
 protected:
     struct MockHolder
     {
-        AZ_TEST_CLASS_ALLOCATOR(MockHolder)
-
         NiceMock<ConsoleMock> m_console;
         NiceMock<SystemMock> m_system;
     };
@@ -869,8 +865,6 @@ class ATLPreloadXmlParsingTestFixture
     : public ::testing::Test
 {
 public:
-    AZ_TEST_CLASS_ALLOCATOR(ATLPreloadXmlParsingTestFixture)
-
     ATLPreloadXmlParsingTestFixture()
         : m_triggers()
         , m_rtpcs()

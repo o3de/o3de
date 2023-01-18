@@ -21,8 +21,6 @@ class MaestroTestEnvironment
     , public UnitTest::TraceBusRedirector
 {
 public:
-    AZ_TEST_CLASS_ALLOCATOR(MaestroTestEnvironment);
-
     virtual ~MaestroTestEnvironment()
     {}
 
@@ -30,8 +28,6 @@ protected:
 
     struct MockHolder
     {
-        AZ_TEST_CLASS_ALLOCATOR(MockHolder);
-
         NiceMock<CryPakMock> pak;
         NiceMock<ConsoleMock> console;
     };
