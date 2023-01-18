@@ -59,8 +59,7 @@ namespace AzToolsFramework
 
         m_menus.insert(
             {
-                menuIdentifier,
-                EditorMenu(properties.m_name)
+                menuIdentifier, EditorMenu(menuIdentifier, properties.m_name)
             }
         );
 
@@ -281,6 +280,7 @@ namespace AzToolsFramework
         }
 
         menuIterator->second.AddSubMenu(sortIndex, subMenuIdentifier);
+        m_subMenusToMenusMap[subMenuIdentifier].insert(menuIdentifier);
         m_menusToRefresh.insert(menuIdentifier);
         return AZ::Success();
     }
@@ -315,6 +315,7 @@ namespace AzToolsFramework
             }
 
             menuIterator->second.AddSubMenu(pair.second, pair.first);
+            m_subMenusToMenusMap[pair.first].insert(menuIdentifier);
         }
 
         m_menusToRefresh.insert(menuIdentifier);
@@ -573,6 +574,21 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
+    MenuManagerOperationResult MenuManager::QueueRefreshForMenusContainingSubMenu(const AZStd::string& subMenuIdentifier)
+    {
+        auto menuIterator = m_subMenusToMenusMap.find(subMenuIdentifier);
+
+        if (menuIterator != m_subMenusToMenusMap.end())
+        {
+            for (const AZStd::string& menuIdentifier : menuIterator->second)
+            {
+                m_menusToRefresh.insert(menuIdentifier);
+            }
+        }
+
+        return AZ::Success();
+    }
+
     MenuManagerOperationResult MenuManager::QueueRefreshForMenuBar(const AZStd::string& menuBarIdentifier)
     {
         if (!m_menuBars.contains(menuBarIdentifier))
@@ -587,7 +603,10 @@ namespace AzToolsFramework
 
     void MenuManager::RefreshMenus()
     {
-        for (const AZStd::string& menuIdentifier : m_menusToRefresh)
+        auto menusToRefreshTemp = m_menusToRefresh;
+        m_menusToRefresh.clear();
+
+        for (const AZStd::string& menuIdentifier : menusToRefreshTemp)
         {
             auto menuIterator = m_menus.find(menuIdentifier);
             if (menuIterator != m_menus.end())
@@ -595,8 +614,6 @@ namespace AzToolsFramework
                 menuIterator->second.RefreshMenu();
             }
         }
-
-        m_menusToRefresh.clear();
     }
 
     void MenuManager::RefreshMenuBars()
