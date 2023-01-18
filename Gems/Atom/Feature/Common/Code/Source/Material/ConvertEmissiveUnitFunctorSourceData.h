@@ -26,6 +26,7 @@ namespace AZ
             : public AZ::RPI::MaterialFunctorSourceData
         {
         public:
+            AZ_CLASS_ALLOCATOR(ConvertEmissiveUnitFunctorSourceData, AZ::SystemAllocator)
             AZ_RTTI(ConvertEmissiveUnitFunctorSourceData, "{B476A346-C5E0-4DB9-BCFD-B2AFA8587D24}", AZ::RPI::MaterialFunctorSourceData);
 
             static void Reflect(AZ::ReflectContext* context);

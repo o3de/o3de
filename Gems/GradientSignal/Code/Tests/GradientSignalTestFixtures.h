@@ -12,6 +12,17 @@
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <AzTest/GemTestEnvironment.h>
 
+namespace UnitTest::StubRHI
+{
+    class Factory;
+}// namespace UnitTest::StubRHI
+
+namespace AZ::RPI
+{
+    class RPISystem;
+    class ImageSystem;
+} // namespace AZ::RPI
+
 namespace UnitTest
 {
     // The GradientSignal unit tests need to use the GemTestEnvironment to load the LmbrCentral Gem so that Shape components can be used
@@ -90,8 +101,6 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceAltitudeGradient(float shapeHalfBounds);
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceMaskGradient(float shapeHalfBounds);
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceSlopeGradient(float shapeHalfBounds);
-
-        AZStd::fixed_vector<AZStd::unique_ptr<AZ::Data::AssetHandler>, 2> m_assetHandlers;
     };
 
     struct GradientSignalTest
@@ -99,18 +108,18 @@ namespace UnitTest
         , public ::testing::Test
     {
     protected:
-        void SetUp() override
-        {
-            SetupCoreSystems();
-        }
+        GradientSignalTest();
+        ~GradientSignalTest() override;
 
-        void TearDown() override
-        {
-            TearDownCoreSystems();
-        }
+        void SetUp() override;
+        void TearDown() override;
 
         void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId);
         void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, GradientSignal::GradientSampler& gradientSampler);
+
+        AZStd::unique_ptr<UnitTest::StubRHI::Factory> m_rhiFactory;
+        AZStd::unique_ptr<AZ::RPI::RPISystem> m_rpiSystem;
+        AZStd::unique_ptr<AZ::RPI::ImageSystem> m_imageSystem;
     };
 
 #ifdef HAVE_BENCHMARK

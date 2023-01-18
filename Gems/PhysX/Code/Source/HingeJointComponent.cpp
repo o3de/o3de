@@ -112,8 +112,7 @@ namespace PhysX
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AZ_Assert(sceneInterface, "No sceneInterface");
         const auto joint = sceneInterface->GetJointFromHandle(m_jointSceneOwner, m_jointHandle);
-        const auto type = joint->GetNativeType();
-        AZ_Assert(type == PhysX::NativeTypeIdentifiers::HingeJoint, "It is not PhysXHingeJoint");
+        AZ_Assert(joint->GetNativeType() == PhysX::NativeTypeIdentifiers::HingeJoint, "It is not PhysXHingeJoint");
         physx::PxJoint* nativeJoint = static_cast<physx::PxJoint*>(joint->GetNativePointer());
         physx::PxRevoluteJoint* native = nativeJoint->is<physx::PxRevoluteJoint>();
         AZ_Assert(native, "It is not PxRevoluteJoint");

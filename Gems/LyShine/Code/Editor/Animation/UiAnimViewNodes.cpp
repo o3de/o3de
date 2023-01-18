@@ -13,7 +13,6 @@
 #include "UiAnimViewNodes.h"
 #include "UiAnimViewDopeSheetBase.h"
 #include "UiAnimViewUndo.h"
-#include "StringDlg.h"
 #include "UiAnimViewDialog.h"
 #include "UiAVEventsDialog.h"
 
@@ -839,40 +838,6 @@ void CUiAnimViewNodesCtrl::OnNMRclick(QPoint point)
             UiAnimUndo undo("Add UiAnimView Event Node");
             pGroupNode->CreateSubNode("Events", eUiAnimNodeType_Event);
         }
-#if UI_ANIMATION_REMOVED // CStringDlg unresolved
-        else if (cmd == eMI_AddConsoleVariable)
-        {
-            CStringDlg dlg(_T("Console Variable Name"));
-            if (dlg.DoModal() == IDOK && !dlg.GetString().IsEmpty())
-            {
-                UiAnimUndo undo("Add UiAnimView Console (CVar) Node");
-                CString name = pGroupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
-                pGroupNode->CreateSubNode(name, eUiAnimNodeType_CVar);
-            }
-        }
-        else if (cmd == eMI_AddScriptVariable)
-        {
-            CStringDlg dlg(_T("Script Variable Name"));
-            if (dlg.DoModal() == IDOK && !dlg.GetString().IsEmpty())
-            {
-                UiAnimUndo undo("Add UiAnimView Script Variable Node");
-                CString name = pGroupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
-                pGroupNode->CreateSubNode(name, eUiAnimNodeType_ScriptVar);
-            }
-        }
-        else if (cmd == eMI_AddMaterial)
-        {
-            CStringDlg dlg(_T("Material Name"));
-            if (dlg.DoModal() == IDOK && !dlg.GetString().IsEmpty())
-            {
-                if (pGroupNode->GetAnimNodesByName(dlg.GetString()).GetCount() == 0)
-                {
-                    UiAnimUndo undo("Add UiAnimView Material Node");
-                    pGroupNode->CreateSubNode(dlg.GetString(), eUiAnimNodeType_Material);
-                }
-            }
-        }
-#endif
     }
 
     if (cmd == eMI_EditEvents)

@@ -130,8 +130,9 @@ void DebugModifyOutput(inout float4 outDiffuse, inout float4 outSpecular, inout 
         else if(viewMode == RenderDebugViewMode::Albedo)         { outSpecular.rgb = albedo; }
         else if(viewMode == RenderDebugViewMode::Roughness)      { outSpecular.rgb = roughness.rrr; }
         else if(viewMode == RenderDebugViewMode::Metallic)       { outSpecular.rgb = metallic.rrr; }
+#if ENABLE_SHADER_DEBUGGING
         else if(viewMode == RenderDebugViewMode::CascadeShadows) { outSpecular.rgb = customDebugFloats.rgb; }
-
+#endif
         if(viewMode != RenderDebugViewMode::None)
         {
             outDiffuse = float4(0, 0, 0, 0);

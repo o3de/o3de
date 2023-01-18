@@ -6,6 +6,12 @@
 #
 # {END_LICENSE}
 
+# Query the gem name from the gem.json file if possible
+# otherwise fallback to using ${GemName}
+o3de_find_ancestor_gem_root(gem_path gem_name "${CMAKE_CURRENT_SOURCE_DIR}")
+if (NOT gem_name)
+    set(gem_name "${GemName}")
+endif()
 
 ly_add_target(
     NAME ${Name}.Object OBJECT
@@ -30,7 +36,7 @@ ly_add_target(
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Source.jinja,$path/$fileprefix_Nodeables.generated.cpp
 )
 
-set (dependent_targets ${GemName}.Private.Object;${GemName};${GemName}.Editor)
+set (dependent_targets ${gem_name}.Private.Object;${gem_name};${gem_name}.Editor)
 
 foreach (dependent_target IN LISTS dependent_targets)
     if (TARGET ${dependent_target})

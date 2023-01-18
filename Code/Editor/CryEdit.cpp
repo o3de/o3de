@@ -92,7 +92,6 @@ AZ_POP_DISABLE_WARNING
 #include "MainWindow.h"
 
 #include "Core/QtEditorApplication.h"
-#include "StringDlg.h"
 #include "NewLevelDialog.h"
 #include "LayoutConfigDialog.h"
 #include "ViewManager.h"
@@ -2538,17 +2537,6 @@ void CCryEditApp::ExportToGame(bool bNoMsgBox)
 void CCryEditApp::OnFileExportToGameNoSurfaceTexture()
 {
     UserExportToGame(false);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::DeleteSelectedEntities([[maybe_unused]] bool includeDescendants)
-{
-    GetIEditor()->BeginUndo();
-    CUndo undo("Delete Selected Object");
-    GetIEditor()->GetObjectManager()->DeleteSelection();
-    GetIEditor()->AcceptUndo("Delete Selection");
-    GetIEditor()->SetModifiedFlag();
-    GetIEditor()->SetModifiedModule(eModifiedBrushes);
 }
 
 void CCryEditApp::OnMoveObject()

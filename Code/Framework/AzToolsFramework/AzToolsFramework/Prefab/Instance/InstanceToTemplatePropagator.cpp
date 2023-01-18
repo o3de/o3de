@@ -54,7 +54,7 @@ namespace AzToolsFramework
             AZ::Interface<InstanceToTemplateInterface>::Unregister(this);
         }
 
-        bool InstanceToTemplatePropagator::GenerateDomForEntity(PrefabDom& generatedEntityDom, const AZ::Entity& entity)
+        bool InstanceToTemplatePropagator::GenerateEntityDomBySerializing(PrefabDom& entityDom, const AZ::Entity& entity)
         {
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entity.GetId());
 
@@ -64,12 +64,12 @@ namespace AzToolsFramework
                 return false;
             }
 
-            return PrefabDomUtils::StoreEntityInPrefabDomFormat(entity, owningInstance->get(), generatedEntityDom);
+            return PrefabDomUtils::StoreEntityInPrefabDomFormat(entity, owningInstance->get(), entityDom);
         }
 
-        bool InstanceToTemplatePropagator::GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Prefab::Instance& instance)
+        bool InstanceToTemplatePropagator::GenerateInstanceDomBySerializing(PrefabDom& instanceDom, const Instance& instance)
         {
-            return PrefabDomUtils::StoreInstanceInPrefabDom(instance, generatedInstanceDom);
+            return PrefabDomUtils::StoreInstanceInPrefabDom(instance, instanceDom);
         }
 
         bool InstanceToTemplatePropagator::GeneratePatch(
@@ -290,7 +290,7 @@ namespace AzToolsFramework
                 patchPathReference->get().SetString(patchPathString.c_str(), patches.GetAllocator());
             }
 
-            linkToApplyPatches.AddPatchesToLink(patches);
+            linkToApplyPatches.SetLinkPatches(patches);
             linkToApplyPatches.UpdateTarget();
 
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(linkToApplyPatches.GetTargetTemplateId(), true);
