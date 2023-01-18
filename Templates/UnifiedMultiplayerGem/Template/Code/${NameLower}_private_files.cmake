@@ -8,6 +8,6 @@
 
 set(FILES
     Source/${Name}ModuleInterface.h
-    Source/Clients/${Name}SystemComponent.cpp
-    Source/Clients/${Name}SystemComponent.h
+    Source/Unified/${Name}SystemComponent.cpp
+    Source/Unified/${Name}SystemComponent.h
 )

@@ -161,15 +161,15 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Clients/${Name}Module.cpp",
+            "file": "Code/Source/Unified/${Name}Module.cpp",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Clients/${Name}SystemComponent.cpp",
+            "file": "Code/Source/Unified/${Name}SystemComponent.cpp",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Clients/${Name}SystemComponent.h",
+            "file": "Code/Source/Unified/${Name}SystemComponent.h",
             "isTemplated": true
         },
         {
@@ -185,7 +185,7 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Tests/Clients/${Name}Test.cpp",
+            "file": "Code/Tests/Unified/${Name}Test.cpp",
             "isTemplated": true
         },
         {
@@ -240,7 +240,7 @@
             "dir": "Code/Source"
         },
         {
-            "dir": "Code/Source/Clients"
+            "dir": "Code/Source/Unified"
         },
         {
             "dir": "Code/Source/Tools"
@@ -249,7 +249,7 @@
             "dir": "Code/Tests"
         },
         {
-            "dir": "Code/Tests/Clients"
+            "dir": "Code/Tests/Unified"
         },
         {
             "dir": "Code/Tests/Tools"

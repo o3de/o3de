@@ -7,5 +7,5 @@
 # {END_LICENSE}
 
 set(FILES
-    Tests/Clients/${Name}Test.cpp
+    Tests/Unified/${Name}Test.cpp
 )

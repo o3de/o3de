@@ -12,7 +12,7 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-#include <Clients/${Name}SystemComponent.h>
+#include <Unified/${Name}SystemComponent.h>
 
 namespace ${SanitizedCppName}
 {
