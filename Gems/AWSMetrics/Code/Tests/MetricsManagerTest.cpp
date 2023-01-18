@@ -134,7 +134,9 @@ namespace AWSMetrics
         , protected AWSMetricsRequestBus::Handler
     {
     public:
-        // Size for each test metrics event will be 180 bytes.
+        // We calculate the event size by adding the size of all the key value pairs in MetricsEvent.m_attributes 
+        // TestMetricsEventSizeInBytes value is based on a simple event with default attributes + one test attribute
+        // See MetricEvents::GetSizeInBytes and MetricsManager::SubmitMetrics for details
         static constexpr int TestMetricsEventSizeInBytes = 178;
         static constexpr int MbToBytes = 1000000;
         static constexpr int DefaultFlushPeriodInSeconds = 1;
