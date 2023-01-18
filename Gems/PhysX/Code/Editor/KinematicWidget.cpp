@@ -40,9 +40,8 @@ namespace PhysX
             auto comboBox = picker->GetComboBox();
             comboBox->addItem("Dynamic");
             comboBox->addItem("Kinematic");
-            comboBox->setEnabled(false);
 
-            picker->GetEditButton()->setToolTip("Open rigid body dialog for more info on the motion types");
+            picker->GetEditButton()->setToolTip("Open Type dialog for a detailed description on the motion types");
 
             connect(picker->GetEditButton(), &QToolButton::clicked, this, &KinematicWidget::OnEditButtonClicked);
             m_widgetComboBox = comboBox;
