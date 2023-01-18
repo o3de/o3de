@@ -33,10 +33,11 @@ namespace AZ::ComponentApplicationLifecycle
                 " or in *.setreg within the project", AZ_STRING_ARG(eventName), AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey));
             return false;
         }
-        auto eventRegistrationKey = FixedValueString::format("%.*s/%.*s", AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey),
+        // The Settings Registry key used to signal the event is a transient runtime key which is separate from the registration key
+        auto eventSignalKey = FixedValueString::format("%.*s/%.*s", AZ_STRING_ARG(ApplicationLifecycleEventSignalKey),
             AZ_STRING_ARG(eventName));
 
-        return settingsRegistry.MergeSettings(eventValue, Format::JsonMergePatch, eventRegistrationKey);
+        return settingsRegistry.MergeSettings(eventValue, Format::JsonMergePatch, eventSignalKey);
     }
 
     bool RegisterEvent(AZ::SettingsRegistryInterface& settingsRegistry, AZStd::string_view eventName)
@@ -74,12 +75,14 @@ namespace AZ::ComponentApplicationLifecycle
                 " or in *.setreg within the project", AZ_STRING_ARG(eventName), AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey));
             return false;
         }
-        auto eventNameRegistrationKey = FixedValueString::format("%.*s/%.*s", AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey),
-            AZ_STRING_ARG(eventName));
-        auto lifecycleCallback = [callback = AZStd::move(callback), eventNameRegistrationKey](
+
+        // The signal key is used for invoking the handler
+        auto lifecycleCallback = [callback = AZStd::move(callback),
+            eventNameSignalKey = FixedValueString::format("%.*s/%.*s",
+                AZ_STRING_ARG(ApplicationLifecycleEventSignalKey), AZ_STRING_ARG(eventName))](
             const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            if (notifyEventArgs.m_jsonKeyPath == eventNameRegistrationKey)
+            if (notifyEventArgs.m_jsonKeyPath == eventNameSignalKey)
             {
                 callback(notifyEventArgs);
             }
