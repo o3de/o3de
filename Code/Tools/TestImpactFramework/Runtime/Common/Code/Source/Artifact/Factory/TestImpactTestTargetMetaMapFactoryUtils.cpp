@@ -26,6 +26,6 @@ namespace TestImpact
         }
 
         // Only test suite labels that contain the TIAF requirement label
-        return labelSet.contains(RequiresTiafLabel) ? std::optional<SuiteLabelSet>{ labelSet } : AZStd::nullopt;
+        return labelSet.contains(RequiresTiafLabel) ? AZStd::optional<SuiteLabelSet>{ labelSet } : AZStd::nullopt;
     }
 } // namespace TestImpact
