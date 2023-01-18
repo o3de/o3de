@@ -17,17 +17,8 @@
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "color",
                 "defaultDataType": "color",
-                "defaultValue": {
-                    "$type": "Color",
-                    "Value": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ]
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -38,8 +29,8 @@
         "outputSlots": [
             {
                 "name": "outValue",
-                "displayName": "Value",
-                "description": "Value",
+                "displayName": "RGBA",
+                "description": "RGBA",
                 "supportedDataTypeRegex": "color",
                 "defaultDataType": "color",
                 "settings": {

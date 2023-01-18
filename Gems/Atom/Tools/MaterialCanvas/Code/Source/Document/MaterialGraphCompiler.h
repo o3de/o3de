@@ -37,14 +37,6 @@ namespace MaterialCanvas
         // Convert the template file path into a save file path based on the document name.
         AZStd::string GetOutputPathFromTemplatePath(const AZStd::string& templatePath) const;
 
-        // Find and replace a whole word or symbol using regular expressions.
-        void ReplaceSymbolsInContainer(
-            const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container) const;
-
-        void ReplaceSymbolsInContainer(
-            const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols,
-            AZStd::vector<AZStd::string>& container) const;
-
         // Functions assisting with conversions between different vector and scalar types. Functions like these will eventually be moved out
         // of the document class so that they can be registered more flexibly and extensively.
         unsigned int GetVectorSize(const AZStd::any& slotValue) const;
@@ -107,13 +99,13 @@ namespace MaterialCanvas
         AZStd::string GetSymbolNameFromSlot(GraphModel::ConstSlotPtr slot) const;
 
         // Convert a material input node into AZSL lines of variables that can be injected into the material SRG
-        AZStd::vector<AZStd::string> GetMaterialInputsFromSlot(
+        AZStd::vector<AZStd::string> GetMaterialPropertySrgMemberFromSlot(
             GraphModel::ConstNodePtr node,
             const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig,
             const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols) const;
 
         // Convert all material input nodes into AZSL lines of variables that can be injected into the material SRG
-        AZStd::vector<AZStd::string> GetMaterialInputsFromNodes(const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const;
+        AZStd::vector<AZStd::string> GetMaterialPropertySrgMemberFromNodes(const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const;
 
         // Creates and exports a material type source file by loading an existing template, replacing special tokens, and injecting
         // properties defined in material input nodes
@@ -126,24 +118,5 @@ namespace MaterialCanvas
         void BuildSlotValueTable();
 
         AZStd::map<GraphModel::ConstSlotPtr, AZStd::any> m_slotValueTable;
-
-        // Utility type wrapping repeated load and save logic for most template files that only require basic insertions and substitutions.
-        // Files will be read in and then tokenized into a vector of strings for each line in the file. This allows for easier and
-        // individual processing of each line.
-        struct TemplateFileData
-        {
-            AZStd::string m_inputPath;
-            AZStd::string m_outputPath;
-            AZStd::vector<AZStd::string> m_lines;
-
-            bool Load();
-            bool Save() const;
-
-            using LineGenerationFn = AZStd::function<AZStd::vector<AZStd::string>(const AZStd::string&)>;
-
-            // Search for marked up blocks of text from a template and replace lines between them with lines provided by a function.
-            void ReplaceLinesInBlock(
-                const AZStd::string& blockBeginToken, const AZStd::string& blockEndToken, const LineGenerationFn& lineGenerationFn);
-        };
     };
 } // namespace MaterialCanvas
