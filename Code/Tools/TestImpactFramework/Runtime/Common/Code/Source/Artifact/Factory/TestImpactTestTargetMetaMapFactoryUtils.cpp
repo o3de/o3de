@@ -16,7 +16,7 @@ namespace TestImpact
         SuiteLabelSet labelSet;
         for (const auto& label : suiteLabels)
         {
-            const auto labelString = label.GetString(); 
+            const auto labelString = label.GetString();
             if (suiteLabelExcludeSet.contains(labelString))
             {
                 return AZStd::nullopt;
