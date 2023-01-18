@@ -339,6 +339,11 @@ namespace AzToolsFramework
 
     bool BoxComponentMode::HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
+        if (!m_allowAsymmetricalEditing)
+        {
+            return false;
+        }
+
         if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Wheel &&
             mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl())
         {
