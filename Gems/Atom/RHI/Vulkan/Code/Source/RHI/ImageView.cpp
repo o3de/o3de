@@ -135,29 +135,46 @@ namespace AZ
 
         RHI::ResultCode ImageView::InvalidateInternal()
         {
-            ShutdownInternal();
-            return InitInternal(GetDevice(), GetResource());
+            ReleaseView();
+            RHI::ResultCode initResult = InitInternal(GetDevice(), GetResource());
+            if (initResult != RHI::ResultCode::Success)
+            {
+                ReleaseBindlessIndices();
+            }
+            return initResult;
         }
 
-        void ImageView::ShutdownInternal()
-        {            
+        void ImageView::ReleaseView()
+        {
             if (m_vkImageView != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
                 device.QueueForRelease(
                     new ReleaseContainer<VkImageView>(device.GetNativeDevice(), m_vkImageView, device.GetContext().DestroyImageView));
                 m_vkImageView = VK_NULL_HANDLE;
-
-                if (m_readIndex != ~0u)
-                {
-                    device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
-                }
-
-                if (m_readWriteIndex != ~0u)
-                {
-                    device.GetBindlessDescriptorPool().DetachReadWriteImage(m_readWriteIndex);
-                }
             }
+        }
+
+        void ImageView::ReleaseBindlessIndices()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            if (m_readIndex != InvalidBindlessIndex)
+            {
+                device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
+                m_readIndex = InvalidBindlessIndex;
+            }
+
+            if (m_readWriteIndex != InvalidBindlessIndex)
+            {
+                device.GetBindlessDescriptorPool().DetachReadWriteImage(m_readWriteIndex);
+                m_readWriteIndex = InvalidBindlessIndex;
+            }
+        }
+
+        void ImageView::ShutdownInternal()
+        {
+            ReleaseView();
+            ReleaseBindlessIndices();
         }
 
         VkImageViewType ImageView::GetImageViewType(const Image& image) const

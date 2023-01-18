@@ -137,9 +137,14 @@ namespace AZ::Vulkan
         const uint32_t roTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
         
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        RHI::VirtualAddress address = m_allocators[roTextureIndex].Allocate(1, 1);
-        AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
-        uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
+
+        uint32_t heapIndex = view->GetBindlessReadIndex();
+        if (heapIndex == ImageView::InvalidBindlessIndex)
+        {
+            RHI::VirtualAddress address = m_allocators[roTextureIndex].Allocate(1, 1);
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
+            heapIndex = static_cast<uint32_t>(address.m_ptr);
+        }
 
         VkWriteDescriptorSet write = PrepareWrite(heapIndex, roTextureIndex, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
         VkDescriptorImageInfo imageInfo{};
@@ -158,9 +163,14 @@ namespace AZ::Vulkan
         const uint32_t rwTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
 
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        RHI::VirtualAddress address = m_allocators[rwTextureIndex].Allocate(1, 1);
-        AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
-        uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
+
+        uint32_t heapIndex = view->GetBindlessReadWriteIndex();
+        if (heapIndex == ImageView::InvalidBindlessIndex)
+        {
+            RHI::VirtualAddress address = m_allocators[rwTextureIndex].Allocate(1, 1);
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
+            heapIndex = static_cast<uint32_t>(address.m_ptr);
+        }
 
         VkWriteDescriptorSet write = PrepareWrite(heapIndex, rwTextureIndex, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
         VkDescriptorImageInfo imageInfo{};
@@ -180,9 +190,14 @@ namespace AZ::Vulkan
         const uint32_t roBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
 
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        RHI::VirtualAddress address = m_allocators[roBufferIndex].Allocate(1, 1);
-        AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
-        uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
+
+        uint32_t heapIndex = view->GetBindlessReadIndex();
+        if (heapIndex == ImageView::InvalidBindlessIndex)
+        {
+            RHI::VirtualAddress address = m_allocators[roBufferIndex].Allocate(1, 1);
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
+            heapIndex = static_cast<uint32_t>(address.m_ptr);
+        }
 
         const auto& viewDesc = view->GetDescriptor();
         const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();
@@ -202,9 +217,14 @@ namespace AZ::Vulkan
         const uint32_t rwBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
 
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        RHI::VirtualAddress address = m_allocators[rwBufferIndex].Allocate(1, 1);
-        AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
-        uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
+
+        uint32_t heapIndex = view->GetBindlessReadWriteIndex();
+        if (heapIndex == ImageView::InvalidBindlessIndex)
+        {
+            RHI::VirtualAddress address = m_allocators[rwBufferIndex].Allocate(1, 1);
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
+            heapIndex = static_cast<uint32_t>(address.m_ptr);
+        }
 
         const auto& viewDesc = view->GetDescriptor();
         const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();
