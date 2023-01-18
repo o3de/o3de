@@ -165,27 +165,34 @@ namespace AZ
         template <class T, class U, typename... Args>
         bool Read(U& value, Args&&... args)
         {
-            return Internal::AttributeReader<T, U, Args...>::Read(value, m_attribute, m_instancePointer, AZStd::forward<Args>(args)...);
+            return Internal::AttributeReader<T, U, Args...>::Read(value, m_attribute, m_instance, AZStd::forward<Args>(args)...);
         }
 
         template <typename RetType, typename... Args>
         bool Invoke(Args&&... args)
         {
-            return Internal::AttributeInvoke<RetType>(m_attribute, m_instancePointer, AZStd::forward<Args>(args)...);
+            return Internal::AttributeInvoke<RetType>(m_attribute, m_instance, AZStd::forward<Args>(args)...);
         }
 
         // ------------ private implementation ---------------------------------
-        AttributeInvoker(InstType* instancePointer, Attribute* attrib)
-            : m_instancePointer(instancePointer)
+        AttributeInvoker(const InstType& instance, Attribute* attrib)
+            : m_instance(instance)
+            , m_attribute(attrib)
+        {
+        }
+
+        AttributeInvoker(InstType&& instance, Attribute* attrib)
+            : m_instance(AZStd::move(instance))
             , m_attribute(attrib)
         {
         }
 
         Attribute* GetAttribute() const { return m_attribute; }
-        InstType* GetInstancePointer() const { return m_instancePointer; }
+        InstType& GetInstance() { return m_instance; }
+        const InstType& GetInstance() const { return m_instance; }
 
     private:
-        InstType* m_instancePointer;
+        InstType m_instance;
         Attribute* m_attribute;
     };
 
@@ -194,13 +201,13 @@ namespace AZ
     // For Attributes that stores raw or free function such as AZ::AttributeData and AZ::AttributeFunction
     // this class works fine as the void pointer instance isn't used, but for Attributes that works
     class AttributeReader
-        : public AttributeInvoker<void>
+        : public AttributeInvoker<void*>
     {
     public:
         AZ_CLASS_ALLOCATOR(AttributeReader, AZ::SystemAllocator, 0);
 
-        // Bring in AttributeInvoker<void> constructors into scope
-        using AttributeInvoker<void>::AttributeInvoker;
+        // Bring in AttributeInvoker<void*> constructors into scope
+        using AttributeInvoker<void*>::AttributeInvoker;
     };
 
     using AZ::Internal::AttributeRead;
