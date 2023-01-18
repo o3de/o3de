@@ -175,5 +175,76 @@ namespace LmbrCentral
 
         ExpectTranslationOffset(m_entity, translationOffset + AZ::Vector3::CreateAxisZ());
     }
+
+    TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, PressingKey1ShouldSetDimensionMode)
+    {
+        EnterComponentMode(m_entity, EditorAxisAlignedBoxShapeComponentTypeId);
+        SetComponentSubMode(m_entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode::TranslationOffset);
+        ExpectSubMode(m_entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode::TranslationOffset);
+
+        QTest::keyPress(&m_editorActions.m_componentModeWidget, Qt::Key_1);
+
+        ExpectSubMode(m_entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode::Dimensions);
+    }
+
+    TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, PressingKey2ShouldSetTranslationOffsetMode)
+    {
+        EnterComponentMode(m_entity, EditorAxisAlignedBoxShapeComponentTypeId);
+        ExpectSubMode(m_entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode::Dimensions);
+
+        QTest::keyPress(&m_editorActions.m_componentModeWidget, Qt::Key_2);
+
+        ExpectSubMode(m_entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode::TranslationOffset);
+    }
+
+    TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, PressingKeyRInDimensionModeShouldResetBoxDimensions)
+    {
+        const AZ::Vector3 boxDimensions(2.0f, 2.0f, 2.0f);
+        BoxShapeComponentRequestsBus::Event(m_entity->GetId(), &BoxShapeComponentRequests::SetBoxDimensions, boxDimensions);
+        EnterComponentMode(m_entity, EditorAxisAlignedBoxShapeComponentTypeId);
+
+        ExpectBoxDimensions(m_entity, boxDimensions);
+
+        QTest::keyPress(&m_editorActions.m_componentModeWidget, Qt::Key_R);
+
+        ExpectBoxDimensions(m_entity, AZ::Vector3::CreateOne());
+    }
+
+    TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, PressingKeyRInTranslationOffsetModeShouldResetTranslationOffset)
+    {
+        const AZ::Vector3 translationOffset(3.0f, 4.0f, 5.0f);
+        ShapeComponentRequestsBus::Event(m_entity->GetId(), &ShapeComponentRequests::SetTranslationOffset, translationOffset);
+        EnterComponentMode(m_entity, EditorAxisAlignedBoxShapeComponentTypeId);
+        SetComponentSubMode(m_entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode::TranslationOffset);
+
+        ExpectTranslationOffset(m_entity, translationOffset);
+
+        QTest::keyPress(&m_editorActions.m_componentModeWidget, Qt::Key_R);
+
+        ExpectTranslationOffset(m_entity, AZ::Vector3::CreateZero());
+    }
+
+    TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, CtrlMouseWheelUpShouldSetNextMode)
+    {
+        EnterComponentMode(m_entity, EditorAxisAlignedBoxShapeComponentTypeId);
+        ExpectSubMode(m_entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode::Dimensions);
+
+        const auto handled = CtrlScroll(1.0f);
+
+        EXPECT_EQ(handled, AzToolsFramework::ViewportInteraction::MouseInteractionResult::Viewport);
+        ExpectSubMode(m_entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode::TranslationOffset);
+    }
+
+    TEST_F(EditorAxisAlignedBoxShapeComponentManipulatorFixture, CtrlMouseWheelDownShouldSetNextMode)
+    {
+        EnterComponentMode(m_entity, EditorAxisAlignedBoxShapeComponentTypeId);
+        SetComponentSubMode(m_entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode::TranslationOffset);
+        ExpectSubMode(m_entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode::TranslationOffset);
+
+        const auto handled = CtrlScroll(-1.0f);
+
+        EXPECT_EQ(handled, AzToolsFramework::ViewportInteraction::MouseInteractionResult::Viewport);
+        ExpectSubMode(m_entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode::Dimensions);
+    }
 }
 

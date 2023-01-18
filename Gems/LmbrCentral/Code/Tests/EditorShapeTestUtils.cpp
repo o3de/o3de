@@ -46,7 +46,7 @@ namespace LmbrCentral
 
     void ExpectBoxDimensions(AZ::Entity* entity, const AZ::Vector3& expectedBoxDimensions)
     {
-        AZ::Vector3 boxDimensions;
+        AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
         BoxShapeComponentRequestsBus::EventResult(boxDimensions, entity->GetId(), &BoxShapeComponentRequests::GetBoxDimensions);
         EXPECT_THAT(boxDimensions, UnitTest::IsCloseTolerance(expectedBoxDimensions, ManipulatorTolerance));
     }
@@ -63,5 +63,32 @@ namespace LmbrCentral
     {
         AzToolsFramework::ShapeComponentModeRequestBus::Event(
             entityComponentIdPair, &AzToolsFramework::ShapeComponentModeRequests::SetCurrentMode, subMode);
+    }
+
+    void ExpectSubMode(
+        AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode expectedSubMode)
+    {
+        AzToolsFramework::ShapeComponentModeRequests::SubMode subMode = AzToolsFramework::ShapeComponentModeRequests::SubMode::NumModes;
+        AzToolsFramework::ShapeComponentModeRequestBus::EventResult(
+            subMode, entityComponentIdPair, &AzToolsFramework::ShapeComponentModeRequests::GetCurrentMode);
+        EXPECT_EQ(subMode, expectedSubMode);
+    }
+
+    AzToolsFramework::ViewportInteraction::MouseInteractionResult CtrlScroll(float wheelDelta)
+    {
+        AzToolsFramework::ViewportInteraction::MouseInteractionEvent interactionEvent(
+            AzToolsFramework::ViewportInteraction::MouseInteraction(), wheelDelta);
+        interactionEvent.m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::Wheel;
+        interactionEvent.m_mouseInteraction.m_keyboardModifiers.m_keyModifiers =
+            static_cast<AZ::u32>(AzToolsFramework::ViewportInteraction::KeyboardModifier::Ctrl);
+
+        AzToolsFramework::ViewportInteraction::MouseInteractionResult handled =
+            AzToolsFramework::ViewportInteraction::MouseInteractionResult::None;
+        AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::BroadcastResult(
+            handled,
+            &AzToolsFramework::ViewportInteraction::InternalMouseViewportRequests::InternalHandleAllMouseInteractions,
+            interactionEvent);
+
+        return handled;
     }
 } // namespace LmbrCentral

@@ -34,4 +34,9 @@ namespace LmbrCentral
     void ExpectBoxDimensions(AZ::Entity* entity, const AZ::Vector3& expectedBoxDimensions);
 
     void ExpectTranslationOffset(AZ::Entity* entity, const AZ::Vector3& expectedTranslationOffset);
+
+    void ExpectSubMode(
+        AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode expectedSubMode);
+
+    AzToolsFramework::ViewportInteraction::MouseInteractionResult CtrlScroll(float wheelDelta);
 } // namespace LmbrCentral
