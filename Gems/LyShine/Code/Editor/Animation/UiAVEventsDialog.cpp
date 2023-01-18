@@ -15,6 +15,7 @@
 #include <limits>
 
 #include <QInputDialog>
+#include <QMessageBox>
 
 
 // CUiAVEventsDialog dialog
