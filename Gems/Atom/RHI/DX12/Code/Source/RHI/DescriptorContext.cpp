@@ -268,6 +268,7 @@ namespace AZ
             ConvertImageView(image, imageViewDescriptor, viewDesc);
             m_device->CreateShaderResourceView(image.GetMemoryView().GetMemory(), &viewDesc, descriptorHandle);
 
+            // Only allocate if the index is already null, otherwise just copy the descriptor onto the old index.
             if (staticView.m_index == DescriptorHandle::NullIndex)
             {
                 staticView = AllocateStaticDescriptor(descriptorHandle);

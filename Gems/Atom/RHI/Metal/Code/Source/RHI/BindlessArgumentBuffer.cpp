@@ -144,6 +144,7 @@ namespace AZ::Metal
         uint32_t heapIndex = imageView.GetBindlessReadIndex();
         if (heapIndex == ImageView::InvalidBindlessIndex)
         {
+            // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
             uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
             RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
@@ -171,6 +172,7 @@ namespace AZ::Metal
         uint32_t heapIndex = imageView.GetBindlessReadWriteIndex();
         if (heapIndex == ImageView::InvalidBindlessIndex)
         {
+            // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
             uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
             RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
@@ -198,6 +200,7 @@ namespace AZ::Metal
         uint32_t heapIndex = bufferView.GetBindlessReadIndex();
         if (heapIndex == BufferView::InvalidBindlessIndex)
         {
+            // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
             uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
             RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
@@ -226,6 +229,7 @@ namespace AZ::Metal
         uint32_t heapIndex = bufferView.GetBindlessReadWriteIndex();
         if (heapIndex == BufferView::InvalidBindlessIndex)
         {
+            // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
             uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
             RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");

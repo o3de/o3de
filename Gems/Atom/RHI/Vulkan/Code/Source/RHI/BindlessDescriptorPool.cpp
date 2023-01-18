@@ -141,6 +141,7 @@ namespace AZ::Vulkan
         uint32_t heapIndex = view->GetBindlessReadIndex();
         if (heapIndex == ImageView::InvalidBindlessIndex)
         {
+            // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
             RHI::VirtualAddress address = m_allocators[roTextureIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             heapIndex = static_cast<uint32_t>(address.m_ptr);
@@ -167,6 +168,7 @@ namespace AZ::Vulkan
         uint32_t heapIndex = view->GetBindlessReadWriteIndex();
         if (heapIndex == ImageView::InvalidBindlessIndex)
         {
+            // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
             RHI::VirtualAddress address = m_allocators[rwTextureIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             heapIndex = static_cast<uint32_t>(address.m_ptr);
@@ -194,6 +196,7 @@ namespace AZ::Vulkan
         uint32_t heapIndex = view->GetBindlessReadIndex();
         if (heapIndex == ImageView::InvalidBindlessIndex)
         {
+            // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
             RHI::VirtualAddress address = m_allocators[roBufferIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             heapIndex = static_cast<uint32_t>(address.m_ptr);
@@ -221,6 +224,7 @@ namespace AZ::Vulkan
         uint32_t heapIndex = view->GetBindlessReadWriteIndex();
         if (heapIndex == ImageView::InvalidBindlessIndex)
         {
+            // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
             RHI::VirtualAddress address = m_allocators[rwBufferIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             heapIndex = static_cast<uint32_t>(address.m_ptr);
