@@ -12,9 +12,13 @@
 #include <AzCore/std/tuple.h>
 #include <GraphModel/Model/Connection.h>
 #include <GraphModel/Model/Node.h>
+#include <GraphModel/Model/Slot.h>
 
 namespace AtomToolsFramework
 {
+    //! Get the value from a slot as a string
+    AZStd::string GetStringValueFromSlot(GraphModel::ConstSlotPtr slot, const AZStd::string& defaultValue = {});
+
     // Sort a container of nodes by depth, considering the number and state of input and output slots and connections, for consistent
     // display and execution order. The function is templatized to account for different container types and constness. 
     template<typename NodeContainer>

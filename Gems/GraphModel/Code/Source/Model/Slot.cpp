@@ -114,6 +114,7 @@ namespace GraphModel
         AZStd::any defaultValue,
         AZStd::string_view description,
         ExtendableSlotConfiguration* extendableSlotConfiguration,
+        const AZStd::vector<AZStd::string>& enumValues,
         bool visibleOnNode,
         bool editableOnNode)
     {
@@ -124,6 +125,7 @@ namespace GraphModel
             defaultValue,
             description,
             extendableSlotConfiguration,
+            enumValues,
             visibleOnNode,
             editableOnNode);
     }
@@ -135,6 +137,7 @@ namespace GraphModel
         AZStd::any defaultValue,
         AZStd::string_view description,
         ExtendableSlotConfiguration* extendableSlotConfiguration,
+        const AZStd::vector<AZStd::string>& enumValues,
         bool visibleOnNode,
         bool editableOnNode)
     {
@@ -146,6 +149,7 @@ namespace GraphModel
         slotDefinition->m_supportedDataTypes = supportedDataTypes;
         slotDefinition->m_defaultValue = defaultValue;
         slotDefinition->m_description = description;
+        slotDefinition->m_enumValues = enumValues;
         slotDefinition->m_visibleOnNode = visibleOnNode;
         slotDefinition->m_editableOnNode = editableOnNode;
 
@@ -160,6 +164,7 @@ namespace GraphModel
         DataTypePtr dataType,
         AZStd::string_view description,
         ExtendableSlotConfiguration* extendableSlotConfiguration,
+        const AZStd::vector<AZStd::string>& enumValues,
         bool visibleOnNode,
         bool editableOnNode)
     {
@@ -170,6 +175,7 @@ namespace GraphModel
         slotDefinition->m_displayName = displayName;
         slotDefinition->m_supportedDataTypes = { dataType };
         slotDefinition->m_defaultValue = dataType->GetDefaultValue();
+        slotDefinition->m_enumValues = enumValues;
         slotDefinition->m_description = description;
         slotDefinition->m_visibleOnNode = visibleOnNode;
         slotDefinition->m_editableOnNode = editableOnNode;
@@ -230,6 +236,7 @@ namespace GraphModel
         AZStd::any defaultValue,
         AZStd::string_view description,
         ExtendableSlotConfiguration* extendableSlotConfiguration,
+        const AZStd::vector<AZStd::string>& enumValues,
         bool visibleOnNode,
         bool editableOnNode)
     {
@@ -240,6 +247,7 @@ namespace GraphModel
         slotDefinition->m_displayName = displayName;
         slotDefinition->m_supportedDataTypes = { dataType };
         slotDefinition->m_defaultValue = defaultValue;
+        slotDefinition->m_enumValues = enumValues;
         slotDefinition->m_description = description;
         slotDefinition->m_visibleOnNode = visibleOnNode;
         slotDefinition->m_editableOnNode = editableOnNode;
@@ -335,6 +343,11 @@ namespace GraphModel
     AZStd::any SlotDefinition::GetDefaultValue() const
     {
         return m_defaultValue;
+    }
+
+    const AZStd::vector<AZStd::string>& SlotDefinition::GetEnumValues() const
+    {
+        return m_enumValues;
     }
 
     const int SlotDefinition::GetMinimumSlots() const
@@ -493,6 +506,11 @@ namespace GraphModel
     const AZStd::string& Slot::GetDescription() const
     {
         return m_slotDefinition->GetDescription();
+    }
+
+    const AZStd::vector<AZStd::string>& Slot::GetEnumValues() const
+    {
+        return m_slotDefinition->GetEnumValues();
     }
 
     AZStd::any Slot::GetDefaultValue() const
