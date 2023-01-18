@@ -31,12 +31,12 @@ namespace AzToolsFramework
     void GlobalPaintBrushSettingsSystemComponent::Activate()
     {
         GlobalPaintBrushSettingsRequestBus::Handler::BusConnect();
-        ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+        ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void GlobalPaintBrushSettingsSystemComponent::Deactivate()
     {
-        ActionManagerRegistrationNotificationBus::Handler::BusConnect();
+        ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         GlobalPaintBrushSettingsRequestBus::Handler::BusDisconnect();
     }
 
