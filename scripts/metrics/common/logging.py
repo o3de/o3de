@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Helper file for assisting in building workspaces and setting up LTT with the current Lumberyard environment.
+Standardized logging util file for metrics scripts
 """
 
 import enum

@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Helper file for assisting in building workspaces and setting up LTT with the current Lumberyard environment.
+Config file utilities for metrics scripts
 """
 
 import os
@@ -30,8 +30,8 @@ def load_config(local_path, override=None):
     try:
         with open(os.path.join(sys.path[0], local_path), "r") as file:
             config = yaml.safe_load(file)
-    except FileNotFoundError:
-        raise ConfigExn(f"Failed to load configuration from local path '{local_path}'") from None
+    except FileNotFoundError as exc:
+        raise ConfigExn(f"Failed to load configuration from local path '{local_path}'") from exc
 
     for path, value in override:
         path_elements = path.split(".")
@@ -45,10 +45,10 @@ def load_config(local_path, override=None):
                     if isinstance(target[key], (int, float, str, bool)):
                         try:
                             target[key] = type(target[key])(value)
-                        except ValueError:
+                        except ValueError as exc:
                             raise ConfigExn(
                                 f"Failed to parse value '{value}' of override configuration parameter '{path}'"
-                            ) from None
+                            ) from exc
                 else:
                     target = target[key]
             else:
@@ -71,8 +71,8 @@ def read_config(path, source=None):
 
             try:
                 source = source[key]
-            except KeyError:
-                raise ConfigExn(f"Invalid configuration path '{path}' - '{key}' is not a key") from None
+            except KeyError as exc:
+                raise ConfigExn(f"Invalid configuration path '{path}' - '{key}' is not a key") from exc
         else:
             raise ConfigExn(f"Invalid configuration path '{path}' - path too long")
 

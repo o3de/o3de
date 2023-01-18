@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Helper file for assisting in building workspaces and setting up LTT with the current Lumberyard environment.
+Scrapes metrics from xml files and creates csv formatted files.
 """
 import os.path
 import sys
@@ -18,15 +18,21 @@ from common.config import load_config, read_config
 
 CONFIG_FILE = "config/config.yml"
 DEFAULT_CTEST_LOG_FILENAME = 'Test.xml'
-# Format default file name based off of date
-now = datetime.datetime.now()
-MONTH = now.month
-if MONTH < 10:
-    MONTH = f"0{now.month}"
-DAY = now.day
-if DAY < 10:
-    DAY = f"0{now.day}"
-DEFAULT_CSV_FILE = f"{now.year}_{MONTH}_{DAY}.csv"
+global DEFAULT_CSV_FILE
+
+
+def _get_default_csv_filename():
+    # Format default file name based off of date
+    global DEFAULT_CSV_FILE
+    now = datetime.datetime.now()
+    month = now.month
+    if month < 10:
+        month = f"0{now.month}"
+    day = now.day
+    if day < 10:
+        day = f"0{now.day}"
+    DEFAULT_CSV_FILE = f"{now.year}_{month}_{day}.csv"
+
 
 # Setup logging.
 logger = logging.get_logger("test_metrics")
@@ -34,7 +40,6 @@ logging.setup_logger(logger)
 
 # Create the csv field header
 CTEST_FIELDS_HEADER = [
-    'test_uuid',
     'test_name',
     'status',
     'duration_seconds'
@@ -42,6 +47,7 @@ CTEST_FIELDS_HEADER = [
 
 
 def main():
+    _get_default_csv_filename()
     # Parse args
     args = parse_args()
 
