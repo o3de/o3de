@@ -25,6 +25,7 @@ namespace GradientSignal
         , private ImageGradientModificationNotificationBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR_DECL
         EditorImageGradientComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         ~EditorImageGradientComponentMode() override;
 

@@ -1064,6 +1064,7 @@ namespace UnitTest
     {
         AZ::Test::ScopedAutoTempDirectory m_tempDir;
     public:
+        AZ_CLASS_ALLOCATOR(UserSettingsTestApp, SystemAllocator)
         AZStd::string ResolveFilePath(u32 providerId) override
         {
             auto filePath = AZ::IO::Path(m_tempDir.GetDirectory());
@@ -1424,6 +1425,7 @@ namespace UnitTest
     class ConfigurableComponentConfig : public ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(ConfigurableComponentConfig , SystemAllocator)
         AZ_RTTI(ConfigurableComponentConfig, "{109C5A93-5571-4D45-BD2F-3938BF63AD83}", ComponentConfig);
 
         int m_intVal = 0;
@@ -1625,6 +1627,7 @@ namespace UnitTest
         : public ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(HydraConfigV1, SystemAllocator)
         AZ_RTTI(HydraConfigV1, "{02198FDB-5CDB-4983-BC0B-CF1AA20FF2AF}", ComponentConfig);
 
         int m_numHeads = 1;
@@ -1635,6 +1638,7 @@ namespace UnitTest
         : public HydraConfigV1
     {
     public:
+        AZ_CLASS_ALLOCATOR(HydraConfigV2, SystemAllocator)
         AZ_RTTI(HydraConfigV2, "{BC68C167-6B01-489C-8415-626455670C34}", HydraConfigV1);
 
         int m_numArms = 2; // now the hydra has multiple arms, as well as multiple heads
@@ -1645,6 +1649,7 @@ namespace UnitTest
         : public ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(HydraConfigV3, SystemAllocator)
         AZ_RTTI(HydraConfigV3, "{71C41829-AA51-4179-B8B4-3C278CBB26AA}", ComponentConfig);
 
         int m_numHeads = 1;

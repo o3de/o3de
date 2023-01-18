@@ -28,6 +28,7 @@ namespace JsonSerializationTests
             : public AZ::RPI::MaterialFunctorSourceData
         {
         public:
+            AZ_CLASS_ALLOCATOR(TestFunctorSourceData, AZ::SystemAllocator)
             AZ_RTTI(TestFunctorSourceData, "{D9B569EA-F45B-4852-9F42-0C104C51166A}", AZ::RPI::MaterialFunctorSourceData);
 
             static void Reflect(AZ::ReflectContext* context)

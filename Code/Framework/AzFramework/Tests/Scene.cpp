@@ -36,6 +36,7 @@ namespace SceneUnitTest
     class TestComponentConfig : public AZ::ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestComponentConfig, AZ::SystemAllocator)
         AZ_RTTI(TestComponentConfig, "{DCD12D72-3BFE-43A9-9679-66B745814CAF}", ComponentConfig);
 
         typedef void(*ActivateFunction)(TestComponent* component);
