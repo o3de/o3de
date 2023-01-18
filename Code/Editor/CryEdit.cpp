@@ -92,7 +92,6 @@ AZ_POP_DISABLE_WARNING
 #include "MainWindow.h"
 
 #include "Core/QtEditorApplication.h"
-#include "StringDlg.h"
 #include "NewLevelDialog.h"
 #include "LayoutConfigDialog.h"
 #include "ViewManager.h"
