@@ -109,10 +109,10 @@ namespace AzPhysics
     }
 
     constexpr AZStd::string_view KinematicDescription =
-        "When active, the rigid body is not affected by gravity or other forces and is moved by script. ";
+        "When active, the rigid body is not affected by gravity or other forces and is moved by script.";
 
     constexpr AZStd::string_view KinematicDescriptionReadOnly =
-        "When active, the rigid body is not affected by gravity or other forces and is moved by script. "
+        "When active, the rigid body is not affected by gravity or other forces and is moved by script. \n"
         "<b>The rigid body cannot be set as Kinematic if CCD is enabled, disable CCD to allow changes to be made.</b>";
 
     constexpr AZStd::string_view CcdDescription =
@@ -123,7 +123,7 @@ namespace AzPhysics
     constexpr AZStd::string_view CcdDescriptionReadOnly =
         "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
         "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX "
-        "configuration. <b>CCD cannot be enabled if the rigid body is kinematic, set the rigid body as non-kinematic"
+        "configuration. \n<b>CCD cannot be enabled if the rigid body is Kinematic, set the rigid body as Dynamic "
         "to allow changes to be made.</b>";
 
     AZ_CLASS_ALLOCATOR_IMPL(RigidBodyConfiguration, AZ::SystemAllocator, 0);

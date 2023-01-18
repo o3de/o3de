@@ -68,16 +68,13 @@ void KinematicDescriptionDialog::UpdateDialogText()
 
         m_ui->validLabel1->setText(AZStd::string(moveWithCode).c_str());
         m_ui->validLabel2->setText(AZStd::string(moveManually).c_str());
-        /*m_ui->validIcon1->setText("<img src=\":/moveWithCodeIcon.svg\"/>");
-        m_ui->validIcon2->setText("<img src=\":/Assets/Editor/Icons/MoveManuallyIcon.svg\"/>");*/
+        m_ui->validIcon1->setText("<img src=\":/stylesheet/img/16x16/move_with_code.svg\"/>");
+        m_ui->validIcon2->setText("<img src=\":/stylesheet/img/16x16/move_manually.svg\"/>");
 
         m_ui->invalidLabel1->setText(AZStd::string(collisions).c_str());
         m_ui->invalidLabel2->setText(AZStd::string(gravity).c_str());
-        //m_ui->invalidIcon1->setText("<img src = \":/impactIcon.svg\"/>");
-        ////m_ui->invalidIcon2->setText(QIcon(":/impactIcon.svg"));
-        //AZ_Printf("debugging", "dynamic: %s", m_ui->invalidIcon2->text().toStdString().c_str());
-        //m_ui->pushButton->setIcon(QIcon(":/../../../Assets/Editor/Icons/ImpactIcon.svg"));
-
+        m_ui->invalidIcon1->setText("<img src=\":/stylesheet/img/16x16/impact.svg\"/>");
+        m_ui->invalidIcon2->setText("<img src=\":/stylesheet/img/16x16/gravity.svg\"/>");
     }
     else
     {
@@ -87,15 +84,15 @@ void KinematicDescriptionDialog::UpdateDialogText()
 
         m_ui->validLabel1->setText(AZStd::string(collisions).c_str());
         m_ui->validLabel2->setText(AZStd::string(gravity).c_str());
-        /*m_ui->validIcon1->setText("<html><head/><body><p><img src=\":/Assets/Editor/Icons/MoveWithCodeIcon.svg\"/></ p></ body></ html>");
-        m_ui->validIcon2->setText("<img src=\":/gravityIcon.svg\"/>");*/
+        m_ui->validIcon1->setText("<img src=\":/stylesheet/img/16x16/impact.svg\"/>");
+        m_ui->validIcon2->setText("<img src=\":/stylesheet/img/16x16/gravity.svg\"/>");
         
         m_ui->invalidLabel1->setText(AZStd::string(moveWithCode).c_str());
         m_ui->invalidLabel2->setText(AZStd::string(moveManually).c_str());
-        /*m_ui->invalidIcon1->setText("<img src=\":/moveWithCodeIcon.svg\"/>");
-        m_ui->invalidIcon2->setText("<html><head/><body><p><img src=\":/Assets/Editor/Icons/MoveWithCodeIcon.svg\"/></ p></ body></ html>");
-        AZ_Printf("debugging", "kinematic: %s", m_ui->validIcon2->text().toStdString().c_str());
-        m_ui->pushButton->setIcon(QIcon(":/Assets/Editor/Icons/MoveManuallyIcon.svg"));*/
+        m_ui->invalidIcon1->setText("<img src=\":/stylesheet/img/16x16/move_with_code.svg\"/>");
+        m_ui->invalidIcon2->setText("<img src=\":/stylesheet/img/16x16/move_manually.svg\"/>");
+
+
     }
 }
 

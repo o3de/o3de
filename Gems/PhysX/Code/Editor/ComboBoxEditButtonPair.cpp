@@ -36,20 +36,18 @@ namespace PhysX
         bool ComboBoxEditButtonPair::value() const 
         {
             return m_comboBox->currentIndex() == 1;
-            
         }
+
         void ComboBoxEditButtonPair::setValue(bool value) 
         {
             m_comboBox->blockSignals(true);
             m_comboBox->setCurrentIndex(value ? 1 : 0);
             m_comboBox->blockSignals(false);
-
         }
 
         void ComboBoxEditButtonPair::onChildComboBoxValueChange(int value)
         {
             emit valueChanged(value == 0 ? false : true);
-            
         }
 
         QComboBox* ComboBoxEditButtonPair::GetComboBox()

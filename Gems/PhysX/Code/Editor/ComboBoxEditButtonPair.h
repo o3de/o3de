@@ -28,7 +28,6 @@ namespace PhysX
 
             QComboBox* GetComboBox();
             QToolButton* GetEditButton();
-
             bool value() const;
 
         signals:

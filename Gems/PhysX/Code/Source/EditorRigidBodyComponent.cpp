@@ -21,7 +21,6 @@
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>
 #include <AzFramework/Physics/PropertyTypes.h>
-#include <Editor/KinematicWidget.h>
 
 #include <LyViewPaneNames.h>
 

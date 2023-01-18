@@ -112,7 +112,6 @@ set(FILES
     Editor/KinematicDescriptionDialog.h
     Editor/KinematicDescriptionDialog.ui
 
-    Editor/Source/PhysX.qrc
     Editor/Source/Components/EditorSystemComponent.h
     Editor/Source/Components/EditorSystemComponent.cpp
     Editor/Source/ComponentModes/Joints/JointsComponentMode.h

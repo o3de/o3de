@@ -116,7 +116,6 @@ namespace Physics
             AzPhysics::CollisionLayers::Reflect(context);
             AzPhysics::CollisionGroups::Reflect(context);
             AzPhysics::CollisionConfiguration::Reflect(context);
-            //AzPhysics::Kinematic::Reflect(context);
             AzPhysics::CollisionEvent::Reflect(context);
             AzPhysics::TriggerEvent::Reflect(context);
             AzPhysics::SceneConfiguration::Reflect(context);

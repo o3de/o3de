@@ -9,7 +9,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-//#include <AzCore/base.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
