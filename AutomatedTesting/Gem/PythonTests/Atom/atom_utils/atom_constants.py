@@ -1325,7 +1325,7 @@ class AtomComponentProperties:
         return properties[property]
 
 
-class AtomToolsDocumentRequestBusStrings(object):
+class AtomToolsDocumentRequestBusEvents(object):
     """
     Used to store string constants representing the bus options for azlmbr.bus.AtomToolsDocumentRequestBus
     """
@@ -1347,7 +1347,7 @@ class AtomToolsDocumentRequestBusStrings(object):
     END_EDIT = "EndEdit"
 
 
-class AtomToolsDocumentSystemRequestBusStrings(object):
+class AtomToolsDocumentSystemRequestBusEvents(object):
     """
     Used to store string constants representing the bus options for azlmbr.bus.AtomToolsDocumentSystemRequestBus
     """
@@ -1374,7 +1374,7 @@ class AtomToolsDocumentSystemRequestBusStrings(object):
     GET_RECENT_FILE_PATHS = "GetRecentFilePaths"
 
 
-class AtomToolsMainWindowRequestBusStrings(object):
+class AtomToolsMainWindowRequestBusEvents(object):
     """
     Used to store string constants representing the bus options for azlmbr.bus.AtomToolsMainWindowRequestBus
     """
@@ -1391,7 +1391,7 @@ class AtomToolsMainWindowRequestBusStrings(object):
     UNLOCK_VIEWPORT_RENDER_TARGET_SIZE = "UnlockViewportRenderTargetSize"
 
 
-class EntityPreviewViewportSettingsRequestBusStrings(object):
+class EntityPreviewViewportSettingsRequestBusEvents(object):
     """
     Used to store string constants representing the bus options for azlmbr.bus.EntityPreviewViewportSettingsRequestBus
     """
