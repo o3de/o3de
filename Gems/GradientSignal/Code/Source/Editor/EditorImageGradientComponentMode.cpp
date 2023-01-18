@@ -151,24 +151,17 @@ namespace GradientSignal
 
     void EditorImageGradientComponentMode::RegisterActions()
     {
+        // Actions are registered in the PaintBrushMainpulator class
     }
 
     void EditorImageGradientComponentMode::BindActionsToModes()
     {
-        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        AZ_Assert(actionManagerInterface, "EditorImageGradientComponentMode - could not get ActionManagerInterface on BindActionsToModes.");
-
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-
-        AZStd::string modeIdentifier = AZStd::string::format(
-            "o3de.context.mode.%s", serializeContext->FindClassData(azrtti_typeid<EditorImageGradientComponentMode>())->m_name);
-
-        AzToolsFramework::PaintBrushManipulator::BindActionsToMode(modeIdentifier);
+        AzToolsFramework::PaintBrushManipulator::BindActionsToMode(azrtti_typeid<EditorImageGradientComponentMode>());
     }
 
     void EditorImageGradientComponentMode::BindActionsToMenus()
     {
+        // Actions are added to menus in the PaintBrushMainpulator class
     }
 
     AZStd::vector<AzToolsFramework::ActionOverride> EditorImageGradientComponentMode::PopulateActionsImpl()

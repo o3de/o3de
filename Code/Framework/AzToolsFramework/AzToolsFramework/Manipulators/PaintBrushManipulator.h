@@ -68,7 +68,7 @@ namespace AzToolsFramework
         static void RegisterActions();
 
         //! Adds the actions that we want any Component Mode using the Paint Brush Manipulator to support to the mode provided.
-        static void BindActionsToMode(AZStd::string_view modeIdentifier);
+        static void BindActionsToMode(AZ::Uuid componentModeTypeId);
 
         //! Adds the actions that we want any Component Mode using the Paint Brush Manipulator to support to the Edit menu.
         static void BindActionsToMenus();

@@ -449,10 +449,16 @@ namespace AzToolsFramework
         }
     }
 
-    void PaintBrushManipulator::BindActionsToMode(AZStd::string_view modeIdentifier)
+    void PaintBrushManipulator::BindActionsToMode(AZ::Uuid componentModeTypeId)
     {
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
         AZ_Assert(actionManagerInterface, "PaintBrushManipulator - could not get ActionManagerInterface on RegisterActions.");
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        AZStd::string modeIdentifier =
+            AZStd::string::format("o3de.context.mode.%s", serializeContext->FindClassData(componentModeTypeId)->m_name);
 
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.increaseSize");
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.decreaseSize");
