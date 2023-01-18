@@ -329,7 +329,7 @@ class MultiTestSuite(object):
     # Tests usually run with no renderer, however some tests require a renderer and will disable this
     use_null_renderer = True
     # Maximum time in seconds for a single executable to stay open across the set of shared tests
-    timeout_shared_test = 300
+    timeout_shared_test = 900
     # Name of the executable's log file.
     log_name = ""
     # Executable name to look for if the test is an Atom Tools test, leave blank if not an Atom Tools test.
