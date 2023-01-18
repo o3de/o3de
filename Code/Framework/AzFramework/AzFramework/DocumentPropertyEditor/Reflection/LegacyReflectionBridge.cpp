@@ -558,8 +558,8 @@ namespace AZ::Reflection
                 AZ::Name handlerName;
 
                 // This array node is for caching related EnumValue attributes if any are seen
-                Dom::Value enumValueCache = Dom::Value(Dom::Type::Array);
-                const AZ::Name enumValueName = AZ::Name("EnumValue");
+                Dom::Value genericValueCache = Dom::Value(Dom::Type::Array);
+                const AZ::Name genericValueName = AZ::Name("GenericValue");
 
                 auto checkAttribute = [&](const AZ::AttributePair* it, void* instance, bool shouldDescribeChildren)
                 {
@@ -574,7 +574,7 @@ namespace AZ::Reflection
                         // If an attribute of the same name is already loaded then ignore the new value
                         // unless it is an EnumValue attribute since each represents an individual value
                         // in a particular enum and multiple are expected
-                        if (visitedAttributes.find(name) != visitedAttributes.end() && name != enumValueName)
+                        if (visitedAttributes.find(name) != visitedAttributes.end() && name != genericValueName)
                         {
                             return;
                         }
@@ -601,9 +601,9 @@ namespace AZ::Reflection
                             });
 
                         // Collect related EnumValue attributes so they can be stored together
-                        if (name == enumValueName && !attributeValue.IsNull())
+                        if (name == genericValueName && !attributeValue.IsNull())
                         {
-                            enumValueCache.ArrayPushBack(attributeValue);
+                            genericValueCache.ArrayPushBack(attributeValue);
                         }
 
                         // Fall back on a generic read that handles primitives.
@@ -622,7 +622,7 @@ namespace AZ::Reflection
                                 handlerName = AZ::Name();
                             }
 
-                            if (name == enumValueName)
+                            if (name == genericValueName)
                             {
                                 return;
                             }
@@ -752,10 +752,10 @@ namespace AZ::Reflection
                     }
                 }
 
-                if (enumValueCache.ArraySize() > 0)
+                if (genericValueCache.ArraySize() > 0)
                 {
                     nodeData.m_cachedAttributes.push_back({
-                        group, DocumentPropertyEditor::Nodes::PropertyEditor::EnumValues.GetName(), enumValueCache });
+                        group, DocumentPropertyEditor::Nodes::PropertyEditor::GenericValueList<AZ::u64>.GetName(), genericValueCache });
                 }
 
                 if (!nodeData.m_labelOverride.empty())

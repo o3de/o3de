@@ -125,7 +125,6 @@ namespace DPEDebugView
         };
 
         using GenericValueListType = AZStd::vector<AZStd::pair<GenericValueTestType, AZStd::string>>;
-
         GenericValueListType GetGenericValueList()
         {
             static GenericValueListType genericValueList;
@@ -138,6 +137,21 @@ namespace DPEDebugView
             }
 
             return genericValueList;
+        }
+
+        using EnumValuesAsPairsObjToStringType = AZStd::vector<AZStd::pair<GenericValueTestType, AZStd::string>>;
+        EnumValuesAsPairsObjToStringType GetEnumValuesInGenericValueListFormat()
+        {
+            static EnumValuesAsPairsObjToStringType enumValuesList;
+
+            if (enumValuesList.empty())
+            {
+                enumValuesList.push_back(AZStd::make_pair(GenericValueTestType{ "enumValues1" }, "enumValues1"));
+                enumValuesList.push_back(AZStd::make_pair(GenericValueTestType{ "enumValues2" }, "enumValues2"));
+                enumValuesList.push_back(AZStd::make_pair(GenericValueTestType{ "enumValues3" }, "enumValues3"));
+            }
+
+            return enumValuesList;
         }
 
         int m_simpleInt = 5;
@@ -155,8 +169,10 @@ namespace DPEDebugView
         AZStd::unordered_map<EnumType, AZStd::unordered_map<int, int>> m_nestedMap;
         AZStd::unordered_map<AZ::EntityId, int> m_entityIdMap;
         EnumType m_enumValue = EnumType::Value1;
+        EnumType m_enumValueInlineDeclaration = EnumType::ValueZ;
         EnumValueType m_enumValueType = EnumValueType::BValue;
         GenericValueTestType m_genericValueList = { "id3" };
+        GenericValueTestType m_enumValuesInGenericValueListFormat = { "enumValues2" };
         AZ::EntityId m_entityId;
 
         // For testing invocable ReadOnly attributes
@@ -183,8 +199,10 @@ namespace DPEDebugView
                     ->Field("nestedMap", &TestContainer::m_nestedMap)
                     ->Field("entityIdMap", &TestContainer::m_entityIdMap)
                     ->Field("enumValue", &TestContainer::m_enumValue)
+                    ->Field("enumValueInlineDeclaration", &TestContainer::m_enumValueInlineDeclaration)
                     ->Field("enumValueType", &TestContainer::m_enumValueType)
                     ->Field("genericValueList", &TestContainer::m_genericValueList)
+                    ->Field("enumValuesInGenericValueListFormat", &TestContainer::m_enumValuesInGenericValueListFormat)
                     ->Field("entityId", &TestContainer::m_entityId)
                     ->Field("readonlyInt", &TestContainer::m_readOnlyInt)
                     ->Field("map", &TestContainer::m_readOnlyMap);
@@ -231,12 +249,26 @@ namespace DPEDebugView
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TestContainer::m_enumValue, "EnumValues ComboBox", "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, &TestContainer::GetEnumValues)
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, false)
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox,
+                            &TestContainer::m_enumValueInlineDeclaration,
+                            "EnumValues ComboBox (inline decl)", "")
+                        ->Attribute(AZ::Edit::Attributes::EnumValues,
+                            AZStd::vector<AZ::Edit::EnumConstant<TestContainer::EnumType>>{
+                                AZ::Edit::EnumConstant<TestContainer::EnumType>(TestContainer::EnumType::Value1, "Value1"),
+                                AZ::Edit::EnumConstant<TestContainer::EnumType>(TestContainer::EnumType::Value2, "Value2"),
+                                AZ::Edit::EnumConstant<TestContainer::EnumType>(TestContainer::EnumType::ValueZ, "ValueZ") })
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TestContainer::m_enumValueType, "EnumValue ComboBox", "")
                         ->EnumAttribute(EnumValueType::AValue, "AValueDescription")
                         ->EnumAttribute(EnumValueType::BValue, "BValueDescription")
                         ->EnumAttribute(EnumValueType::CValue, "CValueDescription")
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TestContainer::m_genericValueList, "GenericValueList ComboBox", "")
                         ->Attribute(AZ::Edit::Attributes::GenericValueList, &TestContainer::GetGenericValueList)
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::ComboBox,
+                            &TestContainer::m_enumValuesInGenericValueListFormat,
+                            "EnumValues in GenericValueList format ComboBox",
+                            "")
+                        ->Attribute(AZ::Edit::Attributes::EnumValues, &TestContainer::GetEnumValuesInGenericValueListFormat)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityId, "entityId", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button2)

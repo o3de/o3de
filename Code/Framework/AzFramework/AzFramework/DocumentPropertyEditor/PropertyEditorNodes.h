@@ -138,10 +138,9 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
         static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
-        template <typename EnumValueType>
-        static constexpr auto EnumValue = EnumValueAttributeDefinition<EnumValueType>("EnumValue");
-        static constexpr auto EnumValues = EnumValuesAttributeDefinition("EnumValues");
 
+        template<typename GenericValueType>
+        static constexpr auto GenericValue = GenericValueAttributeDefinition<GenericValueType>("GenericValue");
         template<typename GenericValueType>
         static constexpr auto GenericValueList = GenericValueListAttributeDefinition<GenericValueType>("GenericValueList");
 
