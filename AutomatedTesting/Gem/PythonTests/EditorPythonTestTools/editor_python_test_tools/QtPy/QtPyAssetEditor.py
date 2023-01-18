@@ -8,12 +8,12 @@ Object to house all the Qt Objects and behavior used in testing the asset editor
 """
 
 from editor_python_test_tools.utils import TestHelper as helper
-from PySide2 import QtWidgets, QtCore, QtTest
+from PySide2 import QtWidgets
 import pyside_utils
 import azlmbr.editor as editor
 import azlmbr.bus as bus
 import os
-from editor_python_test_tools.QtPyCommon import QtPyCommon
+from editor_python_test_tools.QtPy.QtPyCommon import QtPyCommon
 from consts.asset_editor import (ASSET_EDITOR_UI, EVENTS_QT, DEFAULT_SCRIPT_EVENT, DEFAULT_METHOD_NAME)
 from consts.general import (WAIT_TIME_SEC_3, SAVE_STRING)
 
