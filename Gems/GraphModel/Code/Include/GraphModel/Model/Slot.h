@@ -118,6 +118,7 @@ namespace GraphModel
             AZStd::any defaultValue,
             AZStd::string_view description,
             ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            const AZStd::vector<AZStd::string>& enumValues = {},
             bool visibleOnNode = true,
             bool editableOnNode = true);
 
@@ -128,6 +129,7 @@ namespace GraphModel
             AZStd::any defaultValue,
             AZStd::string_view description,
             ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            const AZStd::vector<AZStd::string>& enumValues = {},
             bool visibleOnNode = true,
             bool editableOnNode = true);
 
@@ -137,6 +139,7 @@ namespace GraphModel
             DataTypePtr dataType,
             AZStd::string_view description,
             ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            const AZStd::vector<AZStd::string>& enumValues = {},
             bool visibleOnNode = true,
             bool editableOnNode = true);
 
@@ -163,6 +166,7 @@ namespace GraphModel
             AZStd::any defaultValue,
             AZStd::string_view description,
             ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            const AZStd::vector<AZStd::string>& enumValues = {},
             bool visibleOnNode = true,
             bool editableOnNode = true);
 
@@ -196,6 +200,8 @@ namespace GraphModel
         const DataTypeList& GetSupportedDataTypes() const;  //!< Valid for Data and Property slots. Otherwise returns an empty DataTypeList.
         AZStd::any GetDefaultValue() const;                 //!< Valid for Input Data and Property slots. Otherwise returns an empty AZStd::any.
 
+        const AZStd::vector<AZStd::string>& GetEnumValues() const; //!< Options exposed if this slot type is an enumeration with multiple values
+
         //! These methods are only pertinent for extendable slots
         const int GetMinimumSlots() const;                  //!< Retrieve the minimum configured number of extendable slots (returns a default value if not configured)
         const int GetMaximumSlots() const;                  //!< Retrieve the maximum configured number of extendable slots (returns a default value if not configured)
@@ -211,6 +217,7 @@ namespace GraphModel
         SlotName m_name;
         AZStd::string m_displayName;
         AZStd::string m_description;
+        AZStd::vector<AZStd::string> m_enumValues;
         DataTypeList m_supportedDataTypes;
         AZStd::any m_defaultValue;
         bool m_visibleOnNode = true;
@@ -271,6 +278,7 @@ namespace GraphModel
         const SlotName& GetName() const;
         const AZStd::string& GetDisplayName() const;
         const AZStd::string& GetDescription() const;
+        const AZStd::vector<AZStd::string>& GetEnumValues() const;
         DataTypePtr GetDataType() const; //!< Valid for Data and Property slots. Otherwise returns null.
         DataTypePtr GetDefaultDataType() const; //!< Valid for Data and Property slots. Otherwise returns null.
         AZStd::any GetDefaultValue() const; //!< Valid for Data and Property slots. Otherwise returns an empty AZStd::any.

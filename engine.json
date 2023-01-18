@@ -111,6 +111,7 @@
         "Templates/DefaultProject",
         "Templates/CppToolGem",
         "Templates/MinimalProject",
+        "Templates/ScriptCanvasNode",
         "Templates/PythonToolGem"
     ]
 }

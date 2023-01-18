@@ -69,7 +69,6 @@ namespace Physics
         AzPhysics::CollisionGroups::Id m_collisionGroupId; //!< Which layers does this character collide with.
         AzPhysics::CollisionLayer m_collisionLayer; //!< Which collision layer is this character on.
         MaterialSlots m_materialSlots; //!< Material slots for the character.
-        PhysicsLegacy::MaterialSelection m_legacyMaterialSelection; //!< Kept to convert old physics material assets.
         AZ::Vector3 m_upDirection = AZ::Vector3::CreateAxisZ(); //!< Up direction for character orientation and step behavior.
         float m_maximumSlopeAngle = 30.0f; //!< The maximum slope on which the character can move, in degrees.
         float m_stepHeight = 0.5f; //!< Affects what size steps the character can climb.

@@ -19,6 +19,7 @@ namespace AZ
             : public CubeMapCaptureFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(CubeMapCaptureFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::CubeMapCaptureFeatureProcessor, "{821039A3-AF40-4E69-A7EF-D44D81EAF1FA}", AZ::Render::CubeMapCaptureFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
