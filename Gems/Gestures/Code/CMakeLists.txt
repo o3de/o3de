@@ -43,6 +43,7 @@ ly_add_target(
 # All types of applications use the same module.
 ly_create_alias(NAME Gestures.Clients  NAMESPACE Gem TARGETS Gestures)
 ly_create_alias(NAME Gestures.Servers  NAMESPACE Gem TARGETS Gestures)
+ly_create_alias(NAME Gestures.Unified  NAMESPACE Gem TARGETS Gestures)
 ly_create_alias(NAME Gestures.Builders NAMESPACE Gem TARGETS Gestures)
 ly_create_alias(NAME Gestures.Tools    NAMESPACE Gem TARGETS Gestures)
 

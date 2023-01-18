@@ -176,7 +176,7 @@ namespace UnitTest
             void SetUp() override
             {
                 // lets use a random temp folder name
-                srand(clock());
+                srand(static_cast<unsigned int>(clock()));
                 m_randomFolderKey = rand();
 
                 LocalFileIO local;

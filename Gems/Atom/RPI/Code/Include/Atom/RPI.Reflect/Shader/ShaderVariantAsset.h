@@ -26,6 +26,7 @@ namespace AZ
             friend class ShaderVariantAssetCreator;
 
         public:
+            AZ_CLASS_ALLOCATOR(ShaderVariantAsset , SystemAllocator)
             AZ_RTTI(ShaderVariantAsset, "{51BED815-36D8-410E-90F0-1FA9FF765FBA}", Data::AssetData);
 
             static void Reflect(ReflectContext* context);

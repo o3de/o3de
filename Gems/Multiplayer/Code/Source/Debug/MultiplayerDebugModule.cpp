@@ -31,4 +31,7 @@ namespace Multiplayer
     }
 }
 
+#if defined(AZ_MONOLITHIC_BUILD)
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Debug_Client, Multiplayer::MultiplayerDebugModule);
+#endif
 AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Debug, Multiplayer::MultiplayerDebugModule);
