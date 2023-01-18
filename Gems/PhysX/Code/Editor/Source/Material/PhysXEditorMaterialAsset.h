@@ -8,14 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h>
-
 #include <PhysX/Material/PhysXMaterialConfiguration.h>
-
-namespace PhysicsLegacy
-{
-    class MaterialFromAssetConfiguration;
-} // namespace PhysicsLegacy
 
 namespace PhysX
 {
@@ -39,14 +32,7 @@ namespace PhysX
 
         const MaterialConfiguration& GetMaterialConfiguration() const;
 
-        PhysicsLegacy::MaterialId GetLegacyPhysicsMaterialId() const;
-
     protected:
         MaterialConfiguration m_materialConfiguration;
-
-        // Legacy Physics material Id is only used when converting from old physics material asset,
-        // which holds a library of materials, to the new physx material asset.
-        PhysicsLegacy::MaterialId m_legacyPhysicsMaterialId;
-        friend PhysicsLegacy::MaterialFromAssetConfiguration;
     };
 } // namespace PhysX
