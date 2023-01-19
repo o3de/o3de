@@ -78,9 +78,8 @@ namespace AZ
                     return RHI::ResultCode::Fail;
                 }
             }
-            
-            // Copy the shader collections because the material will make changes, like updating the ShaderVariantId.
-            m_shaderCollections = materialAsset.GetShaderCollections();
+
+            m_generalShaderCollection = materialAsset.GetGeneralShaderCollection();
 
             if (!m_materialProperties.Init(m_materialAsset->GetMaterialPropertiesLayout(), materialAsset.GetPropertyValues()))
             {
@@ -89,18 +88,28 @@ namespace AZ
 
             m_materialProperties.SetAllPropertyDirtyFlags();
 
+            for (auto& [materialPipelineName, materialPipeline] : materialAsset.GetMaterialPipelinePayloads())
+            {
+                MaterialPipelineState& pipelineData = m_materialPipelineData[materialPipelineName];
+
+                pipelineData.m_shaderCollection = materialPipeline.m_shaderCollection;
+
+                if (!pipelineData.m_materialProperties.Init(materialPipeline.m_materialPropertiesLayout, materialPipeline.m_defaultPropertyValues))
+                {
+                    return RHI::ResultCode::Fail;
+                }
+
+                pipelineData.m_materialProperties.SetAllPropertyDirtyFlags();
+            }
+
             // Register for update events related to Shader instances that own the ShaderAssets inside
             // the shader collection.
-            ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
-            for (const auto& shaderCollectionPair : m_shaderCollections)
-            {
-                for (const auto& shaderItem : shaderCollectionPair.second)
+            ForAllShaderItems([this](const Name&, const ShaderCollection::Item& shaderItem)
                 {
                     ShaderReloadDebugTracker::Printf("(Material has ShaderAsset %p)", shaderItem.GetShaderAsset().Get());
                     ShaderReloadNotificationBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
-                }
-            }
-
+                    return true;
+                });
 
             // Usually SetProperties called above will increment this change ID to invalidate
             // the material, but some materials might not have any properties, and we need
@@ -117,32 +126,72 @@ namespace AZ
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
         }
 
-        const MaterialPipelineShaderCollections& Material::GetShaderCollections() const
+        const ShaderCollection& Material::GetGeneralShaderCollection() const
         {
-            return m_shaderCollections;
+            return m_generalShaderCollection;
         }
 
         const ShaderCollection& Material::GetShaderCollection(const Name& forPipeline) const
         {
-            auto iter = m_shaderCollections.find(forPipeline);
-            if (iter == m_shaderCollections.end())
+            auto iter = m_materialPipelineData.find(forPipeline);
+            if (iter == m_materialPipelineData.end())
             {
                 static ShaderCollection EmptyShaderCollection;
                 return EmptyShaderCollection;
             }
 
-            return iter->second;
+            return iter->second.m_shaderCollection;
+        }
+        
+        void Material::ForAllShaderItemsWriteable(AZStd::function<bool(ShaderCollection::Item& shaderItem)> callback)
+        {
+            for (auto& shaderItem : m_generalShaderCollection)
+            {
+                if (!callback(shaderItem))
+                {
+                    return;
+                }
+            }
+            for (auto& materialPipelinePair : m_materialPipelineData)
+            {
+                for (auto& shaderItem : materialPipelinePair.second.m_shaderCollection)
+                {
+                    if (!callback(shaderItem))
+                    {
+                        return;
+                    }
+                }
+            }
         }
 
-        AZ::Outcome<uint32_t> Material::SetSystemShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value)
+        void Material::ForAllShaderItems(AZStd::function<bool(const Name& materialPipelineName, const ShaderCollection::Item& shaderItem)> callback) const
         {
-            uint32_t appliedCount = 0;
+            for (const auto& shaderItem : m_generalShaderCollection)
+            {
+                if (!callback(MaterialPipelineNone, shaderItem))
+                {
+                    return;
+                }
+            }
+            for (const auto& [materialPipelineName, materialPipeline] : m_materialPipelineData)
+            {
+                for (const auto& shaderItem : materialPipeline.m_shaderCollection)
+                {
+                    if (!callback(materialPipelineName, shaderItem))
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
+        bool Material::MaterialOwnsShaderOption(const Name& shaderOptionName) const
+        {
+            bool isOwned = false;
 
             // We won't set any shader options if the shader option is owned by any of the other shaders in this material.
             // If the material uses an option in any shader, then it owns that option for all its shaders.
-            for (const auto& shaderCollectionPair : m_shaderCollections)
-            {
-                for (const auto& shaderItem : shaderCollectionPair.second)
+            ForAllShaderItems([&](const Name&, const ShaderCollection::Item& shaderItem)
                 {
                     const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
                     ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
@@ -150,15 +199,27 @@ namespace AZ
                     {
                         if (shaderItem.MaterialOwnsShaderOption(index))
                         {
-                            return AZ::Failure();
+                            isOwned = true;
+                            return false; // We can stop searching now
                         }
                     }
-                }
+
+                    return true; // Continue
+                });
+
+            return isOwned;
+        }
+
+        AZ::Outcome<uint32_t> Material::SetSystemShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value)
+        {
+            uint32_t appliedCount = 0;
+
+            if (MaterialOwnsShaderOption(shaderOptionName))
+            {
+                return AZ::Failure();
             }
 
-            for (auto& shaderCollectionPair : m_shaderCollections)
-            {
-                for (auto& shaderItem : shaderCollectionPair.second)
+            ForAllShaderItemsWriteable([&](ShaderCollection::Item& shaderItem)
                 {
                     const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
                     ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
@@ -167,8 +228,8 @@ namespace AZ
                         shaderItem.GetShaderOptions()->SetValue(index, value);
                         appliedCount++;
                     }
-                }
-            }
+                    return true;
+                });
 
             return AZ::Success(appliedCount);
         }
@@ -191,6 +252,14 @@ namespace AZ
 
         void Material::SetPsoHandlingOverride(MaterialPropertyPsoHandling psoHandlingOverride)
         {
+            // On some platforms, PipelineStateObjects must be pre-compiled and shipped with the game; they cannot be compiled at runtime. So at some
+            // point the material system needs to be smart about when it allows PSO changes and when it doesn't. There is a task scheduled to
+            // thoroughly address this in 2022, but for now we just report a warning to alert users who are using the engine in a way that might
+            // not be supported for much longer. PSO changes should only be allowed in developer tools (though we could also expose a way for users to
+            // enable dynamic PSO changes if their project only targets platforms that support this).
+            // PSO modifications are allowed during initialization because that's using the stored asset data, which the asset system can
+            // access to pre-compile the necessary PSOs.
+
             m_psoHandling = psoHandlingOverride;
         }
 
@@ -266,9 +335,107 @@ namespace AZ
             return m_compiledChangeId != m_currentChangeId;
         }
 
+        bool Material::TryApplyPropertyConnectionToShaderInput(
+            const MaterialPropertyValue& value,
+            const MaterialPropertyOutputId& connection,
+            const MaterialPropertyDescriptor* propertyDescriptor)
+        {
+            if (connection.m_type == MaterialPropertyOutputType::ShaderInput)
+            {
+                if (propertyDescriptor->GetDataType() == MaterialPropertyDataType::Image)
+                {
+                    const Data::Instance<Image>& image = value.GetValue<Data::Instance<Image>>();
+
+                    RHI::ShaderInputImageIndex shaderInputIndex(connection.m_itemIndex.GetIndex());
+                    m_shaderResourceGroup->SetImage(shaderInputIndex, image);
+                }
+                else
+                {
+                    RHI::ShaderInputConstantIndex shaderInputIndex(connection.m_itemIndex.GetIndex());
+                    SetShaderConstant(shaderInputIndex, value);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        bool Material::TryApplyPropertyConnectionToShaderOption(
+            const MaterialPropertyValue& value,
+            const MaterialPropertyOutputId& connection)
+        {
+            if (connection.m_type == MaterialPropertyOutputType::ShaderOption)
+            {
+                ShaderCollection::Item* shaderReference = nullptr;
+
+                if (connection.m_materialPipelineName.IsEmpty())
+                {
+                    shaderReference = &m_generalShaderCollection[connection.m_containerIndex.GetIndex()];
+                }
+                else
+                {
+                    shaderReference = &m_materialPipelineData[connection.m_materialPipelineName].m_shaderCollection[connection.m_containerIndex.GetIndex()];
+                }
+
+                SetShaderOption(*shaderReference->GetShaderOptions(), ShaderOptionIndex{connection.m_itemIndex.GetIndex()}, value);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        bool Material::TryApplyPropertyConnectionToShaderEnable(
+            const MaterialPropertyValue& value,
+            const MaterialPropertyOutputId& connection)
+        {
+            if (connection.m_type == MaterialPropertyOutputType::ShaderEnabled)
+            {
+                ShaderCollection::Item* shaderReference = nullptr;
+
+                if (!value.Is<bool>())
+                {
+                    // We should never get here because MaterialTypeAssetCreator and MaterialPropertyCollection::ValidatePropertyAccess ensure the value is a bool.
+                    AZ_Assert(false, "Unsupported data type for MaterialPropertyOutputType::ShaderEnabled");
+                    return false;
+                }
+
+                if (connection.m_materialPipelineName.IsEmpty())
+                {
+                    shaderReference = &m_generalShaderCollection[connection.m_containerIndex.GetIndex()];
+                }
+                else
+                {
+                    shaderReference = &m_materialPipelineData[connection.m_materialPipelineName].m_shaderCollection[connection.m_containerIndex.GetIndex()];
+                }
+
+                shaderReference->SetEnabled(value.GetValue<bool>());
+
+                return true;
+            }
+
+            return false;
+        }
+
+        bool Material::TryApplyPropertyConnectionToInternalProperty(
+            const MaterialPropertyValue& value,
+            const MaterialPropertyOutputId& connection)
+        {
+            if (connection.m_type == MaterialPropertyOutputType::InternalProperty)
+            {
+                m_materialPipelineData[connection.m_materialPipelineName].m_materialProperties.SetPropertyValue(MaterialPropertyIndex{connection.m_itemIndex.GetIndex()}, value);
+                return true;
+            }
+
+            return false;
+        }
+
         void Material::ProcessDirectConnections()
         {
-            AZ_PROFILE_SCOPE(RPI, "Material::ProcessDirectConnections()");
+            AZ_PROFILE_SCOPE(RPI, "Process direct connection");
+
+            // Apply any changes to *main* material properties...
 
             for (size_t i = 0; i < m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyCount(); ++i)
             {
@@ -284,44 +451,51 @@ namespace AZ
                 const MaterialPropertyDescriptor* propertyDescriptor =
                     m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex);
 
-                for(auto& outputId : propertyDescriptor->GetOutputConnections())
+                for (const MaterialPropertyOutputId& connection : propertyDescriptor->GetOutputConnections())
                 {
-                    if (outputId.m_type == MaterialPropertyOutputType::ShaderInput)
-                    {
-                        if (propertyDescriptor->GetDataType() == MaterialPropertyDataType::Image)
-                        {
-                            const Data::Instance<Image>& image = value.GetValue<Data::Instance<Image>>();
+                    [[maybe_unused]] bool applied =
+                        TryApplyPropertyConnectionToShaderInput(value, connection, propertyDescriptor) ||
+                        TryApplyPropertyConnectionToShaderOption(value, connection) ||
+                        TryApplyPropertyConnectionToShaderEnable(value, connection) ||
+                        TryApplyPropertyConnectionToInternalProperty(value, connection);
 
-                            RHI::ShaderInputImageIndex shaderInputIndex(outputId.m_itemIndex.GetIndex());
-                            m_shaderResourceGroup->SetImage(shaderInputIndex, image);
-                        }
-                        else
-                        {
-                            RHI::ShaderInputConstantIndex shaderInputIndex(outputId.m_itemIndex.GetIndex());
-                            SetShaderConstant(shaderInputIndex, value);
-                        }
-                    }
-                    else if (outputId.m_type == MaterialPropertyOutputType::ShaderOption)
+                    AZ_Error(s_debugTraceName, applied, "Connections of type %s are not supported by material properties.", ToString(connection.m_type));
+                }
+            }
+        }
+
+        void Material::ProcessInternalDirectConnections()
+        {
+            AZ_PROFILE_SCOPE(RPI, "Process direct connection");
+
+            // Apply any changes to *internal* material properties...
+
+            for (auto& materialPipelinePair : m_materialPipelineData)
+            {
+                MaterialPropertyCollection& pipelineProperties = materialPipelinePair.second.m_materialProperties;
+                const MaterialPropertiesLayout& pipelinePropertiesLayout = *materialPipelinePair.second.m_materialProperties.GetMaterialPropertiesLayout();
+
+                for (size_t i = 0; i < pipelinePropertiesLayout.GetPropertyCount(); ++i)
+                {
+                    if (!materialPipelinePair.second.m_materialProperties.GetPropertyDirtyFlags()[i])
                     {
-                        ShaderCollection::Item& shaderReference = m_shaderCollections[outputId.m_materialPipelineName][outputId.m_containerIndex.GetIndex()];
-                        SetShaderOption(*shaderReference.GetShaderOptions(), ShaderOptionIndex{outputId.m_itemIndex.GetIndex()}, value);
+                        continue;
                     }
-                    else if (outputId.m_type == MaterialPropertyOutputType::ShaderEnabled)
+
+                    MaterialPropertyIndex propertyIndex{i};
+
+                    const MaterialPropertyValue value = pipelineProperties.GetPropertyValue(propertyIndex);
+                    const MaterialPropertyDescriptor* propertyDescriptor = pipelinePropertiesLayout.GetPropertyDescriptor(propertyIndex);
+
+                    for (const MaterialPropertyOutputId& connection : propertyDescriptor->GetOutputConnections())
                     {
-                        ShaderCollection::Item& shaderReference = m_shaderCollections[outputId.m_materialPipelineName][outputId.m_containerIndex.GetIndex()];
-                        if (value.Is<bool>())
-                        {
-                            shaderReference.SetEnabled(value.GetValue<bool>());
-                        }
-                        else
-                        {
-                            // We should never get here because MaterialTypeAssetCreator and ValidatePropertyAccess ensure savedPropertyValue is a bool.
-                            AZ_Assert(false, "Unsupported data type for MaterialPropertyOutputType::ShaderEnabled");
-                        }
-                    }
-                    else
-                    {
-                        AZ_Assert(false, "Unhandled MaterialPropertyOutputType");
+                        // Note that ShaderInput is not supported for internal properties. Internal properties are used exclusively for the
+                        // .materialpipeline which is not allowed to access to the MaterialSrg, only the .materialtype should know about the MaterialSrg.
+                        [[maybe_unused]] bool applied =
+                            TryApplyPropertyConnectionToShaderOption(value, connection) ||
+                            TryApplyPropertyConnectionToShaderEnable(value, connection);
+
+                        AZ_Error(s_debugTraceName, applied, "Connections of type %s are not supported by material pipeline properties.", ToString(connection.m_type));
                     }
                 }
             }
@@ -329,17 +503,11 @@ namespace AZ
 
         void Material::ProcessMaterialFunctors()
         {
-            AZ_PROFILE_SCOPE(RPI, "Material::ProcessMaterialFunctors()");
+            AZ_PROFILE_SCOPE(RPI, "Process material functors");
 
-            // On some platforms, PipelineStateObjects must be pre-compiled and shipped with the game; they cannot be compiled at runtime. So at some
-            // point the material system needs to be smart about when it allows PSO changes and when it doesn't. There is a task scheduled to
-            // thoroughly address this in 2022, but for now we just report a warning to alert users who are using the engine in a way that might
-            // not be supported for much longer. PSO changes should only be allowed in developer tools (though we could also expose a way for users to
-            // enable dynamic PSO changes if their project only targets platforms that support this).
-            // PSO modifications are allowed during initialization because that's using the stored asset data, which the asset system can
-            // access to pre-compile the necessary PSOs.
             MaterialPropertyPsoHandling psoHandling = m_isInitializing ? MaterialPropertyPsoHandling::Allowed : m_psoHandling;
 
+            // First run the "main" MaterialPipelineNone functors, which use the MaterialFunctorAPI::RuntimeContext
             for (const Ptr<MaterialFunctor>& functor : m_materialAsset->GetMaterialFunctors())
             {
                 if (functor)
@@ -354,7 +522,8 @@ namespace AZ
                             &materialPropertyDependencies,
                             psoHandling,
                             m_shaderResourceGroup.get(),
-                            &m_shaderCollections
+                            &m_generalShaderCollection,
+                            &m_materialPipelineData
                         );
 
                         functor->Process(processContext);
@@ -365,6 +534,46 @@ namespace AZ
                     // This could happen when the dll containing the functor class is missing. There will likely be more errors
                     // preceding this one, from the serialization system when loading the material asset.
                     AZ_Error(s_debugTraceName, false, "Material functor is null.");
+                }
+            }
+        }
+
+        void Material::ProcessInternalMaterialFunctors()
+        {
+            AZ_PROFILE_SCOPE(RPI, "Process material functors");
+
+            MaterialPropertyPsoHandling psoHandling = m_isInitializing ? MaterialPropertyPsoHandling::Allowed : m_psoHandling;
+
+            // Then run the "pipeline" functors, which use the MaterialFunctorAPI::PipelineRuntimeContext
+            for (auto& [materialPipelineName, materialPipeline] : m_materialAsset->GetMaterialPipelinePayloads())
+            {
+                MaterialPipelineState& materialPipelineData = m_materialPipelineData[materialPipelineName];
+
+                for (const Ptr<MaterialFunctor>& functor : materialPipeline.m_materialFunctors)
+                {
+                    if (functor)
+                    {
+                        const MaterialPropertyFlags& materialPropertyDependencies = functor->GetMaterialPropertyDependencies();
+                        // None covers case that the client code doesn't register material properties to dependencies,
+                        // which will later get caught in Process() when trying to access a property.
+                        if (materialPropertyDependencies.none() || functor->NeedsProcess(materialPipelineData.m_materialProperties.GetPropertyDirtyFlags()))
+                        {
+                            MaterialFunctorAPI::PipelineRuntimeContext processContext = MaterialFunctorAPI::PipelineRuntimeContext(
+                                materialPipelineData.m_materialProperties,
+                                &materialPropertyDependencies,
+                                psoHandling,
+                                &materialPipelineData.m_shaderCollection
+                            );
+
+                            functor->Process(processContext);
+                        }
+                    }
+                    else
+                    {
+                        // This could happen when the dll containing the functor class is missing. There will likely be more errors
+                        // preceding this one, from the serialization system when loading the material asset.
+                        AZ_Error(s_debugTraceName, false, "Material functor is null.");
+                    }
                 }
             }
         }
@@ -383,7 +592,15 @@ namespace AZ
                 ProcessDirectConnections();
                 ProcessMaterialFunctors();
 
+                ProcessInternalDirectConnections();
+                ProcessInternalMaterialFunctors();
+
                 m_materialProperties.ClearAllPropertyDirtyFlags();
+
+                for (auto& materialPipelinePair : m_materialPipelineData)
+                {
+                    materialPipelinePair.second.m_materialProperties.ClearAllPropertyDirtyFlags();
+                }
 
                 if (m_shaderResourceGroup)
                 {

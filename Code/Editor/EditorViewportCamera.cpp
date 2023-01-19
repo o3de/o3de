@@ -73,28 +73,32 @@ namespace SandboxEditor
     }
 
     void InterpolateViewportCameraToTransform(
-        const AzFramework::ViewportId viewportId, const AZ::Vector3& position, const float pitch, const float yaw)
+        const AzFramework::ViewportId viewportId, const AZ::Vector3& position, const float pitch, const float yaw, const float duration)
     {
-        InterpolateViewportCameraToTransform(viewportId, TransformFromPositionPitchYaw(position, pitch, yaw));
+        InterpolateViewportCameraToTransform(viewportId, TransformFromPositionPitchYaw(position, pitch, yaw), duration);
     }
 
-    void InterpolateDefaultViewportCameraToTransform(const AZ::Vector3& position, const float pitch, const float yaw)
+    void InterpolateDefaultViewportCameraToTransform(const AZ::Vector3& position, const float pitch, const float yaw, const float duration)
     {
-        InterpolateDefaultViewportCameraToTransform(TransformFromPositionPitchYaw(position, pitch, yaw));
+        InterpolateDefaultViewportCameraToTransform(TransformFromPositionPitchYaw(position, pitch, yaw), duration);
     }
 
-    void InterpolateViewportCameraToTransform(const AzFramework::ViewportId viewportId, const AZ::Transform& transform)
+    void InterpolateViewportCameraToTransform(
+        const AzFramework::ViewportId viewportId, const AZ::Transform& transform, const float duration)
     {
         AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-            viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, transform);
+            viewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            transform,
+            duration);
     }
 
-    void InterpolateDefaultViewportCameraToTransform(const AZ::Transform& transform)
+    void InterpolateDefaultViewportCameraToTransform(const AZ::Transform& transform, const float duration)
     {
         auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         if (auto viewportContext = viewportContextManager->GetDefaultViewportContext())
         {
-            InterpolateViewportCameraToTransform(viewportContext->GetId(), transform);
+            InterpolateViewportCameraToTransform(viewportContext->GetId(), transform, duration);
         }
     }
 
@@ -104,12 +108,14 @@ namespace SandboxEditor
         HandleViewportCameraTransitionFromSetting(viewportId, TransformFromPositionPitchYaw(position, pitch, yaw));
     }
 
-    void HandleDefaultViewportCameraTransitionFromSetting(const AZ::Vector3& position, float pitch, float yaw)
+    void HandleDefaultViewportCameraTransitionFromSetting(
+        const AZ::Vector3& position, const float pitch, const float yaw)
     {
         HandleDefaultViewportCameraTransitionFromSetting(TransformFromPositionPitchYaw(position, pitch, yaw));
     }
 
-    void HandleViewportCameraTransitionFromSetting(const AzFramework::ViewportId viewportId, const AZ::Transform& transform)
+    void HandleViewportCameraTransitionFromSetting(
+        const AzFramework::ViewportId viewportId, const AZ::Transform& transform)
     {
         if (CameraGoToPositionInstantlyEnabled())
         {
@@ -117,7 +123,7 @@ namespace SandboxEditor
         }
         else
         {
-            InterpolateViewportCameraToTransform(viewportId, transform);
+            InterpolateViewportCameraToTransform(viewportId, transform, CameraGoToPositionDuration());
         }
     }
 

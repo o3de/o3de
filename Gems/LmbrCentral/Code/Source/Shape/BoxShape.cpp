@@ -131,6 +131,11 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
+    bool BoxShape::IsTypeAxisAligned()
+    {
+        return false;
+    }
+
     AZ::Aabb BoxShape::GetEncompassingAabb()
     {
         AZStd::shared_lock lock(m_mutex);

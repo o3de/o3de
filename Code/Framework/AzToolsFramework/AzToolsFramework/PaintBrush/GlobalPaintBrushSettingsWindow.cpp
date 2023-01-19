@@ -69,12 +69,12 @@ namespace AzToolsFramework
 
         void GlobalPaintBrushSettingsWindow::OnVisiblePropertiesChanged()
         {
-            m_propertyEditor->InvalidateAll();
+            m_propertyEditor->QueueInvalidation(PropertyModificationRefreshLevel::Refresh_EntireTree);
         }
 
         void GlobalPaintBrushSettingsWindow::OnSettingsChanged([[maybe_unused]] const GlobalPaintBrushSettings& newSettings)
         {
-            m_propertyEditor->InvalidateValues();
+            m_propertyEditor->QueueInvalidation(PropertyModificationRefreshLevel::Refresh_Values);
         }
 
         // simple factory method

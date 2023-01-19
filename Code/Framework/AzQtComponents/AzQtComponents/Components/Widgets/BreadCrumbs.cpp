@@ -13,14 +13,17 @@
 #include <AzQtComponents/Components/Style.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
-#include <QtMath>
-#include <QToolButton>
-#include <QToolBar>
-#include <QSettings>
-#include <QResizeEvent>
-#include <QMenu>
-#include <QLabel>
 #include <QHBoxLayout>
+#include <QKeyEvent>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMenu>
+#include <QResizeEvent>
+#include <QSettings>
+#include <QStackedWidget>
+#include <QToolBar>
+#include <QToolButton>
+#include <QtMath>
 AZ_POP_DISABLE_WARNING
 
 namespace AzQtComponents
@@ -33,6 +36,12 @@ namespace AzQtComponents
     // non-breaking spaces
     static const QString g_plainTextSeparator = QStringLiteral("\u00a0\u00a0\u203a\u00a0\u00a0");
     static constexpr int g_iconWidth = 16;
+    static constexpr int g_leftMargin = 5;
+    //! This reserved space is used to make sure that for editable breadcrumbs user has at least some empty space to click and initiate the
+    //! editing.
+    static constexpr double g_reservedEmptySpace = 30.0;
+    //! This should be in sync with border width in BreadCrumbs.qss
+    static constexpr double g_borderWidthWhenEditable = 1.0;
 
     QString toCommonSeparators(const QString& path)
     {
@@ -41,15 +50,28 @@ namespace AzQtComponents
         return ret;
     }
 
+    //! @class AzQtComponents::BreadCrumbs
+    //!
+    //! @internal
+    //! ## Editable BreadCrumbs implementation
+    //!
+    //! Editable breadcrumbs are implemented as two widgets:
+    //!  - A QLabel that shows the nicely formatted breadcrumbs with links when not being edited
+    //!  - A QLineEdit that is shown when editing happens, due to user's interaction or calling startEditing()
+    //!
+    //!  These two widgets are inside the QStackLayout and are brought to front as needed. The interaction patterns
+    //!  are implemented in BreadCrumbs::eventFilter.
+    //! @endinternal
+
     BreadCrumbs::BreadCrumbs(QWidget* parent)
-        : QWidget(parent)
+        : QFrame(parent)
         , m_config(defaultConfig())
     {
         // WARNING: If you add any any new widget to the layout, make sure that it's accounted for in ::sizeHint() and ::fillLabel()
         
         // create the layout
         QHBoxLayout* boxLayout = new QHBoxLayout(this);
-        boxLayout->setContentsMargins(0, 0, 0, 0);
+        boxLayout->setContentsMargins(g_leftMargin, 0, 0, 0);
 
         m_menuButton = new QToolButton(this);
         m_menuButton->setObjectName(g_buttonName);
@@ -57,17 +79,33 @@ namespace AzQtComponents
         boxLayout->addWidget(m_menuButton);
         connect(m_menuButton, &QToolButton::clicked, this, &BreadCrumbs::showTruncatedPathsMenu);
 
+        m_labelEditStack = new QStackedWidget(this);
+        // This needs to be done because QStackWidget by default expands, regardless
+        // of what is inside it.
+        m_labelEditStack->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+
         // create the label
-        m_label = new QLabel(this);
+        m_label = new QLabel();
         m_label->setObjectName(g_labelName);
         m_label->setTextFormat(Qt::RichText);
+        m_label->installEventFilter(this);
+        m_labelEditStack->addWidget(m_label);
+
+        // create the line edit for editable breadcrumbs
+        m_lineEdit = new QLineEdit();
+        m_lineEdit->installEventFilter(this);
+        connect(m_lineEdit, &QLineEdit::returnPressed, this, &BreadCrumbs::confirmEdit);
+        Style::flagToIgnore(m_lineEdit);
+        m_labelEditStack->addWidget(m_lineEdit);
+
         // We need to explicitly set indent. Otherwise the calculations are not correct because the
         // style causes the frame to be positive in size (but invisible) which gives us the effective indent
         // described in https://doc.qt.io/qt-5/qlabel.html#indent-prop
         m_label->setIndent(0);
-        boxLayout->addWidget(m_label);
+        boxLayout->addWidget(m_labelEditStack);
         // Horizontal policy deliberately ignored, we manage the width ourselves see ::sizeHint() and ::fillLabel()
         m_label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+        m_lineEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
         connect(m_label, &QLabel::linkActivated, this, &BreadCrumbs::onLinkActivated);
     }
 
@@ -100,6 +138,8 @@ namespace AzQtComponents
     {
         // clean up the path to use all the first separator in the list of separators
         m_currentPath = toCommonSeparators(newPath);
+
+        m_lineEdit->setText(newPath);
 
         // update internals
         m_currentPathSize = m_currentPath.split(g_separator, Qt::SkipEmptyParts).size();
@@ -134,6 +174,16 @@ namespace AzQtComponents
         }
 
         return QIcon(m_currentPathIcons[index]);
+    }
+
+    bool BreadCrumbs::isEditable() const
+    {
+        return m_editable;
+    }
+
+    void BreadCrumbs::setEditable(bool editable)
+    {
+        m_editable = editable;
     }
 
     bool BreadCrumbs::getPushPathOnLinkActivation() const
@@ -185,8 +235,11 @@ namespace AzQtComponents
             }
         );
 
-        QSize sh = QWidget::sizeHint();
-        sh.rwidth() = qCeil(noSeparatorsWidth + separatorsOnlyWidth + numIcons * iconWidth);
+        const qreal borderWidth = isEditable() ? 2 * g_borderWidthWhenEditable : 0.0;
+        const qreal reservedWidth = isEditable() ? g_reservedEmptySpace : 0.0;
+
+        QSize sh = QFrame::sizeHint();
+        sh.rwidth() = qCeil(g_leftMargin + reservedWidth + borderWidth + noSeparatorsWidth + separatorsOnlyWidth + numIcons * iconWidth);
         return sh;
     }
 
@@ -309,7 +362,86 @@ namespace AzQtComponents
             m_menuButton->setVisible(needsMenu);
             fillLabel();
         }
-        QWidget::resizeEvent(event);
+        QFrame::resizeEvent(event);
+    }
+
+    bool BreadCrumbs::eventFilter(QObject* obj, QEvent* ev)
+    {
+        if (obj == m_label)
+        {
+            // HACK: QLabel doesn't have any API that would answer the question "are we currently hovering a link?" so we query the
+            // cursor shape to detect it. Without this, we would always start editing and not let the user click the breadcrumbs links.
+            // This will fail on touch device so maybe breadcrumbs could be rewritten to a series of buttons instead of rich text links
+            bool linkHovered = m_label->cursor().shape() == Qt::PointingHandCursor;
+            if (ev->type() == QEvent::MouseButtonRelease && isEditable() && !linkHovered)
+            {
+                startEditing();
+                return true;
+            }
+        }
+
+        if (obj == m_lineEdit)
+        {
+            // Esc key does the ::focusOut() on the lineEdit and the actual cancellation will happen through FocusOut event. If
+            // Esc did cancellation directly, we would get a recursive FocusOut event because cancellation swaps the line edit for
+            // label which causes FocusOut for the line edit.
+            switch (ev->type())
+            {
+            case QEvent::ShortcutOverride:
+                // If we're currently editing, Esc should always discard editing. Thus, we need to override any Esc shortcut. Such as one
+                // in the editor main window.
+                if (const auto* keyEvent = static_cast<QKeyEvent*>(ev); keyEvent->key() == Qt::Key_Escape && m_lineEdit->hasFocus())
+                {
+                    m_lineEdit->clearFocus();
+                    return true;
+                }
+                break;
+            case QEvent::FocusOut:
+                cancelEdit();
+                return true;
+            case QEvent::KeyPress:
+                if (const auto* keyEvent = static_cast<QKeyEvent*>(ev); keyEvent->key() == Qt::Key_Escape)
+                {
+                    m_lineEdit->clearFocus();
+                    return true;
+                }
+                break;
+            default:;
+            }
+        }
+        return QFrame::eventFilter(obj, ev);
+    }
+
+    void BreadCrumbs::startEditing()
+    {
+        if (!isEditable() || isEditing())
+        {
+            return;
+        }
+        m_labelEditStack->setCurrentWidget(m_lineEdit);
+        m_lineEdit->selectAll();
+        m_lineEdit->setFocus();
+    }
+
+    void BreadCrumbs::confirmEdit()
+    {
+        if (!isEditing())
+        {
+            return;
+        }
+        const QString requestedPath = m_lineEdit->text();
+        m_lineEdit->setText(m_currentPath);
+        if (requestedPath != m_currentPath)
+        {
+            Q_EMIT pathEdited(requestedPath);
+        }
+        m_labelEditStack->setCurrentWidget(m_label);
+    }
+
+    void BreadCrumbs::cancelEdit()
+    {
+        m_lineEdit->setText(m_currentPath);
+        m_labelEditStack->setCurrentWidget(m_label);
     }
 
     QString BreadCrumbs::generateIconHtml(int index)
@@ -340,9 +472,10 @@ namespace AzQtComponents
         m_truncatedPaths = fullPath;
 
         // used to measure the width used by the path.
-        const int availableWidth = width() -
+        const int availableWidth = width() - g_leftMargin
+            - (isEditable() ? g_borderWidthWhenEditable*2.0 + g_reservedEmptySpace: 0)
             // using sizeHint() because width() will be the QWidget's default 100px before the first layouting
-            (m_menuButton->isVisible() ? m_menuButton->sizeHint().width() + layout()->spacing() : 0);
+            - (m_menuButton->isVisible() ? m_menuButton->sizeHint().width() + layout()->spacing() : 0);
 
         const QFontMetricsF fm(m_label->font());
 
@@ -522,6 +655,11 @@ namespace AzQtComponents
 
         const auto position = m_menuButton->mapToGlobal(m_menuButton->geometry().bottomLeft());
         hiddenPaths.exec(position);
+    }
+
+    bool BreadCrumbs::isEditing() const
+    {
+        return m_labelEditStack->currentWidget() == m_lineEdit;
     }
 } // namespace AzQtComponents
 

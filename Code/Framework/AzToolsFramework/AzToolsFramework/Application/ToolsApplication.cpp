@@ -23,6 +23,7 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
@@ -391,6 +392,8 @@ namespace AzToolsFramework
 
         ComponentModeFramework::ComponentModeDelegate::Reflect(context);
         ComponentModeFramework::EditorBaseComponentMode::Reflect(context);
+
+        BoxComponentMode::Reflect(context);
 
         ViewportInteraction::ViewportInteractionReflect(context);
         ViewportEditorModeNotifications::Reflect(context);

@@ -136,7 +136,11 @@ namespace UnitTest
     };
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TEST_F(AllocatorsTestFixtureLeakDetectionDeathTest_SKIPCODECOVERAGE, DISABLED_AllocatorLeak)
+#else
     TEST_F(AllocatorsTestFixtureLeakDetectionDeathTest_SKIPCODECOVERAGE, AllocatorLeak)
+#endif
     {
         // testing that the TraceBusHook will fail on cause the test to die
         EXPECT_DEATH(TestAllocatorLeak(), "");

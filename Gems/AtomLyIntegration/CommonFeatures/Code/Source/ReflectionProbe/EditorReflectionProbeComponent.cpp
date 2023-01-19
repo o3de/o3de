@@ -161,10 +161,19 @@ namespace AZ
 
             AZ::u64 entityId = (AZ::u64)GetEntityId();
             configuration.m_entityId = entityId;
+
+            m_innerExtentsChangedHandler = AZ::Event<bool>::Handler([]([[maybe_unused]] bool value)
+                {
+                    AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                        &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
+                        AzToolsFramework::Refresh_Values);
+                });
+            m_controller.RegisterInnerExtentsChangedHandler(m_innerExtentsChangedHandler);
         }
 
         void EditorReflectionProbeComponent::Deactivate()
         {
+            m_innerExtentsChangedHandler.Disconnect();
             EditorReflectionProbeBus::Handler::BusDisconnect(GetEntityId());
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
             AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
@@ -227,14 +236,20 @@ namespace AZ
                 return;
             }
 
-            AZ::Vector3 position = AZ::Vector3::CreateZero();
-            AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
-            AZ::Quaternion rotationQuaternion = AZ::Quaternion::CreateIdentity();
-            AZ::TransformBus::EventResult(rotationQuaternion, GetEntityId(), &AZ::TransformBus::Events::GetWorldRotationQuaternion);
-            AZ::Matrix3x3 rotationMatrix = AZ::Matrix3x3::CreateFromQuaternion(rotationQuaternion);
+            const AZ::Vector3 translationOffset =
+                m_controller.m_shapeBus ? m_controller.m_shapeBus->GetTranslationOffset() : AZ::Vector3::CreateZero();
 
-            float scale = 1.0f;
-            AZ::TransformBus::EventResult(scale, GetEntityId(), &AZ::TransformBus::Events::GetLocalUniformScale);
+            AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
+            AZ::TransformBus::EventResult(worldTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+            if (m_controller.m_boxShapeInterface && m_controller.m_boxShapeInterface->IsTypeAxisAligned())
+            {
+                worldTransform.SetRotation(AZ::Quaternion::CreateIdentity());
+            }
+            AZ::Quaternion rotationQuaternion = worldTransform.GetRotation();
+            AZ::Matrix3x3 rotationMatrix = AZ::Matrix3x3::CreateFromQuaternion(rotationQuaternion);
+            const AZ::Vector3 position = worldTransform.TransformPoint(translationOffset);
+
+            float scale = worldTransform.GetUniformScale();
 
             // draw AABB at probe position using the inner dimensions
             Color color(0.0f, 0.0f, 1.0f, 1.0f);

@@ -82,12 +82,16 @@ namespace AZ
             // TransformNotificationBus::Handler overrides ...
             void OnTransformChanged(const Transform& local, const Transform& world) override;
 
+            LmbrCentral::ShapeComponentRequests* m_shapeBus = nullptr;
+
         private:
+            // Computes overall effect transform, taking shape translation offsets into account if applicable
+            AZ::Transform ComputeOverallTransform(const Transform& entityTransform);
+
             FeatureProcessorType* m_featureProcessor = nullptr;
             typename FeatureProcessorType::LightHandle m_lightHandle;
             const AreaLightComponentConfig* m_componentConfig = nullptr;
 
-            LmbrCentral::ShapeComponentRequests* m_shapeBus = nullptr;
             Transform m_transform;
             PhotometricValue m_photometricValue;
             bool m_shuttersEnabled = false;

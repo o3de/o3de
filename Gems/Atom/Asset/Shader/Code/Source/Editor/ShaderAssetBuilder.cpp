@@ -165,7 +165,7 @@ namespace AZ
 
             // Need to get the name of the azsl file from the .shader source asset, to be able to declare a dependency to SRG Layout Job.
             // and the macro options to preprocess.
-            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderAssetSourceFileFullPath);
+            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderAssetSourceFileFullPath, false);
             if (!descriptorParseOutcome.IsSuccess())
             {
                 AZ_Error(
@@ -329,8 +329,15 @@ namespace AZ
             AZStd::string shaderFileName;
             AzFramework::StringFunc::Path::GetFileName(request.m_sourceFile.c_str(), shaderFileName);
 
-            // No error checking because the same calls were already executed during CreateJobs()
             auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderFullPath);
+            if (!descriptorParseOutcome.IsSuccess())
+            {
+                AZ_Error(
+                    ShaderAssetBuilderName, false, "Failed to parse Shader Descriptor JSON: %s",
+                    descriptorParseOutcome.GetError().c_str());
+                return;
+            }
+
             RPI::ShaderSourceData shaderSourceData = descriptorParseOutcome.TakeValue();
             AZStd::string azslFullPath;
             ShaderBuilderUtility::GetAbsolutePathToAzslFile(shaderFullPath, shaderSourceData.m_source, azslFullPath);
@@ -620,13 +627,19 @@ namespace AZ
                         const RHI::TargetBlendState& globalTargetBlendState = shaderSourceData.m_globalTargetBlendState;
                         const auto& targetBlendStates = shaderSourceData.m_targetBlendStates;
 
+                        // There are three ways to set blend state in the .shader file: "BlendState", "GlobalTargetBlendState", and "TargetBlendStates".
+                        // "BlendState" is a raw serialization of the BlendState struct, and is not very convenient to work with because it requires
+                        // every target to be specified in order for the data to load successfully. Normally users will want to use "GlobalTargetBlendState"
+                        // or "TargetBlendStates".
                         for (size_t i = 0; i < colorAttachmentCount; ++i)
                         {
                             if (targetBlendStates.contains(static_cast<uint32_t>(i)))
                             {
                                 renderStates.m_blendState.m_targets[i] = targetBlendStates.at(static_cast<uint32_t>(i));
                             }
-                            else
+                            // We have to ensure this actually has data before applying it, otherwise this would stomp any
+                            // data in the "BlendState" or "TargetBlendStates" with default values.
+                            else if(globalTargetBlendState.m_enable) 
                             {
                                 renderStates.m_blendState.m_targets[i] = globalTargetBlendState;
                             }

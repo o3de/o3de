@@ -23,7 +23,8 @@ namespace AZ
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::FromVec1(Vec1::FloatArgType value)
         {
-            return value;
+            // Coming from a Vec1 the last element could be garbage.
+            return NeonDouble::SplatFirst(value); // {value.x, value.x}
         }
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::LoadAligned(const float* __restrict addr)

@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #include <Atom/Features/ParallaxMapping.azsli>
 #include "../MaterialInputs/ParallaxInput.azsli"
 #include <Atom/Features/MatrixUtility.azsli>

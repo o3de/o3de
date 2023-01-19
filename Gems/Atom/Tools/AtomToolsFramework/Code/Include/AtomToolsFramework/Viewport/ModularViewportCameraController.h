@@ -115,7 +115,7 @@ namespace AtomToolsFramework
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
         // ModularViewportCameraControllerRequestBus overrides ...
-        bool InterpolateToTransform(const AZ::Transform& worldFromLocal) override;
+        bool InterpolateToTransform(const AZ::Transform& worldFromLocal, float duration) override;
         bool IsInterpolating() const override;
         void StartTrackingTransform(const AZ::Transform& worldFromLocal) override;
         void StopTrackingTransform() override;
@@ -150,9 +150,10 @@ namespace AtomToolsFramework
         struct CameraAnimation
         {
             //! The transform of the camera at the start of the animation.
-            AZ::Transform m_transformStart = AZ::Transform::CreateIdentity();
-            AZ::Transform m_transformEnd = AZ::Transform::CreateIdentity(); //!< The transform of the camera at the end of the animation.
+            AZ::Transform m_transformStart;
+            AZ::Transform m_transformEnd; //!< The transform of the camera at the end of the animation.
             float m_time = 0.0f; //!< The interpolation amount between the start and end transforms (in the range 0.0 - 1.0).
+            float m_duration = 1.0f; //!< The length of the animation (how long it takes to complete) in seconds.
         };
 
         AzFramework::Camera m_camera; //!< The current camera state (pitch/yaw/position/look-distance).
@@ -163,7 +164,7 @@ namespace AtomToolsFramework
         AzFramework::CameraProps m_cameraProps; //!< Camera properties to control rotate and translate smoothness.
         CameraControllerPriorityFn m_priorityFn; //!< Controls at what priority the camera controller should respond to events.
 
-        CameraAnimation m_cameraAnimation; //!< Camera animation state (used during CameraMode::Animation).
+        AZStd::optional<CameraAnimation> m_cameraAnimation; //!< Camera animation state (used during CameraMode::Animation).
         CameraMode m_cameraMode = CameraMode::Control; //!< The current mode the camera is operating in.
         float m_roll = 0.0f; //!< The current amount of roll to be applied to the camera.
         float m_targetRoll = 0.0f; //!< The target amount of roll to be applied to the camera (current will move towards this).

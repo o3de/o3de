@@ -51,7 +51,7 @@ namespace AZ
         bool MaterialFunctorAPI::ConfigureShaders::SetShaderOptionValueHelper(const Name& name, const ValueType& value)
         {
             bool didSetOne = false;
-            bool materialOwnsOption = false;
+            bool materialDoesntOwnOption = false;
 
             ForAllShaderItems([&](ShaderCollection::Item& shaderItem)
                 {
@@ -66,7 +66,7 @@ namespace AZ
 
                     if (!shaderItem.MaterialOwnsShaderOption(optionIndex))
                     {
-                        materialOwnsOption = true;
+                        materialDoesntOwnOption = true;
                         return false; // break;
                     }
 
@@ -78,7 +78,7 @@ namespace AZ
                     return true; // continue
                 });
 
-            if (materialOwnsOption)
+            if (materialDoesntOwnOption)
             {
                 AZ_Error("MaterialFunctor", false, "Shader option '%s' is not owned by this material.", name.GetCStr());
                 AZ_Assert(!didSetOne, "The material build pipeline should have ensured that MaterialOwnsShaderOption is consistent across all shaders.");
@@ -141,13 +141,14 @@ namespace AZ
             const MaterialPropertyFlags* materialPropertyDependencies,
             MaterialPropertyPsoHandling psoHandling,
             ShaderResourceGroup* shaderResourceGroup,
-            MaterialPipelineShaderCollections* shaderCollections
+            ShaderCollection* generalShaderCollection,
+            MaterialPipelineDataMap* materialPipelineData
         )
             : MaterialFunctorAPI::CommonRuntimeConfiguration(psoHandling)
             , MaterialFunctorAPI::ReadMaterialPropertyValues(materialProperties, materialPropertyDependencies)
-            , MaterialFunctorAPI::ConfigureShaders(&(*shaderCollections)[MaterialPipelineNameCommon])
+            , MaterialFunctorAPI::ConfigureShaders(generalShaderCollection)
             , m_shaderResourceGroup(shaderResourceGroup)
-            , m_allShaderCollections(shaderCollections)
+            , m_materialPipelineData(materialPipelineData)
         {
         }
 
@@ -155,9 +156,9 @@ namespace AZ
         {
             MaterialFunctorAPI::ConfigureShaders::ForAllShaderItems(callback);
 
-            for (auto& materialPipelinePair : *m_allShaderCollections)
+            for (auto& materialPipelinePair : *m_materialPipelineData)
             {
-                for (ShaderCollection::Item& shaderItem : materialPipelinePair.second)
+                for (ShaderCollection::Item& shaderItem : materialPipelinePair.second.m_shaderCollection)
                 {
                     if (!callback(shaderItem))
                     {
@@ -166,9 +167,45 @@ namespace AZ
                 }
             }
         }
+
         ShaderResourceGroup* MaterialFunctorAPI::RuntimeContext::GetShaderResourceGroup()
         {
             return m_shaderResourceGroup;
+        }
+
+        bool MaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue(const Name& propertyId, const MaterialPropertyValue& value)
+        {
+            bool somethingWasSet = false;
+
+            for (auto& materialPipelinePair : *m_materialPipelineData)
+            {
+                MaterialPropertyCollection& properties = materialPipelinePair.second.m_materialProperties;
+
+                MaterialPropertyIndex index = properties.GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
+                if (!index.IsValid())
+                {
+                    continue;
+                }
+
+                if (properties.SetPropertyValue(index, value))
+                {
+                    somethingWasSet = true;
+                }
+            }
+
+            return somethingWasSet;
+        }
+
+        MaterialFunctorAPI::PipelineRuntimeContext::PipelineRuntimeContext(
+            const MaterialPropertyCollection& internalProperties,
+            const MaterialPropertyFlags* internalMaterialPropertyDependencies,
+            MaterialPropertyPsoHandling psoHandling,
+            ShaderCollection* pipelineShaderCollections
+        )
+            : MaterialFunctorAPI::CommonRuntimeConfiguration(psoHandling)
+            , MaterialFunctorAPI::ReadMaterialPropertyValues(internalProperties, internalMaterialPropertyDependencies)
+            , MaterialFunctorAPI::ConfigureShaders(pipelineShaderCollections)
+        {
         }
 
         MaterialFunctorAPI::EditorContext::EditorContext(

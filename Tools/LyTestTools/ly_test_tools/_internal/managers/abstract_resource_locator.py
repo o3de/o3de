@@ -326,17 +326,6 @@ class AbstractResourceLocator(object):
     #
 
     @abstractmethod
-    def platform_config_file(self):
-        """
-        Return the path to the platform config file.
-        :return: path to the platform config file (i.e. engine_root/dev/system_windows_pc.cfg)
-        """
-        raise NotImplementedError(
-            "platform_config_file() is not implemented on the base AbstractResourceLocator() class. "
-            "It must be defined by the inheriting class - "
-            "i.e. _WindowsResourceLocator(AbstractResourceLocator).platform_config_file()")
-
-    @abstractmethod
     def platform_cache(self):
         """
         Return path to the cache for the current operating system platform and project

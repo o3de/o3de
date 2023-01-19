@@ -22,6 +22,8 @@ namespace UnitTest
     {
         m_name = other.m_name;
         m_source = other.m_source;
+        // copyfrom does not free existing memory, so force this to occur:
+        m_patches = AzToolsFramework::Prefab::PrefabDom();
         m_patches.CopyFrom(other.m_patches, m_patches.GetAllocator());
         return *this;
     }

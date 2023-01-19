@@ -104,6 +104,9 @@ namespace AZ
             // flags
             bool m_editorModeSet = false;
             AZStd::atomic_bool m_bakeInProgress = false;
+
+            // handler for the diffuse probe grid changing the underlying box dimensions
+            AZ::Event<bool>::Handler m_boxChangedByGridHandler;
         };
     } // namespace Render
 } // namespace AZ

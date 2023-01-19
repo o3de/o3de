@@ -50,6 +50,7 @@ namespace UnitTestUtils
             return false;
         }
 
+        if (!contents.isEmpty())
         {
             QTextStream ts(&writer);
             ts.setCodec("UTF-8");

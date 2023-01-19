@@ -15,10 +15,13 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/string/conversions.h>
 #include <SceneWidgets/ui_ManifestWidgetPage.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/IGroup.h>
 #include <SceneAPI/SceneCore/DataTypes/IManifestObject.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/IUnmodifiableRule.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
+#include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidgetPage.h>
@@ -40,6 +43,13 @@ namespace AZ
 
                 m_propertyEditor = new AzToolsFramework::ReflectedPropertyEditor(nullptr);
                 m_propertyEditor->Setup(context, this, true, 250);
+
+                m_propertyEditor->SetReadOnlyQueryFunction(
+                    [this](const AzToolsFramework::InstanceDataNode* node)
+                    {
+                        return SetNodeReadOnlyStatus(node);
+                    });
+
                 ui->m_mainLayout->insertWidget(0, m_propertyEditor);
 
                 BuildAndConnectAddButton();
@@ -90,6 +100,8 @@ namespace AZ
                 // Add new object to the list so it's ready for updating later on.
                 m_objects.push_back(object);
 
+                UpdateAddButtonStatus();
+
                 QTimer::singleShot(0, this,
                     [this]()
                     {
@@ -98,6 +110,21 @@ namespace AZ
                 );
 
                 return true;
+            }
+
+            void ManifestWidgetPage::UpdateAddButtonStatus()
+            {
+                if (m_objects.size() >= m_capSize)
+                {
+                    QString entryString(tr(m_capSize == 1 ? "entry" : "entries"));
+                    ui->m_addButton->setToolTip(tr("Maximum number of entries reached. This page can contain up to %1 %2.").arg(m_capSize).arg(entryString));
+                    ui->m_addButton->setEnabled(false);
+                }
+                else
+                {
+                    ui->m_addButton->setToolTip(QString());
+                    ui->m_addButton->setEnabled(true);
+                }
             }
 
             bool ManifestWidgetPage::RemoveObject(const AZStd::shared_ptr<DataTypes::IManifestObject>& object)
@@ -117,6 +144,8 @@ namespace AZ
                     }
 
                     m_objects.erase(it);
+
+                    UpdateAddButtonStatus();
 
                     if (m_objects.size() == 0)
                     {
@@ -164,6 +193,7 @@ namespace AZ
             {
                 m_objects.clear();
                 m_propertyEditor->ClearInstances();
+                UpdateAddButtonStatus();
             }
 
             void ManifestWidgetPage::BeforePropertyModified(AzToolsFramework::InstanceDataNode* /*pNode*/)
@@ -235,6 +265,8 @@ namespace AZ
                     }
 
                     AddNewObject(m_classTypeIds[0]);
+
+                    UpdateAddButtonStatus();
                 }
             }
 
@@ -247,6 +279,8 @@ namespace AZ
                     return;
                 }
                 AddNewObject(id);
+
+                UpdateAddButtonStatus();
             }
 
             void ManifestWidgetPage::BuildAndConnectAddButton()
@@ -259,6 +293,24 @@ namespace AZ
                 {
                     AZStd::string className = ClassIdToName(m_classTypeIds[0]);
                     AZStd::to_lower(className.begin(), className.end());
+
+                    AZ::SerializeContext* serializeContext = nullptr;
+                    AZ::ComponentApplicationBus::BroadcastResult(
+                        serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+                    AZ_Assert(serializeContext, "No serialize context");
+                    auto classData = serializeContext->FindClassData(m_classTypeIds[0]);
+                    if (classData && classData->m_editData)
+                    {
+                        const AZ::Edit::ElementData* editorElementData =
+                            classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
+                        if (auto categoryAttribute = editorElementData->FindAttribute(AZ::Edit::Attributes::Max))
+                        {
+                            if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<int>*>(categoryAttribute))
+                            {
+                                m_capSize = categoryAttributeData->Get(nullptr);
+                            }
+                        }
+                    }
 
                     ui->m_addButton->setText(QString::fromLatin1("Add another %1").arg(className.c_str()));
                     connect(ui->m_addButton, &QPushButton::clicked, this, &ManifestWidgetPage::OnSingleGroupAdd);
@@ -416,6 +468,53 @@ namespace AZ
                         m_propertyEditor->InvalidateAttributesAndValues();
                     }
                 }
+            }
+
+            void ManifestWidgetPage::AddObjects(AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>& objects)
+            {
+                ManifestWidget* parent = ManifestWidget::FindRoot(this);
+                AZ_Error(SceneAPI::Utilities::ErrorWindow, parent, "ManifestWidgetPage isn't docked in a ManifestWidget.");
+                if (!parent)
+                {
+                    return;
+                }
+                AZStd::shared_ptr<Containers::Scene> scene = parent->GetScene();
+                if (!scene)
+                {
+                    return;
+                }
+                Containers::SceneManifest& manifest = scene->GetManifest();
+                for (auto& object : objects)
+                {
+                    if (!SupportsType(object))
+                    {
+                        continue;
+                    }
+                    if (!manifest.AddEntry(object))
+                    {
+                        AZ_Error(SceneAPI::Utilities::ErrorWindow, false, "Unable to add new object to manifest.");
+                    }
+                    else
+                    {
+                        AddObject(object);
+                    }
+                }
+                RefreshPage();
+            }
+
+            bool ManifestWidgetPage::SetNodeReadOnlyStatus(const AzToolsFramework::InstanceDataNode* node)
+            {
+                if (AzToolsFramework::InstanceDataNode* parentNode = node ? node->GetRoot() : nullptr)
+                {
+                    AZ::SceneAPI::DataTypes::IGroup* group = m_context->Cast<AZ::SceneAPI::DataTypes::IGroup*>(
+                        parentNode->FirstInstance(), parentNode->GetClassMetadata()->m_typeId);
+                    // If this group is unmodifiable, that means it's read only.
+                    if (group && group->GetRuleContainerConst().FindFirstByType<AZ::SceneAPI::DataTypes::IUnmodifiableRule>())
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
         } // namespace UI
     } // namespace SceneAPI

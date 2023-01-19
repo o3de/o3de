@@ -1238,7 +1238,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         //SourceFileDependencyEntry
 
-        SourceFileDependencyEntry::SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, PathOrUuid dependsOnSource, SourceFileDependencyEntry::TypeOfDependency dependencyType, AZ::u32 fromAssetId, const char* subIds)
+        SourceFileDependencyEntry::SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, PathOrUuid dependsOnSource, SourceFileDependencyEntry::TypeOfDependency dependencyType, bool fromAssetId, const char* subIds)
             : m_builderGuid(builderGuid)
             , m_sourceGuid(sourceGuid)
             , m_dependsOnSource(AZStd::move(dependsOnSource))

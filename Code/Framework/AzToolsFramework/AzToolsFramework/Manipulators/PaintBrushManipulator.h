@@ -36,8 +36,7 @@ namespace AzToolsFramework
     {
         //! Private constructor.
         PaintBrushManipulator(
-            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair,
-            AzFramework::PaintBrushColorMode colorMode);
+            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair, PaintBrushColorMode colorMode);
 
     public:
         AZ_RTTI(PaintBrushManipulator, "{0621CB58-21FD-474A-A296-5B1192E714E7}", BaseManipulator);
@@ -52,7 +51,7 @@ namespace AzToolsFramework
         //! A Manipulator must only be created and managed through a shared_ptr.
         static AZStd::shared_ptr<PaintBrushManipulator> MakeShared(
             const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair,
-            AzFramework::PaintBrushColorMode colorMode);
+            PaintBrushColorMode colorMode);
 
         //! Draw the current manipulator state.
         void Draw(
@@ -65,13 +64,24 @@ namespace AzToolsFramework
         //! Returns the actions that we want any Component Mode using the Paint Brush Manipulator to support.
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl();
 
+        //! Initializes the actions that we want any Component Mode using the Paint Brush Manipulator to support.
+        static void RegisterActions();
+
+        //! Adds the actions that we want any Component Mode using the Paint Brush Manipulator to support to the mode provided.
+        static void BindActionsToMode(AZ::Uuid componentModeTypeId);
+
+        //! Adds the actions that we want any Component Mode using the Paint Brush Manipulator to support to the Edit menu.
+        static void BindActionsToMenus();
+
         //! Adjusts the size of the paintbrush
-        void AdjustSize(float sizeDelta);
+        static void AdjustSize(float sizeDelta);
 
         //! Adjusts the paintbrush hardness percent
-        void AdjustHardnessPercent(float hardnessPercentDelta);
+        static void AdjustHardnessPercent(float hardnessPercentDelta);
 
     private:
+        void InvalidateImpl() override;
+
         //! Create the manipulator view(s) for the paintbrush.
         void SetView(
             AZStd::shared_ptr<ManipulatorViewProjectedCircle> innerCircle, AZStd::shared_ptr<ManipulatorViewProjectedCircle> outerCircle);

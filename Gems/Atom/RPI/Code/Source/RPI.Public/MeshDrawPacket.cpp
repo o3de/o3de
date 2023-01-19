@@ -61,9 +61,8 @@ namespace AZ
 
         void MeshDrawPacket::ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback)
         {
-            for (auto shaderCollectionIter : m_material->GetShaderCollections())
-            {
-                for (auto& shaderItem : shaderCollectionIter.second)
+            m_material->ForAllShaderItems(
+                [&](const Name&, const ShaderCollection::Item& shaderItem)
                 {
                     const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
                     ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
@@ -72,31 +71,17 @@ namespace AZ
                         bool shouldContinue = callback(shaderItem, index);
                         if (!shouldContinue)
                         {
-                            return;
+                            return false;
                         }
                     }
-                }
-            }
-        }
-
-        bool MeshDrawPacket::MaterialOwnsShaderOption(const Name& shaderOptionName)
-        {
-            // check if the material owns this option in any of its shaders, if so it can't be set externally
-            bool materialOwnsShaderOption = false;
-            ForValidShaderOptionName(shaderOptionName,
-                [&](const ShaderCollection::Item& shaderItem, ShaderOptionIndex index)
-                {
-                    materialOwnsShaderOption = shaderItem.MaterialOwnsShaderOption(index);
-                    return !materialOwnsShaderOption; // will stop execution if set to true.
-                }
-            );
-            return materialOwnsShaderOption;
+                    return true;
+                });
         }
 
         bool MeshDrawPacket::SetShaderOption(const Name& shaderOptionName, ShaderOptionValue value)
         {
             // check if the material owns this option in any of its shaders, if so it can't be set externally
-            if (MaterialOwnsShaderOption(shaderOptionName))
+            if (m_material->MaterialOwnsShaderOption(shaderOptionName))
             {
                 return false;
             }
@@ -337,7 +322,7 @@ namespace AZ
                     m_perDrawSrgs.push_back(drawSrg);
                 }
 
-                if (materialPipelineName != MaterialPipelineNameCommon)
+                if (materialPipelineName != MaterialPipelineNone)
                 {
                     RHI::DrawFilterTag pipelineTag = parentScene.GetDrawFilterTagRegistry()->AcquireTag(materialPipelineName);
                     AZ_Assert(pipelineTag.IsValid(), "Could not acquire pipeline filter tag '%s'.", materialPipelineName.GetCStr());
@@ -361,9 +346,8 @@ namespace AZ
             m_material->ApplyGlobalShaderOptions();
 
             // TODO(MaterialPipeline): We might want to detect duplicate ShaderItem objects here, and merge them to avoid redundant RHI DrawItems.
-            for (auto& [materialPipelineName, shaderCollection] : m_material->GetShaderCollections())
-            {
-                for (auto& shaderItem : shaderCollection)
+            m_material->ForAllShaderItems(
+                [&](const Name& materialPipelineName, const ShaderCollection::Item& shaderItem)
                 {
                     if (shaderItem.IsEnabled())
                     {
@@ -375,8 +359,9 @@ namespace AZ
 
                         appendShader(shaderItem, materialPipelineName);
                     }
-                }
-            }
+
+                    return true;
+                });
 
             m_drawPacket = drawPacketBuilder.End();
 

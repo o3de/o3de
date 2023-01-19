@@ -29,9 +29,7 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
     float2 detailUvs[UvSetCount],
     bool isFrontFace)
 {
-    bool usingParallax = ShouldHandleParallax();
-    bool evaluateTangentFrame = usingParallax || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture) || o_detail_normal_useTexture;
-    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace, evaluateTangentFrame);
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace);
 
     // ------- Detail UVs -------
 
@@ -41,7 +39,7 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
 
     geoData.isDisplacementClipped = false;
 
-    if(usingParallax)
+    if(ShouldHandleParallax())
     {
         SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
                       geoData.uvs, geoData.detailUvs, isFrontFace, positionSV.z, positionSV.w, geoData.isDisplacementClipped);

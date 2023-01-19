@@ -19,8 +19,9 @@
 #include <EMotionFX/Source/Actor.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
-#include <Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.h>
+#include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
 #include <Editor/InputDialogValidatable.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 
@@ -383,9 +384,10 @@ namespace EMotionFX
 
         SelectIndexes(indexList, treeView, 3, 3);
 
-        QDockWidget* simulatedObjectInspectorDock = EMStudio::GetMainWindow()->findChild<QDockWidget*>("EMFX.SimulatedObjectWidget.SimulatedObjectInspectorDock");
-        ASSERT_TRUE(simulatedObjectInspectorDock);
-        QPushButton* addColliderButton = simulatedObjectInspectorDock->findChild<QPushButton*>("EMFX.SimulatedObjectColliderWidget.AddColliderButton");
+        QDockWidget* simulatedObjectWidget =  EMStudio::GetPluginManager()->FindActivePlugin<SimulatedObjectWidget>()->GetDockWidget();
+        ASSERT_TRUE(simulatedObjectWidget);
+        QPushButton* addColliderButton =
+            simulatedObjectWidget->findChild<QPushButton*>("EMFX.SimulatedObjectColliderWidget.AddColliderButton");
         ASSERT_TRUE(addColliderButton);
         // Send the left button click directly to the button
         QTest::mouseClick(addColliderButton, Qt::LeftButton);

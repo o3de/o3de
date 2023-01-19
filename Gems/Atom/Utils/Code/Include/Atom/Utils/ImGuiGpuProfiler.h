@@ -294,8 +294,8 @@ namespace AZ
 
                 bool m_deviceHeap = false;
                 size_t m_budgetBytes = 0;
-                size_t m_reservedBytes = 0;
-                size_t m_residentBytes = 0;
+                size_t m_allocatedBytes = 0;
+                size_t m_usedBytes = 0;
                 float m_fragmentation = 0.f;
             };
 

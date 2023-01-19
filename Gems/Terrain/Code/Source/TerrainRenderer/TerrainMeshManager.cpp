@@ -84,12 +84,15 @@ namespace Terrain
 
     void TerrainMeshManager::SetConfiguration(const MeshConfiguration& config)
     {
-        if (m_config.CheckWouldRequireRebuild(config))
+        bool requireRebuild = m_config.CheckWouldRequireRebuild(config);
+
+        m_config = config;
+
+        if (requireRebuild)
         {
             m_rebuildSectors = true;
             OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
         }
-        m_config = config;
 
         // This will trigger a draw packet rebuild later.
         AZ::RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(AZ::Name{ "o_useTerrainClod" }, AZ::RPI::ShaderOptionValue{ m_config.m_clodEnabled });
@@ -125,7 +128,7 @@ namespace Terrain
             m_materialInstance = materialInstance;
 
             // Queue the load of the material's shaders now since they'll be needed later.
-            for (auto& shaderItem : m_materialInstance->GetShaderCollection(AZ::RPI::MaterialPipelineNameCommon))
+            for (auto& shaderItem : m_materialInstance->GetGeneralShaderCollection())
             {
                 AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = shaderItem.GetShaderAsset();
                 if (!shaderAsset.IsReady())
@@ -455,7 +458,7 @@ namespace Terrain
         m_candidateSectors.clear();
 
         // Rebuild common draw packet data
-        for (auto& shaderItem : m_materialInstance->GetShaderCollection(AZ::RPI::MaterialPipelineNameCommon))
+        for (auto& shaderItem : m_materialInstance->GetGeneralShaderCollection())
         {
             if (!shaderItem.IsEnabled())
             {
@@ -548,7 +551,7 @@ namespace Terrain
 
     void TerrainMeshManager::OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        if ((dataChangedMask & (TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings)) != 0)
+        if ((dataChangedMask & (TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings)) != TerrainDataChangedMask::None)
         {
             AzFramework::Terrain::FloatRange heightBounds = AzFramework::Terrain::FloatRange::CreateNull();
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(

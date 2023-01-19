@@ -8,14 +8,14 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-
-#include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyDoubleSpinCtrl.hxx>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
-#include <Editor/ObjectEditor.h>
-#include <Editor/ColliderHelpers.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyDoubleSpinCtrl.hxx>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
+#include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <Editor/ColliderContainerWidget.h>
+#include <Editor/ColliderHelpers.h>
+#include <Editor/ObjectEditor.h>
+#include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 
 #include <Tests/UI/SkeletonOutlinerTestFixture.h>
 #include <Tests/TestAssetCode/TestActorAssets.h>
@@ -36,6 +36,18 @@ namespace EMotionFX
 
         m_actor = actorAsset->GetActor();
         CreateSkeletonAndModelIndices();
+        EXPECT_EQ(m_indexList.size(), numJoints);
+    }
+
+    void SkeletonOutlinerTestFixture::SetUpSimulatedObject()
+    {
+        const int numJoints = 6;
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, numJoints, "TestsActor");
+
+        CreateSkeletonAndModelIndices();
+
         EXPECT_EQ(m_indexList.size(), numJoints);
     }
 
@@ -80,13 +92,12 @@ namespace EMotionFX
         auto* mainwindow = new QMainWindow;
 
         auto* widget = GetJointPropertyWidget();
-        auto* mainWidget = new QWidget;
+        auto* mainWidget = new QScrollArea;
         auto* mainLayout = new QVBoxLayout;
         mainLayout->addWidget(widget);
-        mainLayout->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Fixed, QSizePolicy::MinimumExpanding));
         mainWidget->setLayout(mainLayout);
 
-        mainwindow->setMinimumHeight(500);
+        mainwindow->setMinimumHeight(1000);
         mainwindow->setCentralWidget(mainWidget);
         mainwindow->show();
 
@@ -100,10 +111,7 @@ namespace EMotionFX
     {
         SetUpPhysics();
 
-        // Find the 3rd joint after the RootJoint in the TreeView and select it
-        SelectIndexes(m_indexList, m_treeView, 3, 3);
-
-        AddColliderViaAddComponentButton("Add Cloth Collider", "Sphere");
+        AddColliderViaAddComponentButton("Cloth Collider", "Sphere");
 
         ShowJointPropertyWidget();
 
@@ -114,7 +122,7 @@ namespace EMotionFX
     {
         SetUpPhysics();
 
-        AddColliderViaAddComponentButton("Add Cloth Collider", "Capsule");
+        AddColliderViaAddComponentButton("Cloth Collider", "Capsule");
 
         // Check the node is in the ragdoll
         EXPECT_TRUE(ColliderHelpers::NodeHasClothCollider(m_indexList[3]));
@@ -150,12 +158,32 @@ namespace EMotionFX
         // We did not crash, at least
     }
 
-    TEST_F(SkeletonOutlinerTestFixture, DISABLED_CopyAndPaste)
+    TEST_F(SkeletonOutlinerTestFixture, CopyAndPaste)
     {
         SetUpPhysics();
 
         // create a cloth collider to copy it
-        AddColliderViaAddComponentButton("Add Cloth Collider", "Capsule");
+
+        // Find the 3rd joint after the RootJoint in the TreeView and select it
+        SelectIndexes(m_indexList, m_treeView, 3, 3);
+        auto selectionIndex = m_treeView->selectionModel()->selectedIndexes().first();
+        // Add a Cloth Collider to it
+        ColliderHelpers::AddCollider({selectionIndex}, PhysicsSetup::Cloth, azrtti_typeid<Physics::SphereShapeConfiguration>());
+
+        AddColliderViaAddComponentButton("Copy from Cloth to Hit Detection");
+        ShowJointPropertyWidget();
+        EXPECT_TRUE(ColliderHelpers::NodeHasHitDetection(selectionIndex));
+    }
+
+    TEST_F(SkeletonOutlinerTestFixture, ClipboardCopyPaste)
+    {
+        SetUpPhysics();
+
+        // Find the 3rd joint after the RootJoint in the TreeView and select it
+        SelectIndexes(m_indexList, m_treeView, 3, 3);
+        auto selectionIndex = m_treeView->selectionModel()->selectedIndexes().first();
+        // Add a Cloth Collider to it
+        ColliderHelpers::AddCollider({selectionIndex}, PhysicsSetup::Cloth, azrtti_typeid<Physics::SphereShapeConfiguration>());
 
         // copy it
         auto* jointWidget = GetJointPropertyWidget()->findChild<ClothJointWidget*>();
@@ -164,6 +192,20 @@ namespace EMotionFX
 
         AddColliderViaAddComponentButton("Paste as Hit Detection Collider");
         ShowJointPropertyWidget();
-       EXPECT_EQ(0, 1) << "This test is not implemented";
+        EXPECT_TRUE(ColliderHelpers::NodeHasHitDetection(selectionIndex));
+    }
+
+    TEST_F(SkeletonOutlinerTestFixture, SimulatedObject)
+    {
+        SetUpSimulatedObject();
+        SelectIndexes(m_indexList, m_treeView, 3, 3);
+
+        auto* plugin = EMStudio::GetPluginManager()->FindActivePlugin<SimulatedObjectWidget>();
+        auto* w = plugin->GetDockWidget();
+        auto* mw = new QMainWindow;
+        mw->setCentralWidget(w);
+        mw->show();
+
+        ShowJointPropertyWidget();
     }
 } // namespace EMotionFX

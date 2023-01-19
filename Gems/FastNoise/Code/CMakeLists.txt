@@ -45,6 +45,7 @@ ly_add_target(
 # Clients and Servers use the above module
 ly_create_alias(NAME FastNoise.Clients  NAMESPACE Gem TARGETS FastNoise)
 ly_create_alias(NAME FastNoise.Servers  NAMESPACE Gem TARGETS FastNoise)
+ly_create_alias(NAME FastNoise.Unified  NAMESPACE Gem TARGETS FastNoise)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(

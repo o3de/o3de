@@ -215,7 +215,7 @@ namespace AzToolsFramework
             };
 
             SourceFileDependencyEntry() = default;
-            SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, PathOrUuid dependsOnSource, TypeOfDependency dependencyType, AZ::u32 fromAssetId, const char* subIds);
+            SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, PathOrUuid dependsOnSource, TypeOfDependency dependencyType, bool fromAssetId, const char* subIds);
 
             AZStd::string ToString() const;
             auto GetColumns();

@@ -282,6 +282,10 @@ namespace AZ
                 template<typename T>
                 bool SetShaderConstant(const char* name, T value);
 
+                //! Sets the value of an intermediate material property, used to pass data to the material pipelines.
+                template<typename T>
+                bool SetInternalMaterialPropertyValue(const char* name, T value);
+
                 // The subclass must have wrapper functions for the underlying implementations in the base classes,
                 // in order to expose the entire API in lua in a single context class...
                 template<typename Type>
@@ -300,6 +304,35 @@ namespace AZ
 
                 MaterialFunctorAPI::RuntimeContext* m_runtimeContextImpl = nullptr;
                 const MaterialNameContext* m_materialNameContext;
+            };
+
+            //! Wraps MaterialFunctorAPI::PipelineRuntimeContext with lua bindings
+            class PipelineRuntimeContext
+                : public CommonRuntimeConfiguration
+                , public LuaMaterialFunctorAPI::ReadMaterialPropertyValues
+                , public LuaMaterialFunctorAPI::ConfigureShaders
+            {
+            public:
+                AZ_TYPE_INFO(LuaMaterialFunctorAPI::LuaMaterialFunctorPipelineRuntimeContext, "{632F1E52-79EE-4184-A7B0-55C0EEEC5AB2}");
+
+                static void Reflect(BehaviorContext* behaviorContext);
+
+                explicit PipelineRuntimeContext(
+                    MaterialFunctorAPI::PipelineRuntimeContext* runtimeContextImpl,
+                    const MaterialPropertyFlags* materialPropertyDependencies,
+                    const MaterialNameContext* materialNameContext);
+
+                // The subclass must have wrapper functions for the underlying implementations in the base classes,
+                // in order to expose the entire API in lua in a single context class...
+                template<typename Type>
+                Type GetMaterialPropertyValue(const char* name) const;
+                bool HasMaterialValue(const char* name) const;
+                template<typename Type>
+                bool SetShaderOptionValue(const char* name, Type value);
+                AZStd::size_t GetShaderCount() const;
+                LuaMaterialFunctorAPI::ShaderItem GetShader(AZStd::size_t index);
+                LuaMaterialFunctorAPI::ShaderItem GetShaderByTag(const char* shaderTag);
+                bool HasShaderWithTag(const char* shaderTag);
             };
 
             //! Wraps MaterialFunctorAPI::EditorContext with lua bindings
@@ -349,6 +382,7 @@ namespace AZ
             {
                 friend CommonRuntimeConfiguration;
                 friend LuaMaterialFunctorAPI::RuntimeContext;
+                friend LuaMaterialFunctorAPI::PipelineRuntimeContext;
                 friend LuaMaterialFunctorAPI::EditorContext;
                 friend LuaMaterialFunctorAPI::RenderStates;
                 friend LuaMaterialFunctorAPI::ShaderItem;
@@ -379,6 +413,7 @@ namespace AZ
             LuaMaterialFunctor();
 
             void Process(MaterialFunctorAPI::RuntimeContext& context) override;
+            void Process(MaterialFunctorAPI::PipelineRuntimeContext& context) override;
             void Process(MaterialFunctorAPI::EditorContext& context) override;
 
         private:

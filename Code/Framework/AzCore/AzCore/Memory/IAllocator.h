@@ -207,7 +207,7 @@ namespace AZ
         /// Returns true if this allocator is ready to use.
         virtual bool IsReady() const { return true; }
 
-    private:
+    protected:
         /// Sets whether profiling calls should be made.
         /// This is primarily a performance compromise, as the profiling calls go out on an EBus that may not exist if not activated, and will
         /// result in an expensive hash lookup if that is the case.

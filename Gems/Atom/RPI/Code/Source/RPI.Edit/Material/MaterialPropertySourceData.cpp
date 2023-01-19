@@ -35,20 +35,19 @@ namespace AZ
             }
         }
 
+        MaterialPropertySourceData::MaterialPropertySourceData(AZStd::string_view name) : m_name(name)
+        {
+        }
+
+        const AZStd::string& MaterialPropertySourceData::GetName() const
+        {
+            return m_name;
+        }
+
         MaterialPropertySourceData::Connection::Connection(MaterialPropertyOutputType type, AZStd::string_view name)
             : m_type(type)
             , m_name(name)
         {
-        }
-
-        bool MaterialPropertySourceData::Connection::operator==(const Connection& rhs) const
-        {
-            return m_type == rhs.m_type && m_name == rhs.m_name;
-        }
-
-        bool MaterialPropertySourceData::Connection::operator!=(const Connection& rhs) const
-        {
-            return!(*this == rhs);
         }
 
         const float MaterialPropertySourceData::DefaultMin = std::numeric_limits<float>::lowest();

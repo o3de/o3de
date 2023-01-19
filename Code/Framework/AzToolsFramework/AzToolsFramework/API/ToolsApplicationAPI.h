@@ -821,7 +821,7 @@ namespace AzToolsFramework
 
         /// Return path to icon for component.
         /// Path will be empty if component should have no icon.
-        virtual AZStd::string GetComponentEditorIcon(const AZ::Uuid& /*componentType*/, AZ::Component* /*component*/) { return AZStd::string(); }
+        virtual AZStd::string GetComponentEditorIcon(const AZ::Uuid& /*componentType*/, const AZ::Component* /*component*/) { return AZStd::string(); }
 
         //! Return path to icon for component type.
         //! Path will be empty if component type should have no icon.
@@ -833,7 +833,7 @@ namespace AzToolsFramework
          * \param componentIconAttrib   edit attribute describing where the icon is used, it could be one of Icon, Viewport and HidenIcon
          * \return the path of the icon image
          */
-        virtual AZStd::string GetComponentIconPath(const AZ::Uuid& /*componentType*/, AZ::Crc32 /*componentIconAttrib*/, AZ::Component* /*component*/) { return AZStd::string(); }
+        virtual AZStd::string GetComponentIconPath(const AZ::Uuid& /*componentType*/, AZ::Crc32 /*componentIconAttrib*/, const AZ::Component* /*component*/) { return AZStd::string(); }
 
         /**
          * Calculate the navigation 2D radius in units of an agent given its Navigation Type Name

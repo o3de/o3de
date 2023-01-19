@@ -37,9 +37,6 @@ namespace AZ
                 Connection() = default;
                 Connection(MaterialPropertyOutputType type, AZStd::string_view name);
 
-                bool operator==(const Connection& rhs) const;
-                bool operator!=(const Connection& rhs) const;
-
                 MaterialPropertyOutputType m_type = MaterialPropertyOutputType::Invalid;
 
                 //! The name of a specific shader setting. This will either be a ShaderResourceGroup input, a ShaderOption, or a shader tag, depending on m_type.
@@ -56,11 +53,9 @@ namespace AZ
 
             MaterialPropertySourceData() = default;
 
-            explicit MaterialPropertySourceData(AZStd::string_view name) : m_name(name)
-            {
-            }
+            explicit MaterialPropertySourceData(AZStd::string_view name);
 
-            const AZStd::string& GetName() const { return m_name; }
+            const AZStd::string& GetName() const;
 
             MaterialPropertyVisibility m_visibility = MaterialPropertyVisibility::Default;
 
@@ -85,8 +80,8 @@ namespace AZ
 
         private:
 
-            // We are gradually moving toward having a more proper API for MaterialPropertySourceData code, but we still some public members
-            // like above. However, it's important for m_name to be private because it is used as the key for lookups, collision validation, etc.
+            // Even though most data in this struct is public, m_name is protected because the MaterialTypeSourceData keeps tight
+            // control over how material properties and groups are created and named.
             AZStd::string m_name; //!< The name of the property within the property group. The full property ID will be groupName.propertyName.
         };
 

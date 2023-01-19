@@ -222,8 +222,10 @@ namespace AssetProcessor
         void AddMetaDataType(const QString& type, const QString& originalExtension);
 
         // ------------------- utility functions --------------------
-        ///! Checks to see whether the input file is an excluded file
+        //! Checks to see whether the input file is an excluded file, assumes input is absolute path.
         bool IsFileExcluded(QString fileName) const;
+        //! If you already have a relative path, this is a cheaper function to call:
+        bool IsFileExcludedRelPath(QString relPath) const;
 
         //! Given a file name, return a container that contains all matching recognizers
         //!
@@ -295,7 +297,8 @@ namespace AssetProcessor
 
         void PopulatePlatformsForScanFolder(AZStd::vector<AssetBuilderSDK::PlatformInfo>& platformsList, QStringList includeTagsList = QStringList(), QStringList excludeTagsList = QStringList());
 
-        void CacheIntermediateAssetsScanFolderId();
+        // uses const + mutability since its a cache.
+        void CacheIntermediateAssetsScanFolderId() const; 
         AZStd::optional<AZ::s64> GetIntermediateAssetsScanFolderId() const;
 
     protected:
@@ -323,7 +326,7 @@ namespace AssetProcessor
         QList<QPair<QString, QString> > m_metaDataFileTypes;
         QSet<QString> m_metaDataRealFiles;
         AZStd::vector<AzFramework::GemInfo> m_gemInfoList;
-        AZ::s64 m_intermediateAssetScanFolderId = -1; // Cached ID for intermediate scanfolder, for quick lookups
+        mutable AZ::s64 m_intermediateAssetScanFolderId = -1; // Cached ID for intermediate scanfolder, for quick lookups
 
         int m_minJobs = 1;
         int m_maxJobs = 3;

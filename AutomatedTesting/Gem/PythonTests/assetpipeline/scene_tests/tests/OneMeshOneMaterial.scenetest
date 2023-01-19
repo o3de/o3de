@@ -1,0 +1,52 @@
+{
+    "test_name": "OneMeshOneMaterial_RunAP_SuccessWithMatchingProducts",
+    "asset_folder": "OneMeshOneMaterial",
+    "override_asset_folder": null,
+    "scene_debug_file": "onemeshonematerial.dbgsg",
+    "override_scene_debug_file": null,
+    "assets": {
+        "source_file_name": "OneMeshOneMaterial.fbx",
+        "uuid": "8a9164adb84859be893e18aa819438e1",
+        "jobs": {
+            "job_key": "Scene compilation",
+            "builder_guid": "bd8bf65894854fe3830e8ec3a23c35f3",
+            "status": 4,
+            "error_count": 0,
+            "products": [
+                {
+                    "product_name": "onemeshonematerial/onemeshonematerial.assetinfo.dbg",
+                    "sub_id": -1450203600,
+                    "asset_type": "48a78be7b3f244b88aa6f0607e9a75a5"
+                },
+                {
+                    "product_name": "onemeshonematerial/onemeshonematerial.dbgsg",
+                    "sub_id": 1918494907,
+                    "asset_type": "07f289d14dc74c4094b40a53bbcb9f0b"
+                },
+                {
+                    "product_name" : "onemeshonematerial/onemeshonematerial.dbgsg.json",
+                    "sub_id" : 1785487734,
+                    "asset_type" : "4342b27e0e1449c3b3b9bcdb9a5fca23"
+                },
+                {
+                    "product_name": "onemeshonematerial/onemeshonematerial.dbgsg.xml",
+                    "sub_id": 556355570,
+                    "asset_type": "51f376140d774f369ac67ed70a0ac868"
+                },
+                {
+                    "product_name": "onemeshonematerial/onemeshonematerial_fbx.procprefab",
+                    "sub_id": -1819295853,
+                    "asset_type": "9b7c8459471e4eada3637990cc4065a9"
+                },
+                {
+                    "product_name": "onemeshonematerial/onemeshonematerial_fbx.procprefab.json",
+                    "sub_id": -1860036023,
+                    "asset_type": "00000000000000000000000000000000"
+                }
+            ]
+        }
+    },
+    "override_assets": null,
+    "id": "32250017",
+    "marks": "pytest.mark.test_case_id('C32250017')"
+}
