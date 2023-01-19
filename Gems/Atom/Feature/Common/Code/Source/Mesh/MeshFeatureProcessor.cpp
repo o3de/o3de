@@ -324,6 +324,11 @@ namespace AZ
             meshDataHandle->m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
             meshDataHandle->m_isAlwaysDynamic = descriptor.m_isAlwaysDynamic;
 
+            if (descriptor.m_excludeFromReflectionCubeMaps)
+            {
+                meshDataHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
+            }
+
             meshDataHandle->UpdateMaterialChangeIds();
 
             return meshDataHandle;
@@ -577,7 +582,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+                meshHandle->m_descriptor.m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
                 if (excludeFromReflectionCubeMaps)
                 {
                     meshHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
@@ -1597,7 +1602,7 @@ namespace AZ
             }
 
             cullData.m_hideFlags = RPI::View::UsageNone;
-            if (m_excludeFromReflectionCubeMaps)
+            if (m_descriptor.m_excludeFromReflectionCubeMaps)
             {
                 cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
             }

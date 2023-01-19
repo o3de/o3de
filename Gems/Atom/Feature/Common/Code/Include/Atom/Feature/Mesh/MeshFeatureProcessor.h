@@ -138,7 +138,6 @@ namespace AZ
             bool m_needsInit = false;
             bool m_objectSrgNeedsUpdate = true;
             bool m_isAlwaysDynamic = false;
-            bool m_excludeFromReflectionCubeMaps = false;
             bool m_visible = true;
             bool m_hasForwardPassIblSpecularMaterial = false;
             bool m_needsSetRayTracingData = false;
