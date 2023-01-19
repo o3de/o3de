@@ -18,10 +18,6 @@
                 "description": "Material type group name that will contain the property corresponding to this input.",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                },
                 "visibleOnNode": false,
                 "editableOnNode": false
             },
@@ -30,11 +26,7 @@
                 "displayName": "Name",
                 "description": "Property name that will be added to the material type for this input. The shader variable name and display name will be derived from this.",
                 "supportedDataTypeRegex": "string",
-                "defaultDataType": "string",
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                }
+                "defaultDataType": "string"
             },
             {
                 "name": "inDescription",
@@ -42,10 +34,6 @@
                 "description": "Description about what this material input does and how it should be usefd.",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                },
                 "visibleOnNode": false,
                 "editableOnNode": false
             },
@@ -55,13 +43,12 @@
                 "description": "Default value for the material property.",
                 "supportedDataTypeRegex": "float",
                 "defaultDataType": "float",
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "settings": {
-                    "materialInputs": [
-                        "SLOTSTANDARDSRGMEMBER"
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
+                        "STANDARD_SRG_MEMBER"
                     ]
                 }
             }

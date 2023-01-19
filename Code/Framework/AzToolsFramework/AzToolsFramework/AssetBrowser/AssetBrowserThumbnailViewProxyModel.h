@@ -8,14 +8,14 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QAbstractProxyModel>
+#include <QIdentityProxyModel>
 #endif
 
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class AssetBrowserThumbnailViewProxyModel : public QAbstractProxyModel
+        class AssetBrowserThumbnailViewProxyModel : public QIdentityProxyModel
         {
             Q_OBJECT
 
@@ -23,24 +23,18 @@ namespace AzToolsFramework
             explicit AssetBrowserThumbnailViewProxyModel(QObject* parent = nullptr);
             ~AssetBrowserThumbnailViewProxyModel() override;
 
-            void SetSourceModelCurrentSelection(const QModelIndex& sourceIndex);
-
             QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-            QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
-            QModelIndex parent(const QModelIndex& child) const override;
+            // Used to keep track of the root index on the view consuming this model, so that the model
+            // can generate extra data such as whether an entry is on the top level.
+            void SetRootIndex(const QModelIndex& index);
 
-            QModelIndex mapToSource(const QModelIndex& proxyIndex) const override;
-            QModelIndex mapFromSource(const QModelIndex& sourceIndex) const override;
-
-            int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-            int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+            bool GetShowSearchResultsMode() const;
+            void SetShowSearchResultsMode(bool searchMode);
 
         private:
-            QPersistentModelIndex m_sourceSelectionIndex;
-            AZStd::vector<int> m_sourceValidChildren;
-
-            void RecomputeValidEntries();
+            QPersistentModelIndex m_rootIndex;
+            bool m_searchResultsMode;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

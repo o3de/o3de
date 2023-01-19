@@ -11,7 +11,6 @@
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -48,7 +47,6 @@ namespace PhysX
         AZ::ComponentTypeList components = AZ::ComponentApplication::GetRequiredSystemComponents();
         components.insert(components.end(),
             {
-                azrtti_typeid<AZ::MemoryComponent>(),
                 azrtti_typeid<AZ::AssetManagerComponent>(),
                 azrtti_typeid<AZ::JobManagerComponent>(),
                 azrtti_typeid<AZ::StreamerComponent>(),
@@ -91,8 +89,6 @@ namespace PhysX
 
     void Environment::SetupInternal()
     {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
         m_fileIo = AZStd::make_unique<AZ::IO::LocalFileIO>();
 
         AZ::IO::FileIOBase::SetInstance(m_fileIo.get());

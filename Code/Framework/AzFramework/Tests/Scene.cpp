@@ -101,9 +101,6 @@ namespace SceneUnitTest
     public:
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
 
@@ -134,9 +131,6 @@ namespace SceneUnitTest
             m_app.Destroy();
 
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
         }
 
         AZ::IO::LocalFileIO m_fileIO;

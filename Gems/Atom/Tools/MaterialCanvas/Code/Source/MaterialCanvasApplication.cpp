@@ -119,6 +119,8 @@ namespace MaterialCanvas
         m_window.reset();
         m_viewportSettingsSystem.reset();
         m_graphContext.reset();
+        m_graphCompilerManager.reset();
+        m_graphTemplateFileDataCache.reset();
         m_dynamicNodeManager.reset();
 
         ApplyShaderBuildSettings();
@@ -138,34 +140,6 @@ namespace MaterialCanvas
     void MaterialCanvasApplication::FactoryRegistered()
     {
         ApplyShaderBuildSettings();
-    }
-
-    void MaterialCanvasApplication::OnDocumentOpened(const AZ::Uuid& documentId)
-    {
-        AtomToolsFramework::GraphCompilerRequestBus::Event(
-            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
-    }
-
-    void MaterialCanvasApplication::OnDocumentSaved(const AZ::Uuid& documentId)
-    {
-        AtomToolsFramework::GraphCompilerRequestBus::Event(
-            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
-    }
-
-    void MaterialCanvasApplication::OnDocumentUndoStateChanged(const AZ::Uuid& documentId)
-    {
-        AtomToolsFramework::GraphCompilerRequestBus::Event(
-            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
-    }
-
-    void MaterialCanvasApplication::OnDocumentClosed(const AZ::Uuid& documentId)
-    {
-        m_graphCompilerMap.erase(documentId);
-    }
-
-    void MaterialCanvasApplication::OnDocumentDestroyed(const AZ::Uuid& documentId)
-    {
-        m_graphCompilerMap.erase(documentId);
     }
 
     void MaterialCanvasApplication::InitDynamicNodeManager()
@@ -200,13 +174,30 @@ namespace MaterialCanvas
     {
         // Registering custom property handlers for dynamic node configuration settings. The settings are just a map of string data.
         // Recognized settings will need special controls for selecting files or editing large blocks of text without taking up much real
-        // estate in the property editor.
+        // estate in the property editor. In the future, this will likely be replaced with a more specialized node configuration editor. 
         AZ::Edit::ElementData editData;
         editData.m_elementId = AZ_CRC_CE("MultilineStringDialog");
         m_dynamicNodeManager->RegisterEditDataForSetting("instructions", editData);
-        m_dynamicNodeManager->RegisterEditDataForSetting("materialInputs", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("classDefinitions", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("functionDefinitions", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertySrgMember", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyDescription", editData);
+
+        editData = {};
+        editData.m_elementId = AZ::Edit::UIHandlers::LineEdit;
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyDisplayName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyConnectionName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyGroupName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyGroup", editData);
+
+        editData = {};
+        editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
+        AtomToolsFramework::AddEditDataAttribute(
+            editData,
+            AZ::Edit::Attributes::StringList,
+            AZStd::vector<AZStd::string>{ "None", "ShaderInput", "ShaderOption", "ShaderEnabled", "InternalProperty", "" });
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyConnectionType", editData);
 
         editData = {};
         editData.m_elementId = AZ_CRC_CE("StringFilePath");
@@ -263,6 +254,9 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::InitMaterialGraphDocumentType()
     {
+        m_graphCompilerManager.reset(aznew AtomToolsFramework::GraphCompilerManager(m_toolId));
+        m_graphTemplateFileDataCache.reset(aznew AtomToolsFramework::GraphTemplateFileDataCache(m_toolId));
+
         // Acquiring default Material Canvas document type info so that it can be customized before registration
         auto documentTypeInfo = AtomToolsFramework::GraphDocument::BuildDocumentTypeInfo(
             "Material Graph",
@@ -278,7 +272,10 @@ namespace MaterialCanvas
         {
             m_window->AddDocumentTab(
                 documentId, aznew AtomToolsFramework::GraphDocumentView(toolId, documentId, m_graphViewSettingsPtr, m_window.get()));
-            m_graphCompilerMap.emplace(documentId, AZStd::make_unique<MaterialGraphCompiler>(toolId, documentId));
+
+            // Create and register a material graph compiler for this document with the graph compiler manager. The manager will monitor
+            // document notifications, process queued graph compiler requests, and report status of generated files from the AP.
+            m_graphCompilerManager->RegisterGraphCompiler(documentId, aznew MaterialGraphCompiler(toolId, documentId));
             return true;
         };
 
@@ -317,6 +314,7 @@ namespace MaterialCanvas
             { "shader" },
             {},
             AZStd::any(AZ::RPI::ShaderSourceData()),
+
             AZ::RPI::ShaderSourceData::TYPEINFO_Uuid()); // Supplying ID because it is not included in the JSON file
 
         documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId)

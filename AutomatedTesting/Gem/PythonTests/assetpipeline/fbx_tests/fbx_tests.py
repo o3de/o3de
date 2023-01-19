@@ -1090,9 +1090,9 @@ class TestsFBX_AllPlatforms(object):
             f'The following assets were expected to be in, but not found in cache: {str(missing_assets)}'
 
         # Load the asset database.
-        db_path = os.path.join(asset_processor.temp_asset_root(), "Cache",
+        db_path = os.path.join(asset_processor.temp_asset_root(), workspace.project, "Cache",
                                "assetdb.sqlite")
-        cache_root = os.path.dirname(os.path.join(asset_processor.temp_asset_root(), "Cache",
+        cache_root = os.path.dirname(os.path.join(asset_processor.temp_asset_root(), workspace.project, "Cache",
                                                   ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]))
 
         if blackbox_params.scene_debug_file:

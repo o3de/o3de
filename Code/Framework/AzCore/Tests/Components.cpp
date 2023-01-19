@@ -18,7 +18,6 @@
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Serialization/ObjectStream.h>
 
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/IO/SystemFile.h>
 
@@ -60,7 +59,6 @@ namespace UnitTest
         appDesc.m_recordingMode = AllocationRecords::RECORD_FULL;
         Entity* systemEntity = app.Create(appDesc);
 
-        systemEntity->CreateComponent<MemoryComponent>();
         systemEntity->CreateComponent<StreamerComponent>();
         systemEntity->CreateComponent(AZ::Uuid("{CAE3A025-FAC9-4537-B39E-0A800A2326DF}")); // JobManager component
         systemEntity->CreateComponent(AZ::Uuid("{D5A73BCC-0098-4d1e-8FE4-C86101E374AC}")); // AssetDatabase component
@@ -175,9 +173,7 @@ namespace UnitTest
         ComponentApplication componentApp;
         ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-        ComponentApplication::StartupParameters startupParams;
-        startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-        Entity* systemEntity = componentApp.Create(desc, startupParams);
+        Entity* systemEntity = componentApp.Create(desc, {});
         AZ_TEST_ASSERT(systemEntity);
         systemEntity->Init();
 
@@ -631,10 +627,7 @@ namespace UnitTest
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
 
-            ComponentApplication::StartupParameters startupParams;
-            startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-
-            Entity* systemEntity = m_componentApp->Create(desc, startupParams);
+            Entity* systemEntity = m_componentApp->Create(desc, {});
             systemEntity->Init();
 
             m_entity = aznew Entity();
@@ -1116,7 +1109,6 @@ namespace UnitTest
         app.UserSettingsFileLocatorBus::Handler::BusConnect();
 
         MyUserSettings::Reflect(app.GetSerializeContext());
-        systemEntity->CreateComponent<MemoryComponent>();
 
         UserSettingsComponent* globalUserSettingsComponent = systemEntity->CreateComponent<UserSettingsComponent>();
         AZ_TEST_ASSERT(globalUserSettingsComponent);
@@ -1978,10 +1970,7 @@ namespace Benchmark
         ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
 
-        ComponentApplication::StartupParameters startupParams;
-        startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-
-        Entity* systemEntity = componentApp.Create(desc, startupParams);
+        Entity* systemEntity = componentApp.Create(desc, {});
         systemEntity->Init();
 
         while(state.KeepRunning())
