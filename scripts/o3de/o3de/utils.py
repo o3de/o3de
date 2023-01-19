@@ -122,7 +122,7 @@ def validate_version_specifier(version_specifier:str) -> bool:
 
 def validate_version_specifier_list(version_specifiers:str or list) -> bool:
     version_specifier_list = version_specifiers.split() if isinstance(version_specifiers, str) else version_specifiers
-    if not version_specifier_list:
+    if not isinstance(version_specifier_list, list):
         logger.error(f'Version specifiers must be in the format <name><version specifiers>. e.g. name==1.2.3')
         return False
 
