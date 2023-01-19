@@ -89,6 +89,14 @@ namespace AZ
             return EndCommon(result);
         }
 
+        void ModelAssetCreator::AddTag(AZ::Name tag)
+        {
+            if (ValidateIsReady())
+            {
+                m_asset->m_tags.emplace(AZStd::move(tag));
+            }
+        }
+
         bool ModelAssetCreator::Clone(const Data::Asset<ModelAsset>& sourceAsset, Data::Asset<ModelAsset>& clonedResult, const Data::AssetId& cloneAssetId)
         {
             if (!sourceAsset.IsReady())
@@ -126,5 +134,6 @@ namespace AZ
 
             return creator.End(clonedResult);
         }
+
     } // namespace RPI
 } // namespace AZ

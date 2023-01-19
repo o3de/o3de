@@ -29,6 +29,8 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
+#include <Atom/RPI.Public/AssetTagBus.h>
+
 namespace AZ
 {
     namespace Render
@@ -289,6 +291,7 @@ namespace AZ
             MeshComponentRequestBus::Handler::BusDisconnect();
             MeshHandleStateRequestBus::Handler::BusDisconnect();
             AtomImGuiTools::AtomImGuiMeshCallbackBus::Handler::BusDisconnect();
+            RPI::ModelTagNotificationBus::MultiHandler::BusDisconnect();
 
             m_nonUniformScaleChangedHandler.Disconnect();
 
@@ -327,6 +330,39 @@ namespace AZ
             if (m_meshFeatureProcessor)
             {
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, m_transformInterface->GetWorldTM(), m_cachedNonUniformScale);
+            }
+        }
+
+        void MeshComponentController::OnAssetTagQualityUpdated([[maybe_unused]] RPI::AssetQuality quality)
+        {
+            RecomputeAssetQuality();
+        }
+
+        void MeshComponentController::RecomputeAssetQuality()
+        {
+            m_configuration.m_qualityLevel = RPI::AssetQualityHighest;
+            if (m_configuration.m_modelAsset)
+            {
+                if (const AZStd::unordered_set<AZ::Name>& modelTags = m_configuration.m_modelAsset->GetTags(); !modelTags.empty())
+                {
+                    m_configuration.m_qualityLevel = RPI::AssetQualityLowest;
+                    for (const AZ::Name& tag : modelTags)
+                    {
+                        RPI::AssetQuality tagQuality = RPI::AssetQualityHighest;
+                        RPI::ModelTagBus::BroadcastResult(tagQuality, &RPI::ModelTagBus::Events::GetQuality, tag);
+                        m_configuration.m_qualityLevel = AZStd::min(m_configuration.m_qualityLevel, tagQuality);
+                    }
+                }
+
+                if (m_configuration.m_qualityLevel >= m_configuration.m_modelAsset->GetLodCount())
+                    m_configuration.m_qualityLevel = aznumeric_caster(m_configuration.m_modelAsset->GetLodCount() - 1);
+            }
+
+            if (m_meshFeatureProcessor)
+            {
+                RPI::Cullable::LodConfiguration lodConfig = GetMeshLodConfiguration();
+                lodConfig.m_lodBias = m_configuration.m_qualityLevel;
+                m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, lodConfig);
             }
         }
 
@@ -386,6 +422,17 @@ namespace AZ
             {
                 const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
                 m_configuration.m_modelAsset = modelAsset;
+                RecomputeAssetQuality();
+
+                if (const AZStd::unordered_set<AZ::Name>& modelTags = m_configuration.m_modelAsset->GetTags(); !modelTags.empty())
+                {
+                    m_configuration.m_qualityLevel = RPI::AssetQualityLowest;
+                    for (const AZ::Name& tag : modelTags)
+                    {
+                        RPI::ModelTagNotificationBus::MultiHandler::BusConnect(tag);
+                    }
+                }
+
                 MeshComponentNotificationBus::Event(entityId, &MeshComponentNotificationBus::Events::OnModelReady, m_configuration.m_modelAsset, model);
                 MaterialConsumerNotificationBus::Event(entityId, &MaterialConsumerNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
                 AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(entityId);
@@ -434,6 +481,8 @@ namespace AZ
                 // If there is no model asset to be loaded then we need to invalidate the material slot configuration
                 MaterialConsumerNotificationBus::Event(
                     m_entityComponentIdPair.GetEntityId(), &MaterialConsumerNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
+
+                RPI::ModelTagNotificationBus::MultiHandler::BusDisconnect();
             }
         }
 
@@ -451,6 +500,8 @@ namespace AZ
                 // Model has been released which invalidates the material slot configuration
                 MaterialConsumerNotificationBus::Event(
                     m_entityComponentIdPair.GetEntityId(), &MaterialConsumerNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
+
+                RPI::ModelTagNotificationBus::MultiHandler::BusDisconnect();
             }
         }
 
@@ -544,6 +595,7 @@ namespace AZ
         RPI::Cullable::LodConfiguration MeshComponentController::GetMeshLodConfiguration() const
         {
             return {
+                m_configuration.m_qualityLevel,
                 m_configuration.m_lodType,
                 m_configuration.m_lodOverride,
                 m_configuration.m_minimumScreenCoverage,

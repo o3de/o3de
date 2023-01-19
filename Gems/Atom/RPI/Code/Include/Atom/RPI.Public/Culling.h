@@ -29,6 +29,8 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RHI/DrawList.h>
 
+#include <Atom/RPI.Public/AssetQuality.h>
+
 #include <AtomCore/std/parallel/concurrency_checker.h>
 
 #ifdef AZ_DEBUG_BUILD
@@ -84,6 +86,7 @@ namespace AZ
 
             struct LodConfiguration
             {
+                AssetQuality m_lodBias = 0;
                 LodType m_lodType = LodType::Default;
                 LodOverride m_lodOverride = 0;
                 // the minimum possible area a sphere enclosing a mesh projected onto the screen should have before it is culled.
