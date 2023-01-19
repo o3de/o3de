@@ -18,6 +18,7 @@ namespace AZ::Render
         : public AZ::ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(SkyAtmosphereComponentConfig, SystemAllocator)
         AZ_RTTI(AZ::Render::SkyAtmosphereComponentConfig, "{1874446D-E0AA-4DFF-83A0-F7F76C10A867}", AZ::ComponentConfig);
 
         enum class AtmosphereOrigin

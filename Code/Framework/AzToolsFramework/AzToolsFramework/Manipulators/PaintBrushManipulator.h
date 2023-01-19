@@ -64,13 +64,24 @@ namespace AzToolsFramework
         //! Returns the actions that we want any Component Mode using the Paint Brush Manipulator to support.
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl();
 
+        //! Initializes the actions that we want any Component Mode using the Paint Brush Manipulator to support.
+        static void RegisterActions();
+
+        //! Adds the actions that we want any Component Mode using the Paint Brush Manipulator to support to the mode provided.
+        static void BindActionsToMode(AZ::Uuid componentModeTypeId);
+
+        //! Adds the actions that we want any Component Mode using the Paint Brush Manipulator to support to the Edit menu.
+        static void BindActionsToMenus();
+
         //! Adjusts the size of the paintbrush
-        void AdjustSize(float sizeDelta);
+        static void AdjustSize(float sizeDelta);
 
         //! Adjusts the paintbrush hardness percent
-        void AdjustHardnessPercent(float hardnessPercentDelta);
+        static void AdjustHardnessPercent(float hardnessPercentDelta);
 
     private:
+        void InvalidateImpl() override;
+
         //! Create the manipulator view(s) for the paintbrush.
         void SetView(
             AZStd::shared_ptr<ManipulatorViewProjectedCircle> innerCircle, AZStd::shared_ptr<ManipulatorViewProjectedCircle> outerCircle);

@@ -18,10 +18,10 @@ namespace AzToolsFramework
     }
 
     BoxComponentMode::BoxComponentMode(
-        const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType)
+        const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType, bool allowAsymmetricalEditing)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
     {
-        m_boxEdit.Setup(entityComponentIdPair);
+        m_boxEdit.Setup(entityComponentIdPair, allowAsymmetricalEditing);
     }
 
     BoxComponentMode::~BoxComponentMode()

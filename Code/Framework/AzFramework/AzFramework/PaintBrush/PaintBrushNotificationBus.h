@@ -103,7 +103,7 @@ namespace AzFramework
         //! This will get called in each frame that the paintbrush continues its brush stroke and the brush has moved.
         //! @param brushCenterPoint the point to get the color from.
         //! @return The color stored in the data source at that point.
-        virtual AZ::Color OnGetColor([[maybe_unused]] const AZ::Vector3& brushCenterPoint)
+        virtual AZ::Color OnGetColor([[maybe_unused]] const AZ::Vector3& brushCenterPoint) const
         {
             return AZ::Color(0.0f, 0.0f, 0.0f, 1.0f);
         }

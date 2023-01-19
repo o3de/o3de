@@ -16,12 +16,10 @@ namespace AZ::Dom::Tests
     void DomTestHarness::SetUpHarness()
     {
         NameDictionary::Create();
-        AZ::AllocatorInstance<ValueAllocator>::Create();
     }
 
     void DomTestHarness::TearDownHarness()
     {
-        AZ::AllocatorInstance<ValueAllocator>::Destroy();
         NameDictionary::Destroy();
     }
 

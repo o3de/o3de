@@ -23,6 +23,7 @@ namespace AZ
         {
             friend class Transform2DFunctorSourceData;
         public:
+            AZ_CLASS_ALLOCATOR(Transform2DFunctor, SystemAllocator)
             AZ_RTTI(Transform2DFunctor, "{3E9C4357-6B2D-4A22-89DB-462441C9D8CD}", RPI::MaterialFunctor);
 
             static void Reflect(ReflectContext* context);

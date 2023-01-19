@@ -192,6 +192,7 @@ namespace Multiplayer
         VersionMismatchEvent m_versionMismatchEvent;
 
         AZ::Event<NetEntityId>::Handler m_autonomousEntityReplicatorCreatedHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
 
         AZStd::queue<AZStd::string> m_pendingConnectionTickets;
         AZStd::unordered_map<uint64_t, NetEntityId> m_playerRejoinData;

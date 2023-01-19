@@ -27,16 +27,20 @@ namespace AzToolsFramework
             const AZStd::vector<AZStd::string>& entityAliasPathList,
             const AZStd::vector<AZStd::string>& instanceAliasPathList,
             const AZStd::vector<const AZ::Entity*> parentEntityList,
-            const Instance& owningInstance,
-            Instance& focusedInstance)
+            Instance& owningInstance,
+            const Instance& focusedInstance)
         {
+            AZ_Assert(
+                &owningInstance != &focusedInstance,
+                "PrefabUndoDeleteAsOverride::Capture - Owning instance should not be the focused instance for override edit node.");
+
             m_templateId = focusedInstance.GetTemplateId();
             m_redoPatch.SetArray();
             m_undoPatch.SetArray();
 
             PrefabDom& focusedTempalteDom = m_prefabSystemComponentInterface->FindTemplateDom(m_templateId);
 
-            PrefabDomReference cachedOwningInstanceDom = focusedInstance.GetCachedInstanceDom();
+            PrefabDomReference cachedOwningInstanceDom = owningInstance.GetCachedInstanceDom();
 
             // Generates override patch path to owning instance.
             InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(owningInstance, &focusedInstance);
@@ -112,7 +116,7 @@ namespace AzToolsFramework
                     }
 
                     PrefabDom parentEntityDomAfterRemovingChildren;
-                    m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterRemovingChildren, *parentEntity);
+                    m_instanceToTemplateInterface->GenerateEntityDomBySerializing(parentEntityDomAfterRemovingChildren, *parentEntity);
 
                     PrefabUndoUtils::AppendUpdateEntityPatch(
                         m_redoPatch,

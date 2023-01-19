@@ -265,13 +265,15 @@ namespace AssetProcessor
 
         void SourceDeleted(SourceAssetReference sourceAsset);
         void SourceFolderDeleted(QString folderPath);
-        void SourceQueued(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid, SourceAssetReference sourceAssetReference);
-        void SourceFinished(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid);
+        void SourceQueued(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids, SourceAssetReference sourceAssetReference);
+        void SourceFinished(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids);
         void JobRemoved(AzToolsFramework::AssetSystem::JobInfo jobInfo);
 
         void JobComplete(JobEntry jobEntry, AzToolsFramework::AssetSystem::JobStatus status);
         void JobProcessDurationChanged(JobEntry jobEntry, int durationMs);
         void CreateJobsDurationChanged(QString sourceName);
+
+        void IntermediateAssetCreated(QString newFileAbsolutePath);
 
         //! Send a message when a new path dependency is resolved, so that downstream tools know the AssetId of the resolved dependency.
         void PathDependencyResolved(const AZ::Data::AssetId& assetId, const AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry);
@@ -290,7 +292,9 @@ namespace AssetProcessor
         void AssetCancelled(JobEntry jobEntry);
 
         void AssessFilesFromScanner(QSet<AssetFileInfo> filePaths);
+        void RecordFilesFromScanner(QSet<AssetFileInfo> filePaths);
         void RecordFoldersFromScanner(QSet<AssetFileInfo> folderPaths);
+        void RecordExcludesFromScanner(QSet<AssetFileInfo> excludePaths);
 
         virtual void AssessModifiedFile(QString filePath);
         virtual void AssessAddedFile(QString filePath);
@@ -328,6 +332,7 @@ namespace AssetProcessor
         void RemoveEmptyFolders();
 
         void OnBuildersRegistered();
+        void OnCatalogReady();
 
     private:
         template <class R>
@@ -408,6 +413,8 @@ namespace AssetProcessor
         void WarmUpFileCache(QSet<AssetFileInfo> filePaths);
         // Checks whether or not a file can be skipped for processing (ie, file content hasn't changed, builders haven't been added/removed, builders for the file haven't changed)
         bool CanSkipProcessingFile(const AssetFileInfo &fileInfo, AZ::u64& fileHash);
+
+        void CheckReadyToAssessScanFiles();
 
         AZ::s64 GenerateNewJobRunKey();
         // Attempt to erase a log file.  Failing to erase it is not a critical problem, but should be logged.
@@ -506,6 +513,8 @@ namespace AssetProcessor
         bool m_quitRequested = false;
         bool m_processedQueued = false;
         bool m_AssetProcessorIsBusy = true;
+        bool m_catalogReady = false;
+        bool m_buildersReady = false;
 
         bool m_alreadyScheduledUpdate = false;
         QMutex m_processingJobMutex;
@@ -530,6 +539,9 @@ namespace AssetProcessor
 
         int m_numOfJobsToAnalyze = 0;
         bool m_alreadyQueuedCheckForIdle = false;
+
+        // Files from the scanner, waiting for initial analysis
+        QSet<AssetFileInfo> m_scannerFiles;
 
         //////////////////// Analysis Early-Out feature ///////////////////
         // ComputeBuilderDirty builds the maps of which builders are dirty and how they have changed.

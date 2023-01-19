@@ -14,6 +14,8 @@ namespace GradientSignal
 {
     void EditorImageGradientComponent::Reflect(AZ::ReflectContext* context)
     {
+        EditorImageGradientComponentMode::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorImageGradientComponent, AzToolsFramework::Components::EditorComponentBase>()
@@ -387,7 +389,7 @@ namespace GradientSignal
             color, dirtyArea, valueLookupFn, valuePointOffsets, smoothFn);
     }
 
-    AZ::Color EditorImageGradientComponent::OnGetColor(const AZ::Vector3& brushCenter)
+    AZ::Color EditorImageGradientComponent::OnGetColor(const AZ::Vector3& brushCenter) const
     {
         AZ::Color result;
 

@@ -566,7 +566,7 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Warning(s_builderName, false,
+                    AZ_Printf(s_builderName,
                         "Found multiple tangent data sets for mesh '%s'. Only the first will be used.",
                         content.m_name.GetCStr());
                 }
@@ -580,7 +580,7 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Warning(s_builderName, false,
+                    AZ_Printf(s_builderName,
                         "Found multiple bitangent data sets for mesh '%s'. Only the first will be used.",
                         content.m_name.GetCStr());
                 }
