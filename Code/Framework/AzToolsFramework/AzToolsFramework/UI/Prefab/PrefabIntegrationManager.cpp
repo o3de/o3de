@@ -616,15 +616,29 @@ namespace AzToolsFramework
 
                 if (!selectionContainsDescendantOfReadOnlyEntity)
                 {
-                    QAction* duplicateAction = menu->addAction(QObject::tr("Duplicate"));
-                    duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
-                    QObject::connect(
-                        duplicateAction, &QAction::triggered, duplicateAction,
-                        [this]
+                    if (s_prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntities))
+                    {
+                        AZ::EntityId entityToCheck = selectedEntities[0];
+
+                        // If it is a container entity, then check its parent entity's owning instance instead.
+                        if (s_prefabPublicInterface->IsInstanceContainerEntity(entityToCheck))
                         {
-                            ContextMenu_Duplicate();
+                            AZ::TransformBus::EventResult(entityToCheck, entityToCheck, &AZ::TransformBus::Events::GetParentId);
                         }
-                    );
+
+                        // Do not show the option when it is not a prefab edit.
+                        if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityToCheck))
+                        {
+                            QAction* duplicateAction = menu->addAction(QObject::tr("Duplicate"));
+                            duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+                            QObject::connect(
+                                duplicateAction, &QAction::triggered, duplicateAction,
+                                [this]
+                                {
+                                    ContextMenu_Duplicate();
+                                });
+                        }
+                    }
                 }
             }
 
