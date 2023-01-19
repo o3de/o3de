@@ -181,12 +181,6 @@ class TestAbstractResourceLocator(object):
 
         assert abstract_resource_locator.AbstractResourceLocator.devices_file() == expected_path
 
-    def test_PlatformConfigFile_NotImplemented_RaisesNotImplementedError(self):
-        mock_abstract_resource_locator = abstract_resource_locator.AbstractResourceLocator(
-            mock_build_directory, mock_project)
-        with pytest.raises(NotImplementedError):
-            mock_abstract_resource_locator.platform_config_file()
-
     def test_PlatformCache_NotImplemented_RaisesNotImplementedError(self):
         mock_abstract_resource_locator = abstract_resource_locator.AbstractResourceLocator(
             mock_build_directory, mock_project)

@@ -38,6 +38,8 @@ namespace AZ
 
             static constexpr const char Extension[] = "materialtype";
 
+            static constexpr AZ::u32 IntermediateMaterialTypeSubId = 0;
+
             static void Reflect(ReflectContext* context);
 
             //! The .materialtype file has two slightly different formats, in most cases users will want to author content in the abstract format, which is 

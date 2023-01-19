@@ -86,7 +86,7 @@
                 "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/ClearCoatPropertyGroup.json"
             },
             { 
-                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/ParallaxPropertyGroup.json"
+                "$import": "MaterialPipelineTest_ParallaxPropertyGroup.json"
             },
             { 
                 "$import": "MaterialPipelineTest_OpacityPropertyGroup.json"

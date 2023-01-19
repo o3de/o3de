@@ -346,7 +346,8 @@ namespace AzToolsFramework
             HandleEntitiesAdded({ m_rootInstance->m_containerEntity.get() });
 
             AzToolsFramework::Prefab::PrefabDom dom;
-            bool success = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*m_rootInstance, dom);
+            bool success = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*m_rootInstance, dom,
+                AzToolsFramework::Prefab::PrefabDomUtils::StoreFlags::StripLinkIds);
             if (!success)
             {
                 AZ_Error(

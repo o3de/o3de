@@ -41,6 +41,14 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <Controls/ui_ConsoleSCB.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
+namespace ConsoleConstants
+{
+    static constexpr const char* ButtonIcon = ":/controls/img/cvar_dark.bmp";
+    static constexpr const char* SearchIcon = ":/stylesheet/img/search.png";
+    static constexpr const char* ClearIcon = ":/stylesheet/img/lineedit-clear.png";
+    static constexpr const char* MenuIcon = ":/Menu/menu.svg";
+} // namespace ConsoleConstants
+
 class CConsoleSCB::SearchHighlighter : public QSyntaxHighlighter
 {
 public:
@@ -315,6 +323,8 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
     ui->lineEditFind->setClearButtonEnabled(true);
     AzQtComponents::LineEdit::applySearchStyle(ui->lineEditFind);
 
+    SetupOptionsMenu();
+
     // Setup the color table for the default (light) theme
     m_colorTable << QColor(0, 0, 0)
         << QColor(0, 0, 0)
@@ -384,6 +394,30 @@ CConsoleSCB::~CConsoleSCB()
     CLogFile::AttachEditBox(nullptr);
 }
 
+void CConsoleSCB::SetupOptionsMenu()
+{
+    m_optionsMenu = new QMenu(QStringLiteral("Console Options Menu"), this);
+    connect(m_optionsMenu, &QMenu::aboutToShow, this, &CConsoleSCB::UpdateOptionsMenu);
+    ui->optionsButton->setMenu(m_optionsMenu);
+    ui->optionsButton->setAutoRaise(true);
+    ui->optionsButton->setPopupMode(QToolButton::InstantPopup);
+
+    m_clearOnPlayAction = new QAction(tr("Clear On Play"), this);
+    m_clearOnPlayAction->setCheckable(true);
+    connect(m_clearOnPlayAction, &QAction::triggered, this, &CConsoleSCB::toggleClearOnPlay);
+    m_optionsMenu->addAction(m_clearOnPlayAction);
+}
+
+void CConsoleSCB::UpdateOptionsMenu()
+{
+    m_clearOnPlayAction->setChecked(gSettings.clearConsoleOnGameModeStart);
+}
+
+void CConsoleSCB::toggleClearOnPlay()
+{
+    gSettings.clearConsoleOnGameModeStart = !gSettings.clearConsoleOnGameModeStart;
+}
+
 void CConsoleSCB::RegisterViewClass()
 {
     AzToolsFramework::ViewPaneOptions opts;
@@ -408,10 +442,10 @@ void CConsoleSCB::OnEditorPreferencesChanged()
 
 void CConsoleSCB::RefreshStyle()
 {
-    ui->button->setIcon(QIcon(QString(":/controls/img/cvar_dark.bmp")));
-    ui->findButton->setIcon(QIcon(QString(":/stylesheet/img/search.png")));
-    ui->closeButton->setIcon(QIcon(QString(":/stylesheet/img/lineedit-clear.png")));
-
+    ui->button->setIcon(QIcon(ConsoleConstants::ButtonIcon));
+    ui->findButton->setIcon(QIcon(ConsoleConstants::SearchIcon));
+    ui->closeButton->setIcon(QIcon(ConsoleConstants::ClearIcon));
+    ui->optionsButton->setIcon(QIcon(ConsoleConstants::MenuIcon));
     // Set the debug/warning text colors appropriately for the background theme
     // (e.g. not have black text on black background)
     QColor textColor = Qt::black;

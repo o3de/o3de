@@ -53,6 +53,7 @@ ly_add_target(
 # the above module is for use in all client/server types
 ly_create_alias(NAME DiffuseProbeGrid.Servers  NAMESPACE Gem TARGETS Gem::DiffuseProbeGrid)
 ly_create_alias(NAME DiffuseProbeGrid.Clients  NAMESPACE Gem TARGETS Gem::DiffuseProbeGrid)
+ly_create_alias(NAME DiffuseProbeGrid.Unified  NAMESPACE Gem TARGETS Gem::DiffuseProbeGrid)
 
 # If we are on a host platform add DiffuseProbeGrid.Editor which will also depend on DiffuseProbeGrid.Static
 if(PAL_TRAIT_BUILD_HOST_TOOLS)

@@ -39,7 +39,6 @@ then
     exit 1
 fi
 
-
 # Install git
 ./install-ubuntu-git.sh
 if [ $? -ne 0 ]
@@ -48,11 +47,19 @@ then
     exit 1
 fi
 
-# Install the necessary build tools
+# Install the necessary build tools repos
 ./install-ubuntu-build-tools.sh
 if [ $? -ne 0 ]
 then
-    echo Error installing ubuntu tools
+    echo Error installing ubuntu tool repos
+    exit 1
+fi
+
+# Install the packages in the platform list
+./install-ubuntu-packages.sh
+if [ $? -ne 0 ]
+then
+    echo Error installing ubuntu packages
     exit 1
 fi
 

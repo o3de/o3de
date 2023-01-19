@@ -1,0 +1,95 @@
+{
+    "description": "Material Type with properties used to define Base PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
+    "version": 1,
+    "propertyLayout": {
+    },
+    "shaders": [
+        {
+            "file": "./MaterialGraphName_ForwardPass.shader",
+            "tag": "ForwardPass"
+        },
+        {
+            "file": "./MaterialGraphName_ForwardPass_EDS.shader",
+            "tag": "ForwardPass_EDS"
+        },
+        {
+            "file": "./MaterialGraphName_LowEndForward.shader",
+            "tag": "LowEndForward"
+        },
+        {
+            "file": "./MaterialGraphName_LowEndForward_EDS.shader",
+            "tag": "LowEndForward_EDS"
+        },
+        {
+            "file": "./MaterialGraphName_MultiViewForward.shader",
+            "tag": "MultiViewForward"
+        },
+        {
+            "file": "./MaterialGraphName_MultiViewForward_EDS.shader",
+            "tag": "MultiViewForward_EDS"
+        },
+        {
+            "file": "./MaterialGraphName_MultiViewTransparentForward_EDS.shader",
+            "tag": "MultiViewTransparentForward"
+        },
+        {
+            "file": "./MaterialGraphName_Shadowmap.shader",
+            "tag": "Shadowmap"
+        },
+        {
+            "file": "./MaterialGraphName_Shadowmap_WithPS.shader",
+            "tag": "Shadowmap_WithPS"
+        },
+        {
+            "file": "./MaterialGraphName_DepthPass.shader",
+            "tag": "DepthPass"
+        },
+        {
+            "file": "./MaterialGraphName_DepthPass_WithPS.shader",
+            "tag": "DepthPass_WithPS"
+        },
+        {
+            "file": "./MaterialGraphName_MeshMotionVector.shader",
+            "tag": "MeshMotionVector"
+        },
+        // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
+        {
+            "file": "./MaterialGraphName_DepthPassTransparentMin.shader",
+            "tag": "DepthPassTransparentMin"
+        },
+        {
+            "file": "./MaterialGraphName_DepthPassTransparentMax.shader",
+            "tag": "DepthPassTransparentMax"
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/HandleShaderEnable.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/HandleOpacityMode.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/HandleOpacityDoubleSided.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/HandleCastShadows.lua"
+            }
+        }
+    ],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    }
+}

@@ -15,7 +15,8 @@ namespace PhysX
 
     void ColliderBoxMode::Setup(const AZ::EntityComponentIdPair& idPair)
     {
-        m_boxEdit.Setup(idPair);
+        const bool allowAsymmetricalEditing = true;
+        m_boxEdit.Setup(idPair, allowAsymmetricalEditing);
     }
 
     void ColliderBoxMode::Refresh([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)

@@ -831,8 +831,6 @@ namespace UnitTest
             using AzToolsFramework::InstanceDataHierarchy;
             using AzToolsFramework::InstanceDataNode;
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-
             m_serializeContext.reset(aznew AZ::SerializeContext());
             m_serializeContext.get()->CreateEditContext();
             Entity::Reflect(m_serializeContext.get());
@@ -870,7 +868,6 @@ namespace UnitTest
             m_serializeContext.reset();
             testEntity1.reset();
             delete instanceDataHierarchy;
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
             LeakDetectionFixture::TearDown();
         }
     };
@@ -1154,8 +1151,6 @@ namespace UnitTest
         {
             using namespace AzToolsFramework;
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-
             AZ::SerializeContext serializeContext;
             Container::Reflect(serializeContext);
 
@@ -1231,8 +1226,6 @@ namespace UnitTest
             testComparison(c1, c3, {"D", "[0]", "[1]"}, {"B", "C"}, {"A"});
             testComparison(c3, c1, {"B", "C", "[0]", "[1]"}, {"D"}, {"A"});
             testComparison(c1, c2, {}, {}, {"A", "B", "C"});
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
     };
 

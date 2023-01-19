@@ -60,8 +60,14 @@ namespace GradientSignal
             // Update config from shape on game component, copy that back to our config.
             bool notifyDependentsOfChange = true;
             m_component.UpdateFromShape(notifyDependentsOfChange);
+
+            auto oldConfig = m_configuration;
             m_component.WriteOutConfig(&m_configuration);
-            SetDirty();
+
+            if (oldConfig != m_configuration)
+            {
+                SetDirty();
+            }
         }
     }
 } //namespace GradientSignal

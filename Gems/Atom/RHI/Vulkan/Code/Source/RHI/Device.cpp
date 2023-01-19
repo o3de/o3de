@@ -98,6 +98,10 @@ namespace AZ
             m_enabledDeviceFeatures.sampleRateShading = deviceFeatures.sampleRateShading;
             m_enabledDeviceFeatures.shaderImageGatherExtended = deviceFeatures.shaderImageGatherExtended;
             m_enabledDeviceFeatures.shaderInt64 = deviceFeatures.shaderInt64;
+            m_enabledDeviceFeatures.sparseBinding = deviceFeatures.sparseBinding;
+            m_enabledDeviceFeatures.sparseResidencyImage2D = deviceFeatures.sparseResidencyImage2D;
+            m_enabledDeviceFeatures.sparseResidencyImage3D = deviceFeatures.sparseResidencyImage3D;
+            m_enabledDeviceFeatures.sparseResidencyAliased = deviceFeatures.sparseResidencyAliased;
 
             if (deviceFeatures.geometryShader)
             {
@@ -454,7 +458,8 @@ namespace AZ
                 // Need to create an image to get the requirements.
                 // This will not allocate or bind memory.
                 Image image;
-                [[maybe_unused]] RHI::ResultCode result = image.Init(*this, descriptor);
+                const bool tryUseSparse = false;
+                [[maybe_unused]] RHI::ResultCode result = image.Init(*this, descriptor, tryUseSparse);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to get memory requirements");
                 auto it2 = cache.insert(hash, image.m_memoryRequirements);
                 return it2.first->second;
@@ -980,6 +985,17 @@ namespace AZ
             m_features.m_indirectDrawStartInstanceLocationSupported = m_enabledDeviceFeatures.drawIndirectFirstInstance == VK_TRUE;
             m_features.m_renderTargetSubpassInputSupport = RHI::SubpassInputSupportType::Native;
             m_features.m_depthStencilSubpassInputSupport = RHI::SubpassInputSupportType::Native;
+
+            const VkPhysicalDeviceProperties& deviceProperties = physicalDevice.GetPhysicalDeviceProperties();
+            // Our sparse image implementation requires the device support sparse binding and particle residency for 2d and 3d images
+            // And it should use standard block shape (64k).
+            // It also requires memory alias support so resources can use the same block repeatedly (this may reduce performance based on implementation)
+            m_features.m_tiledResource = m_enabledDeviceFeatures.sparseBinding
+                && m_enabledDeviceFeatures.sparseResidencyImage2D
+                && m_enabledDeviceFeatures.sparseResidencyImage3D
+                && m_enabledDeviceFeatures.sparseResidencyAliased
+                && deviceProperties.sparseProperties.residencyStandard2DBlockShape
+                && deviceProperties.sparseProperties.residencyStandard3DBlockShape;
 
             // check for the VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME in the list of physical device extensions
             // to determine if ray tracing is supported on this device

@@ -32,7 +32,8 @@ function Process(context)
     if context:HasMaterialProperty("mode") then
         opacityMode = context:GetMaterialPropertyValue_enum("mode")
     end
-
+    
+    context:SetInternalMaterialPropertyValue_bool("hasPerPixelClip", opacityMode == OpacityMode_Cutout)
     context:SetInternalMaterialPropertyValue_bool("isTransparent", opacityMode == OpacityMode_Blended)
     context:SetInternalMaterialPropertyValue_bool("isTintedTransparent", opacityMode == OpacityMode_TintedTransparent)
 end

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
 {
@@ -33,8 +34,6 @@ namespace AZ
 
         bool Create();
 
-        void Destroy() override;
-
         //////////////////////////////////////////////////////////////////////////
         // IAllocator
         AllocatorDebugConfig GetDebugConfig() override;
@@ -56,7 +55,7 @@ namespace AZ
         SystemAllocator(const SystemAllocator&);
         SystemAllocator& operator=(const SystemAllocator&);
 
-        IAllocator* m_subAllocator;
+        AZStd::unique_ptr<IAllocator> m_subAllocator;
     };
 }
 

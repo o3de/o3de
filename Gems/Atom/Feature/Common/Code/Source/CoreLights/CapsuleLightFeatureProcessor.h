@@ -25,6 +25,7 @@ namespace AZ
             : public CapsuleLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(CapsuleLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::CapsuleLightFeatureProcessor, "{0FC290C5-DD28-4194-8C0B-B90C3291BAF6}", AZ::Render::CapsuleLightFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);

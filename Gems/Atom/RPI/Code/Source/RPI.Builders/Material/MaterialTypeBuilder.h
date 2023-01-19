@@ -74,8 +74,8 @@ namespace AZ
 
                 enum class MaterialTypeProductSubId : u32
                 {
-                    MaterialTypeAsset = 0,
-                    AllPropertiesMaterialSourceFile = 1
+                    MaterialTypeAsset = MaterialTypeAsset::SubId,
+                    AllPropertiesMaterialSourceFile
                 };
 
             } m_finalStage;

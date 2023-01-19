@@ -344,17 +344,19 @@ namespace AZ
 
     AZ_MATH_INLINE float Quaternion::NormalizeWithLength()
     {
-        const Simd::Vec1::FloatType length = Simd::Vec1::Sqrt(Simd::Vec4::Dot(m_value, m_value));
-        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::FromVec1(length));
-        return Simd::Vec1::SelectFirst(length);
+        const float length = Simd::Vec1::SelectFirst(
+            Simd::Vec1::Sqrt(Simd::Vec4::Dot(m_value, m_value)));
+        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::Splat(length));
+        return length;
     }
 
 
     AZ_MATH_INLINE float Quaternion::NormalizeWithLengthEstimate()
     {
-        const Simd::Vec1::FloatType length = Simd::Vec1::SqrtEstimate(Simd::Vec4::Dot(m_value, m_value));
-        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::FromVec1(length));
-        return Simd::Vec1::SelectFirst(length);
+        const float length = Simd::Vec1::SelectFirst(
+            Simd::Vec1::SqrtEstimate(Simd::Vec4::Dot(m_value, m_value)));
+        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::Splat(length));
+        return length;
     }
 
 

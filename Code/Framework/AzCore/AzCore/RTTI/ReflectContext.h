@@ -238,7 +238,7 @@ namespace AZ
         template<class U>
         explicit AttributeData(U&& data)
             : m_data(AZStd::forward<U>(data)) {}
-        virtual const T& Get(void* instance) const { (void)instance; return m_data; }
+        virtual const T& Get(const void* instance) const { (void)instance; return m_data; }
         T& operator = (T& data) { m_data = data; return m_data; }
         T& operator = (const T& data) { m_data = data; return m_data; }
 
@@ -276,7 +276,7 @@ namespace AZ
         explicit AttributeMemberData(DataPtr p)
             : AttributeData<T>(T())
             , m_dataPtr(p) {}
-        const T& Get(void* instance) const override { return (reinterpret_cast<C*>(instance)->*m_dataPtr); }
+        const T& Get(const void* instance) const override { return (reinterpret_cast<const C*>(instance)->*m_dataPtr); }
         DataPtr GetMemberDataPtr() const { return m_dataPtr; }
 
         AZ::Dom::Value GetAsDomValue(void* instance) override

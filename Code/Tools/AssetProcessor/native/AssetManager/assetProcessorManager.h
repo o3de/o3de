@@ -190,6 +190,9 @@ namespace AssetProcessor
         //! and neither have any builders.
         void SetEnableModtimeSkippingFeature(bool enable);
 
+        //! Controls whether or not startup analysis is enabled or not.
+        void SetInitialScanSkippingFeature(bool enable);
+
         //! Query logging will log every asset database query.
         void SetQueryLogging(bool enableLogging);
 
@@ -270,6 +273,8 @@ namespace AssetProcessor
         void JobProcessDurationChanged(JobEntry jobEntry, int durationMs);
         void CreateJobsDurationChanged(QString sourceName);
 
+        void IntermediateAssetCreated(QString newFileAbsolutePath);
+
         //! Send a message when a new path dependency is resolved, so that downstream tools know the AssetId of the resolved dependency.
         void PathDependencyResolved(const AZ::Data::AssetId& assetId, const AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry);
 
@@ -288,6 +293,7 @@ namespace AssetProcessor
 
         void AssessFilesFromScanner(QSet<AssetFileInfo> filePaths);
         void RecordFoldersFromScanner(QSet<AssetFileInfo> folderPaths);
+        void RecordExcludesFromScanner(QSet<AssetFileInfo> excludePaths);
 
         virtual void AssessModifiedFile(QString filePath);
         virtual void AssessAddedFile(QString filePath);
@@ -608,6 +614,10 @@ namespace AssetProcessor
         // when true, only processes files if their modtime or builder(s) have changed
         // defaults to true (in the settings) for GUI mode, false for batch mode
         bool m_allowModtimeSkippingFeature = false;
+
+        // when true, startup scan is disabled which means modified files when asset processor
+        // was not running won't be processed. this may be useful when working on pure code changes.
+        bool m_initialScanSkippingFeature = false;
 
         // when true, a flag will be sent to builders process job indicating debug output/mode should be used
         bool m_builderDebugFlag = false;

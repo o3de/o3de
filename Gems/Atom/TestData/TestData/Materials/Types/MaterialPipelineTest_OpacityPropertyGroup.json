@@ -1,7 +1,7 @@
 {
-    // TODO(MaterialPipeline): This MaterialPipelineTest_OpacityPropertyGroup.json file is here temporarily because it needs to skip the
+    // TODO(MaterialPipeline): This MaterialPipelineTest_OpacityPropertyGroup.json file is here temporarily because it needs to replace the
     // lua functor that appears in the original OpacityPropertyGroup.json. Once we migrate the core material types to the material pipeline
-    // system, remove the functor from OpacityPropertyGroup.json and delete this file.
+    // system, replace the functor in OpacityPropertyGroup.json and delete this file.
     "name": "opacity",
     "displayName": "Opacity",
     "description": "Properties for configuring the materials transparency.",

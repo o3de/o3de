@@ -1,5 +1,7 @@
 {
     "shaderTemplates": [
+        // Unlike Standard and Enhanced, BaseLighting doesn't have "_CustomZ" just because BasePBR.materialtype doesn't use alpha cutout or POM PDO, so we don't need it right now.
+        // But that could be added if some other material type wants to use BaseLighting with one of these features, as they don't really relate to the lighting model.
         {
             "shader": "./ForwardPass_BaseLighting.shader.template",
             "azsli": "./ForwardPass_BaseLighting.azsli",
@@ -9,6 +11,11 @@
             "shader": "./ForwardPass_StandardLighting.shader.template",
             "azsli": "./ForwardPass_StandardLighting.azsli",
             "tag": "forward"
+        },
+        {
+            "shader": "./ForwardPass_StandardLighting_CustomZ.shader.template",
+            "azsli": "./ForwardPass_StandardLighting_CustomZ.azsli",
+            "tag": "forward_customZ"
         },
         {
             "shader": "./Transparent_StandardLighting.shader.template",
@@ -30,9 +37,19 @@
             "tag": "depth"
         },
         {
+            "shader": "../Common/DepthPass_CustomZ.shader.template",
+            "azsli": "../Common/DepthPass_CustomZ.azsli",
+            "tag": "depth_customZ"
+        },
+        {
             "shader": "../Common/ShadowmapPass.shader.template",
             "azsli": "../Common/DepthPass.azsli",
             "tag": "shadow"
+        },
+        {
+            "shader": "../Common/ShadowmapPass_CustomZ.shader.template",
+            "azsli": "../Common/DepthPass_CustomZ.azsli",
+            "tag": "shadow_customZ"
         }
     ],
     "runtime": {
@@ -54,6 +71,16 @@
             },
             {
                 "name": "doubleSided",
+                "type": "Bool",
+                "defaultValue": false
+            },
+            {
+                "name": "hasPerPixelDepth",
+                "type": "Bool",
+                "defaultValue": false
+            },
+            {
+                "name": "hasPerPixelClip",
                 "type": "Bool",
                 "defaultValue": false
             }

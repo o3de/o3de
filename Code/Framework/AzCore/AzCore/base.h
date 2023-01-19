@@ -138,6 +138,18 @@ namespace AZ::Internal
 #   define azlocaltime                                      localtime_r
 #endif
 
+// When using -ffast-math flag INFs and NaNs are not handled and
+// it is expected that isfinite() have undefined behaviour.
+// In this case we will provide a replacement following IEEE 754 standard.
+#ifdef __FAST_MATH__
+    #undef azisfinite
+    constexpr bool azisfinite(float f) noexcept
+    {
+        union { float f; uint32_t x; } u = { f };
+        return (u.x & 0x7F800000U) != 0x7F800000U;
+    }
+#endif
+
 #if AZ_TRAIT_USE_POSIX_STRERROR_R
 #   define azstrerror_s(_dst, _num, _err)                   strerror_r(_err, _dst, _num)
 #else

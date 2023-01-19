@@ -21,6 +21,28 @@
                     "m_propertySlots": [
                         {
                             "Key": {
+                                "m_name": "inApplySpecularAA"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inCastShadows"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
                                 "m_name": "inDescription"
                             },
                             "Value": {
@@ -29,20 +51,97 @@
                                     "Value": ""
                                 }
                             }
-                        }
-                    ],
-                    "m_inputDataSlots": [
+                        },
                         {
                             "Key": {
-                                "m_name": "inAlpha"
+                                "m_name": "inDoubleSided"
                             },
                             "Value": {
                                 "m_value": {
-                                    "$type": "float",
-                                    "Value": 1.0
+                                    "$type": "bool",
+                                    "Value": false
                                 }
                             }
                         },
+                        {
+                            "Key": {
+                                "m_name": "inEnableAreaLights"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableDirectionalLights"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableIBL"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableNormal"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": false
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnablePunctualLights"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableShadows"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inUseForwardPassIBLSpecular"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        }
+                    ],
+                    "m_inputDataSlots": [
                         {
                             "Key": {
                                 "m_name": "inBaseColor"
@@ -60,7 +159,18 @@
                         },
                         {
                             "Key": {
-                                "m_name": "inEmissive"
+                                "m_name": "inMetallic"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 0.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inNormal"
                             },
                             "Value": {
                                 "m_value": {
@@ -70,17 +180,6 @@
                                         0.0,
                                         0.0
                                     ]
-                                }
-                            }
-                        },
-                        {
-                            "Key": {
-                                "m_name": "inMetallic"
-                            },
-                            "Value": {
-                                "m_value": {
-                                    "$type": "float",
-                                    "Value": 0.0
                                 }
                             }
                         },
