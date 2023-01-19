@@ -343,12 +343,10 @@ namespace GraphModel
         SlotSubId m_subId = 0;
 
         // Storing the parent node so that it only needs to be looked up once unless the graph state and cached data is clear
-        mutable AZStd::mutex m_parentNodeMutex;
         mutable bool m_parentNodeDirty = true;
         mutable NodePtr m_parentNode;
 
         // Storing a list of connections for this slot, copied From the owner graph object.
-        mutable AZStd::mutex m_connectionsMutex;
         mutable bool m_connectionsDirty = true;
         mutable ConnectionList m_connections;
     };

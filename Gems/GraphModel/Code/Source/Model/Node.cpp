@@ -352,7 +352,7 @@ namespace GraphModel
     {
         return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
             const auto& slot = slotPair.second;
-            return !slot->GetConnections().empty();
+            return slot->GetConnections().empty();
         });
     }
 
