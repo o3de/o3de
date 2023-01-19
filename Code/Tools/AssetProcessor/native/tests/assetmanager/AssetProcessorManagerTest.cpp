@@ -8,6 +8,8 @@
 
 #include "AssetProcessorManagerTest.h"
 #include "native/AssetManager/PathDependencyManager.h"
+#include "native/AssetManager/assetScannerWorker.h"
+
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/Asset/AssetProcessorMessages.h>
 #include <AzToolsFramework/ToolsFileUtils/ToolsFileUtils.h>
@@ -82,9 +84,6 @@ void AssetProcessorManagerTest::SetUp()
     AssetProcessorTest::SetUp();
 
     qRegisterMetaType<AssetProcessor::SourceAssetReference>("SourceAssetReference");
-
-    AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-    AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
     m_data = AZStd::make_unique<StaticData>();
 
@@ -183,9 +182,6 @@ void AssetProcessorManagerTest::TearDown()
     m_config.reset();
     m_qApp.reset();
     m_scopeDir.reset();
-
-    AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-    AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
     AssetProcessor::AssetProcessorTest::TearDown();
 }
@@ -4880,7 +4876,53 @@ TEST_F(WildcardSourceDependencyTest, FilesRemovedAfterInitialCache)
     ASSERT_TRUE(excludedFolderCacheInterface);
 
     {
+        m_errorAbsorber->Clear();
         const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+        m_errorAbsorber->ExpectWarnings(1); // because we didn't precache, we'd expect a warning here, about performance.
+
+        ASSERT_EQ(excludedFolders.size(), 3);
+    }
+
+    m_fileStateCache->SignalDeleteEvent(m_assetRootDir.absoluteFilePath("subfolder2/folder/two/ignored"));
+
+    const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+    ASSERT_EQ(excludedFolders.size(), 2);
+}
+
+// same as above test but actually runs a file scanner over the root dir and ensures it still functions
+TEST_F(WildcardSourceDependencyTest, FilesRemovedAfterInitialCache_WithPrecache)
+{
+    // Add a file to a new ignored folder
+    QString newFilePath = m_assetRootDir.absoluteFilePath("subfolder2/folder/two/ignored/three/new.foo");
+    UnitTestUtils::CreateDummyFile(newFilePath);
+
+    {
+        // warm up the cache.
+        AssetScannerWorker worker(m_config.get());
+        bool foundExcludes = false;
+        QObject::connect(
+            &worker,
+            &AssetScannerWorker::ExcludedFound,
+            m_assetProcessorManager.get(),
+            [&](QSet<AssetFileInfo> excluded)
+            {
+                foundExcludes = true;
+                m_assetProcessorManager->RecordExcludesFromScanner(excluded);
+            });
+
+        worker.StartScan();
+        QCoreApplication::processEvents();
+        ASSERT_TRUE(foundExcludes);
+    }
+
+    auto excludedFolderCacheInterface = AZ::Interface<ExcludedFolderCacheInterface>::Get();
+    ASSERT_TRUE(excludedFolderCacheInterface);
+
+    {
+        m_errorAbsorber->Clear();
+        const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+        m_errorAbsorber->ExpectWarnings(0);  // we precached, so there should not be a warning.
 
         ASSERT_EQ(excludedFolders.size(), 3);
     }

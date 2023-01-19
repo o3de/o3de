@@ -15,6 +15,7 @@
 #include <AzCore/std/functional.h>
 
 #include <AzCore/Debug/Profiler.h>
+#include <memory>
 
 #define AZCORE_SYSTEM_ALLOCATOR_HPHA 1
 #define AZCORE_SYSTEM_ALLOCATOR_MALLOC 2
@@ -23,10 +24,6 @@
 
 namespace AZ
 {
-    //////////////////////////////////////////////////////////////////////////
-    // Globals - we use global storage for the first memory schema, since we can't use dynamic memory!
-    static AZStd::aligned_storage<sizeof(HphaSchema), AZStd::alignment_of<HphaSchema>::value>::type g_systemSchema;
-
     //////////////////////////////////////////////////////////////////////////
 
     SystemAllocator::SystemAllocator()
@@ -54,17 +51,8 @@ namespace AZ
     //=========================================================================
     bool SystemAllocator::Create()
     {
-        m_subAllocator = new (&g_systemSchema) HphaSchema();
+        m_subAllocator = AZStd::make_unique<HphaSchema>();
         return true;
-    }
-
-    //=========================================================================
-    // Allocate
-    // [9/2/2009]
-    //=========================================================================
-    void SystemAllocator::Destroy()
-    {
-        static_cast<HphaSchema*>(m_subAllocator)->~HphaSchema();
     }
 
     AllocatorDebugConfig SystemAllocator::GetDebugConfig()

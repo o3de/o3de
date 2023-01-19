@@ -43,6 +43,7 @@ namespace AZ
         public:
             virtual ~SwapChainDescriptor() = default;
             AZ_RTTI(SwapChainDescriptor, "{214C7DD0-C380-45B6-8021-FD0C43CF5C05}", ResourcePoolDescriptor);
+            AZ_CLASS_ALLOCATOR(SwapChainDescriptor, SystemAllocator)
             static void Reflect(AZ::ReflectContext* context);
 
             // The dimensions and format of the swap chain images.

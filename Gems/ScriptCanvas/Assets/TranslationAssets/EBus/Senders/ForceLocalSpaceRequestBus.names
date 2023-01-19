@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Force Local Space"
+                "name": "Force Region (Local Space)"
             },
             "methods": [
                 {
@@ -19,13 +19,15 @@
                         "tooltip": "Signaled after SetDirection is invoked"
                     },
                     "details": {
-                        "name": "Set Direction"
+                        "name": "Set Direction",
+                        "tooltip": "Set the direction (in the local space of the force region entity) for the force applied"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Direction"
+                                "name": "Direction",
+                                "tooltip": "Direction (in the local space of the force region entity) for the force applied"
                             }
                         }
                     ]
@@ -41,13 +43,24 @@
                         "tooltip": "Signaled after Get Direction is invoked"
                     },
                     "details": {
-                        "name": "Get Direction"
+                        "name": "Get Direction",
+                        "tooltip": "Get the direction (in the local space of the force region entity) for the force applied"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the force region entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Direction"
+                                "name": "Direction",
+                                "tooltip": "Direction (in the local space of the force region entity) for the force applied"
                             }
                         }
                     ]
@@ -63,13 +76,15 @@
                         "tooltip": "Signaled after Set Magnitude is invoked"
                     },
                     "details": {
-                        "name": "Set Magnitude"
+                        "name": "Set Magnitude",
+                        "tooltip": "Set the magnitude of the force applied"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Magnitude"
+                                "name": "Magnitude",
+                                "tooltip": "Magnitude of the force applied"
                             }
                         }
                     ]
@@ -85,13 +100,24 @@
                         "tooltip": "Signaled after Get Magnitude is invoked"
                     },
                     "details": {
-                        "name": "Get Magnitude"
+                        "name": "Get Magnitude",
+                        "tooltip": "Get the magnitude of the force applied"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the force region entity"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Magnitude"
+                                "name": "Magnitude",
+                                "tooltip": "Magnitude of the force applied"
                             }
                         }
                     ]

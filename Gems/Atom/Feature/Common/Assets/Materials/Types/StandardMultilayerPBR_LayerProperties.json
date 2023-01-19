@@ -1,0 +1,191 @@
+{
+    // name, displayName, shaderInputsPrefix, and shaderOptionsPrefix will need to be patched wherever this file is imported,
+    // to customize them for a specific layer.
+    "description": "Settings that affect one layer of the multilayer material.",
+    "propertyGroups": [
+        { 
+            "$import": "MaterialInputs/BaseColorPropertyGroup.json"
+        },
+        { 
+            "$import": "MaterialInputs/MetallicPropertyGroup.json"
+        },
+        { 
+            "$import": "MaterialInputs/RoughnessPropertyGroup.json"
+        },
+        { 
+            // TODO: We could replace this with $import SpecularPropertyGroup.json if we move enableMultiScatterCompensation to the "general" property group.
+            // This section is otherwise identical.
+            "name": "specularF0",
+            "displayName": "Specular Reflectance f0",
+            "description": "The constant f0 represents the specular reflectance at normal incidence (Fresnel 0 Angle). Used to adjust reflectance of non-metal surfaces.",
+            "properties": [
+                {
+                    "name": "factor",
+                    "displayName": "Factor",
+                    "description": "The default IOR is 1.5, which gives you 0.04 (4% of light reflected at 0 degree angle for dielectric materials). F0 values lie in the range 0-0.08, so that is why the default F0 slider is set on 0.5.",
+                    "type": "Float",
+                    "defaultValue": 0.5,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_specularF0Factor"
+                    }
+                },
+                {
+                    "name": "textureMap",
+                    "displayName": "Texture",
+                    "description": "Texture for defining surface reflectance.",
+                    "type": "Image",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_specularF0Map"
+                    }
+                },
+                {
+                    "name": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture, or just default to the Factor value.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
+                    "name": "textureMapUv",
+                    "displayName": "UV",
+                    "description": "Specular reflection map UV set",
+                    "type": "Enum",
+                    "enumIsUv": true,
+                    "defaultValue": "Tiled",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_specularF0MapUvIndex"
+                    }
+                }
+            ],
+            "functors": [
+                {
+                    "type": "UseTexture",
+                    "args": {
+                        "textureProperty": "textureMap",
+                        "useTextureProperty": "useTexture",
+                        "dependentProperties": ["textureMapUv"],
+                        "shaderOption": "o_specularF0_useTexture"
+                    }
+                }
+            ]
+        },
+        { 
+            "$import": "MaterialInputs/NormalPropertyGroup.json"
+        },
+        { 
+            "$import": "MaterialInputs/OcclusionPropertyGroup.json"
+        },
+        { 
+            "$import": "MaterialInputs/EmissivePropertyGroup.json"
+        },
+        { 
+            "$import": { 
+                "filename": "MaterialInputs/ClearCoatPropertyGroup.json", 
+                // This patch erases the fuctors so we can define our own, since there is only one o_clearCoat_feature_enabled flag
+                "patch": {
+                    "functors": 
+                    [
+                        // There's one functor for this layer, and then the .materialtype will need to define an additional one to do StandardMultilayerPBR_ClearCoatEnableFeature.lua
+                        {
+                            "type": "Lua",
+                            "args": {
+                                "file": "Materials/Types/StandardPBR_ClearCoatState.lua"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "parallax",
+            "displayName": "Displacement",
+            "description": "Properties for parallax effect produced by a height map.",
+            "properties": [
+                {
+                    "name": "textureMap",
+                    "displayName": "Height Map",
+                    "description": "Displacement height map to create parallax effect.",
+                    "type": "Image",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_heightmap"
+                    }
+                },
+                {
+                    "name": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the height map.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
+                    "name": "factor",
+                    "displayName": "Height Map Scale",
+                    "description": "The total height of the height map in local model units.",
+                    "type": "Float",
+                    "defaultValue": 0.05,
+                    "min": 0.0,
+                    "softMax": 0.1,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_heightmapScale"
+                    }
+                },
+                {
+                    "name": "offset",
+                    "displayName": "Offset",
+                    "description": "Adjusts the overall displacement amount in local model units.",
+                    "type": "Float",
+                    "defaultValue": 0.0,
+                    "softMin": -0.1,
+                    "softMax": 0.1,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_heightmapOffset"
+                    }
+                }
+            ],
+            "functors": [
+                {
+                    "type": "UseTexture",
+                    "args": {
+                        "textureProperty": "textureMap",
+                        "useTextureProperty": "useTexture",
+                        "dependentProperties": ["factor"],
+                        "shaderOption": "o_useHeightmap"
+                    }
+                }
+            ]
+        },
+        {                 
+            "$import": { 
+                "filename": "MaterialInputs/UvPropertyGroup.json", 
+                // This patch erases the fuctors so we can define our own. This functor is the same except it omits "float3x3InverseShaderInput"
+                // since the layers don't have or need an inverse matrix.
+                "patch": {
+                    "functors": [
+                        {
+                            "type": "Transform2D",
+                            "args": {
+                                "transformOrder": [ "Rotate", "Translate", "Scale" ],
+                                "centerProperty": "center",
+                                "scaleProperty": "scale",
+                                "scaleXProperty": "tileU",
+                                "scaleYProperty": "tileV",
+                                "translateXProperty": "offsetU",
+                                "translateYProperty": "offsetV",
+                                "rotateDegreesProperty": "rotateDegrees",
+                                "float3x3ShaderInput": "m_uvMatrix"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

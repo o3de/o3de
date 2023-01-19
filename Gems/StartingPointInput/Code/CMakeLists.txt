@@ -60,6 +60,7 @@ ly_add_source_properties(
 
 # the above module is for use in clients and servers
 ly_create_alias(NAME StartingPointInput.Servers  NAMESPACE Gem TARGETS Gem::StartingPointInput)
+ly_create_alias(NAME StartingPointInput.Unified  NAMESPACE Gem TARGETS Gem::StartingPointInput)
 ly_create_alias(NAME StartingPointInput.Clients  NAMESPACE Gem TARGETS Gem::StartingPointInput)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)

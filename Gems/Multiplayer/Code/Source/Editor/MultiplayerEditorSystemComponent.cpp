@@ -60,7 +60,7 @@ namespace Multiplayer
     AZ_CVAR(AZ::CVarFixedString, editorsv_rhi_override, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Override the default rendering hardware interface (rhi) when launching the Editor server. For example, you may be running an Editor using 'dx12', but want to launch a headless server using 'null'. If empty the server will launch using the same rhi as the Editor.");
     AZ_CVAR(uint16_t, editorsv_max_connection_attempts, 5, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "The maximum times the editor will attempt to connect to the server.");
+        "The maximum times the editor will attempt to connect to the server. Time between attempts is increased based on the number of failed attempts.");
 
     AZ_CVAR(bool, editorsv_print_server_logs, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor should print its server's logs to the Editor console. Useful for seeing server prints, warnings, and errors without having to open up the server console or server.log file. Note: Must be set before entering the editor play mode.");
@@ -471,6 +471,13 @@ namespace Multiplayer
             m_connectionEvent.RemoveFromQueue();
             SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
         }
+        else
+        {
+            // Increase the wait time based on the number of connection attempts.
+            const double retrySeconds = m_connectionAttempts;
+            constexpr bool autoRequeue = false;
+            m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
+        }
     }
 
     void MultiplayerEditorSystemComponent::OnPreparingInMemorySpawnableFromPrefab(
@@ -557,7 +564,7 @@ namespace Multiplayer
         // Keep trying to connect until the port is finally available.
         m_connectionAttempts = 0;
         constexpr double retrySeconds = 1.0;
-        constexpr bool autoRequeue = true;
+        constexpr bool autoRequeue = false;
         m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
     }
 

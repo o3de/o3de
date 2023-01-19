@@ -280,7 +280,7 @@ namespace PhysX
     {
         AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), WorldSpaceForce);
         // World space force direction: AZ::Vector3(0.0f, 0.0f, 1.0f)
-        EXPECT_TRUE(entityVelocity.GetZ() > 0.0f); // World space force causes box to bounce upwards
+        EXPECT_GT(entityVelocity.GetZ(), 0.0f); // World space force causes box to bounce upwards
         EXPECT_NEAR(entityVelocity.GetX(), 0.0f, AZ::Constants::FloatEpsilon);
         EXPECT_NEAR(entityVelocity.GetY(), 0.0f, AZ::Constants::FloatEpsilon);
     }
@@ -290,9 +290,9 @@ namespace PhysX
         AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), LocalSpaceForce);
         // Local space force direction: AZ::Vector3(0.0f, 0.0f, 1.0f)
         // Force region was rotated about Y-axis by 90 deg
-        EXPECT_TRUE(entityVelocity.GetX() > 0.0f); // Falling body should be moving in positive X direction since force region is rotated.
+        EXPECT_GT(entityVelocity.GetX(), 0.0f); // Falling body should be moving in positive X direction since force region is rotated.
         EXPECT_NEAR(entityVelocity.GetY(), 0.0f, AZ::Constants::FloatEpsilon);
-        EXPECT_TRUE(entityVelocity.GetZ() < 0.0f); // Gravity
+        EXPECT_LT(entityVelocity.GetZ(), 0.0f); // Gravity
     }
 
     TEST_F(PhysXForceRegionTest, ForceRegion_PointForce_EntityVelocityZPositive)
@@ -301,23 +301,23 @@ namespace PhysX
         // Force region was positioned at AZ::Vector3(0.0f, 0.0f, 12.0f)
         // PointForce causes box to bounce upwards and to the right.
         AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), PointForce);
-        EXPECT_TRUE(entityVelocity.GetX() > 0.0f);
+        EXPECT_GT(entityVelocity.GetX(), 0.0f);
         EXPECT_NEAR(entityVelocity.GetY(), 0.0f, AZ::Constants::FloatEpsilon);
-        EXPECT_TRUE(entityVelocity.GetZ() > 0.0f);
+        EXPECT_GT(entityVelocity.GetZ(), 0.0f);
     }
 
     TEST_F(PhysXForceRegionTest, ForceRegion_SplineFollowForce_EntityVelocitySpecificValue)
     {
         AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), SplineFollowForce);
         // Follow spline direction towards positive X and Y.
-        EXPECT_TRUE(entityVelocity.GetX() > 0.0f);
-        EXPECT_TRUE(entityVelocity.GetY() > 0.0f);
+        EXPECT_GT(entityVelocity.GetX(), 0.0f);
+        EXPECT_GT(entityVelocity.GetY(), 0.0f);
     }
 
     TEST_F(PhysXForceRegionTest, ForceRegion_SimpleDragForce_EntityVelocitySpecificValue)
     {
         AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), SimpleDragForce);
-        EXPECT_TRUE(entityVelocity.GetZ() > -12.65f); // Falling velocity should be slower than free fall velocity, which is -12.65.
+        EXPECT_GT(entityVelocity.GetZ(), -12.66f); // Falling velocity should be slower than free fall velocity, which is -12.65 (+-0.01).
         EXPECT_NEAR(entityVelocity.GetX(), 0.0f, AZ::Constants::FloatEpsilon); // Dragging should not change original direction.
         EXPECT_NEAR(entityVelocity.GetY(), 0.0f, AZ::Constants::FloatEpsilon); // Dragging should not change original direction.
     }
@@ -325,7 +325,7 @@ namespace PhysX
     TEST_F(PhysXForceRegionTest, ForceRegion_LinearDampingForce_EntityVelocitySpecificValue)
     {
         AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), LinearDampingForce);
-        EXPECT_TRUE(entityVelocity.GetZ() > -12.65f); // Falling velocity should be slower than free fall velocity, which is -12.65.
+        EXPECT_GT(entityVelocity.GetZ(), -12.66f); // Falling velocity should be slower than free fall velocity, which is -12.65 (+-0.01).
         EXPECT_NEAR(entityVelocity.GetX(), 0.0f, AZ::Constants::FloatEpsilon); // Damping should not change original direction.
         EXPECT_NEAR(entityVelocity.GetY(), 0.0f, AZ::Constants::FloatEpsilon); // Damping should not change original direction.
     }

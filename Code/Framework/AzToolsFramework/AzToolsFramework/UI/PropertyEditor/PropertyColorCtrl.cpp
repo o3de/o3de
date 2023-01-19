@@ -358,6 +358,7 @@ namespace AzToolsFramework
     void PropertyColorCtrl::SetColorEditorConfiguration(const ColorEditorConfiguration& configuration)
     {
         m_config = configuration;
+        setAlphaChannelEnabled(m_config.m_colorPickerDialogConfiguration == AzQtComponents::ColorPicker::Configuration::RGBA);
     }
 
     QColor PropertyColorCtrl::TransformColor(const QColor& color, uint32_t fromColorSpaceId, uint32_t toColorSpaceId) const

@@ -20,7 +20,6 @@
 #include <AzCore/std/time.h>
 
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
@@ -157,11 +156,6 @@ namespace LegacyFramework
 
     int Application::Run(const ApplicationDesc& desc)
     {
-        if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-        }
-
         QString appNameConcat = QStringLiteral("%1_GLOBALMUTEX").arg(desc.m_applicationName);
         {
             // If the application crashed before, it may have left behind shared memory
@@ -473,8 +467,6 @@ namespace LegacyFramework
 
     void Application::CreateSystemComponents()
     {
-        EnsureComponentCreated(AZ::MemoryComponent::RTTI_Type());
-
         AZ_Assert(!m_desc.m_enableProjectManager || m_desc.m_enableGUI, "Enabling the project manager in the application settings requires enabling the GUI as well.");
 
         EnsureComponentCreated(AzToolsFramework::Framework::RTTI_Type());

@@ -20,6 +20,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(HDRiSkyboxComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::HDRiSkyboxComponentConfig, "{AEAD8F5A-8D2F-47CD-B98C-C99541F7B229}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

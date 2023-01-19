@@ -382,22 +382,7 @@
             <height>0</height>
            </size>
           </property>
-          <widget class="QWidget" name="m_thumbnailView">
-           <layout class="QVBoxLayout" name="m_thumbnailViewLayout">
-            <property name="spacing">
-             <number>0</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="m_thumbnailViewPlaceholder">
-              <property name="text">
-               <string>Thumbnail view placeholder</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-           </layout>
+          <widget class="AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView" name="m_thumbnailView">
           </widget>
           <widget class="QWidget" name="m_tableView">
            <layout class="QVBoxLayout" name="m_tableViewLayout">
@@ -417,20 +402,6 @@
            </layout>
           </widget>
          </widget>
-         <widget class="QWidget" name="previewWidgetWrapper">
-          <layout class="QVBoxLayout" name="m_rightLayout">
-           <item>
-            <widget class="AzToolsFramework::AssetBrowser::PreviewerFrame" name="m_previewerFrame">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
         </widget>
        </item>
       </layout>
@@ -447,30 +418,24 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>AzQtComponents::TableView</class>
-   <extends>QTreeView</extends>
-   <header>AzQtComponents/Components/Widgets/TableView.h</header>
-  </customwidget>
-  <customwidget>
    <class>AzToolsFramework::AssetBrowser::AssetBrowserTreeView</class>
    <extends>QTreeView</extends>
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h</header>
   </customwidget>
   <customwidget>
-   <class>AzToolsFramework::AssetBrowser::PreviewerFrame</class>
-   <extends>QFrame</extends>
-   <header>AzToolsFramework/AssetBrowser/Previewer/PreviewerFrame.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>AzToolsFramework::AssetBrowser::AssetBrowserTableView</class>
-   <extends>AzQtComponents::TableView</extends>
+   <extends>QTableView</extends>
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h</header>
   </customwidget>
   <customwidget>
    <class>AzQtComponents::BreadCrumbs</class>
    <extends>QWidget</extends>
    <header>AzQtComponents/Components/Widgets/BreadCrumbs.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView</class>
+   <extends>QWidget</extends>
+   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h</header>
   </customwidget>
  </customwidgets>
  <resources>

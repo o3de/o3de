@@ -24,13 +24,14 @@ if(NOT PROJECT_NAME)
     include(cmake/CompilerSettings.cmake)
     project(O3DE
         LANGUAGES C CXX
-        VERSION ${LY_VERSION_STRING}
+        VERSION ${O3DE_VERSION_STRING}
     )
 endif()
 
 ################################################################################
 # Initialize
 ################################################################################
+include(CTest)
 include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)

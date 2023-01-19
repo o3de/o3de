@@ -20,20 +20,24 @@ namespace AtomToolsFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::Uuid BusIdType;
 
-        // Get a list of all of the generated files from the last time this graph was compiled.
+        //! Get a list of all of the generated files from the last time this graph was compiled.
         virtual const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const = 0;
 
-        // Get the graph export path based on the document path or default export path.
+        //! Get the graph export path based on the document path or default export path.
         virtual AZStd::string GetGraphPath() const = 0;
 
-        // Evaluate the graph nodes, slots, values, and settings to generate and export data.
+        //! Evaluate the graph nodes, slots, values, and settings to generate and export data.
         virtual bool CompileGraph() = 0;
 
-        // Schedule the graph to be compiled on the next system tick.
+        //! Schedule the graph to be compiled on the next system tick.
         virtual void QueueCompileGraph() = 0;
 
-        // Returns true if graph compilation has already been scheduled.
+        //! Returns true if graph compilation has already been scheduled.
         virtual bool IsCompileGraphQueued() const = 0;
+
+        //! Requests and reports job status of generated files from the AP.
+        //! Return true if generation and processing is complete. Otherwise, return falss.
+        virtual bool ReportGeneratedFileStatus() = 0;
     };
 
     using GraphCompilerRequestBus = AZ::EBus<GraphCompilerRequests>;

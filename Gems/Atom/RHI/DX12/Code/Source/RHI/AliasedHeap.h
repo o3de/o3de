@@ -32,6 +32,7 @@ namespace AZ
             struct Descriptor
                 : public RHI::AliasedHeapDescriptor
             {
+                AZ_CLASS_ALLOCATOR(Descriptor, SystemAllocator)
                 D3D12_HEAP_FLAGS m_heapFlags = D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES;
             };            
 

@@ -438,7 +438,8 @@ namespace AzFramework
         // values at specific world positions, and provide the blendFn to perform blending operations based on the provided base and
         // paint brush values.
         PaintBrushNotificationBus::Event(
-            m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaint, strokeRegion, valueLookupFn, blendFn);
+            m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaint,
+            brushSettings.GetColor(), strokeRegion, valueLookupFn, blendFn);
     }
 
     void PaintBrush::SmoothToLocation(
@@ -564,6 +565,7 @@ namespace AzFramework
         PaintBrushNotificationBus::Event(
             m_ownerEntityComponentId,
             &PaintBrushNotificationBus::Events::OnSmooth,
+            brushSettings.GetColor(),
             strokeRegion,
             valueLookupFn,
             valuePointOffsets,
