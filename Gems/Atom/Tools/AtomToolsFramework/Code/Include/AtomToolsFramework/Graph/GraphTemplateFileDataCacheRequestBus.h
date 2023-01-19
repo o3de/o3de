@@ -21,6 +21,9 @@ namespace AtomToolsFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::Crc32 BusIdType;
 
+        using MutexType = AZStd::recursive_mutex;
+        static const bool LocklessDispatch = true;
+
         //! Attempts to load or retrieve a previously loaded template file data structure
         virtual GraphTemplateFileData Load(const AZStd::string& path) = 0;
     };
