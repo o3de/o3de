@@ -556,7 +556,7 @@ namespace AZ
                 return CaptureHandle::Null();
             }
 
-            CaptureHandle captureHandle = ScreenshotPreparation(outputFilePath, nullptr);
+            CaptureHandle captureHandle = ScreenshotPreparation(outputFilePath, callbackFunction);
 
             if (captureHandle.IsNull())
             {
