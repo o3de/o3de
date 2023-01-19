@@ -20,6 +20,8 @@
 
 namespace EMotionFX
 {
+    AZ_CLASS_ALLOCATOR_IMPL(MotionLayerSystem, MotionAllocator)
+
     MotionLayerSystem::MotionLayerSystem(ActorInstance* actorInstance)
         : MotionSystem(actorInstance)
     {

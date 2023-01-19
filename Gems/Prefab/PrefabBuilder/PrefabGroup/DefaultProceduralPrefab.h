@@ -16,6 +16,11 @@
 
 namespace AZ::SceneAPI
 {
+    namespace SceneData
+    {
+        class MeshGroup;
+    }
+
     using PrefabGroup = AZ::SceneAPI::SceneData::PrefabGroup;
     using Scene = AZ::SceneAPI::Containers::Scene;
 
@@ -33,6 +38,7 @@ namespace AZ::SceneAPI
 
         // PrefabGroupEventBus::Handler
         AZStd::optional<ManifestUpdates> GeneratePrefabGroupManifestUpdates(const Scene& scene) const override;
+        AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> GenerateDefaultPrefabMeshGroups(const Scene& scene) const override;
 
     protected:
         // this stores the data related with nodes that will translate to entities in the prefab group
@@ -48,6 +54,11 @@ namespace AZ::SceneAPI
         using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
         using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId>; // NodeIndex -> EntityId
         using EntityIdList = AZStd::vector<AZ::EntityId>;
+
+        AZStd::shared_ptr<SceneData::MeshGroup> BuildMeshGroupForNode(
+            const Scene& scene,
+            const NodeDataForEntity& nodeData,
+            const NodeDataMap& nodeDataMap) const;
 
         NodeDataMap CalculateNodeDataMap(const Containers::Scene& scene) const;
 

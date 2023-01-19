@@ -11,12 +11,166 @@
                     "m_propertySlots": [
                         {
                             "Key": {
+                                "m_name": "inApplySpecularAA"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inCastShadows"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
                                 "m_name": "inDescription"
                             },
                             "Value": {
                                 "m_value": {
                                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                                     "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDoubleSided"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": false
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableAreaLights"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableClearCoat"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": false
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableClearCoatNormal"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": false
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableDirectionalLights"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableIBL"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableNormal"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": false
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnablePunctualLights"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableShadows"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inOpacityAffectsSpecularFactor"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inOpacityMode"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Opaque"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inUseForwardPassIBLSpecular"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
                                 }
                             }
                         }
@@ -50,6 +204,54 @@
                         },
                         {
                             "Key": {
+                                "m_name": "inClearCoatFactor"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 0.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inClearCoatNormal"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector3",
+                                    "Value": [
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inClearCoatRoughness"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 0.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDiffuseAmbientOcclusion"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 1.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
                                 "m_name": "inEmissive"
                             },
                             "Value": {
@@ -71,6 +273,21 @@
                                 "m_value": {
                                     "$type": "float",
                                     "Value": 0.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inNormal"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector3",
+                                    "Value": [
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ]
                                 }
                             }
                         },
@@ -110,12 +327,23 @@
                                     "Value": 0.0
                                 }
                             }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inSpecularOcclusion"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 1.0
+                                }
+                            }
                         }
                     ],
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "{B352A2E4-D6A6-4178-9406-57716051024F}"
+                    "configId": "{81F5EB68-12A1-47C2-BDC0-3A08A033D85A}"
                 }
             },
             {

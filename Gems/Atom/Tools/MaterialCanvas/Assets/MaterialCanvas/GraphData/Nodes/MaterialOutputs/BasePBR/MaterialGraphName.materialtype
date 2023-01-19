@@ -1,0 +1,42 @@
+{
+    "description": "MaterialGraphName Material Type Template.",
+    "version": 1,
+    "shaders": [
+        {
+            "file": "./MaterialGraphName_ForwardPass.shader",
+            "tag": "ForwardPass_EDS"
+        },
+        {
+            "file": "./MaterialGraphName_LowEndForward.shader",
+            "tag": "LowEndForward_EDS"
+        },
+        {
+            "file": "./MaterialGraphName_MultiViewForward.shader",
+            "tag": "MultiViewForward_EDS"
+        },
+        {
+            "file": "./MaterialGraphName_Shadowmap.shader",
+            "tag": "Shadowmap"
+        },
+        {
+            "file": "./MaterialGraphName_DepthPass.shader",
+            "tag": "DepthPass"
+        },
+        {
+            "file": "./MaterialGraphName_MeshMotionVector.shader",
+            "tag": "MeshMotionVector"
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/HandleCastShadows.lua"
+            }
+        }
+    ],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    }
+}

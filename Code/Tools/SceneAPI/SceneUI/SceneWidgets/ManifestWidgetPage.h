@@ -87,6 +87,7 @@ namespace AZ
 
                 // ManifestMetaInfoBus
                 void ObjectUpdated(const Containers::Scene& scene, const DataTypes::IManifestObject* target, void* sender) override;
+                void AddObjects(AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>& objects) override;
 
                 void UpdateAddButtonStatus();
 

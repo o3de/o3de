@@ -9,6 +9,7 @@
 #pragma once
 
 #include <GradientSignalModule.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 
 namespace GradientSignal
 {
@@ -26,6 +27,7 @@ namespace GradientSignal
 
     class GradientSignalEditorSystemComponent
         : public AZ::Component
+        , public AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(GradientSignalEditorSystemComponent, "{A3F1E796-7C69-441C-8FA1-3A4001EF2DE3}");
@@ -35,6 +37,9 @@ namespace GradientSignal
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
+
+        // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionContextModeBindingHook() override;
 
     private:
         // AZ::Component

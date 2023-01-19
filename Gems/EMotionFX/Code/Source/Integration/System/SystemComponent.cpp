@@ -465,9 +465,6 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::Activate()
         {
-            // Start EMotionFX allocator.
-            AZ::AllocatorInstance<EMotionFXAllocator>::Create();
-
             // Initialize MCore, which is EMotionFX's standard library of containers and systems.
             MCore::Initializer::InitSettings coreSettings;
             coreSettings.m_memAllocFunction = &EMotionFXAlloc;
@@ -562,9 +559,6 @@ namespace EMotionFX
                 EMotionFX::Initializer::Shutdown();
                 MCore::Initializer::Shutdown();
             }
-
-            // Memory leaks will be reported.
-            AZ::AllocatorInstance<EMotionFXAllocator>::Destroy();
         }
 
         //////////////////////////////////////////////////////////////////////////

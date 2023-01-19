@@ -207,9 +207,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_serializeContext = aznew AZ::SerializeContext(true, true);
             m_sliceDescriptor = AZ::SliceComponent::CreateDescriptor();
 
@@ -244,9 +241,6 @@ namespace UnitTest
             AZ::Interface<AZ::IO::IStreamer>::Unregister(m_streamer);
             delete m_streamer;
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }
@@ -827,10 +821,7 @@ namespace Benchmark
         AZ::ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
 
-        AZ::ComponentApplication::StartupParameters startupParams;
-        startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-
-        componentApp.Create(desc, startupParams);
+        componentApp.Create(desc, {});
 
         UnitTest::MyTestComponent1::Reflect(componentApp.GetSerializeContext());
         UnitTest::MyTestComponent2::Reflect(componentApp.GetSerializeContext());
