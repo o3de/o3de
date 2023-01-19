@@ -172,6 +172,7 @@ class LinuxLauncher(Launcher):
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/remote_ip={host_ip}"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/allowed_list={host_ip}"')
         self.args.append(f'--log_RemoteConsoleAllowedAddresses={host_ip}')
+        self.args.append("--log_IncludeTime=1")
 
 
 class DedicatedLinuxLauncher(LinuxLauncher):

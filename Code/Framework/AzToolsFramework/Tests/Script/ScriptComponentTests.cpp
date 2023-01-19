@@ -44,7 +44,6 @@ namespace UnitTest
             //appDesc.m_stackRecordLevels = 20;
             Entity* systemEntity = m_app.Create(appDesc);
 
-            systemEntity->CreateComponent<MemoryComponent>();
             systemEntity->CreateComponent(AZ::TypeId{ "{CAE3A025-FAC9-4537-B39E-0A800A2326DF}" }); // JobManager component
             systemEntity->CreateComponent<StreamerComponent>();
             systemEntity->CreateComponent<AssetManagerComponent>();

@@ -2183,13 +2183,13 @@ namespace AZ::IO
 
     void Archive::OnSystemEntityActivated()
     {
-        for (const auto& archiveInfo : m_archivesWithCatalogsToLoad)
+        auto LoadArchives = [this](const AZ::IO::Archive::ArchivesWithCatalogsToLoad& archiveInfo)
         {
             AZStd::intrusive_ptr<INestedArchive> archive =
                 OpenArchive(archiveInfo.m_fullPath, archiveInfo.m_bindRoot, archiveInfo.m_flags, nullptr);
             if (!archive)
             {
-                continue;
+                return false;
             }
 
             ZipDir::CachePtr pZip = static_cast<NestedArchive*>(archive.get())->GetCache();
@@ -2209,7 +2209,9 @@ namespace AZ::IO
                     archiveNotifications->BundleOpened(bundleName, bundleManifest, nextBundle.c_str(), bundleCatalog);
                 },
                 archiveInfo.m_strFileName.c_str(), bundleManifest, archiveInfo.m_nextBundle, bundleCatalog);
-        }
-        m_archivesWithCatalogsToLoad.clear();
+
+            return true;
+        };
+        AZStd::erase_if(m_archivesWithCatalogsToLoad, LoadArchives);
     }
 }

@@ -21,6 +21,7 @@
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
+#include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidgetPage.h>
@@ -467,6 +468,38 @@ namespace AZ
                         m_propertyEditor->InvalidateAttributesAndValues();
                     }
                 }
+            }
+
+            void ManifestWidgetPage::AddObjects(AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>& objects)
+            {
+                ManifestWidget* parent = ManifestWidget::FindRoot(this);
+                AZ_Error(SceneAPI::Utilities::ErrorWindow, parent, "ManifestWidgetPage isn't docked in a ManifestWidget.");
+                if (!parent)
+                {
+                    return;
+                }
+                AZStd::shared_ptr<Containers::Scene> scene = parent->GetScene();
+                if (!scene)
+                {
+                    return;
+                }
+                Containers::SceneManifest& manifest = scene->GetManifest();
+                for (auto& object : objects)
+                {
+                    if (!SupportsType(object))
+                    {
+                        continue;
+                    }
+                    if (!manifest.AddEntry(object))
+                    {
+                        AZ_Error(SceneAPI::Utilities::ErrorWindow, false, "Unable to add new object to manifest.");
+                    }
+                    else
+                    {
+                        AddObject(object);
+                    }
+                }
+                RefreshPage();
             }
 
             bool ManifestWidgetPage::SetNodeReadOnlyStatus(const AzToolsFramework::InstanceDataNode* node)

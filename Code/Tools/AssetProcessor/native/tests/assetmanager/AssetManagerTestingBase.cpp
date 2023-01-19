@@ -97,9 +97,6 @@ namespace UnitTests
         m_builderInfoHandler.BusConnect();
 
         // Set up the Job Context, required for the PathDependencyManager to do its work
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
         m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
         m_descriptor = AZ::JobManagerComponent::CreateDescriptor();
         m_descriptor->Reflect(m_serializeContext.get());
@@ -170,9 +167,6 @@ namespace UnitTests
         delete m_jobManagerEntity;
 
         delete m_descriptor;
-
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
         m_stateData.reset();
         m_assetProcessorManager.reset();
