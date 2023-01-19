@@ -12,6 +12,8 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
@@ -61,9 +63,6 @@ namespace AzToolsFramework
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The number of meters to raycast to look for a valid surface to paint onto.");
-
-    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
-    static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
     namespace
     {
@@ -373,7 +372,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "PaintBrush Manipulator";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -394,7 +393,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "PaintBrush Manipulator";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -415,7 +414,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "PaintBrush Manipulator";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -436,7 +435,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "PaintBrush Manipulator";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -471,13 +470,13 @@ namespace AzToolsFramework
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "PaintBrushManipulator - could not get MenuManagerInterface on BindActionsToMenus.");
 
-        int baseSortKey = 6000; // arbitrary starting sort number
+        constexpr int baseSortKey = 6000; // arbitrary starting sort number
 
         // leave space between entries in case something wants to add menu items in-between
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseSize", baseSortKey);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseSize", baseSortKey + 10);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseHardness", baseSortKey + 20);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseHardness", baseSortKey + 30);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseSize", baseSortKey);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseSize", baseSortKey + 10);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseHardness", baseSortKey + 20);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseHardness", baseSortKey + 30);
     }
 
     void PaintBrushManipulator::AdjustSize(float sizeDelta)
