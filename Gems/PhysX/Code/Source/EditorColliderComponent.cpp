@@ -21,7 +21,6 @@
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <Editor/EditorClassConverters.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <Source/BoxColliderComponent.h>
@@ -106,7 +105,7 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorProxyShapeConfig>()
-                ->Version(2, &PhysX::ClassConverters::EditorProxyShapeConfigVersionConverter)
+                ->Version(1)
                 ->Field("ShapeType", &EditorProxyShapeConfig::m_shapeType)
                 ->Field("Sphere", &EditorProxyShapeConfig::m_sphere)
                 ->Field("Box", &EditorProxyShapeConfig::m_box)
@@ -202,33 +201,8 @@ namespace PhysX
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            // Deprecate old separate components
-            serializeContext->ClassDeprecate(
-                "EditorCapsuleColliderComponent",
-                AZ::Uuid("{0BD5AF3A-35C0-4386-9930-54A2A3E97432}"),
-                &ClassConverters::DeprecateEditorCapsuleColliderComponent)
-                ;
-
-            serializeContext->ClassDeprecate(
-                "EditorBoxColliderComponent",
-                AZ::Uuid("{FAECF2BE-625B-469D-BBFF-E345BBB12D66}"),
-                &ClassConverters::DeprecateEditorBoxColliderComponent)
-                ;
-
-            serializeContext->ClassDeprecate(
-                "EditorSphereColliderComponent",
-                AZ::Uuid("{D11C1624-4AE9-4B66-A6F6-40EDB9CDCE99}"),
-                &ClassConverters::DeprecateEditorSphereColliderComponent)
-                ;
-
-            serializeContext->ClassDeprecate(
-                "EditorMeshColliderComponent",
-                AZ::Uuid("{214185DA-ABD9-4410-9819-7C177801CF7A}"),
-                &ClassConverters::DeprecateEditorMeshColliderComponent)
-                ;
-
             serializeContext->Class<EditorColliderComponent, EditorComponentBase>()
-                ->Version(9, &PhysX::ClassConverters::UpgradeEditorColliderComponent)
+                ->Version(1 + (1<<PX_PHYSICS_VERSION_MAJOR)) // Use PhysX version to trigger prefabs recompilation when switching between PhysX 4 and 5.
                 ->Field("ColliderConfiguration", &EditorColliderComponent::m_configuration)
                 ->Field("ShapeConfiguration", &EditorColliderComponent::m_shapeConfiguration)
                 ->Field("DebugDrawSettings", &EditorColliderComponent::m_colliderDebugDraw)
@@ -617,6 +591,7 @@ namespace PhysX
                 GetEntity()->GetName().c_str());
             break;
         case Physics::ShapeType::Cylinder:
+            UpdateCylinderCookedMesh();
             buildGameEntityScaledPrimitive(
                 sharedColliderConfig, m_shapeConfiguration.m_cylinder.m_configuration, m_shapeConfiguration.m_subdivisionLevel);
             break;

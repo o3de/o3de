@@ -22,10 +22,10 @@ TEST_ENGINE_JSON_PAYLOAD = '''
     "api_versions": {
         "api":"1.2.3"
     },
-    "FileVersion": 1,
+    "file_version": 1,
     "O3DEVersion": "0.0.0.0",
-    "O3DECopyrightYear": 2021,
-    "O3DEBuildNumber": 0,
+    "copyright_year": 2021,
+    "build": 0,
     "external_subdirectories": [
         "Gems/TestGem2"
     ],

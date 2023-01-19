@@ -20,9 +20,6 @@ namespace EMotionFX
      * Every time we create a new allocator we need:
      * 1) to create a class that inherits from an another allocator type e.g. AZ::AllocatorBase<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>,  AZ::AllocatorBase<AZ::ChildAllocatorSchema<AZ::PoolAllocator>>
      * 2) that class will contain the UUID
-     * 3) we need to add them to the "Create" method so they are created during component creation
-     * 4) during the creation, we need to configure the allocator if it is a sub-allocator
-     * 5) we need to add them to the "Destroy" method so they are destroyed during component destruction
      *
      * Forgetting one of this will either cause a compilation error or a runtime error on the first allocation with that allocator (which is sometimes hard to track)
      * To avoid forgetting anything and to help the developer that wants to add/remove a new allocator, we built this table and a set of macros that expand into the above steps
@@ -144,9 +141,6 @@ namespace EMotionFX
     class Allocators
     {
     public:
-        static void Create();
-        static void Destroy();
-
         static void ShrinkPools();
     };
 

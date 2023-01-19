@@ -20,7 +20,6 @@
 #include "UiAnimViewDialog.h"
 
 #include "ViewPane.h"
-#include "StringDlg.h"
 #include "UiAVSequenceProps.h"
 #include "ViewManager.h"
 #include "AnimationContext.h"
@@ -53,6 +52,7 @@
 
 #include <QAction>
 #include <QComboBox>
+#include <QInputDialog>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QMenu>

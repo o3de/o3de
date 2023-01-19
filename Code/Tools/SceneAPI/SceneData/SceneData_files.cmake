@@ -11,8 +11,6 @@ set(FILES
     DllMain.cpp
     ManifestMetaInfoHandler.h
     ManifestMetaInfoHandler.cpp
-    SceneDataStandaloneAllocator.h
-    SceneDataStandaloneAllocator.cpp
     ReflectionRegistrar.h
     ReflectionRegistrar.cpp
     Behaviors/BehaviorsMeshGroup.cpp

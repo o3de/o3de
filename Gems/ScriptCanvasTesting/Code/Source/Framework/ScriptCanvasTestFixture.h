@@ -11,7 +11,6 @@
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
