@@ -17,6 +17,9 @@
                 "Exclude Restricted AssetProcessorTestAssets": {
                     "glob": "*/asset_processor_tests/restricted/*"
                 },
+                "Exclude AssetBundlerTestAssets": {
+                    "glob": "*/asset_bundler_tests/assets/*"
+                },
                 "Exclude Scene Tests": {
                     "glob": "*/scene_tests/assets/*"
                 }

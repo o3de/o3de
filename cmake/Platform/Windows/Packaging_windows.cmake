@@ -46,7 +46,7 @@ function(generate_wix_guid out_value seed)
     set(${out_value} ${_guid} PARENT_SCOPE)
 endfunction()
 
-set(_guid_seed_base "${PROJECT_NAME}_${LY_VERSION_STRING}")
+set(_guid_seed_base "${PROJECT_NAME}_${O3DE_VERSION_STRING}")
 generate_wix_guid(_wix_default_product_guid "${_guid_seed_base}_ProductID" )
 generate_wix_guid(_wix_default_upgrade_guid "${_guid_seed_base}_UpgradeCode")
 

@@ -34,28 +34,10 @@ using ::testing::NiceMock;
 
 void CreateAudioAllocators()
 {
-    if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-    }
-
-    if (!AZ::AllocatorInstance<Audio::AudioSystemAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Create();
-    }
 }
 
 void DestroyAudioAllocators()
 {
-    if (AZ::AllocatorInstance<Audio::AudioSystemAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Destroy();
-    }
-
-    if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
 }
 
 

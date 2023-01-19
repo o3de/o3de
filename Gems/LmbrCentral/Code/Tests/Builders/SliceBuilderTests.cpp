@@ -322,9 +322,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-
             m_serializeContext = aznew SerializeContext(true, true);
 
             ComponentApplicationBus::Handler::BusConnect();
@@ -367,9 +364,6 @@ namespace UnitTest
             delete m_mockAssetDescriptor;
             delete m_sliceDescriptor;
             delete m_serializeContext;
-
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }

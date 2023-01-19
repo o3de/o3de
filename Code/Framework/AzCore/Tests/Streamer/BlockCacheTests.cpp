@@ -40,9 +40,6 @@ namespace AZ::IO
     public:
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
 
@@ -62,9 +59,6 @@ namespace AZ::IO
             m_context = nullptr;
 
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
         void CreateTestEnvironmentImplementation(bool onlyEpilogWrites)

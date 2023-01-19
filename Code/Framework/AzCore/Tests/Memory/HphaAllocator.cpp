@@ -56,16 +56,6 @@ namespace UnitTest
         : public LeakDetectionFixture
         , public ::testing::WithParamInterface<HphaSchemaTestParameters>
     {
-    public:
-        void SetUp() override
-        {
-            AZ::AllocatorInstance<HphaSchema_TestAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AZ::AllocatorInstance<HphaSchema_TestAllocator>::Destroy();
-        }
     };
 
     TEST_P(HphaSchemaTestFixture, Allocate)

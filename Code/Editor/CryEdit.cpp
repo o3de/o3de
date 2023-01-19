@@ -92,7 +92,6 @@ AZ_POP_DISABLE_WARNING
 #include "MainWindow.h"
 
 #include "Core/QtEditorApplication.h"
-#include "StringDlg.h"
 #include "NewLevelDialog.h"
 #include "LayoutConfigDialog.h"
 #include "ViewManager.h"
@@ -853,12 +852,12 @@ namespace
 
 QString FormatVersion([[maybe_unused]] const SFileVersion& v)
 {
-    if (QObject::tr("%1").arg(LY_VERSION_BUILD_NUMBER) == "0")
+    if (QObject::tr("%1").arg(O3DE_BUILD_VERSION) == "0")
     {
         return QObject::tr("Development Build");
     }
 
-    return QObject::tr("Version %1").arg(LY_VERSION_BUILD_NUMBER);
+    return QObject::tr("Version %1").arg(O3DE_BUILD_VERSION);
 }
 
 QString FormatRichTextCopyrightNotice()
