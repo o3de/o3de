@@ -31,7 +31,8 @@
 
 namespace AWSCore
 {
-    constexpr const char* EngineVersionJsonKey = "O3DEVersion";
+    constexpr const char* EngineVersionJsonKeyFileFormat1 = "O3DEVersion";
+    constexpr const char* EngineVersionJsonKeyFileFormat2 = "display_version";
 
     constexpr char EditorAWSPreferencesFileName[] = "editor_aws_preferences.setreg";
     constexpr char AWSAttributionSettingsPrefixKey[] = "/Amazon/AWS/Preferences";
@@ -287,7 +288,12 @@ namespace AWSCore
             if (settingsRegistry.MergeSettingsFile(
                     engineSettingsPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey))
             {
-                settingsRegistry.Get(engineVersion, AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey) + "/" + EngineVersionJsonKey);
+                constexpr auto rootKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey);
+                if(!settingsRegistry.Get(engineVersion, rootKey + "/" + EngineVersionJsonKeyFileFormat2))
+                {
+                    // fallback to using the old json key
+                    settingsRegistry.Get(engineVersion, rootKey + "/" + EngineVersionJsonKeyFileFormat1);
+                }
             }
         }
         return engineVersion;
