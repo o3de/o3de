@@ -5,186 +5,211 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserExpandedTableView.h>
 
-
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserExpandedTableView.h>
-#include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserExpandedTableViewProxyModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerFrame.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 
-AZ_PUSH_DISABLE_WARNING(
-    4244 4251 4800, "-Wunknown-warning-option") // conversion from 'int' to 'float', possible loss of data, needs to have dll-interface to
-                                                // be used by clients of class 'QFlags<QPainter::RenderHint>::Int': forcing value to bool
-                                                // 'true' or 'false' (performance warning)
-#include <QCoreApplication>
-#include <QHeaderView>
-#include <QMenu>
-#include <QResizeEvent>
-#include <QTimer>
-AZ_POP_DISABLE_WARNING
-namespace AzToolsFramework
+#include <AzQtComponents/Components/Widgets/AssetFolderExpandedTableView.h>
+
+#if !defined(Q_MOC_RUN)
+#include <QVBoxLayout>
+
+#endif
+
+    namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        const float MinHeaderResizeProportion = .25f;
-        const float MaxHeaderResizeProportion = .75f;
-        const float DefaultHeaderResizeProportion = .5f;
-
+#pragma optimize("", off)
         AssetBrowserExpandedTableView::AssetBrowserExpandedTableView(QWidget* parent)
-            : AzQtComponents::TableView(parent)
-            , m_delegate(new SearchEntryDelegate(this))
+            : QWidget(parent)
+            , m_expandedTableViewWidget(new AzQtComponents::AssetFolderExpandedTableView(parent))
+            , m_expandedTableViewProxyModel(new AssetBrowserExpandedTableViewProxyModel(parent))
+            , m_assetFilterModel(new AssetBrowserFilterModel(parent))
         {
-            setSortingEnabled(false);
-            setItemDelegate(m_delegate);
-            setRootIsDecorated(false);
+            // Using our own instance of AssetBrowserFilterModel to be able to show also files when the main model
+            // only lists directories, and at the same time get sort and filter entries features from AssetBrowserFilterModel.
+            m_assetFilterModel->sort(0, Qt::DescendingOrder);
+            m_expandedTableViewProxyModel->setSourceModel(m_assetFilterModel);
+            m_expandedTableViewWidget->setModel(m_expandedTableViewProxyModel);
 
-            //Styling the header aligning text to the left and using a bold font.
-            header()->setDefaultAlignment(Qt::AlignLeft);
-            header()->setStyleSheet("QHeaderView { font-weight: bold; };");
-            
-
-            setContextMenuPolicy(Qt::CustomContextMenu);
-
-            setMouseTracking(true);
-            setSelectionMode(QAbstractItemView::SingleSelection);
-
-            connect(this, &AzQtComponents::TableView::customContextMenuRequested, this, &AssetBrowserExpandedTableView::OnContextMenu);
-
-            AssetBrowserViewRequestBus::Handler::BusConnect();
-            AssetBrowserComponentNotificationBus::Handler::BusConnect();
-        }
-
-        AssetBrowserExpandedTableView::~AssetBrowserExpandedTableView()
-        {
-            AssetBrowserViewRequestBus::Handler::BusDisconnect();
-            AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
-        }
-
-        void AssetBrowserExpandedTableView::setModel(QAbstractItemModel* model)
-        {
-            m_tableModel = qobject_cast<AssetBrowserExpandedTableModel*>(model);
-            AZ_Assert(m_tableModel, "Expecting AssetBrowserTableModel");
-            m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_tableModel->sourceModel());
-            m_delegate->Init();
-            AzQtComponents::TableView::setModel(model);
-            connect(m_tableModel, &AssetBrowserExpandedTableModel::layoutChanged, this, &AssetBrowserExpandedTableView::layoutChangedSlot);
-
-            header()->setStretchLastSection(true);
-            header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
-            header()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
-            UpdateSizeSlot(parentWidget()->width());
-            header()->setSortIndicatorShown(false);
-            header()->setSectionsClickable(false);
-        }
-
-        void AssetBrowserExpandedTableView::SetName(const QString& name)
-        {
-            m_name = name;
-            bool isAssetBrowserComponentReady = false;
-            AssetBrowserComponentRequestBus::BroadcastResult(isAssetBrowserComponentReady, &AssetBrowserComponentRequests::AreEntriesReady);
-            if (isAssetBrowserComponentReady)
-            {
-                OnAssetBrowserComponentReady();
-            }
-        }
-
-        AZStd::vector<AssetBrowserEntry*> AssetBrowserExpandedTableView::GetSelectedAssets() const
-        {
-            QModelIndexList sourceIndexes;
-            for (const auto& index : selectedIndexes())
-            {
-                if (index.column() == 0)
+            connect(
+                m_expandedTableViewWidget,
+                &AzQtComponents::AssetFolderExpandedTableView::IndexClicked,
+                this,
+                [this](const QModelIndex& index)
                 {
-                    sourceIndexes.push_back(m_sourceFilterModel->mapToSource(m_tableModel->mapToSource(index)));
+                    if (!m_previewerFrame)
+                    {
+                        return;
+                    }
+
+                    auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+                    if (indexData->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                    {
+                        m_previewerFrame->Display(indexData);
+                    }
+                });
+
+            connect(
+                m_expandedTableViewWidget,
+                &AzQtComponents::AssetFolderExpandedTableView::IndexDoubleClicked,
+                this,
+                [this](const QModelIndex& index)
+                {
+                    if (!m_assetTreeView)
+                    {
+                        return;
+                    }
+
+                    auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+                    if (indexData->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
+                    {
+                        return;
+                    }
+
+                    auto treeViewFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_assetTreeView->model());
+                    if (!treeViewFilterModel)
+                    {
+                        return;
+                    }
+
+                    auto selectionModel = m_assetTreeView->selectionModel();
+
+                    auto targetIndex =
+                        treeViewFilterModel->mapFromSource(m_assetFilterModel->mapToSource(m_expandedTableViewProxyModel->mapToSource(index)));
+
+                    selectionModel->select(targetIndex, QItemSelectionModel::ClearAndSelect);
+
+                    auto targetIndexAncestor = targetIndex.parent();
+                    while (targetIndexAncestor.isValid())
+                    {
+                        m_assetTreeView->expand(targetIndexAncestor);
+                        targetIndexAncestor = targetIndexAncestor.parent();
+                    }
+
+                    m_assetTreeView->scrollTo(targetIndex);
+                });
+
+            auto layout = new QVBoxLayout();
+            layout->addWidget(m_expandedTableViewWidget);
+            setLayout(layout);
+        }
+
+        AssetBrowserExpandedTableView::~AssetBrowserExpandedTableView() = default;
+
+        void AssetBrowserExpandedTableView::SetPreviewerFrame(PreviewerFrame* previewerFrame)
+        {
+            m_previewerFrame = previewerFrame;
+        }
+
+        void AssetBrowserExpandedTableView::SetAssetTreeView(AssetBrowserTreeView* treeView)
+        {
+            if (m_assetTreeView)
+            {
+                disconnect(m_assetTreeView, &AssetBrowserTreeView::selectionChangedSignal, this, nullptr);
+                auto treeViewFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_assetTreeView->model());
+                if (treeViewFilterModel)
+                {
+                    disconnect(
+                        treeViewFilterModel,
+                        &AssetBrowserFilterModel::filterChanged,
+                        this,
+                        &AssetBrowserExpandedTableView::UpdateFilterInLocalFilterModel);
                 }
             }
 
-            AZStd::vector<AssetBrowserEntry*> entries;
-            AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(sourceIndexes, entries);
-            return entries;
-        }
+            m_assetTreeView = treeView;
 
-        void AssetBrowserExpandedTableView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
-        {
-            AzQtComponents::TableView::selectionChanged(selected, deselected);
-            Q_EMIT selectionChangedSignal(selected, deselected);
-        }
-
-        void AssetBrowserExpandedTableView::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
-        {
-            // if selected entry is being removed, clear selection so not to select (and attempt to preview) other entries potentially
-            // marked for deletion
-            if (selectionModel() && selectionModel()->selectedIndexes().size() == 1)
-            {
-                QModelIndex selectedIndex = selectionModel()->selectedIndexes().first();
-                QModelIndex parentSelectedIndex = selectedIndex.parent();
-                if (parentSelectedIndex == parent && selectedIndex.row() >= start && selectedIndex.row() <= end)
-                {
-                    selectionModel()->clear();
-                }
-            }
-            AzQtComponents::TableView::rowsAboutToBeRemoved(parent, start, end);
-        }
-
-        void AssetBrowserExpandedTableView::layoutChangedSlot(
-            [[maybe_unused]] const QList<QPersistentModelIndex>& parents, [[maybe_unused]] QAbstractItemModel::LayoutChangeHint hint)
-        {
-            scrollToTop();
-        }
-
-        void AssetBrowserExpandedTableView::SelectProduct([[maybe_unused]] AZ::Data::AssetId assetID)
-        {
-        }
-
-        void AssetBrowserExpandedTableView::SelectFileAtPath([[maybe_unused]] const AZStd::string& assetPath)
-        {
-        }
-
-        void AssetBrowserExpandedTableView::ClearFilter()
-        {
-            emit ClearStringFilter();
-            emit ClearTypeFilter();
-            if (m_sourceFilterModel)
-            {
-                m_sourceFilterModel->FilterUpdatedSlotImmediate();
-            }
-        }
-
-        void AssetBrowserExpandedTableView::Update()
-        {
-            update();
-        }
-
-        void AssetBrowserExpandedTableView::OnAssetBrowserComponentReady()
-        {
-            UpdateSizeSlot(parentWidget()->width());
-        }
-
-        void AssetBrowserExpandedTableView::UpdateSizeSlot(int newWidth)
-        {
-            setColumnWidth(0, aznumeric_cast<int>(newWidth * DefaultHeaderResizeProportion));
-            header()->setMinimumSectionSize(aznumeric_cast<int>(newWidth * MinHeaderResizeProportion));
-            header()->setMaximumSectionSize(aznumeric_cast<int>(newWidth * MaxHeaderResizeProportion));
-        }
-
-
-        void AssetBrowserExpandedTableView::OnContextMenu([[maybe_unused]] const QPoint& point)
-        {
-            const auto& selectedAssets = GetSelectedAssets();
-            if (selectedAssets.size() != 1)
+            if (!m_assetTreeView)
             {
                 return;
             }
 
-            QMenu menu(this);
-            AssetBrowserInteractionNotificationBus::Broadcast(
-                &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, selectedAssets);
-            if (!menu.isEmpty())
+            auto treeViewFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_assetTreeView->model());
+            if (!treeViewFilterModel)
             {
-                menu.exec(QCursor::pos());
+                return;
+            }
+
+            auto treeViewModel = qobject_cast<AssetBrowserModel*>(treeViewFilterModel->sourceModel());
+            if (!treeViewModel)
+            {
+                return;
+            }
+
+            m_assetFilterModel->setSourceModel(treeViewModel);
+            UpdateFilterInLocalFilterModel();
+
+            connect(
+                treeViewFilterModel,
+                &AssetBrowserFilterModel::filterChanged,
+                this,
+                &AssetBrowserExpandedTableView::UpdateFilterInLocalFilterModel);
+
+            connect(
+                m_assetTreeView,
+                &AssetBrowserTreeView::selectionChangedSignal,
+                this,
+                &AssetBrowserExpandedTableView::HandleTreeViewSelectionChanged);
+        }
+
+        void AssetBrowserExpandedTableView::HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+        {
+            Q_UNUSED(deselected);
+
+            auto treeViewFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_assetTreeView->model());
+            if (!treeViewFilterModel)
+            {
+                return;
+            }
+
+            auto selectedIndexes = selected.indexes();
+            if (selectedIndexes.count() > 0)
+            {
+                m_expandedTableViewProxyModel->SetSourceModelCurrentSelection(
+                    m_assetFilterModel->mapFromSource(treeViewFilterModel->mapToSource(selectedIndexes[0])));
+            }
+            else
+            {
+                m_expandedTableViewProxyModel->SetSourceModelCurrentSelection({});
             }
         }
+
+        void AssetBrowserExpandedTableView::UpdateFilterInLocalFilterModel()
+        {
+            if (!m_assetTreeView)
+            {
+                return;
+            }
+
+            auto treeViewFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_assetTreeView->model());
+            if (!treeViewFilterModel)
+            {
+                return;
+            }
+
+            auto filter = qobject_cast<const CompositeFilter*>(treeViewFilterModel->GetFilter().get());
+            if (!filter)
+            {
+                return;
+            }
+
+            auto filterCopy = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
+            for (const auto& subFilter : filter->GetSubFilters())
+            {
+                if (subFilter->GetName() != "Folder")
+                {
+                    filterCopy->AddFilter(subFilter);
+                }
+            }
+            m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
+        }
+#pragma optimize("", on)
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
-#include "AssetBrowser/Views/moc_AssetBrowserExpandedTableView.cpp"
