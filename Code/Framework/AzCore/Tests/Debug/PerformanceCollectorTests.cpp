@@ -187,4 +187,31 @@ namespace UnitTest
         }
     }
 
+    TEST_F(PerformanceCollectorTest, CreatePerformnaceCollector_WithDefaultFileExtension_ValidateFileExtension)
+    {
+        auto paramList = AZStd::to_array<AZStd::string_view>({ "param1" });
+        auto onCompleteCallback = [](AZ::u32)
+        {
+        };
+
+        AZ::Debug::PerformanceCollector performanceCollector("PerformanceCollectorTest", paramList, onCompleteCallback);
+
+        const AZStd::string& actualExtension = performanceCollector.GetFileExtension();
+        ASSERT_EQ("json", actualExtension);
+    }
+
+    TEST_F(PerformanceCollectorTest, CreatePerformanceCollector_WithCustomFileExtension_ValidateFileExtension)
+    {
+        auto paramList = AZStd::to_array<AZStd::string_view>({ "param1" });
+        auto onCompleteCallback = [](AZ::u32)
+        {
+        };
+        const AZStd::string testFileExtention("test.json");
+
+        AZ::Debug::PerformanceCollector performanceCollector("PerformanceCollectorTest", paramList, onCompleteCallback, testFileExtention);
+
+        const AZStd::string& actualExtension = performanceCollector.GetFileExtension();
+        ASSERT_EQ(testFileExtention, actualExtension);
+    }
+
 }//namespace UnitTest

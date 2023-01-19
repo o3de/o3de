@@ -39,6 +39,7 @@ function(ly_add_autogen)
         string(STRIP "${AUTOGEN_OUTPUTS}" AUTOGEN_OUTPUTS)
         set(AZCG_DEPENDENCIES ${AZCG_INPUTFILES})
         list(APPEND AZCG_DEPENDENCIES "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py")
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${AZCG_DEPENDENCIES})
         add_custom_command(
             OUTPUT ${AUTOGEN_OUTPUTS}
             DEPENDS ${AZCG_DEPENDENCIES}

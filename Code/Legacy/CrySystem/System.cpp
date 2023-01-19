@@ -233,18 +233,6 @@ CSystem::CSystem()
 
     m_pXMLUtils = new CXmlUtils(this);
 
-    if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-    {
-        m_initedOSAllocator = true;
-        AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-    }
-    if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        m_initedSysAllocator = true;
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-        AZ::Debug::Trace::Instance().Init();
-    }
-
     m_eRuntimeState = ESYSTEM_EVENT_LEVEL_UNLOAD;
 
     m_bHasRenderedErrorMessage = false;
@@ -272,15 +260,6 @@ CSystem::~CSystem()
     SAFE_DELETE(m_pSystemEventDispatcher);
 
     AZCoreLogSink::Disconnect();
-    if (m_initedSysAllocator)
-    {
-        AZ::Debug::Trace::Instance().Destroy();
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
-    if (m_initedOSAllocator)
-    {
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-    }
 
     m_env.pSystem = 0;
     gEnv = 0;

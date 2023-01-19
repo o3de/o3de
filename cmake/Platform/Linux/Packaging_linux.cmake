@@ -8,7 +8,7 @@
 
 set(CPACK_GENERATOR DEB)
 
-set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}/${LY_VERSION_STRING}")
+set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}/${O3DE_VERSION_STRING}")
 
 set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-linux-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.tar.gz")
@@ -33,6 +33,8 @@ set(package_dependencies
     libxcb-xinput-dev                       # For mouse input
     zlib1g-dev
     mesa-common-dev
+    libunwind-dev
+    pkg-config
 )
 list(JOIN package_dependencies "," CPACK_DEBIAN_PACKAGE_DEPENDS)
 

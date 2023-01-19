@@ -20,10 +20,6 @@
                 "description": "Material type group name that will contain the property corresponding to this input.",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                },
                 "visibleOnNode": false,
                 "editableOnNode": false
             },
@@ -32,11 +28,7 @@
                 "displayName": "Name",
                 "description": "Property name that will be added to the material type for this input. The shader variable name and display name will be derived from this.",
                 "supportedDataTypeRegex": "string",
-                "defaultDataType": "string",
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                }
+                "defaultDataType": "string"
             },
             {
                 "name": "inDescription",
@@ -44,10 +36,6 @@
                 "description": "Description about what this material input does and how it should be used.",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                },
                 "visibleOnNode": false,
                 "editableOnNode": false
             },
@@ -57,14 +45,14 @@
                 "description": "Image",
                 "supportedDataTypeRegex": "image",
                 "defaultDataType": "image",
-                "defaultValue": {
-                    "$type": "{403A7CFE-B218-5D57-8540-BD58E734BCFE} Asset<StreamingImageAsset>"
-                },
                 "visibleOnNode": false,
                 "editableOnNode": false,
                 "settings": {
-                    "materialInputs": [
-                        "SLOTSTANDARDSRGMEMBER"
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
+                        "STANDARD_SRG_MEMBER"
                     ]
                 }
             },
@@ -74,14 +62,14 @@
                 "description": "Sampler",
                 "supportedDataTypeRegex": "sampler",
                 "defaultDataType": "sampler",
-                "defaultValue": {
-                    "$type": "SamplerState"
-                },
                 "visibleOnNode": false,
                 "editableOnNode": false,
                 "settings": {
-                    "materialInputs": [
-                        "SLOTSTANDARDSRGMEMBER"
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
+                        "STANDARD_SRG_MEMBER"
                     ]
                 }
             }
@@ -91,15 +79,8 @@
                 "name": "inUV",
                 "displayName": "UV",
                 "description": "UV",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float2",
-                "defaultValue": {
-                    "$type": "Vector2",
-                    "Value": [
-                        0.0,
-                        0.0
-                    ]
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
