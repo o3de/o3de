@@ -75,6 +75,7 @@ ly_add_target(
 # use the PhysX module in clients and servers:
 ly_create_alias(NAME PhysX.Clients NAMESPACE Gem TARGETS Gem::PhysX)
 ly_create_alias(NAME PhysX.Servers NAMESPACE Gem TARGETS Gem::PhysX)
+ly_create_alias(NAME PhysX.Unified NAMESPACE Gem TARGETS Gem::PhysX)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 

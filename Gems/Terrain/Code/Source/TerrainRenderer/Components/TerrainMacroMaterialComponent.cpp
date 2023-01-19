@@ -465,19 +465,54 @@ namespace Terrain
         return !m_modifiedMacroColorImageData.empty() && m_macroColorImageIsModified;
     }
 
+    uint32_t TerrainMacroMaterialComponent::GetHighestLoadedMipLevel() const
+    {
+        if (m_configuration.m_macroColorAsset->IsReady())
+        {
+            // Walk through the mip chains to find the highest loaded mip level.
+            const size_t numMipChains = m_configuration.m_macroColorAsset->GetMipChainCount();
+            if (numMipChains > 0)
+            {
+                // Check the standard mip chain assets to look for the highest loaded mip.
+                for (size_t mipChainIndex = 0; mipChainIndex < (numMipChains - 1); mipChainIndex++)
+                {
+                    auto mipChainAsset = m_configuration.m_macroColorAsset->GetMipChainAsset(mipChainIndex);
+                    if (mipChainAsset->IsReady())
+                    {
+                        return aznumeric_cast<uint32_t>(m_configuration.m_macroColorAsset->GetMipLevel(mipChainIndex));
+                    }
+                }
+
+                // The tail mip chain is always loaded but can't be queried the same way as the other mip chain assets,
+                // so we'll just assume that it's loaded and return its highest mip level.
+                // Note that this could still potentially be mip 0 if the image is extremely small.
+                return aznumeric_cast<uint32_t>(m_configuration.m_macroColorAsset->GetMipLevel(numMipChains - 1));
+            }
+        }
+
+        // No loaded mip level found.
+        return InvalidMipLevel;
+    }
+
     void TerrainMacroMaterialComponent::CreateMacroColorImageModificationBuffer()
     {
-        if (!m_configuration.m_macroColorAsset->IsReady())
+        // Get the highest loaded mip, which is hopefully mip 0.
+        uint32_t mipLevel = GetHighestLoadedMipLevel();
+
+        if (mipLevel == InvalidMipLevel)
         {
-            AZ_Error(
-                "TerrainMacroMaterialComponent",
-                false,
-                "Color data is empty. Make sure the image asset is fully loaded before attempting to modify it.");
+            AZ_Error("TerrainMacroMaterialComponent", false, "No mip levels are loaded, cannot create an image modification buffer.");
             return;
         }
 
+        if (mipLevel > 0)
+        {
+            AZ_Warning("TerrainMacroMaterialComponent", false,
+                "Highest mip level loaded is %zu, painting data will be of lesser quality.", mipLevel);
+        }
+
         const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_macroColorAsset->GetImageDescriptor();
-        auto imageData = m_configuration.m_macroColorAsset->GetSubImageData(0, 0);
+        auto imageData = m_configuration.m_macroColorAsset->GetSubImageData(mipLevel, 0);
 
         const auto& width = imageDescriptor.m_size.m_width;
         const auto& height = imageDescriptor.m_size.m_height;

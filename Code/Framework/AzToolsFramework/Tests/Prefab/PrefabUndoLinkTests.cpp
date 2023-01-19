@@ -80,7 +80,7 @@ namespace UnitTest
 
         //generate a patch to add a component to the nested instance
         PrefabDom initialEntityDom;
-        m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(initialEntityDom, *nestedContainerEntity);
 
         nestedContainerEntity->Deactivate();
         PrefabTestComponent* nestedTestComponent = nestedContainerEntity->CreateComponent<PrefabTestComponent>();
@@ -88,7 +88,7 @@ namespace UnitTest
         nestedContainerEntity->Activate();
 
         PrefabDom modifiedEntityDom;
-        m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(modifiedEntityDom, *nestedContainerEntity);
 
         PrefabDom patch;
         m_instanceToTemplateInterface->GeneratePatch(patch, initialEntityDom, modifiedEntityDom);
@@ -107,9 +107,9 @@ namespace UnitTest
         AZStd::vector<InstanceAlias> aliases = rootInstance->GetNestedInstanceAliases(nestedTemplateId);
 
         //create patch for nesting
-        m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(initialEntityDom, *nestedContainerEntity);
         nestedTestComponent->m_entityIdProperty = rootContainerEntityId;
-        m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(modifiedEntityDom, *nestedContainerEntity);
         m_instanceToTemplateInterface->GeneratePatch(patch, initialEntityDom, modifiedEntityDom);
         m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, nestedContainerEntityId);
 
@@ -150,7 +150,7 @@ namespace UnitTest
 
         //add a component for testing to the instance that will be nested
         PrefabDom initialEntityDom;
-        m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(initialEntityDom, *nestedContainerEntity);
 
         nestedContainerEntity->Deactivate();
         PrefabTestComponent* nestedTestComponent = nestedContainerEntity->CreateComponent<PrefabTestComponent>();
@@ -158,7 +158,7 @@ namespace UnitTest
         nestedContainerEntity->Activate();
 
         PrefabDom modifiedEntityDom;
-        m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(modifiedEntityDom, *nestedContainerEntity);
 
         //create patch
         PrefabDom patch;
@@ -181,11 +181,11 @@ namespace UnitTest
         ASSERT_TRUE(nestedContainerEntity);
 
         //nest the second instance under the first instance
-        m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(initialEntityDom, *nestedContainerEntity);
 
         rootInstance->AddInstance(AZStd::move(nestedInstance));
 
-        m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(modifiedEntityDom, *nestedContainerEntity);
 
         //create patch
         PrefabDom linkPatch;
@@ -219,12 +219,12 @@ namespace UnitTest
         ASSERT_TRUE(nestedContainerEntity);
 
         //update the property on the nested component
-        m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(initialEntityDom, *nestedContainerEntity);
 
         nestedTestComponent = nestedContainerEntity->FindComponent<PrefabTestComponent>();
         nestedTestComponent->m_boolProperty = true;
 
-        m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(modifiedEntityDom, *nestedContainerEntity);
 
         //create patch
         PrefabDom updatePatch;
@@ -296,12 +296,12 @@ namespace UnitTest
         ASSERT_TRUE(nestedContainerEntity);
 
         //update the property on the nested component
-        m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(initialEntityDom, *nestedContainerEntity);
 
         nestedTestComponent = nestedContainerEntity->FindComponent<PrefabTestComponent>();
         nestedTestComponent->m_intProperty = 1;
 
-        m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(modifiedEntityDom, *nestedContainerEntity);
 
         //create patch
         PrefabDom updatePatchIntField;

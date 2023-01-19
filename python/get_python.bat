@@ -22,9 +22,7 @@ call python.cmd --version > NUL
 IF !ERRORLEVEL!==0 (
     echo get_python.bat: Python is already installed:
     call python.cmd --version
-    call "%CMD_DIR%\pip.cmd" install -r "%CMD_DIR%/requirements.txt" --quiet --disable-pip-version-check --no-warn-script-location
-    call "%CMD_DIR%\pip.cmd" install -e "%CMD_DIR%/../scripts/o3de" --quiet --disable-pip-version-check --no-warn-script-location --no-deps
-    exit /B 0
+    goto install_packages
 )
 
 cd /D %CMD_DIR%\..
@@ -59,8 +57,19 @@ if ERRORLEVEL 1 (
     EXIT /b 1
 )
 
+:install_packages
 echo calling PIP to install requirements...
 call "%CMD_DIR%\pip.cmd" install -r "%CMD_DIR%/requirements.txt" --disable-pip-version-check --no-warn-script-location
+if ERRORLEVEL 1 (
+    echo Failed to install the packages listed in %CMD_DIR%\requirements.txt.  Check the log above!
+    EXIT /b 1
+)
+
 call "%CMD_DIR%\pip.cmd" install -e "%CMD_DIR%/../scripts/o3de" --disable-pip-version-check --no-warn-script-location --no-deps
-exit /B %ERRORLEVEL%
+if ERRORLEVEL 1 (
+    echo Failed to install %CMD_DIR%\..\scripts\o3de into python.  Check the log above!
+    EXIT /b 1
+)
+
+exit /b 0
 

@@ -3169,18 +3169,14 @@ namespace AZ
         auto genericClassInfoContainer = AZStd::move(m_moduleLocalGenericClassInfos);
         auto serializeContextSet = AZStd::move(m_serializeContextSet);
         // Un-reflect GenericClassInfo from each serialize context registered with the module
-        // The SerailizeContext uses the SystemAllocator so it is required to be ready in order to remove the data
-        if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
+        for (AZ::SerializeContext* serializeContext : serializeContextSet)
         {
-            for (AZ::SerializeContext* serializeContext : serializeContextSet)
+            for (const auto& [specializedTypeId, genericClassInfo] : genericClassInfoContainer)
             {
-                for (const auto& [specializedTypeId, genericClassInfo] : genericClassInfoContainer)
-                {
-                    serializeContext->RemoveGenericClassInfo(genericClassInfo);
-                }
-
-                serializeContext->m_perModuleSet.erase(this);
+                serializeContext->RemoveGenericClassInfo(genericClassInfo);
             }
+
+            serializeContext->m_perModuleSet.erase(this);
         }
 
         // Cleanup the memory for the GenericClassInfo objects.

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			  xsi:noNamespaceSchemaLocation="../../AutoGen/ScriptCanvasNodeable.xsd">
+	
     <Class Name="CreateSpawnTicketNodeable"
         QualifiedName="Nodeables::Spawning::CreateSpawnTicketNodeable"
         PreferredClassName="CreateSpawnTicket"
@@ -13,6 +15,7 @@
             <Parameter Name="Prefab" Type="const AzFramework::Scripts::SpawnableScriptAssetRef&amp;" Description="Prefab source asset to spawn"/>
             <Return Name="SpawnTicket" Type="AzFramework::EntitySpawnTicket" Shared="true"/>
         </Input>
+		
     </Class>
 </ScriptCanvas>
 
