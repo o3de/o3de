@@ -1180,6 +1180,7 @@ namespace AzToolsFramework
                 {
                     const QModelIndex endIndex = createIndex(beginIndex.row(), VisibleColumnCount - 1, beginIndex.internalId());
                     emit dataChanged(beginIndex, endIndex);
+                    m_entityLayoutQueued = true;
                 }
             }
         
