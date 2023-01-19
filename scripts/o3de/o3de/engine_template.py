@@ -2633,7 +2633,7 @@ def add_args(subparsers) -> None:
     create_project_subparser.add_argument('--no-register', action='store_true', default=False,
                                           help='If the project template is instantiated successfully, it will not register the'
                                                ' project with the global or engine manifest file.')
-    create_project_subparser.add_argument('-v', '--version', type=str, required=False,
+    create_project_subparser.add_argument('--version', type=str, required=False,
                                           help='An optional version. Defaults to 1.0.0')
     create_project_subparser.set_defaults(func=_run_create_project)
 
@@ -2766,7 +2766,7 @@ def add_args(subparsers) -> None:
                        help='Link to any documentation of your Gem i.e. https://o3de.org/docs/user-guide/gems/...')
     create_gem_subparser.add_argument('-ru', '--repo-uri', type=str, required=False,
                        help='An optional URI for the gem repository where your Gem can be downloaded')
-    create_gem_subparser.add_argument('-v', '--version', type=str, required=False,
+    create_gem_subparser.add_argument('--version', type=str, required=False,
                        help='An optional version. Defaults to 1.0.0')
     create_gem_subparser.set_defaults(func=_run_create_gem)
 
