@@ -60,6 +60,7 @@ namespace EMotionFX
                     ->Field("UpdateJointTransformsWhenOutOfView", &EditorActorComponent::m_forceUpdateJointsOOV)
                     ->Field("LodLevel", &EditorActorComponent::m_lodLevel)
                     ->Field("BBoxConfig", &EditorActorComponent::m_bboxConfig)
+                    ->Field("ExcludeFromReflectionCubeMaps", &EditorActorComponent::m_excludeFromReflectionCubeMaps)
                     ;
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -139,6 +140,9 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnSkinningMethodChanged)
                         ->EnumAttribute(SkinningMethod::DualQuat, "Dual quat skinning")
                         ->EnumAttribute(SkinningMethod::Linear, "Linear skinning")
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorActorComponent::m_excludeFromReflectionCubeMaps, "Exclude from reflection cubemaps", "Actor will not be visible in baked reflection probe cubemaps")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnExcludeFromReflectionCubeMapsChanged)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Attach To")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorActorComponent::m_attachmentType,
@@ -188,6 +192,7 @@ namespace EMotionFX
             , m_attachmentJointIndex(0)
             , m_lodLevel(0)
             , m_actorAsset(AZ::Data::AssetLoadBehavior::NoLoad)
+            , m_excludeFromReflectionCubeMaps(false)
         {
         }
 
@@ -652,6 +657,16 @@ namespace EMotionFX
             }
         }
 
+        void EditorActorComponent::OnExcludeFromReflectionCubeMapsChanged()
+        {
+            if (!m_renderActorInstance)
+            {
+                return;
+            }
+
+            m_renderActorInstance->SetExcludeFromReflectionCubeMaps(m_excludeFromReflectionCubeMaps);
+        }
+
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world)
         {
@@ -722,6 +737,7 @@ namespace EMotionFX
             cfg.m_bboxConfig = m_bboxConfig;
             cfg.m_forceUpdateJointsOOV = m_forceUpdateJointsOOV;
             cfg.m_renderFlags = m_renderFlags;
+            cfg.m_excludeFromReflectionCubeMaps = m_excludeFromReflectionCubeMaps;
 
             gameEntity->AddComponent(aznew ActorComponent(&cfg));
         }
@@ -1016,6 +1032,7 @@ namespace EMotionFX
                 if (m_renderActorInstance)
                 {
                     m_renderActorInstance->SetIsVisible(m_entityVisible && m_renderCharacter);
+                    m_renderActorInstance->SetExcludeFromReflectionCubeMaps(m_excludeFromReflectionCubeMaps);
 
                     m_renderActorInstance->SetOnMaterialChangedCallback([this](const AZStd::string& materialName)
                         {

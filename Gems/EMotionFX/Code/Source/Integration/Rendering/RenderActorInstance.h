@@ -51,6 +51,8 @@ namespace EMotionFX
             typedef AZStd::function<void(const AZStd::string& materialName)> MaterialChangedFunction;
             void SetOnMaterialChangedCallback(MaterialChangedFunction callback);
 
+            virtual void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) = 0;
+
             Actor* GetActor() const;
 
         protected:

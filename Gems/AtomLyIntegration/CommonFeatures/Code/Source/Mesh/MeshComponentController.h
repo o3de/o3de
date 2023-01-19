@@ -102,6 +102,7 @@ namespace AZ
             void SetModelAssetPath(const AZStd::string& modelAssetPath) override;
             AZStd::string GetModelAssetPath() const override;
             AZ::Data::Instance<RPI::Model> GetModel() const override;
+            void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) override;
 
             // AtomImGuiTools::AtomImGuiMeshCallbackBus::Handler overrides ...
             const RPI::MeshDrawPacketLods* GetDrawPackets() const override;

@@ -377,6 +377,14 @@ namespace AZ::Render
         return false;
     }
 
+    void AtomActorInstance::SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps)
+    {
+        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        {
+            m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(*m_meshHandle, excludeFromReflectionCubeMaps);
+        }
+    }
+
     AZ::u32 AtomActorInstance::GetJointCount()
     {
         return aznumeric_caster(m_actorInstance->GetActor()->GetSkeleton()->GetNumNodes());

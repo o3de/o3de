@@ -513,6 +513,15 @@ namespace AZ
         {
             return m_meshFeatureProcessor ? m_meshFeatureProcessor->GetModel(m_meshHandle) : Data::Instance<RPI::Model>();
         }
+
+        void MeshComponentController::SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps)
+        {
+            m_configuration.m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+            if (m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, excludeFromReflectionCubeMaps);
+            }
+        }
         
         const RPI::MeshDrawPacketLods* MeshComponentController::GetDrawPackets() const
         {

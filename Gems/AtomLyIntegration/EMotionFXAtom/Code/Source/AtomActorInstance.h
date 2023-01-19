@@ -160,6 +160,7 @@ namespace AZ
             void SetRayTracingEnabled(bool enabled) override;
             bool GetRayTracingEnabled() const override;
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
+            void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) override;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // SkinnedMeshOverrideRequestBus::Handler overrides...

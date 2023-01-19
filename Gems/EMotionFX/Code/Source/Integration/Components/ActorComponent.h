@@ -94,6 +94,8 @@ namespace EMotionFX
                 bool m_forceUpdateJointsOOV = false;
                 BoundingBoxConfiguration m_bboxConfig; ///< Configuration for bounding box type and updates
 
+                bool m_excludeFromReflectionCubeMaps = false;
+
                 static void Reflect(AZ::ReflectContext* context);
             };
 

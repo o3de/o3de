@@ -91,6 +91,9 @@ namespace AZ
 
             //! Returns the axis-aligned bounding box in model space.
             virtual AZ::Aabb GetLocalBounds() = 0;
+
+            //! Sets the option to exclude this mesh from baked reflection probe cubemaps
+            virtual void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) = 0;
         };
         using MeshComponentRequestBus = EBus<MeshComponentRequests>;
 
