@@ -35,7 +35,7 @@ class PersistentStorage(ABC):
         Initializes the persistent storage into a state for which there is no historic data available.
 
         @param config: The runtime configuration to obtain the data file paths from.
-        @param suites_string:  The concatenated test suites string for which the historic data will be obtained for.
+        @param suites_string: The unique key to differentiate the different suite combinations from one another different for which the historic data will be obtained for.
         @param commit: The commit hash for this build.
         """
 
