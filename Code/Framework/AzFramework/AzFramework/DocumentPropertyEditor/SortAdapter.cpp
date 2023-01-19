@@ -240,7 +240,9 @@ namespace AZ::DocumentPropertyEditor
 
     void RowSortAdapter::ResortRow(Dom::Path sortedPath)
     {
-        // TODO: record row's sorted index, remove it, re-cache its data,add it, check its new index. If changed, generate move operation
+        // TODO once the DPE supports move operations:
+        // record row's sorted index, remove it, re-cache its data,add it, check its new index. If changed, generate move operation
+        // NB: this isn't necessary for flat adapters that can't be re-ordered, so the CVarAdapter doesn't need this
     }
 
 } // namespace AZ::DocumentPropertyEditor
