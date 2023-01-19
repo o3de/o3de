@@ -84,6 +84,9 @@ namespace AzToolsFramework
         // ActionManagerNotificationBus overrides ...
         void OnActionStateChanged(AZStd::string actionIdentifier) override;
 
+        // Identifies whether adding a submenu to a menu would generate any circular dependencies.
+        bool WouldGenerateCircularDependency(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier);
+
         AZStd::unordered_map<AZStd::string, EditorMenu> m_menus;
         AZStd::unordered_map<AZStd::string, EditorMenuBar> m_menuBars;
 

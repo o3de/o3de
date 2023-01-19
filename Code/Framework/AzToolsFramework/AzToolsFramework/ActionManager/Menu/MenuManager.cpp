@@ -279,6 +279,13 @@ namespace AzToolsFramework
                 subMenuIdentifier.c_str(), menuIdentifier.c_str()));
         }
 
+        if (WouldGenerateCircularDependency(menuIdentifier, subMenuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" as this would generate a circular dependency.",
+                subMenuIdentifier.c_str(), menuIdentifier.c_str()));
+        }
+
         menuIterator->second.AddSubMenu(sortIndex, subMenuIdentifier);
         m_subMenusToMenusMap[subMenuIdentifier].insert(menuIdentifier);
         m_menusToRefresh.insert(menuIdentifier);
@@ -614,6 +621,26 @@ namespace AzToolsFramework
                 menuIterator->second.RefreshMenu();
             }
         }
+
+        if (!m_menusToRefresh.empty())
+        {
+            RefreshMenus();
+        }
+    }
+
+    bool MenuManager::WouldGenerateCircularDependency(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier)
+    {
+        // Iterate through all menus that have menuIdentifier as their submenu.
+        for (auto identifier : m_subMenusToMenusMap[menuIdentifier])
+        {
+            // Return true if the menu is the submenu we're trying to add, or keep checking with the ancestors.
+            if (identifier == subMenuIdentifier || WouldGenerateCircularDependency(identifier, subMenuIdentifier))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     void MenuManager::RefreshMenuBars()
