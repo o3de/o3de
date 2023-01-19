@@ -23,7 +23,7 @@
                 "name": "inIndex",
                 "displayName": "Index",
                 "description": "Index",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "uint",
                 "defaultValue": {
                     "$type": "unsigned int",

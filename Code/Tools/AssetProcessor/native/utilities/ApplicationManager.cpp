@@ -61,6 +61,7 @@ namespace AssetProcessor
         : public AzFramework::LogComponent
     {
     public:
+        AZ_CLASS_ALLOCATOR(FilteredLogComponent, AZ::SystemAllocator)
         void OutputMessage(AzFramework::LogFile::SeverityLevel severity, const char* window, const char* message) override
         {
             // if we receive an exception it means we are likely to crash.  in that case, even if it occurred in a job thread

@@ -80,6 +80,7 @@ namespace ScriptCanvasEditor
         : public ValidationEffect
     {
     public:
+        AZ_CLASS_ALLOCATOR(UnusedNodeValidationEffect, AZ::SystemAllocator)
         void AddUnusedNode(const AZ::EntityId& graphCanvasNodeId);
         void RemoveUnusedNode(const AZ::EntityId& graphCanvasNodeId);
 

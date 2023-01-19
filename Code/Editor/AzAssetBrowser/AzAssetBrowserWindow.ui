@@ -407,18 +407,13 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>AzQtComponents::TableView</class>
-   <extends>QTreeView</extends>
-   <header>AzQtComponents/Components/Widgets/TableView.h</header>
-  </customwidget>
-  <customwidget>
    <class>AzToolsFramework::AssetBrowser::AssetBrowserTreeView</class>
    <extends>QTreeView</extends>
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h</header>
   </customwidget>
   <customwidget>
    <class>AzToolsFramework::AssetBrowser::AssetBrowserTableView</class>
-   <extends>AzQtComponents::TableView</extends>
+   <extends>QTableView</extends>
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h</header>
   </customwidget>
   <customwidget>

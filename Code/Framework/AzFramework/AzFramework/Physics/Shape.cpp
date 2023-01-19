@@ -19,7 +19,7 @@ namespace Physics
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ColliderConfiguration>()
-                ->Version(6, &Physics::ClassConverters::ColliderConfigurationConverter)
+                ->Version(7, &Physics::ClassConverters::ColliderConfigurationConverter)
                 ->Field("CollisionLayer", &ColliderConfiguration::m_collisionLayer)
                 ->Field("CollisionGroupId", &ColliderConfiguration::m_collisionGroupId)
                 ->Field("Visible", &ColliderConfiguration::m_visible)
@@ -30,7 +30,6 @@ namespace Physics
                 ->Field("Position", &ColliderConfiguration::m_position)
                 ->Field("Rotation", &ColliderConfiguration::m_rotation)
                 ->Field("MaterialSlots", &ColliderConfiguration::m_materialSlots)
-                ->Field("MaterialSelection", &ColliderConfiguration::m_legacyMaterialSelection)
                 ->Field("propertyVisibilityFlags", &ColliderConfiguration::m_propertyVisibilityFlags)
                 ->Field("ColliderTag", &ColliderConfiguration::m_tag)
                 ->Field("RestOffset", &ColliderConfiguration::m_restOffset)

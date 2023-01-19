@@ -38,6 +38,7 @@ namespace UnitTest
             : public AZ::RPI::MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(Splat3Functor, SystemAllocator)
             AZ_RTTI(Splat3Functor, "{4719BBAD-21A1-4909-88E9-C190208BDD00}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(AZ::SerializeContext* serializeContext)
@@ -67,6 +68,7 @@ namespace UnitTest
             : public AZ::RPI::MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(DummyShaderCollectionFunctor, SystemAllocator)
             AZ_RTTI(DummyShaderCollectionFunctor, "{6ED031DC-DADC-4A47-B858-DDA9748700A6}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(AZ::SerializeContext* serializeContext)
