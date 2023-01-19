@@ -44,6 +44,10 @@ namespace AzToolsFramework
                 [this](const QModelIndex& index)
                 {
                     auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+                    if (indexData->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                    {
+                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
+                    }
                     emit entryClicked(indexData);
                 });
 
