@@ -109,17 +109,23 @@ namespace GradientSignal
 
     void GradientSignalEditorSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
     {
+    }
 
+    void GradientSignalEditorSystemComponent::OnActionContextModeBindingHook()
+    {
+        EditorImageGradientComponentMode::BindActionsToModes();
     }
 
     void GradientSignalEditorSystemComponent::Activate()
     {
         GradientPreviewDataWidgetHandler::Register();
         StreamingImagePropertyHandler::Register();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void GradientSignalEditorSystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         GradientPreviewDataWidgetHandler::Unregister();
         // We don't need to unregister the StreamingImagePropertyHandler
         // because its set to auto-delete (default)

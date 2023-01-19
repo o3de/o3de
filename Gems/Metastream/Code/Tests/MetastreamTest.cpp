@@ -35,14 +35,10 @@ protected:
 
     void SetupEnvironment() override
     {
-        AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     }
 
     void TeardownEnvironment() override
     {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     }
 };
 

@@ -176,10 +176,16 @@ namespace AtomToolsFramework
                 AddEditDataAttribute(AZ_CRC_CE("ColorEditorConfiguration"), AZ::RPI::ColorUtils::GetLinearRgbEditorConfig());
             }
 
-            if (!m_config.m_enumValues.empty() && (IsValueInteger() || m_value.is<AZStd::string>()))
+            if (!m_config.m_enumValues.empty() && IsValueInteger())
             {
                 m_editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
                 AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::EnumValues, &DynamicProperty::GetEnumValues);
+            }
+
+            if (!m_config.m_enumValues.empty() && m_value.is<AZStd::string>())
+            {
+                m_editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
+                AddEditDataAttribute(AZ::Edit::Attributes::StringList, m_config.m_enumValues);
             }
         }
     }

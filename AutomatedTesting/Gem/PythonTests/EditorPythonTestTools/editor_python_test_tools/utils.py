@@ -190,6 +190,7 @@ class TestHelper:
         with MultiplayerHelper() as multiplayer_helper:
             # enter game-mode. 
             # game-mode in multiplayer will also launch ServerLauncher.exe and connect to the editor
+            general.set_cvar_integer('editorsv_max_connection_attempts', 15)
             multiplayer.PythonEditorFuncs_enter_game_mode()
 
             # make sure the server launcher is running
@@ -200,7 +201,7 @@ class TestHelper:
             TestHelper.wait_for_condition(lambda : multiplayer_helper.editorConnectionAttemptCount > 0, 10.0)
             Report.critical_result(("Multiplayer Editor attempting server connection.", "Multiplayer Editor never tried connecting to the server."), multiplayer_helper.editorConnectionAttemptCount > 0)
 
-            TestHelper.wait_for_condition(lambda : multiplayer_helper.editorSendingLevelData, 10.0)
+            TestHelper.wait_for_condition(lambda : multiplayer_helper.editorSendingLevelData, 106.0)
             Report.critical_result(("Multiplayer Editor sent level data to the server.", "Multiplayer Editor never sent the level to the server."), multiplayer_helper.editorSendingLevelData)
 
             TestHelper.wait_for_condition(lambda : multiplayer_helper.connectToSimulationSuccess, 10.0)

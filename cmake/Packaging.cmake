@@ -50,7 +50,14 @@ set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_FULL_NAME "Open3D Engine")
 set(CPACK_PACKAGE_VENDOR "O3DE Binary Project a Series of LF Projects, LLC")
 set(CPACK_PACKAGE_CONTACT "info@o3debinaries.org")
-set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
+# prefer the display engine version if available.
+# during development, the display version will be "00.00" or "" in which case we want
+# to use the actual engine version  
+if(NOT ((${O3DE_DISPLAY_VERSION_STRING} STREQUAL "00.00") OR (${O3DE_DISPLAY_VERSION_STRING} STREQUAL "")))
+    set(CPACK_PACKAGE_VERSION "${O3DE_DISPLAY_VERSION_STRING}")
+else()
+    set(CPACK_PACKAGE_VERSION "${O3DE_VERSION_STRING}")
+endif()
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
 
 string(TOLOWER "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}" CPACK_PACKAGE_FILE_NAME)
