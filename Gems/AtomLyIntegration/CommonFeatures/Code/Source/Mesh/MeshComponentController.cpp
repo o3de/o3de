@@ -412,6 +412,8 @@ namespace AZ
                 meshDescriptor.m_useForwardPassIblSpecular = m_configuration.m_useForwardPassIblSpecular;
                 meshDescriptor.m_requiresCloneCallback = RequiresCloning;
                 meshDescriptor.m_isRayTracingEnabled = m_configuration.m_isRayTracingEnabled;
+                meshDescriptor.m_excludeFromReflectionCubeMaps = m_configuration.m_excludeFromReflectionCubeMaps;
+                meshDescriptor.m_isAlwaysDynamic = m_configuration.m_isAlwaysDynamic;
                 m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
@@ -419,10 +421,8 @@ namespace AZ
                     m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
 
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
-                m_meshFeatureProcessor->SetIsAlwaysDynamic(m_meshHandle, m_configuration.m_isAlwaysDynamic);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
-                m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);
                 m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
                 m_meshFeatureProcessor->SetRayTracingEnabled(m_meshHandle, meshDescriptor.m_isRayTracingEnabled);
                 // [GFX TODO] This should happen automatically. m_changeEventHandler should be passed to AcquireMesh
