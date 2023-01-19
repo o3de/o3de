@@ -24,8 +24,6 @@ namespace UnitTest
         void SetUp() override
         {
             LeakDetectionFixture::SetUp();
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
             m_app.reset(aznew ComponentApplication);
@@ -36,8 +34,6 @@ namespace UnitTest
         {
             m_app->Destroy();
             m_app.reset();
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
             LeakDetectionFixture::TearDown();
         }
 

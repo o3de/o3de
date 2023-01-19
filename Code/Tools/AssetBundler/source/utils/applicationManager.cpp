@@ -13,7 +13,6 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Slice/SliceSystemComponent.h>

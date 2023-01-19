@@ -78,7 +78,6 @@
 #include <Editor/DisplaySettings.h>
 #include <Editor/IconManager.h>
 #include <Editor/Settings.h>
-#include <Editor/StringDlg.h>
 #include <Editor/QtViewPaneManager.h>
 #include <Editor/EditorViewportSettings.h>
 #include <Editor/EditorViewportCamera.h>

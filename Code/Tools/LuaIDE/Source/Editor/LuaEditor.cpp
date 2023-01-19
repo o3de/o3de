@@ -30,15 +30,6 @@ int main(int argc, char* argv[])
     int exitCode = 0;
 
     {
-        if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-        }
-        if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-        }
-
         AZStd::unique_ptr<AZ::IO::LocalFileIO> fileIO = AZStd::unique_ptr<AZ::IO::LocalFileIO>(aznew AZ::IO::LocalFileIO());
         AZ::IO::FileIOBase::SetInstance(fileIO.get());
 
@@ -77,15 +68,6 @@ int main(int argc, char* argv[])
         // calling UserWantsToQuit will simply queue the quit, so its safe to call from any thread.
         // your components can query EBUS_EVENT_RESULT(res, LegacyFramework::FrameworkApplicationMessages::IsRunningInGUIMode) to determine
         // if its in GUI mode or not.
-    }
-
-    if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
-    if (AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     }
 
     return exitCode;

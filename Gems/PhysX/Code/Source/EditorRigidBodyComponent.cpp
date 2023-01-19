@@ -16,7 +16,6 @@
 #include <Editor/Source/Components/EditorSystemComponent.h>
 #include <Source/RigidBodyComponent.h>
 #include <Editor/InertiaPropertyHandler.h>
-#include <Editor/EditorClassConverters.h>
 #include <Source/NameConstants.h>
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>
@@ -132,7 +131,7 @@ namespace PhysX
         if (serializeContext)
         {
             serializeContext->Class<EditorRigidBodyConfiguration, AzPhysics::RigidBodyConfiguration>()
-                ->Version(2, &ClassConverters::EditorRigidBodyConfigVersionConverter)
+                ->Version(1)
                 ->Field("Debug Draw Center of Mass", &EditorRigidBodyConfiguration::m_centerOfMassDebugDraw)
             ;
 
