@@ -14,7 +14,7 @@ import azlmbr.atomtools
 import azlmbr.bus as bus
 import azlmbr.paths
 
-from atom_constants import (
+from Atom.atom_utils.atom_constants import (
     AtomToolsDocumentRequestBusEvents, AtomToolsDocumentSystemRequestBusEvents, AtomToolsMainWindowRequestBusEvents,
     EntityPreviewViewportSettingsRequestBusEvents)
 
