@@ -594,6 +594,15 @@ namespace AZ
             }
         }
 
+        bool MeshFeatureProcessor::GetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_descriptor.m_excludeFromReflectionCubeMaps;
+            }
+            return false;
+        }
+
         void MeshFeatureProcessor::SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled)
         {
             if (meshHandle.IsValid())

@@ -189,6 +189,8 @@ namespace AZ
                     ->Event("SetQualityDecayRate", &MeshComponentRequestBus::Events::SetQualityDecayRate)
                     ->Event("GetQualityDecayRate", &MeshComponentRequestBus::Events::GetQualityDecayRate)
                     ->Event("SetRayTracingEnabled", &MeshComponentRequestBus::Events::SetRayTracingEnabled)
+                    ->Event("GetExcludeFromReflectionCubeMaps", &MeshComponentRequestBus::Events::GetExcludeFromReflectionCubeMaps)
+                    ->Event("SetExcludeFromReflectionCubeMaps", &MeshComponentRequestBus::Events::SetExcludeFromReflectionCubeMaps)
                     ->Event("GetRayTracingEnabled", &MeshComponentRequestBus::Events::GetRayTracingEnabled)
                     ->Event("SetVisibility", &MeshComponentRequestBus::Events::SetVisibility)
                     ->Event("GetVisibility", &MeshComponentRequestBus::Events::GetVisibility)
@@ -201,6 +203,7 @@ namespace AZ
                     ->VirtualProperty("MinimumScreenCoverage", "GetMinimumScreenCoverage", "SetMinimumScreenCoverage")
                     ->VirtualProperty("QualityDecayRate", "GetQualityDecayRate", "SetQualityDecayRate")
                     ->VirtualProperty("RayTracingEnabled", "GetRayTracingEnabled", "SetRayTracingEnabled")
+                    ->VirtualProperty("ExcludeFromReflectionCubeMaps", "GetExcludeFromReflectionCubeMaps", "SetExcludeFromReflectionCubeMaps")
                     ->VirtualProperty("Visibility", "GetVisibility", "SetVisibility")
                     ;
                 
@@ -634,6 +637,25 @@ namespace AZ
             if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
             {
                 return m_meshFeatureProcessor->GetRayTracingEnabled(m_meshHandle);
+            }
+
+            return false;
+        }
+
+        void MeshComponentController::SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps)
+        {
+            m_configuration.m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+            if (m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, excludeFromReflectionCubeMaps);
+            }
+        }
+
+        bool MeshComponentController::GetExcludeFromReflectionCubeMaps() const
+        {
+            if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
+            {
+                return m_meshFeatureProcessor->GetExcludeFromReflectionCubeMaps(m_meshHandle);
             }
 
             return false;

@@ -377,6 +377,24 @@ namespace AZ::Render
         return false;
     }
 
+    void AtomActorInstance::SetExcludeFromReflectionCubeMaps(bool enabled)
+    {
+        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        {
+            m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(*m_meshHandle, enabled);
+        }
+    }
+
+    bool AtomActorInstance::GetExcludeFromReflectionCubeMaps() const
+    {
+        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        {
+            return m_meshFeatureProcessor->GetExcludeFromReflectionCubeMaps(*m_meshHandle);
+        }
+
+        return false;
+    }
+
     AZ::u32 AtomActorInstance::GetJointCount()
     {
         return aznumeric_caster(m_actorInstance->GetActor()->GetSkeleton()->GetNumNodes());
