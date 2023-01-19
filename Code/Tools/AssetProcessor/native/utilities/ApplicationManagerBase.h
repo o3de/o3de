@@ -149,7 +149,8 @@ public Q_SLOTS:
 
 protected:
     virtual void InitAssetProcessorManager(AZStd::vector<APCommandLineSwitch>& commandLineInfo);//Deletion of assetProcessor Manager will be handled by the ThreadController
-    virtual void InitAssetCatalog();//Deletion of AssetCatalog will be handled when the ThreadController is deleted by the base ApplicationManager
+    virtual void InitAssetCatalog(); // Deletion of AssetCatalog will be handled when the ThreadController is deleted by the base ApplicationManager
+    virtual void ConnectAssetCatalog();
     virtual void InitRCController();
     virtual void DestroyRCController();
     virtual void InitAssetScanner();
