@@ -165,7 +165,11 @@ namespace AzToolsFramework
         {
             // Ensure the failure was due to the file not existing rather than failing to read the metadata file.
             // It would be bad to continue and overwrite an existing metadata file.
-            if (AZ::IO::FileIOBase::GetInstance()->Exists(path.FixedMaxPathStringAsPosix().c_str()))
+            // Check the size because an empty file is fine to overwrite.
+            AZ::u64 size = 0;
+            AZ::IO::FileIOBase::GetInstance()->Size(path.Native().c_str(), size);
+
+            if (size > 0)
             {
                 AZ_Error(
                     "MetadataManager",

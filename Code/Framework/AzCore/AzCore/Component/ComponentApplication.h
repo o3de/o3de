@@ -104,19 +104,6 @@ namespace AZ
             AZ_TYPE_INFO(ComponentApplication::Descriptor, "{70277A3E-2AF5-4309-9BBF-6161AFBDE792}");
             AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor, SystemAllocator, 0);
 
-            struct AllocatorRemapping
-            {
-                AZ_TYPE_INFO(ComponentApplication::Descriptor::AllocatorRemapping, "{4C865590-4506-4B76-BF14-6CCB1B83019A}");
-                AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor::AllocatorRemapping, OSAllocator, 0);
-
-                static void Reflect(ReflectContext* context, ComponentApplication* app);
-
-                OSString m_from;
-                OSString m_to;
-            };
-
-            typedef AZStd::vector<AllocatorRemapping, OSStdAllocator> AllocatorRemappings;
-
             ///////////////////////////////////////////////
             // SerializeContext::IObjectFactory
             void* Create(const char* name) override;
