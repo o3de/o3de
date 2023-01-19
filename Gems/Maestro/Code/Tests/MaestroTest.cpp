@@ -38,8 +38,6 @@ protected:
 
     void SetupEnvironment() override
     {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
         // Mocks need to be destroyed before the allocators are destroyed, 
         // but if they are member variables, they get destroyed *after*
         // TeardownEnvironment when this Environment class is destroyed
@@ -59,10 +57,7 @@ protected:
     void TeardownEnvironment() override
     {
         BusDisconnect();
-        // Destroy mocks before AZ allocators
         delete m_mocks;
-
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 
 private:

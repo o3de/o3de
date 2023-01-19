@@ -14,28 +14,10 @@ namespace Audio::Platform
 {
     void InitializeAudioAllocators()
     {
-        if (!AZ::AllocatorInstance<AudioSystemAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AudioSystemAllocator>::Create();
-        }
-
-        if (!AZ::AllocatorInstance<AudioBankAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AudioBankAllocator>::Create();
-        }
     }
 
     void ShutdownAudioAllocators()
     {
-        if (AZ::AllocatorInstance<Audio::AudioBankAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<Audio::AudioBankAllocator>::Destroy();
-        }
-
-        if (AZ::AllocatorInstance<Audio::AudioSystemAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Destroy();
-        }
     }
 
 } // namespace Audio::Platform

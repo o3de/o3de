@@ -29,7 +29,6 @@
 
 // Components
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
