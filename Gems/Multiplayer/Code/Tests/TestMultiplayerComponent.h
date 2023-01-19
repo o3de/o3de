@@ -39,6 +39,7 @@ namespace MultiplayerTest
         void OnInit() override;
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnNetworkActivated() override;
 
         AZStd::function<void(Multiplayer::NetEntityId)> m_processInputCallback;
     };

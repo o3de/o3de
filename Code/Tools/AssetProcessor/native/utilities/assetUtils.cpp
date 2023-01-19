@@ -39,6 +39,7 @@
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/UI/Logging/LogLine.h>
 #include <xxhash/xxhash.h>
+#include <native/utilities/UuidManager.h>
 
 #if defined(AZ_PLATFORM_WINDOWS)
 #   include <windows.h>
@@ -871,6 +872,37 @@ namespace AssetUtilities
         }
         AzFramework::StringFunc::Replace(lowerVersion, '\\', '/');
         return AZ::Uuid::CreateName(lowerVersion.c_str());
+    }
+
+    AZ::Uuid GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset)
+    {
+        if (!sourceAsset)
+        {
+            return {};
+        }
+
+        auto* uuidRequests = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+
+        if (uuidRequests)
+        {
+            return uuidRequests->GetUuid(sourceAsset);
+        }
+
+        AZ_Assert(false, "Programmer Error: GetSourceUuid called before IUuidRequests interface is available.");
+        return {};
+    }
+
+    AZStd::unordered_set<AZ::Uuid> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset)
+    {
+        auto* uuidRequests = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+
+        if (uuidRequests)
+        {
+            return uuidRequests->GetLegacyUuids(sourceAsset);
+        }
+
+        AZ_Assert(false, "Programmer Error: GetSourceUuid called before IUuidRequests interface is available.");
+        return {};
     }
 
     void NormalizeFilePaths(QStringList& filePaths)
