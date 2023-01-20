@@ -23,7 +23,6 @@ set(FILES
     SpawnerComponentTest.cpp
     Builders/CopyDependencyBuilderTest.cpp
     Builders/SliceBuilderTests.cpp
-    Builders/LevelBuilderTest.cpp
     Builders/LuaBuilderTests.cpp
     ../Source/LmbrCentral.cpp
     ../Source/LmbrCentralEditor.cpp

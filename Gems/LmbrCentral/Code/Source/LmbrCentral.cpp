@@ -57,8 +57,6 @@
 
 // Asset types
 #include <AzCore/Slice/SliceAsset.h>
-#include <LmbrCentral/Rendering/MaterialAsset.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
 
 // Scriptable Ebus Registration
 #include "Events/ReflectScriptableEvents.h"
@@ -249,43 +247,6 @@ namespace LmbrCentral
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            // Allow loading of Material and Texture Assets which explicitly specialized AzTypeInfo instead of using
-            // the AZ_RTTI Uuid from SimpleAssetReference<T>
-            serializeContext->ClassDeprecate("SimpleAssetReference_MaterialAsset", AZ::Uuid("{B7B8ECC7-FF89-4A76-A50E-4C6CA2B6E6B4}"),
-                [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
-                {
-                    AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
-                    for (int index = 0; index < rootElement.GetNumSubElements(); ++index)
-                    {
-                        childNodeElements.push_back(rootElement.GetSubElement(index));
-                    }
-                    // Convert the rootElement now, the existing child DataElmentNodes are now removed
-                    rootElement.Convert<AzFramework::SimpleAssetReference<MaterialAsset>>(context);
-                    for (AZ::SerializeContext::DataElementNode& childNodeElement : childNodeElements)
-                    {
-                        rootElement.AddElement(AZStd::move(childNodeElement));
-                    }
-                    return true;
-                });
-            serializeContext->ClassDeprecate("SimpleAssetReference_TextureAsset", AZ::Uuid("{68E92460-5C0C-4031-9620-6F1A08763243}"),
-                [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
-                {
-                    AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
-                    for (int index = 0; index < rootElement.GetNumSubElements(); ++index)
-                    {
-                        childNodeElements.push_back(rootElement.GetSubElement(index));
-                    }
-                    // Convert the rootElement now, the existing child DataElmentNodes are now removed
-                    rootElement.Convert<AzFramework::SimpleAssetReference<TextureAsset>>(context);
-                    for (AZ::SerializeContext::DataElementNode& childNodeElement : childNodeElements)
-                    {
-                        rootElement.AddElement(AZStd::move(childNodeElement));
-                    }
-                    return true;
-                });
-            AzFramework::SimpleAssetReference<MaterialAsset>::Register(*serializeContext);
-            AzFramework::SimpleAssetReference<TextureAsset>::Register(*serializeContext);
-
             serializeContext->Class<LmbrCentralSystemComponent, AZ::Component>()
                 ->Version(1)
             ;
@@ -329,22 +290,6 @@ namespace LmbrCentral
     {
         // Register asset handlers. Requires "AssetDatabaseService"
         AZ_Assert(AZ::Data::AssetManager::IsReady(), "Asset manager isn't ready!");
-
-        // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
-        if (auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler(); assetCatalog)
-        {
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<MeshAsset>::Uuid());
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<CharacterDefinitionAsset>::Uuid());
-
-            assetCatalog->AddExtension("cgf");
-            assetCatalog->AddExtension("chr");
-            assetCatalog->AddExtension("cdf");
-            assetCatalog->AddExtension("dds");
-            assetCatalog->AddExtension("caf");
-            assetCatalog->AddExtension("xml");
-            assetCatalog->AddExtension("sprite");
-            assetCatalog->AddExtension("cax");
-        }
 
         AZ::Data::AssetManagerNotificationBus::Handler::BusConnect();
 

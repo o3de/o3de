@@ -91,7 +91,6 @@ namespace AZ
             void OnTick(float timeDelta) override;
             void DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags);
             void UpdateBounds() override;
-            void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
             void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod) override;
             SkinningMethod GetAtomSkinningMethod() const;
             void SetIsVisible(bool isVisible) override;
