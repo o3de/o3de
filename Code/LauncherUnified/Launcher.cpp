@@ -440,15 +440,6 @@ namespace O3DELauncher
         {
             AzGameFramework::GameApplication::StartupParameters gameApplicationStartupParams;
 
-            if (mainInfo.m_allocator)
-            {
-                gameApplicationStartupParams.m_allocator = mainInfo.m_allocator;
-            }
-            else if (AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-            {
-                gameApplicationStartupParams.m_allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
-            }
-
         #if defined(AZ_MONOLITHIC_BUILD)
             gameApplicationStartupParams.m_createStaticModulesCallback = CreateStaticModules;
             gameApplicationStartupParams.m_loadDynamicModules = false;
@@ -471,7 +462,6 @@ namespace O3DELauncher
                 }
             }
 
-            AZ_Assert(AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady(), "System allocator was not created or creation failed.");
             //Initialize the Debug trace instance to create necessary environment variables
             AZ::Debug::Trace::Instance().Init();
 

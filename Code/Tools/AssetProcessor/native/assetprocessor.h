@@ -270,7 +270,7 @@ namespace AssetProcessor
 
         AZStd::string ToString() const
         {
-            AZStd::string lowerSourceName = m_sourceAsset.AbsolutePath().Native();
+            AZStd::string lowerSourceName = m_sourceAsset.AbsolutePath().c_str();
             AZStd::to_lower(lowerSourceName.begin(), lowerSourceName.end());
 
             return AZStd::string::format("%s %s %s", lowerSourceName.c_str(), m_platformIdentifier.c_str(), m_jobKey.c_str());

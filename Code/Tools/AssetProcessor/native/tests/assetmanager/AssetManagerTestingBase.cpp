@@ -17,6 +17,7 @@
 #include <native/tests/assetmanager/AssetManagerTestingBase.h>
 #include <native/utilities/AssetUtilEBusHelper.h>
 #include <unittests/UnitTestUtils.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace UnitTests
 {
@@ -97,9 +98,6 @@ namespace UnitTests
         m_builderInfoHandler.BusConnect();
 
         // Set up the Job Context, required for the PathDependencyManager to do its work
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
         m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
         m_descriptor = AZ::JobManagerComponent::CreateDescriptor();
         m_descriptor->Reflect(m_serializeContext.get());
@@ -126,7 +124,7 @@ namespace UnitTests
         AZStd::string testFilename = "test.stage1";
         m_testFilePath = (scanFolderDir / testFilename).AsPosix().c_str();
 
-        UnitTestUtils::CreateDummyFile(m_testFilePath.c_str(), "unit test file");
+        AZ::Utils::WriteFile("unit test file", m_testFilePath);
 
         m_rc = AZStd::make_unique<AssetProcessor::RCController>(1, 1);
         m_rc->SetDispatchPaused(false);
@@ -149,7 +147,7 @@ namespace UnitTests
                 m_processJobResponse = response;
             });
 
-        m_localFileIo->SetAlias("@log@", (AZ::IO::Path(m_databaseLocationListener.GetAssetRootDir()) / "logs").c_str());
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@log@", (AZ::IO::Path(m_databaseLocationListener.GetAssetRootDir()) / "logs").c_str());
     }
 
     void AssetManagerTestingBase::TearDown()
@@ -170,9 +168,6 @@ namespace UnitTests
         delete m_jobManagerEntity;
 
         delete m_descriptor;
-
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
         m_stateData.reset();
         m_assetProcessorManager.reset();
@@ -268,7 +263,7 @@ namespace UnitTests
                 auto extraFilePath =
                     AZ::IO::Path(request.m_tempDirPath) / "z_extra.txt"; // Z prefix to place at end of list when sorting for processing
 
-                UnitTestUtils::CreateDummyFile(extraFilePath.c_str(), "unit test file");
+                AZ::Utils::WriteFile("unit test file", extraFilePath.Native());
 
                 auto extraProduct = JobProduct{ extraFilePath.c_str(), AZ::Data::AssetType::CreateName("extra"), 2 };
 
