@@ -415,14 +415,13 @@ namespace AZ
                 RootParameterBinding binding = pipelineLayout->GetRootParameterBindingByIndex(srgIndex);
 
                 //Check if we are iterating over the bindless srg slot
-                if (srgSlot != RHI::Limits::Pipeline::ShaderResourceGroupCountMax && shaderResourceGroup == nullptr)
+                if (srgSlot == RHI::ShaderResourceGroupData::BindlessSRGFrequencyId && shaderResourceGroup == nullptr)
                 {
                     // Skip in case the global static heap is already bound
                     if (m_state.m_bindBindlessHeap)
                     {
                         continue;
                     }
-                    AZ_Assert(srgSlot == RHI::ShaderResourceGroupData::BindlessSRGFrequencyId,"Bindless SRG slot needs to match the one described in the shader.");
                     AZ_Assert(binding.m_bindlessTable.IsValid(), "BindlessSRG handles is not valid.");
 
                     switch (pipelineType)
