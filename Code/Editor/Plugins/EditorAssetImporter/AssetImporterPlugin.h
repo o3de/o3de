@@ -36,7 +36,6 @@ public:
     //! Opens the scene settings tool to the specified source asset path.
     //! Returns the window ID of the viewpane, because Python can't have QObjects sent to it.
     virtual AZ::u64 EditImportSettings(const AZStd::string& sourceFilePath) = 0;
-    virtual AZ::u64 GetImportSettingsWindowID() = 0;
 };
 using SceneSettingsAssetImporterForScriptRequestBus = AZ::EBus<SceneSettingsAssetImporterForScriptRequests>;
 
@@ -50,7 +49,6 @@ public:
 
     static void Reflect(AZ::ReflectContext* context);
     AZ::u64 EditImportSettings(const AZStd::string& sourceFilePath) override;
-    AZ::u64 GetImportSettingsWindowID() override;
 };
 
 class AssetImporterPlugin
@@ -108,7 +106,6 @@ public:
     /////////////////////////////////////////////////////////////////////////////
 
     QMainWindow* EditImportSettings(const AZStd::string& sourceFilePath);
-    AZ::u64 GetImportSettingsWindowID();
 
 private:
     AZStd::unique_ptr<AZ::DynamicModuleHandle> LoadSceneLibrary(const char* name, bool explicitInit);

@@ -119,16 +119,6 @@ QMainWindow* AssetImporterPlugin::EditImportSettings(const AZStd::string& source
     return assetImporterWindow;
 }
 
-AZ::u64 AssetImporterPlugin::GetImportSettingsWindowID()
-{
-    const AssetImporterWindow* assetImporterPane = FindViewPane<AssetImporterWindow>(m_toolName.c_str());
-    if (!assetImporterPane)
-    {
-        return 0;
-    }
-    return aznumeric_cast<AZ::u64>(assetImporterPane->winId());
-}
-
 SceneSettingsAssetImporterForScriptRequestHandler::SceneSettingsAssetImporterForScriptRequestHandler()
 {
     SceneSettingsAssetImporterForScriptRequestBus::Handler::BusConnect();
@@ -151,8 +141,7 @@ void SceneSettingsAssetImporterForScriptRequestHandler::Reflect(AZ::ReflectConte
         behavior->EBus<SceneSettingsAssetImporterForScriptRequestBus>("SceneSettingsAssetImporterForScriptRequestBus")
             ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
             ->Attribute(AZ::Script::Attributes::Module, "qt")
-            ->Event("EditImportSettings", &SceneSettingsAssetImporterForScriptRequestBus::Events::EditImportSettings)
-            ->Event("GetImportSettingsWindowID", &SceneSettingsAssetImporterForScriptRequestBus::Events::GetImportSettingsWindowID);
+            ->Event("EditImportSettings", &SceneSettingsAssetImporterForScriptRequestBus::Events::EditImportSettings);
     }
 }
 
@@ -171,9 +160,4 @@ AZ::u64 SceneSettingsAssetImporterForScriptRequestHandler::EditImportSettings(co
     // This is a helper function, to let Python invoke the scene settings tool.
     // Qt objects can't be passed back to Python, so pass the ID of the window.
     return aznumeric_cast<AZ::u64>(importSettingsWindow->winId());
-}
-
-AZ::u64 SceneSettingsAssetImporterForScriptRequestHandler::GetImportSettingsWindowID()
-{
-    return AssetImporterPlugin::GetInstance()->GetImportSettingsWindowID();
 }
