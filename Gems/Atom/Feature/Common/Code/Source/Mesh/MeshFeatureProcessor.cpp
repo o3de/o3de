@@ -146,7 +146,7 @@ namespace AZ
 
         void MeshFeatureProcessor::Deactivate()
         {
-            for (auto&[view, bufferHandler] : m_perViewInstanceDataBufferHandlers)
+            for (auto& bufferHandler : m_perViewInstanceDataBufferHandlers)
             {
                 bufferHandler.Release();
             }
@@ -214,7 +214,10 @@ namespace AZ
                     RPI::MeshDrawPacket& drawPacket = instanceData.m_drawPacket;
                     if (drawPacket.Update(*scene, m_forceRebuildDrawPackets))
                     {
+                        // Clear any cached draw packets, since they need to be re-created
+                        instanceData.m_perViewDrawPackets.clear();
                         instanceData.m_drawSrgInstanceDataIndices.clear();
+                        instanceData.m_drawRootConstantIntervals.clear();
                         // We're going to need an index for m_instanceOffset every frame for each draw item, so cache those here
                         for (auto& drawSrg : drawPacket.GetDrawSrgs())
                         {
@@ -222,6 +225,25 @@ namespace AZ
                                 drawSrg->FindShaderInputConstantIndex(s_m_instanceDataOffset_Name);
 
                             instanceData.m_drawSrgInstanceDataIndices.push_back(drawSrgIndexInstanceOffsetIndex);
+                        }
+                        const RPI::MeshDrawPacket::RootConstantsLayoutList& rootConstantsLayouts =
+                            instanceData.m_drawPacket.GetRootConstantsLayouts();
+
+                        for (size_t i = 0; i < rootConstantsLayouts.size(); ++i)
+                        {
+                            // Get the root constant layout
+                            RHI::ShaderInputConstantIndex shaderInputIndex =
+                                rootConstantsLayouts[i]->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
+
+                            if (shaderInputIndex.IsValid())
+                            {
+                                RHI::Interval interval = rootConstantsLayouts[i]->GetInterval(shaderInputIndex);
+                                instanceData.m_drawRootConstantIntervals.push_back(interval);
+                            }
+                            else
+                            {
+                                instanceData.m_drawRootConstantIntervals.push_back(RHI::Interval{});
+                            }
                         }
                     }
                 }
@@ -349,7 +371,7 @@ namespace AZ
             if (r_enableHardwareInstancing)
             {
                 AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: OnEndCulling");
-
+                size_t viewIndex = 0;
                 for (const RPI::ViewPtr& view : packet.m_views)
                 {
                     // Update the buffer that stores the instance data for this frames visible instances
@@ -364,11 +386,16 @@ namespace AZ
                     RPI::VisibilityListView visibilityList = view->GetVisibilityList();
                     size_t instanceBufferCount = visibilityList.size();
 
-                    AZStd::vector<uint32_t>& perViewInstanceData = m_perViewInstanceData[view.get()];
+                    // Initialize the instance data if it hasn't been created yet
+                    if (m_perViewInstanceData.size() <= viewIndex)
+                    {
+                        m_perViewInstanceData.push_back(AZStd::vector<uint32_t>());
+                    }
+
+                    AZStd::vector<uint32_t>& perViewInstanceData = m_perViewInstanceData[viewIndex];
 
                     // Initialize the buffer handler if it hasn't been created yet
-                    const auto& bufferHandlerIter = m_perViewInstanceDataBufferHandlers.find(view.get());
-                    if (bufferHandlerIter == m_perViewInstanceDataBufferHandlers.end())
+                    if (m_perViewInstanceDataBufferHandlers.size() <= viewIndex)
                     {
                         GpuBufferHandler::Descriptor desc;
                         desc.m_bufferName = "MeshInstanceDataBuffer";
@@ -376,31 +403,19 @@ namespace AZ
                         desc.m_elementSize = sizeof(uint32_t);
                         desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
-                        m_perViewInstanceDataBufferHandlers[view.get()] = GpuBufferHandler(desc);
+                        m_perViewInstanceDataBufferHandlers.push_back(GpuBufferHandler(desc));
                     }
 
-                    // TODO: don't do this map lookup a second time
-                    GpuBufferHandler& instanceDataBufferHandler = m_perViewInstanceDataBufferHandlers[view.get()];
+                    GpuBufferHandler& instanceDataBufferHandler = m_perViewInstanceDataBufferHandlers[viewIndex];
 
                     if (instanceBufferCount > 0)
                     {
-                        AZStd::vector<uint32_t> visibleInstanceCounts;
-                        visibleInstanceCounts.reserve(instanceBufferCount);
-
-                        // Normally we'll do a pass to count all the visible instances for each view,
-                        // but for now, we know it's always 1
-                        for (size_t i = 0; i < instanceBufferCount; ++i)
-                        {
-                            // Always assume there is only one instance
-                            constexpr uint32_t instanceCount = 1;
-                            visibleInstanceCounts.push_back(instanceCount);
-                        }
-
                         perViewInstanceData.reserve(instanceBufferCount);
                         perViewInstanceData.clear();
                     }
 
                     AZStd::unordered_set<uint32_t> visibleInstanceIndices;
+                    // Even though this is larger than actual number of visible instance groups, reserve memory here to avoid several allocations later
                     visibleInstanceIndices.reserve(instanceBufferCount);
                     for (const RPI::VisiblityEntryProperties& visibilityEntry : visibilityList)
                     {
@@ -420,7 +435,12 @@ namespace AZ
                                 // The per-instance data is just the objectId, which is used to look up the object transform
                                 // After this first pass, we will accumulate all the per-instance data into one buffer for the view,
                                 // sorted by the instance key so that all data for any objects instanced together is contiguous
-                                instanceData.m_perViewInstanceData[view.get()].push_back(objectId);
+                                if (instanceData.m_perViewInstanceData.size() <= viewIndex)
+                                {
+                                    instanceData.m_perViewInstanceData.resize(viewIndex + 1);
+                                    instanceData.m_perViewDrawPackets.resize(viewIndex + 1);
+                                }
+                                instanceData.m_perViewInstanceData[viewIndex].push_back(objectId);
                                 visibleInstanceIndices.insert(instanceIndex);
                             }
                         }
@@ -430,13 +450,21 @@ namespace AZ
                     {
                         MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
 
-                        // Clone the draw packet
-                        RHI::DrawPacketBuilder drawPacketBuilder;
-                        RHI::Ptr<RHI::DrawPacket> clonedDrawPacket =
-                            const_cast<RHI::DrawPacket*>(drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
+                        if (instanceData.m_perViewDrawPackets.size() <= viewIndex)
+                        {
+                            instanceData.m_perViewDrawPackets.resize(viewIndex + 1);
+                        }
 
-                        // Keep the refcount alive
-                        instanceData.m_perViewDrawPackets[view.get()] = clonedDrawPacket;
+                        // Cache a cloned drawpacket here
+                        if (!instanceData.m_perViewDrawPackets[viewIndex])
+                        {
+                            // Clone the draw packet
+                            RHI::DrawPacketBuilder drawPacketBuilder;
+                            instanceData.m_perViewDrawPackets[viewIndex] =
+                                const_cast<RHI::DrawPacket*>(drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
+                        }
+
+                        RHI::Ptr<RHI::DrawPacket> clonedDrawPacket = instanceData.m_perViewDrawPackets[viewIndex];
 
                         // Get the instanceData offset
                         // The offset into the per-instance data is part of the instanced draw call. This can change every frame,
@@ -444,19 +472,13 @@ namespace AZ
                         [[maybe_unused]] uint32_t instanceDataOffset = static_cast<uint32_t>(perViewInstanceData.size());
 
                         // Set the instance data offset
-                        const RPI::MeshDrawPacket::RootConstantsLayoutList& rootConstantsLayouts =
-                            instanceData.m_drawPacket.GetRootConstantsLayouts();
-
                         for (size_t i = 0; i < clonedDrawPacket->GetDrawItemCount(); ++i)
                         {
                             // Get the root constant layout
-                            RHI::ShaderInputConstantIndex shaderInputIndex =
-                                rootConstantsLayouts[i]->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
-                            if (shaderInputIndex.IsValid())
+                            if (instanceData.m_drawRootConstantIntervals[i].IsValid())
                             {
-                                RHI::Interval interval = rootConstantsLayouts[i]->GetInterval(shaderInputIndex);
                                 AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
-                                clonedDrawPacket->SetRootConstant(i, interval, data);
+                                clonedDrawPacket->SetRootConstant(i, instanceData.m_drawRootConstantIntervals[i], data);
                             }
                             else
                             {
@@ -469,7 +491,7 @@ namespace AZ
                         }
 
                         // These are the object Id's (instance data) for all the instances visible by this view
-                        AZStd::vector<uint32_t>& instanceDataForCurrentIndexAndView = instanceData.m_perViewInstanceData[view.get()];
+                        AZStd::vector<uint32_t>& instanceDataForCurrentIndexAndView = instanceData.m_perViewInstanceData[viewIndex];
                         // This is the number of visible instances for this view
                         uint32_t instanceCount = static_cast<uint32_t>(instanceDataForCurrentIndexAndView.size());
                         // Set the cloned draw packet instance count
@@ -494,6 +516,7 @@ namespace AZ
 
                     // create output buffer descriptors
                     instanceDataBufferHandler.UpdateBuffer(perViewInstanceData);
+                    viewIndex++;
                 }
             }
         }
@@ -1478,6 +1501,26 @@ namespace AZ
                                 drawSrg->FindShaderInputConstantIndex(s_m_instanceDataOffset_Name);
 
                             instanceData.m_drawSrgInstanceDataIndices.push_back(drawSrgIndexInstanceOffsetIndex);
+                        }
+
+                        const RPI::MeshDrawPacket::RootConstantsLayoutList& rootConstantsLayouts =
+                            instanceData.m_drawPacket.GetRootConstantsLayouts();
+
+                        for (size_t i = 0; i < rootConstantsLayouts.size(); ++i)
+                        {
+                            // Get the root constant layout
+                            RHI::ShaderInputConstantIndex shaderInputIndex =
+                                rootConstantsLayouts[i]->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
+
+                            if (shaderInputIndex.IsValid())
+                            {
+                                RHI::Interval interval = rootConstantsLayouts[i]->GetInterval(shaderInputIndex);
+                                instanceData.m_drawRootConstantIntervals.push_back(interval);
+                            }
+                            else
+                            {
+                                instanceData.m_drawRootConstantIntervals.push_back(RHI::Interval{});
+                            }
                         }
                     }
                 }

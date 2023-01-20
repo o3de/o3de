@@ -28,6 +28,11 @@ namespace AZ
 
             bool operator == (const Interval& rhs) const;
             bool operator != (const Interval& rhs) const;
+
+            bool IsValid()
+            {
+                return !(m_min == 0 && m_max == 0);
+            }
         };
     }
 }

@@ -320,8 +320,8 @@ namespace AZ
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
             RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
             AZ::RHI::Handle<uint32_t> m_meshMovedFlag;
-            AZStd::unordered_map<const RPI::View*, AZStd::vector<uint32_t>> m_perViewInstanceData;
-            AZStd::unordered_map<const RPI::View*, GpuBufferHandler> m_perViewInstanceDataBufferHandlers;
+            AZStd::vector<AZStd::vector<uint32_t>> m_perViewInstanceData;
+            AZStd::vector<GpuBufferHandler> m_perViewInstanceDataBufferHandlers;
             bool m_forceRebuildDrawPackets = false;
             bool m_reportShaderOptionFlags = false;
             bool m_enablePerMeshShaderOptionFlags = false;
