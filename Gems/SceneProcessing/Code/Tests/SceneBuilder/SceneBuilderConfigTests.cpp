@@ -8,6 +8,7 @@
 
 #include <gmock/gmock.h>
 #include <AzTest/AzTest.h>
+#include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -22,6 +23,7 @@
 
 class SceneProcessingConfigTest
     : public UnitTest::LeakDetectionFixture
+    , public AZ::Debug::TraceMessageBus::Handler
 {
 public:
     void SetUp() override
@@ -61,10 +63,14 @@ public:
                 return true;
             }
         );
+
+        AZ::Debug::TraceMessageBus::Handler::BusConnect();
     }
 
     void TearDown() override
     {
+        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
+
         EXPECT_EQ(m_fileIOMock.get(), AZ::IO::FileIOBase::GetInstance());
         AZ::IO::FileIOBase::SetInstance(nullptr);
         AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
@@ -104,11 +110,23 @@ public:
         m_registrationContext->DisableRemoveReflection();
     }
 
+    // AZ::Debug::TraceMessageBus::Handler overrides
+    bool OnWarning(const char* window, const char* message) override
+    {
+        AZ_UNUSED(window);
+        AZ_UNUSED(message);
+
+        ++m_warningsCount;
+
+        return true;
+    }
+
     AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
     AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
     AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
     AZStd::unique_ptr<::testing::NiceMock<AZ::IO::MockFileIOBase>> m_fileIOMock;
     AZ::IO::FileIOBase* m_prevFileIO = nullptr;
+    int m_warningsCount = 0;
 };
 
 TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_EmptySetReg_ReturnsEmptyGetScriptConfigList)
@@ -249,7 +267,7 @@ TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameS
     AZ::SceneProcessingConfig::SceneProcessingConfigSystemComponent sceneProcessingConfigSystemComponent;
     sceneProcessingConfigSystemComponent.Activate();
 
-    const AZStd::vector<AZ::SceneProcessingConfig::SoftNameSetting*>* result = nullptr;
+    const AZStd::vector<AZStd::unique_ptr<AZ::SceneProcessingConfig::SoftNameSetting>>* result = nullptr;
     AZ::SceneProcessingConfig::SceneProcessingConfigRequestBus::BroadcastResult(
         result,
         &AZ::SceneProcessingConfig::SceneProcessingConfigRequests::GetSoftNames);
@@ -262,7 +280,66 @@ TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameS
     RemoveReflectedTypes();
 }
 
-TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameSettings_IgnoreDuplicateSoftNameSettings)
+TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameSettings_AddSoftNameSettingsWithDifferentTypeIdAndSameVirtualType)
+{
+    const char* settings = R"JSON(
+    {
+        "O3DE": {
+            "AssetProcessor": {
+                "SceneBuilder": {
+                    "NodeSoftNameSettings": [
+                        {
+                            "pattern": {
+                                "pattern": "^.*_[Ll][Oo][Dd]_?1(_optimized)?$",
+                                "matcher": 2
+                            },
+                            "virtualType": "Ignore",
+                            "includeChildren": true
+                        }
+                    ],
+                    "FileSoftNameSettings": [
+                        {
+                            "pattern": {
+                                "pattern": "_anim",
+                                "matcher": 1
+                            },
+                            "virtualType": "Ignore",
+                            "inclusiveList": false,
+                            "graphTypes": {
+                                "types": [
+                                    {
+                                        "name": "IAnimationData"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }  
+    )JSON";
+    m_settingsRegistry->MergeSettings(settings, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+
+    ReflectTypes();
+
+    AZ::SceneProcessingConfig::SceneProcessingConfigSystemComponent sceneProcessingConfigSystemComponent;
+    sceneProcessingConfigSystemComponent.Activate();
+
+    const AZStd::vector<AZStd::unique_ptr<AZ::SceneProcessingConfig::SoftNameSetting>>* result = nullptr;
+    AZ::SceneProcessingConfig::SceneProcessingConfigRequestBus::BroadcastResult(
+        result,
+        &AZ::SceneProcessingConfig::SceneProcessingConfigRequests::GetSoftNames);
+    EXPECT_EQ(result->size(), 2);
+    EXPECT_EQ(result->at(0)->GetVirtualType(), "Ignore");
+    EXPECT_EQ(result->at(1)->GetVirtualType(), "Ignore");
+
+    sceneProcessingConfigSystemComponent.Deactivate();
+
+    RemoveReflectedTypes();
+}
+
+TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameSettings_IgnoreSoftNameSettingsWithSameTypeIdAndSameVirtualType)
 {
     const char* settings = R"JSON(
     {
@@ -281,7 +358,7 @@ TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameS
                         {
                             "pattern": {
                                 "pattern": "^.*_[Ll][Oo][Dd]_?1(_optimized)?$",
-                                "matcher": 2
+                                "matcher": 0
                             },
                             "virtualType": "LODMesh1",
                             "includeChildren": true
@@ -310,10 +387,11 @@ TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameS
     AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     sceneProcessingConfigSystemComponent.Activate();
 
-    const AZStd::vector<AZ::SceneProcessingConfig::SoftNameSetting*>* result = nullptr;
+    const AZStd::vector<AZStd::unique_ptr<AZ::SceneProcessingConfig::SoftNameSetting>>* result = nullptr;
     AZ::SceneProcessingConfig::SceneProcessingConfigRequestBus::BroadcastResult(
         result,
         &AZ::SceneProcessingConfig::SceneProcessingConfigRequests::GetSoftNames);
+
     EXPECT_EQ(result->size(), 2);
     EXPECT_EQ(result->at(0)->GetVirtualType(), "LODMesh1");
     EXPECT_EQ(result->at(1)->GetVirtualType(), "LODMesh2");
@@ -323,17 +401,56 @@ TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameS
     RemoveReflectedTypes();
 }
 
-TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameSettings_DefaultSoftNameSettings)
+TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameSettings_WarningWithoutSettingsRegistry)
 {
+    // Expect to get one warning when soft name settings cannot be read from the settings registry
     AZ::SceneProcessingConfig::SceneProcessingConfigSystemComponent sceneProcessingConfigSystemComponent;
+    EXPECT_EQ(m_warningsCount, 1);
     sceneProcessingConfigSystemComponent.Activate();
 
-    const AZStd::vector<AZ::SceneProcessingConfig::SoftNameSetting*>* result = nullptr;
+    const AZStd::vector<AZStd::unique_ptr<AZ::SceneProcessingConfig::SoftNameSetting>>* result = nullptr;
     AZ::SceneProcessingConfig::SceneProcessingConfigRequestBus::BroadcastResult(
         result,
         &AZ::SceneProcessingConfig::SceneProcessingConfigRequests::GetSoftNames);
-    // 8 soft name settings are added by default if there's no setting registry setup
-    EXPECT_EQ(result->size(), 8);
+
+    EXPECT_EQ(result->size(), 0);
 
     sceneProcessingConfigSystemComponent.Deactivate();
+}
+
+TEST_F(SceneProcessingConfigTest, SceneProcessingConfigSystemComponent_SoftNameSettings_NoWarningWithEmptySettingsRegistry)
+{
+    const char* settings = R"JSON(
+    {
+        "O3DE": {
+            "AssetProcessor": {
+                "SceneBuilder": {
+                    "NodeSoftNameSettings": [
+                    ],
+                    "FileSoftNameSettings": [
+                    ]
+                }
+            }
+        }
+    }  
+    )JSON";
+    m_settingsRegistry->MergeSettings(settings, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+
+    ReflectTypes();
+
+    AZ::SceneProcessingConfig::SceneProcessingConfigSystemComponent sceneProcessingConfigSystemComponent;
+    EXPECT_EQ(m_warningsCount, 0);
+    sceneProcessingConfigSystemComponent.Activate();
+
+    const AZStd::vector<AZStd::unique_ptr<AZ::SceneProcessingConfig::SoftNameSetting>>* result = nullptr;
+
+    AZ::SceneProcessingConfig::SceneProcessingConfigRequestBus::BroadcastResult(
+        result,
+        &AZ::SceneProcessingConfig::SceneProcessingConfigRequests::GetSoftNames);
+
+    EXPECT_EQ(result->size(), 0);
+
+    sceneProcessingConfigSystemComponent.Deactivate();
+
+    RemoveReflectedTypes();
 }

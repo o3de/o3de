@@ -40,50 +40,44 @@ namespace AZ
             ActivateSceneModule(SceneProcessing::s_sceneDataModule);
             ActivateSceneModule(SceneProcessing::s_sceneBuilderModule);
 
-            PopulateDefaultSoftNameSettings();
+            PopulateSoftNameSettings();
             m_UseCustomNormals = true;
         }
 
-        void SceneProcessingConfigSystemComponent::PopulateDefaultSoftNameSettings()
+        void SceneProcessingConfigSystemComponent::PopulateSoftNameSettings()
         {
+            bool softNameSettingsFound = false;
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             if (settingsRegistry)
             {
-                AddSoftNameSettingsFromSettingResitry<NodeSoftNameSetting>(settingsRegistry, AssetProcessorDefaultNodeSoftNameSettingsKey);
-                AddSoftNameSettingsFromSettingResitry<FileSoftNameSetting>(settingsRegistry, AssetProcessorDefaultFileSoftNameSettingsKey);
+                softNameSettingsFound =
+                    AddSoftNameSettingsFromSettingsRegistry<NodeSoftNameSetting>(settingsRegistry, AssetProcessorDefaultNodeSoftNameSettingsKey);
+                softNameSettingsFound = softNameSettingsFound &&
+                    AddSoftNameSettingsFromSettingsRegistry<FileSoftNameSetting>(settingsRegistry, AssetProcessorDefaultFileSoftNameSettingsKey);
             }
 
-            if (m_softNames.empty())
-            {
-                // Defaults in case there's no config setup
-                m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]_?1(_optimized)?$", SceneAPI::SceneCore::PatternMatcher::MatchApproach::Regex, "LODMesh1", true));
-                m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]_?2(_optimized)?$", SceneAPI::SceneCore::PatternMatcher::MatchApproach::Regex, "LODMesh2", true));
-                m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]_?3(_optimized)?$", SceneAPI::SceneCore::PatternMatcher::MatchApproach::Regex, "LODMesh3", true));
-                m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]_?4(_optimized)?$", SceneAPI::SceneCore::PatternMatcher::MatchApproach::Regex, "LODMesh4", true));
-                m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]_?5(_optimized)?$", SceneAPI::SceneCore::PatternMatcher::MatchApproach::Regex, "LODMesh5", true));
-                m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Pp][Hh][Yy][Ss](_optimized)?$", SceneAPI::SceneCore::PatternMatcher::MatchApproach::Regex, "PhysicsMesh", true));
-                m_softNames.push_back(aznew NodeSoftNameSetting("_ignore", SceneAPI::SceneCore::PatternMatcher::MatchApproach::PostFix, "Ignore", false));
-                // If the filename ends with "_anim" this will mark all nodes as "Ignore" unless they're derived from IAnimationData. This will
-                // cause only animations to be exported from the source scene file even if there's other data available.
-                m_softNames.push_back(aznew FileSoftNameSetting("_anim", SceneAPI::SceneCore::PatternMatcher::MatchApproach::PostFix, "Ignore", false,
-                    { FileSoftNameSetting::GraphType(SceneAPI::DataTypes::IAnimationData::TYPEINFO_Name()) }));
-            }
+            AZ_Warning("SceneProcessing", softNameSettingsFound,
+                "No soft name settings are found from the settings registry. If you want to customize the soft naming convertions, "
+                "Please override the default values using the Project User Registry or the global machine registry (~/.o3de/Registry/) "
+                "instead of modifying the default Gems/SceneSettings/Registry/SoftNameSettings.setreg.");
         }
 
         template<class SoftNameSettingsType>
-        void SceneProcessingConfigSystemComponent::AddSoftNameSettingsFromSettingResitry(
+        bool SceneProcessingConfigSystemComponent::AddSoftNameSettingsFromSettingsRegistry(
             AZ::SettingsRegistryInterface* settingsRegistry, AZStd::string_view settingRegistryKey)
         {
-            AZStd::vector<SoftNameSettingsType*> softNameSettings;
-            settingsRegistry->GetObject(softNameSettings, settingRegistryKey);
-            for (SoftNameSettingsType* softNameSetting : softNameSettings)
+            AZStd::vector<AZStd::unique_ptr<SoftNameSettingsType>> softNameSettings;
+            if (!settingsRegistry->GetObject(softNameSettings, settingRegistryKey))
             {
-                if (!AddSoftName(softNameSetting))
-                {
-                    delete softNameSetting;
-                    softNameSetting = nullptr;
-                }
+                return false;
             }
+
+            for (AZStd::unique_ptr<SoftNameSettingsType>& softNameSetting : softNameSettings)
+            {
+                AddSoftName(AZStd::move(softNameSetting));
+            }
+
+            return true;
         }
 
         void SceneProcessingConfigSystemComponent::Activate()
@@ -114,10 +108,6 @@ namespace AZ
 
         void SceneProcessingConfigSystemComponent::Clear()
         {
-            for (auto* softName : m_softNames)
-            {
-                delete softName;
-            }
             m_softNames.clear();
             m_softNames.shrink_to_fit();
             m_scriptConfigList.clear();
@@ -125,19 +115,19 @@ namespace AZ
             m_UseCustomNormals = true;
         }
 
-        const AZStd::vector<SoftNameSetting*>* SceneProcessingConfigSystemComponent::GetSoftNames()
+        const AZStd::vector<AZStd::unique_ptr<SoftNameSetting>>* SceneProcessingConfigSystemComponent::GetSoftNames()
         {
             return &m_softNames;
         }
 
-        bool SceneProcessingConfigSystemComponent::AddSoftName(SoftNameSetting* newSoftname)
+        bool SceneProcessingConfigSystemComponent::AddSoftName(AZStd::unique_ptr<SoftNameSetting> newSoftname)
         {
             bool success = true;
             Crc32 newHash = newSoftname->GetVirtualTypeHash();
-            for (SoftNameSetting* softName : m_softNames)
+            for (AZStd::unique_ptr<SoftNameSetting>& softName : m_softNames)
             {
                 //First check whether an item with the same CRC value already exists.
-                if (newHash == softName->GetVirtualTypeHash())
+                if (newHash == softName->GetVirtualTypeHash() && softName->GetTypeId() == newSoftname->GetTypeId())
                 {
                     AZ_Error("SceneProcessing", false, "newSoftname(%s) and existing softName(%s) have the same hash: 0x%X",
                              newSoftname->GetVirtualType().c_str(), softName->GetVirtualType().c_str(), newHash);
@@ -147,7 +137,7 @@ namespace AZ
             }
             if (success)
             {
-                m_softNames.push_back(newSoftname);
+                m_softNames.push_back(AZStd::move(newSoftname));
             }
             return success;
         }
@@ -156,12 +146,8 @@ namespace AZ
             SceneAPI::SceneCore::PatternMatcher::MatchApproach approach,
             const char* virtualType, bool includeChildren)
         {
-            SoftNameSetting* newSoftname = aznew NodeSoftNameSetting(pattern, approach, virtualType, includeChildren);
-            bool success = AddSoftName(newSoftname);
-            if (!success)
-            {
-                delete newSoftname;
-            }
+            AZStd::unique_ptr<SoftNameSetting> newSoftname = AZStd::make_unique<NodeSoftNameSetting>(pattern, approach, virtualType, includeChildren);
+            bool success = AddSoftName(AZStd::move(newSoftname));
             return success;
         }
 
@@ -169,13 +155,10 @@ namespace AZ
             SceneAPI::SceneCore::PatternMatcher::MatchApproach approach,
             const char* virtualType, bool inclusive, const AZStd::string& graphObjectTypeName)
         {
-            SoftNameSetting* newSoftname = aznew FileSoftNameSetting(pattern, approach, virtualType, inclusive,
-                { FileSoftNameSetting::GraphType(graphObjectTypeName) });
-            bool success = AddSoftName(newSoftname);
-            if (!success)
-            {
-                delete newSoftname;
-            }
+            std::initializer_list<FileSoftNameSetting::GraphType> graphTypes({ FileSoftNameSetting::GraphType(graphObjectTypeName) });
+            AZStd::unique_ptr<SoftNameSetting> newSoftname = AZStd::make_unique<FileSoftNameSetting>(
+                pattern, approach, virtualType, inclusive, graphTypes);
+            bool success = AddSoftName(AZStd::move(newSoftname));
             return success;
         }
 
@@ -274,7 +257,7 @@ namespace AZ
             if (serialize)
             {
                 serialize->Class<SceneProcessingConfigSystemComponent, AZ::Component>()
-                    ->Version(2)
+                    ->Version(3)
                     ->EventHandler<SceneProcessingConfigSystemComponentSerializationEvents>() 
                     ->Field("softNames", &SceneProcessingConfigSystemComponent::m_softNames)
                     ->Field("useCustomNormals", &SceneProcessingConfigSystemComponent::m_UseCustomNormals);

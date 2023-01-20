@@ -46,6 +46,14 @@
                     {
                         "pattern": {
                             "pattern": "^.*_[Pp][Hh][Yy][Ss](_optimized)?$",
+                            "matcher": 2
+                        },
+                        "virtualType": "PhysicsMesh",
+                        "includeChildren": true
+                    },
+                    {
+                        "pattern": {
+                            "pattern": "^.*_[Pp][Hh][Yy][Ss](_optimized)?$",
                             "matcher": 1
                         },
                         "virtualType": "Ignore",
