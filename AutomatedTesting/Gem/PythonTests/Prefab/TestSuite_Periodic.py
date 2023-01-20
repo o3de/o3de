@@ -50,6 +50,9 @@ class TestAutomationNoOverrides(EditorTestSuite):
     class test_Lua_Spawnables_SimpleSpawnAndDespawn(EditorBatchedTest):
         from .tests.spawnables import Lua_Spawnables_SimpleSpawnAndDespawn as test_module
 
+    class test_DeletePrefab_AndCreateWithSameName(EditorBatchedTest):
+        from .tests.delete_prefab import DeletePrefab_AndCreateWithSameName as test_module
+
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])

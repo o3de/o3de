@@ -103,7 +103,7 @@ namespace AzToolsFramework
             * @param prefabDom A Prefab DOM presenting this Template.
             * @return A unique id for the new Template.
             */
-            TemplateId AddTemplate(const AZ::IO::Path& filePath, PrefabDom prefabDom) override;
+            TemplateId AddTemplate(const AZ::IO::Path& filePath, PrefabDom prefabDom, TemplateId templateId = InvalidTemplateId) override;
 
             /**
              * Updates relative filepath location of a prefab (in case of SaveAs operation).

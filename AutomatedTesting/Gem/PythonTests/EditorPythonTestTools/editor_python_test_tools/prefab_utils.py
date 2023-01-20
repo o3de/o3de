@@ -226,7 +226,6 @@ class Prefab:
         :param prefab_instance_name: A name for the very first instance generated while prefab creation. The default instance name is the same as the file name in file_path.
         :return: Created Prefab object and the very first PrefabInstance object owned by the prefab.
         """
-        assert not Prefab.is_prefab_loaded(file_path), f"Can't create Prefab '{file_path}' since the prefab already exists"
 
         new_prefab = Prefab(file_path)
         entity_ids = [entity.id for entity in entities]

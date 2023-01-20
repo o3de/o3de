@@ -68,10 +68,15 @@ namespace AzToolsFramework
             AZ::Interface<PrefabLoaderInterface>::Unregister(this);
         }
 
-        TemplateId PrefabLoader::LoadTemplateFromFile(AZ::IO::PathView filePath)
+        TemplateId PrefabLoader::LoadTemplateFromFile(AZ::IO::PathView filePath, TemplateId templateId)
         {
             AZStd::unordered_set<AZ::IO::Path> progressedFilePathsSet;
-            TemplateId newTemplateId = LoadTemplateFromFile(filePath, progressedFilePathsSet);
+            TemplateId newTemplateId = LoadTemplateFromFile(filePath, progressedFilePathsSet, templateId);
+            if (templateId != InvalidTemplateId)
+            {
+                AZ_Assert(
+                    newTemplateId == templateId, "PrefabLoader::LoadTemplateFromFile - Provided template id differs from the one created.");
+            }
             return newTemplateId;
         }
 
@@ -352,7 +357,8 @@ namespace AzToolsFramework
             return false;
         }
 
-        TemplateId PrefabLoader::LoadTemplateFromFile(AZ::IO::PathView filePath, AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet)
+        TemplateId PrefabLoader::LoadTemplateFromFile(
+            AZ::IO::PathView filePath, AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet, TemplateId templateId)
         {
             if (!IsValidPrefabPath(filePath))
             {
@@ -378,7 +384,7 @@ namespace AzToolsFramework
                 return InvalidTemplateId;
             }
 
-            return LoadTemplateFromString(readResult.GetValue(), filePath, progressedFilePathsSet);
+            return LoadTemplateFromString(readResult.GetValue(), filePath, progressedFilePathsSet, templateId);
         }
 
         TemplateId PrefabLoader::LoadTemplateFromString(
@@ -392,7 +398,8 @@ namespace AzToolsFramework
         TemplateId PrefabLoader::LoadTemplateFromString(
             AZStd::string_view fileContent,
             AZ::IO::PathView originPath,
-            AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet)
+            AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet,
+            TemplateId templateId)
         {
             if (!IsValidPrefabPath(originPath))
             {
@@ -447,7 +454,8 @@ namespace AzToolsFramework
             sourcePath.Set(readPrefabFileResult.GetValue(), relativePath.Native().c_str());
 
             // Create new Template with the Prefab DOM.
-            TemplateId newTemplateId = m_prefabSystemComponentInterface->AddTemplate(relativePath, readPrefabFileResult.TakeValue());
+            TemplateId newTemplateId =
+                m_prefabSystemComponentInterface->AddTemplate(relativePath, readPrefabFileResult.TakeValue(), templateId);
             if (newTemplateId == InvalidTemplateId)
             {
                 AZ_Error(

@@ -35,7 +35,8 @@ namespace AzToolsFramework
             virtual TemplateReference FindTemplate(TemplateId id) = 0;
             virtual LinkReference FindLink(const LinkId& id) = 0;
 
-            virtual TemplateId AddTemplate(const AZ::IO::Path& filePath, PrefabDom prefabDom) = 0;
+            virtual TemplateId AddTemplate(
+                const AZ::IO::Path& filePath, PrefabDom prefabDom, TemplateId templateId = InvalidTemplateId) = 0;
             virtual void UpdateTemplateFilePath(TemplateId templateId, const AZ::IO::PathView& filePath) = 0;
             virtual void RemoveTemplate(TemplateId templateId) = 0;
             virtual void RemoveAllTemplates() = 0;

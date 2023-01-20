@@ -19,6 +19,7 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     from pathlib import Path
 
     import azlmbr.legacy.general as general
+    from azlmbr.math import Vector3
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab, get_all_entity_ids
@@ -58,13 +59,19 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
 
     # Creates a new prefab containing the nested entities and the nested prefab instances
     # Asserts if prefab creation doesn't succeed
-    _, new_prefab = Prefab.create_prefab(
+    new_prefab, new_prefab_instance = Prefab.create_prefab(
         [nested_entities_root, nested_prefab_instances[0].container_entity], FILE_NAME_OF_PREFAB_WITH_NESTED_ENTITIES_AND_NESTED_PREFABS)
-    new_prefab_container_entity = new_prefab.container_entity
+    new_prefab_container_entity = new_prefab_instance.container_entity
 
-    nested_entities_root_on_instance = new_prefab.get_direct_child_entities()[0]
-    nested_prefabs_root_container_entity_on_instance = new_prefab.get_direct_child_entities()[1]
-    if new_prefab.get_direct_child_entities()[0].get_name() != nested_entities_root_name:
+    # Template will get removed if the only instance is deleted. So, instantiate a second instance so that the
+    # template will stay around in-memory. This is only needed for testing the undo behavior because in the real-world,
+    # we will load the template again from file when undo is pressed.
+    new_prefab.instantiate(
+        prefab_position=Vector3(10.00, 20.0, 30.0))
+
+    nested_entities_root_on_instance = new_prefab_instance.get_direct_child_entities()[0]
+    nested_prefabs_root_container_entity_on_instance = new_prefab_instance.get_direct_child_entities()[1]
+    if new_prefab_instance.get_direct_child_entities()[0].get_name() != nested_entities_root_name:
         nested_entities_root_on_instance, nested_prefabs_root_container_entity_on_instance = \
             nested_prefabs_root_container_entity_on_instance, nested_entities_root_on_instance
 
@@ -76,11 +83,11 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root_on_instance, NUM_NESTED_ENTITIES_LEVELS, CREATION_POSITION)
 
     # Get parent entity and container id for verifying successful Undo/Redo operations
-    instance_parent_entity = EditorEntity(new_prefab.container_entity.get_parent_id())
-    instance_id = new_prefab.container_entity.id
+    instance_parent_entity = EditorEntity(new_prefab_instance.container_entity.get_parent_id())
+    instance_id = new_prefab_instance.container_entity.id
 
     # Deletes the prefab instance and asserts if deletion doesn't succeed
-    entity_ids_removed = Prefab.remove_prefabs([new_prefab])
+    entity_ids_removed = Prefab.remove_prefabs([new_prefab_instance])
 
     # Undo the prefab instance deletion
     general.undo()
@@ -132,7 +139,7 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
             assert False, "Redo Failed: Not all entities and descendants in target prefabs are deleted."
 
     child_ids = instance_parent_entity.get_children_ids()
-    assert not child_ids, \
+    assert instance_id not in child_ids, \
         "Redo Failed: Instance was still found after redo of instance deletion."
 
 if __name__ == "__main__":

@@ -17,6 +17,9 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        class PrefabLoaderInterface;
+        class TemplateInstanceMapperInterface;
+
         //! handles the addition and removal of entities from instances
         class PrefabUndoInstance
             : public PrefabUndoBase
@@ -82,7 +85,8 @@ namespace AzToolsFramework
                 TemplateId sourceId,
                 const InstanceAlias& instanceAlias,
                 PrefabDom linkPatches = PrefabDom(),
-                const LinkId linkId = InvalidLinkId);
+                const LinkId linkId = InvalidLinkId,
+                bool removeTemplateIfLastInstance = false);
 
             void Undo() override;
             void Redo() override;
@@ -96,13 +100,16 @@ namespace AzToolsFramework
 
             void RemoveLink();
 
+            PrefabDom m_linkPatches; // data for delete/update
+            InstanceAlias m_instanceAlias;
+            AZ::IO::Path m_sourceTemplatePath;
+            PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
+            TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
             TemplateId m_targetId;
             TemplateId m_sourceId;
-            InstanceAlias m_instanceAlias;
-
             LinkId m_linkId;
-            PrefabDom m_linkPatches;  //data for delete/update
             LinkStatus m_linkStatus;
+            bool m_removeTemplateIfLastInstance = false;
         };
     }
 }

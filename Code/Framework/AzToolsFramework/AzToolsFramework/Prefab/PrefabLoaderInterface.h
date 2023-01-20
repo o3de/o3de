@@ -40,7 +40,7 @@ namespace AzToolsFramework
              * @param filePath A Prefab Template file path.
              * @return A unique id of Template on filePath loaded. Return invalid template id if loading Template on filePath failed.
              */
-            virtual TemplateId LoadTemplateFromFile(AZ::IO::PathView filePath) = 0;
+            virtual TemplateId LoadTemplateFromFile(AZ::IO::PathView filePath, TemplateId templateId = InvalidTemplateId) = 0;
 
             /**
              * Load Prefab Template from given content string to memory and return the id of loaded Template.

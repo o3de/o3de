@@ -7,7 +7,9 @@
  */
 
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
+#include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
 
@@ -161,6 +163,11 @@ namespace AzToolsFramework
             , m_linkPatches(PrefabDom())
             , m_linkStatus(LinkStatus::LINKSTATUS)
         {
+            m_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+            AZ_Assert(m_prefabLoaderInterface, "PrefabUndoInstanceLink - Could not get PrefabLoaderInterface.");
+
+            m_templateInstanceMapperInterface = AZ::Interface<TemplateInstanceMapperInterface>::Get();
+            AZ_Assert(m_templateInstanceMapperInterface != nullptr, "PrefabUndoInstanceLink - Could not get TemplateInstanceMapperInterface.");
         }
 
         void PrefabUndoInstanceLink::Capture(
@@ -168,12 +175,19 @@ namespace AzToolsFramework
             TemplateId sourceId,
             const InstanceAlias& instanceAlias,
             PrefabDom linkPatches,
-            const LinkId linkId)
+            const LinkId linkId,
+            bool removeTemplateIfLastInstance)
         {
             m_targetId = targetId;
+            TemplateReference sourceTemplate = m_prefabSystemComponentInterface->FindTemplate(sourceId);
+            if (sourceTemplate.has_value())
+            {
+                m_sourceTemplatePath = sourceTemplate->get().GetFilePath();
+            }
             m_sourceId = sourceId;
             m_instanceAlias = instanceAlias;
             m_linkId = linkId;
+            m_removeTemplateIfLastInstance = removeTemplateIfLastInstance;
 
             m_linkPatches = AZStd::move(linkPatches);
 
@@ -238,12 +252,26 @@ namespace AzToolsFramework
 
         void PrefabUndoInstanceLink::AddLink()
         {
+            TemplateReference sourceTemplate = m_prefabSystemComponentInterface->FindTemplate(m_sourceId);
+            if (!sourceTemplate.has_value())
+            {
+                m_prefabLoaderInterface->LoadTemplateFromFile(m_sourceTemplatePath, m_sourceId);
+            }
             m_linkId = m_prefabSystemComponentInterface->CreateLink(m_targetId, m_sourceId, m_instanceAlias, m_linkPatches, m_linkId);
         }
 
         void PrefabUndoInstanceLink::RemoveLink()
         {
             m_prefabSystemComponentInterface->RemoveLink(m_linkId);
+            InstanceSetConstReference instancesMappedToTemplate =
+                m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(m_sourceId);
+            if (m_removeTemplateIfLastInstance)
+            {
+                if (!instancesMappedToTemplate.has_value() || instancesMappedToTemplate->get().size() == 1)
+                {
+                    m_prefabSystemComponentInterface->RemoveTemplate(m_sourceId);
+                }
+            }
         }
     }
 }

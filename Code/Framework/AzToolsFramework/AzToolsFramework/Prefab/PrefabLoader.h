@@ -52,7 +52,7 @@ namespace AzToolsFramework
              * @param filePath A Prefab Template file path.
              * @return A unique id of Template on filePath loaded. Return invalid template id if loading Template on filePath failed.
              */
-            TemplateId LoadTemplateFromFile(AZ::IO::PathView filePath) override;
+            TemplateId LoadTemplateFromFile(AZ::IO::PathView filePath, TemplateId templateId = InvalidTemplateId) override;
 
              /**
              * Reloads Prefab Template from given file path and updates values that are changed
@@ -161,7 +161,8 @@ namespace AzToolsFramework
              */
             TemplateId LoadTemplateFromFile(
                 AZ::IO::PathView filePath,
-                AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet);
+                AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet,
+                TemplateId templateId = InvalidTemplateId);
 
             /**
              * Load Prefab Template from given string to memory and return the id of loaded Template.
@@ -173,7 +174,8 @@ namespace AzToolsFramework
             TemplateId LoadTemplateFromString(
                 AZStd::string_view fileContent,
                 AZ::IO::PathView filePath,
-                AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet);
+                AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet,
+                TemplateId templateId = InvalidTemplateId);
 
             /**
              * Load nested instance given a nested instance value iterator and target Template with its id.

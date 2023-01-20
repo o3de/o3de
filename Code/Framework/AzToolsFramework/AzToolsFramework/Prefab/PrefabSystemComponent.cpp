@@ -523,11 +523,16 @@ namespace AzToolsFramework
             }
         }
 
-        TemplateId PrefabSystemComponent::AddTemplate(const AZ::IO::Path& filePath, PrefabDom prefabDom)
+        TemplateId PrefabSystemComponent::AddTemplate(const AZ::IO::Path& filePath, PrefabDom prefabDom, TemplateId templateId)
         {
-            TemplateId newTemplateId = CreateUniqueTemplateId();
-            Template& newTemplate = m_templateIdMap.emplace(
-                AZStd::make_pair(newTemplateId, AZStd::move(Template(filePath, AZStd::move(prefabDom))))).first->second;
+            if (templateId == InvalidTemplateId)
+            {
+                templateId = CreateUniqueTemplateId();
+            }
+            
+            Template& newTemplate =
+                m_templateIdMap.emplace(AZStd::make_pair(templateId, AZStd::move(Template(filePath, AZStd::move(prefabDom)))))
+                    .first->second;
 
             if (!newTemplate.IsValid())
             {
@@ -536,19 +541,19 @@ namespace AzToolsFramework
                     "Can't add this new Template on file path '%s' since it is invalid.",
                     filePath.c_str());
 
-                m_templateIdMap.erase(newTemplateId);
+                m_templateIdMap.erase(templateId);
                 return InvalidTemplateId;
             }
 
-            if (!m_templateInstanceMapper.RegisterTemplate(newTemplateId))
+            if (!m_templateInstanceMapper.RegisterTemplate(templateId))
             {
-                m_templateIdMap.erase(newTemplateId);
+                m_templateIdMap.erase(templateId);
                 return InvalidTemplateId;
             }
 
-            m_templateFilePathToIdMap.emplace(AZStd::make_pair(filePath, newTemplateId));
+            m_templateFilePathToIdMap.emplace(AZStd::make_pair(filePath, templateId));
 
-            return newTemplateId;
+            return templateId;
         }
 
         void PrefabSystemComponent::UpdateTemplateFilePath(TemplateId templateId, const AZ::IO::PathView& filePath)

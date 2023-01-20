@@ -145,7 +145,7 @@ namespace AzToolsFramework
              * \param undoBatch The undo batch to set as parent for this remove link action.
              */
             void RemoveLink(
-                AZStd::unique_ptr<Instance>& sourceInstance, TemplateId targetTemplateId, UndoSystem::URSequencePoint* undoBatch);
+                AZStd::unique_ptr<Instance>& sourceInstance, TemplateId targetTemplateId, UndoSystem::URSequencePoint* undoBatch, bool removeTemplateIfLastInstance = false);
 
             /**
              * Given a list of entityIds, finds the prefab instance that owns the common root entity of the entityIds.

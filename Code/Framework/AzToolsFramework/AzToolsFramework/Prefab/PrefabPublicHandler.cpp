@@ -640,7 +640,10 @@ namespace AzToolsFramework
         }
 
         void PrefabPublicHandler::RemoveLink(
-            AZStd::unique_ptr<Instance>& sourceInstance, TemplateId targetTemplateId, UndoSystem::URSequencePoint* undoBatch)
+            AZStd::unique_ptr<Instance>& sourceInstance,
+            TemplateId targetTemplateId,
+            UndoSystem::URSequencePoint* undoBatch,
+            bool removeTemplateIfLastInstance)
         {
             LinkReference nestedInstanceLink = m_prefabSystemComponentInterface->FindLink(sourceInstance->GetLinkId());
             AZ_Assert(
@@ -659,7 +662,7 @@ namespace AzToolsFramework
 
             PrefabUndoHelpers::RemoveLink(
                 sourceInstance->GetTemplateId(), targetTemplateId, sourceInstance->GetInstanceAlias(), sourceInstance->GetLinkId(),
-                AZStd::move(patchesCopyForUndoSupport), undoBatch);
+                AZStd::move(patchesCopyForUndoSupport), undoBatch, removeTemplateIfLastInstance);
         }
 
         PrefabOperationResult PrefabPublicHandler::SavePrefab(AZ::IO::Path filePath)
@@ -1418,7 +1421,7 @@ namespace AzToolsFramework
                 else
                 {
                     // Removes the link if it is source template editing.
-                    RemoveLink(detachedInstance, commonOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
+                    RemoveLink(detachedInstance, commonOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch(), true);
                 }
 
                 detachedInstance.reset();

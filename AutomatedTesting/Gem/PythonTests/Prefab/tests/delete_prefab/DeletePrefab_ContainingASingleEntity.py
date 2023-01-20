@@ -10,6 +10,7 @@ def DeletePrefab_ContainingASingleEntity():
     from pathlib import Path
 
     import azlmbr.legacy.general as general
+    from azlmbr.math import Vector3
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab
@@ -25,15 +26,21 @@ def DeletePrefab_ContainingASingleEntity():
     car_prefab_entities = [car_entity]
 
     # Creates a prefab from the new entity
-    _, car = Prefab.create_prefab(
+    carPrefab, carInstance = Prefab.create_prefab(
         car_prefab_entities, CAR_PREFAB_FILE_NAME)
 
+    # Template will get removed if the only instance is deleted. So, instantiate a second instance so that the
+    # template will stay around in-memory. This is only needed for testing the undo behavior because in the real-world,
+    # we will load the template again from file when undo is pressed.
+    carPrefab.instantiate(
+        prefab_position=Vector3(10.00, 20.0, 30.0))
+
     # Get parent entity and container id for verifying successful Undo/Redo operations
-    instance_parent_id = EditorEntity(car.container_entity.get_parent_id())
-    instance_id = car.container_entity.id
+    instance_parent_id = EditorEntity(carInstance.container_entity.get_parent_id())
+    instance_id = carInstance.container_entity.id
 
     # Deletes the prefab instance
-    Prefab.remove_prefabs([car])
+    Prefab.remove_prefabs([carInstance])
 
     # Undo the prefab delete
     general.undo()

@@ -24,7 +24,9 @@ namespace AzToolsFramework
                 const InstanceAlias& instanceAlias, UndoSystem::URSequencePoint* undoBatch);
             void RemoveLink(
                 TemplateId sourceTemplateId, TemplateId targetTemplateId, const InstanceAlias& instanceAlias, LinkId linkId,
-                PrefabDom linkPatches, UndoSystem::URSequencePoint* undoBatch);
+                PrefabDom linkPatches,
+                UndoSystem::URSequencePoint* undoBatch,
+                bool removeTemplateIfLastInstance = false);
 
             //! Helper function for adding an entity to a prefab template with undo-redo support.
             //! @param parentEntity The target parent entity of the newly added entity.
