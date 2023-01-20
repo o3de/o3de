@@ -39,7 +39,7 @@ def Scene_Settings_Clear_Unsaved_Changes():
         
         has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayScriptRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
 
-        Report.critical_result(tm.Test_Messages.scene_settings_unsaved_toggle_changed, has_unsaved_changes == True)
+        Report.critical_result(tm.Test_Messages.scene_settings_has_unsaved_changes, has_unsaved_changes == True)
                 
         clear_unsaved_changes_action = widget_main_window.findChild(QtWidgets.QAction, "m_actionClearUnsavedChanges")
         clear_unsaved_changes_action.trigger()
@@ -50,7 +50,7 @@ def Scene_Settings_Clear_Unsaved_Changes():
         
         has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayScriptRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
 
-        Report.critical_result(tm.Test_Messages.scene_settings_unsaved_toggle_changed, has_unsaved_changes == False)
+        Report.critical_result(tm.Test_Messages.scene_settings_unsaved_changes_cleared, has_unsaved_changes == False)
 
         widget_main_window.close()
 

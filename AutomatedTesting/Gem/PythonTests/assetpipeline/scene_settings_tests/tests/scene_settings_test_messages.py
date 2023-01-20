@@ -152,13 +152,13 @@ class Test_Messages:
         "The expected mesh group was not found."
     )
     
-    scene_settings_unsaved_toggle_changed = (
-        "The checkbox to test unsaved changes toggled correctly.",
-        "The checkbox to test unsaved changes did not toggle correctly."
+    scene_settings_has_unsaved_changes = (
+        "The scene has the expected unsaved changes.",
+        "The scene is not registered as having unsaved changes."
     )
 
-    scene_settings_unsaved_toggle_restored = (
-        "The checkbox to test unsaved changes reverted correctly.",
-        "The checkbox to test unsaved changes did not revert correctly."
+    scene_settings_unsaved_changes_cleared = (
+        "Clearing unsaved changes worked correctly.",
+        "Unsaved changes did not clear correctly as expected, scene appears to still have unsaved changes."
     )
     
