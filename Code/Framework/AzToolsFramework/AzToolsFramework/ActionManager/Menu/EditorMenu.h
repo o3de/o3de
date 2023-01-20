@@ -37,7 +37,7 @@ namespace AzToolsFramework
         AZ_RTTI(EditorMenu, "{6B6F6802-C587-4734-A5DB-5732329EED03}");
 
         EditorMenu();
-        explicit EditorMenu(const AZStd::string& identifier, const AZStd::string& name);
+        EditorMenu(AZStd::string identifier, const AZStd::string& name);
 
         static void Initialize(QWidget* defaultParentWidget);
         static void Reflect(AZ::ReflectContext* context);

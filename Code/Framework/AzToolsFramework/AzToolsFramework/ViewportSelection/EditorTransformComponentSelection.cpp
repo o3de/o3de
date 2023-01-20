@@ -3076,7 +3076,7 @@ namespace AzToolsFramework
         }
 
         // Transform Mode - Scale
-        {
+        {      
             AZStd::string actionIdentifier = "o3de.action.edit.transform.scale";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Scale";

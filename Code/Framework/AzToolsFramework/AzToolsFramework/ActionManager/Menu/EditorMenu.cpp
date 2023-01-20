@@ -21,8 +21,8 @@ namespace AzToolsFramework
     {
     }
 
-    EditorMenu::EditorMenu(const AZStd::string& identifier, const AZStd::string& name)
-        : m_identifier(identifier)
+    EditorMenu::EditorMenu(AZStd::string identifier, const AZStd::string& name)
+        : m_identifier(AZStd::move(identifier))
         , m_menu(new QMenu(name.c_str()))
     {
     }
@@ -199,7 +199,7 @@ namespace AzToolsFramework
                     }
                 case MenuItemType::SubMenu:
                     {
-                        if (QMenu* menu = s_menuManagerInternalInterface->GetMenu(menuItem.m_identifier); !menu->isEmpty())
+                        if (QMenu* menu = s_menuManagerInternalInterface->GetMenu(menuItem.m_identifier); menu && !menu->isEmpty())
                         {
                             m_menu->addMenu(menu);
                         }

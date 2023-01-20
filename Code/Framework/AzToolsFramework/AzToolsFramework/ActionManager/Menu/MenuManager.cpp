@@ -568,9 +568,7 @@ namespace AzToolsFramework
 
     MenuManagerOperationResult MenuManager::QueueRefreshForMenusContainingAction(const AZStd::string& actionIdentifier)
     {
-        auto actionIterator = m_actionsToMenusMap.find(actionIdentifier);
-
-        if (actionIterator != m_actionsToMenusMap.end())
+        if (auto actionIterator = m_actionsToMenusMap.find(actionIdentifier); actionIterator != m_actionsToMenusMap.end())
         {
             for (const AZStd::string& menuIdentifier : actionIterator->second)
             {
@@ -583,9 +581,7 @@ namespace AzToolsFramework
 
     MenuManagerOperationResult MenuManager::QueueRefreshForMenusContainingSubMenu(const AZStd::string& subMenuIdentifier)
     {
-        auto menuIterator = m_subMenusToMenusMap.find(subMenuIdentifier);
-
-        if (menuIterator != m_subMenusToMenusMap.end())
+        if (auto menuIterator = m_subMenusToMenusMap.find(subMenuIdentifier); menuIterator != m_subMenusToMenusMap.end())
         {
             for (const AZStd::string& menuIdentifier : menuIterator->second)
             {
@@ -610,6 +606,8 @@ namespace AzToolsFramework
 
     void MenuManager::RefreshMenus()
     {
+        // RefreshMenu can add more menus to the refresh queue.
+        // Since it's unordered, we're making a copy of it to prevent issues with the iterator.
         auto menusToRefreshTemp = m_menusToRefresh;
         m_menusToRefresh.clear();
 
@@ -622,6 +620,7 @@ namespace AzToolsFramework
             }
         }
 
+        // If more menus were added during the refresh process, do this again.
         if (!m_menusToRefresh.empty())
         {
             RefreshMenus();

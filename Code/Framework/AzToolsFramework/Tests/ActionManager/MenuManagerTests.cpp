@@ -811,7 +811,7 @@ namespace UnitTest
         EXPECT_EQ(menu->actions().size(), 1);
     }
 
-    TEST_F(ActionManagerFixture, VerifySubMenuIsHiddenWhenEmpty)
+    TEST_F(ActionManagerFixture, VerifySubMenuIsHiddenWhenEmptied)
     {
         // Register menus
         m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
@@ -854,6 +854,38 @@ namespace UnitTest
         m_menuManagerInternalInterface->RefreshMenus();
 
         // Verify the sub-menu is no longer part of the menu since it is empty.
+        {
+            QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+            EXPECT_EQ(menu->actions().size(), 0);
+        }
+    }
+
+    TEST_F(ActionManagerFixture, VerifySubMenuIsShownWhenFilled)
+    {
+        // Register menus
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
+        m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
+
+        // Register a new action and add it to the sub-menu.
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu", "o3de.action.test", 42);
+
+        // Add enabled state callback.
+        bool enabledState = false;
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.test",
+            [&]()
+            {
+                return enabledState;
+            }
+        );
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the sub-menu is not part of the menu since it is empty.
         {
             QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
             EXPECT_EQ(menu->actions().size(), 0);
