@@ -63,6 +63,7 @@ namespace AssetProcessor
         // outgoing message to the network
         void SendAssetMessage(AzFramework::AssetSystem::AssetNotificationMessage message);
         void AsyncAssetCatalogStatusResponse(AssetCatalogStatus status);
+        void CatalogLoaded();
 
     public Q_SLOTS:
         // incoming message from the AP
@@ -74,8 +75,8 @@ namespace AssetProcessor
         virtual AzFramework::AssetSystem::GetUnresolvedDependencyCountsResponse HandleGetUnresolvedDependencyCountsRequest(MessageData<AzFramework::AssetSystem::GetUnresolvedDependencyCountsRequest> messageData);
         virtual void HandleSaveAssetCatalogRequest(MessageData<AzFramework::AssetSystem::SaveAssetCatalogRequest> messageData);
         void BuildRegistry();
-        void OnSourceQueued(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid, const SourceAssetReference& sourceAsset);
-        void OnSourceFinished(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid);
+        void OnSourceQueued(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids, const SourceAssetReference& sourceAsset);
+        void OnSourceFinished(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids);
         void AsyncAssetCatalogStatusRequest();
 
     protected:

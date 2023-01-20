@@ -485,10 +485,12 @@ function(ly_setup_cmake_install)
 
     # Read the "templates" key from the source engine.json
     o3de_read_json_array(engine_templates ${LY_ROOT_FOLDER}/engine.json "templates")
-    foreach(template_path ${engine_templates})
-        list(APPEND relative_templates "\"${template_path}\"")
-    endforeach()
-    list(JOIN relative_templates ",\n${indent}" O3DE_INSTALL_TEMPLATES)
+    if(engine_templates)
+        foreach(template_path ${engine_templates})
+            list(APPEND relative_templates "\"${template_path}\"")
+        endforeach()
+        list(JOIN relative_templates ",\n${indent}" O3DE_INSTALL_TEMPLATES)
+    endif()
 
     # Read the "api_versions" key from the source engine.json
     o3de_read_json_key(O3DE_INSTALL_API_VERSIONS ${LY_ROOT_FOLDER}/engine.json "api_versions")

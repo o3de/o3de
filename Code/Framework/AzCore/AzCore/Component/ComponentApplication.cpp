@@ -292,26 +292,12 @@ namespace AZ
         AZ::CommandLine& m_commandLine;
     };
 
-    void ComponentApplication::Descriptor::AllocatorRemapping::Reflect(ReflectContext* context, ComponentApplication* app)
-    {
-        (void)app;
-
-        if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
-        {
-            serializeContext->Class<AllocatorRemapping>()
-                ->Field("from", &AllocatorRemapping::m_from)
-                ->Field("to", &AllocatorRemapping::m_to)
-                ;
-        }
-    }
-
     //=========================================================================
     // Reflect
     //=========================================================================
     void  ComponentApplication::Descriptor::Reflect(ReflectContext* context, ComponentApplication* app)
     {
         DynamicModuleDescriptor::Reflect(context);
-        AllocatorRemapping::Reflect(context, app);
 
         if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
         {
