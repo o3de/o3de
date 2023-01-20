@@ -29,9 +29,6 @@ namespace AWSMetrics
         void SetUp() override
         {
             UnitTest::LeakDetectionFixture::SetUp();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-
             // Set up the file IO and alias
             m_localFileIO = aznew AZ::IO::LocalFileIO();
             m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
@@ -87,8 +84,6 @@ namespace AWSMetrics
             delete m_localFileIO;
             AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
             UnitTest::LeakDetectionFixture::TearDown();
         }
 

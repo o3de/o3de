@@ -166,25 +166,6 @@ namespace UnitTest
     class ScopedAllocatorBenchmarkEnvironment
         : public AZ::Test::BenchmarkEnvironmentBase
     {
-    public:
-        ScopedAllocatorBenchmarkEnvironment()
-        {
-            // Only create the allocator if it doesn't exist
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-                m_ownsAllocator = true;
-            }
-        }
-        ~ScopedAllocatorBenchmarkEnvironment() override
-        {
-            if (m_ownsAllocator)
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            }
-        }
-    private:
-        bool m_ownsAllocator{};
     };
 #endif
 

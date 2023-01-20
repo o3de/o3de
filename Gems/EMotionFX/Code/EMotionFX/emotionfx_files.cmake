@@ -39,8 +39,6 @@ set(FILES
     Source/EMotionFXConfig.h
     Source/EMotionFXManager.cpp
     Source/EMotionFXManager.h
-    Source/EMotionFXAllocatorInitializer.cpp
-    Source/EMotionFXAllocatorInitializer.h
     Source/JointSelectionBus.h
     Source/KeyFrame.h
     Source/KeyFrame.inl
