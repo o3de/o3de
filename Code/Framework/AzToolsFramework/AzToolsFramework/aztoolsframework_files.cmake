@@ -154,7 +154,6 @@ set(FILES
     ContainerEntity/ContainerEntitySystemComponent.h
     Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h
     Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h
-    Editor/ActionManagerIdentifiers/EditorFileMenuActionsIdentifiers.h
     Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h
     Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h
     Editor/ActionManagerUtils.cpp
