@@ -3068,7 +3068,7 @@ namespace AssetProcessor
                 {
                     AssetProcessor::FileStateInfo fileStateInfo;
 
-                    if(AZ::Interface<AssetProcessor::FileStateCache>::Get()->GetFileInfo(
+                    if(AZ::Interface<AssetProcessor::IFileStateRequests>::Get()->GetFileInfo(
                         sourceAssetReference.AbsolutePath().c_str(), &fileStateInfo)
                         && fileStateInfo.m_absolutePath.compare(sourceAssetReference.AbsolutePath().c_str()) != 0)
                     {
