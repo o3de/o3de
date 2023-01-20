@@ -31,9 +31,15 @@ namespace AZ
                 return true;
             }
             // try a type with an invocable function
-            if (auto invocable = azrtti_cast<AttributeInvocable<AttrType(AZStd::remove_reference_t<InstType>, Args...)>*>(attr); invocable != nullptr)
+            if (auto invocable = azrtti_cast<AttributeInvocable<AttrType(InstType, Args...)>*>(attr); invocable != nullptr)
             {
                 value = static_cast<DestType>(invocable->operator()(AZStd::forward<InstType>(instance), AZStd::forward<Args>(args)...));
+                return true;
+            }
+            // try a type with an invocable function that takes no arguments
+            if (auto invocable = azrtti_cast<AttributeInvocable<AttrType(Args...)>*>(attr); invocable != nullptr)
+            {
+                value = static_cast<DestType>(invocable->operator()(AZStd::forward<Args>(args)...));
                 return true;
             }
             // else you are on your own!
@@ -50,9 +56,15 @@ namespace AZ
                 return true;
             }
             // try a type with an invocable function
-            if (auto invocable = azrtti_cast<AttributeInvocable<RetType(AZStd::remove_reference_t<InstType>, Args...)>*>(attr); invocable != nullptr)
+            if (auto invocable = azrtti_cast<AttributeInvocable<RetType(InstType, Args...)>*>(attr); invocable != nullptr)
             {
                 invocable->operator()(AZStd::forward<InstType>(instance), AZStd::forward<Args>(args)...);
+                return true;
+            }
+            // try a type with an invocable function that takes no arguments
+            if (auto invocable = azrtti_cast<AttributeInvocable<RetType(Args...)>*>(attr); invocable != nullptr)
+            {
+                invocable->operator()(AZStd::forward<Args>(args)...);
                 return true;
             }
             return false;
@@ -72,54 +84,54 @@ namespace AZ
             {
                 if constexpr (AZStd::is_integral_v<DestType> && !AZStd::is_same_v<DestType, bool>)
                 {
-                    if (AttributeRead<bool, DestType, Args...>(value, attr, instance, args ...))
+                    if (AttributeRead<bool, DestType, Args...>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
-                    if (AttributeRead<char, DestType, Args...>(value, attr, instance, args ...))
+                    if (AttributeRead<char, DestType, Args...>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
-                    if (AttributeRead<unsigned char, DestType, Args...>(value, attr, instance, args ...))
+                    if (AttributeRead<unsigned char, DestType, Args...>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
-                    if (AttributeRead<short, DestType, Args...>(value, attr, instance, args ...))
+                    if (AttributeRead<short, DestType, Args...>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
-                    if (AttributeRead<unsigned short, DestType, Args...>(value, attr, instance, args ...))
+                    if (AttributeRead<unsigned short, DestType, Args...>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
-                    if (AttributeRead<int, DestType, Args...>(value, attr, instance, args ...))
+                    if (AttributeRead<int, DestType, Args...>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
-                    if (AttributeRead<unsigned int, Args..., DestType>(value, attr, instance, args ...))
+                    if (AttributeRead<unsigned int, Args..., DestType>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
-                    if (AttributeRead<AZ::s64, DestType, Args...>(value, attr, instance, args ...))
+                    if (AttributeRead<AZ::s64, DestType, Args...>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
-                    if (AttributeRead<AZ::u64, DestType, Args...>(value, attr, instance, args ...))
+                    if (AttributeRead<AZ::u64, DestType, Args...>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
-                    if (AttributeRead<AZ::Crc32, DestType, Args...>(value, attr, instance, args ...))
+                    if (AttributeRead<AZ::Crc32, DestType, Args...>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
                 }
                 if constexpr (AZStd::is_floating_point_v<DestType>)
                 {
-                    if (AttributeRead<float, DestType>(value, attr, instance, args ...))
+                    if (AttributeRead<float, DestType>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
-                    if (AttributeRead<double, DestType>(value, attr, instance, args ...))
+                    if (AttributeRead<double, DestType>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
@@ -128,16 +140,16 @@ namespace AZ
                     || AZStd::is_same_v<AttrType, AZStd::string_view>
                     || AZStd::is_same_v<AttrType, const char*>))
                 {
-                    if (AttributeRead<const char*, AZStd::string>(value, attr, instance, args...))
+                    if (AttributeRead<const char*, AZStd::string>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
-                    if (AttributeRead<AZStd::string_view, AZStd::string>(value, attr, instance, args...))
+                    if (AttributeRead<AZStd::string_view, AZStd::string>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }
                 }
-                return AttributeRead<AttrType, DestType>(value, attr, instance, args...);
+                return AttributeRead<AttrType, DestType>(value, attr, AZStd::forward<InstType>(instance), args...);
             }
         };
     } // namespace Internal
@@ -165,13 +177,32 @@ namespace AZ
         template <class T, class U, typename... Args>
         bool Read(U& value, Args&&... args)
         {
-            return Internal::AttributeReader<T, U, Args...>::Read(value, m_attribute, m_instance, AZStd::forward<Args>(args)...);
+            using DecayInstType = AZStd::remove_cvref_t<InstType>;
+            if constexpr (AZStd::is_pointer_v<DecayInstType> && AZStd::is_void_v<AZStd::remove_pointer_t<DecayInstType>>)
+            {
+                // Forward the void* as an rvalue so it is not a void*&
+                return Internal::AttributeReader<T, U, Args...>::Read(
+                    value, m_attribute, static_cast<DecayInstType>(m_instance), AZStd::forward<Args>(args)...);
+            }
+            else
+            {
+                return Internal::AttributeReader<T, U, Args...>::Read(value, m_attribute, m_instance, AZStd::forward<Args>(args)...);
+            }
         }
 
         template <typename RetType, typename... Args>
         bool Invoke(Args&&... args)
         {
-            return Internal::AttributeInvoke<RetType>(m_attribute, m_instance, AZStd::forward<Args>(args)...);
+            using DecayInstType = AZStd::remove_cvref_t<InstType>;
+            if constexpr (AZStd::is_pointer_v<DecayInstType> && AZStd::is_void_v<AZStd::remove_pointer_t<DecayInstType>>)
+            {
+                // Forward the void* as an rvalue so it is not a void*&
+                return Internal::AttributeInvoke<RetType>(m_attribute, static_cast<DecayInstType>(m_instance), AZStd::forward<Args>(args...));
+            }
+            else
+            {
+                return Internal::AttributeInvoke<RetType>(m_attribute, m_instance, AZStd::forward<Args>(args...));
+            }
         }
 
         // ------------ private implementation ---------------------------------
@@ -267,17 +298,16 @@ namespace AZ
             {}
             RetType operator()(void* instancePtr, Args... args) const
             {
-                using RemoveClassCVRef = AZStd::remove_cvref_t<ClassType>;
-                if constexpr (AZStd::is_pointer_v<RemoveClassCVRef>)
+                if constexpr (AZStd::is_pointer_v<ClassType>)
                 {
                     // ClassType is a pointer so cast directly from the void pointer
-                    return m_callable(static_cast<RemoveClassCVRef>(instancePtr), static_cast<Args&&>(args)...);
+                    return m_callable(static_cast<ClassType>(instancePtr), static_cast<Args&&>(args)...);
                 }
                 else
                 {
                     // If the ClassType parameter accepts a value type, then cast the void pointer to a class type pointer
                     // and deference
-                    return m_callable(*static_cast<RemoveClassCVRef*>(instancePtr), static_cast<Args&&>(args)...);
+                    return m_callable(*static_cast<AZStd::remove_cvref_t<ClassType>*>(instancePtr), static_cast<Args&&>(args)...);
                 }
             }
 
