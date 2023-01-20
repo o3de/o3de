@@ -355,7 +355,7 @@ namespace CopyDependencyBuilder
         xmlSchemaBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("(?!.*libs\\/gameaudio\\/).*\\.xml", AssetBuilderSDK::AssetBuilderPattern::PatternType::Regex));
         xmlSchemaBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.vegdescriptorlist", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
         xmlSchemaBuilderDescriptor.m_busId = azrtti_typeid<XmlBuilderWorker>();
-        xmlSchemaBuilderDescriptor.m_version = 8;
+        xmlSchemaBuilderDescriptor.m_version = 9;
         xmlSchemaBuilderDescriptor.m_createJobFunction =
             AZStd::bind(&XmlBuilderWorker::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
         xmlSchemaBuilderDescriptor.m_processJobFunction =

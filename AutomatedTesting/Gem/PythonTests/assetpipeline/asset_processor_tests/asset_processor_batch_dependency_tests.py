@@ -50,11 +50,9 @@ class TestsAssetProcessorBatch_DependenycyTests(object):
     """
     schemas = [
         ("C16877170", "fonts%.xml"),
-        ("C16877171", "game.xml")
     ]
 
     @pytest.mark.test_case_id("C16877170")
-    @pytest.mark.test_case_id("C16877171")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.parametrize("folder, schema", schemas)
