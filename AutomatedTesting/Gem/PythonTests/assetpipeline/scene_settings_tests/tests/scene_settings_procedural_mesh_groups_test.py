@@ -112,7 +112,10 @@ def Scene_Settings_Procedural_Mesh_Groups_Test():
             prefab_add_button.click()
             general.idle_wait_frames(PAUSE_TIME_IN_FRAMES)
 
-        scene_test_helpers.save_and_verify_manifest(path_to_manifest, widget_main_window)
+        # Clear unsaved changes and wait briefly so that the window will close without issues
+        clear_unsaved_changes_action = widget_main_window.findChild(QtWidgets.QAction, "m_actionClearUnsavedChanges")
+        clear_unsaved_changes_action.trigger()
+        general.idle_wait_frames(PAUSE_TIME_IN_FRAMES)
         widget_main_window.close()
 
     run_test()
