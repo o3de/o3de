@@ -67,14 +67,11 @@ namespace AssetProcessor
     {
         AZStd::string extension = file.Extension().Native();
 
-        // Only metadata files are cached, so make sure the file is a metadata file before continuing
-        if (extension != AzToolsFramework::MetadataManager::MetadataFileExtension)
+        if (extension == AzToolsFramework::MetadataManager::MetadataFileExtension)
         {
-            return;
+            // Remove the metadata part of the extension since the cache is actually keyed by the source file path
+            file.ReplaceExtension("");
         }
-
-        // Remove the metadata part of the extension since the cache is actually keyed by the source file path
-        file.ReplaceExtension("");
 
         AZStd::scoped_lock scopeLock(m_uuidMutex);
 
@@ -124,13 +121,22 @@ namespace AssetProcessor
             return AZ::Failure(AZStd::string("Programmer Error - IFileStateRequests interface is not available"));
         }
 
-        const bool fileExists = fileStateInterface->Exists(AzToolsFramework::MetadataManager::ToMetadataPath(sourceAsset.AbsolutePath().c_str()).c_str());
+        AssetProcessor::FileStateInfo metadataFileInfo;
+        const AZ::IO::Path metadataFilePath = AzToolsFramework::MetadataManager::ToMetadataPath(sourceAsset.AbsolutePath().c_str());
+        const bool fileExists = fileStateInterface->GetFileInfo(metadataFilePath.c_str(), &metadataFileInfo);
         const bool isEnabledType = m_enabledTypes.contains(sourceAsset.AbsolutePath().Extension().Native());
 
         // Metadata manager can't use the file state cache since it is in AzToolsFramework, so it's faster to do an Exists check up-front.
         if (fileExists)
         {
             AzToolsFramework::MetaUuidEntry uuidInfo;
+
+            if (metadataFileInfo.m_absolutePath.compare(metadataFilePath.c_str()) != 0)
+            {
+                // Metadata filename case does not match source filename case
+                // Rename the metadata file to match
+                AZ::IO::FileIOBase::GetInstance()->Rename(metadataFileInfo.m_absolutePath.toUtf8().constData(), metadataFilePath.c_str());
+            }
 
             // Check if there's a metadata file that already contains a saved UUID
             if (GetMetadataManager()->GetValue(sourceAsset.AbsolutePath(), AzToolsFramework::UuidUtilComponent::UuidKey, uuidInfo))

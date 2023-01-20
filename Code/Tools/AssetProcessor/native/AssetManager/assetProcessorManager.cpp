@@ -1559,7 +1559,7 @@ namespace AssetProcessor
                     message.m_legacyAssetIds.push_back(legacyAssetId);
                 }
 
-                SourceAssetReference sourceAsset(source.m_scanFolderPK, source.m_sourceName.c_str());
+                const SourceAssetReference& sourceAsset = processedAsset.m_entry.m_sourceAssetReference;
                 AZStd::unordered_set<AZ::Data::AssetId> legacySourceAssetIds; // Keep track of the legacy *asset* Ids to avoid duplicates
                 auto legacySourceUuidsOutcome = AssetUtilities::GetLegacySourceUuids(sourceAsset);
 
@@ -3066,6 +3066,18 @@ namespace AssetProcessor
                 }
                 else
                 {
+                    AssetProcessor::FileStateInfo fileStateInfo;
+
+                    if(AZ::Interface<AssetProcessor::FileStateCache>::Get()->GetFileInfo(
+                        sourceAssetReference.AbsolutePath().c_str(), &fileStateInfo)
+                        && fileStateInfo.m_absolutePath.compare(sourceAssetReference.AbsolutePath().c_str()) != 0)
+                    {
+                        // File on disk has different case compared to the file being processed
+                        // This usually means a file was renamed and a "change" event was fired for both the old and new name
+                        // Ignore this event as its for the old file name
+                        continue;
+                    }
+
                     // log-spam-reduction - the lack of the prior tag (input was deleted) which is rare can infer that the above branch was taken
                     //AZ_TracePrintf(AssetProcessor::DebugChannel, "Input is modified or is overriding something.\n");
                     CheckModifiedSourceFile(sourceAssetReference, scanFolderInfo);
