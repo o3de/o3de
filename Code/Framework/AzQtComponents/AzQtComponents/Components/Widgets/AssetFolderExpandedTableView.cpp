@@ -17,6 +17,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: 'in
 #include <QPainter>
 #include <QScrollBar>
 #include <QSettings>
+#include <QMenu>
 AZ_POP_DISABLE_WARNING
 
 namespace
@@ -93,7 +94,7 @@ namespace AzQtComponents
 
     void AssetFolderExpandedTableViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
-        const auto isTopLevel = index.parent().isValid() == false;
+        const auto isTopLevel = index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsTopLevel)).value<bool>();
 
         painter->save();
 
@@ -184,13 +185,13 @@ namespace AzQtComponents
         painter->restore();
     }
 
-    QSize AssetFolderExpandedTableViewDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+    QSize AssetFolderThumbnailViewDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         Q_UNUSED(index);
         return option.rect.size();
     }
 
-    void AssetFolderExpandedTableViewDelegate::polish(const AssetFolderExpandedTableView::Config& config)
+    void AssetFolderThumbnailViewDelegate::polish(const AssetFolderThumbnailView::Config& config)
     {
         m_config = config;
     }
@@ -204,7 +205,7 @@ namespace AzQtComponents
         }
     }
 
-    static void readThumbnail(QSettings& settings, AssetFolderExpandedTableView::Config::Thumbnail& thumbnail)
+    static void readThumbnail(QSettings& settings, AssetFolderThumbnailView::Config::Thumbnail& thumbnail)
     {
         thumbnail.width = settings.value(QStringLiteral("Width"), thumbnail.width).toInt();
         thumbnail.height = settings.value(QStringLiteral("Height"), thumbnail.height).toInt();
@@ -217,7 +218,7 @@ namespace AzQtComponents
         readColor(settings, "SelectedBorderColor", thumbnail.selectedBorderColor);
     }
 
-    static void readExpandButton(QSettings& settings, AssetFolderExpandedTableView::Config::ExpandButton& expandButton)
+    static void readExpandButton(QSettings& settings, AssetFolderThumbnailView::Config::ExpandButton& expandButton)
     {
         expandButton.width = settings.value(QStringLiteral("Width"), expandButton.width).toInt();
         expandButton.caretWidth = settings.value(QStringLiteral("CaretWidth"), expandButton.caretWidth).toReal();
@@ -227,7 +228,7 @@ namespace AzQtComponents
         readColor(settings, "CaretColor", expandButton.caretColor);
     }
 
-    static void readChildFrame(QSettings& settings, AssetFolderExpandedTableView::Config::ChildFrame& childFrame)
+    static void readChildFrame(QSettings& settings, AssetFolderThumbnailView::Config::ChildFrame& childFrame)
     {
         childFrame.padding = settings.value(QStringLiteral("Padding"), childFrame.padding).toInt();
         childFrame.borderRadius = settings.value(QStringLiteral("BorderRadius"), childFrame.borderRadius).toReal();
@@ -235,7 +236,7 @@ namespace AzQtComponents
         childFrame.closeButtonWidth = settings.value(QStringLiteral("CloseButtonWidth"), childFrame.padding).toInt();
     }
 
-    AssetFolderExpandedTableView::Config AssetFolderExpandedTableView::loadConfig(QSettings& settings)
+    AssetFolderThumbnailView::Config AssetFolderThumbnailView::loadConfig(QSettings& settings)
     {
         auto config = defaultConfig();
 
@@ -265,7 +266,7 @@ namespace AzQtComponents
         return config;
     }
 
-    AssetFolderExpandedTableView::Config AssetFolderExpandedTableView::defaultConfig()
+    AssetFolderThumbnailView::Config AssetFolderThumbnailView::defaultConfig()
     {
         Config config;
 
@@ -309,9 +310,9 @@ namespace AzQtComponents
         return config;
     }
 
-    bool AssetFolderExpandedTableView::polish(Style* style, QWidget* widget, const ScrollBar::Config& scrollBarConfig, const Config& config)
+    bool AssetFolderThumbnailView::polish(Style* style, QWidget* widget, const ScrollBar::Config& scrollBarConfig, const Config& config)
     {
-        auto thumbnailView = qobject_cast<AssetFolderExpandedTableView*>(widget);
+        auto thumbnailView = qobject_cast<AssetFolderThumbnailView*>(widget);
         if (!thumbnailView)
         {
             return false;
@@ -325,24 +326,24 @@ namespace AzQtComponents
         return true;
     }
 
-    void AssetFolderExpandedTableView::polish(const Config& config)
+    void AssetFolderThumbnailView::polish(const Config& config)
     {
         m_config = config;
         m_delegate->polish(config);
     }
 
-    AssetFolderExpandedTableView::AssetFolderExpandedTableView(QWidget* parent)
+    AssetFolderThumbnailView::AssetFolderThumbnailView(QWidget* parent)
         : QAbstractItemView(parent)
-        , m_delegate(new AssetFolderExpandedTableViewDelegate(this))
+        , m_delegate(new AssetFolderThumbnailViewDelegate(this))
         , m_thumbnailSize(ThumbnailSize::Small)
         , m_config(defaultConfig())
     {
         setItemDelegate(m_delegate);
     }
 
-    AssetFolderExpandedTableView::~AssetFolderExpandedTableView() = default;
+    AssetFolderThumbnailView::~AssetFolderThumbnailView() = default;
 
-    void AssetFolderExpandedTableView::setThumbnailSize(ThumbnailSize size)
+    void AssetFolderThumbnailView::setThumbnailSize(ThumbnailSize size)
     {
         if (size == m_thumbnailSize)
         {
@@ -352,12 +353,12 @@ namespace AzQtComponents
         scheduleDelayedItemsLayout();
     }
 
-    AssetFolderExpandedTableView::ThumbnailSize AssetFolderExpandedTableView::thumbnailSize() const
+    AssetFolderThumbnailView::ThumbnailSize AssetFolderThumbnailView::thumbnailSize() const
     {
         return m_thumbnailSize;
     }
 
-    QModelIndex AssetFolderExpandedTableView::indexAt(const QPoint& point) const
+    QModelIndex AssetFolderThumbnailView::indexAt(const QPoint& point) const
     {
         if (!model())
         {
@@ -377,7 +378,7 @@ namespace AzQtComponents
         return {};
     }
 
-    void AssetFolderExpandedTableView::scrollTo(const QModelIndex& index, QAbstractItemView::ScrollHint hint)
+    void AssetFolderThumbnailView::scrollTo(const QModelIndex& index, QAbstractItemView::ScrollHint hint)
     {
         if (!index.isValid())
         {
@@ -431,7 +432,7 @@ namespace AzQtComponents
         }
     }
 
-    QRect AssetFolderExpandedTableView::visualRect(const QModelIndex& index) const
+    QRect AssetFolderThumbnailView::visualRect(const QModelIndex& index) const
     {
         if (!index.isValid())
         {
@@ -446,6 +447,16 @@ namespace AzQtComponents
 
         const auto& rect = it.value();
         return rect.translated(-horizontalOffset(), -verticalOffset());
+    }
+
+    void AssetFolderThumbnailView::setRootIndex(const QModelIndex& index)
+    {
+        if (index != rootIndex())
+        {
+            QAbstractItemView::setRootIndex(index);
+            m_expandedIndexes.clear();
+            emit rootIndexChanged(index);
+        }
     }
 
     QModelIndex AssetFolderExpandedTableView::moveCursor(QAbstractItemView::CursorAction cursorAction, Qt::KeyboardModifiers modifiers)
@@ -521,20 +532,8 @@ namespace AzQtComponents
 
     void AssetFolderExpandedTableView::setSelection(const QRect& rect, QItemSelectionModel::SelectionFlags flags)
     {
-        if (!model())
-        {
-            return;
-        }
-
-        const auto translatedRect = rect.translated(horizontalOffset(), verticalOffset());
-
-        for (auto it = m_itemGeometry.constBegin(); it != m_itemGeometry.constEnd(); ++it)
-        {
-            if (it.value().intersects(translatedRect))
-            {
-                selectionModel()->select(it.key(), flags);
-            }
-        }
+        Q_UNUSED(rect);
+        Q_UNUSED(flags);
     }
 
     QRegion AssetFolderExpandedTableView::visualRegionForSelection(const QItemSelection& selection) const
@@ -549,7 +548,7 @@ namespace AzQtComponents
 
     bool AssetFolderExpandedTableView::isExpandable(const QModelIndex& index) const
     {
-        return !index.parent().isValid() && model()->rowCount(index) > 0;
+        return index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsExpandable)).value<bool>();
     }
 
     void AssetFolderExpandedTableView::paintEvent(QPaintEvent* event)
@@ -645,6 +644,23 @@ namespace AzQtComponents
         }
     }
 
+   QModelIndex AssetFolderThumbnailView::indexAtPos(const QPoint& pos) const
+    {
+        auto it = std::find_if(
+            m_itemGeometry.keyBegin(),
+            m_itemGeometry.keyEnd(),
+            [this, &pos](const QModelIndex& index)
+            {
+                return m_itemGeometry.value(index).contains(pos);
+            });
+
+        if (it != m_itemGeometry.keyEnd())
+        {
+            return *it;
+        }
+        return {};
+    }
+
     void AssetFolderExpandedTableView::mousePressEvent(QMouseEvent* event)
     {
         const auto p = event->pos() + QPoint{horizontalOffset(), verticalOffset()};
@@ -657,7 +673,7 @@ namespace AzQtComponents
                 m_itemGeometry.keyEnd(),
                 [this, &p](const QModelIndex& index)
                 {
-                    if (isExpandable(index) && !m_expandedRows.contains(index.row()))
+                    if (isExpandable(index) && !m_expandedIndexes.contains(index))
                     {
                         const auto& rect = m_itemGeometry.value(index);
                         const auto width = m_config.expandButton.width;
@@ -668,14 +684,13 @@ namespace AzQtComponents
                 });
             if (it != m_itemGeometry.keyEnd())
             {
-                const auto row = it->row();
-                if (m_expandedRows.contains(row))
+                if (m_expandedIndexes.contains(*it))
                 {
-                    m_expandedRows.remove(row);
+                    m_expandedIndexes.remove(*it);
                 }
                 else
                 {
-                    m_expandedRows.insert(row);
+                    m_expandedIndexes.insert(*it);
                 }
                 scheduleDelayedItemsLayout();
                 return;
@@ -685,18 +700,12 @@ namespace AzQtComponents
         // check that the preview on one of the top level items was clicked
         // No need to do computations on m_itemGeometry entries since we handled the expand/collapse button with the case above
         {
-            auto it = std::find_if(
-                m_itemGeometry.keyBegin(),
-                m_itemGeometry.keyEnd(),
-                [this, &p](const QModelIndex& index)
-                {
-                    return m_itemGeometry.value(index).contains(p);
-                });
+            auto idx = indexAtPos(p);
 
-            if (it != m_itemGeometry.keyEnd())
+            if (idx.isValid())
             {
-                selectionModel()->select(*it, QItemSelectionModel::SelectionFlag::ClearAndSelect);
-                emit IndexClicked(*it);
+                selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+                emit clicked(idx);
                 return;
             }
         }
@@ -712,10 +721,9 @@ namespace AzQtComponents
             });
             if (it != m_childFrames.end())
             {
-                const auto row = it->index.row();
-                if (m_expandedRows.contains(row))
+                if (m_expandedIndexes.contains(it->index))
                 {
-                    m_expandedRows.remove(row);
+                    m_expandedIndexes.remove(it->index);
                     scheduleDelayedItemsLayout();
                     return;
                 }
@@ -730,24 +738,45 @@ namespace AzQtComponents
         const auto p = event->pos() + QPoint{ horizontalOffset(), verticalOffset() };
 
         // check the expand/collapse buttons on one of the top level items was clicked
+        auto idx = indexAtPos(p);
 
+        if (idx.isValid())
         {
-            auto it = std::find_if(
-                m_itemGeometry.keyBegin(),
-                m_itemGeometry.keyEnd(),
-                [this, &p](const QModelIndex& index)
-                {
-                    return m_itemGeometry.value(index).contains(p);
-                });
-
-            if (it != m_itemGeometry.keyEnd())
-            {
-                emit IndexDoubleClicked(*it);
-                return;
-            }
+            selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+            emit doubleClicked(idx);
+            return;
         }
 
         QAbstractItemView::mouseDoubleClickEvent(event);
+    }
+
+    void AssetFolderThumbnailView::contextMenuEvent(QContextMenuEvent* event)
+    {
+        // For now we only have a context menu in search mode for the "show in folder" option
+        if (!m_showSearchResultsMode)
+        {
+            return;
+        }
+
+        const auto p = event->pos() + QPoint{ horizontalOffset(), verticalOffset() };
+        auto idx = indexAtPos(p);
+
+        if (idx.isValid())
+        {
+            m_contextMenu = new QMenu(this);
+            auto action = m_contextMenu->addAction("Show In Folder");
+            connect(
+                action,
+                &QAction::triggered,
+                this,
+                [this, idx]()
+                {
+                    emit showInFolderTriggered(idx);
+                });
+            m_contextMenu->exec(event->globalPos());
+            delete m_contextMenu;
+            m_contextMenu = nullptr;
+        }
     }
 
     int AssetFolderExpandedTableView::rootThumbnailSizeInPixels() const
@@ -770,7 +799,28 @@ namespace AzQtComponents
             return;
         }
 
-        const auto rowCount = model()->rowCount();
+        int x = m_config.viewportPadding;
+        int y = m_config.viewportPadding;
+
+        const QSize itemSize{ m_config.rootThumbnail.width, m_config.rootThumbnail.height + 4 + fontMetrics().height() };
+        const int rowHeight = itemSize.height() + m_config.topItemsVerticalSpacing;
+
+        if (m_showSearchResultsMode || !rootIndex().isValid())
+        {
+            updateGeometriesInternal(model()->index(0, 0, {}), x, y);
+        }
+        else
+        {
+            updateGeometriesInternal(rootIndex(), x, y);
+        }
+
+        verticalScrollBar()->setPageStep(viewport()->height());
+        verticalScrollBar()->setRange(0, y + rowHeight - viewport()->height());
+    }
+
+    void AssetFolderThumbnailView::updateGeometriesInternal(const QModelIndex& idx, int& x, int& y)
+    {
+        const auto rowCount = model()->rowCount(idx);
         if (rowCount == 0)
         {
             return;
@@ -785,11 +835,18 @@ namespace AzQtComponents
 
         const int childItemYOffset = (m_config.rootThumbnail.height - m_config.childThumbnail.height) / 2;
 
-        int x = m_config.viewportPadding;
-        int y = m_config.viewportPadding;
-
         for (int row = 0; row < rowCount; ++row)
         {
+            const auto index = model()->index(row, 0, idx);
+
+            // When in search results mode, we visit the whole asset tree, but only display entries that are
+            // exact matches for the search filter. This is reflected in the IsVisible role on the associated
+            // AssetBrowserFilterModel model.
+            if (m_showSearchResultsMode && !index.data(static_cast<int>(Role::IsVisible)).value<bool>())
+            {
+                continue;
+            }
+
             if (row > 0 && x + itemSize.width() > viewportWidth)
             {
                 x = m_config.viewportPadding;
@@ -797,7 +854,6 @@ namespace AzQtComponents
             }
 
             // add item geometry
-            const auto index = model()->index(row, 0, rootIndex());
             m_itemGeometry[index] = { QPoint{ x, y }, itemSize };
             x += itemSize.width();
 
@@ -812,7 +868,7 @@ namespace AzQtComponents
                 continue;
             }
 
-            if (childRowCount && m_expandedRows.contains(row))
+            if (childRowCount && m_expandedIndexes.contains(index))
             {
                 ChildFrame childFrame{index};
 
@@ -876,9 +932,22 @@ namespace AzQtComponents
             x += m_config.topItemsHorizontalSpacing;
         }
 
-        verticalScrollBar()->setPageStep(viewport()->height());
-        verticalScrollBar()->setRange(0, y + rowHeight - viewport()->height());
+        // Generate geometries recursively for all children if in search results mode
+        if (m_showSearchResultsMode)
+        {
+            for (int row = 0; row < rowCount; ++row)
+            {
+                const auto index = model()->index(row, 0, idx);
+                updateGeometriesInternal(index, x, y);
+            }
+        }
     }
+
+    void AssetFolderThumbnailView::SetShowSearchResultsMode(bool searchMode)
+    {
+        m_showSearchResultsMode = searchMode;
+    }
+
 } // namespace AzQtComponents
 
 #include "Components/Widgets/moc_AssetFolderExpandedTableView.cpp"
