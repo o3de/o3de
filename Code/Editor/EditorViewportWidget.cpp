@@ -163,6 +163,48 @@ static void MarkCameraEntityDirty(const AZ::EntityId entityId)
     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::EndUndoBatch);
 }
 
+static void PopViewGroupForDefaultContext()
+{
+    auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    if (!atomViewportRequests)
+    {
+        return;
+    }
+
+    auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
+    if (!viewSystem)
+    {
+        return;
+    }
+
+    if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+    {
+        const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
+        atomViewportRequests->PopViewGroup(contextName, viewGroup);
+    }
+}
+
+static void PushViewGroupForDefaultContext()
+{
+    auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    if (!atomViewportRequests)
+    {
+        return;
+    }
+
+    auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
+    if (!viewSystem)
+    {
+        return;
+    }
+
+    if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+    {
+        const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
+        atomViewportRequests->PushViewGroup(contextName, viewGroup);
+    }
+}
+
 EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     : QtViewport(parent)
     , m_defaultViewName(name)
@@ -1753,20 +1795,8 @@ void EditorViewportWidget::SetDefaultCamera()
 {
     if (m_viewEntityId.IsValid())
     {
-        if (auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
-        {
-            auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-            if (!viewSystem)
-            {
-                return;
-            }
-
-            if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
-            {
-                const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-                atomViewportRequests->PopViewGroup(contextName, viewGroup);
-            }
-        }
+        // remove pushed view group for view entity (editor camera component in 'Be this camera' mode
+        PopViewGroupForDefaultContext();
     }
 
     m_viewEntityId.SetInvalid();
@@ -1782,24 +1812,10 @@ void EditorViewportWidget::SetDefaultCamera()
         SetFOV(fovRadians);
     }
 
-    // Update camera matrix according to near / far values
+    // update camera matrix according to near / far values
     SetDefaultCameraNearFar();
 
-    // push the default view as the active view
-    if (auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
-    {
-        auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-        if (!viewSystem)
-        {
-            return;
-        }
-
-        if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
-        {
-            const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-            atomViewportRequests->PushViewGroup(contextName, viewGroup);
-        }
-    }
+    PushViewGroupForDefaultContext();
 
     PostCameraSet();
 }
@@ -1957,10 +1973,19 @@ void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& enti
 
     if (entityId.IsValid())
     {
+        // if we are switching between editor camera components (view entities) in the scene, if one is currently
+        // assigned, ensure we pop it from the stack before assigning a new one
+        if (m_viewEntityId.IsValid())
+        {
+            PopViewGroupForDefaultContext();
+        }
+
         Camera::CameraRequestBus::Event(entityId, &Camera::CameraRequestBus::Events::MakeActiveView);
     }
     else
     {
+        // note: SetDefaultCamera internally handles popping the current view group if an editor camera component
+        // (view entity) is assigned
         SetDefaultCamera();
     }
 }
