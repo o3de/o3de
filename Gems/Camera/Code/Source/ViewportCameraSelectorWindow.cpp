@@ -17,9 +17,6 @@
 #include <QVBoxLayout>
 #include <qmetatype.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace Qt
 {
     enum
@@ -74,8 +71,7 @@ namespace Camera
 
         CameraListModel::~CameraListModel()
         {
-            // m_firstEntry = true;
-            //  set the view entity id back to Invalid, thus enabling the editor camera
+            // set the view entity id back to Invalid, thus enabling the editor camera
             EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, AZ::EntityId());
 
             CameraNotificationBus::Handler::BusDisconnect();
@@ -103,9 +99,6 @@ namespace Camera
         {
             // if the camera entity is not an editor camera entity, don't add it to the list
             // this occurs when we're in simulation mode.
-
-            // we reset the m_firstEntry value so we can update m_lastActiveCamera when we remove from the cameras list
-            // m_firstEntry = true;
 
             bool isEditorEntity = false;
             AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
@@ -140,14 +133,6 @@ namespace Camera
 
         void CameraListModel::OnCameraRemoved(const AZ::EntityId& cameraId)
         {
-            // check it is the first time we remove a camera from the list before any other addition
-            // so we don't end up with the wrong camera ID.
-            // if (m_firstEntry)
-            //{
-            //    CameraSystemRequestBus::BroadcastResult(m_lastActiveCamera, &CameraSystemRequestBus::Events::GetActiveCamera);
-            //    m_firstEntry = false;
-            //}
-
             if (auto cameraIt = AZStd::find_if(
                     m_cameraItems.begin(),
                     m_cameraItems.end(),
@@ -190,7 +175,6 @@ namespace Camera
 
         void CameraListModel::Reset()
         {
-            // m_firstEntry = true;
             m_lastActiveCamera = AZ::EntityId();
             m_cameraItems.clear();
             m_cameraItems.push_back(AZ::EntityId());
@@ -400,6 +384,3 @@ namespace Camera
             &Internal::CreateNewSelectionWindow);
     }
 } // namespace Camera
-
-#pragma optimize("", on)
-#pragma inline_depth()

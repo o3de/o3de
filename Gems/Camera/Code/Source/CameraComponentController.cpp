@@ -19,9 +19,6 @@
 
 #include <AzFramework/Viewport/ViewportScreen.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace Camera
 {
     void CameraComponentConfig::Reflect(AZ::ReflectContext* context)
@@ -121,11 +118,7 @@ namespace Camera
 
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
 
-            // Connect to the bus the first time we activate the view
-            //if (!AZ::RPI::ViewportContextNotificationBus::Handler::BusIsConnectedId(contextName))
-            //{
-                AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
-            //}
+            AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
 
             // Ensure the Atom camera is updated with our current transform state
             AZ::Transform localTransform;
@@ -148,10 +141,6 @@ namespace Camera
             atomViewportRequests->PopViewGroup(contextName, m_atomCameraViewGroup);
 
             AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect(contextName);
-
-            //const AZ::Name other = AZ::Name("ViewportContext0");
-            ////atomViewportRequests->GetViewportContextByName(other);
-            //atomViewportRequests->PopViewGroup(other, m_atomCameraViewGroup);
         }
     }
 
@@ -640,6 +629,3 @@ namespace Camera
         }
     }
 } //namespace Camera
-
-#pragma optimize("", on)
-#pragma inline_depth()

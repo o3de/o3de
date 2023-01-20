@@ -12,9 +12,6 @@
 #include <Atom/RPI.Public/ViewportContextManager.h>
 #include <Atom/RPI.Public/View.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AZ
 {
     namespace RPI
@@ -358,7 +355,6 @@ namespace AZ
             if (!m_rootScene)
             {
                 pipelineView.reset();
-                //m_viewGroup.reset();
                 return;
             }
 
@@ -425,6 +421,3 @@ namespace AZ
         }
     } // namespace RPI
 } // namespace AZ
-
-#pragma optimize("", on)
-#pragma inline_depth()

@@ -55,9 +55,6 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::Null,
     "Specify the color the camera pivot point should be");
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace SandboxEditor
 {
     static AzFramework::TranslateCameraInputChannelIds BuildTranslateCameraInputChannelIds()
@@ -497,6 +494,3 @@ namespace SandboxEditor
         }
     }
 } // namespace SandboxEditor
-
-#pragma optimize("", on)
-#pragma inline_depth()

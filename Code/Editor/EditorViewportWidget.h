@@ -361,9 +361,6 @@ private:
     // Legacy...
     KeyPressedState m_pressedKeyState = KeyPressedState::AllUp;
 
-    // The last camera matrix of the default editor camera, used when switching back to editor camera to restore the right TM
-    //Matrix34 m_defaultViewTM;
-
     // The name to use for the default editor camera
     const QString m_defaultViewName;
 
@@ -416,13 +413,6 @@ private:
 
     // Type to return current state of editor viewport settings
     EditorViewportSettings m_editorViewportSettings;
-
-    // The default view group created for the viewport context, which is used as the "Editor Camera".
-    // The group contains stereoscopic and non-stereoscopic views.
-    //AZ::RPI::ViewGroupPtr m_defaultViewGroup;
-
-    // The name to set on the viewport context when this viewport widget is set as the active one
-    //AZ::Name m_defaultViewportContextName; // removing this made things worse...
 
     // DO NOT USE THIS! It exists only to satisfy the signature of the base class method GetViewTm
     mutable Matrix34 m_viewTmStorage;

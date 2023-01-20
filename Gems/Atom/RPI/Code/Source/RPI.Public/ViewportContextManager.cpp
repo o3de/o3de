@@ -10,9 +10,6 @@
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AZ
 {
     namespace RPI
@@ -203,13 +200,17 @@ namespace AZ
                 AZ_Assert(false, "Attempted to rename ViewportContext \"%s\" to \"%s\", but \"%s\" is already assigned to another ViewportContext", viewportContext->m_name.GetCStr(), newContextName.GetCStr(), newContextName.GetCStr());
                 return;
             }
-            //GetOrCreateViewStackForContext(newContextName);
 
+            // find the existing view group stack with the old name
             auto viewGroupIt = m_viewportViews.find(viewportContext->GetName());
+            // make a copy of the view group stack
             auto existingViewGroup = *viewGroupIt;
+            // erase the original value from the container
             m_viewportViews.erase(viewGroupIt);
 
+            // update the name of the viewport context
             viewportContext->m_name = newContextName;
+            // insert the updated view group back into the map with the new name
             m_viewportViews[newContextName] = existingViewGroup.second;
 
             UpdateViewForContext(newContextName);
@@ -363,6 +364,3 @@ namespace AZ
         }
     } // namespace RPI
 } // namespace AZ
-
-#pragma optimize("", on)
-#pragma inline_depth()
