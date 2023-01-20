@@ -55,8 +55,8 @@ namespace PhysX
             property_t& instance,
             [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
         {
-            bool val = GUI->GetComboBox()->currentIndex() == 1;
-            instance = static_cast<property_t>(val);
+            bool value = GUI->GetComboBox()->currentIndex() == 1;
+            instance = static_cast<property_t>(value);
         }
 
         bool KinematicWidget::ReadValuesIntoGUI(

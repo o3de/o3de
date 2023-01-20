@@ -106,10 +106,10 @@ namespace AzPhysics
     }
 
     static constexpr AZStd::string_view KinematicDescription =
-        "Determines how the movement / position of the rigid body is controlled.";
+        "Determines how the movement/position of the rigid body is controlled.";
 
     static constexpr AZStd::string_view KinematicDescriptionReadOnly =
-        "Determines how the movement / position of the rigid body is controlled. \n"
+        "Determines how the movement/position of the rigid body is controlled. \n"
         "<b>The rigid body cannot be set as Kinematic if CCD is enabled, disable CCD to allow changes to be made.</b>";
 
     static constexpr AZStd::string_view CcdDescription =
@@ -130,7 +130,7 @@ namespace AzPhysics
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RigidBodyConfiguration, AzPhysics::SimulatedBodyConfiguration>()
-                ->Version(6, &Internal::RigidBodyVersionConverter)
+                ->Version(5, &Internal::RigidBodyVersionConverter)
                 ->Field("Kinematic", &RigidBodyConfiguration::m_kinematic)
                 ->Field("Initial linear velocity", &RigidBodyConfiguration::m_initialLinearVelocity)
                 ->Field("Initial angular velocity", &RigidBodyConfiguration::m_initialAngularVelocity)
