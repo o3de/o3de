@@ -57,6 +57,7 @@
 
 // Asset types
 #include <AzCore/Slice/SliceAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 // Scriptable Ebus Registration
 #include "Events/ReflectScriptableEvents.h"
@@ -247,6 +248,26 @@ namespace LmbrCentral
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext->ClassDeprecate(
+                "SimpleAssetReference_TextureAsset",
+                AZ::Uuid("{68E92460-5C0C-4031-9620-6F1A08763243}"),
+                [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
+                {
+                    AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
+                    for (int index = 0; index < rootElement.GetNumSubElements(); ++index)
+                    {
+                        childNodeElements.push_back(rootElement.GetSubElement(index));
+                    }
+                    // Convert the rootElement now, the existing child DataElmentNodes are now removed
+                    rootElement.Convert<AzFramework::SimpleAssetReference<TextureAsset>>(context);
+                    for (AZ::SerializeContext::DataElementNode& childNodeElement : childNodeElements)
+                    {
+                        rootElement.AddElement(AZStd::move(childNodeElement));
+                    }
+                    return true;
+                });
+            AzFramework::SimpleAssetReference<TextureAsset>::Register(*serializeContext);
+
             serializeContext->Class<LmbrCentralSystemComponent, AZ::Component>()
                 ->Version(1)
             ;
@@ -290,6 +311,13 @@ namespace LmbrCentral
     {
         // Register asset handlers. Requires "AssetDatabaseService"
         AZ_Assert(AZ::Data::AssetManager::IsReady(), "Asset manager isn't ready!");
+
+        // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
+        if (auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler(); assetCatalog)
+        {
+            // Sprite files are only used by LyShine and should be moved there at some point
+            assetCatalog->AddExtension("sprite");
+        }
 
         AZ::Data::AssetManagerNotificationBus::Handler::BusConnect();
 
