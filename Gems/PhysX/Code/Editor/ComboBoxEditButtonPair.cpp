@@ -59,7 +59,7 @@ namespace PhysX
         { 
             return m_editButton; 
         }
-    }
-}
+    } // namespace Editor
+} // namespace PhysX
 
 #include <Editor/moc_ComboBoxEditButtonPair.cpp>

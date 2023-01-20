@@ -17,6 +17,7 @@ namespace PhysX
 {
     namespace Editor
     {
+        /// Widget to connect the KinematicDescriptionDialog with the Kinematic setting for rigid bodies.
         class KinematicWidget
             : public QObject
             , public AzToolsFramework::PropertyHandler<bool, ComboBoxEditButtonPair>

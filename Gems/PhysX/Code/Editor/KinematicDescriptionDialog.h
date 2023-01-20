@@ -24,6 +24,7 @@ namespace PhysX
 {
     namespace Editor
     {
+        /// Dialog for explaining the difference between Dynamic and Kinematic bodies.
         class KinematicDescriptionDialog : public QDialog
         {
             Q_OBJECT
@@ -42,6 +43,6 @@ namespace PhysX
             QScopedPointer<Ui::KinematicDescriptionDialog> m_ui;
             bool m_kinematicSetting = false;
         };
-    }
-}
+    } // namespace Editor
+} // namespace PhysX
 

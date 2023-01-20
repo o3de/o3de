@@ -130,7 +130,7 @@ namespace PhysX
         {
             return m_kinematicSetting;
         }
-    }
-}
+    } // namespace Editor
+} // namespace PhysX
 
 #include <moc_KinematicDescriptionDialog.cpp>

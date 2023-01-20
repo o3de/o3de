@@ -43,5 +43,5 @@ namespace PhysX
             QComboBox* m_comboBox = nullptr;
             QToolButton* m_editButton = nullptr;
         };
-    }
-}
+    } // namespace Editor
+} // namespace PhysX
