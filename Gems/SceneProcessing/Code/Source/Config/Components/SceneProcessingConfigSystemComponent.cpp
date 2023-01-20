@@ -57,7 +57,7 @@ namespace AZ
             }
 
             AZ_Warning("SceneProcessing", softNameSettingsFound,
-                "No soft name settings are found from the settings registry. If you want to customize the soft naming convertions, "
+                "No soft name settings are found from the settings registry. If you want to customize the soft naming conventions, "
                 "Please override the default values using the Project User Registry or the global machine registry (~/.o3de/Registry/) "
                 "instead of modifying the default Gems/SceneSettings/Registry/SoftNameSettings.setreg.");
         }
