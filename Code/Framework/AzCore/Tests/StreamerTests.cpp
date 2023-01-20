@@ -248,8 +248,6 @@ namespace AZ::IO
         void SetUp() override
         {
             LeakDetectionFixture::SetUp();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
             m_prevFileIO = FileIOBase::GetInstance();
             FileIOBase::SetInstance(&m_fileIO);
@@ -275,8 +273,6 @@ namespace AZ::IO
 
             FileIOBase::SetInstance(m_prevFileIO);
 
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
             LeakDetectionFixture::TearDown();
         }
 

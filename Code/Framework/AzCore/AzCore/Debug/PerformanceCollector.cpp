@@ -18,8 +18,14 @@
 
 namespace AZ::Debug
 {
-    PerformanceCollector::PerformanceCollector(const AZStd::string_view logCategory, AZStd::span<const AZStd::string_view> m_metricNames, OnBatchCompleteCallback onBatchCompleteCallback)
-        : m_logCategory(logCategory), m_onBatchCompleteCallback(onBatchCompleteCallback)
+    PerformanceCollector::PerformanceCollector(
+        const AZStd::string_view logCategory,
+        AZStd::span<const AZStd::string_view> m_metricNames,
+        OnBatchCompleteCallback onBatchCompleteCallback,
+        const AZStd::string_view fileExtension)
+        : m_logCategory(logCategory)
+        , m_onBatchCompleteCallback(onBatchCompleteCallback)
+        , m_fileExtension(fileExtension)
     {
         for (const auto& metricName : m_metricNames)
         {
@@ -244,7 +250,7 @@ namespace AZ::Debug
             settingsRegistry->Get(m_outputFilePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
             AZ::Date::Iso8601TimestampString utcTimestamp;
             AZ::Date::GetFilenameCompatibleFormatNowWithMicroseconds(utcTimestamp);
-            m_outputFilePath /= AZStd::string::format("Performance_%s_%s.json", m_logCategory.c_str(), utcTimestamp.c_str());
+            m_outputFilePath /= AZStd::string::format("Performance_%s_%s.%s", m_logCategory.c_str(), utcTimestamp.c_str(), m_fileExtension.c_str());
 
             constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite;
             auto stream = AZStd::make_unique<AZ::IO::SystemFileStream>(m_outputFilePath.c_str(), openMode);

@@ -1,5 +1,6 @@
 {
     "gem_name": "RecastNavigation",
+    "version": "0.0.0",
     "display_name": "RecastNavigation",
     "license": "Apache-2.0 Or MIT and zlib license for Recast library",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",

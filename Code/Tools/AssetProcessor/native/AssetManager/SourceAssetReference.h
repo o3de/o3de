@@ -60,17 +60,17 @@ namespace AssetProcessor
         explicit operator bool() const;
 
         bool IsValid() const;
-        AZ::IO::Path AbsolutePath() const;
-        AZ::IO::Path RelativePath() const;
-        AZ::IO::Path ScanFolderPath() const;
+        AZ::IO::FixedMaxPath AbsolutePath() const;
+        AZ::IO::FixedMaxPath RelativePath() const;
+        AZ::IO::FixedMaxPath ScanFolderPath() const;
         AZ::s64 ScanFolderId() const;
 
     private:
         void Normalize();
 
-        AZ::IO::Path m_absolutePath;
-        AZ::IO::Path m_relativePath;
-        AZ::IO::Path m_scanFolderPath;
+        AZ::IO::FixedMaxPath m_absolutePath;
+        AZ::IO::FixedMaxPath m_relativePath;
+        AZ::IO::FixedMaxPath m_scanFolderPath;
         AZ::s64 m_scanFolderId{};
     };
 }

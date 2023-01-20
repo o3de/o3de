@@ -309,5 +309,19 @@ namespace UnitTest
             EXPECT_TRUE(AZ::Date::GetFilenameCompatibleFormatWithMicroseconds(iso8601Timestamp, utcTestDateTime));
             EXPECT_STREQ("2025-03-18T110537.071041Z", iso8601Timestamp.c_str());
         }
+
+        TEST_F(DateFormatTest, DateFormat_NowFunctions_CompileAndLink)
+        {
+            AZ::Date::Iso8601TimestampString iso8601Timestamp;
+            EXPECT_TRUE(AZ::Date::GetIso8601ExtendedFormatNow(iso8601Timestamp));
+            EXPECT_TRUE(AZ::Date::GetIso8601ExtendedFormatNowWithMilliseconds(iso8601Timestamp));
+            EXPECT_TRUE(AZ::Date::GetIso8601ExtendedFormatNowWithMicroseconds(iso8601Timestamp));
+            EXPECT_TRUE(AZ::Date::GetIso8601BasicFormatNow(iso8601Timestamp));
+            EXPECT_TRUE(AZ::Date::GetIso8601BasicFormatNowWithMilliseconds(iso8601Timestamp));
+            EXPECT_TRUE(AZ::Date::GetIso8601BasicFormatNowWithMicroseconds(iso8601Timestamp));
+            EXPECT_TRUE(AZ::Date::GetFilenameCompatibleFormatNow(iso8601Timestamp));
+            EXPECT_TRUE(AZ::Date::GetFilenameCompatibleFormatNowWithMilliseconds(iso8601Timestamp));
+            EXPECT_TRUE(AZ::Date::GetFilenameCompatibleFormatNowWithMicroseconds(iso8601Timestamp));
+        }
     } // namespace Iso8601Timestamp
 } // namespace UnitTest
