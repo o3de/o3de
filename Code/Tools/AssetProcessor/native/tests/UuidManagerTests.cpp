@@ -346,7 +346,7 @@ namespace UnitTests
         MakeFile(TestFile);
 
         // Generate a metadata file
-        auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
+        m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
         // Read in the metadata file
         auto result = AZ::Utils::ReadFile<AZStd::string>(MetadataFile.Native());
