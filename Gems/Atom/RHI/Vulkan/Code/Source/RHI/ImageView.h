@@ -56,14 +56,16 @@ namespace AZ
 
             VkImageViewType GetImageViewType(const Image& image) const;
             void BuildImageSubresourceRange(VkImageViewType imageViewType, VkImageAspectFlags aspectFlags);
+            void ReleaseView();
+            void ReleaseBindlessIndices();
 
             VkImageView m_vkImageView = VK_NULL_HANDLE;
             RHI::Format m_format = RHI::Format::Unknown;
             RHI::ImageSubresourceRange m_imageSubresourceRange;
             VkImageSubresourceRange m_vkImageSubResourceRange;
 
-            uint32_t m_readIndex = ~0u;
-            uint32_t m_readWriteIndex = ~0u;
+            uint32_t m_readIndex = InvalidBindlessIndex;
+            uint32_t m_readWriteIndex = InvalidBindlessIndex;
         };
     }
 }
