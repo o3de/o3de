@@ -161,9 +161,8 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterController_GamePlayComponent_GravitySetsWhileMoving)
     {
-        PhysX::CharacterControllerComponent* characterComponent = nullptr;
         PhysX::CharacterGameplayComponent* gameplayComponent = nullptr;
-        AzFramework::TransformComponent* transform = nullptr;
+        AzFramework::TransformComponent* transformComponent = nullptr;
 
         float expectedGravityMultiplier = 2.5f;
 
@@ -181,19 +180,16 @@ namespace PhysX
             characterGameplayConfiguration.m_gravityMultiplier = expectedGravityMultiplier;
             characterGameplayConfiguration.m_groundDetectionBoxHeight = 0.05f;
 
-            transform = gameplayEntity->CreateComponent<AzFramework::TransformComponent>();
-            characterComponent = gameplayEntity->CreateComponent<CharacterControllerComponent>(
-                AZStd::move(characterConfiguration), AZStd::move(characterShapeConfiguration));
+            gameplayEntity->CreateComponent<CharacterControllerComponent>(AZStd::move(characterConfiguration), AZStd::move(characterShapeConfiguration));
+            transformComponent = gameplayEntity->CreateComponent<AzFramework::TransformComponent>();
             gameplayComponent = gameplayEntity->CreateComponent<CharacterGameplayComponent>(characterGameplayConfiguration);
 
-            transform->SetWorldTM(AZ::Transform::Identity());
+            transformComponent->SetWorldTM(AZ::Transform::Identity());
         }
         gameplayEntity->Init();
         gameplayEntity->Activate();
 
         // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
-        auto startTransform = transform->GetWorldTM();
-
         int duration = 10;
         float timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
 
