@@ -1108,7 +1108,7 @@ try {
 
                         //this can happen on the first run, the pipeline parameters are not yet defined
                         if(!env.PROJECT_NAME) {
-                            env.PROJECT_NAME = projectName
+                            env.PROJECT_NAME = 'AutomatedTesting'
                         }
 
                         if(env.PROJECT_NAME != projectName) {
