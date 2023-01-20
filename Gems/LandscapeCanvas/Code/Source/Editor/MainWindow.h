@@ -100,6 +100,7 @@ namespace LandscapeCanvasEditor
         Q_OBJECT
 
     public:
+        AZ_CLASS_ALLOCATOR(MainWindow, AZ::SystemAllocator)
         explicit MainWindow(QWidget* parent = nullptr);
         ~MainWindow() override;
 

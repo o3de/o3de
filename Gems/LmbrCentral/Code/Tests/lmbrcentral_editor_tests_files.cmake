@@ -25,7 +25,6 @@ set(FILES
     Builders/SliceBuilderTests.cpp
     Builders/LevelBuilderTest.cpp
     Builders/LuaBuilderTests.cpp
-    Builders/SeedBuilderTests.cpp
     ../Source/LmbrCentral.cpp
     ../Source/LmbrCentralEditor.cpp
 )

@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Transform3",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns a float3 transformed by a matrix3",
         "slotDataTypeGroups": [
             "inVector|outVector",
             "inMatrix"
@@ -16,16 +17,8 @@
                 "name": "inVector",
                 "displayName": "Vector",
                 "description": "Vector",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float3",
-                "defaultValue": {
-                    "$type": "Vector3",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -38,26 +31,6 @@
                 "description": "Matrix",
                 "supportedDataTypeRegex": "(bool|int|uint|float)[3]x[1-4]",
                 "defaultDataType": "float3x3",
-                "defaultValue": {
-                    "$type": "AZStd::array<Vector3, 3>",
-                    "Value": [
-                        [
-                            1.0,
-                            0.0,
-                            0.0
-                        ],
-                        [
-                            0.0,
-                            1.0,
-                            0.0
-                        ],
-                        [
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    ]
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"

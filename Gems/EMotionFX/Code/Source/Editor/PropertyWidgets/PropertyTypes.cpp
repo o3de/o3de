@@ -40,8 +40,6 @@ namespace EMotionFX
     AZStd::vector<AzToolsFramework::PropertyHandlerBase*> RegisterPropertyTypes()
     {
 #if defined(EMOTIONFXANIMATION_EDITOR)
-        AZ::AllocatorInstance<PropertyWidgetAllocator>::Create();
-
         AZStd::vector<AzToolsFramework::PropertyHandlerBase*> propertyHandlers =
         {
             aznew EMotionFX::ActorJointElementHandler(),
@@ -106,8 +104,6 @@ namespace EMotionFX
                 delete handler;
             }
         }
-
-        AZ::AllocatorInstance<PropertyWidgetAllocator>::Destroy();
 #endif
     }
 } // namespace EMotionFX

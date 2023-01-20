@@ -34,6 +34,7 @@ ly_add_target(
 # Load the "Gem::CrashReporting" module in Clients and Servers
 ly_create_alias(NAME CrashReporting.Clients NAMESPACE Gem TARGETS Gem::CrashReporting)
 ly_create_alias(NAME CrashReporting.Servers NAMESPACE Gem TARGETS Gem::CrashReporting)
+ly_create_alias(NAME CrashReporting.Unified NAMESPACE Gem TARGETS Gem::CrashReporting)
 
 if(NOT LY_MONOLITHIC_GAME)
 

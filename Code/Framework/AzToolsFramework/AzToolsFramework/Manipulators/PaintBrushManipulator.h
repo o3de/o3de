@@ -13,6 +13,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/PaintBrush/PaintBrush.h>
 #include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ViewportSelection/EditorPickEntitySelection.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsNotificationBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
@@ -33,6 +35,7 @@ namespace AzToolsFramework
         : public BaseManipulator
         , public ManipulatorSpace
         , protected GlobalPaintBrushSettingsNotificationBus::Handler
+        , private AzToolsFramework::EditorPickModeNotificationBus::Handler
     {
         //! Private constructor.
         PaintBrushManipulator(
@@ -64,13 +67,25 @@ namespace AzToolsFramework
         //! Returns the actions that we want any Component Mode using the Paint Brush Manipulator to support.
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl();
 
+        //! Initializes the actions that we want any Component Mode using the Paint Brush Manipulator to support.
+        static void RegisterActions();
+
+        //! Adds the actions that we want any Component Mode using the Paint Brush Manipulator to support to the mode provided.
+        static void BindActionsToMode(AZ::Uuid componentModeTypeId);
+
+        //! Adds the actions that we want any Component Mode using the Paint Brush Manipulator to support to the Edit menu.
+        static void BindActionsToMenus();
+
         //! Adjusts the size of the paintbrush
-        void AdjustSize(float sizeDelta);
+        static void AdjustSize(float sizeDelta);
 
         //! Adjusts the paintbrush hardness percent
-        void AdjustHardnessPercent(float hardnessPercentDelta);
+        static void AdjustHardnessPercent(float hardnessPercentDelta);
 
     private:
+        void OnEntityPickModeStarted() override;
+        void OnEntityPickModeStopped() override;
+
         void InvalidateImpl() override;
 
         //! Create the manipulator view(s) for the paintbrush.
@@ -97,5 +112,7 @@ namespace AzToolsFramework
         AZ::EntityComponentIdPair m_ownerEntityComponentId;
 
         AzFramework::PaintBrush m_paintBrush;
+
+        AZStd::optional<EditorPickEntitySelectionHelper> m_pickEntitySelectionMode;
     };
 } // namespace AzToolsFramework

@@ -19,6 +19,7 @@ namespace LyShine
         : public AZ::RPI::FeatureProcessor
     {
     public:
+        AZ_CLASS_ALLOCATOR(LyShineFeatureProcessor, AZ::SystemAllocator)
         AZ_RTTI(LyShineFeatureProcessor, "{D6218A9D-5F27-4ACC-8F89-CCBDAFD24693}", AZ::RPI::FeatureProcessor);
         AZ_DISABLE_COPY_MOVE(LyShineFeatureProcessor);
         AZ_FEATURE_PROCESSOR(LyShineFeatureProcessor);

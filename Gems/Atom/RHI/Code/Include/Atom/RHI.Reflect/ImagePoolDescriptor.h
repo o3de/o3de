@@ -22,6 +22,7 @@ namespace AZ
         public:
             virtual ~ImagePoolDescriptor() = default;
             AZ_RTTI(ImagePoolDescriptor, "{9828B912-7D7D-4443-8794-E10E0EF34269}", ResourcePoolDescriptor);
+            AZ_CLASS_ALLOCATOR(ImagePoolDescriptor, SystemAllocator)
             static void Reflect(AZ::ReflectContext* context);
 
             ImagePoolDescriptor() = default;

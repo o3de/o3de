@@ -40,8 +40,6 @@ namespace UnitTest
     protected:
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
             m_app.reset(aznew AZ::ComponentApplication());
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
@@ -106,8 +104,6 @@ namespace UnitTest
 
             m_app->Destroy();
             m_app = nullptr;
-
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
 
         static constexpr char testFileFolder[] = "@gemroot:LmbrCentral@/Code/Tests/";
