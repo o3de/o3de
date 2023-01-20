@@ -952,10 +952,7 @@ namespace AzFramework
                 UnregisterAsset(assetId);
                 {
                     AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
-                    for (const auto& mapping : message.m_legacyAssetIds)
-                    {
-                        m_registry->UnregisterLegacyAssetMapping(mapping);
-                    }
+                    m_registry->UnregisterLegacyAssetMappingsForAsset(assetId);
                 }
                 // queue this for later delivery, since we are not on the main thread:
                 AzFramework::LegacyAssetEventBus::QueueEvent(

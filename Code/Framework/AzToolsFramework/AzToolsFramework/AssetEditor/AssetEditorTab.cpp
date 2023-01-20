@@ -901,4 +901,4 @@ namespace AzToolsFramework
     } // namespace AssetEditor
 } // namespace AzToolsFramework
 
-#include <AssetEditor/AssetEditorTab.moc>
+#include <AssetEditor/moc_AssetEditorTab.cpp>

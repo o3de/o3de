@@ -223,6 +223,7 @@ namespace UnitTest
     {
         friend class SetInternalPropertyFunctorSourceData;
     public:
+        AZ_CLASS_ALLOCATOR(SetInternalPropertyFunctor, SystemAllocator)
         using AZ::RPI::MaterialFunctor::Process;
         void Process(AZ::RPI::MaterialFunctorAPI::RuntimeContext& context) override
         {
@@ -239,6 +240,7 @@ namespace UnitTest
         : public AZ::RPI::MaterialFunctorSourceData
     {
     public:
+        AZ_CLASS_ALLOCATOR(SetInternalPropertyFunctorSourceData, AZ::SystemAllocator)
         using MaterialFunctorSourceData::CreateFunctor;
         FunctorResult CreateFunctor(const RuntimeContext& context) const override
         {
@@ -261,6 +263,7 @@ namespace UnitTest
         : public AZ::RPI::MaterialFunctor
     {
     public:
+        AZ_CLASS_ALLOCATOR(ShaderEnablePipelineFunctor, SystemAllocator)
         using AZ::RPI::MaterialFunctor::Process;
         void Process(AZ::RPI::MaterialFunctorAPI::PipelineRuntimeContext& context) override
         {
@@ -276,6 +279,7 @@ namespace UnitTest
         : public AZ::RPI::MaterialFunctorSourceData
     {
     public:
+        AZ_CLASS_ALLOCATOR(ShaderEnablePipelineFunctorSourceData, AZ::SystemAllocator)
         using MaterialFunctorSourceData::CreateFunctor;
         FunctorResult CreateFunctor(const RuntimeContext& context) const override
         {

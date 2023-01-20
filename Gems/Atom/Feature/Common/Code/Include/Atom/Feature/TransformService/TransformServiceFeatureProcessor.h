@@ -24,6 +24,7 @@ namespace AZ
             : public TransformServiceFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(TransformServiceFeatureProcessor, AZ::SystemAllocator)
 
             AZ_RTTI(AZ::Render::TransformServiceFeatureProcessor, "{D8A2C353-2850-42F8-AA21-3979CBECBF80}", AZ::Render::TransformServiceFeatureProcessorInterface);
 
