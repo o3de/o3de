@@ -27,7 +27,7 @@ def Scene_Settings_Procedural_Mesh_Groups_Test():
         import scene_settings_test_helpers as scene_test_helpers
         general.idle_enable(True)
         
-        path_to_manifest, widget_main_window, reflected_property_root, window_id = \
+        path_to_manifest, widget_main_window, reflected_property_root = \
             scene_test_helpers.prepare_scene_ui_for_test(test_file_name="auto_test_fbx.fbx", manifest_should_exist=False, should_create_manifest=False)
 
         editable_mesh_group_name = "auto_test_fbx"

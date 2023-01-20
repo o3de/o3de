@@ -19,11 +19,8 @@ def Scene_Settings_Clear_Unsaved_Changes():
         import scene_settings_test_messages as tm
         import scene_settings_test_helpers as scene_test_helpers
         
-        path_to_manifest, widget_main_window, reflected_property_root, window_id = \
+        path_to_manifest, widget_main_window, reflected_property_root = \
             scene_test_helpers.prepare_scene_ui_for_test(test_file_name="auto_test_fbx.fbx", manifest_should_exist=False, should_create_manifest=False)
-
-        # Pause a bit longer, the UI has to be rebuilt after clearing unsaved changes.
-        PAUSE_TIME_IN_FRAMES = 3000
 
         # 1. Make a change - Change the update material toggle
         # 2. Verify the change.
@@ -38,45 +35,22 @@ def Scene_Settings_Clear_Unsaved_Changes():
         
         update_material_checkbox = check_boxes[0]
 
-        initial_check_state = update_material_checkbox.isChecked()
-        Report.critical_result(("Initial state is false" , "Initial state is true"), initial_check_state == False)
-        
-        general.idle_wait_frames(PAUSE_TIME_IN_FRAMES)
-
         update_material_checkbox.click()
-        updated_checkbox_state = update_material_checkbox.isChecked()
+        
+        has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayScriptRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
 
-        Report.critical_result(tm.Test_Messages.scene_settings_unsaved_toggle_changed, updated_checkbox_state == True)
+        Report.critical_result(tm.Test_Messages.scene_settings_unsaved_toggle_changed, has_unsaved_changes == True)
                 
-        general.idle_wait_frames(PAUSE_TIME_IN_FRAMES)
-
         clear_unsaved_changes_action = widget_main_window.findChild(QtWidgets.QAction, "m_actionClearUnsavedChanges")
         clear_unsaved_changes_action.trigger()
-        
-        # Clear the handles to old objects, so objects refresh correctly.
-        clear_unsaved_changes_action = None
-        update_material_checkbox = None
-        check_boxes = None
-        update_materials_row = None
-        widget_main_window = None
-        
-        # Wait for the UI to finish rebuilding.
-        general.idle_wait_frames(PAUSE_TIME_IN_FRAMES)
-        PySide2.QtCore.QCoreApplication.instance().processEvents()
-        
-        # If the old widget handles are used, the old values will be returned, so refresh everything manually.
-        widget_main_window2 = QtWidgets.QWidget.find(window_id)
-        reflected_property_root2 = widget_main_window2.findChild(QtWidgets.QWidget, "m_rootWidget")
-        update_materials_row2 = reflected_property_root2.findChild(QtWidgets.QWidget,"Update materials")
-        check_boxes2 = update_materials_row2.findChildren(QtWidgets.QCheckBox,"")
-        update_material_checkbox2 = check_boxes2[0]
-        general.idle_wait_frames(PAUSE_TIME_IN_FRAMES)
-        PySide2.QtCore.QCoreApplication.instance().processEvents()
-        
-        cleared_unsaved_changes_checkbox_state = update_material_checkbox2.isChecked()
-        #Report.critical_result(tm.Test_Messages.scene_settings_unsaved_toggle_restored, initial_check_state == cleared_unsaved_changes_checkbox_state)
 
-        Report.critical_result(("GOOD", f"Checked: {update_material_checkbox2.isChecked()}"), cleared_unsaved_changes_checkbox_state == False)
+        # Wait for the UI to finish rebuilding.
+        PAUSE_TIME_IN_FRAMES = 30
+        general.idle_wait_frames(PAUSE_TIME_IN_FRAMES)
+        
+        has_unsaved_changes = azlmbr.qt.SceneSettingsRootDisplayScriptRequestBus(azlmbr.bus.Broadcast, "HasUnsavedChanges")
+
+        Report.critical_result(tm.Test_Messages.scene_settings_unsaved_toggle_changed, has_unsaved_changes == False)
 
         widget_main_window.close()
 

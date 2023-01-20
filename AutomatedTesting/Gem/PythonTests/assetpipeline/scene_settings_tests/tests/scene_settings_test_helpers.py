@@ -62,7 +62,7 @@ def prepare_scene_ui_for_test(test_file_name, manifest_should_exist, should_crea
     
     reflected_property_root = widget_main_window.findChild(QtWidgets.QWidget, "m_rootWidget")
 
-    return path_to_manifest, widget_main_window, reflected_property_root, window_id
+    return path_to_manifest, widget_main_window, reflected_property_root
 
 
 def save_and_verify_manifest(path_to_manifest, widget_main_window):

@@ -18,7 +18,7 @@ def Scene_Settings_Tests_In_Editor_Create_And_Verify_Scene_Settings_File():
         import scene_settings_test_messages as tm
         import scene_settings_test_helpers as scene_test_helpers
         
-        path_to_manifest, widget_main_window, reflected_property_root, window_id = \
+        path_to_manifest, widget_main_window, reflected_property_root = \
             scene_test_helpers.prepare_scene_ui_for_test(test_file_name="auto_test_fbx.fbx", manifest_should_exist=False, should_create_manifest=True)
 
         update_materials_row = reflected_property_root.findChild(QtWidgets.QWidget,"Update materials")
