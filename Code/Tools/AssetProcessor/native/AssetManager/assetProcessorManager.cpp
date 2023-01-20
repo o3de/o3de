@@ -34,6 +34,7 @@
 
 #include <AssetManager/ProductAsset.h>
 #include <native/AssetManager/SourceAssetReference.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
 
 namespace AssetProcessor
 {
@@ -3921,7 +3922,10 @@ namespace AssetProcessor
 
         if (sourceUUID.IsNull())
         {
-            auto failureMessage = AZStd::string::format("CreateJobs failed for %s - Invalid UUID, metadata file is likely corrupt", sourceAsset.AbsolutePath().c_str());
+            auto failureMessage = AZStd::string::format(
+                "CreateJobs failed for %s - Invalid UUID, metadata file " AZ_STRING_FORMAT " is likely corrupt",
+                sourceAsset.AbsolutePath().c_str(),
+                AZ_STRING_ARG(AzToolsFramework::MetadataManager::ToMetadataPath(sourceAsset.AbsolutePath().c_str()).Native()));
             AutoFailJob(
                 failureMessage,
                 failureMessage,

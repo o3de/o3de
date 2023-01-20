@@ -114,11 +114,13 @@ namespace UnitTests
         EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(
             AZStd::string::format("%s%s", TestFile, AzToolsFramework::MetadataManager::MetadataFileExtension).c_str()));
 
+        // Remove the file
         AZ::IO::FileIOBase::GetInstance()->Remove(TestFile);
         AZ::IO::FileIOBase::GetInstance()->Remove(
             (AZStd::string(TestFile) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
         m_uuidInterface->FileRemoved((AZStd::string(TestFile) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
 
+        // Check the UUID again, expecting an error
         TraceBusErrorChecker errorHandler;
         errorHandler.Begin();
         uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
@@ -207,6 +209,7 @@ namespace UnitTests
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
+        // Move the metadata file and signal the old one is removed
         AZ::IO::FileIOBase::GetInstance()->Rename(
             (AZStd::string(FileA) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str(),
             (AZStd::string(FileB) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
@@ -228,6 +231,7 @@ namespace UnitTests
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
+        // Move the metadata file and signal the old one is removed
         AZ::IO::FileIOBase::GetInstance()->Rename(
             (AZStd::string(FileA) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str(),
             (AZStd::string(FileB) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
@@ -247,6 +251,7 @@ namespace UnitTests
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
+        // Delete the metadata file and signal its removal
         AZ::IO::FileIOBase::GetInstance()->Remove(
             (AZStd::string(TestFile) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
 
@@ -340,19 +345,22 @@ namespace UnitTests
 
         MakeFile(TestFile);
 
+        // Generate a metadata file
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
+
+        // Read in the metadata file
         auto result = AZ::Utils::ReadFile<AZStd::string>(MetadataFile.Native());
 
         ASSERT_TRUE(result.IsSuccess());
 
         auto metadataFileContents = result.GetValue();
 
-        // Corrupt the first character
+        // Corrupt the first character of the metadata file and write it back to disk, signalling a file change as well
         metadataFileContents.data()[0] = 'A';
-
         AZ::Utils::WriteFile(metadataFileContents, MetadataFile.Native());
         m_uuidInterface->FileChanged(MetadataFile);
 
+        // Try to read the metadata again, expecting an error
         TraceBusErrorChecker errorChecker;
         errorChecker.Begin();
         auto uuidRetry = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
