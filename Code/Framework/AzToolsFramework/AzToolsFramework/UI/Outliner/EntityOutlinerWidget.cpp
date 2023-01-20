@@ -23,6 +23,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -878,11 +879,14 @@ namespace AzToolsFramework
         connect(m_actionToDeleteSelection, &QAction::triggered, this, &EntityOutlinerWidget::DoDeleteSelection);
         addAction(m_actionToDeleteSelection);
 
-        m_actionToDeleteSelectionAndDescendants = new QAction(tr("Delete Selection And Descendants"), this);
-        m_actionToDeleteSelectionAndDescendants->setShortcut(QKeySequence::Delete);
-        m_actionToDeleteSelectionAndDescendants->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToDeleteSelectionAndDescendants, &QAction::triggered, this, &EntityOutlinerWidget::DoDeleteSelectionAndDescendants);
-        addAction(m_actionToDeleteSelectionAndDescendants);
+        if (!IsNewActionManagerEnabled())
+        {
+            m_actionToDeleteSelectionAndDescendants = new QAction(tr("Delete Selection And Descendants"), this);
+            m_actionToDeleteSelectionAndDescendants->setShortcut(QKeySequence::Delete);
+            m_actionToDeleteSelectionAndDescendants->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            connect(m_actionToDeleteSelectionAndDescendants, &QAction::triggered, this, &EntityOutlinerWidget::DoDeleteSelectionAndDescendants);
+            addAction(m_actionToDeleteSelectionAndDescendants);
+        }
 
         m_actionToRenameSelection = new QAction(tr("Rename"), this);
     #if defined(Q_OS_MAC)

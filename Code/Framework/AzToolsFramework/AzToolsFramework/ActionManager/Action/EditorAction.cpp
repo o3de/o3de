@@ -40,6 +40,10 @@ namespace AzToolsFramework
         UpdateIconFromPath();
         m_action = new QAction(m_icon, m_name.c_str(), parentWidget);
 
+        // The action needs to be explicitly added, not just parented on creation, or it won't
+        // show up in widget->actions(), and won't handle some events properly
+        parentWidget->addAction(m_action);
+
         QObject::connect(
             m_action, &QAction::triggered, parentWidget,
             [h = AZStd::move(handler)]()
@@ -136,6 +140,7 @@ namespace AzToolsFramework
     void EditorAction::SetHotKey(const AZStd::string& hotKey)
     {
         m_action->setShortcut(QKeySequence(hotKey.c_str()));
+        m_action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         UpdateTooltipText();
     }
 

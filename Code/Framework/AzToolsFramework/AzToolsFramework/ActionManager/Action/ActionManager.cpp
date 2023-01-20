@@ -6,12 +6,104 @@
  *
  */
 
-#include <AzToolsFramework/ActionManager/Action/ActionManager.h>
+#include <QApplication>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QShortcutEvent>
+#include <QTimer>
 
+#include <AzQtComponents/Components/WindowDecorationWrapper.h>
+
+#include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 
 namespace AzToolsFramework
 {
+    //! This class is used to install an event filter on each widget that the action contexts are registered to in order to properly handle
+    //! ambiguous shorcuts.
+    class ActionContextWidgetWatcher : public QObject
+    {
+    public:
+        explicit ActionContextWidgetWatcher(QObject* parent = nullptr)
+            : QObject(parent)
+        {
+        }
+
+        bool eventFilter(QObject* watched, QEvent* event) override
+        {
+            switch (event->type())
+            {
+            case QEvent::Shortcut:
+            {
+                QShortcutEvent* shortcutEvent = static_cast<QShortcutEvent*>(event);
+                if (shortcutEvent->isAmbiguous())
+                {
+                    QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
+                    for (QAction* action : watchedWidget->actions())
+                    {
+                        if (action->shortcut() == shortcutEvent->key())
+                        {
+                            action->trigger();
+                            return true;
+                        }
+                    }
+                }
+                break;
+            }
+            case QEvent::ShortcutOverride:
+            {
+                QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+                int keyInt = keyEvent->key();
+                Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
+                if (modifiers & Qt::ShiftModifier)
+                {
+                    keyInt += Qt::SHIFT;
+                }
+                if (modifiers & Qt::ControlModifier)
+                {
+                    keyInt += Qt::CTRL;
+                }
+                if (modifiers & Qt::AltModifier)
+                {
+                    keyInt += Qt::ALT;
+                }
+                if (modifiers & Qt::MetaModifier)
+                {
+                    keyInt += Qt::META;
+                }
+
+                QKeySequence keySequence(keyInt);
+
+                // FIXME: Originally it looked like we could check this shortcutMap to determine if the ShortcutOverride
+                // was ambiguous, but unfortunately that doesn't seem to be the case :/
+                auto globalShortcutMap = &QGuiApplicationPrivate::instance()->shortcutMap;
+                bool isAmbiguous = globalShortcutMap->hasShortcutForKeySequence(keySequence);
+                if (isAmbiguous)
+                {
+                    QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
+                    for (QAction* action : watchedWidget->actions())
+                    {
+                        if (action->shortcut() == keySequence)
+                        {
+                            // TODO: If we delay the action then we can properly stop the ShortcutOverride from
+                            // continuing on to the parent. For some reason if we trigger it during this flow,
+                            // the parent action's shortcut will get triggered also.
+                            QTimer::singleShot(0, this, [action] {
+                                action->trigger();
+                            });
+
+                            return true;
+                        }
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+            }
+            return false;
+        }
+    };
+
     ActionManager::ActionManager()
     {
         AZ::Interface<ActionManagerInterface>::Register(this);
@@ -52,6 +144,31 @@ namespace AzToolsFramework
                 new EditorActionContext(contextIdentifier, properties.m_name, parentContextIdentifier, widget)
             }
         );
+
+        // If this action context is registered on a top level widget, then we don't need to watch it for handling ambiguous shortcuts
+        // since if the shortcut reaches a top-level it shouldn't be ambiguous.
+        bool isTopLevelWidget = false;
+        for (QWidget* topLevelWidget : QApplication::topLevelWidgets())
+        {
+            if (widget == topLevelWidget)
+            {
+                isTopLevelWidget = true;
+                break;
+            }
+            else if (auto wrapper = qobject_cast<const AzQtComponents::WindowDecorationWrapper*>(topLevelWidget))
+            {
+                if (widget->parentWidget() == topLevelWidget)
+                {
+                    isTopLevelWidget = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isTopLevelWidget)
+        {
+            widget->installEventFilter(new ActionContextWidgetWatcher(widget));
+        }
 
         return AZ::Success();
     }
