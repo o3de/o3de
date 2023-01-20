@@ -97,7 +97,7 @@ namespace EMotionFX
             virtual void SetActorAsset(AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset) = 0;
 
             // Use this bus to enable or disable the actor instance update in the job scheduler system.
-            // This could be useful if you want to manuelly update the actor instance.
+            // This could be useful if you want to manually update the actor instance.
             virtual void EnableInstanceUpdate(bool enableInstanceUpdate) = 0;
 
             static const size_t s_invalidJointIndex = std::numeric_limits<size_t>::max();
