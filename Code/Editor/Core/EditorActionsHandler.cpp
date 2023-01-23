@@ -741,7 +741,6 @@ void EditorActionsHandler::OnActionRegistrationHook()
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Global Preferences...";
         actionProperties.m_category = "Editor";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier,
@@ -763,7 +762,6 @@ void EditorActionsHandler::OnActionRegistrationHook()
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Editor Settings Manager";
         actionProperties.m_category = "Editor";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier,

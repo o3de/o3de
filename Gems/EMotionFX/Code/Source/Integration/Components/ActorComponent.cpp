@@ -216,6 +216,7 @@ namespace EMotionFX
                     ->Event("GetRenderCharacter", &ActorComponentRequestBus::Events::GetRenderCharacter)
                     ->Event("SetRenderCharacter", &ActorComponentRequestBus::Events::SetRenderCharacter)
                     ->Event("GetRenderActorVisible", &ActorComponentRequestBus::Events::GetRenderActorVisible)
+                    ->Event("EnableInstanceUpdate", &ActorComponentRequestBus::Events::EnableInstanceUpdate)
                     ->VirtualProperty("RenderCharacter", "GetRenderCharacter", "SetRenderCharacter")
                 ;
 
@@ -232,6 +233,18 @@ namespace EMotionFX
         {
             m_configuration.m_actorAsset = actorAsset;
             CheckActorCreation();
+        }
+
+        void ActorComponent::EnableInstanceUpdate(bool enable)
+        {
+            if (m_actorInstance)
+            {
+                m_actorInstance->SetIsEnabled(enable);
+            }
+            else
+            {
+                AZ_ErrorOnce("EMotionFX", false, "Cannot enable the actor instance update because actor instance haven't been created.");
+            }
         }
 
         //////////////////////////////////////////////////////////////////////////
