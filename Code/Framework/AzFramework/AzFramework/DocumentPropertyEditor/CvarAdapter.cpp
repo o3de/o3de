@@ -48,6 +48,7 @@ namespace AZ::DocumentPropertyEditor
                               {
                                   // rebuild and replace the editor with one with the correct value
                                   AdapterBuilder builder;
+                                  builder.SetCurrentPath(path);
                                   BuildEditorForCvar(builder, commandFunctor);
                                   auto newEditor = builder.FinishAndTakeResult();
                                   adapter->NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(path, newEditor) });

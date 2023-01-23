@@ -49,9 +49,9 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzCore/Console/ConsoleDataWrapper.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzCore/Console/ConsoleDataWrapper.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <CryCommon/LoadScreenBus.h>
@@ -662,39 +662,54 @@ public:
                 {
                     using type = decltype(value);
                     using consoleDataWrapperType = AZ::ConsoleDataWrapper<type, ConsoleThreadSafety<type>>;
-                    if (typeId == azrtti_typeid<type>() ||
-                        typeId == azrtti_typeid<consoleDataWrapperType>())
+                    if (typeId == azrtti_typeid<type>() || typeId == azrtti_typeid<consoleDataWrapperType>())
                     {
                         functor->GetValue(value);
-                        if constexpr (AZStd::is_integral_v<type> || AZStd::is_same_v<bool, type>)
+                        if constexpr (AZStd::is_integral_v<type>)
                         {
                             return (
                                 gEnv->pConsole->RegisterInt(
-                                    functor->GetName(), static_cast<int>(value), cryFlags, functor->GetDesc(), AzConsoleToCryConsoleBinder::OnVarChanged) !=
-                                nullptr);
+                                    functor->GetName(),
+                                    static_cast<int>(value),
+                                    cryFlags,
+                                    functor->GetDesc(),
+                                    AzConsoleToCryConsoleBinder::OnVarChanged) != nullptr);
                         }
                         else if constexpr (AZStd::is_floating_point_v<type>)
                         {
                             return (
                                 gEnv->pConsole->RegisterFloat(
-                                    functor->GetName(), static_cast<float>(value), cryFlags, functor->GetDesc(), AzConsoleToCryConsoleBinder::OnVarChanged) !=
-                                nullptr);
+                                    functor->GetName(),
+                                    static_cast<float>(value),
+                                    cryFlags,
+                                    functor->GetDesc(),
+                                    AzConsoleToCryConsoleBinder::OnVarChanged) != nullptr);
                         }
                         else
                         {
                             return (
                                 gEnv->pConsole->RegisterString(
-                                    functor->GetName(), value.c_str(), cryFlags, functor->GetDesc(), AzConsoleToCryConsoleBinder::OnVarChanged) !=
-                                nullptr);
+                                    functor->GetName(),
+                                    value.c_str(),
+                                    cryFlags,
+                                    functor->GetDesc(),
+                                    AzConsoleToCryConsoleBinder::OnVarChanged) != nullptr);
                         }
                     }
                     return false;
                 };
-                registerType(AZStd::string()) || registerType(AZ::CVarFixedString()) || registerType(AZ::s32()) || registerType(bool()) 
-                    || registerType(AZ::u32()) || registerType(float()) || registerType(double()) 
-                    || registerType(AZ::s16()) ||  registerType(AZ::u16()) 
-                    || registerType(AZ::s64()) || registerType(AZ::u64())
-                    || registerType(AZ::s8()) || registerType(AZ::u8());
+                const bool registered = registerType(AZStd::string()) || registerType(AZ::CVarFixedString()) || registerType(AZ::s32()) ||
+                    registerType(AZ::u32()) || registerType(float()) || registerType(double()) || registerType(AZ::s16()) ||
+                    registerType(AZ::u16()) || registerType(AZ::s64()) || registerType(AZ::u64()) || registerType(AZ::s8()) ||
+                    registerType(AZ::u8());
+
+                if (!registered)
+                {
+                    AZ::CVarFixedString value;
+                    functor->GetValue(value);
+                    gEnv->pConsole->RegisterString(
+                        functor->GetName(), value.c_str(), cryFlags, functor->GetDesc(), AzConsoleToCryConsoleBinder::OnVarChanged);
+                }
             }
             else
             {
@@ -704,7 +719,8 @@ public:
         }
         else
         {
-            existingCVar->AddOnChangeFunctor(AZ::Name("AZCryBinder"),
+            existingCVar->AddOnChangeFunctor(
+                AZ::Name("AZCryBinder"),
                 [existingCVar]()
                 {
                     AzConsoleToCryConsoleBinder::OnVarChanged(existingCVar);
