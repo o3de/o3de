@@ -69,6 +69,7 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME'),
     booleanParam(defaultValue: false, description: 'Cancels AR immediately on any failure in the pipeline and marks it as failed', name: 'FAIL_FAST'),
     booleanParam(defaultValue: false, description: 'Deletes the volume used for the workspace after the pipeline steps are completed.', name: 'DISCARD_VOLUME'),
+    stringParam(defaultValue: 'AutomatedTesting', description: 'Name of the project to build.', name: 'PROJECT_NAME')
 ]
 
 def PlatformSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
@@ -359,7 +360,7 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
 }
 
 //this should assume it will always be executed from the workspace root
-def NoControlFile(repoName, processed_repos, project_name) {
+def NoControlFile(repoName, processed_repos, o3de_project) {
     echo "NoControlFile(reponame:${repoName}, processed_repos:${processed_repos})"
 
     processed_repos.add(repoName)
@@ -381,7 +382,7 @@ def NoControlFile(repoName, processed_repos, project_name) {
         }
         else if(fileExists("gem.json")) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --gem-path ${workspace}/${repoName} || ver>nul", "Registering gem in ${workspace}/${repoName}")
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${project_name} || ver>nul", "Enabling ${gemName} in ${project_name}")
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${o3de_project} || ver>nul", "Enabling ${gemName} in ${o3de_project}")
         }
         else if(fileExists("template.json")) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --template-path ${workspace}/${repoName} || ver>nul", "Registering template in ${workspace}/${repoName}")
@@ -408,7 +409,7 @@ def NoControlFile(repoName, processed_repos, project_name) {
             }
             if(fileExists("Gems")) {
                 PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-gems-path ${workspace}/${repoName}/Gems || ver>nul", "Registering all gems in ${workspace}/${repoName}/Gems")
-                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${project_name} || ver>nul", "Enabling all gems in ${project_name}")
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${o3de_project} || ver>nul", "Enabling all gems in ${o3de_project}")
                 found = true
             }
             if(fileExists("Templates")) {
@@ -632,7 +633,12 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
         }
 
         dir(ENGINE_REPOSITORY_NAME) {
-            unstash "${COMMIT_REPOSITORY_NAME}-scripts"
+            // This is a try/catch in the event that this function is called before the scripts are stashed
+            try {
+                unstash "${COMMIT_REPOSITORY_NAME}-scripts"
+            } catch (e) {
+                print "Unstash failed, ignoring"
+            }
             def ext = ''
             if(env.IS_UNIX) {
                 ext = '.sh'
@@ -1145,7 +1151,8 @@ try {
                         echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${scm.GIT_COMMIT}\"..."
 
                         CheckoutEngineBootstrapScripts(branchName, scm.userRemoteConfigs)
-                        stash name: "${COMMIT_REPOSITORY_NAME}-scripts", includes: "scripts/**"
+                        // Stash any project based build configs
+                        stash name: "${COMMIT_REPOSITORY_NAME}-scripts", includes: "scripts/build/**"
                         // Project or external repos may not have the bootstrapping scripts. For these cases, pull the bootstrap scripts from the engine repo at the default branch
                         if (!fileExists(SCRIPTS_PATH) || !fileExists(PIPELINE_CONFIG_FILE) || !(COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME)) {
                             echo "No bootstrap scripts found in ${SCRIPTS_PATH} or working repo is not the engine repo, downloading it from the engine repo at ${ENGINE_DEVELOPMENT_BRANCH}"
