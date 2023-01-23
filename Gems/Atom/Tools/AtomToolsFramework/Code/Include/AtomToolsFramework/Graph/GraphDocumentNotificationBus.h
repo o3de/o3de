@@ -12,7 +12,7 @@
 
 namespace AtomToolsFramework
 {
-    //! Interface for notifications about graph document status
+    //! Interface for handling graph document status notifications
     class GraphDocumentNotifications : public AZ::EBusTraits
     {
     public:

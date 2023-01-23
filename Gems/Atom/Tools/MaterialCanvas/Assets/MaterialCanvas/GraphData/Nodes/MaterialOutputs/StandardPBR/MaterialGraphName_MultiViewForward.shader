@@ -1,7 +1,7 @@
 {
     "Source" : "./MaterialGraphName_Forward.azsl",
 
-    "Definitions" : [ "QUALITY_LOW_END_TIER1=1", "QUALITY_LOW_END_TIER2=1", "OUTPUT_DEPTH=1", "MULTI_VIEW_FORWARD=1" ],
+    "Definitions": ["QUALITY_LOW_END_TIER1=1", "QUALITY_LOW_END_TIER2=1", "MULTI_VIEW_FORWARD=1" ],
 
     "DepthStencilState" :
     {
