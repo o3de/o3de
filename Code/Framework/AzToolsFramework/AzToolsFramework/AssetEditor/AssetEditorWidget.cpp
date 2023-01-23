@@ -167,7 +167,8 @@ namespace AzToolsFramework
                         [assetType, this]()
                         {
                             CreateAsset(assetType, AZ::Uuid::CreateNull());
-                        });
+                        }
+                    );
                 }
             }
 
