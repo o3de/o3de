@@ -353,6 +353,7 @@ private: // ----------------------------------------------------------
 
     AZStd::vector<FunctorWrapper<float>> m_floatWrappers;
     AZStd::vector<FunctorWrapper<int>> m_intWrappers;
+    AZStd::vector<FunctorWrapper<AZStd::string>> m_stringWrappers;
 
     TDeferredCommandList                        m_deferredCommands;             // A fifo of deferred commands
     bool                                                        m_deferredExecution;            // True when deferred commands are processed

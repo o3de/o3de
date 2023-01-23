@@ -189,6 +189,25 @@ namespace AZ
         }
     };
 
+    template<>
+    struct ConsoleReplicateHelper<AZStd::string, true>
+    {
+        static bool GetReplicationString(AZStd::string&, const char*, CVarFixedString&)
+        {
+            return true;
+        }
+
+        static bool StringToValue(AZStd::string& instance, const ConsoleCommandContainer& arguments)
+        {
+            return ConsoleTypeHelpers::ToValue(instance, arguments);
+        }
+
+        static void ValueToString(AZStd::string& instance, CVarFixedString& outString)
+        {
+            outString = instance;
+        }
+    };
+
     template <typename _TYPE, bool _REPLICATES_VALUE>
     inline bool ConsoleFunctor<_TYPE, _REPLICATES_VALUE>::GetReplicationString(CVarFixedString& outString) const
     {
