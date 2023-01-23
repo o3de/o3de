@@ -170,7 +170,7 @@ namespace AzToolsFramework
             }
 
             auto productFilter = new EntryTypeFilter();
-            productFilter->SetName("Source");
+            productFilter->SetName("Product");
             productFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Product);
             auto inverseProductFilter = new InverseFilter();
             inverseProductFilter->SetFilter(FilterConstType(productFilter));
