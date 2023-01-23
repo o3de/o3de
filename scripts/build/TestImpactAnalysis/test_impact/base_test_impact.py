@@ -69,8 +69,8 @@ class BaseTestImpact(ABC):
         self._label_excludes = args.get(ARG_LABEL_EXCLUDES)
 
         # Compile the dash-separated concatenation of the ordered suites and labels to be used as path components
-        self._suites_string = "-".join(self._suites)
-        self._label_excludes_string = "-".join(self._label_excludes)
+        self._suites_string = '-'.join(self._suites) if isinstance(self._suites, list) else self._suites
+        self._label_excludes_string = '-'.join(self._label_excludes) if isinstance(self._label_excludes, list) else self._label_excludes
 
         self._config = self._parse_config_file(args.get(ARG_CONFIG))
         if not self._enabled:
