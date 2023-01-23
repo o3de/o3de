@@ -35,7 +35,7 @@ class PersistentStorage(ABC):
         Initializes the persistent storage into a state for which there is no historic data available.
 
         @param config: The runtime configuration to obtain the data file paths from.
-        @param suites_string:  The concatenated test suites string for which the historic data will be obtained for.
+        @param suites_string: The unique key to differentiate the different suite combinations from one another different for which the historic data will be obtained for.
         @param commit: The commit hash for this build.
         """
 
@@ -43,7 +43,6 @@ class PersistentStorage(ABC):
         self._suites_string = suites_string
         self._last_commit_hash = None
         self._has_historic_data = False
-        self._has_previous_last_commit_hash = False
         self._this_commit_hash = commit
         self._this_commit_hash_last_commit_hash = None
         self._historic_data = None
@@ -63,7 +62,6 @@ class PersistentStorage(ABC):
         """
         
         self._has_historic_data = False
-        self._has_previous_last_commit_hash = False
 
         try:
             self._historic_data = json.loads(historic_data_json)
@@ -77,9 +75,8 @@ class PersistentStorage(ABC):
                 if self._this_commit_hash in self._historic_data[self.HISTORIC_SEQUENCES_KEY]:
                     # 'None' is a valid value for the previously used last commit hash if there was no coverage data at that time
                     self._this_commit_hash_last_commit_hash = self._historic_data[self.HISTORIC_SEQUENCES_KEY][self._this_commit_hash]
-                    self._has_previous_last_commit_hash = self._this_commit_hash_last_commit_hash is not None
 
-                    if self._has_previous_last_commit_hash:
+                    if self.has_previous_last_commit_hash:
                         logger.info(f"Last commit hash '{self._this_commit_hash_last_commit_hash}' was used previously for the commit '{self._last_commit_hash}'.")
                     else:
                         logger.info(f"Prior sequence data found for this commit but it is empty (there was no coverage data available at that time).")
@@ -225,7 +222,7 @@ class PersistentStorage(ABC):
         return self._last_commit_hash
 
     @property
-    def is_last_commit_hash_equal_to_this_commit_hash(self):
+    def is_rerun(self):
         """
         Is the current commit that we are running TIAF on the same as the last commit we have in our historic data.
         This means that this is a repeat sequence.
@@ -235,7 +232,7 @@ class PersistentStorage(ABC):
     @property
     def this_commit_last_commit_hash(self):
         """
-        Hash of this commit. Is none if this commit hash was not found in our historic data.
+        Hash of the last commit win the historic data when this commit was run. Is none if this commit hash was not found in our historic data.
         """
         return self._this_commit_hash_last_commit_hash
 
@@ -244,5 +241,5 @@ class PersistentStorage(ABC):
         """
         If the hash of the last commit was found in our historic data, then this flag will be set.
         """
-        return self._has_previous_last_commit_hash
+        return self._this_commit_hash_last_commit_hash is not None
 

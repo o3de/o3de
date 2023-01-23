@@ -69,8 +69,8 @@ class BaseTestImpact(ABC):
         self._label_excludes = args.get(ARG_LABEL_EXCLUDES)
 
         # Compile the dash-separated concatenation of the ordered suites and labels to be used as path components
-        self._suites_string = "-".join(self._suites)
-        self._label_excludes_string = "-".join(self._label_excludes)
+        self._suites_string = '-'.join(self._suites) if isinstance(self._suites, list) else self._suites
+        self._label_excludes_string = '-'.join(self._label_excludes) if isinstance(self._label_excludes, list) else self._label_excludes
 
         self._config = self._parse_config_file(args.get(ARG_CONFIG))
         if not self._enabled:
@@ -170,10 +170,9 @@ class BaseTestImpact(ABC):
 
         # Check to see if this is a re-run for this commit before any other changes have come in
 
-        # If the last commit hash in our historic data is the same as our current commit hash
-        if self._persistent_storage.is_last_commit_hash_equal_to_this_commit_hash:
+        if self._persistent_storage.is_rerun:
 
-            # If we have the last commit hash of our previous run in our json then we will just use the data from that run
+            # If we have the last commit hash of our previous run in our json then we will just use the historic data from that run
             if self._persistent_storage.has_previous_last_commit_hash:
                 logger.info(
                     f"This sequence is being re-run before any other changes have come in so the last commit '{self._persistent_storage.this_commit_last_commit_hash}' used for the previous sequence will be used instead.")

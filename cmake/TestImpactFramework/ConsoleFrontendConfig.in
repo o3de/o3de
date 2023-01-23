@@ -47,7 +47,7 @@
   },
   "native": {
     "jenkins": {
-      "enabled": ${native_jenkins_enabled},
+      "enabled": ${native_test_targets_enabled},
       "use_test_impact_analysis": ${use_tiaf}
     },
     "workspace": {
@@ -102,7 +102,7 @@
   },
   "python": {
     "jenkins": {
-      "enabled": ${python_jenkins_enabled},
+      "enabled": ${python_test_targets_enabled},
       "use_test_impact_analysis": true
     },
     "workspace": {
