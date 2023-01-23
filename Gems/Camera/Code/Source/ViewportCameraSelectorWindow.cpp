@@ -35,7 +35,7 @@ namespace Camera
 
     namespace Internal
     {
-        CameraListItem::CameraListItem(const AZ::EntityId& cameraId)
+        CameraListItem::CameraListItem(const AZ::EntityId cameraId)
             : m_cameraId(cameraId)
         {
             if (cameraId.IsValid())
@@ -57,7 +57,7 @@ namespace Camera
             }
         }
 
-        bool CameraListItem::operator<(const CameraListItem& rhs)
+        bool CameraListItem::operator<(const CameraListItem& rhs) const
         {
             return m_cameraId < rhs.m_cameraId;
         }
@@ -122,7 +122,7 @@ namespace Camera
             }
 
             beginInsertRows(QModelIndex(), rowCount(), rowCount());
-            m_cameraItems.push_back(cameraId);
+            m_cameraItems.push_back(CameraListItem(cameraId));
             endInsertRows();
 
             if (m_lastActiveCamera.IsValid() && m_lastActiveCamera == cameraId)
@@ -175,13 +175,11 @@ namespace Camera
 
         void CameraListModel::Reset()
         {
-            m_lastActiveCamera = AZ::EntityId();
-            m_cameraItems.clear();
-            m_cameraItems.push_back(AZ::EntityId());
+            m_lastActiveCamera.SetInvalid();
+            m_cameraItems = AZStd::vector<CameraListItem>(1, CameraListItem(AZ::EntityId()));
         }
 
         ViewportCameraSelectorWindow::ViewportCameraSelectorWindow(QWidget* parent)
-            : m_ignoreViewportViewEntityChanged(false)
         {
             qRegisterMetaType<AZ::EntityId>("AZ::EntityId");
             setParent(parent);
