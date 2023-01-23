@@ -108,7 +108,7 @@ class TestTiafInitialiseStorage():
     def test_create_TestImpact_no_s3_bucket_name(self, caplog, tiaf_args, config_data, mocker, storage_config):
         # given:
         # Default args.
-        expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
+        expected_storage_args = config_data, tiaf_args['suites'], tiaf_args[
             'commit'], storage_config['active_workspace'], storage_config['unpacked_coverage_data_file'], storage_config['previous_test_run_data_file'], storage_config['historic_workspace'], storage_config['historic_data_file'], storage_config['temp_workspace']
         mock_local = mocker.patch(
             "persistent_storage.PersistentStorageLocal.__init__", side_effect=SystemError(), return_value=None)
@@ -117,7 +117,7 @@ class TestTiafInitialiseStorage():
         tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
-        # PersistentStorageLocal should be called with suite, commit and config data as arguments.
+        # PersistentStorageLocal should be called with suites, commit and config data as arguments.
         assert_list_content_equal(self.to_list(mock_local.call_args[0]).pop(), self.to_list(expected_storage_args).pop())
 
     @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir/native")])
@@ -130,7 +130,7 @@ class TestTiafInitialiseStorage():
         mock_storage = mocker.patch(
             "persistent_storage.PersistentStorageS3.__init__", side_effect=SystemError())
 
-        expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
+        expected_storage_args = config_data, tiaf_args['suites'], tiaf_args[
             'commit'], bucket_name, expected_top_level_dir, tiaf_args['src_branch'], storage_config['active_workspace'], storage_config['unpacked_coverage_data_file'], storage_config['previous_test_run_data_file'], storage_config['temp_workspace']
 
         # when:
@@ -220,7 +220,7 @@ class TestTIAFNativeUnitTests():
         tiaf_args['s3_top_level_dir'] = top_level_dir
         mock_storage = mocker.patch(
             "persistent_storage.PersistentStorageS3.__init__", side_effect=SystemError())
-        expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
+        expected_storage_args = config_data, tiaf_args['suites'], tiaf_args[
             'commit'], bucket_name, expected_top_level_dir, tiaf_args['src_branch'], storage_config['active_workspace'], storage_config['unpacked_coverage_data_file'], storage_config['previous_test_run_data_file'], storage_config['temp_workspace']
 
         # when:
@@ -228,7 +228,7 @@ class TestTIAFNativeUnitTests():
         tiaf = NativeTestImpact(tiaf_args)
 
         # then:
-        # PersistentStorageS3.__init__ should be called with config data, suite, commit, bucket_name, modified top level dir and src_branch as arguments
+        # PersistentStorageS3.__init__ should be called with config data, suites, commit, bucket_name, modified top level dir and src_branch as arguments
         mock_storage.assert_called_with(*expected_storage_args)
 
 
@@ -250,7 +250,7 @@ class TestTIAFPythonUnitTests():
         tiaf_args['s3_top_level_dir'] = top_level_dir
         mock_storage = mocker.patch(
             "persistent_storage.PersistentStorageS3.__init__", side_effect=SystemError())
-        expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
+        expected_storage_args = config_data, tiaf_args['suites'], tiaf_args[
             'commit'], bucket_name, expected_top_level_dir, tiaf_args['src_branch'], storage_config['active_workspace'], storage_config['unpacked_coverage_data_file'], storage_config['previous_test_run_data_file'], storage_config['temp_workspace']
 
         # when:
@@ -258,7 +258,7 @@ class TestTIAFPythonUnitTests():
         tiaf = PythonTestImpact(tiaf_args)
 
         # then:
-        # PersistentStorageS3.__init__ should be called with config data, suite, commit, bucket_name, modified top level dir and src_branch as arguments
+        # PersistentStorageS3.__init__ should be called with config data, suites, commit, bucket_name, modified top level dir and src_branch as arguments
         mock_storage.assert_called_with(*expected_storage_args)
 
 
@@ -360,9 +360,9 @@ class TestTIAFBaseUnitTests():
 
     def test_create_TestImpact_invalid_test_suite_name(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
-        # Default args + suite defined as "foobar" in given args and expected args.
-        tiaf_args['suite'] = "foobar"
-        default_runtime_args['suite'] = "--suite=foobar"
+        # Default args + suites defined as "foobar" in given args and expected args.
+        tiaf_args['suites'] = "foobar"
+        default_runtime_args['suites'] = "--suites=foobar"
 
         # when:
         # We create a TestImpact object.

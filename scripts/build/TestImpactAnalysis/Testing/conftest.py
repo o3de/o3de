@@ -91,7 +91,7 @@ def tiaf_args(config_path):
     args['dst_branch'] = "123"
     args['commit'] = "foobar"
     args['build_number'] = 1
-    args['suite'] = "main"
+    args['suites'] = "main"
     args['test_failure_policy'] = "continue"
     return args
 
@@ -126,7 +126,7 @@ def default_runtime_args(mock_uuid, report_path):
     runtime_args['test_failure_policy'] = "--fpolicy=continue"
     runtime_args['report'] = "--report=" + \
         str(report_path).replace("/", "\\")
-    runtime_args['suite'] = "--suite=main"
+    runtime_args['suites'] = "--suites=main"
     return runtime_args
 
 
