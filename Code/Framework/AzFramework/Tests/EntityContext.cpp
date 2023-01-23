@@ -28,29 +28,15 @@ namespace UnitTest
     {
     public:
 
-        EntityContextBasicTest()
-        {
-        }
-
         void SetUp() override
         {
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-
             Data::AssetManager::Descriptor desc;
             Data::AssetManager::Create(desc);
-        }
-
-        ~EntityContextBasicTest() override
-        {
         }
 
         void TearDown() override
         {
             Data::AssetManager::Destroy();
-
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
         }
 
         void run()

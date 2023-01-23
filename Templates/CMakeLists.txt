@@ -18,5 +18,6 @@ ly_install_directory(
         GemRepo
         DefaultComponent
         ScriptCanvasNode
+        UnifiedMultiplayerGem
     VERBATIM
 )

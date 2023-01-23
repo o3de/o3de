@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 POLLING_INTERVAL_SEC = 0.5
 DEFAULT_TIMEOUT_HOURS = 8
-DEFAULT_TIMEOUT_SECONDS = 300
+DEFAULT_TIMEOUT_SECONDS = 900
 
 ASSET_PROCESSOR_PLATFORM_MAP = {
     'android': 'android',
@@ -854,7 +854,7 @@ class AssetProcessor(object):
         self._function_name = function_name
         self._assets_source_folder = utils.prepare_test_assets(assets_path, function_name, test_folder)
         self._test_assets_source_folder = test_folder
-        self._cache_folder = os.path.join(self._temp_asset_root, 'Cache', cache_platform or
+        self._cache_folder = os.path.join(self._temp_asset_root, self._workspace.project,'Cache', cache_platform or
                                           ASSET_PROCESSOR_PLATFORM_MAP[self._workspace.asset_processor_platform],
                                           function_name.lower() if existing_function_name is None
                                           else existing_function_name)
@@ -958,7 +958,7 @@ class AssetProcessor(object):
         :return: path to project cache
         """
         asset_platform = asset_platform or ASSET_PROCESSOR_PLATFORM_MAP[self._workspace.asset_processor_platform]
-        return os.path.join(self._temp_asset_root, 'Cache', asset_platform.lower())
+        return os.path.join(self._temp_asset_root, self._workspace.project, 'Cache', asset_platform.lower())
 
     def temp_project_cache_path(self, project_name=None):
         """
@@ -969,7 +969,7 @@ class AssetProcessor(object):
 
         :return: path to project cache root folder
         """
-        return os.path.join(self._temp_asset_root, 'Cache')
+        return os.path.join(self._temp_asset_root, self._workspace.project, 'Cache')
 
     def clear_readonly(self, relative_dest):
         """

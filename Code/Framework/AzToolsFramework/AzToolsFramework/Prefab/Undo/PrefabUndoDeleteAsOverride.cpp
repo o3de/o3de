@@ -30,6 +30,10 @@ namespace AzToolsFramework
             Instance& owningInstance,
             const Instance& focusedInstance)
         {
+            AZ_Assert(
+                &owningInstance != &focusedInstance,
+                "PrefabUndoDeleteAsOverride::Capture - Owning instance should not be the focused instance for override edit node.");
+
             m_templateId = focusedInstance.GetTemplateId();
             m_redoPatch.SetArray();
             m_undoPatch.SetArray();
@@ -112,7 +116,7 @@ namespace AzToolsFramework
                     }
 
                     PrefabDom parentEntityDomAfterRemovingChildren;
-                    m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterRemovingChildren, *parentEntity);
+                    m_instanceToTemplateInterface->GenerateEntityDomBySerializing(parentEntityDomAfterRemovingChildren, *parentEntity);
 
                     PrefabUndoUtils::AppendUpdateEntityPatch(
                         m_redoPatch,

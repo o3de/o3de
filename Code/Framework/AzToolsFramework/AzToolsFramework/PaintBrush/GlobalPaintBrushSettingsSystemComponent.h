@@ -10,6 +10,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
 
@@ -18,6 +19,7 @@ namespace AzToolsFramework
     //! GlobalPaintBrushSettingsSystemComponent owns the current global paintbrush settings for the Editor.
     class GlobalPaintBrushSettingsSystemComponent
         : public AZ::Component
+        , public AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
         , private AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Handler
     {
     public:
@@ -27,6 +29,10 @@ namespace AzToolsFramework
         ~GlobalPaintBrushSettingsSystemComponent() override = default;
 
         static void Reflect(AZ::ReflectContext* context);
+
+        // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionRegistrationHook() override;
+        void OnMenuBindingHook() override;
 
     protected:
         void Activate() override;

@@ -7,7 +7,6 @@
 import json
 import pathlib
 import uuid
-
 import pytest
 import string
 
@@ -360,19 +359,21 @@ class TestCreateTemplate:
         " keep_license_text, force, expect_failure,"
         " template_json_contents,"
         " display_name, summary, requirements, license, license_url,"
-        " origin, origin_url, user_tags, platforms, icon_path, documentation_url, repo_uri,"
+        " origin, origin_url, user_tags, platforms, icon_path, documentation_url, repo_uri, version,"
         " expected_tags, expected_platforms", [
             pytest.param(TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITH_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
                          True, True, False,
                          TEST_TEMPLATE_JSON_CONTENTS,
                          "Test Gem", "Test Summary", "Test Requirements", "Test License", "https://o3de.org/license", 
                          "Test Origin", "https://o3de.org", "tag1", "Windows", "preview.png", "https://o3de.org/docs", "https://o3de.org/repo",
+                         None,
                          ["tag1","TestGem"], ['Windows']),
             pytest.param(TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITHOUT_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
                          False, True, False,
                          TEST_TEMPLATE_JSON_CONTENTS,
                          "Test Gem2", "Test Summary2", "Test Requirements2", "Test License2", "https://o3de.org/license2", 
                          "Test Origin2", "https://o3de.org/2", "tag2 tag3  tag4", "MacOS Linux Windows", "preview2.png", "https://o3de.org/docs2", "https://o3de.org/repo2",
+                         "1.2.3",
                          ["tag2","tag3","tag4","TestGem"], ['MacOS', 'Linux', 'Windows']),
         ]
     )
@@ -380,12 +381,14 @@ class TestCreateTemplate:
                                   expect_failure, template_json_contents,
                                   display_name, summary, requirements, license, license_url,
                                   origin, origin_url, user_tags, platforms, icon_path, documentation_url, repo_uri,
+                                  version,
                                   expected_tags, expected_platforms):
         # Create a gem.json file in the template folder
         template_file_map = {'gem.json':
                                  '''
                                   {
                                    "gem_name": "${Name}",
+                                   "version": "${Version}",
                                    "display_name": "${DisplayName}",
                                    "summary": "${Summary}",
                                    "requirements": "${Requirements}",
@@ -416,7 +419,7 @@ class TestCreateTemplate:
                                           display_name=display_name, summary=summary, requirements=requirements,
                                           license=license, license_url=license_url, origin=origin, origin_url=origin_url,
                                           user_tags=user_tags, platforms=platforms, icon_path=icon_path, documentation_url=documentation_url,
-                                          repo_uri=repo_uri, no_register=True)
+                                          repo_uri=repo_uri, no_register=True, version=version)
         if not expect_failure:
             test_gem_manifest = test_folder / 'gem.json'
             assert test_gem_manifest.is_file()
@@ -424,6 +427,7 @@ class TestCreateTemplate:
                 json_data = json.load(f)
 
                 assert json_data['gem_name'] == "TestGem"
+                assert json_data['version'] == "1.0.0" if not version else version
                 assert json_data['display_name'] == display_name
                 assert json_data['summary'] == summary
                 assert json_data['requirements'] == requirements

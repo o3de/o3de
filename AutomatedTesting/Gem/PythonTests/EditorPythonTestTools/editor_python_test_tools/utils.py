@@ -190,19 +190,24 @@ class TestHelper:
         with MultiplayerHelper() as multiplayer_helper:
             # enter game-mode. 
             # game-mode in multiplayer will also launch ServerLauncher.exe and connect to the editor
+            general.set_cvar_integer('editorsv_max_connection_attempts', 15)
             multiplayer.PythonEditorFuncs_enter_game_mode()
 
             # make sure the server launcher is running
-            TestHelper.wait_for_condition(lambda : multiplayer_helper.serverLaunched, 10.0)
+            TestHelper.wait_for_condition(lambda : multiplayer_helper.serverLaunched, 20.0)
             waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher process is not running!"), interval=1.0)
+            Report.critical_result(("AutomatedTesting.ServerLauncher process successfully launched", "AutomatedTesting.ServerLauncher process failed to launch"), process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True))
 
             TestHelper.wait_for_condition(lambda : multiplayer_helper.editorConnectionAttemptCount > 0, 10.0)
+            Report.critical_result(("Multiplayer Editor attempting server connection.", "Multiplayer Editor never tried connecting to the server."), multiplayer_helper.editorConnectionAttemptCount > 0)
 
-            TestHelper.wait_for_condition(lambda : multiplayer_helper.editorSendingLevelData, 10.0)
+            TestHelper.wait_for_condition(lambda : multiplayer_helper.editorSendingLevelData, 106.0)
+            Report.critical_result(("Multiplayer Editor sent level data to the server.", "Multiplayer Editor never sent the level to the server."), multiplayer_helper.editorSendingLevelData)
 
-            TestHelper.wait_for_condition(lambda : multiplayer_helper.connectToSimulationSuccess, 10.0)
+            TestHelper.wait_for_condition(lambda : multiplayer_helper.connectToSimulationSuccess, 20.0)
+            Report.critical_result(("Multiplayer Editor successfully connected to server network simuluation.", "Multiplayer Editor failed to connected to server network simuluation."), multiplayer_helper.connectToSimulationSuccess)
 
-        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 5.0)
+        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 10.0)
         Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
 
     @staticmethod

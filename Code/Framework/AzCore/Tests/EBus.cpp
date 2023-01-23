@@ -1763,8 +1763,6 @@ namespace UnitTest
         using namespace QueueMessageTest;
 
         // Setup
-        AllocatorInstance<PoolAllocator>::Create();
-        AllocatorInstance<ThreadPoolAllocator>::Create();
         JobManagerDesc jobDesc;
         JobManagerThreadDesc threadDesc;
         jobDesc.m_workerThreads.push_back(threadDesc);
@@ -1818,8 +1816,6 @@ namespace UnitTest
         JobContext::SetGlobalContext(nullptr);
         delete m_jobContext;
         delete m_jobManager;
-        AllocatorInstance<ThreadPoolAllocator>::Destroy();
-        AllocatorInstance<PoolAllocator>::Destroy();
     }
 
     class QueueEbusTest

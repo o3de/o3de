@@ -73,8 +73,6 @@ set(FILES
     Editor/CollisionFilteringWidget.cpp
     Editor/PropertyTypes.h
     Editor/PropertyTypes.cpp
-    Editor/EditorClassConverters.cpp
-    Editor/EditorClassConverters.h
     Editor/PvdWidget.h
     Editor/PvdWidget.cpp
     Editor/DocumentationLinkWidget.h
@@ -106,11 +104,17 @@ set(FILES
     Editor/EditorJointConfiguration.h
     Editor/EditorViewportEntityPicker.cpp
     Editor/EditorViewportEntityPicker.h
+    Editor/KinematicWidget.cpp
+    Editor/KinematicWidget.h
+    Editor/KinematicDescriptionDialog.cpp
+    Editor/KinematicDescriptionDialog.h
+    Editor/KinematicDescriptionDialog.ui
 
     Editor/Source/Components/EditorSystemComponent.h
     Editor/Source/Components/EditorSystemComponent.cpp
     Editor/Source/ComponentModes/Joints/JointsComponentMode.h
     Editor/Source/ComponentModes/Joints/JointsComponentMode.cpp
+    Editor/Source/ComponentModes/Joints/JointsComponentModeBus.h
     Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.h
     Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.cpp
     Editor/Source/ComponentModes/PhysXSubComponentModeBase.h
@@ -136,11 +140,4 @@ set(FILES
     Editor/Source/Material/PhysXEditorMaterialAsset.h
     Editor/Source/Material/PhysXEditorMaterialAssetBuilder.cpp
     Editor/Source/Material/PhysXEditorMaterialAssetBuilder.h
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.cpp
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.h
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialAssetsConversion.cpp
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialPrefabConversion.cpp
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialPrefabConversion.h
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialFbxManifestConversion.cpp
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialFbxManifestConversion.h
 )

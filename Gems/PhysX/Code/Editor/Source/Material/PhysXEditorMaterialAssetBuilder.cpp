@@ -58,8 +58,6 @@ namespace PhysX
             return;
         }
 
-        physicsMaterialAsset->SetLegacyPhysicsMaterialId(editorMaterialAsset->GetLegacyPhysicsMaterialId());
-
         if (!SerializeOutPhysicsMaterialAsset(physicsMaterialAsset, request, response))
         {
             AZ_Error("EditorMaterialAssetBuilder", false, "Failed to serialize out physics material asset.");

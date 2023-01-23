@@ -38,7 +38,8 @@ ly_add_target(
 # clients and servers use the above module:
 ly_create_alias(NAME Camera.Clients NAMESPACE Gem TARGETS Gem::Camera)
 ly_create_alias(NAME Camera.Servers NAMESPACE Gem TARGETS Gem::Camera)
-   
+ly_create_alias(NAME Camera.Unified NAMESPACE Gem TARGETS Gem::Camera)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
