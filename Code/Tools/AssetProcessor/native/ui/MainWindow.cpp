@@ -30,6 +30,7 @@
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
@@ -593,6 +594,10 @@ void MainWindow::Activate()
     // Tools tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);
 
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->modtimeSkippingCheckBox);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->disableStartupScanCheckBox);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->debugOutputCheckBox);
+
     // Note: the settings can't be used in ::MainWindow(), because the application name
     // hasn't been set up and therefore the settings will load from somewhere different than later
     // on.
@@ -636,7 +641,7 @@ void MainWindow::Activate()
     bool initialScanSkippingEnabled = settings.value("SkipInitialScan", QVariant(false)).toBool();
     settings.endGroup();
 
-    QObject::connect(ui->skipinitialdatabaseCheck, &QCheckBox::stateChanged, this,
+    QObject::connect(ui->disableStartupScanCheckBox, &QCheckBox::stateChanged, this,
         [](int newCheckState)
     {
         bool newOption = newCheckState == Qt::Checked ? true : false;
@@ -649,7 +654,7 @@ void MainWindow::Activate()
     });
 
     m_guiApplicationManager->GetAssetProcessorManager()->SetInitialScanSkippingFeature(initialScanSkippingEnabled);
-    ui->skipinitialdatabaseCheck->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
+    ui->disableStartupScanCheckBox->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
 
     // Shared Cache tab:
     SetupAssetServerTab();
