@@ -13,12 +13,12 @@
 namespace EditorToolBar
 {
     // Editor main window top ToolBarArea
-    static constexpr AZStd::string_view MainWindowTopToolBarAreaIdentifier = "o3de.toolbararea.editor.mainwindow.top";
+    inline constexpr AZStd::string_view MainWindowTopToolBarAreaIdentifier = "o3de.toolbararea.editor.mainwindow.top";
 
     // Editor ToolBars (shown in the top ToolBar area by default)
-    static constexpr AZStd::string_view ToolsToolBarIdentifier = "o3de.toolbar.editor.tools";
-    static constexpr AZStd::string_view PlayControlsToolBarIdentifier = "o3de.toolbar.editor.playcontrols";
+    inline constexpr AZStd::string_view ToolsToolBarIdentifier = "o3de.toolbar.editor.tools";
+    inline constexpr AZStd::string_view PlayControlsToolBarIdentifier = "o3de.toolbar.editor.playcontrols";
 
     // Viewport ToolBar
-    static constexpr AZStd::string_view ViewportTopToolBarIdentifier = "o3de.toolbar.viewport.top";
+    inline constexpr AZStd::string_view ViewportTopToolBarIdentifier = "o3de.toolbar.viewport.top";
 }

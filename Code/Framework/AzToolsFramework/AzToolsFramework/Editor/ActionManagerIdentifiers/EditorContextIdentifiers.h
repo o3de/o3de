@@ -12,5 +12,5 @@
 
 namespace EditorActionContext
 {
-    static constexpr AZStd::string_view MainWindowContextIdentifier = "o3de.context.editor.mainwindow";
+    inline constexpr AZStd::string_view MainWindowContextIdentifier = "o3de.context.editor.mainwindow";
 }
