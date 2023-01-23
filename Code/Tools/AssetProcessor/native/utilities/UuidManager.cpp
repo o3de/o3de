@@ -56,17 +56,17 @@ namespace AssetProcessor
         return entry.m_legacyUuids;
     }
 
-    void UuidManager::FileChanged(AZ::IO::Path file)
+    void UuidManager::FileChanged(AZ::IO::PathView file)
     {
-        InvalidateCacheEntry(AZStd::move(file));
+        InvalidateCacheEntry(file);
     }
 
-    void UuidManager::FileRemoved(AZ::IO::Path file)
+    void UuidManager::FileRemoved(AZ::IO::PathView file)
     {
-        InvalidateCacheEntry(AZStd::move(file));
+        InvalidateCacheEntry(file);
     }
 
-    void UuidManager::InvalidateCacheEntry(AZ::IO::Path file)
+    void UuidManager::InvalidateCacheEntry(AZ::IO::FixedMaxPath file)
     {
         AZStd::string extension = file.Extension().Native();
 
