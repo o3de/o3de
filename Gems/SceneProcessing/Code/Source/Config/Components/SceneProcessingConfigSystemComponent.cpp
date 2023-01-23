@@ -147,8 +147,7 @@ namespace AZ
             const char* virtualType, bool includeChildren)
         {
             AZStd::unique_ptr<SoftNameSetting> newSoftname = AZStd::make_unique<NodeSoftNameSetting>(pattern, approach, virtualType, includeChildren);
-            bool success = AddSoftName(AZStd::move(newSoftname));
-            return success;
+            return AddSoftName(AZStd::move(newSoftname));
         }
 
         bool SceneProcessingConfigSystemComponent::AddFileSoftName(const char* pattern,
@@ -158,8 +157,7 @@ namespace AZ
             std::initializer_list<FileSoftNameSetting::GraphType> graphTypes({ FileSoftNameSetting::GraphType(graphObjectTypeName) });
             AZStd::unique_ptr<SoftNameSetting> newSoftname = AZStd::make_unique<FileSoftNameSetting>(
                 pattern, approach, virtualType, inclusive, graphTypes);
-            bool success = AddSoftName(AZStd::move(newSoftname));
-            return success;
+            return AddSoftName(AZStd::move(newSoftname));
         }
 
         void SceneProcessingConfigSystemComponent::LoadScriptSettings()
