@@ -390,13 +390,6 @@ namespace ScriptCanvasEditor
         void OnViewPresetsEditor();
         void OnRestoreDefaultLayout();
 
-        // ScriptEvent Extension Actions
-        void OnScriptEventAddHelpers();
-        void OnScriptEventClearStatus();
-        void OnScriptEventMenuPreShow();
-        void OnScriptEventOpen(const AZ::IO::Path& filePath);
-        bool OnScriptEventSave(Save save);
-
         void UpdateViewMenu();
         /////////////////////////////////////////////////////////////////////////////////////////////
 
