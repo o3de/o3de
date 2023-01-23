@@ -571,6 +571,8 @@ namespace O3DELauncher
 
                 gEnv->pSystem->ExecuteCommandLine(false);
 
+                AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CommandLineProcessed", R"({})");
+
                 // Run the main loop
                 RunMainLoop(gameApplication);
             }
