@@ -6,6 +6,7 @@
  *
  */
 
+#pragma optimize("", off)
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 
 #include <AzCore/Component/Entity.h>
@@ -23,6 +24,10 @@
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationHandler.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+
+#include <QMessageBox>
+#include <QTranslator>
 
 AZ_DEFINE_BUDGET(PrefabSystem);
 
@@ -46,18 +51,12 @@ namespace AzToolsFramework
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
-            if (AzToolsFramework::Prefab::IsHotReloadingEnabled())
-            {
-                AzToolsFramework::AssetSystemBus::Handler::BusConnect();
-            }
+            AzToolsFramework::AssetSystemBus::Handler::BusConnect();
         }
 
         void PrefabSystemComponent::Deactivate()
         {
-            if (AzToolsFramework::Prefab::IsHotReloadingEnabled())
-            {
-                AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
-            }
+            AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_prefabSystemScriptingHandler.Disconnect();
             m_prefabPublicRequestHandler.Disconnect();
@@ -216,8 +215,43 @@ namespace AzToolsFramework
             auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
             if (found != m_templateFilePathToIdMap.end())
             {
-                RemoveTemplate(found->second);
+                TemplateId sourceTemplateId = found->second;
+                InstanceSetConstReference instancesMappedToTemplate =
+                    m_templateInstanceMapper.FindInstancesOwnedByTemplate(sourceTemplateId);
 
+                if (!instancesMappedToTemplate.has_value() || instancesMappedToTemplate->get().size() == 0)
+                {
+                    RemoveTemplate(sourceTemplateId);
+                }
+                else
+                {
+                    auto button = QMessageBox::question(
+                        AzToolsFramework::GetActiveWindow(),
+                        QString(),
+                        QString("Prefab %1 has been deleted from the file system. But we detected %2 instances "
+                                "in the level. Would you like to delete them?")
+                            .arg(found->first.c_str())
+                            .arg(instancesMappedToTemplate->get().size()),
+                        QMessageBox::Yes | QMessageBox::No);
+                    switch (button)
+                    {
+                    case QMessageBox::Yes:
+                        RemoveTemplate(sourceTemplateId);
+                        PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                            AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+
+                        if (prefabEditorEntityOwnershipInterface != nullptr)
+                        {
+                            TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+                            PropagateTemplateChanges(rootTemplateId);
+                        }
+                        break;
+                    }
+                }
+
+
+                
+                /*
                 PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
                     AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
 
@@ -225,7 +259,7 @@ namespace AzToolsFramework
                 {
                      TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
                      PropagateTemplateChanges(rootTemplateId);
-                }
+                }*/
                 
             }
         }
@@ -1250,3 +1284,4 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
+#pragma optimize("", on)
