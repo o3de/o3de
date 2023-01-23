@@ -471,9 +471,8 @@ def ExecuteControlFile(controlFile, repoName, processed_repos, o3de_project, def
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --restricted-path ${workspace}/${repoName}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repoName}/${restrictedName}")
         }
     }
-    //enable all gems specified in the control file
+    //queue enable all gems specified in the control file
     if(controlFile.ENABLE_GEMS) {
-        echo 'ENABLE_GEMS'
         controlFile.ENABLE_GEMS.each { gemName ->
             defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${o3de_project} || ver>nul", ECHO: "Enabling ${workspace}/${repoName}/${gemName} for ${o3de_project}"])
         }
@@ -658,8 +657,11 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
         }
 
         //defer enabling gems until after the repos are done registering all objects
-        defer_enable_gems.each { enableGemCommands ->
-            PlatformSh(enableGemCommands.COMMAND, enableGemCommands.ECHO)
+        if(defer_enable_gems) {
+            echo 'ENABLE_GEMS'
+            defer_enable_gems.each { enableGemCommands ->
+                PlatformSh(enableGemCommands.COMMAND, enableGemCommands.ECHO)
+            }
         }
     }
 }
