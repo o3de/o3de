@@ -5674,8 +5674,8 @@ namespace UnitTest
 
     TEST_F(Serialization, AttributeData_WithCallableType_Succeeds)
     {
-        constexpr AZ::Crc32 invokableCrc = AZ_CRC_CE("Invokable");
-        constexpr AZ::Crc32 nonInvokableCrc = AZ_CRC_CE("NonInvokable");
+        static constexpr AZ::Crc32 invokableCrc = AZ_CRC_CE("Invokable");
+        static constexpr AZ::Crc32 nonInvokableCrc = AZ_CRC_CE("NonInvokable");
         auto ReadFloat = [](SerializeTestClasses::BaseNoRtti* instance) -> float
         {
             auto noRttiInstance = instance;
@@ -5714,7 +5714,7 @@ namespace UnitTest
 
     TEST_F(Serialization, AttributeInvocable_UsingVoidPointerInstance_Succeeds)
     {
-        constexpr AZ::Crc32 invokableCrc = AZ_CRC_CE("Invokable");
+        static constexpr AZ::Crc32 invokableCrc = AZ_CRC_CE("Invokable");
         auto ReadFloat = [](SerializeTestClasses::BaseNoRtti* instance) -> float
         {
             auto noRttiInstance = instance;

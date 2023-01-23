@@ -197,11 +197,11 @@ namespace AZ
             if constexpr (AZStd::is_pointer_v<DecayInstType> && AZStd::is_void_v<AZStd::remove_pointer_t<DecayInstType>>)
             {
                 // Forward the void* as an rvalue so it is not a void*&
-                return Internal::AttributeInvoke<RetType>(m_attribute, static_cast<DecayInstType>(m_instance), AZStd::forward<Args>(args...));
+                return Internal::AttributeInvoke<RetType>(m_attribute, static_cast<DecayInstType>(m_instance), AZStd::forward<Args>(args)...);
             }
             else
             {
-                return Internal::AttributeInvoke<RetType>(m_attribute, m_instance, AZStd::forward<Args>(args...));
+                return Internal::AttributeInvoke<RetType>(m_attribute, m_instance, AZStd::forward<Args>(args)...);
             }
         }
 
