@@ -107,7 +107,7 @@ namespace UnitTest
 
         //create document with before change snapshot
         PrefabDom entityDomBefore;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomBefore, *wheelEntityUnderAxle);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomBefore, *wheelEntityUnderAxle);
 
         PrefabTestComponent* axlewheelComponent = wheelEntityUnderAxle->FindComponent<PrefabTestComponent>();
         // Change the bool property of the component from Wheel instance and use it to update the wheel template.
@@ -115,7 +115,7 @@ namespace UnitTest
 
         //create document with after change snapshot
         PrefabDom entityDomAfter;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomAfter, *wheelEntityUnderAxle);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomAfter, *wheelEntityUnderAxle);
 
         InstanceOptionalReference topMostInstanceInHierarchy = m_instanceToTemplateInterface->GetTopMostInstanceInHierarchy(wheelEntityIdUnderAxle);
         ASSERT_TRUE(topMostInstanceInHierarchy);

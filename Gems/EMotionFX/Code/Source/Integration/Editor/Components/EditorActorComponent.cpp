@@ -603,6 +603,18 @@ namespace EMotionFX
             CheckActorCreation();
         }
 
+        void EditorActorComponent::EnableInstanceUpdate(bool enable)
+        {
+            if (m_actorInstance)
+            {
+                m_actorInstance->SetIsEnabled(enable);
+            }
+            else
+            {
+                AZ_ErrorOnce("EMotionFX", false, "Cannot enable the actor instance update because actor instance haven't been created.");
+            }
+        }
+
         void EditorActorComponent::InitializeMaterial(ActorAsset& actorAsset)
         {
             if (!m_materialPerLOD.empty())

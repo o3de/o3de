@@ -292,26 +292,12 @@ namespace AZ
         AZ::CommandLine& m_commandLine;
     };
 
-    void ComponentApplication::Descriptor::AllocatorRemapping::Reflect(ReflectContext* context, ComponentApplication* app)
-    {
-        (void)app;
-
-        if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
-        {
-            serializeContext->Class<AllocatorRemapping>()
-                ->Field("from", &AllocatorRemapping::m_from)
-                ->Field("to", &AllocatorRemapping::m_to)
-                ;
-        }
-    }
-
     //=========================================================================
     // Reflect
     //=========================================================================
     void  ComponentApplication::Descriptor::Reflect(ReflectContext* context, ComponentApplication* app)
     {
         DynamicModuleDescriptor::Reflect(context);
-        AllocatorRemapping::Reflect(context, app);
 
         if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
         {
@@ -415,8 +401,8 @@ namespace AZ
         m_descriptor.m_recordingMode = AllocatorManager::Instance().GetDefaultTrackingMode();
 
         // Initializes the OSAllocator and SystemAllocator as soon as possible
-        CreateOSAllocator();
-        CreateSystemAllocator();
+        AZ::Debug::Trace::Instance().Init();
+        ConfigureSystemAllocatorTracking();
 
         // Now that the Allocators are initialized, the Command Line parameters can be parsed
         m_commandLine.Parse(m_argC, m_argV);
@@ -515,7 +501,7 @@ namespace AZ
         m_entityActivatedEvent.DisconnectAllHandlers();
         m_entityDeactivatedEvent.DisconnectAllHandlers();
 
-        DestroyAllocator();
+        AZ::Debug::Trace::Instance().Destroy();
     }
 
     void ComponentApplication::InitializeSettingsRegistry()
@@ -741,10 +727,7 @@ namespace AZ
 
         m_descriptor = descriptor;
 
-        // Re-invokes CreateOSAllocator and CreateSystemAllocator function to allow the component application
-        // to use supplied startupParameters and descriptor parameters this time
-        CreateOSAllocator();
-        CreateSystemAllocator();
+        ConfigureSystemAllocatorTracking();
 
 #if !defined(_RELEASE)
         m_budgetTracker.Init();
@@ -911,73 +894,20 @@ namespace AZ
 #endif // defined(AZ_ENABLE_DEBUG_TOOLS)
     }
 
-    void ComponentApplication::DestroyAllocator()
-    {
-        AZ::Debug::Trace::Instance().Destroy();
-
-        // kill the system allocator if we created it
-        if (m_isSystemAllocatorOwner)
-        {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-
-            m_isSystemAllocatorOwner = false;
-        }
-
-        if (m_isOSAllocatorOwner)
-        {
-            AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-            m_isOSAllocatorOwner = false;
-        }
-
-        m_osAllocator = nullptr;
-    }
-
-    void ComponentApplication::CreateOSAllocator()
-    {
-        if (!m_startupParameters.m_allocator)
-        {
-            if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-                m_isOSAllocatorOwner = true;
-            }
-            m_osAllocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
-        }
-        else
-        {
-            m_osAllocator = m_startupParameters.m_allocator;
-        }
-    }
-
     //=========================================================================
-    // CreateSystemAllocator
+    // ConfigureSystemAllocatorTracking
     // [5/30/2012]
     //=========================================================================
-    void ComponentApplication::CreateSystemAllocator()
+    void ComponentApplication::ConfigureSystemAllocatorTracking()
     {
-        AZ::Debug::Trace::Instance().Init();
-
-        if (m_descriptor.m_useExistingAllocator || AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
+        AZ::Debug::AllocationRecords* records = AllocatorInstance<SystemAllocator>::Get().GetRecords();
+        if (records)
         {
-            AZ_Assert(AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady(), "You must setup AZ::SystemAllocator instance, before you can call Create application with m_useExistingAllocator flag set to true");
-            return;
-        }
-        else
-        {
-            // Create the system allocator
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
-            AZ::Debug::AllocationRecords* records = AllocatorInstance<SystemAllocator>::Get().GetRecords();
-            if (records)
-            {
-                records->SetMode(m_descriptor.m_recordingMode);
-                records->SetSaveNames(m_descriptor.m_allocationRecordsSaveNames);
-                records->SetDecodeImmediately(m_descriptor.m_allocationRecordsAttemptDecodeImmediately);
-                records->AutoIntegrityCheck(m_descriptor.m_autoIntegrityCheck);
-                records->MarkUallocatedMemory(m_descriptor.m_markUnallocatedMemory);
-            }
-
-            m_isSystemAllocatorOwner = true;
+            records->SetMode(m_descriptor.m_recordingMode);
+            records->SetSaveNames(m_descriptor.m_allocationRecordsSaveNames);
+            records->SetDecodeImmediately(m_descriptor.m_allocationRecordsAttemptDecodeImmediately);
+            records->AutoIntegrityCheck(m_descriptor.m_autoIntegrityCheck);
+            records->MarkUallocatedMemory(m_descriptor.m_markUnallocatedMemory);
         }
     }
 

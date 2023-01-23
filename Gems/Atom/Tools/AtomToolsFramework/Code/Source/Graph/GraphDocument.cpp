@@ -434,6 +434,7 @@ namespace AtomToolsFramework
                         propertyConfig.m_groupName = group->m_name;
                         propertyConfig.m_groupDisplayName = group->m_displayName;
                         propertyConfig.m_description = currentSlot->GetDescription();
+                        propertyConfig.m_enumValues = currentSlot->GetEnumValues();
                         propertyConfig.m_defaultValue = currentSlot->GetDefaultValue();
                         propertyConfig.m_originalValue = currentSlot->GetValue();
                         propertyConfig.m_parentValue = currentSlot->GetDefaultValue();

@@ -17,7 +17,12 @@
                     "Name": "InputDepth",
                     "SlotType": "Input",
                     "ShaderInputName": "m_inputDepth",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
                 },
                 {
                     "Name": "MotionVectors",

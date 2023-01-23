@@ -122,6 +122,7 @@ namespace PhysX
         class HeightfieldUpdateJobContext : public AZ::JobContext
         {
         public:
+            AZ_CLASS_ALLOCATOR(HeightfieldUpdateJobContext, AZ::ThreadPoolAllocator)
             HeightfieldUpdateJobContext(AZ::JobManager& jobManager)
                 : JobContext(jobManager)
             {

@@ -39,7 +39,7 @@ namespace Multiplayer
         static void Reflect(AZ::ReflectContext* context);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
-        MultiplayerComponent() = default;
+        MultiplayerComponent();
         ~MultiplayerComponent() override = default;
 
         //! Returns the NetBindComponent responsible for network binding for this entity.
@@ -67,6 +67,11 @@ namespace Multiplayer
         NetworkEntityHandle GetEntityHandle();
         void MarkDirty();
 
+        //! Override to run component logic when the NetworkEntity has completed network activation
+        //! Invoked when the NetworkEntity is attached and has RPCs bound via m_networkActivatedHandler
+        //! Requires m_networkActivatedHandler be registered via NetBindComponent::AddNetworkActivatedEventHandler 
+        virtual void OnNetworkActivated(){};
+
         virtual void SetOwningConnectionId(AzNetworking::ConnectionId connectionId) = 0;
         virtual NetComponentId GetNetComponentId() const = 0;
 
@@ -85,6 +90,7 @@ namespace Multiplayer
         virtual void NetworkAttach(NetBindComponent* netBindComponent, ReplicationRecord& currentEntityRecord, ReplicationRecord& predictableEntityRecord) = 0;
 
         mutable NetBindComponent* m_netBindComponent = nullptr;
+        AZ::Event<>::Handler m_networkActivatedHandler;
 
         friend class NetworkEntityHandle;
         friend class NetBindComponent;

@@ -1084,6 +1084,7 @@ namespace AZ
         class EntityIdAccessor final : public AZ::Entity
         {
         public:
+            AZ_CLASS_ALLOCATOR(EntityIdAccessor, SystemAllocator)
             void ForceSetId(AZ::EntityId id)
             {
                 m_id = id;

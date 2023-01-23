@@ -42,6 +42,7 @@ ly_add_target(
 # and the dependency needs to be different per application type
 ly_create_alias(NAME ScriptCanvasPhysics.Clients  NAMESPACE Gem TARGETS Gem::ScriptCanvasPhysics Gem::ScriptCanvas)
 ly_create_alias(NAME ScriptCanvasPhysics.Servers  NAMESPACE Gem TARGETS Gem::ScriptCanvasPhysics Gem::ScriptCanvas)
+ly_create_alias(NAME ScriptCanvasPhysics.Unified  NAMESPACE Gem TARGETS Gem::ScriptCanvasPhysics Gem::ScriptCanvas)
 ly_create_alias(NAME ScriptCanvasPhysics.Tools    NAMESPACE Gem TARGETS Gem::ScriptCanvasPhysics Gem::ScriptCanvas.Editor)
 ly_create_alias(NAME ScriptCanvasPhysics.Builders NAMESPACE Gem TARGETS Gem::ScriptCanvasPhysics Gem::ScriptCanvas.Editor)
 
