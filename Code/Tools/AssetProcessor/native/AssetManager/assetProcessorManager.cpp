@@ -34,6 +34,7 @@
 
 #include <AssetManager/ProductAsset.h>
 #include <native/AssetManager/SourceAssetReference.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
 
 namespace AssetProcessor
 {
@@ -2396,8 +2397,16 @@ namespace AssetProcessor
                 m_sourceFileModTimeMap[jobDetails.m_jobEntry.m_sourceFileUUID] = mSecsSinceEpoch;
                 QString sourceFile(jobDetails.m_jobEntry.m_sourceAssetReference.RelativePath().c_str());
                 AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(jobDetails.m_jobEntry.m_sourceAssetReference);
-                AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(AZ::OSString(sourceFile.toUtf8().constData()), AZ::OSString(jobDetails.m_scanFolder->ScanPath().toUtf8().constData()), AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileChanged, sourceUUID);
-                EBUS_EVENT(AssetProcessor::ConnectionBus, Send, 0, message);
+
+                if (!sourceUUID.IsNull())
+                {
+                    AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(
+                        AZ::OSString(sourceFile.toUtf8().constData()),
+                        AZ::OSString(jobDetails.m_scanFolder->ScanPath().toUtf8().constData()),
+                        AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileChanged,
+                        sourceUUID);
+                    AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::Send, 0, message);
+                }
             }
         }
 
@@ -3953,6 +3962,19 @@ namespace AssetProcessor
 
         AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(sourceAsset);
 
+        if (sourceUUID.IsNull())
+        {
+            auto failureMessage = AZStd::string::format(
+                "CreateJobs failed for %s - Invalid UUID, metadata file " AZ_STRING_FORMAT " is likely corrupt",
+                sourceAsset.AbsolutePath().c_str(),
+                AZ_STRING_ARG(AzToolsFramework::MetadataManager::ToMetadataPath(sourceAsset.AbsolutePath().c_str()).Native()));
+            AutoFailJob(
+                failureMessage,
+                failureMessage,
+                JobEntry(sourceAsset, AZ::Uuid(), { "all", {} }, QString("CreateJobs"), 0, GenerateNewJobRunKey(), sourceUUID, false));
+            return;
+        }
+
         {
             // this scope exists only to narrow the range of m_sourceUUIDToSourceNameMapMutex
             AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceInfoMapMutex);
@@ -4851,7 +4873,7 @@ namespace AssetProcessor
         sourceDatabaseEntry.m_sourceName = sourceAsset.RelativePath().c_str();
         sourceDatabaseEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset);
 
-        if (!m_stateData->SetSource(sourceDatabaseEntry))
+        if (sourceDatabaseEntry.m_sourceGuid.IsNull() || !m_stateData->SetSource(sourceDatabaseEntry))
         {
             AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to add source to the database!!!");
             return;
