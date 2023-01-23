@@ -26,4 +26,5 @@ namespace PhysX::JointsComponentModeCommon
     const AZStd::string_view ParameterNames::LinearLimits = "Linear Limits";
     const AZStd::string_view ParameterNames::EnableLimits = "Enable Limits";
     const AZStd::string_view ParameterNames::EnableSoftLimits = "Enable SoftLimits";
+    const AZStd::string_view ParameterNames::JointName = "Joint Name";
 } // namespace PhysX::JointsComponentModeCommon

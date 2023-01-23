@@ -215,6 +215,14 @@ namespace PhysX
         return subModes;
     }
 
+    void EditorJointComponent::SetStringValue(const AZStd::string& parameterName, const AZStd::string& value)
+    {
+        if (parameterName == JointsComponentModeCommon::ParameterNames::JointName)
+        {
+            m_config.m_jointname = value;
+        }
+    }
+
     void EditorJointComponent::SetLinearValue(const AZStd::string& parameterName, float value)
     {
         if (parameterName == JointsComponentModeCommon::ParameterNames::MaxForce)

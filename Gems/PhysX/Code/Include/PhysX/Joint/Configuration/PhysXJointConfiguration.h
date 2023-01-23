@@ -52,7 +52,7 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         JointGenericProperties() = default;
-        JointGenericProperties(GenericJointFlag flags, float forceMax, float torqueMax);
+        JointGenericProperties(GenericJointFlag flags, float forceMax, float torqueMax, AZStd::string joint_name);
 
         bool IsFlagSet(GenericJointFlag flag) const; ///< Returns if a particular flag is set as a bool.
 
@@ -61,6 +61,7 @@ namespace PhysX
         GenericJointFlag m_flags = GenericJointFlag::None;
         float m_forceMax = 1.0f; ///< Max force joint can tolerate before breaking.
         float m_torqueMax = 1.0f; ///< Max torque joint can tolerate before breaking.
+        AZStd::string m_jointname;  // joint_name (useful for some ROS2 application)
     };
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(PhysX::JointGenericProperties::GenericJointFlag)
 

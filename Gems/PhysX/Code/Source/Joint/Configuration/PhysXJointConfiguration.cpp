@@ -13,10 +13,11 @@
 
 namespace PhysX
 {
-    JointGenericProperties::JointGenericProperties(GenericJointFlag flags, float forceMax, float torqueMax)
+    JointGenericProperties::JointGenericProperties(GenericJointFlag flags, float forceMax, float torqueMax, AZStd::string joint_name)
         : m_flags(flags)
         , m_forceMax(forceMax)
         , m_torqueMax(torqueMax)
+        , m_jointname(joint_name)
     {
 
     }
