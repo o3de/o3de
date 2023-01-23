@@ -65,6 +65,8 @@ namespace AZ
 
             // FeatureProcessor overrides ...
             void Activate() override;
+            void Deactivate() override;
+            void OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
             struct Mesh;
 
