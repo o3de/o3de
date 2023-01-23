@@ -154,9 +154,9 @@ namespace AZ
             SceneAPI::SceneCore::PatternMatcher::MatchApproach approach,
             const char* virtualType, bool inclusive, const AZStd::string& graphObjectTypeName)
         {
-            std::initializer_list<FileSoftNameSetting::GraphType> graphTypes({ FileSoftNameSetting::GraphType(graphObjectTypeName) });
             AZStd::unique_ptr<SoftNameSetting> newSoftname = AZStd::make_unique<FileSoftNameSetting>(
-                pattern, approach, virtualType, inclusive, graphTypes);
+                pattern, approach, virtualType, inclusive,
+                std::initializer_list<FileSoftNameSetting::GraphType>{FileSoftNameSetting::GraphType(graphObjectTypeName)});
             return AddSoftName(AZStd::move(newSoftname));
         }
 
