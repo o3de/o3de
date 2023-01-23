@@ -33,7 +33,7 @@ namespace AtomToolsFramework
 
     private:
         const AZ::Crc32 m_toolId = {};
-        AZStd::recursive_mutex m_graphTemplateFileDataMapMutex;
+        AZStd::mutex m_graphTemplateFileDataMapMutex;
         AZStd::unordered_map<AZStd::string, GraphTemplateFileData> m_graphTemplateFileDataMap;
     };
 } // namespace AtomToolsFramework

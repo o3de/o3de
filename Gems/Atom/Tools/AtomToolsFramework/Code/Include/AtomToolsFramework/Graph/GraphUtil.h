@@ -30,7 +30,7 @@ namespace AtomToolsFramework
         using NodeValueTypeRef = typename NodeContainer::const_reference;
 
         // Pre-calculate and cache sorting scores for all nodes to avoid reprocessing during the sort
-        AZStd::recursive_mutex nodeScoreMapMutex;
+        AZStd::mutex nodeScoreMapMutex;
         AZStd::unordered_map<GraphModel::NodeId, AZStd::tuple<bool, bool, uint32_t>> nodeScoreMap;
 
         AZ::parallel_for_each(nodes.begin(), nodes.end(), [&](NodeValueTypeRef node) {

@@ -720,7 +720,7 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetSystemRequestBus::Broadcast(
             &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
 
-        AZStd::recursive_mutex resultsMutex;
+        AZStd::mutex resultsMutex;
         AZStd::vector<AZStd::string> results;
         results.reserve(scanFolders.size());
 

@@ -8,9 +8,11 @@
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Graph/GraphDocument.h>
+#include <AtomToolsFramework/Graph/GraphDocumentNotificationBus.h>
 #include <AtomToolsFramework/Graph/GraphUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/ByteContainerStream.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -52,9 +54,11 @@ namespace AtomToolsFramework
     GraphDocument::GraphDocument(
         const AZ::Crc32& toolId,
         const DocumentTypeInfo& documentTypeInfo,
-        AZStd::shared_ptr<GraphModel::GraphContext> graphContext)
+        AZStd::shared_ptr<GraphModel::GraphContext> graphContext,
+        AZStd::shared_ptr<GraphCompiler> graphCompiler)
         : AtomToolsDocument(toolId, documentTypeInfo)
         , m_graphContext(graphContext)
+        , m_graphCompiler(graphCompiler)
     {
         AZ_Assert(m_graphContext, "Graph context must be valid in order to create a graph document.");
 
@@ -75,10 +79,12 @@ namespace AtomToolsFramework
         GraphModelIntegration::GraphControllerNotificationBus::Handler::BusConnect(m_graphId);
         GraphCanvas::SceneNotificationBus::Handler::BusConnect(m_graphId);
         GraphDocumentRequestBus::Handler::BusConnect(m_id);
+        AZ::SystemTickBus::Handler::BusConnect();
     }
 
     GraphDocument::~GraphDocument()
     {
+        AZ::SystemTickBus::Handler::BusDisconnect();
         GraphDocumentRequestBus::Handler::BusDisconnect();
         GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
         GraphModelIntegration::GraphControllerNotificationBus::Handler::BusDisconnect();
@@ -95,13 +101,14 @@ namespace AtomToolsFramework
         const AZStd::vector<AZStd::string>& documentTypeExtensions,
         const AZStd::vector<AZStd::string>& documentTypeTemplateExtensions,
         const AZStd::string& defaultDocumentTypeTemplatePath,
-        AZStd::shared_ptr<GraphModel::GraphContext> graphContext)
+        AZStd::shared_ptr<GraphModel::GraphContext> graphContext,
+        AZStd::function<AZStd::shared_ptr<GraphCompiler>()> graphCompilerCreateFn)
     {
         DocumentTypeInfo documentType;
         documentType.m_documentTypeName = documentTypeName;
-        documentType.m_documentFactoryCallback = [graphContext](const AZ::Crc32& toolId, const DocumentTypeInfo& documentTypeInfo)
-        {
-            return aznew GraphDocument(toolId, documentTypeInfo, graphContext);
+        documentType.m_documentFactoryCallback = [graphContext, graphCompilerCreateFn](const AZ::Crc32& toolId, const DocumentTypeInfo& documentTypeInfo) {
+            return aznew GraphDocument(
+                toolId, documentTypeInfo, graphContext, graphCompilerCreateFn ? graphCompilerCreateFn() : AZStd::shared_ptr<GraphCompiler>());
         };
 
         for (const auto& extension : documentTypeExtensions)
@@ -171,6 +178,7 @@ namespace AtomToolsFramework
 
         m_modified = false;
         CreateGraph(graph);
+        m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnOpen", true);
         return OpenSucceeded();
     }
 
@@ -191,6 +199,7 @@ namespace AtomToolsFramework
 
         m_modified = false;
         m_absolutePath = m_savePathNormalized;
+        m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave", true);
         return SaveSucceeded();
     }
 
@@ -211,6 +220,7 @@ namespace AtomToolsFramework
 
         m_modified = false;
         m_absolutePath = m_savePathNormalized;
+        m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave", true);
         return SaveSucceeded();
     }
 
@@ -231,6 +241,7 @@ namespace AtomToolsFramework
 
         m_modified = false;
         m_absolutePath = m_savePathNormalized;
+        m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave", true);
         return SaveSucceeded();
     }
 
@@ -260,8 +271,18 @@ namespace AtomToolsFramework
             m_modified = true;
             AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
             GraphCanvas::ViewRequestBus::Event(m_graphId, &GraphCanvas::ViewRequests::RefreshView);
+            m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit", true);
         }
         return true;
+    }
+
+    void GraphDocument::Clear()
+    {
+        DestroyGraph();
+        m_graphStateForUndoRedo.clear();
+        m_groups.clear();
+        m_modified = false;
+        AtomToolsDocument::Clear();
     }
 
     GraphModel::GraphPtr GraphDocument::GetGraph() const
@@ -287,20 +308,91 @@ namespace AtomToolsFramework
         return GetSymbolNameFromText(documentName);
     }
 
-    void GraphDocument::Clear()
+    void GraphDocument::SetGeneratedFilePaths(const AZStd::vector<AZStd::string>& pathas)
     {
-        DestroyGraph();
-        m_graphStateForUndoRedo.clear();
-        m_groups.clear();
-        m_modified = false;
+        m_generatedFiles = pathas;
+    }
 
-        AtomToolsDocument::Clear();
+    const AZStd::vector<AZStd::string>& GraphDocument::GetGeneratedFilePaths() const
+    {
+        return m_generatedFiles;
+    }
+
+    bool GraphDocument::CompileGraph()
+    {
+        if (!m_graphCompiler || !m_graphCompiler->Reset())
+        {
+            return false;
+        }
+
+        m_compileGraphQueued = false;
+        AZStd::vector<AZ::u8> graphBuffer;
+        AZ::IO::ByteContainerStream<decltype(graphBuffer)> graphBufferStream(&graphBuffer);
+        AZ::Utils::SaveObjectToStream(graphBufferStream, AZ::ObjectStream::ST_BINARY, m_graph.get());
+
+        auto compileJobFn = [toolId = m_toolId,
+                             documentId = m_id,
+                             graphBuffer,
+                             graphCompiler = m_graphCompiler,
+                             graphContext = m_graphContext,
+                             graphName = GetGraphName(),
+                             graphPath = GetAbsolutePath()]()
+        {
+            GraphModel::GraphPtr graph = AZStd::make_shared<GraphModel::Graph>(graphContext);
+            AZ::Utils::LoadObjectFromBufferInPlace(graphBuffer.data(), graphBuffer.size(), *graph.get());
+            graph->PostLoadSetup(graphContext);
+
+            AZ::SystemTickBus::QueueFunction([toolId, documentId]() {
+                GraphDocumentRequestBus::Event(documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, AZStd::vector<AZStd::string>{});
+                GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphStarted, documentId);
+            });
+            if (graphCompiler->CompileGraph(graph, graphName, graphPath))
+            {
+                AZ::SystemTickBus::QueueFunction([toolId, documentId, generatedFiles = graphCompiler->GetGeneratedFilePaths()]() {
+                    GraphDocumentRequestBus::Event(documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, generatedFiles);
+                    GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphCompleted, documentId);
+                });
+            }
+            else
+            {
+                AZ::SystemTickBus::QueueFunction([toolId, documentId]() {
+                    GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphFailed, documentId);
+                });
+            }
+        };
+
+        auto job = AZ::CreateJobFunction(compileJobFn, true);
+        job->Start();
+        return true;
+    }
+
+    void GraphDocument::QueueCompileGraph()
+    {
+        m_compileGraphQueued = true;
+    }
+
+    bool GraphDocument::IsCompileGraphQueued() const
+    {
+        return m_compileGraphQueued;
+    }
+
+    void GraphDocument::OnSystemTick()
+    {
+        if (m_buildPropertiesQueued)
+        {
+            BuildEditablePropertyGroups();
+        }
+
+        if (IsCompileGraphQueued())
+        {
+            CompileGraph();
+        }
     }
 
     void GraphDocument::OnGraphModelSlotModified([[maybe_unused]] GraphModel::SlotPtr slot)
     {
         m_modified = true;
-        BuildEditablePropertyGroups();
+        m_buildPropertiesQueued = true;
         AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
     }
 
@@ -320,8 +412,9 @@ namespace AtomToolsFramework
                 [this, redoState]() { RestoreGraphState(redoState); });
 
             m_modified = true;
-            BuildEditablePropertyGroups();
+            m_buildPropertiesQueued = true;
             AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+            m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit", true);
         }
     }
 
@@ -337,7 +430,7 @@ namespace AtomToolsFramework
 
     void GraphDocument::OnSelectionChanged()
     {
-        BuildEditablePropertyGroups();
+        m_buildPropertiesQueued = true;
     }
 
     void GraphDocument::RecordGraphState()
@@ -356,14 +449,13 @@ namespace AtomToolsFramework
     {
         // Restore a version of the graph that was previously serialized to a byte stream
         m_graphStateForUndoRedo = graphState;
-        AZ::IO::ByteContainerStream<decltype(m_graphStateForUndoRedo)> undoGraphStateStream(&m_graphStateForUndoRedo);
-
         GraphModel::GraphPtr graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
-        AZ::Utils::LoadObjectFromStreamInPlace(undoGraphStateStream, *graph.get());
+        AZ::Utils::LoadObjectFromBufferInPlace(m_graphStateForUndoRedo.data(), m_graphStateForUndoRedo.size(), *graph.get());
 
         m_modified = true;
         CreateGraph(graph);
         AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit", true);
     }
 
     void GraphDocument::CreateGraph(GraphModel::GraphPtr graph)
@@ -380,7 +472,7 @@ namespace AtomToolsFramework
                 &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_graphId, m_graph);
 
             RecordGraphState();
-            BuildEditablePropertyGroups();
+            m_buildPropertiesQueued = true;
         }
     }
 
@@ -399,6 +491,8 @@ namespace AtomToolsFramework
 
     void GraphDocument::BuildEditablePropertyGroups()
     {
+        m_buildPropertiesQueued = false;
+
         // Sort nodes according to their connection so they appear in a consistent order in the inspector
         GraphModel::NodePtrList selectedNodes;
         GraphModelIntegration::GraphControllerRequestBus::EventResult(

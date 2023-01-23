@@ -113,7 +113,7 @@ namespace GraphModel
         //! other types, such as wrapper nodes
         virtual NodeType GetNodeType() const;
 
-        //! Return the unique ID for this node in the containing graph
+n        //! Return the unique ID for this node in the containing graph
         NodeId GetId() const;
 
         //! Return the greatest distance, number of connected nodes, between this node and other root nodes.
