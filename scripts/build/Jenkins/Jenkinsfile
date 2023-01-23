@@ -360,7 +360,7 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
 }
 
 //this should assume it will always be executed from the workspace root
-def NoControlFile(repoName, processed_repos, o3de_project) {
+def NoControlFile(repoName, processed_repos, o3de_project, defer_enable_gems) {
     echo "NoControlFile(reponame:${repoName}, processed_repos:${processed_repos})"
 
     processed_repos.add(repoName)
@@ -382,7 +382,7 @@ def NoControlFile(repoName, processed_repos, o3de_project) {
         }
         else if(fileExists("gem.json")) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --gem-path ${workspace}/${repoName} || ver>nul", "Registering gem in ${workspace}/${repoName}")
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${o3de_project} || ver>nul", "Enabling ${gemName} in ${o3de_project}")
+            defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${o3de_project} || ver>nul", ECHO: "Enabling ${gemName} in ${o3de_project}"])
         }
         else if(fileExists("template.json")) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --template-path ${workspace}/${repoName} || ver>nul", "Registering template in ${workspace}/${repoName}")
@@ -409,7 +409,7 @@ def NoControlFile(repoName, processed_repos, o3de_project) {
             }
             if(fileExists("Gems")) {
                 PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-gems-path ${workspace}/${repoName}/Gems || ver>nul", "Registering all gems in ${workspace}/${repoName}/Gems")
-                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${o3de_project} || ver>nul", "Enabling all gems in ${o3de_project}")
+                defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${o3de_project} || ver>nul", ECHO: "Enabling all gems in ${o3de_project}"])
                 found = true
             }
             if(fileExists("Templates")) {
@@ -430,7 +430,7 @@ def NoControlFile(repoName, processed_repos, o3de_project) {
 }
 
 //this should assume it will always be executed from the workspace root
-def ExecuteControlFile(controlFile, repoName, processed_repos, o3de_project) {
+def ExecuteControlFile(controlFile, repoName, processed_repos, o3de_project, defer_enable_gems) {
     echo "ExecuteControlFile(controlFile:${controlFile}, reponame:${repoName}, processed_repos:${processed_repos})"
 
     processed_repos.add(repoName)
@@ -475,7 +475,7 @@ def ExecuteControlFile(controlFile, repoName, processed_repos, o3de_project) {
     if(controlFile.ENABLE_GEMS) {
         echo 'ENABLE_GEMS'
         controlFile.ENABLE_GEMS.each { gemName ->
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${o3de_project} || ver>nul", "Enabling ${workspace}/${repoName}/${gemName} for ${o3de_project}")
+            defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${o3de_project} || ver>nul", ECHO: "Enabling ${workspace}/${repoName}/${gemName} for ${o3de_project}"])
         }
     }
 
@@ -502,9 +502,9 @@ def ExecuteControlFile(controlFile, repoName, processed_repos, o3de_project) {
 
                 if(foundRepoControlFile) {
                     //There is a control file, execute it
-                    processed_repos = ExecuteControlFile(repoControlFile, repo.NAME, processed_repos, o3de_project)
+                    processed_repos = ExecuteControlFile(repoControlFile, repo.NAME, processed_repos, o3de_project, defer_enable_gems)
                 } else {
-                    processed_repos = NoControlFile(repo.NAME, processed_repos, o3de_project)
+                    processed_repos = NoControlFile(repo.NAME, processed_repos, o3de_project, defer_enable_gems)
                 }
             }
         }
@@ -550,6 +550,7 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
         }
 
         def processed_repos = []
+        def defer_enable_gems = []
 
         //we always get the engine repo first and get python, setEnvCommit only if the repo is the engine repo
         def engineAutomatedTestingControlFile = {}
@@ -601,10 +602,10 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
             }
         }
         if(engineAutomatedTestingControlFileFound) {
-            processed_repos = ExecuteControlFile(engineAutomatedTestingControlFile, ENGINE_REPOSITORY_NAME, processed_repos, o3de_project)
+            processed_repos = ExecuteControlFile(engineAutomatedTestingControlFile, ENGINE_REPOSITORY_NAME, processed_repos, o3de_project, defer_enable_gems)
         }
 
-        //lastly, if we are not committing to the engine repo then pull that repo in here
+        //if we are not committing to the engine repo then pull that repo in here
         if(COMMIT_REPOSITORY_NAME != ENGINE_REPOSITORY_NAME) {
             echo "Commit repo: ${scm.userRemoteConfigs.url[0]}"
             def automatedTestingControlFile = {}
@@ -625,13 +626,14 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
             }
 
             if(automatedTestingControlFileFound) {
-                processed_repos = ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME, processed_repos, o3de_project)
+                processed_repos = ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME, processed_repos, o3de_project, defer_enable_gems)
             }
             else {
-                processed_repos = NoControlFile(COMMIT_REPOSITORY_NAME, processed_repos, o3de_project)
+                processed_repos = NoControlFile(COMMIT_REPOSITORY_NAME, processed_repos, o3de_project, defer_enable_gems)
             }
         }
 
+        //set CMAKE_LY_PROJECTS to the relative project_path so it will work on all platforms
         dir(ENGINE_REPOSITORY_NAME) {
             // This is a try/catch in the event that this function is called before the scripts are stashed
             try {
@@ -653,6 +655,11 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
             project_path = project_path.replace("${workspace}", "..")
             env.CMAKE_LY_PROJECTS = project_path
             echo "env.CMAKE_LY_PROJECTS = ${env.CMAKE_LY_PROJECTS}"
+        }
+
+        //defer enabling gems until after the repos are done registering all objects
+        defer_enable_gems.each { enableGemCommands ->
+            PlatformSh(enableGemCommands.COMMAND, enableGemCommands.ECHO)
         }
     }
 }
