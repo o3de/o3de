@@ -11,7 +11,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserExpandedTableViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerFrame.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 
 #include <AzQtComponents/Components/Widgets/AssetFolderExpandedTableView.h>
@@ -21,7 +20,7 @@
 
 #endif
 
-    namespace AzToolsFramework
+namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
@@ -40,61 +39,44 @@
 
             connect(
                 m_expandedTableViewWidget,
-                &AzQtComponents::AssetFolderExpandedTableView::IndexClicked,
+                &AzQtComponents::AssetFolderExpandedTableView::clicked,
                 this,
                 [this](const QModelIndex& index)
                 {
-                    if (!m_previewerFrame)
-                    {
-                        return;
-                    }
-
                     auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
                     if (indexData->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
                     {
-                        m_previewerFrame->Display(indexData);
+                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
                     }
+                    emit entryClicked(indexData);
                 });
 
             connect(
                 m_expandedTableViewWidget,
-                &AzQtComponents::AssetFolderExpandedTableView::IndexDoubleClicked,
+                &AzQtComponents::AssetFolderExpandedTableView::doubleClicked,
                 this,
                 [this](const QModelIndex& index)
                 {
-                    if (!m_assetTreeView)
-                    {
-                        return;
-                    }
-
                     auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                    if (indexData->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
-                    {
-                        return;
-                    }
-
-                    auto treeViewFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_assetTreeView->model());
-                    if (!treeViewFilterModel)
-                    {
-                        return;
-                    }
-
-                    auto selectionModel = m_assetTreeView->selectionModel();
-
-                    auto targetIndex =
-                        treeViewFilterModel->mapFromSource(m_assetFilterModel->mapToSource(m_expandedTableViewProxyModel->mapToSource(index)));
-
-                    selectionModel->select(targetIndex, QItemSelectionModel::ClearAndSelect);
-
-                    auto targetIndexAncestor = targetIndex.parent();
-                    while (targetIndexAncestor.isValid())
-                    {
-                        m_assetTreeView->expand(targetIndexAncestor);
-                        targetIndexAncestor = targetIndexAncestor.parent();
-                    }
-
-                    m_assetTreeView->scrollTo(targetIndex);
+                    emit entryDoubleClicked(indexData);
                 });
+
+            connect(
+                m_expandedTableViewWidget,
+                &AzQtComponents::AssetFolderExpandedTableView::showInFolderTriggered,
+                this,
+                [this](const QModelIndex& index)
+                {
+                    auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+                    emit showInFolderTriggered(indexData);
+                });
+
+            // Track the root index on the proxy model as well so it can provide info such as whether an entry is first level or not
+            connect(
+                m_expandedTableViewWidget,
+                &AzQtComponents::AssetFolderExpandedTableView::rootIndexChanged,
+                m_expandedTableViewProxyModel,
+                &AssetBrowserExpandedTableViewProxyModel::SetRootIndex);
 
             auto layout = new QVBoxLayout();
             layout->addWidget(m_expandedTableViewWidget);
@@ -103,9 +85,9 @@
 
         AssetBrowserExpandedTableView::~AssetBrowserExpandedTableView() = default;
 
-        void AssetBrowserExpandedTableView::SetPreviewerFrame(PreviewerFrame* previewerFrame)
+        AzQtComponents::AssetFolderExpandedTableView* AssetBrowserExpandedTableView::GetExpandedTableViewWidget() const
         {
-            m_previewerFrame = previewerFrame;
+            return m_expandedTableViewWidget;
         }
 
         void AssetBrowserExpandedTableView::SetAssetTreeView(AssetBrowserTreeView* treeView)
@@ -159,6 +141,16 @@
                 &AssetBrowserExpandedTableView::HandleTreeViewSelectionChanged);
         }
 
+        void AssetBrowserExpandedTableView::setSelectionMode(QAbstractItemView::SelectionMode mode)
+        {
+            m_expandedTableViewWidget->setSelectionMode(mode);
+        }
+
+        QAbstractItemView::SelectionMode AssetBrowserExpandedTableView::selectionMode() const
+        {
+            return m_expandedTableViewWidget->selectionMode();
+        }
+
         void AssetBrowserExpandedTableView::HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
         {
             Q_UNUSED(deselected);
@@ -172,12 +164,13 @@
             auto selectedIndexes = selected.indexes();
             if (selectedIndexes.count() > 0)
             {
-                m_expandedTableViewProxyModel->SetSourceModelCurrentSelection(
+                auto newRootIndex = m_expandedTableViewProxyModel->mapFromSource(
                     m_assetFilterModel->mapFromSource(treeViewFilterModel->mapToSource(selectedIndexes[0])));
+                m_expandedTableViewWidget->setRootIndex(newRootIndex);
             }
             else
             {
-                m_expandedTableViewProxyModel->SetSourceModelCurrentSelection({});
+                m_expandedTableViewWidget->setRootIndex({});
             }
         }
 
@@ -203,11 +196,30 @@
             auto filterCopy = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
             for (const auto& subFilter : filter->GetSubFilters())
             {
-                if (subFilter->GetName() != "Folder")
+                // Switch between "search mode" where all results in the asset folder tree are shown,
+                // and "normal mode", where only contents for a single folder are shown, depending on
+                // whether there is an active string search ongoing.
+                if (subFilter->GetTag() == "String")
+                {
+                    auto stringCompFilter = qobject_cast<const CompositeFilter*>(subFilter.get());
+                    if (!stringCompFilter)
+                    {
+                        continue;
+                    }
+
+                    auto stringSubFilters = stringCompFilter->GetSubFilters();
+
+                    m_expandedTableViewProxyModel->SetShowSearchResultsMode(stringSubFilters.count() != 0);
+                    m_expandedTableViewWidget->SetShowSearchResultsMode(stringSubFilters.count() != 0);
+                }
+
+                // Skip the folder filter on the thumbnail view so that we can see files
+                if (subFilter->GetTag() != "Folder")
                 {
                     filterCopy->AddFilter(subFilter);
                 }
             }
+            filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Up | AssetBrowserEntryFilter::Down);
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
         }
 #pragma optimize("", on)

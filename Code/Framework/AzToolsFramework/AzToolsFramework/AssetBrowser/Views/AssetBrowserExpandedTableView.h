@@ -6,11 +6,13 @@
  *
  */
 #pragma once
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <QItemSelection>
 #include <QWidget>
+#include <QAbstractItemView>
 
 #endif
 
@@ -19,7 +21,6 @@ namespace AzQtComponents
     class AssetFolderExpandedTableView;
 }
 
-
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -27,7 +28,7 @@ namespace AzToolsFramework
         class AssetBrowserFilterModel;
         class AssetBrowserTreeView;
         class AssetBrowserExpandedTableViewProxyModel;
-        class PreviewerFrame;
+        class AssetBrowserEntry;
 
         class AssetBrowserExpandedTableView : public QWidget
         {
@@ -38,12 +39,20 @@ namespace AzToolsFramework
             explicit AssetBrowserExpandedTableView(QWidget* parent = nullptr);
             ~AssetBrowserExpandedTableView() override;
 
-            void SetPreviewerFrame(PreviewerFrame* previewerFrame);
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
+
+            AzQtComponents::AssetFolderExpandedTableView* GetExpandedTableViewWidget() const;
+
+            void setSelectionMode(QAbstractItemView::SelectionMode mode);
+            QAbstractItemView::SelectionMode selectionMode() const;
+
+        signals:
+            void entryClicked(const AssetBrowserEntry* entry);
+            void entryDoubleClicked(const AssetBrowserEntry* entry);
+            void showInFolderTriggered(const AssetBrowserEntry* entry);
 
         private:
             AssetBrowserTreeView* m_assetTreeView = nullptr;
-            PreviewerFrame* m_previewerFrame = nullptr;
             AzQtComponents::AssetFolderExpandedTableView* m_expandedTableViewWidget = nullptr;
             AssetBrowserExpandedTableViewProxyModel* m_expandedTableViewProxyModel = nullptr;
             AssetBrowserFilterModel* m_assetFilterModel = nullptr;

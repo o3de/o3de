@@ -94,7 +94,7 @@ namespace AzQtComponents
 
     void AssetFolderExpandedTableViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
-        const auto isTopLevel = index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsTopLevel)).value<bool>();
+        const auto isTopLevel = index.data(static_cast<int>(AssetFolderExpandedTableView::Role::IsTopLevel)).value<bool>();
 
         painter->save();
 
@@ -185,13 +185,13 @@ namespace AzQtComponents
         painter->restore();
     }
 
-    QSize AssetFolderThumbnailViewDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+    QSize AssetFolderExpandedTableViewDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         Q_UNUSED(index);
         return option.rect.size();
     }
 
-    void AssetFolderThumbnailViewDelegate::polish(const AssetFolderThumbnailView::Config& config)
+    void AssetFolderExpandedTableViewDelegate::polish(const AssetFolderExpandedTableView::Config& config)
     {
         m_config = config;
     }
@@ -205,7 +205,7 @@ namespace AzQtComponents
         }
     }
 
-    static void readThumbnail(QSettings& settings, AssetFolderThumbnailView::Config::Thumbnail& thumbnail)
+    static void readThumbnail(QSettings& settings, AssetFolderExpandedTableView::Config::Thumbnail& thumbnail)
     {
         thumbnail.width = settings.value(QStringLiteral("Width"), thumbnail.width).toInt();
         thumbnail.height = settings.value(QStringLiteral("Height"), thumbnail.height).toInt();
@@ -218,7 +218,7 @@ namespace AzQtComponents
         readColor(settings, "SelectedBorderColor", thumbnail.selectedBorderColor);
     }
 
-    static void readExpandButton(QSettings& settings, AssetFolderThumbnailView::Config::ExpandButton& expandButton)
+    static void readExpandButton(QSettings& settings, AssetFolderExpandedTableView::Config::ExpandButton& expandButton)
     {
         expandButton.width = settings.value(QStringLiteral("Width"), expandButton.width).toInt();
         expandButton.caretWidth = settings.value(QStringLiteral("CaretWidth"), expandButton.caretWidth).toReal();
@@ -228,7 +228,7 @@ namespace AzQtComponents
         readColor(settings, "CaretColor", expandButton.caretColor);
     }
 
-    static void readChildFrame(QSettings& settings, AssetFolderThumbnailView::Config::ChildFrame& childFrame)
+    static void readChildFrame(QSettings& settings, AssetFolderExpandedTableView::Config::ChildFrame& childFrame)
     {
         childFrame.padding = settings.value(QStringLiteral("Padding"), childFrame.padding).toInt();
         childFrame.borderRadius = settings.value(QStringLiteral("BorderRadius"), childFrame.borderRadius).toReal();
@@ -236,7 +236,7 @@ namespace AzQtComponents
         childFrame.closeButtonWidth = settings.value(QStringLiteral("CloseButtonWidth"), childFrame.padding).toInt();
     }
 
-    AssetFolderThumbnailView::Config AssetFolderThumbnailView::loadConfig(QSettings& settings)
+    AssetFolderExpandedTableView::Config AssetFolderExpandedTableView::loadConfig(QSettings& settings)
     {
         auto config = defaultConfig();
 
@@ -266,7 +266,7 @@ namespace AzQtComponents
         return config;
     }
 
-    AssetFolderThumbnailView::Config AssetFolderThumbnailView::defaultConfig()
+    AssetFolderExpandedTableView::Config AssetFolderExpandedTableView::defaultConfig()
     {
         Config config;
 
@@ -310,9 +310,9 @@ namespace AzQtComponents
         return config;
     }
 
-    bool AssetFolderThumbnailView::polish(Style* style, QWidget* widget, const ScrollBar::Config& scrollBarConfig, const Config& config)
+    bool AssetFolderExpandedTableView::polish(Style* style, QWidget* widget, const ScrollBar::Config& scrollBarConfig, const Config& config)
     {
-        auto thumbnailView = qobject_cast<AssetFolderThumbnailView*>(widget);
+        auto thumbnailView = qobject_cast<AssetFolderExpandedTableView*>(widget);
         if (!thumbnailView)
         {
             return false;
@@ -326,24 +326,24 @@ namespace AzQtComponents
         return true;
     }
 
-    void AssetFolderThumbnailView::polish(const Config& config)
+    void AssetFolderExpandedTableView::polish(const Config& config)
     {
         m_config = config;
         m_delegate->polish(config);
     }
 
-    AssetFolderThumbnailView::AssetFolderThumbnailView(QWidget* parent)
+    AssetFolderExpandedTableView::AssetFolderExpandedTableView(QWidget* parent)
         : QAbstractItemView(parent)
-        , m_delegate(new AssetFolderThumbnailViewDelegate(this))
+        , m_delegate(new AssetFolderExpandedTableViewDelegate(this))
         , m_thumbnailSize(ThumbnailSize::Small)
         , m_config(defaultConfig())
     {
         setItemDelegate(m_delegate);
     }
 
-    AssetFolderThumbnailView::~AssetFolderThumbnailView() = default;
+    AssetFolderExpandedTableView::~AssetFolderExpandedTableView() = default;
 
-    void AssetFolderThumbnailView::setThumbnailSize(ThumbnailSize size)
+    void AssetFolderExpandedTableView::setThumbnailSize(ThumbnailSize size)
     {
         if (size == m_thumbnailSize)
         {
@@ -353,12 +353,12 @@ namespace AzQtComponents
         scheduleDelayedItemsLayout();
     }
 
-    AssetFolderThumbnailView::ThumbnailSize AssetFolderThumbnailView::thumbnailSize() const
+    AssetFolderExpandedTableView::ThumbnailSize AssetFolderExpandedTableView::thumbnailSize() const
     {
         return m_thumbnailSize;
     }
 
-    QModelIndex AssetFolderThumbnailView::indexAt(const QPoint& point) const
+    QModelIndex AssetFolderExpandedTableView::indexAt(const QPoint& point) const
     {
         if (!model())
         {
@@ -378,7 +378,7 @@ namespace AzQtComponents
         return {};
     }
 
-    void AssetFolderThumbnailView::scrollTo(const QModelIndex& index, QAbstractItemView::ScrollHint hint)
+    void AssetFolderExpandedTableView::scrollTo(const QModelIndex& index, QAbstractItemView::ScrollHint hint)
     {
         if (!index.isValid())
         {
@@ -432,7 +432,7 @@ namespace AzQtComponents
         }
     }
 
-    QRect AssetFolderThumbnailView::visualRect(const QModelIndex& index) const
+    QRect AssetFolderExpandedTableView::visualRect(const QModelIndex& index) const
     {
         if (!index.isValid())
         {
@@ -449,7 +449,7 @@ namespace AzQtComponents
         return rect.translated(-horizontalOffset(), -verticalOffset());
     }
 
-    void AssetFolderThumbnailView::setRootIndex(const QModelIndex& index)
+    void AssetFolderExpandedTableView::setRootIndex(const QModelIndex& index)
     {
         if (index != rootIndex())
         {
@@ -548,7 +548,7 @@ namespace AzQtComponents
 
     bool AssetFolderExpandedTableView::isExpandable(const QModelIndex& index) const
     {
-        return index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsExpandable)).value<bool>();
+        return index.data(static_cast<int>(AssetFolderExpandedTableView::Role::IsExpandable)).value<bool>();
     }
 
     void AssetFolderExpandedTableView::paintEvent(QPaintEvent* event)
@@ -630,7 +630,7 @@ namespace AzQtComponents
             }
             if (isExpandable(index))
             {
-                if (m_expandedRows.contains(index.row()))
+                if (m_expandedIndexes.contains(index))
                 {
                     option.state |= QStyle::State_UpArrow;
                 }
@@ -644,7 +644,7 @@ namespace AzQtComponents
         }
     }
 
-   QModelIndex AssetFolderThumbnailView::indexAtPos(const QPoint& pos) const
+   QModelIndex AssetFolderExpandedTableView::indexAtPos(const QPoint& pos) const
     {
         auto it = std::find_if(
             m_itemGeometry.keyBegin(),
@@ -750,7 +750,7 @@ namespace AzQtComponents
         QAbstractItemView::mouseDoubleClickEvent(event);
     }
 
-    void AssetFolderThumbnailView::contextMenuEvent(QContextMenuEvent* event)
+    void AssetFolderExpandedTableView::contextMenuEvent(QContextMenuEvent* event)
     {
         // For now we only have a context menu in search mode for the "show in folder" option
         if (!m_showSearchResultsMode)
@@ -818,7 +818,7 @@ namespace AzQtComponents
         verticalScrollBar()->setRange(0, y + rowHeight - viewport()->height());
     }
 
-    void AssetFolderThumbnailView::updateGeometriesInternal(const QModelIndex& idx, int& x, int& y)
+    void AssetFolderExpandedTableView::updateGeometriesInternal(const QModelIndex& idx, int& x, int& y)
     {
         const auto rowCount = model()->rowCount(idx);
         if (rowCount == 0)
@@ -943,7 +943,7 @@ namespace AzQtComponents
         }
     }
 
-    void AssetFolderThumbnailView::SetShowSearchResultsMode(bool searchMode)
+    void AssetFolderExpandedTableView::SetShowSearchResultsMode(bool searchMode)
     {
         m_showSearchResultsMode = searchMode;
     }

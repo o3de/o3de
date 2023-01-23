@@ -671,8 +671,8 @@ set(FILES
     AssetBrowser/AssetBrowserFilterModel.h
     AssetBrowser/AssetBrowserTableModel.cpp
     AssetBrowser/AssetBrowserTableModel.h
-    AssetBrowser/AssetBrowserExpandedTableViewProxyModel.cpp
-    AssetBrowser/AssetBrowserExpandedTableViewProxyModel.h
+    AssetBrowser/AssetBrowserExpandedTableViewModel.cpp
+    AssetBrowser/AssetBrowserExpandedTableViewModel.h
     AssetBrowser/AssetBrowserThumbnailViewProxyModel.cpp
     AssetBrowser/AssetBrowserThumbnailViewProxyModel.h
     AssetBrowser/AssetBrowserModel.cpp

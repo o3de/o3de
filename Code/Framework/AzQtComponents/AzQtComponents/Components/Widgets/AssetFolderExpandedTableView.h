@@ -153,7 +153,7 @@ namespace AzQtComponents
             QVector<QRect> rects;
         };
         QVector<ChildFrame> m_childFrames;
-        QSet<int> m_expandedRows;
+        QSet<QPersistentModelIndex> m_expandedIndexes;
         AZ_POP_DISABLE_WARNING
         ThumbnailSize m_thumbnailSize;
         Config m_config;
