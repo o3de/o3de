@@ -68,8 +68,7 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Deletes the contents of the workspace and forces a complete pull.', name: 'CLEAN_WORKSPACE'),
     booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME'),
     booleanParam(defaultValue: false, description: 'Cancels AR immediately on any failure in the pipeline and marks it as failed', name: 'FAIL_FAST'),
-    booleanParam(defaultValue: false, description: 'Deletes the volume used for the workspace after the pipeline steps are completed.', name: 'DISCARD_VOLUME'),
-    stringParam(defaultValue: 'AutomatedTesting', description: 'Name of the project to build.', name: 'PROJECT_NAME')
+    booleanParam(defaultValue: false, description: 'Deletes the volume used for the workspace after the pipeline steps are completed.', name: 'DISCARD_VOLUME')
 ]
 
 def PlatformSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
@@ -620,7 +619,10 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
                 }
             }
 
-            if (params.CMAKE_LY_PROJECTS) {
+            if(env.PROJECT_OVERRIDE) {
+                o3de_project = env.PROJECT_OVERRIDE
+            }
+            else if(params.CMAKE_LY_PROJECTS) {
                 o3de_project = params.CMAKE_LY_PROJECTS
             }
 
@@ -1175,7 +1177,7 @@ try {
                         // Add each platform as a parameter that the user can disable if needed
                         if (!IsPullRequest(branchName) || IsPeriodicPipeline(pipelineName)) {
                             pipelineParameters.add(stringParam(defaultValue: '', description: 'Filters and overrides the list of jobs to run for each of the below platforms (comma-separated). Can\'t be used during a pull request.', name: 'JOB_LIST_OVERRIDE'))
-
+                            pipelineParameters.add(stringParam(defaultValue: '', description: 'Name of the project to build. Overrides default project', name: 'PROJECT_OVERRIDE'))
                             pipelineConfig.platforms.each { platform ->
                                 pipelineParameters.add(booleanParam(defaultValue: true, description: '', name: platform.key))
                             }
