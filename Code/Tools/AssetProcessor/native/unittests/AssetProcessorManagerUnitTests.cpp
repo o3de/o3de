@@ -3029,7 +3029,8 @@ namespace AssetProcessor
         {
             AssetDatabaseConnection connection;
             EXPECT_TRUE(connection.OpenDatabase());
-            bool entryAlreadyExists;
+            // Init to the opposite of the expected value, to verify that it gets set to what's expected.
+            bool entryAlreadyExists = true;
             connection.InsertFile(file, entryAlreadyExists);
             EXPECT_FALSE(entryAlreadyExists);
         }

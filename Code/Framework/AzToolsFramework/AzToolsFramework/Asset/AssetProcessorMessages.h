@@ -34,7 +34,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(AssetFingerprintClearRequest, AZ::OSAllocator, 0);
             AZ_RTTI(AssetFingerprintClearRequest, "{2B7B5477-D3F8-43FF-8595-89D023690FCB}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
-            static constexpr unsigned int MessageType = AZ_CRC("AssetProcessor::AssetFingerprintClearRequest");
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetProcessor::AssetFingerprintClearRequest"); // CRC = 54071616 0x3391140
 
             explicit AssetFingerprintClearRequest(bool requireFencing = true);
             AssetFingerprintClearRequest(const AZ::OSString& searchTerm, bool requireFencing = true);
