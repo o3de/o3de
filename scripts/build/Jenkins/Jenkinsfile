@@ -1163,7 +1163,7 @@ try {
 
                         CheckoutEngineBootstrapScripts(branchName, scm.userRemoteConfigs)
                         // Stash any project based build configs
-                        stash name: "${COMMIT_REPOSITORY_NAME}-scripts", includes: "scripts/build/**" allowEmpty: true
+                        stash name: "${COMMIT_REPOSITORY_NAME}-scripts", includes: "scripts/build/**", allowEmpty: true
                         // Project or external repos may not have the bootstrapping scripts. For these cases, pull the bootstrap scripts from the engine repo at the default branch
                         if (!fileExists(SCRIPTS_PATH) || !fileExists(PIPELINE_CONFIG_FILE) || !(COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME)) {
                             echo "No bootstrap scripts found in ${SCRIPTS_PATH} or working repo is not the engine repo, downloading it from the engine repo at ${ENGINE_DEVELOPMENT_BRANCH}"
