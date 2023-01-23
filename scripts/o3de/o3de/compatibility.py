@@ -70,7 +70,7 @@ def get_incompatible_gem_dependencies(gem_json_data:dict, all_gems_json_data:dic
     if not gem_dependencies:
         return set()
 
-    return get_incompatible_gem_version_specifiers(gem_dependencies, all_gems_json_data, set())
+    return get_incompatible_gem_version_specifiers(gem_dependencies, all_gems_json_data, checked_specifiers=set())
 
 
 def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathlib.Path, all_gems_json_data:dict = None) -> set:
@@ -170,7 +170,7 @@ def get_incompatible_objects_for_engine(object_json_data:dict, engine_json_data:
     return incompatible_objects
 
 
-def get_incompatible_gem_version_specifiers(gem_version_specifier_list:list, all_gems_json_data:dict, checked_specifiers:set() = None) -> set:
+def get_incompatible_gem_version_specifiers(gem_version_specifier_list:list, all_gems_json_data:dict, checked_specifiers:set) -> set:
     """
     Returns a set of gem version specifiers that are not compatible with the gem's provided
     If a gem_version_specifier_list entry only has a gem name, it is assumed compatible with every gem version with that name.
