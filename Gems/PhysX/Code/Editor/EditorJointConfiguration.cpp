@@ -298,6 +298,7 @@ namespace PhysX
                 ->Field("Display Debug", &EditorJointConfig::m_displayJointSetup)
                 ->Field("Select Lead on Snap", &EditorJointConfig::m_selectLeadOnSnap)
                 ->Field("Self Collide", &EditorJointConfig::m_selfCollide)
+                // ->Field("Joint Name", &EditorJointConfig::m_jointname)
                 ;
 
             if (auto* editContext = serializeContext->GetEditContext())
@@ -374,7 +375,7 @@ namespace PhysX
             flags |= JointGenericProperties::GenericJointFlag::SelfCollide;
         }
 
-        return JointGenericProperties(flags, m_forceMax, m_torqueMax);
+        return JointGenericProperties(flags, m_forceMax, m_torqueMax, m_jointname);
     }
 
     JointComponentConfiguration EditorJointConfig::ToGameTimeConfig() const

@@ -120,6 +120,7 @@ namespace PhysX
         return native;
     }
 
+
     float HingeJointComponent::GetPosition() const
     {
         return m_nativeJoint->getAngle();
