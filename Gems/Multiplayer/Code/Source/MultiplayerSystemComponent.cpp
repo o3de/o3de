@@ -118,7 +118,7 @@ namespace Multiplayer
         "How often in milliseconds to record transport metrics.");
 
     AZ_CVAR(bool, sv_multithreadedConnectionUpdates, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "If true, the server will perform connection updates to clients on threads, which improves performance with large number of clients");
+        "If true, the server will send updates to clients on different threads, which improves performance with large number of clients");
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
