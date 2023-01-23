@@ -516,15 +516,15 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     endif()
 
     if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED)
-        set(native_jenkins_enabled true)
+        set(native_test_targets_enabled true)
     else()
-        set(native_jenkins_enabled false)
+        set(native_test_targets_enabled false)
     endif()
 
     if(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
-        set(python_jenkins_enabled true)
+        set(python_test_targets_enabled true)
     else()
-        set(python_jenkins_enabled false)
+        set(python_test_targets_enabled false)
     endif()
 
     # Testrunner binary
@@ -602,7 +602,7 @@ function(ly_test_impact_write_pytest_file CONFIGURATION_FILE)
 
     # Configure our list of entries
     string(REPLACE ";" ",\n" build_configs "${build_configs}")
-    
+
     # Configure and write out our test data file
     ly_file_read("${CONFIGURATION_FILE}" test_file)
     string(CONFIGURE ${test_file} test_file)
