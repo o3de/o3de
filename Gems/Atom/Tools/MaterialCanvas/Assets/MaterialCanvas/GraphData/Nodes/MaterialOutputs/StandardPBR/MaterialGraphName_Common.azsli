@@ -8,7 +8,7 @@
  
 #pragma once
 
-#ifndef ENABLE_CLEAR_COAT
+// ------- Options -------
 #define ENABLE_CLEAR_COAT 1
 #endif
 
