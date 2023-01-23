@@ -328,8 +328,16 @@ namespace AzNetworking
 
         if (dstData == nullptr)
         {
-            AZLOG_ERROR("Send ringbuffer full, dropped packet");
-            return false;
+            // Ring buffer is full, try sending existing data then reserving the ring buffer memory again.
+            UpdateSend();
+            dstData = reinterpret_cast<uint8_t*>(m_sendRingbuffer.ReserveBlockForWrite(headerSize + payloadSize));
+
+            // Still failed to get ring buffer memory, this packet can't be sent.
+            if (dstData == nullptr)
+            {
+                AZLOG_ERROR("Send ringbuffer full, dropped packet");
+                return false;
+            }
         }
 
         // Copy the header data to the ring buffer
