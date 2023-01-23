@@ -3019,7 +3019,6 @@ namespace AzToolsFramework
             actionProperties.m_description = "Select and move selected object(s)";
             actionProperties.m_category = "Edit";
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Move.svg";
-            actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
@@ -3052,7 +3051,6 @@ namespace AzToolsFramework
             actionProperties.m_description = "Select and rotate selected object(s)";
             actionProperties.m_category = "Edit";
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Rotate.svg";
-            actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
@@ -3078,14 +3076,13 @@ namespace AzToolsFramework
         }
 
         // Transform Mode - Scale
-        {
+        {      
             AZStd::string actionIdentifier = "o3de.action.edit.transform.scale";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Scale";
             actionProperties.m_description = "Select and scale selected object(s)";
             actionProperties.m_category = "Edit";
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Scale.svg";
-            actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
