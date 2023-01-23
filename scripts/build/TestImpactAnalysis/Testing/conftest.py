@@ -15,6 +15,8 @@ BUILD_INFO_KEY = 'build_info'
 CONFIG_PATH_KEY = 'config'
 BINARY_PATH_KEY = 'runtime_bin'
 COMMON_CONFIG_KEY = "common"
+JENKINS_KEY = "jenkins"
+ENABLED_KEY = "enabled"
 WORKSPACE_KEY = "workspace"
 ROOT_KEY = "root"
 TEMP_KEY = "temp"
@@ -60,6 +62,10 @@ def storage_config(runtime_type, config_data):
         HISTORIC_KEY][RELATIVE_PATHS_KEY][HISTORIC_DATA_FILE_KEY]
     args_from_config['temp_workspace'] = config_data[runtime_type][WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]
     return args_from_config
+
+@pytest.fixture
+def test_targets_enabled(runtime_type, config_data):
+    return config_data[runtime_type][JENKINS_KEY][ENABLED_KEY]
 
 
 @pytest.fixture
