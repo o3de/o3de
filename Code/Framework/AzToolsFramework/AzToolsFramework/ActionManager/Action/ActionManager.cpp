@@ -23,7 +23,7 @@ namespace AzToolsFramework
     class ActionContextWidgetWatcher : public QObject
     {
     public:
-        explicit ActionContextWidgetWatcher(QObject* parent = nullptr)
+        explicit ActionContextWidgetWatcher(QObject* parent)
             : QObject(parent)
         {
         }
@@ -73,8 +73,6 @@ namespace AzToolsFramework
 
                 QKeySequence keySequence(keyInt);
 
-                // FIXME: Originally it looked like we could check this shortcutMap to determine if the ShortcutOverride
-                // was ambiguous, but unfortunately that doesn't seem to be the case :/
                 auto globalShortcutMap = &QGuiApplicationPrivate::instance()->shortcutMap;
                 bool isAmbiguous = globalShortcutMap->hasShortcutForKeySequence(keySequence);
                 if (isAmbiguous)
@@ -84,13 +82,11 @@ namespace AzToolsFramework
                     {
                         if (action->shortcut() == keySequence)
                         {
-                            // TODO: If we delay the action then we can properly stop the ShortcutOverride from
-                            // continuing on to the parent. For some reason if we trigger it during this flow,
-                            // the parent action's shortcut will get triggered also.
-                            QTimer::singleShot(0, this, [action] {
-                                action->trigger();
-                            });
+                            action->trigger();
 
+                            // We need to accept the event in addition to return true on this event filter
+                            // to ensure the event doesn't get propagated to any parent widgets.
+                            event->accept();
                             return true;
                         }
                     }
