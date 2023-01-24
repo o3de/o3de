@@ -198,6 +198,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::AudioSystem.Static
                 Gem::Atom_RPI.Public
     )
+
     ly_add_target(
         NAME AudioSystem.Editor GEM_MODULE
 
@@ -208,6 +209,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Source
                 Source/Editor
+                Source/Engine
             PUBLIC
                 Include/Editor
         BUILD_DEPENDENCIES
@@ -226,11 +228,12 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             NAMESPACE Gem
             FILES_CMAKE
                 audiosystem_editor_tests_files.cmake
+                audiosystem_editor_shared_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
                     Source/Editor
-                    Source/Audio
+                    Source/Engine
                     Source
             BUILD_DEPENDENCIES
                 PRIVATE

@@ -58,6 +58,4 @@ set(FILES
     Source/Editor/AudioSystemPanel.h
     Source/Editor/ImplementationManager.h
     Source/Editor/InspectorPanel.h
-    Source/AudioSystemGemSystemComponent.cpp
-    Source/AudioSystemGemSystemComponent.h
 )
