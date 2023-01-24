@@ -189,6 +189,8 @@ namespace UnitTest
 
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
+
+            UnitTest::TestRunner::Instance().ResetSuppressionSettingsToDefault();
         }
 
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;

@@ -10,8 +10,6 @@ set(FILES
     SceneCoreConfiguration.h
     DllMain.cpp
     SceneBuilderDependencyBus.h
-    SceneCoreStandaloneAllocator.h
-    SceneCoreStandaloneAllocator.cpp
     DataTypes/IManifestObject.h
     DataTypes/IGraphObject.h
     DataTypes/DataTypeUtilities.h

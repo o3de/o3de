@@ -13,6 +13,8 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <Editor/EditorJointConfiguration.h>
 #include <Editor/Source/ComponentModes/Joints/JointsSubComponentModeAngleCone.h>
 #include <Editor/Source/ComponentModes/Joints/JointsSubComponentModeAnglePair.h>
@@ -25,9 +27,6 @@
 namespace PhysX
 {
     AZ_CLASS_ALLOCATOR_IMPL(JointsComponentMode, AZ::SystemAllocator, 0);
-
-    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
-    static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
     void SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType modeType)
     {
@@ -194,7 +193,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -215,7 +214,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -236,7 +235,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -263,7 +262,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -290,7 +289,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -317,7 +316,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -344,7 +343,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -371,7 +370,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -398,7 +397,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -425,7 +424,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -452,7 +451,7 @@ namespace PhysX
             actionProperties.m_category = "Joints Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -503,17 +502,17 @@ namespace PhysX
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "JointsComponentMode - could not get MenuManagerInterface on BindActionsToMenus.");
 
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToTranslationSubMode", 6000);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToRotationSubMode", 6001);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToMaxForceSubMode", 6002);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToMaxTorqueSubMode", 6003);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToDampingSubMode", 6004);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToStiffnessSubMode", 6005);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSnapPositionSubMode", 6006);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSnapRotationSubMode", 6007);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSwingLimitsSubMode", 6008);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToTwistLimitsSubMode", 6009);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.jointsComponentMode.resetCurrentMode", 6010);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToTranslationSubMode", 6000);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToRotationSubMode", 6001);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToMaxForceSubMode", 6002);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToMaxTorqueSubMode", 6003);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToDampingSubMode", 6004);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToStiffnessSubMode", 6005);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSnapPositionSubMode", 6006);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSnapRotationSubMode", 6007);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSwingLimitsSubMode", 6008);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToTwistLimitsSubMode", 6009);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.jointsComponentMode.resetCurrentMode", 6010);
     }
 
     void JointsComponentMode::Refresh()

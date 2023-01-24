@@ -196,7 +196,8 @@ namespace AssetProcessor
 
         //! Retrieve the scan folder at a given index.
         const AssetProcessor::ScanFolderInfo& GetScanFolderAt(int index) const;
-
+        //! Retrieve the scan folder found by a boolean predicate function, when the predicate returns true, the current scan folder info is returned.
+        const AssetProcessor::ScanFolderInfo* FindScanFolder(AZStd::function<bool(const AssetProcessor::ScanFolderInfo&)> predicate) const;
         const AssetProcessor::ScanFolderInfo* GetScanFolderById(AZ::s64 id) const override;
 
         //!  Manually add a scan folder.  Also used for testing.
@@ -262,11 +263,11 @@ namespace AssetProcessor
         //! c:/dev/engine/models/box01.mdl
         //! ----> [models/box01.mdl] found under[c:/dev/engine]
         //! note that this does return a database source path by default
-        bool ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName) const;
+        bool ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName) const override;
         static bool ConvertToRelativePath(const QString& fullFileName, const ScanFolderInfo* scanFolderInfo, QString& databaseSourceName);
 
         //! given a full file name (assumed already fed through the normalization funciton), return the first matching scan folder
-        const AssetProcessor::ScanFolderInfo* GetScanFolderForFile(const QString& fullFileName) const;
+        const AssetProcessor::ScanFolderInfo* GetScanFolderForFile(const QString& fullFileName) const override;
 
         //! Given a scan folder path, get its complete info
         const AssetProcessor::ScanFolderInfo* GetScanFolderByPath(const QString& scanFolderPath) const;
@@ -316,6 +317,8 @@ namespace AssetProcessor
         void ReadEnabledPlatformsFromSettingsRegistry();
         bool ReadRecognizersFromSettingsRegistry(const QString& assetRoot, bool skipScanFolders = false, QStringList scanFolderPatterns = QStringList() );
         void ReadMetaDataFromSettingsRegistry();
+
+        int GetProjectScanFolderOrder() const;
 
     private:
         AZStd::vector<AssetBuilderSDK::PlatformInfo> m_enabledPlatforms;

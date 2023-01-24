@@ -22,13 +22,6 @@ namespace AzFramework::ProjectManager
 {
     AZStd::tuple<AZ::IO::FixedMaxPath, AZ::IO::FixedMaxPath> FindProjectAndEngineRootPaths(const int argc, char* argv[])
     {
-        bool ownsAllocator = false;
-        if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-            ownsAllocator = true;
-        }
-
         AZ::IO::FixedMaxPath projectRootPath;
         AZ::IO::FixedMaxPath engineRootPath;
         {
@@ -49,10 +42,6 @@ namespace AzFramework::ProjectManager
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, false);
             engineRootPath = AZ::SettingsRegistryMergeUtils::FindEngineRoot(settingsRegistry);
             projectRootPath = AZ::SettingsRegistryMergeUtils::FindProjectRoot(settingsRegistry);
-        }
-        if (ownsAllocator)
-        {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
         return AZStd::make_tuple(projectRootPath, engineRootPath);
     }
@@ -87,12 +76,6 @@ namespace AzFramework::ProjectManager
     {
         bool launchSuccess = false;
 #if (AZ_TRAIT_AZFRAMEWORK_USE_PROJECT_MANAGER)
-        bool ownsSystemAllocator = false;
-        if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-        {
-            ownsSystemAllocator = true;
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-        }
         {
             AZStd::string filename = "o3de";
             AZ::IO::FixedMaxPath executablePath = AZ::Utils::GetExecutableDirectory();
@@ -112,10 +95,6 @@ namespace AzFramework::ProjectManager
             processLaunchInfo.m_commandlineParameters = AZStd::move(launchCmd);
 
             launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
-        }
-        if (ownsSystemAllocator)
-        {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
 #endif // #if defined(AZ_FRAMEWORK_USE_PROJECT_MANAGER)
         return launchSuccess;

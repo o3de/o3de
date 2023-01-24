@@ -102,11 +102,20 @@ namespace AZ
             };
             friend CaptureHandle;
 
-            CaptureHandle  InternalCapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, 
-                                                         const AZStd::string& slotName, 
-                                                         const AZStd::string& outputFilePath,
-                                                         RPI::PassAttachmentReadbackOption option,
-                                                         AZ::RPI::AttachmentReadback::CallbackFunction callbackFunction);
+            FrameCaptureSystemComponent::CaptureHandle ScreenshotPreparation(
+                const AZStd::string& imagePath,
+                AZ::RPI::AttachmentReadback::CallbackFunction callbackFunction);
+
+            FrameCaptureId InternalCaptureScreenshot(
+                const AZStd::string& imagePath,
+                AzFramework::NativeWindowHandle windowHandle);
+
+            CaptureHandle  InternalCapturePassAttachment(
+                    const AZStd::vector<AZStd::string>& passHierarchy,
+                    const AZStd::string& slotName,
+                    const AZStd::string& outputFilePath,
+                    RPI::PassAttachmentReadbackOption option,
+                    AZ::RPI::AttachmentReadback::CallbackFunction callbackFunction);
 
             void CaptureAttachmentCallback(const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult);
 

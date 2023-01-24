@@ -58,6 +58,10 @@ namespace AzToolsFramework
             //! Check if entry matches filter
             bool Match(const AssetBrowserEntry* entry) const;
 
+            //! Check if the entry matches filter without propagation (i.e. it's an exact match and it doesn't match only
+            //  beause a descendant or an ancestor matches)
+            bool MatchWithoutPropagation(const AssetBrowserEntry* entry) const;
+
             //! Retrieve all matching entries that are either entry itself or its parents or children
             void Filter(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const;
 

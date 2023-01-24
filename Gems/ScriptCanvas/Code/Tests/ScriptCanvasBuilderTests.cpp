@@ -100,9 +100,6 @@ protected:
     {
         UnitTest::LeakDetectionFixture::SetUp();
 
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
         m_serializeContext = aznew AZ::SerializeContext(true, true);
         AZ::ComponentApplicationBus::Handler::BusConnect();
         AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
@@ -131,9 +128,6 @@ protected:
         delete m_mockAssetDescriptor;
 
         delete m_serializeContext;
-
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
 
         UnitTest::LeakDetectionFixture::TearDown();
     }

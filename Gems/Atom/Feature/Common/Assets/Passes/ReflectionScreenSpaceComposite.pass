@@ -15,7 +15,12 @@
                 {
                     "Name": "DownsampledDepthInput",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
                 },
                 {
                     "Name": "NormalInput",

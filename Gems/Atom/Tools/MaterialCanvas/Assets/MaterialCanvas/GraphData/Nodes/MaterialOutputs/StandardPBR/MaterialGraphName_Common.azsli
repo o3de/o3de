@@ -5,54 +5,75 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
+ 
 #pragma once
 
-// ------- Options -------
+#ifndef ENABLE_CLEAR_COAT
+#define ENABLE_CLEAR_COAT 1
+#endif
 
-#define ENABLE_CLEAR_COAT               1
-#define ENABLE_TRANSMISSION             0
-#define ENABLE_AREA_LIGHT_VALIDATION    0
-#define ENABLE_SHADER_DEBUGGING         0
-#define OUTPUT_SUBSURFACE               0
-#define OUTPUT_DEPTH                    1
-#define FORCE_OPAQUE                    0
-#define ENABLE_PARALLAX                 0 // Disabled until parallax depth functions can be rewritten to not pass in the heightmap or sampler from the material SRG
-#define UvSetCount                      2
+#ifndef ENABLE_TRANSMISSION
+#define ENABLE_TRANSMISSION 0
+#endif
+
+#ifndef ENABLE_AREA_LIGHT_VALIDATION
+#define ENABLE_AREA_LIGHT_VALIDATION 0
+#endif
+
+#ifndef ENABLE_SHADER_DEBUGGING
+#define ENABLE_SHADER_DEBUGGING 1
+#endif
+
+#ifndef OUTPUT_SUBSURFACE
+#define OUTPUT_SUBSURFACE 0
+#endif
+
+#ifndef OUTPUT_DEPTH
+#define OUTPUT_DEPTH 0
+#endif
+
+#ifndef FORCE_OPAQUE
+#define FORCE_OPAQUE 0
+#endif
+
+#ifndef ENABLE_PARALLAX
+// Disabled until parallax depth functions can be rewritten to not pass in the heightmap or sampler from the material SRG
+#define ENABLE_PARALLAX 0
+#endif
+
+#ifndef UvSetCount
+#define UvSetCount 2
+#endif
 
 #include <Atom/Features/ShaderQualityOptions.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/RPI/TangentSpace.azsli>
+#include <../Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli>
+
+#if ENABLE_PARALLAX
+#include <../Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli>
+#include <../Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli>
+COMMON_OPTIONS_PARALLAX()
+#endif
 
 option bool o_normal_override_enabled = false;
 option bool o_opacity_affects_specular_factor = true;
 option bool o_clearCoat_enabled = false;
 option bool o_clearCoat_normal_override_enabled = false;
 
-// ------- Shader Resource Groups -------
-
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-#include <Atom/RPI/TangentSpace.azsli>
-#include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli"
-#include <Atom/Features/PBR/LightingOptions.azsli>
-#include <Atom/Features/PBR/AlphaUtils.azsli>
-#include <Atom/Features/SrgSemantics.azsli>
-
-#if ENABLE_PARALLAX
-#include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli"
-#include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli"
-COMMON_OPTIONS_PARALLAX()
-#endif
-
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
     // O3DE_GENERATED_MATERIAL_SRG_BEGIN
     // O3DE_GENERATED_MATERIAL_SRG_END
 }
-
-// ------- Shader Stitching -------
  
 // O3DE_GENERATED_INCLUDES_BEGIN
 // O3DE_GENERATED_INCLUDES_END
@@ -95,15 +116,12 @@ bool NeedsTangentFrame()
 }
 
 // Use same vertex logic as BasePBR
-#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
+#include <../Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
 #include "MaterialGraphName_VertexEval.azsli"
 
-#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
+#include <../Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
 #include "MaterialGraphName_PixelGeometryEval.azsli"
 
-#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_SurfaceData.azsli>
+#include <../Shaders/Materials/StandardPBR/StandardPBR_SurfaceData.azsli>
 #include "MaterialGraphName_SurfaceEval.azsli"
 
-#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingData.azsli>
-#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli>
-#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli>
