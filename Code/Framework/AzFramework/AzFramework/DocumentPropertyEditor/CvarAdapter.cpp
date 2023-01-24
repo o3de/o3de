@@ -19,7 +19,8 @@ namespace AZ::DocumentPropertyEditor
         Impl(CvarAdapter* adapter)
             : m_adapter(adapter)
             , m_commandInvokedHandler(
-                  [adapter, this](AZStd::string_view command, const AZ::ConsoleCommandContainer&, AZ::ConsoleFunctorFlags, AZ::ConsoleInvokedFrom)
+                  [adapter,
+                   this](AZStd::string_view command, const AZ::ConsoleCommandContainer&, AZ::ConsoleFunctorFlags, AZ::ConsoleInvokedFrom)
                   {
                       // look up the command being performed and rebuild its editor
                       if (!m_performingCommand && !command.empty())
@@ -31,7 +32,7 @@ namespace AZ::DocumentPropertyEditor
                               Dom::Path path;
                               const auto& existingContents = adapter->GetContents();
 
-                              for (size_t rowIndex = 0, numRows = existingContents.ArraySize(); rowIndex < numRows; ++ rowIndex)
+                              for (size_t rowIndex = 0, numRows = existingContents.ArraySize(); rowIndex < numRows; ++rowIndex)
                               {
                                   const auto& rowValue = existingContents.ArrayAt(rowIndex);
                                   auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(rowValue.ArrayAt(0)).value_or("");
@@ -112,7 +113,9 @@ namespace AZ::DocumentPropertyEditor
 
         bool TryBuildStringEditor(AdapterBuilder& builder, ConsoleFunctorBase* functor)
         {
-            if (functor->GetTypeId() == azrtti_typeid<CVarFixedString>())
+            const auto typeId = functor->GetTypeId();
+            if (typeId == azrtti_typeid<CVarFixedString>() || typeId == azrtti_typeid<AZStd::string>() ||
+                typeId == azrtti_typeid<const char*>())
             {
                 CVarFixedString buffer;
                 functor->GetValue(buffer);
@@ -183,7 +186,7 @@ namespace AZ::DocumentPropertyEditor
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType changeType)
                     {
-                        if (changeType == Nodes::ValueChangeType::FinishedEdit &&m_adapter->GetContents()[path] != value)
+                        if (changeType == Nodes::ValueChangeType::FinishedEdit && m_adapter->GetContents()[path] != value)
                         {
                             PerformCommand(functor->GetName(), { ConsoleTypeHelpers::ToString(value.GetBool()) });
                             m_adapter->OnContentsChanged(path, value);
@@ -198,8 +201,19 @@ namespace AZ::DocumentPropertyEditor
         bool BuildEditorForCvar(AdapterBuilder& builder, ConsoleFunctorBase* functor)
         {
             // Check all possible type IDs for our supported types and try to create a property editor
-            return TryBuildNumericEditor<AZ::s8, AZ::u8, AZ::s16, AZ::u16, AZ::s32, AZ::u32, AZ::s64, AZ::u64, long, unsigned long, float, double>(
-                       builder, functor) ||
+            return TryBuildNumericEditor<
+                       AZ::s8,
+                       AZ::u8,
+                       AZ::s16,
+                       AZ::u16,
+                       AZ::s32,
+                       AZ::u32,
+                       AZ::s64,
+                       AZ::u64,
+                       long,
+                       unsigned long,
+                       float,
+                       double>(builder, functor) ||
                 TryBuildStringEditor(builder, functor) || TryBuildMathVectorEditor<AZ::Vector2, 2, Nodes::Vector2>(builder, functor) ||
                 TryBuildMathVectorEditor<AZ::Vector3, 3, Nodes::Vector3>(builder, functor) ||
                 TryBuildMathVectorEditor<AZ::Vector4, 4, Nodes::Vector4>(builder, functor) ||
