@@ -1297,9 +1297,6 @@ namespace UnitTest
             ComponentApplicationBus::Handler::BusConnect();
             AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_streamer = AZStd::make_unique<IO::Streamer>(AZStd::thread_desc{}, AZ::StreamerComponent::CreateStreamerStack());
             Interface<IO::IStreamer>::Register(m_streamer.get());
         }
@@ -1310,9 +1307,6 @@ namespace UnitTest
 
             Interface<IO::IStreamer>::Unregister(m_streamer.get());
             m_streamer.reset();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
@@ -3413,9 +3407,6 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
         {
             LeakDetectionFixture::SetUp();
 
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-
             m_prevFileIO = IO::FileIOBase::GetInstance();
             IO::FileIOBase::SetInstance(&m_fileIO);
             m_streamer = aznew IO::Streamer(AZStd::thread_desc{}, StreamerComponent::CreateStreamerStack());
@@ -3449,8 +3440,6 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
             delete m_streamer;
 
             IO::FileIOBase::SetInstance(m_prevFileIO);
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }
@@ -5219,9 +5208,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_serializeContext = AZStd::make_unique<SerializeContext>();
             AnyMemberClass::Reflect(m_serializeContext.get());
             MyClassBase1::Reflect(*m_serializeContext);
@@ -5250,9 +5236,6 @@ namespace UnitTest
             m_serializeContext->DisableRemoveReflection();
 
             m_serializeContext.reset();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }
@@ -5623,9 +5606,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_serializeContext = AZStd::make_unique<SerializeContext>();
             OptionalMemberClass::Reflect(m_serializeContext.get());
         }
@@ -5636,9 +5616,6 @@ namespace UnitTest
             m_serializeContext->EnableRemoveReflection();
             OptionalMemberClass::Reflect(m_serializeContext.get());
             m_serializeContext.reset();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }
@@ -5744,9 +5721,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_serializeContext = AZStd::make_unique<SerializeContext>();
             TemplateInstantiationReflectedWrapper::Reflect(m_serializeContext.get());
         }
@@ -5758,9 +5732,6 @@ namespace UnitTest
             m_serializeContext->DisableRemoveReflection();
 
             m_serializeContext.reset();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }
@@ -6590,9 +6561,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_serializeContext = AZStd::make_unique<SerializeContext>();
             AZ::GenericClassInfo* genericInfo = SerializeGenericTypeInfo<AZStd::vector<AZ::u32>>::GetGenericInfo();
             if (genericInfo)
@@ -6637,9 +6605,6 @@ namespace UnitTest
             m_serializeContext->DisableRemoveReflection();
 
             m_serializeContext.reset();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }
@@ -6718,9 +6683,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_serializeContext = AZStd::make_unique<SerializeContext>();
             StringUtils::Reflect(m_serializeContext.get());
         }
@@ -6732,9 +6694,6 @@ namespace UnitTest
             m_serializeContext->DisableRemoveReflection();
 
             m_serializeContext.reset();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }
@@ -6799,9 +6758,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_serializeContext = AZStd::make_unique<SerializeContext>();
             AZ::Entity::Reflect(m_serializeContext.get());
             AZ::GenericClassInfo* genericClassInfo = SerializeGenericTypeInfo<FloatStringIntTuple>::GetGenericInfo();
@@ -6883,9 +6839,6 @@ namespace UnitTest
             m_serializeContext->DisableRemoveReflection();
 
             m_serializeContext.reset();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }
@@ -7036,9 +6989,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_serializeContext = AZStd::make_unique<SerializeContext>();
             AZ::GenericClassInfo* genericClassInfo = SerializeGenericTypeInfo<ZeroArray>::GetGenericInfo();
             if (genericClassInfo)
@@ -7088,9 +7038,6 @@ namespace UnitTest
             m_serializeContext->DisableRemoveReflection();
 
             m_serializeContext.reset();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }
@@ -7385,9 +7332,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_serializeContext = AZStd::make_unique<SerializeContext>();
             VectorWrapper::Reflect(m_serializeContext.get());
         }
@@ -7395,9 +7339,6 @@ namespace UnitTest
         void TearDown() override
         {
             m_serializeContext.reset();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }

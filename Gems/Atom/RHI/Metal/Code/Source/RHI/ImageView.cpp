@@ -102,12 +102,12 @@ namespace AZ
             {
                 if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
                 {
-                    m_readIndex = device.GetBindlessArgumentBuffer().AttachReadImage(m_memoryView.GetGpuAddress<id<MTLTexture>>());
+                    m_readIndex = device.GetBindlessArgumentBuffer().AttachReadImage(*this);
                 }
 
                 if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
                 {
-                    m_readWriteIndex = device.GetBindlessArgumentBuffer().AttachReadWriteImage(m_memoryView.GetGpuAddress<id<MTLTexture>>());
+                    m_readWriteIndex = device.GetBindlessArgumentBuffer().AttachReadWriteImage(*this);
                }
             }
             
@@ -125,35 +125,50 @@ namespace AZ
         {
             return m_memoryView;
         }
-    
-        void ImageView::ShutdownInternal()
+
+        void ImageView::ReleaseView()
         {
             auto& device = static_cast<Device&>(GetDevice());
-            
-            if(m_memoryView.GetMemory())
+            if (m_memoryView.GetMemory())
             {
                 device.QueueForRelease(m_memoryView);
                 m_memoryView = {};
-                if (m_readIndex != ~0u)
-                {
-                    device.GetBindlessArgumentBuffer().DetachReadImage(m_readIndex);
-                }
-
-                if (m_readWriteIndex != ~0u)
-                {
-                    device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
-                }
             }
             else
             {
-                AZ_Assert(GetImage().IsSwapChainTexture(), "Validation check to ensure that only swapchain textures have null imageview as they are special and dont need a view for metal backend");
+                AZ_Assert(GetImage().IsSwapChainTexture(), "Validation check to ensure that only swapchain textures have null ImageView as they are special and don't need a view for metal back-end");
             }
+        }
+
+        void ImageView::ReleaseBindlessIndices()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+
+            if (m_readIndex != ~0u)
+            {
+                device.GetBindlessArgumentBuffer().DetachReadImage(m_readIndex);
+            }
+            if (m_readWriteIndex != ~0u)
+            {
+                device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
+            }
+        }
+
+        void ImageView::ShutdownInternal()
+        {
+            ReleaseView();
+            ReleaseBindlessIndices();
         }
 
         RHI::ResultCode ImageView::InvalidateInternal()
         {
-            ShutdownInternal();
-            return InitInternal(GetDevice(), GetResource());
+            ReleaseView();
+            RHI::ResultCode initResult = InitInternal(GetDevice(), GetResource());
+            if (initResult != RHI::ResultCode::Success)
+            {
+                ReleaseBindlessIndices();
+            }
+            return initResult;
         }
         
         const RHI::ImageSubresourceRange& ImageView::GetImageSubresourceRange() const

@@ -21,12 +21,9 @@ PIPELINE_TIMEOUT = 60
 
 EMPTY_JSON = readJSON text: '{}'
 
-ENGINE_DEFAULT_ORGANIZATION_NAME = 'o3de'
 ENGINE_REPOSITORY_NAME = 'o3de'
 ENGINE_DEVELOPMENT_BRANCH = 'development'
-EXTRAS_DEFAULT_ORGANIZATION_NAME = 'o3de'
-EXTRAS_REPOSITORY_NAME = 'o3de-extras'
-EXTRAS_DEVELOPMENT_BRANCH = 'development'
+ENGINE_URL = "https://github.com/o3de/o3de.git"
 
 COMMIT_DOMAIN_NAME = ''
 COMMIT_ORGANIZATION_NAME = ''
@@ -48,26 +45,6 @@ def doit()
     echo "matcher.group(3) = COMMIT_REPOSITORY_NAME = ${COMMIT_REPOSITORY_NAME}"
 }
 doit()
-
-ENGINE_COMMIT = false
-EXTRAS_COMMIT = false
-ENGINE_URL = ''
-EXTRAS_URL = ''
-if(COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME) {
-    ENGINE_COMMIT = true
-    ENGINE_URL = scm.userRemoteConfigs.url[0]
-    EXTRAS_URL = "https://${COMMIT_DOMAIN_NAME}/${EXTRAS_DEFAULT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
-}
-else if(COMMIT_REPOSITORY_NAME == EXTRAS_REPOSITORY_NAME) {
-    EXTRAS_COMMIT = true
-    ENGINE_URL = "https://${COMMIT_DOMAIN_NAME}/${ENGINE_DEFAULT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
-    EXTRAS_URL = scm.userRemoteConfigs.url[0]
-} else {
-    //Error unknown repo
-    assert false : "Unknown repo"
-}
-echo "ENGINE_URL = ${ENGINE_URL}"
-echo "EXTRAS_URL = ${EXTRAS_URL}"
 
 // Branches with build snapshots
 BUILD_SNAPSHOTS = ['development', 'stabilization/2210']
@@ -91,7 +68,8 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Deletes the contents of the workspace and forces a complete pull.', name: 'CLEAN_WORKSPACE'),
     booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME'),
     booleanParam(defaultValue: false, description: 'Cancels AR immediately on any failure in the pipeline and marks it as failed', name: 'FAIL_FAST'),
-    booleanParam(defaultValue: false, description: 'Deletes the volume used for the workspace after the pipeline steps are completed.', name: 'DISCARD_VOLUME')
+    booleanParam(defaultValue: false, description: 'Deletes the volume used for the workspace after the pipeline steps are completed.', name: 'DISCARD_VOLUME'),
+    stringParam(defaultValue: 'AutomatedTesting', description: 'Name of the project to build.', name: 'PROJECT_NAME')
 ]
 
 def PlatformSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
@@ -283,10 +261,6 @@ def GetEngineRemoteConfig() {
     return GetRemoteConfig(ENGINE_REPOSITORY_NAME, ENGINE_URL)
 }
 
-def GetExtrasRemoteConfig() {
-    return GetRemoteConfig(EXTRAS_REPOSITORY_NAME, EXTRAS_URL)
-}
-
 def CheckoutEngineBootstrapScripts(branchName, userRemoteConfig = [GetEngineRemoteConfig()]) {
     checkout([$class: 'GitSCM',
         branches: [[name: "*/${branchName}"]],
@@ -309,6 +283,7 @@ def CheckoutEngineBootstrapScripts(branchName, userRemoteConfig = [GetEngineRemo
 }
 
 def CheckoutRepo(String branchName, userRemoteConfigs, boolean disableSubmodules = false, boolean setEnvCommit = false) {
+    echo "Checkout Repo:"
     if (fileExists('.git')) {
         // If the repository after checkout is locked, likely we took a snapshot while git was running,
         // to leave the repo in a usable state, garbage collect.
@@ -384,6 +359,160 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
     }
 }
 
+//this should assume it will always be executed from the workspace root
+def NoControlFile(repoName, processed_repos) {
+    echo "NoControlFile(reponame:${repoName}, processed_repos:${processed_repos})"
+
+    processed_repos.add(repoName)
+
+    def ext = ''
+    if(env.IS_UNIX) {
+        ext = '.sh'
+    }
+
+    //There is no control file so we must determine if this is a composite repo or a singular repo
+    dir(repo.NAME) {
+
+        //a singular object repo will have one of these o3de json files in the root
+        if(fileExists("engine.json")) {
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --engine-path ${workspace}/${repoName} || ver>nul", "Registering engine in ${workspace}/${repoName}")
+        }
+        else if(fileExists("project.json")) {
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --project-path ${workspace}/${repoName} || ver>nul", "Registering project in ${workspace}/${repoName}")
+        }
+        else if(fileExists("gem.json")) {
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --gem-path ${workspace}/${repoName} || ver>nul", "Registering gem in ${workspace}/${repoName}")
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${env.PROJECT_NAME} || ver>nul", "Enabling ${gemName} in ${env.PROJECT_NAME}")
+        }
+        else if(fileExists("template.json")) {
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --template-path ${workspace}/${repoName} || ver>nul", "Registering template in ${workspace}/${repoName}")
+        }
+        else if(fileExists("restricted.json")) {
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --restricted-path ${workspace}/${repoName} || ver>nul", "Registering restricted in ${workspace}/${repoName}")
+        }
+        else {
+            //A standard composite repo has the form
+            //root
+            //  Engines
+            //  Projects
+            //  Gems
+            //  Templates
+            //  Restricted
+            def found = false
+            if(fileExists("Engines")) {
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-engines-path ${workspace}/${repoName}/Engines || ver>nul", "Registering all engines in ${workspace}/${repoName}/Engines")
+                found = true
+            }
+            if(fileExists("Projects")) {
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-projects-path ${workspace}/${repoName}/Projects || ver>nul", "Registering all projects in ${workspace}/${repoName}/Projects")
+                found = true
+            }
+            if(fileExists("Gems")) {
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-gems-path ${workspace}/${repoName}/Gems || ver>nul", "Registering all gems in ${workspace}/${repoName}/Gems")
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${env.PROJECT_NAME} || ver>nul", "Enabling all gems in ${env.PROJECT_NAME}")
+                found = true
+            }
+            if(fileExists("Templates")) {
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-templates-path ${workspace}/${repoName}/Templates || ver>nul", "Registering all templates in ${workspace}/${repoName}/Templates")
+                found = true
+            }
+            if(fileExists("Restricted")) {
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-restricted-path ${workspace}/${repoName}/Restricted || ver>nul", "Registering all restricted in ${workspace}/${repoName}/Restricted")
+                found = true
+            }
+            if(!found) {
+                echo "WARNING: No objects found in repo ${repo.NAME}!"
+            }
+        }
+    }
+
+    return processed_repos
+}
+
+//this should assume it will always be executed from the workspace root
+def ExecuteControlFile(controlFile, repoName, processed_repos) {
+    echo "ExecuteControlFile(controlFile:${controlFile}, reponame:${repoName}, processed_repos:${processed_repos})"
+
+    processed_repos.add(repoName)
+
+    def ext = ''
+    if(env.IS_UNIX) {
+        ext = '.sh'
+    }
+
+    //register all the objects specified in this controlFile
+    if(controlFile.REGISTER_ENGINES) {
+        echo 'REGISTER_ENGINES'
+        controlFile.REGISTER_ENGINES.each { engineName ->
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --engine-path ${workspace}/${repoName}/${engineName} || ver>nul", "Registering engine in ${workspace}/${repoName}/${engineName}")
+        }
+    }
+    if(controlFile.REGISTER_PROJECTS) {
+        echo 'REGISTER_PROJECTS'
+        controlFile.REGISTER_PROJECTS.each { projectName ->
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --project-path ${workspace}/${repoName}/${projectName} || ver>nul", "Registering project in ${workspace}/${repoName}/${projectName}")
+        }
+    }
+    if(controlFile.REGISTER_GEMS) {
+        echo 'REGISTER_GEMS'
+        controlFile.REGISTER_GEMS.each { gemName ->
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --gem-path ${workspace}/${repoName}/${gemName} || ver>nul", "Registering gem in ${workspace}/${repoName}/${gemName}")
+        }
+    }
+    if(controlFile.REGISTER_TEMPLATES) {
+        echo 'REGISTER_TEMPLATES'
+        controlFile.REGISTER_TEMPLATES.each { templateName ->
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --template-path ${workspace}/${repoName}/${templateName} || ver>nul", "Registering template in ${workspace}/${repoName}/${templateName}")
+        }
+    }
+    if(controlFile.REGISTER_RESTRICTED) {
+        echo 'REGISTER_RESTRICTED'
+        controlFile.REGISTER_RESTRICTED.each { restrictedName ->
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --restricted-path ${workspace}/${repoName}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repoName}/${restrictedName}")
+        }
+    }
+    //enable all gems specified in the control file
+    if(controlFile.ENABLE_GEMS) {
+        echo 'ENABLE_GEMS'
+        controlFile.ENABLE_GEMS.each { gemName ->
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${env.PROJECT_NAME} || ver>nul", "Enabling ${workspace}/${repoName}/${gemName} for ${env.PROJECT_NAME}")
+        }
+    }
+
+    //check out all repos
+    if(controlFile.REPOS) {
+        echo 'REPOS'
+        controlFile.REPOS.each { repo ->
+            //stop cyclical repos
+            if(processed_repos.contains(repo.NAME)) {
+                echo "Already processed ${repo.NAME}"
+            }
+            else {
+                def repoControlFile = {}
+                def foundRepoControlFile = false
+                dir(repo.NAME) {
+                    CheckoutRepo(repo.BRANCH, [GetRemoteConfig(repo.NAME, repo.URL)])
+
+                    if(fileExists('.automatedtesting.json')) {
+                        echo "Loading ${repo.URL} .automatedtesting.json"
+                        repoControlFile = readJSON file: '.automatedtesting.json'
+                        foundRepoControlFile = true
+                    }
+                }
+
+                if(foundRepoControlFile) {
+                    //There is a control file, execute it
+                    processed_repos = ExecuteControlFile(repoControlFile, repo.NAME, processed_repos)
+                } else {
+                    processed_repos = NoControlFile(repo.NAME, processed_repos)
+                }
+            }
+        }
+    }
+
+    return processed_repos
+}
+
 def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false) {
     echo 'Starting pre-build common steps...'
 
@@ -401,29 +530,28 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
     // we need to cleanup. Once all branches take this relocation, we can remove this
     if(env.CLEAN_WORKSPACE?.toBoolean() || fileExists("${workspace}/.git")) {
         if(fileExists(workspace)) {
+            echo 'Clean workspace...'
             PlatformRmDir(workspace)
         }
     }
 
-    def workspace_retry = 5
     dir(workspace) {
-        while(!fileExists(workspace) || workspace_retry > 0) {
-            sleep 1 // sleep in case directory creation is slow
-            PlatformSh("ls ${workspace}", "Printing directory listing")
-            workspace_retry--
-        }
 
         // Add folder where we will store the 3rdParty downloads and packages
         dir('3rdParty') {
         }
 
-        //get the engine repo first and get python, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the engine repo
+        def processed_repos = []
+
+        //we always get the engine repo first and get python, setEnvCommit only if the repo is the engine repo
+        def engineAutomatedTestingControlFile = {}
+        def engineAutomatedTestingControlFileFound = false
         dir(ENGINE_REPOSITORY_NAME) {
             echo "Checkout Engine: ${ENGINE_URL}"
             def setEnvCommit = false
             def the_branch = branchName
             def remoteConfig = scm.userRemoteConfigs
-            if(ENGINE_COMMIT) {
+            if(COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME) {
                 //the pr is for the engine repo, so we want to use the passed in branch name and record the change id and change date
                 setEnvCommit = true
             } else {
@@ -449,41 +577,64 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 bat label: "Running ${platform} clean",
                     script: "${pipelineConfig.PYTHON_DIR}/python.cmd -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
             }
-        }
-        dir(EXTRAS_REPOSITORY_NAME) {
-            echo "Checkout Extras: ${EXTRAS_URL}"
-            def setEnvCommit = false
-            def the_branch = branchName
-            def remoteConfig = scm.userRemoteConfigs
-            if(EXTRAS_COMMIT) {
-                //the pr is for the engine repo, so we want to use the passed in branch name and record the change id and change date
-                setEnvCommit = true
-            } else {
-                //this pr is for another repo so we want to use the development branch for the engine and do not set the commit id or change date
-                the_branch = EXTRAS_DEVELOPMENT_BRANCH
-                remoteConfig = [GetExtrasRemoteConfig()]
-            }
 
-            //checkout the extras branch
-            CheckoutRepo(the_branch, remoteConfig, disableSubmodules, setEnvCommit)
+            //register the engine
+            def ext = ''
+            if(env.IS_UNIX) {
+                ext = '.sh'
+            }
+            PlatformSh("scripts/o3de${ext} register --this-engine", "Registering this engine, will generate the o3de_manifest")
+
+            //if the engine has an .automatedtesting.json execute it
+            if(fileExists('.automatedtesting.json')) {
+                echo 'Loading Engine .automatedtesting.json'
+                engineAutomatedTestingControlFile = readJSON file: '.automatedtesting.json'
+                engineAutomatedTestingControlFileFound = true
+            }
         }
-        //get any other external repos next, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the pr repo
-        pipelineConfig.EXTERNAL_REPOS.each { repo ->
-            dir(repo.REPOSITORY_NAME) {
-                echo "Checkout External Repo: ${repo.URL}"
-                def setEnvCommit = false
-                def the_branch = branchName
-                if(!ENGINE_COMMIT && !EXTRAS_COMMIT) {
-                    //the pr is for the this repo, so we want to use the passed in branch name and record the change id and change date
-                    setEnvCommit = true
-                } else {
-                    //this pr is for the another repo so we want to use the development branch for the this repo and do not set the commit id or change date
-                    the_branch = repo.DEVELOPMENT_BRANCH
+        if(engineAutomatedTestingControlFileFound) {
+            processed_repos = ExecuteControlFile(engineAutomatedTestingControlFile, ENGINE_REPOSITORY_NAME, processed_repos)
+        }
+
+        //lastly, if we are not committing to the engine repo then pull that repo in here
+        if(COMMIT_REPOSITORY_NAME != ENGINE_REPOSITORY_NAME) {
+            echo "Commit repo: ${scm.userRemoteConfigs.url[0]}"
+            def automatedTestingControlFile = {}
+            def automatedTestingControlFileFound = false
+            dir(COMMIT_REPOSITORY_NAME) {
+                CheckoutRepo(branchName, scm.userRemoteConfigs, disableSubmodules, true)
+
+                //if the repo has an .automatedtesting.json execute it
+                if(fileExists('.automatedtesting.json')) {
+                    echo "Loading ${COMMIT_REPOSITORY_NAME} .automatedtesting.json"
+                    automatedTestingControlFile = readJSON file: '.automatedtesting.json'
+                    automatedTestingControlFileFound = true
                 }
-
-                //checkout the branch
-                CheckoutRepo(the_branch, GetRemoteConfig(repo.REPOSITORY_NAME, repo.URL), disableSubmodules, setEnvCommit)
             }
+
+            if(automatedTestingControlFileFound) {
+                processed_repos = ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME, processed_repos)
+            }
+            else {
+                processed_repos = NoControlFile(COMMIT_REPOSITORY_NAME, processed_repos)
+            }
+        }
+
+        dir(ENGINE_REPOSITORY_NAME) {
+            def ext = ''
+            if(env.IS_UNIX) {
+                ext = '.sh'
+            }
+            PlatformSh("scripts/o3de${ext} get-registered --project-name ${projectName} > projectpath", "Get the project path")
+            def project_path = readFile file: 'projectpath'
+            PlatformRm('projectpath')
+            project_path = project_path.trim()
+            project_path = project_path.replace("\\", "/")
+            workspace_path = "${workspace}"
+            workspace_path = workspace_path.replace("\\", "/")
+            project_path = project_path.replace("${workspace}", "..")
+            env.CMAKE_LY_PROJECTS = project_path
+            echo "env.CMAKE_LY_PROJECTS = ${env.CMAKE_LY_PROJECTS}"
         }
     }
 }
@@ -500,179 +651,7 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
         command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type ${type}"
 
         dir(workspace) {
-            def extrasAutomatedTestingControlFile = {}
-            dir(EXTRAS_REPOSITORY_NAME) {
-                echo 'Loading Extras .automatedtesting.json'
-                extrasAutomatedTestingControlFile = readJSON file: '.automatedtesting.json'
-            }
             dir(ENGINE_REPOSITORY_NAME) {
-                //register the engine
-                PlatformSh("scripts/o3de${ext} register --this-engine", "Registering this engine, will generate the o3de_manifest")
-
-                //register all the objects specified in this repos .automatedtesting.json
-                extrasAutomatedTestingControlFile.REGISTER_ENGINES.each { engineName ->
-                    PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/${engineName} || ver>nul", "Registering engine in ${workspace}/${EXTRAS_REPOSITORY_NAME}/${engineName}")
-                }
-                extrasAutomatedTestingControlFile.REGISTER_PROJECTS.each { projectName ->
-                    PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/${projectName} || ver>nul", "Registering project in ${workspace}/${EXTRAS_REPOSITORY_NAME}/${projectName}")
-                }
-                extrasAutomatedTestingControlFile.REGISTER_GEMS.each { gemName ->
-                    PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/${gemName} || ver>nul", "Registering gem in ${workspace}/${EXTRAS_REPOSITORY_NAME}/${gemName}")
-                }
-                extrasAutomatedTestingControlFile.REGISTER_TEMPLATES.each { templateName ->
-                    PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/${templateName} || ver>nul", "Registering template in ${workspace}/${EXTRAS_REPOSITORY_NAME}/${templateName}")
-                }
-                extrasAutomatedTestingControlFile.REGISTER_RESTRICTED.each { restrictedName ->
-                    PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${EXTRAS_REPOSITORY_NAME}/${restrictedName}")
-                }
-                //enable all gems specified in the control file
-                extrasAutomatedTestingControlFile.ENABLE_GEMS.each { gemName ->
-                    PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/${gemName} --project-name AutomatedTesting || ver>nul", "Enabling ${workspace}/${EXTRAS_REPOSITORY_NAME}/${gemName} for AutomatedTesting")
-                }
-            }
-            pipelineConfig.EXTERNAL_REPOS.each { repo ->
-                //now each of these repos could be either a composite repo or a singular repo
-                //if it does not have a .automatedtesting.json control file, which is explicit in what objects to register
-                //and which gems to enable, we assume they want to register all objects and enable all gems
-                def foundControlFile = false
-                def automatedTestingControlFile = {}
-                def enginesExist = false
-                def projectsExist = false
-                def gemsExist = false
-                def templatesExist = false
-                def restrictedExist = false
-                def engineRepo = false
-                def projectRepo = false
-                def gemRepo = false
-                def templateRepo = false
-                def restrictedRepo = false
-
-                //see if this repo has supplied its own .automatedtesting.json to control what gets registered
-                //and enabled/tested
-                dir(repo.REPOSITORY_NAME) {
-                    if(fileExists('.automatedtesting.json')) {
-                        //There is a control file, so we will do only register and enable the gems it says to
-                        foundControlFile = true
-                        automatedTestingControlFile = readJSON file: '.automatedtesting.json'
-                    } else {
-                        //There is no control file so we must determine if this is a composite repo or a singular repo
-                        //A standard composite repo has the form
-                        //root
-                        //  Engines
-                        //  Projects
-                        //  Gems
-                        //  Templates
-                        //  Restricted
-                        allObjects = true
-                        if(fileExists("Engines")) {
-                            enginesExist = true
-                        }
-                        if(fileExists("Projects")) {
-                            projectsExist = true
-                        }
-                        if(fileExists("Gems")) {
-                            gemsExist = true
-                        }
-                        if(fileExists("Templates")) {
-                            templatesExist = true
-                        }
-                        if(fileExists("Restricted")) {
-                            restrictedExist = true
-                        }
-
-                        //If this is not a standard composite repo, then it wont have any composite dirs, then we know
-                        //its a singular object repo, see what kind it is.
-                        if(!enginesExist && !projectsExist && !gemsExist && !templatesExist && !restrictedExist)
-                        {
-                            if(fileExists("engine.json")) {
-                                engineRepo = true
-                            }
-                            if(fileExists("project.json")) {
-                                projectRepo = true
-                            }
-                            if(fileExists("gem.json")) {
-                                gemRepo = true
-                            }
-                            if(fileExists("template.json")) {
-                                templateRepo = true
-                            }
-                            if(fileExists("restricted.json")) {
-                                restrictedRepo = true
-                            }
-                        }
-                    }
-                }
-
-                dir(ENGINE_REPOSITORY_NAME) {
-                    if(foundControlFile) {
-                        //register all the objects specified in this repos .automatedtesting.json
-                        automatedTestingControlFile.REGISTER_ENGINES.each { engineName ->
-                            PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.REPOSITORY_NAME}/${engineName} || ver>nul", "Registering engine in ${workspace}/${repo.REPOSITORY_NAME}/${engineName}")
-                        }
-                        automatedTestingControlFile.REGISTER_PROJECTS.each { projectName ->
-                            PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.REPOSITORY_NAME}/${projectName} || ver>nul", "Registering project in ${workspace}/${repo.REPOSITORY_NAME}/${projectName}")
-                        }
-                        automatedTestingControlFile.REGISTER_GEMS.each { gemName ->
-                            PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.REPOSITORY_NAME}/${gemName} || ver>nul", "Registering gem in ${workspace}/${repo.REPOSITORY_NAME}/${gemName}")
-                        }
-                        automatedTestingControlFile.REGISTER_TEMPLATES.each { templateName ->
-                            PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.REPOSITORY_NAME}/${templateName} || ver>nul", "Registering template in ${workspace}/${repo.REPOSITORY_NAME}/${templateName}")
-                        }
-                        automatedTestingControlFile.REGISTER_RESTRICTED.each { restrictedName ->
-                            PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.REPOSITORY_NAME}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repo.REPOSITORY_NAME}/${restrictedName}")
-                        }
-                        //enable all gems specified in the control file
-                        automatedTestingControlFile.ENABLE_GEMS.each { gemName ->
-                            PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repo.REPOSITORY_NAME}/${gemName} --project-name AutomatedTesting || ver>nul", "Enabling ${gemName} in AutomatedTesting")
-                        }
-                    } else {
-                        //register all the objects in this repo
-                        //if it is a composite repo then use the --all-<type>-path to register all of them
-                        if(enginesExist) {
-                            PlatformSh("scripts/o3de${ext} register --all-engines-path ${workspace}/${repo.REPOSITORY_NAME}/Engines || ver>nul", "Registering all engines in ${workspace}/${repo.REPOSITORY_NAME}/Engines")
-                        }
-                        if(projectsExist) {
-                            PlatformSh("scripts/o3de${ext} register --all-projects-path ${workspace}/${repo.REPOSITORY_NAME}/Projects || ver>nul", "Registering all projects in ${workspace}/${repo.REPOSITORY_NAME}/Projects")
-                        }
-                        if(gemsExist) {
-                            PlatformSh("scripts/o3de${ext} register --all-gems-path ${workspace}/${repo.REPOSITORY_NAME}/Gems || ver>nul", "Registering all gems in ${workspace}/${repo.REPOSITORY_NAME}/Gems")
-                        }
-                        if(templatesExist) {
-                            PlatformSh("scripts/o3de${ext} register --all-templates-path ${workspace}/${repo.REPOSITORY_NAME}/Templates || ver>nul", "Registering all templates in ${workspace}/${repo.REPOSITORY_NAME}/Templates")
-                        }
-                        if(restrictedExist) {
-                            PlatformSh("scripts/o3de${ext} register --all-restricted-path ${workspace}/${repo.REPOSITORY_NAME}/Restricted || ver>nul", "Registering all restricted in ${workspace}/${repo.REPOSITORY_NAME}/Restricted")
-                        }
-                        //enable all gems in this repo
-                        if(gemsExist) {
-                            PlatformSh("scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repo.REPOSITORY_NAME}/Gems --project-name AutomatedTesting || ver>nul", "Enabling all gems in AutomatedTesting")
-                        }
-
-                        //if its a singular repo register it using the --<type>-path
-                        if(engineRepo) {
-                            PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.REPOSITORY_NAME} || ver>nul", "Registering engine in ${workspace}/${repo.REPOSITORY_NAME}")
-                        }
-                        if(projectRepo) {
-                            PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.REPOSITORY_NAME} || ver>nul", "Registering project in ${workspace}/${repo.REPOSITORY_NAME}")
-                        }
-                        if(gemRepo) {
-                            PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.REPOSITORY_NAME} || ver>nul", "Registering gem in ${workspace}/${repo.REPOSITORY_NAME}")
-                        }
-                        if(templateRepo) {
-                            PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.REPOSITORY_NAME} || ver>nul", "Registering template in ${workspace}/${repo.REPOSITORY_NAME}")
-                        }
-                        if(restrictedRepo) {
-                            PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.REPOSITORY_NAME} || ver>nul", "Registering restricted in ${workspace}/${repo.REPOSITORY_NAME}")
-                        }
-                        //if this singular repo is a gem enable it
-                        if(gemRepo) {
-                            PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repo.REPOSITORY_NAME} --project-name AutomatedTesting || ver>nul", "Enabling ${gemName} in AutomatedTesting")
-                        }
-                    }
-                }
-            }
-            dir(ENGINE_REPOSITORY_NAME) {
-                //build
                 PlatformSh(command, "Running ${platform} ${type}")
             }
         }
@@ -1033,7 +1012,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
     }
 }
 
-// Used in CreateBuildJobs() to preprocess the build_job steps to programically create
+// Used in CreateBuildJobs() to preprocess the build_job steps to programmatically create
 // Node sections with a set of steps that can run on that node.
 class PipeStepJobData {
     String m_nodeLabel = ""
@@ -1126,6 +1105,16 @@ try {
                         repositoryName = (repositoryUrl =~ /https:\/\/github.com\/(.*)\.git/)[0][1]
                         env.REPOSITORY_NAME = repositoryName
                         (projectName, pipelineName) = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
+
+                        //this can happen on the first run, the pipeline parameters are not yet defined
+                        if(!env.PROJECT_NAME) {
+                            env.PROJECT_NAME = 'AutomatedTesting'
+                        }
+
+                        if(env.PROJECT_NAME != projectName) {
+                            echo "Overriding ProjectName: ${projectName} -> ${env.PROJECT_NAME}"
+                            projectName = env.PROJECT_NAME
+                        }
                         env.PIPELINE_NAME = pipelineName
                         if(env.BRANCH_NAME) {
                             branchName = env.BRANCH_NAME
@@ -1296,7 +1285,8 @@ finally {
                     "recreate_volume": env.RECREATE_VOLUME,
                     "clean_output_directory": env.CLEAN_OUTPUT_DIRECTORY,
                     "clean_assets": env.CLEAN_ASSETS,
-                    "fail_fast": env.FAIL_FAST
+                    "fail_fast": env.FAIL_FAST,
+                    "project_name": env.PROJECT_NAME
                 ]
                 snsPublish(
                     topicArn: env.POST_AR_BUILD_SNS_TOPIC,

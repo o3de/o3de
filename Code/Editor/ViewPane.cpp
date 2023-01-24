@@ -32,7 +32,12 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 
 #include <AzQtComponents/Components/Style.h>
 
@@ -49,20 +54,6 @@
 #include "QtViewPaneManager.h"
 #include "EditorViewportWidget.h"
 #include <Editor/EditorViewportSettings.h>
-
-static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
-
-static constexpr AZStd::string_view ViewportDisplayInfoStateChangedUpdaterIdentifier = "o3de.updater.onViewportDisplayInfoStateChanged";
-
-static constexpr AZStd::string_view ViewportCameraMenuIdentifier = "o3de.menu.editor.viewport.camera";
-static constexpr AZStd::string_view ViewportHelpersMenuIdentifier = "o3de.menu.editor.viewport.helpers";
-static constexpr AZStd::string_view ViewportDebugInfoMenuIdentifier = "o3de.menu.editor.viewport.debugInfo";
-static constexpr AZStd::string_view ViewportSizeMenuIdentifier = "o3de.menu.editor.viewport.size";
-static constexpr AZStd::string_view ViewportSizeRatioMenuIdentifier = "o3de.menu.editor.viewport.size.ratio";
-static constexpr AZStd::string_view ViewportSizeResolutionMenuIdentifier = "o3de.menu.editor.viewport.size.resolution";
-static constexpr AZStd::string_view ViewportOptionsMenuIdentifier = "o3de.menu.editor.viewport.options";
-
-static constexpr AZStd::string_view ViewportTopToolBarIdentifier = "o3de.toolbar.viewport.top";
 
 static const std::pair<int, int> ViewportRatios[] = { { 16, 9 }, { 16, 10 }, { 4, 3 }, { 5, 4 } };
 static const size_t ViewportRatiosCount = sizeof(ViewportRatios) / sizeof(ViewportRatios[0]);
@@ -255,37 +246,37 @@ void CLayoutViewPane::OnMenuRegistrationHook()
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "Viewport Camera Settings";
-        m_menuManagerInterface->RegisterMenu(ViewportCameraMenuIdentifier, menuProperties);
+        m_menuManagerInterface->RegisterMenu(EditorMenu::ViewportCameraMenuIdentifier, menuProperties);
     }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "Viewport Debug Info";
-        m_menuManagerInterface->RegisterMenu(ViewportDebugInfoMenuIdentifier, menuProperties);
+        m_menuManagerInterface->RegisterMenu(EditorMenu::ViewportDebugInfoMenuIdentifier, menuProperties);
     }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "Viewport Helpers";
-        m_menuManagerInterface->RegisterMenu(ViewportHelpersMenuIdentifier, menuProperties);
+        m_menuManagerInterface->RegisterMenu(EditorMenu::ViewportHelpersMenuIdentifier, menuProperties);
     }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "Viewport Size";
-        m_menuManagerInterface->RegisterMenu(ViewportSizeMenuIdentifier, menuProperties);
+        m_menuManagerInterface->RegisterMenu(EditorMenu::ViewportSizeMenuIdentifier, menuProperties);
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Ratio";
-            m_menuManagerInterface->RegisterMenu(ViewportSizeRatioMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorMenu::ViewportSizeRatioMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Resolution";
-            m_menuManagerInterface->RegisterMenu(ViewportSizeResolutionMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorMenu::ViewportSizeResolutionMenuIdentifier, menuProperties);
         }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "Viewport Options";
-        m_menuManagerInterface->RegisterMenu(ViewportOptionsMenuIdentifier, menuProperties);
+        m_menuManagerInterface->RegisterMenu(EditorMenu::ViewportOptionsMenuIdentifier, menuProperties);
     }
 }
 
@@ -294,10 +285,10 @@ void CLayoutViewPane::OnToolBarRegistrationHook()
     // Register top viewport toolbar.
     AzToolsFramework::ToolBarProperties toolBarProperties;
     toolBarProperties.m_name = "Viewport ToolBar";
-    m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.viewport.top", toolBarProperties);
+    m_toolBarManagerInterface->RegisterToolBar(EditorToolBar::ViewportTopToolBarIdentifier, toolBarProperties);
 
     // Add toolbar to top of viewport.
-    QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.viewport.top");
+    QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar(EditorToolBar::ViewportTopToolBarIdentifier);
     addToolBar(Qt::TopToolBarArea, toolBar);
 }
 
@@ -311,7 +302,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_iconPath = ":/Menu/resolution.svg";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -328,7 +319,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_iconPath = ":/Menu/menu.svg";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -345,7 +336,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_iconPath = ":/Menu/debug.svg";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [viewportTitleDlg = m_viewportTitleDlg]
@@ -362,7 +353,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
             }
         );
 
-        m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.normal";
@@ -371,7 +362,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Debug Information";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [viewportTitleDlg = m_viewportTitleDlg]
@@ -388,7 +379,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
             }
         );
 
-        m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(
+            EditorActionUpdater::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.full";
@@ -397,7 +389,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Debug Information";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [viewportTitleDlg = m_viewportTitleDlg]
@@ -414,7 +406,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
             }
         );
 
-        m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(
+            EditorActionUpdater::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.compact";
@@ -423,7 +416,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Debug Information";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [viewportTitleDlg = m_viewportTitleDlg]
@@ -440,7 +433,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
             }
         );
 
-        m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(
+            EditorActionUpdater::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.none";
@@ -449,7 +443,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Debug Information";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [viewportTitleDlg = m_viewportTitleDlg]
@@ -465,7 +459,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
                 return currentState == AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
             });
 
-        m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(
+            EditorActionUpdater::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
 
     // Viewport Size
@@ -481,7 +476,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Size Ratio";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [this, w = width, h = height]
@@ -497,7 +492,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Size Ratio";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [&]
@@ -530,7 +525,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Size Resolution";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [&, w = width, h = height]
@@ -546,7 +541,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         actionProperties.m_category = "Viewport Size Resolution";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier,
+            EditorActionContext::MainWindowContextIdentifier,
             actionIdentifier,
             actionProperties,
             [this]
@@ -566,30 +561,31 @@ void CLayoutViewPane::OnMenuBindingHook()
 {
     // Camera
     {
-        m_menuManagerInterface->AddWidgetToMenu(ViewportCameraMenuIdentifier, "o3de.widgetAction.viewport.fieldOfView", 100);
-        m_menuManagerInterface->AddActionToMenu(ViewportCameraMenuIdentifier, "o3de.action.view.goToPosition", 200);
-        m_menuManagerInterface->AddSeparatorToMenu(ViewportCameraMenuIdentifier, 300);
-        m_menuManagerInterface->AddWidgetToMenu(ViewportCameraMenuIdentifier, "o3de.widgetAction.viewport.cameraSpeedScale", 400);
+        m_menuManagerInterface->AddWidgetToMenu(EditorMenu::ViewportCameraMenuIdentifier, "o3de.widgetAction.viewport.fieldOfView", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportCameraMenuIdentifier, "o3de.action.view.goToPosition", 200);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::ViewportCameraMenuIdentifier, 300);
+        m_menuManagerInterface->AddWidgetToMenu(
+            EditorMenu::ViewportCameraMenuIdentifier, "o3de.widgetAction.viewport.cameraSpeedScale", 400);
     }
 
     // Debug Info
     {
-        m_menuManagerInterface->AddActionToMenu(ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.normal", 100);
-        m_menuManagerInterface->AddActionToMenu(ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.full", 200);
-        m_menuManagerInterface->AddActionToMenu(ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.compact", 300);
-        m_menuManagerInterface->AddActionToMenu(ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.none", 400);
+        m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.normal", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.full", 200);
+        m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.compact", 300);
+        m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.none", 400);
     }
 
     // Helpers
     {
-        m_menuManagerInterface->AddActionToMenu(ViewportHelpersMenuIdentifier, "o3de.action.view.toggleHelpers", 100);
-        m_menuManagerInterface->AddActionToMenu(ViewportHelpersMenuIdentifier, "o3de.action.view.toggleIcons", 200);
-        m_menuManagerInterface->AddActionToMenu(ViewportHelpersMenuIdentifier, "o3de.action.view.toggleSelectedEntityHelpers", 300);
+        m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleHelpers", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleIcons", 200);
+        m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleSelectedEntityHelpers", 300);
     }
 
     // Size
     {
-        m_menuManagerInterface->AddSubMenuToMenu(ViewportSizeMenuIdentifier, ViewportSizeRatioMenuIdentifier, 100);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::ViewportSizeMenuIdentifier, EditorMenu::ViewportSizeRatioMenuIdentifier, 100);
         {
             for (size_t i = 0; i < ViewportRatiosCount; ++i)
             {
@@ -598,17 +594,17 @@ void CLayoutViewPane::OnMenuBindingHook()
                 AZStd::string actionIdentifier = AZStd::string::format("o3de.action.viewport.size.ratio[%i:%i]", width, height);
 
                 m_menuManagerInterface->AddActionToMenu(
-                    ViewportSizeRatioMenuIdentifier, actionIdentifier, SortKeySpacing * (aznumeric_cast<int>(i) + 1));
+                    EditorMenu::ViewportSizeRatioMenuIdentifier, actionIdentifier, SortKeySpacing * (aznumeric_cast<int>(i) + 1));
             }
             
             m_menuManagerInterface->AddSeparatorToMenu(
-                ViewportSizeRatioMenuIdentifier, SortKeySpacing * (aznumeric_cast<int>(ViewportRatiosCount) + 1));
+                EditorMenu::ViewportSizeRatioMenuIdentifier, SortKeySpacing * (aznumeric_cast<int>(ViewportRatiosCount) + 1));
             m_menuManagerInterface->AddActionToMenu(
-                ViewportSizeRatioMenuIdentifier,
+                EditorMenu::ViewportSizeRatioMenuIdentifier,
                 "o3de.action.viewport.size.ratio.custom",
                 SortKeySpacing * (aznumeric_cast<int>(ViewportRatiosCount) + 2));
         }
-        m_menuManagerInterface->AddSubMenuToMenu(ViewportSizeMenuIdentifier, ViewportSizeResolutionMenuIdentifier, 200);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::ViewportSizeMenuIdentifier, EditorMenu::ViewportSizeResolutionMenuIdentifier, 200);
         {
             for (size_t i = 0; i < ViewportResolutionsCount; ++i)
             {
@@ -617,13 +613,13 @@ void CLayoutViewPane::OnMenuBindingHook()
                 AZStd::string actionIdentifier = AZStd::string::format("o3de.action.viewport.size.resolution[%i:%i]", width, height);
 
                 m_menuManagerInterface->AddActionToMenu(
-                    ViewportSizeResolutionMenuIdentifier, actionIdentifier, SortKeySpacing * (aznumeric_cast<int>(i) + 1));
+                    EditorMenu::ViewportSizeResolutionMenuIdentifier, actionIdentifier, SortKeySpacing * (aznumeric_cast<int>(i) + 1));
             }
 
             m_menuManagerInterface->AddSeparatorToMenu(
-                ViewportSizeResolutionMenuIdentifier, SortKeySpacing * (aznumeric_cast<int>(ViewportResolutionsCount) + 1));
+                EditorMenu::ViewportSizeResolutionMenuIdentifier, SortKeySpacing * (aznumeric_cast<int>(ViewportResolutionsCount) + 1));
             m_menuManagerInterface->AddActionToMenu(
-                ViewportSizeResolutionMenuIdentifier,
+                EditorMenu::ViewportSizeResolutionMenuIdentifier,
                 "o3de.action.viewport.size.resolution.custom",
                 SortKeySpacing * (aznumeric_cast<int>(ViewportResolutionsCount) + 2));
         }
@@ -631,29 +627,30 @@ void CLayoutViewPane::OnMenuBindingHook()
 
     // Options
     {
-        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleGridSnapping", 300);
-        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleShowingGrid", 400);
-        m_menuManagerInterface->AddWidgetToMenu(ViewportOptionsMenuIdentifier, "o3de.widgetAction.viewport.gridSnappingSize", 500);
-        m_menuManagerInterface->AddSeparatorToMenu(ViewportOptionsMenuIdentifier, 600);
-        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleAngleSnapping", 700);
-        m_menuManagerInterface->AddWidgetToMenu(ViewportOptionsMenuIdentifier, "o3de.widgetAction.viewport.angleSnappingSize", 800);
+        m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleGridSnapping", 300);
+        m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleShowingGrid", 400);
+        m_menuManagerInterface->AddWidgetToMenu(EditorMenu::ViewportOptionsMenuIdentifier, "o3de.widgetAction.viewport.gridSnappingSize", 500);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::ViewportOptionsMenuIdentifier, 600);
+        m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleAngleSnapping", 700);
+        m_menuManagerInterface->AddWidgetToMenu(EditorMenu::ViewportOptionsMenuIdentifier, "o3de.widgetAction.viewport.angleSnappingSize", 800);
     }
 }
 
 void CLayoutViewPane::OnToolBarBindingHook()
 {
-    m_toolBarManagerInterface->AddWidgetToToolBar(ViewportTopToolBarIdentifier, "o3de.widgetAction.expander", 300);
-    m_toolBarManagerInterface->AddWidgetToToolBar(ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.editVisualMode", 400);
+    m_toolBarManagerInterface->AddWidgetToToolBar(EditorToolBar::ViewportTopToolBarIdentifier, "o3de.widgetAction.expander", 300);
+    m_toolBarManagerInterface->AddWidgetToToolBar(
+        EditorToolBar::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.editVisualMode", 400);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-        ViewportTopToolBarIdentifier, "o3de.action.view.goToPosition", ViewportCameraMenuIdentifier, 500);
+        EditorToolBar::ViewportTopToolBarIdentifier, "o3de.action.view.goToPosition", EditorMenu::ViewportCameraMenuIdentifier, 500);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-        ViewportTopToolBarIdentifier, "o3de.action.viewport.info.toggle", ViewportDebugInfoMenuIdentifier, 600);
+        EditorToolBar::ViewportTopToolBarIdentifier, "o3de.action.viewport.info.toggle", EditorMenu::ViewportDebugInfoMenuIdentifier, 600);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-        ViewportTopToolBarIdentifier, "o3de.action.view.toggleHelpers", ViewportHelpersMenuIdentifier, 700);
+        EditorToolBar::ViewportTopToolBarIdentifier, "o3de.action.view.toggleHelpers", EditorMenu::ViewportHelpersMenuIdentifier, 700);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-        ViewportTopToolBarIdentifier, "o3de.action.viewport.resizeIcon", ViewportSizeMenuIdentifier, 800);
+        EditorToolBar::ViewportTopToolBarIdentifier, "o3de.action.viewport.resizeIcon", EditorMenu::ViewportSizeMenuIdentifier, 800);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-        ViewportTopToolBarIdentifier, "o3de.action.viewport.menuIcon", ViewportOptionsMenuIdentifier, 900);
+        EditorToolBar::ViewportTopToolBarIdentifier, "o3de.action.viewport.menuIcon", EditorMenu::ViewportOptionsMenuIdentifier, 900);
 }
 
 //////////////////////////////////////////////////////////////////////////

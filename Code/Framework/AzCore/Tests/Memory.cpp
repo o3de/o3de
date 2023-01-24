@@ -119,8 +119,6 @@ namespace UnitTest
             // On windows we don't require to preallocate memory to function.
             // On most consoles we do!
             {
-                AllocatorInstance<SystemAllocator>::Create();
-
                 IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
 
                 for (int i = 0; i < 100; ++i)
@@ -154,14 +152,10 @@ namespace UnitTest
                         m_threads[i].join();
                     }
                 }
-                //////////////////////////////////////////////////////////////////////////
-
-                AllocatorInstance<SystemAllocator>::Destroy();
             }
 #endif
             memset(address, 0, AZ_ARRAY_SIZE(address) * sizeof(void*));
 
-            AllocatorInstance<SystemAllocator>::Create();
             IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
 
             for (int i = 0; i < 100; ++i)
@@ -287,8 +281,6 @@ namespace UnitTest
             //AZStd::chrono::microseconds exTime = AZStd::chrono::steady_clock::now() - startTime;
             //AZ_Printf("UnitTest::SystemAllocatorTest::mspaces","Time: %d Ms\n",exTime.count());
             //////////////////////////////////////////////////////////////////////////
-
-            AllocatorInstance<SystemAllocator>::Destroy();
         }
     };
 
@@ -302,21 +294,6 @@ namespace UnitTest
     {
     protected:
     public:
-        void SetUp() override
-        {
-            MemoryTrackingFixture::SetUp();
-
-            AllocatorInstance<SystemAllocator>::Create();
-            AllocatorInstance<PoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<SystemAllocator>::Destroy();
-            MemoryTrackingFixture::TearDown();
-        }
-
         void run()
         {
             IAllocator& poolAllocator = AllocatorInstance<PoolAllocator>::Get();
@@ -456,17 +433,6 @@ namespace UnitTest
             {
                 m_desc[i].m_stackSize = m_threadStackSize;
             }
-
-            AllocatorInstance<SystemAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<SystemAllocator>::Destroy();
-
-            MemoryTrackingFixture::TearDown();
         }
 
         void AllocDeallocFunc()
@@ -683,9 +649,6 @@ namespace UnitTest
             }
             //////////////////////////////////////////////////////////////////////////
 
-            // Our pools will support only 512 byte allocations
-            AZ::AllocatorInstance<MyThreadPoolAllocator>::Create();
-
             void* pooled512 = AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().Allocate(512, 512);
             ASSERT_TRUE(pooled512);
             AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().DeAllocate(pooled512);
@@ -694,8 +657,6 @@ namespace UnitTest
             void* pooled2048 = AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().Allocate(2048, 2048);
             (void)pooled2048;
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-
-            AZ::AllocatorInstance<MyThreadPoolAllocator>::Destroy();
         }
     };
 
@@ -711,21 +672,6 @@ namespace UnitTest
         : public MemoryTrackingFixture
     {
     public:
-        void SetUp() override
-        {
-            MemoryTrackingFixture::SetUp();
-
-            AllocatorInstance<SystemAllocator>::Create();
-            AllocatorInstance<PoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<SystemAllocator>::Destroy();
-            MemoryTrackingFixture::TearDown();
-        }
-
         void run()
         {
             IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
@@ -813,22 +759,6 @@ namespace UnitTest
             MyDerivedClass() = default;
         };
     public:
-        void SetUp() override
-        {
-            MemoryTrackingFixture::SetUp();
-
-            AllocatorInstance<SystemAllocator>::Create();
-            AllocatorInstance<PoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<SystemAllocator>::Destroy();
-
-            MemoryTrackingFixture::TearDown();
-        }
-
         void run()
         {
             IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
@@ -940,7 +870,6 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorInstance<SystemAllocator>::Create();
             tr = (test_record*)AZ_OS_MALLOC(sizeof(test_record)*N, 8);
             MAX_SIZE = 4096;
         }
@@ -948,7 +877,6 @@ namespace UnitTest
         void TearDown() override
         {
             AZ_OS_FREE(tr);
-            AllocatorInstance<SystemAllocator>::Destroy();
         }
 
         //////////////////////////////////////////////////////////////////////////

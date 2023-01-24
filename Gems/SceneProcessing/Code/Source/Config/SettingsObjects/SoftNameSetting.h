@@ -43,6 +43,8 @@ namespace AZ
 
             virtual bool IsVirtualType(const SceneAPI::Containers::Scene& scene, SceneAPI::Containers::SceneGraph::NodeIndex node) const = 0;
 
+            virtual const AZ::Uuid GetTypeId() const = 0;
+
             static void Reflect(ReflectContext* context);
 
         protected:

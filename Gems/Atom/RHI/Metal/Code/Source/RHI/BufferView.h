@@ -51,7 +51,10 @@ namespace AZ
             RHI::ResultCode InvalidateInternal() override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////
-                   
+
+            void ReleaseViews();
+            void ReleaseBindlessIndices();
+
             //Buffer view
             MemoryView m_memoryView;
             
@@ -59,8 +62,8 @@ namespace AZ
             MemoryView m_imageBufferMemoryView;
             
             //! Index related to the position of the read and readwrite view within the global Bindless Argument Buffer
-            uint32_t m_readIndex = ~0u;
-            uint32_t m_readWriteIndex = ~0u;
+            uint32_t m_readIndex = InvalidBindlessIndex;
+            uint32_t m_readWriteIndex = InvalidBindlessIndex;
         };
     }
 }

@@ -267,7 +267,17 @@ namespace AZ
             D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc;
             ConvertImageView(image, imageViewDescriptor, viewDesc);
             m_device->CreateShaderResourceView(image.GetMemoryView().GetMemory(), &viewDesc, descriptorHandle);
-            staticView = AllocateStaticDescriptor(descriptorHandle);
+
+            // Only allocate if the index is already null, otherwise just copy the descriptor onto the old index.
+            if (staticView.m_index == DescriptorHandle::NullIndex)
+            {
+                staticView = AllocateStaticDescriptor(descriptorHandle);
+            }
+            else
+            {
+                m_device->CopyDescriptorsSimple(
+                    1, m_staticPool.GetCpuPlatformHandle(staticView), descriptorHandle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+            }
         }
 
         void DescriptorContext::CreateUnorderedAccessView(
@@ -310,7 +320,16 @@ namespace AZ
                 }
             }
             CopyDescriptor(unorderedAccessViewClear, unorderedAccessView);
-            staticView = AllocateStaticDescriptor(unorderedAccessDescriptor);
+
+            if (staticView.m_index == DescriptorHandle::NullIndex)
+            {
+                staticView = AllocateStaticDescriptor(unorderedAccessDescriptor);
+            }
+            else
+            {
+                m_device->CopyDescriptorsSimple(
+                    1, m_staticPool.GetCpuPlatformHandle(staticView), unorderedAccessDescriptor, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+            }
         }
 
         void DescriptorContext::CreateRenderTargetView(
