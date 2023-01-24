@@ -408,6 +408,7 @@ namespace PhysX
         EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
         EditorColliderValidationRequestBus::Handler::BusConnect(GetEntityId());
         AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
+        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
             [this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale); });
         AZ::NonUniformScaleRequestBus::Event(GetEntityId(), &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
@@ -455,6 +456,7 @@ namespace PhysX
         AZ::Data::AssetBus::Handler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
         EditorColliderValidationRequestBus::Handler::BusDisconnect();
         EditorColliderComponentRequestBus::Handler::BusDisconnect();
         AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
@@ -1585,6 +1587,34 @@ namespace PhysX
         }
 
         return AZ::Aabb::CreateNull();
+    }
+
+    bool EditorColliderComponent::SupportsEditorRayIntersect()
+    {
+        return true;
+    }
+
+    AZ::Aabb EditorColliderComponent::GetEditorSelectionBoundsViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
+    {
+        return GetWorldBounds();
+    }
+
+    bool EditorColliderComponent::EditorSelectionIntersectRayViewport(
+        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    {
+        AzPhysics::RayCastRequest request;
+        request.m_direction = dir;
+        request.m_distance = distance;
+        request.m_start = src;
+
+        auto hit = RayCast(request);
+        if (hit)
+        {
+            distance = hit.m_distance;
+            return true;
+        }
+
+        return false;
     }
 
     void EditorColliderComponentDescriptor::Reflect(AZ::ReflectContext* reflection) const
