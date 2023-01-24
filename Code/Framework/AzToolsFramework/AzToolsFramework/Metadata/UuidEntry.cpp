@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <AzToolsFramework/Metadata/UuidEntry.h>
 
 namespace AzToolsFramework
