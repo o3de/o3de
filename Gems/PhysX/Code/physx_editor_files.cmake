@@ -73,8 +73,6 @@ set(FILES
     Editor/CollisionFilteringWidget.cpp
     Editor/PropertyTypes.h
     Editor/PropertyTypes.cpp
-    Editor/EditorClassConverters.cpp
-    Editor/EditorClassConverters.h
     Editor/PvdWidget.h
     Editor/PvdWidget.cpp
     Editor/DocumentationLinkWidget.h
@@ -106,6 +104,11 @@ set(FILES
     Editor/EditorJointConfiguration.h
     Editor/EditorViewportEntityPicker.cpp
     Editor/EditorViewportEntityPicker.h
+    Editor/KinematicWidget.cpp
+    Editor/KinematicWidget.h
+    Editor/KinematicDescriptionDialog.cpp
+    Editor/KinematicDescriptionDialog.h
+    Editor/KinematicDescriptionDialog.ui
 
     Editor/Source/Components/EditorSystemComponent.h
     Editor/Source/Components/EditorSystemComponent.cpp

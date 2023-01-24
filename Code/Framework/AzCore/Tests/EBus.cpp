@@ -1763,8 +1763,6 @@ namespace UnitTest
         using namespace QueueMessageTest;
 
         // Setup
-        AllocatorInstance<PoolAllocator>::Create();
-        AllocatorInstance<ThreadPoolAllocator>::Create();
         JobManagerDesc jobDesc;
         JobManagerThreadDesc threadDesc;
         jobDesc.m_workerThreads.push_back(threadDesc);
@@ -1818,8 +1816,6 @@ namespace UnitTest
         JobContext::SetGlobalContext(nullptr);
         delete m_jobContext;
         delete m_jobManager;
-        AllocatorInstance<ThreadPoolAllocator>::Destroy();
-        AllocatorInstance<PoolAllocator>::Destroy();
     }
 
     class QueueEbusTest
@@ -3650,7 +3646,10 @@ namespace UnitTest
             DelayUnlockHandler connectHandler;
             waitHandler.m_connectMethod = [&connectHandler]()
             {
-                constexpr int waitMsMax = 100;
+                // Check that a connection for the connectHandler has occured
+                // within a 1 second, which should be more than enough
+                // time for a connection to occur even when the system is under load
+                constexpr int waitMsMax = 1000;
                 auto startTime = AZStd::chrono::steady_clock::now();
                 auto endTime = startTime + AZStd::chrono::milliseconds(waitMsMax);
 
@@ -3664,10 +3663,8 @@ namespace UnitTest
             };
             AZStd::thread connectThread([&connectHandler]()
             {
-
                 connectHandler.BusConnect();
-            }
-            );
+            });
             waitHandler.BusConnect();
             connectThread.join();
             EXPECT_EQ(connectHandler.m_didConnect, true);

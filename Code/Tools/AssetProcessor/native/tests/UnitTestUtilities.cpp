@@ -145,4 +145,94 @@ namespace UnitTests
             m_matcherBuilderPatterns.push_back(patternMatcher);
         }
     }
-}
+
+    TraceBusErrorChecker::TraceBusErrorChecker()
+    {
+        AZ::Debug::TraceMessageBus::Handler::BusConnect();
+    }
+
+    TraceBusErrorChecker::~TraceBusErrorChecker()
+    {
+        EXPECT_FALSE(m_expectingFailure);
+        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
+    }
+
+    void TraceBusErrorChecker::Begin()
+    {
+        m_expectingFailure = true;
+        m_suppressedMessages.clear();
+    }
+
+    void TraceBusErrorChecker::End(int expectedCount)
+    {
+        m_expectingFailure = false;
+
+        if (expectedCount != m_suppressedMessages.size())
+        {
+            for (const auto& message : m_suppressedMessages)
+            {
+                AZ::Debug::Trace::Instance().Output("", message.c_str());
+            }
+
+            EXPECT_EQ(expectedCount, m_suppressedMessages.size());
+        }
+    }
+
+    bool TraceBusErrorChecker::OnPreAssert(
+        [[maybe_unused]] const char* fileName,
+        [[maybe_unused]] int line,
+        [[maybe_unused]] const char* func,
+        [[maybe_unused]] const char* message)
+    {
+        EXPECT_TRUE(m_expectingFailure) << "Unexpected assert occurred";
+
+        m_suppressedMessages.push_back(AZStd::string::format("%s(%d): %s - %s\n", fileName, line, func, message));
+
+        return m_expectingFailure;
+    }
+
+    bool TraceBusErrorChecker::OnPreError(
+        [[maybe_unused]] const char* window,
+        [[maybe_unused]] const char* fileName,
+        [[maybe_unused]] int line,
+        [[maybe_unused]] const char* func,
+        [[maybe_unused]] const char* message)
+    {
+        EXPECT_TRUE(m_expectingFailure) << "Unexpected error occurred";
+
+        m_suppressedMessages.push_back(AZStd::string::format("%s(%d): %s - %s\n", fileName, line, func, message));
+
+        return m_expectingFailure;
+    }
+
+    bool TraceBusErrorChecker::OnPreWarning(
+        [[maybe_unused]] const char* window,
+        [[maybe_unused]] const char* fileName,
+        [[maybe_unused]] int line,
+        [[maybe_unused]] const char* func,
+        [[maybe_unused]] const char* message)
+    {
+        EXPECT_TRUE(m_expectingFailure) << "Unexpected warning occurred";
+
+        m_suppressedMessages.push_back(AZStd::string::format("%s(%d): %s - %s\n", fileName, line, func, message));
+
+        return m_expectingFailure;
+    }
+
+    void MockFileStateCache::RegisterForDeleteEvent(AZ::Event<AssetProcessor::FileStateInfo>::Handler& handler)
+    {
+        handler.Connect(m_deleteEvent);
+    }
+
+    bool MockFileStateCache::GetHash(const QString& absolutePath, FileHash* foundHash)
+    {
+        if (!Exists(absolutePath))
+        {
+            return false;
+        }
+
+        *foundHash = AssetUtilities::GetFileHash(absolutePath.toUtf8().constData(), true);
+
+        return true;
+    }
+} // namespace UnitTests

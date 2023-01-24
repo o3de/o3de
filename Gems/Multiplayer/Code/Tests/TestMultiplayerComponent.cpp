@@ -7,6 +7,7 @@
 #include <Tests/TestMultiplayerComponent.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 
 namespace MultiplayerTest
 {
@@ -33,6 +34,7 @@ namespace MultiplayerTest
 
     void TestMultiplayerComponent::OnInit()
     {
+        m_netBindComponent->AddNetworkActivatedEventHandler(m_networkActivatedHandler);
     }
 
     void TestMultiplayerComponent::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -40,6 +42,10 @@ namespace MultiplayerTest
     }
 
     void TestMultiplayerComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+
+    void TestMultiplayerComponent::OnNetworkActivated()
     {
     }
 

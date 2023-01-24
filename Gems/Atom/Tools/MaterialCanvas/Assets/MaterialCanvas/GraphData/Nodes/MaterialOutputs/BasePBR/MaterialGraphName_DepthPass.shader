@@ -12,10 +12,6 @@
         {
           "name": "MainVS",
           "type": "Vertex"
-        },
-        {
-          "name": "MainPS",
-          "type": "Fragment"
         }
       ]
     },

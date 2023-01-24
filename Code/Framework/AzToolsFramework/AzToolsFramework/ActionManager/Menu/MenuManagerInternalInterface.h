@@ -42,6 +42,11 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual MenuManagerOperationResult QueueRefreshForMenusContainingAction(const AZStd::string& actionIdentifier) = 0;
 
+        //! Queues up all menus containing the sub-menu for a refresh at the end of this tick.
+        //! @param subMenuIdentifier The identifier for the sub-menu triggering the refresh for menus containing it.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult QueueRefreshForMenusContainingSubMenu(const AZStd::string& subMenuIdentifier) = 0;
+
         //! Queues up a menuBar for a refresh at the end of this tick.
         //! @param menuIdentifier The identifier for the menuBar to refresh.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.

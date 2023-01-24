@@ -74,9 +74,11 @@
     <file>img/16x16/deploy.png</file>
     <file>img/16x16/Follow_terrain.png</file>
     <file>img/16x16/Freeze.png</file>
+    <file>img/16x16/gravity.svg</file>
     <file>img/16x16/Grid.png</file>
     <file>img/16x16/Helpers.png</file>
     <file>img/16x16/Helpers@2x.png</file>
+    <file>img/16x16/impact.svg</file>
     <file>img/16x16/info.png</file>
     <file>img/16x16/info@2x.png</file>
     <file>img/16x16/layer_editor.png</file>
@@ -86,6 +88,8 @@
     <file>img/16x16/Material.png</file>
     <file>img/16x16/Measure.png</file>
     <file>img/16x16/Move.png</file>
+    <file>img/16x16/move_manually.svg</file>
+    <file>img/16x16/move_with_code.svg</file>
     <file>img/16x16/Play.png</file>
     <file>img/16x16/Object_follow_terrain.png</file>
     <file>img/16x16/Scale.png</file>

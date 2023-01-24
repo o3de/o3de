@@ -26,7 +26,7 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
 {
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
-    float bitangent = cross(normal, (float3)tangent);
+    float3 bitangent = cross(normal, (float3)tangent);
 
     #define O3DE_MC_POSITION position
     #define O3DE_MC_UV(index) (index == 0 ? uv0 : uv1);
