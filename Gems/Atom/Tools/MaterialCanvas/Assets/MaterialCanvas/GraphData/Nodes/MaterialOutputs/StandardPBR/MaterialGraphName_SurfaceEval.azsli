@@ -79,7 +79,7 @@ Surface EvaluateSurface_MaterialGraphName(
     surface.specularOcclusion = inSpecularOcclusion;
     surface.opacityAffectsSpecularFactor = o_opacity_affects_specular_factor;
 
-    CheckClipping(surface.alpha, 0.0);
+    CheckClipping(surface.alpha, 0.5);
 
     // ------- Clearcoat -------
 
