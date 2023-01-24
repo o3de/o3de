@@ -13,6 +13,9 @@ import sys
 
 
 class Level(enum.IntEnum):
+    """
+    Enum reference for default log values
+    """
     CRITICAL = 50
     ERROR = 40
     WARNING = 30
@@ -22,6 +25,9 @@ class Level(enum.IntEnum):
 
 
 class Formatter(logging.Formatter):
+    """
+    Standardized log formatting for scripts.
+    """
     def __init__(self):
         super().__init__("%(asctime)s  %(name)-40s  %(message)s")
 
@@ -29,26 +35,40 @@ class Formatter(logging.Formatter):
         return "{} {}".format(Formatter.get_level_acronym(record.levelno), super().format(record))
 
     @classmethod
-    def get_level_acronym(cls, level):
-        if level >= Level.CRITICAL:
+    def get_level_acronym(cls, level: int):
+        """
+        Returns the corresponding log letter for formatting.
+        :param level: The log level enum
+        :return: The letter of the log level
+        """
+        if level == Level.CRITICAL:
             return "C"
-        elif level >= Level.ERROR:
+        elif level == Level.ERROR:
             return "E"
-        elif level >= Level.WARNING:
+        elif level == Level.WARNING:
             return "W"
-        elif level >= Level.INFO:
+        elif level == Level.INFO:
             return "I"
-        elif level >= Level.DEBUG:
+        elif level == Level.DEBUG:
             return "D"
         else:
-            return "?"
+            return f"({level})"
 
 
 def get_logger(name=None):
+    """
+    Wrapper function
+    """
     return logging.getLogger(name)
 
 
 def setup_logger(logger, min_level=Level.INFO):
+    """
+    Standardized logging setup.
+    :param logger: The logger object
+    :param min_level: Minimum level of logging to be set
+    :return: None
+    """
     formatter = Formatter()
 
     out_handler = logging.StreamHandler(sys.stdout)

@@ -21,19 +21,25 @@ class ConfigExn(MetricsExn):
     pass
 
 
-def load_config(local_path, override=None):
+def load_config(local_path: str, override: list[list] = None):
+    """
+    Loads configuration file with provided override values.
+    :param local_path: Path to the yaml configuration file as a string
+    :param override: A list of lists where each list is a key/value pair to override
+    :return: None
+    """
     global config
 
-    if override is None:
-        override = {}
+    override = {} if override is None else override
 
     try:
         with open(os.path.join(sys.path[0], local_path), "r") as file:
             config = yaml.safe_load(file)
-    except FileNotFoundError as exc:
+    except Exception as exc:
         raise ConfigExn(f"Failed to load configuration from local path '{local_path}'") from exc
 
     for path, value in override:
+        # Keys are separated with periods i.e. (key1.key2.key3)
         path_elements = path.split(".")
         target = config
 
@@ -55,7 +61,13 @@ def load_config(local_path, override=None):
                 raise ConfigExn(f"Invalid override configuration parameter '{path}'")
 
 
-def read_config(path, source=None):
+def read_config(path: str, source: dict = None):
+    """
+    Reads the value for the given path from the yaml config file
+    :param path: The path as a string (i.e. key1.key2)
+    :param source: A source override as a dict
+    :return: The value for the given path
+    """
     if source is None:
         source = config
 
