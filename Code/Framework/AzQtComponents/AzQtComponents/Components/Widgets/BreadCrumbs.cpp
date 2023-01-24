@@ -34,7 +34,7 @@ namespace AzQtComponents
     static const QString g_buttonName = QStringLiteral("MenuButton");
     // Separator is two non-breaking spaces, Right-Pointing Angle Quotation Mark (U+203A) and two more
     // non-breaking spaces
-    static const QString g_plainTextSeparator = QStringLiteral("\u00a0\u00a0\u203a\u00a0\u00a0");
+    static const QString g_plainTextSeparator = QStringLiteral("  ›  ");
     static constexpr int g_iconWidth = 16;
     static constexpr int g_leftMargin = 5;
     //! This reserved space is used to make sure that for editable breadcrumbs user has at least some empty space to click and initiate the
