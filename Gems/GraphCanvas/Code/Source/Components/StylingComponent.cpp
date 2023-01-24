@@ -137,13 +137,14 @@ namespace GraphCanvas
     {
         Styling::SelectorVector selectors = m_coreSelectors;
 
-        QGraphicsItem* root = nullptr;
-        SceneMemberUIRequestBus::EventResult(root, GetEntityId(), &SceneMemberUIRequests::GetRootGraphicsItem);
-
+        selectors.reserve(selectors.size() + m_dynamicSelectors.size());
         for (auto& mapPair : m_dynamicSelectors)
         {
             selectors.emplace_back(mapPair.second);
         }
+
+        QGraphicsItem* root = nullptr;
+        SceneMemberUIRequestBus::EventResult(root, GetEntityId(), &SceneMemberUIRequests::GetRootGraphicsItem);
 
         if (!root)
         {
@@ -170,10 +171,11 @@ namespace GraphCanvas
 
         // TODO collapsed and highlighted
 
-        for (auto& mapPair : m_dynamicSelectors)
-        {
-            selectors.emplace_back(mapPair.second);
-        }
+        // Why is this repeated?
+        //for (auto& mapPair : m_dynamicSelectors)
+        //{
+        //    selectors.emplace_back(mapPair.second);
+        //}
 
         return selectors;
     }
