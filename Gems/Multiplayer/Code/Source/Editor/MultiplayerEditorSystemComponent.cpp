@@ -414,15 +414,21 @@ namespace Multiplayer
             // Try to send the packet to the Editor server. Retry if necessary.
             bool packetSent = false;
             static constexpr int MaxRetries = 20;
-            static constexpr int MillisecondDelayPerRetry = 100;
+            int millisecondDelayPerRetry = 10;
             int numRetries = 0;
             while (!packetSent && (numRetries < MaxRetries))
             {
                 packetSent = connection->SendReliablePacket(editorServerLevelDataPacket);
                 if (!packetSent)
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(MillisecondDelayPerRetry));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(millisecondDelayPerRetry));
                     numRetries++;
+
+                    // Keep doubling the time between retries up to 1 second, then clamp it there.
+                    millisecondDelayPerRetry = AZStd::min(millisecondDelayPerRetry * 2, 1000);
+
+                    // Force the networking buffers to try and flush before sending the packet again.
+                    AZ::Interface<AzNetworking::INetworking>::Get()->ForceUpdate();
                 }
             }
             AZ_Assert(packetSent, "Failed to send level packet after %d tries. Server will fail to run the level correctly.", numRetries);
