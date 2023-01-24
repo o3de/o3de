@@ -61,7 +61,7 @@ namespace PhysX
         GenericJointFlag m_flags = GenericJointFlag::None;
         float m_forceMax = 1.0f; ///< Max force joint can tolerate before breaking.
         float m_torqueMax = 1.0f; ///< Max torque joint can tolerate before breaking.
-        AZStd::string m_jointname;  // joint_name (useful for some ROS2 application)
+        AZStd::string m_jointname{""};  // joint_name (useful for some ROS2 application)
     };
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(PhysX::JointGenericProperties::GenericJointFlag)
 

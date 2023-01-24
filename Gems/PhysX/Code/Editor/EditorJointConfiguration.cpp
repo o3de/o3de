@@ -298,7 +298,7 @@ namespace PhysX
                 ->Field("Display Debug", &EditorJointConfig::m_displayJointSetup)
                 ->Field("Select Lead on Snap", &EditorJointConfig::m_selectLeadOnSnap)
                 ->Field("Self Collide", &EditorJointConfig::m_selfCollide)
-                // ->Field("Joint Name", &EditorJointConfig::m_jointname)
+                ->Field("Joint Name", &EditorJointConfig::m_jointname)
                 ;
 
             if (auto* editContext = serializeContext->GetEditContext())
@@ -331,6 +331,9 @@ namespace PhysX
                         "Select = Show setup display when entity is selected."
                         "Always = Always show setup display.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorJointConfig::IsInComponentMode)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorJointConfig::m_jointname 
+                        , "Joint name"
+                        , "Usually coming from URDF")
                     ->DataElement(0, &PhysX::EditorJointConfig::m_selectLeadOnSnap, "Select Lead on Snap"
                         , "Select lead entity on snap to position in component mode.")
                     ->DataElement(0, &PhysX::EditorJointConfig::m_breakable
