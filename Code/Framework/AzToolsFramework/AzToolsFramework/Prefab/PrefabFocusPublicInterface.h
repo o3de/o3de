@@ -50,6 +50,9 @@ namespace AzToolsFramework::Prefab
         //! Returns the entity id of the container entity for the instance the prefab system is focusing on.
         virtual AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const = 0;
 
+        //! Returns the template id of the focused prefab instance.
+        virtual TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const = 0;
+
         //! Returns whether the entity belongs to the instance that is being focused on.
         //! @param entityId The entityId of the queried entity.
         //! @return true if the entity belongs to the focused instance, false otherwise.

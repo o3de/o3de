@@ -114,21 +114,27 @@ namespace AzToolsFramework
             // in focused instance DOM with the one seen by the root.
             else if (PrefabInstanceUtils::IsDescendantInstance(focusedInstance->get(), instance))
             {
-                // use instanceDom's allocator, because ultimately we will be setting this data back into
-                // instanceDom with move semantics.
-                PrefabDom focusedTemplateDomCopy(&instanceDom.GetAllocator());
+                // The template of the focused instance can be deleted in cases like hot reloading via file removal.
+                // So, check for a valid template id here before accessing its DOM
+                TemplateReference focusedTemplate= m_prefabSystemComponentInterface->FindTemplate(focusedInstance->get().GetTemplateId());
+                if (focusedTemplate.has_value())
+                {
+                    // use instanceDom's allocator, because ultimately we will be setting this data back into
+                    // instanceDom with move semantics.
+                    PrefabDom focusedTemplateDomCopy(&instanceDom.GetAllocator());
 
-                focusedTemplateDomCopy.CopyFrom(
-                    m_prefabSystemComponentInterface->FindTemplateDom(focusedInstance->get().GetTemplateId()), instanceDom.GetAllocator());
+                    focusedTemplateDomCopy.CopyFrom(focusedTemplate->get().GetPrefabDom(), instanceDom.GetAllocator());
 
-                UpdateContainerEntityInDomFromHighestAncestor(focusedTemplateDomCopy, focusedInstance->get());
+                    UpdateContainerEntityInDomFromHighestAncestor(focusedTemplateDomCopy, focusedInstance->get());
 
-                // Stores the focused DOM into the instance DOM.
-                AZStd::string relativePathToFocus = PrefabInstanceUtils::GetRelativePathBetweenInstances(instance, focusedInstance->get());
-                PrefabDomPath relativeDomPathToFocus(relativePathToFocus.c_str());
+                    // Stores the focused DOM into the instance DOM.
+                    AZStd::string relativePathToFocus =
+                        PrefabInstanceUtils::GetRelativePathBetweenInstances(instance, focusedInstance->get());
+                    PrefabDomPath relativeDomPathToFocus(relativePathToFocus.c_str());
 
-                // because focusedTemplateDomCopy is an non-const reference, its memory will be adopted into instanceDom without copying
-                relativeDomPathToFocus.Set(instanceDom, focusedTemplateDomCopy);
+                    // because focusedTemplateDomCopy is an non-const reference, its memory will be adopted into instanceDom without copying
+                    relativeDomPathToFocus.Set(instanceDom, focusedTemplateDomCopy);
+                }
             }
             // Skips additional processing if the focused instance is a proper ancestor of the given instance, or
             // the focused instance has no hierarchy relation with the given instance.

@@ -20,10 +20,14 @@
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerDragAndDropContext.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
@@ -111,17 +115,40 @@ namespace AzToolsFramework
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
             if (m_instanceEntityMapperInterface == nullptr)
             {
-                AZ_Assert(false, "InstanceEntityMapperInterface - could not get InstanceEntityMapperInterface on construction.");
+                AZ_Assert(false, "PrefabSaveHandler - could not get InstanceEntityMapperInterface on construction.");
                 return;
             }
 
+            m_prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+            if (m_prefabEditorEntityOwnershipInterface == nullptr)
+            {
+                AZ_Assert(false, "PrefabSaveHandler - could not get PrefabEditorEntityOwnershipInterface on construction.");
+                return;
+            }
+
+            m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+            if (m_prefabFocusPublicInterface == nullptr)
+            {
+                AZ_Assert(false, "PrefabSaveHandler - Could not get PrefabFocusPublicInterface on construction.");
+                return;
+            }
+            
+
+            m_templateInstanceMapperInterface = AZ::Interface<TemplateInstanceMapperInterface>::Get();
+            if (m_templateInstanceMapperInterface == nullptr)
+            {
+                AZ_Assert(false, "PrefabSaveHandler - could not get TemplateInstanceMapperInterface on construction.");
+                return;
+            }
             // we care about both outliner and viewport.
             AzQtComponents::DragAndDropEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EditorViewport);
             AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EntityOutliner);
+            AzToolsFramework::AssetSystemBus::Handler::BusConnect();
         }
 
         PrefabSaveHandler::~PrefabSaveHandler()
         {
+            AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
             AzQtComponents::DragAndDropEventsBus::Handler::BusDisconnect();
             AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusDisconnect();
         }
@@ -992,6 +1019,60 @@ namespace AzToolsFramework
             unsavedPrefabsContainer->setContentWidget(unsavedPrefabsScrollArea);
 
             return AZStd::move(unsavedPrefabsContainer);
+        }
+
+        void PrefabSaveHandler::SourceFileRemoved(
+            AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
+        {
+            // This gets triggered for every source file. We only need source files that are prefabs and are loaded in the current level.
+            TemplateId loadedTemplateId = s_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath.c_str());
+            if (loadedTemplateId != InvalidTemplateId)
+            {
+                InstanceSetConstReference instancesMappedToTemplate =
+                    m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(loadedTemplateId);
+
+                if (!instancesMappedToTemplate.has_value() || instancesMappedToTemplate->get().size() == 0)
+                {
+                    // There are no instances mapping to this template. So it can be removed from memory.
+                    s_prefabSystemComponentInterface->RemoveTemplate(loadedTemplateId);
+                }
+                else
+                {
+                    TemplateId rootTemplateId = m_prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+                    if (rootTemplateId == loadedTemplateId)
+                    {
+                        // Deletion of the current level that the user has opened needs to be handled differently. Skip for now
+                        return;
+                    }
+                    else
+                    {
+                        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+                        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
+                        if (m_prefabFocusPublicInterface->GetFocusedPrefabTemplateId(editorEntityContextId) == loadedTemplateId)
+                        {
+                            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(editorEntityContextId);
+                        }
+
+                        auto button = QMessageBox::question(
+                            AzToolsFramework::GetActiveWindow(),
+                            QString(),
+                            QString("Prefab '%1' has been deleted from the file system. But we detected %2 instance(s) of it "
+                                    "in the level. Would you like to delete them ?")
+                                .arg(relativePath.c_str())
+                                .arg(instancesMappedToTemplate->get().size()),
+                            QMessageBox::Yes | QMessageBox::No);
+                        switch (button)
+                        {
+                        case QMessageBox::Yes:
+                            s_prefabSystemComponentInterface->RemoveTemplate(loadedTemplateId);
+                            break;
+                        }
+                    }
+                    
+                }
+            }
         }
     } // namespace Prefab
 } // namespace AzToolsFramework

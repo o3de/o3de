@@ -13,6 +13,8 @@ namespace AZ
 {
     class Vector3;
 }
+
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
@@ -32,12 +34,17 @@ namespace AzToolsFramework
         class AssetBrowserEntry;
     }
 
+    class PrefabEditorEntityOwnershipInterface;
+
     namespace Prefab
     {
+        class InstanceEntityMapperInterface;
+        class PrefabFocusPublicInterface;
         class PrefabLoaderInterface;
         class PrefabPublicInterface;
         class PrefabSystemComponentInterface;
-        class InstanceEntityMapperInterface;
+        class TemplateInstanceMapperInterface;
+        
 
         //! Structure for saving/retrieving user settings related to prefab workflows.
         class PrefabUserSettings : public AZ::UserSettings
@@ -60,6 +67,7 @@ namespace AzToolsFramework
             : public QObject
             , public AzQtComponents::DragAndDropEventsBus::Handler
             , public AzQtComponents::DragAndDropItemViewEventsBus::Handler
+            , private AzToolsFramework::AssetSystemBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabSaveHandler, AZ::SystemAllocator, 0);
@@ -114,6 +122,14 @@ namespace AzToolsFramework
                 const AZStd::string& prefabName, const AZStd::string& targetDirectory, AZStd::string& suggestedFullPath);
 
         private:
+
+            //! AssetSystemBus notification handlers
+            //! @{
+            //! Called by the AssetProcessor when the source file has been removed.
+            void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
+            //! @}
+            
+
             AZStd::shared_ptr<QDialog> ConstructClosePrefabDialog(TemplateId templateId);
             AZStd::unique_ptr<AzQtComponents::Card> ConstructUnsavedPrefabsCard(TemplateId templateId);
             AZStd::unique_ptr<QDialog> ConstructSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
@@ -126,7 +142,10 @@ namespace AzToolsFramework
             static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
 
-            InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+            PrefabEditorEntityOwnershipInterface* m_prefabEditorEntityOwnershipInterface = nullptr;
+            PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
+            TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
 
             bool CanDragAndDropData(
                 const QMimeData* data,

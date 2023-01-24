@@ -51,12 +51,10 @@ namespace AzToolsFramework
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
-            AzToolsFramework::AssetSystemBus::Handler::BusConnect();
         }
 
         void PrefabSystemComponent::Deactivate()
         {
-            AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_prefabSystemScriptingHandler.Disconnect();
             m_prefabPublicRequestHandler.Disconnect();
@@ -196,71 +194,6 @@ namespace AzToolsFramework
             else
             {
                 newInstance->SetTemplateId(newTemplateId);
-            }
-        }
-
-        void PrefabSystemComponent::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
-        {
-            auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
-            if (found != m_templateFilePathToIdMap.end())
-            {
-                m_prefabLoader.ReloadTemplateFromFile(relativePath.c_str());
-                PropagateTemplateChanges(found->second);
-            }
-        }
-
-        void PrefabSystemComponent::SourceFileRemoved(
-            AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
-        {
-            auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
-            if (found != m_templateFilePathToIdMap.end())
-            {
-                TemplateId sourceTemplateId = found->second;
-                InstanceSetConstReference instancesMappedToTemplate =
-                    m_templateInstanceMapper.FindInstancesOwnedByTemplate(sourceTemplateId);
-
-                if (!instancesMappedToTemplate.has_value() || instancesMappedToTemplate->get().size() == 0)
-                {
-                    RemoveTemplate(sourceTemplateId);
-                }
-                else
-                {
-                    auto button = QMessageBox::question(
-                        AzToolsFramework::GetActiveWindow(),
-                        QString(),
-                        QString("Prefab %1 has been deleted from the file system. But we detected %2 instances "
-                                "in the level. Would you like to delete them?")
-                            .arg(found->first.c_str())
-                            .arg(instancesMappedToTemplate->get().size()),
-                        QMessageBox::Yes | QMessageBox::No);
-                    switch (button)
-                    {
-                    case QMessageBox::Yes:
-                        RemoveTemplate(sourceTemplateId);
-                        PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
-                            AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-
-                        if (prefabEditorEntityOwnershipInterface != nullptr)
-                        {
-                            TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-                            PropagateTemplateChanges(rootTemplateId);
-                        }
-                        break;
-                    }
-                }
-
-
-                
-                /*
-                PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
-                    AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-
-                if (prefabEditorEntityOwnershipInterface != nullptr)
-                {
-                     TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-                     PropagateTemplateChanges(rootTemplateId);
-                }*/
-                
             }
         }
 
@@ -1277,6 +1210,11 @@ namespace AzToolsFramework
 
                 removed = templateInstancesRef->get().RemoveMember(link.GetInstanceName().c_str())
                     ? removed : false;
+
+                if (removed)
+                {
+                    PropagateTemplateChanges(targetTemplateId);
+                }
             }
 
             return removed;
