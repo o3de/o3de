@@ -834,14 +834,23 @@ namespace AssetProcessor
                 if (VerifyOutputProduct(
                         QDir(intermediateDirectory.c_str()), outputFilename, absolutePathOfSource, fileSizeRequired, outputsToCopy))
                 {
-                    // Generate a UUID for the intermediate as:
-                    // SourceUuid:BuilderUuid:SubId
-                    auto uuid = AZ::Uuid::CreateName(
-                        AZStd::string::format(
-                            "%s:%s:%d", params.m_topLevelSourceUuid.ToFixedString().c_str(), params.m_assetBuilderDesc.m_busId.ToFixedString().c_str(), product.m_productSubID));
+                    // A null uuid indicates the top level source is not using metadata files.
+                    // The assumption for the UUID generated below is that the source UUID will not change.  A type which has no metadata
+                    // file currently may be updated later to have a metadata file, which would break that assumption.  In that case, stick
+                    // with the default path-based UUID.
+                    if (!params.m_topLevelSourceUuid.IsNull())
+                    {
+                        // Generate a UUID for the intermediate as:
+                        // SourceUuid:BuilderUuid:SubId
+                        auto uuid = AZ::Uuid::CreateName(AZStd::string::format(
+                            "%s:%s:%d",
+                            params.m_topLevelSourceUuid.ToFixedString().c_str(),
+                            params.m_assetBuilderDesc.m_busId.ToFixedString().c_str(),
+                            product.m_productSubID));
 
-                    // Add the product absolute path to the list of intermediates
-                    intermediateOutputPaths.append(QPair(outputsToCopy.back().second, uuid));
+                        // Add the product absolute path to the list of intermediates
+                        intermediateOutputPaths.append(QPair(outputsToCopy.back().second, uuid));
+                    }
                 }
                 else
                 {

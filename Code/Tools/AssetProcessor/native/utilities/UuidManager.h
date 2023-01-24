@@ -45,6 +45,8 @@ namespace AssetProcessor
         //! which are not enabled will use legacy path-based UUIDs.
         //! @param types Set of file extensions to enable generation for.
         virtual void EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types) = 0;
+        //! Returns true if UUID generation is enabled for the type (based on file extension), false otherwise.
+        virtual bool IsGenerationEnabledForFile(AZ::IO::PathView file) = 0;
     };
 
     //! Serialized settings type for storing the user preferences for the UUID manager
@@ -63,8 +65,6 @@ namespace AssetProcessor
     public:
         AZ_RTTI(UuidManager, "{49FA0129-7272-4256-A5C6-D789C156E6BA}", IUuidRequests);
 
-
-
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::Uuid GetUuid(const SourceAssetReference& sourceAsset) override;
@@ -72,6 +72,7 @@ namespace AssetProcessor
         void FileChanged(AZ::IO::PathView file) override;
         void FileRemoved(AZ::IO::PathView file) override;
         void EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types) override;
+        bool IsGenerationEnabledForFile(AZ::IO::PathView file) override;
 
     private:
         AZStd::string GetCanonicalPath(AZ::IO::PathView file);
