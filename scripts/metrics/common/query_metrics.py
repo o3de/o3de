@@ -15,57 +15,63 @@ from boto3.session import Session
 
 BUCKET_NAME = "o3de-metrics"
 
-SESSION = None
 DOWNLOADED_FILES = []
 
 
-def _get_session():
+def _get_session(region = 'us-west-2'):
     """
-    Gets an AWS session via boto3 or returns the existing one
+    Gets an AWS session via boto3
+    :param region: desired AWS region for session
     """
-    global SESSION
-    if SESSION is None:
-        # get session
-        id_ = os.environ['AWS_ACCESS_KEY_ID']
-        secret = os.environ['AWS_SECRET_ACCESS_KEY']
-        token = os.environ['AWS_SESSION_TOKEN']
+    #id_ = os.environ['AWS_ACCESS_KEY_ID']
+    #secret = os.environ['AWS_SECRET_ACCESS_KEY']
+    #token = os.environ['AWS_SESSION_TOKEN']
+    id_ = "ASIASRV3MJV2UPV2M3OY"
+    secret = "c1iqK/yVtwxsoEKFyfMVEF/A9bVmohz9qI47pjEx"
+    token = "IQoJb3JpZ2luX2VjEH0aCXVzLWVhc3QtMSJHMEUCIQDnS2iuSr4jD5/rGxyxMlvEt0GkQ+oXIj6gnUcO3Hoi1AIgWh6MoP241Bzq8dK8k7Wez6Lo5EckZXFZQZkTz6WJ9zkqpwII5v//////////ARAAGgwxNzU0MTI4OTA5OTciDNWUitUv6G8tmG/iXSr7AeoHDiyEHI/ebJ9k2tfQHycDilkCBywBkiSR1ChSjydX3sMF4UWfPFmmrEhDyK22qMekGYf8llvemsoiLCAF7sre8GKuh2PKwfvssJyBtCy91AAa5Ldo4xDy9iYFW/+koR6HOXcpkIcp00t/v6vZwnE7eY3ASBE2AQF5tCjXtgahRTe+OhP4HEGjUYqgUd3lR60mCK6fmxouMvAOLvv1ECXHr3U7a4h1P/rWdFnVnmZ97q5W+V0KmL0gIqk2SuKOJXh8/i0ngFoUJifc4cKwuPbSBozgKNHFpYR44BFGW0R4c6UgAWBrGKDHqIZlE/fjgUOVjjwvPZvMt4UJMKjMvZ4GOp0BrUBjg5+L/o08pUIPEYS8MGZtFK44+kyoibGoIceA0fPNlDskrGok5iHUaK5h/E9pGJEgV7Z1XnlX5mOnAav3OTjcDvbnaWqFsM6biDRygi4FIJwbowJ4VtDtpd7NVnw9buK2h1ksQcvURwnn3Qe+Bs570ICHjjNu15t7vSqaZHaHxwJsXq7o3up22bKSg0FG0hzLfG+I9YB/9Z8oTA=="
 
-        SESSION = Session(
-            aws_access_key_id=id_,
-            aws_secret_access_key=secret,
-            aws_session_token=token,
-            region_name='us-west-2'
-        )
-    return SESSION
+    session = Session(
+        aws_access_key_id=id_,
+        aws_secret_access_key=secret,
+        aws_session_token=token,
+        region_name=region
+    )
+    return session
 
 
-def _download_csvs(branch, start_week, end_week, download_folder):
+def _download_csvs(desired_branch, start_week, end_week, download_folder, region):
     """
     Downloads the desired csvs based on branch, start_week, and end_week to the download_folder
-    :param branch: name of the desired branch
+    :param desired_branch: name of the desired branch
     :param start_week: number of the first week to include
     :param end_week: number of the last week to include
     :param download_folder: destination folder for the .csvs to be stored while they are being parsed
+    :param region: desired AWS region for session
     """
-    bucket = _get_session().resource('s3').Bucket(BUCKET_NAME)
+    bucket = _get_session(region).resource('s3').Bucket(BUCKET_NAME)
 
-    prefix = "csv/" + branch
+    prefix = "csv/" + desired_branch
 
-    objs = list(bucket.objects.filter(Prefix=prefix))
+    objects = list(bucket.objects.filter(Prefix=prefix))
 
     file_type = ".csv"
-    for obj in objs:
-        if file_type == obj.key[-4:]:
+    for object in objects:
+        if file_type == os.path.splitext(object.key)[1]:
             try:
                 # Get the key file values
-                filter_values = obj.key.split('/')
-                branch = filter_values[-3]
+                # We are expecting files to be found in buckets/o3de-metrics/csv/branch/Week#/file_name.csv
+                # If they are not, they won't be checked, and will be caught in the ValueError below
+                filter_values = object.key.split('/')
+                found_branch = filter_values[-3]
                 week_number = int((filter_values[-2])[4:])
                 file_name = filter_values[-1]
+                print("found_branch: " + str(found_branch))
+                print("week_number: " + str(week_number))
+                print("file_name: " + str(file_name))
 
                 # Determine if the file should be downloaded
                 should_download_file = True
-                if branch != branch:
+                if found_branch != desired_branch:
                     should_download_file = False
                 if start_week and week_number < start_week:
                     should_download_file = False
@@ -74,12 +80,14 @@ def _download_csvs(branch, start_week, end_week, download_folder):
 
                 # Download the file
                 if should_download_file:
+                    print("str(download_folder): " + str(download_folder))
+                    print("str(week_number): " + str(week_number))
                     week_folder = os.path.join(download_folder, str(week_number))
                     if not os.path.exists(week_folder):
                         os.mkdir(week_folder)
                     download_path = os.path.join(download_folder, str(week_number), file_name)
                     DOWNLOADED_FILES.append(download_path)
-                    bucket.download_file(obj.key, download_path)
+                    bucket.download_file(object.key, download_path)
 
             # If a .csv is in the wrong location, it'll break the functionality above. We're just going to skip it.
             except ValueError as value_error:
@@ -141,17 +149,18 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='MetricsQueryTool', description='Queries the metrics.')
     parser.add_argument('-b', '--branch', required=True)
     parser.add_argument('-sw', '--startweek', required=False)
-    parser.add_argument('-ew', '--endweek', required=False)
-    parser.add_argument('-df', '--downloadfolder', required=False)
+    parser.add_argument('-ew', '--endweek', required=False, help='Max of 52.')
+    parser.add_argument('-df', '--downloadfolder', required=True)
     parser.add_argument('-tcids', '--testcaseids', nargs='+', required=False)
     parser.add_argument('-tcms', '--testcasemetrics', nargs='+', required=False)
+    parser.add_argument('-region', '--region', required=False)
     args = parser.parse_args()
 
     start_week = int(args.startweek) if args.startweek else None
     end_week = int(args.endweek) if args.endweek else None
 
     # download csvs
-    _download_csvs(args.branch, start_week, end_week, args.downloadfolder)
+    _download_csvs(args.branch, start_week, end_week, args.downloadfolder, args.region)
 
     # query csvs for data
     query_csvs(args.testcaseids, args.testcasemetrics)
