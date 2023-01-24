@@ -11,6 +11,7 @@ import argparse
 import csv
 import os
 
+import boto3
 from boto3.session import Session
 
 BUCKET_NAME = "o3de-metrics"
@@ -18,17 +19,14 @@ BUCKET_NAME = "o3de-metrics"
 DOWNLOADED_FILES = []
 
 
-def _get_session(region = 'us-west-2'):
+def _get_session(region='us-west-2'):
     """
     Gets an AWS session via boto3
     :param region: desired AWS region for session
     """
-    #id_ = os.environ['AWS_ACCESS_KEY_ID']
-    #secret = os.environ['AWS_SECRET_ACCESS_KEY']
-    #token = os.environ['AWS_SESSION_TOKEN']
-    id_ = "ASIASRV3MJV2UPV2M3OY"
-    secret = "c1iqK/yVtwxsoEKFyfMVEF/A9bVmohz9qI47pjEx"
-    token = "IQoJb3JpZ2luX2VjEH0aCXVzLWVhc3QtMSJHMEUCIQDnS2iuSr4jD5/rGxyxMlvEt0GkQ+oXIj6gnUcO3Hoi1AIgWh6MoP241Bzq8dK8k7Wez6Lo5EckZXFZQZkTz6WJ9zkqpwII5v//////////ARAAGgwxNzU0MTI4OTA5OTciDNWUitUv6G8tmG/iXSr7AeoHDiyEHI/ebJ9k2tfQHycDilkCBywBkiSR1ChSjydX3sMF4UWfPFmmrEhDyK22qMekGYf8llvemsoiLCAF7sre8GKuh2PKwfvssJyBtCy91AAa5Ldo4xDy9iYFW/+koR6HOXcpkIcp00t/v6vZwnE7eY3ASBE2AQF5tCjXtgahRTe+OhP4HEGjUYqgUd3lR60mCK6fmxouMvAOLvv1ECXHr3U7a4h1P/rWdFnVnmZ97q5W+V0KmL0gIqk2SuKOJXh8/i0ngFoUJifc4cKwuPbSBozgKNHFpYR44BFGW0R4c6UgAWBrGKDHqIZlE/fjgUOVjjwvPZvMt4UJMKjMvZ4GOp0BrUBjg5+L/o08pUIPEYS8MGZtFK44+kyoibGoIceA0fPNlDskrGok5iHUaK5h/E9pGJEgV7Z1XnlX5mOnAav3OTjcDvbnaWqFsM6biDRygi4FIJwbowJ4VtDtpd7NVnw9buK2h1ksQcvURwnn3Qe+Bs570ICHjjNu15t7vSqaZHaHxwJsXq7o3up22bKSg0FG0hzLfG+I9YB/9Z8oTA=="
+    id_ = os.environ['AWS_ACCESS_KEY_ID']
+    secret = os.environ['AWS_SECRET_ACCESS_KEY']
+    token = os.environ['AWS_SESSION_TOKEN']
 
     session = Session(
         aws_access_key_id=id_,
@@ -39,7 +37,7 @@ def _get_session(region = 'us-west-2'):
     return session
 
 
-def _download_csvs(desired_branch, start_week, end_week, download_folder, region):
+def _download_csvs(desired_branch, start_week, end_week, download_folder, region, use_env_credentials):
     """
     Downloads the desired csvs based on branch, start_week, and end_week to the download_folder
     :param desired_branch: name of the desired branch
@@ -47,8 +45,9 @@ def _download_csvs(desired_branch, start_week, end_week, download_folder, region
     :param end_week: number of the last week to include
     :param download_folder: destination folder for the .csvs to be stored while they are being parsed
     :param region: desired AWS region for session
+    :param use_env_credentials: use the env credentials instead of the configured boto3 credentials
     """
-    bucket = _get_session(region).resource('s3').Bucket(BUCKET_NAME)
+    bucket = _get_session(region, ).resource('s3').Bucket(BUCKET_NAME) if use_env_credentials else boto3.client('s3')
 
     prefix = "csv/" + desired_branch
 
@@ -153,14 +152,16 @@ if __name__ == '__main__':
     parser.add_argument('-df', '--downloadfolder', required=True)
     parser.add_argument('-tcids', '--testcaseids', nargs='+', required=False)
     parser.add_argument('-tcms', '--testcasemetrics', nargs='+', required=False)
-    parser.add_argument('-region', '--region', required=False)
+    parser.add_argument('-r', '--region', required=False)
+    parser.add_argument('-env', '--envcredentials', required=False, help="Override the configured credentials to "
+                                                                         "instead use environment variables.")
     args = parser.parse_args()
 
     start_week = int(args.startweek) if args.startweek else None
     end_week = int(args.endweek) if args.endweek else None
 
     # download csvs
-    _download_csvs(args.branch, start_week, end_week, args.downloadfolder, args.region)
+    _download_csvs(args.branch, start_week, end_week, args.downloadfolder, args.region, args.envcredentials)
 
     # query csvs for data
     query_csvs(args.testcaseids, args.testcasemetrics)
