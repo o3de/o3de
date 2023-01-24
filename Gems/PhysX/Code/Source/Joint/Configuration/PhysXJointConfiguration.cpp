@@ -17,9 +17,8 @@ namespace PhysX
         : m_flags(flags)
         , m_forceMax(forceMax)
         , m_torqueMax(torqueMax)
-        , m_jointname(joint_name)
     {
-
+        m_jointname = joint_name;
     }
 
     JointLimitProperties::JointLimitProperties(
@@ -179,6 +178,7 @@ namespace PhysX
                 ->Field("Maximum Force", &JointGenericProperties::m_forceMax)
                 ->Field("Maximum Torque", &JointGenericProperties::m_torqueMax)
                 ->Field("Flags", &JointGenericProperties::m_flags)
+                ->Field("Joint Name", &JointGenericProperties::m_jointname)
                 ;
         }
     }
