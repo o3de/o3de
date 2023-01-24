@@ -142,6 +142,9 @@ namespace AZ
         using MemberFunctorSignature = typename ConsoleCommandMemberFunctorSignature<_TYPE>::type;
         using RawFunctorSignature = void(*)(_TYPE&, const ConsoleCommandContainer&);
 
+        // This alias avoids the issue with two of the exact same types being added as alternatives to a variant,
+        // which would cause ambiguity errors when initializing the variants without using the explicit index.
+        // The solution is to collapse the variant to a single option as there isn't a need to have two alternatives in this case.
         using FunctorUnion = AZStd::conditional_t<
             AZStd::is_same_v<RawFunctorSignature, MemberFunctorSignature>,
             AZStd::variant<RawFunctorSignature>,

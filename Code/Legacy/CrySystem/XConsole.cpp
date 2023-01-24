@@ -457,8 +457,8 @@ void CXConsole::RegisterVar(ICVar* pCVar, ConsoleVarFunc pChangeFunc)
     ConsoleVariablesMapItor::value_type value = ConsoleVariablesMapItor::value_type(pCVar->GetName(), pCVar);
     m_mapVariables.insert(value);
 
-    auto consoleInterface = AZ::Interface<AZ::IConsole>::Get();
-    if (consoleInterface != nullptr && !consoleInterface->HasCommand(pCVar->GetName(), AZ::ConsoleFunctorFlags::Null))
+    if (auto consoleInterface = AZ::Interface<AZ::IConsole>::Get();
+        consoleInterface != nullptr && !consoleInterface->HasCommand(pCVar->GetName(), AZ::ConsoleFunctorFlags::Null))
     {
         if (pCVar->GetType() == CVAR_INT)
         {

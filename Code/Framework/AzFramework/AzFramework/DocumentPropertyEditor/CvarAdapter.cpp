@@ -22,7 +22,7 @@ namespace AZ::DocumentPropertyEditor
                   [adapter,
                    this](AZStd::string_view command, const AZ::ConsoleCommandContainer&, AZ::ConsoleFunctorFlags, AZ::ConsoleInvokedFrom)
                   {
-                      // look up the command being performed and rebuild its editor
+                      // look up the command that was performed and rebuild its corresponding editor
                       if (!m_performingCommand && !command.empty())
                       {
                           auto commandFunctor = AZ::Interface<AZ::IConsole>::Get()->FindCommand(command);
@@ -47,7 +47,7 @@ namespace AZ::DocumentPropertyEditor
 
                               if (!path.IsEmpty())
                               {
-                                  // rebuild and replace the editor with one with the correct value
+                                  // replace the existing editor with a new one that has the correct value
                                   AdapterBuilder builder;
                                   builder.SetCurrentPath(path);
                                   BuildEditorForCvar(builder, commandFunctor);

@@ -1187,6 +1187,7 @@ AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedH
                      SetCVarFromConsoleCommand<AZ::u16, CVAR_INT>(changedCVar, azConsoleCommand) ||
                      SetCVarFromConsoleCommand<AZ::u32, CVAR_INT>(changedCVar, azConsoleCommand) ||
                      SetCVarFromConsoleCommand<AZ::u64, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<bool, CVAR_INT>(changedCVar, azConsoleCommand) ||
                      SetCVarFromConsoleCommand<long, CVAR_INT>(changedCVar, azConsoleCommand) ||
                      SetCVarFromConsoleCommand<unsigned long, CVAR_INT>(changedCVar, azConsoleCommand) ||
                      SetCVarFromConsoleCommand<float, CVAR_FLOAT>(changedCVar, azConsoleCommand) ||

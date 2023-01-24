@@ -74,7 +74,7 @@ namespace AZ::DocumentPropertyEditor
         // DocumentAdapter overrides ...
         Dom::Value GenerateContents() override;
 
-        // MetaAdapter overrides
+        // MetaAdapter overrides ...
         void HandleReset() override;
         void HandleDomChange(const Dom::Patch& patch) override;
 
