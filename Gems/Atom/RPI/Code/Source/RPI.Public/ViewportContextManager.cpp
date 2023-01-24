@@ -201,17 +201,12 @@ namespace AZ
                 return;
             }
 
-            // find the existing view group stack with the old name
-            auto viewGroupIt = m_viewportViews.find(viewportContext->GetName());
-            // make a copy of the view group stack
-            auto existingViewGroup = *viewGroupIt;
-            // erase the original value from the container
-            m_viewportViews.erase(viewGroupIt);
-
-            // update the name of the viewport context
-            viewportContext->m_name = newContextName;
+            // find the existing view group stack with the old name and extract it
+            auto nodeHandle = m_viewportViews.extract(viewportContext->GetName());
+            // rename the node handle with the new name (key)
+            nodeHandle.key() = newContextName;
             // insert the updated view group back into the map with the new name
-            m_viewportViews[newContextName] = existingViewGroup.second;
+            m_viewportViews.insert(AZStd::move(nodeHandle));
 
             UpdateViewForContext(newContextName);
             // Ensure anyone listening on per-name viewport size updates gets notified.
