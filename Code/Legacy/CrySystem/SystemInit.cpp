@@ -665,7 +665,18 @@ public:
                     if (typeId == azrtti_typeid<type>() || typeId == azrtti_typeid<consoleDataWrapperType>())
                     {
                         functor->GetValue(value);
-                        if constexpr (AZStd::is_integral_v<type>)
+                        if constexpr (AZStd::is_same_v<type, bool>)
+                        {
+                            AZ::CVarFixedString valueString;
+                            functor->GetValue(valueString);
+                            gEnv->pConsole->RegisterString(
+                                functor->GetName(),
+                                valueString.c_str(),
+                                cryFlags,
+                                functor->GetDesc(),
+                                AzConsoleToCryConsoleBinder::OnVarChanged);
+                        }
+                        else if constexpr (AZStd::is_integral_v<type>)
                         {
                             return (
                                 gEnv->pConsole->RegisterInt(
@@ -698,10 +709,10 @@ public:
                     }
                     return false;
                 };
-                const bool registered = registerType(AZStd::string()) || registerType(AZ::CVarFixedString()) || registerType(AZ::s32()) ||
-                    registerType(AZ::u32()) || registerType(float()) || registerType(double()) || registerType(AZ::s16()) ||
-                    registerType(AZ::u16()) || registerType(AZ::s64()) || registerType(AZ::u64()) || registerType(AZ::s8()) ||
-                    registerType(AZ::u8());
+                const bool registered = registerType(AZStd::string()) || registerType(AZ::CVarFixedString()) || registerType(bool()) ||
+                    registerType(AZ::s32()) || registerType(AZ::u32()) || registerType(float()) || registerType(double()) ||
+                    registerType(AZ::s16()) || registerType(AZ::u16()) || registerType(AZ::s64()) || registerType(AZ::u64()) ||
+                    registerType(AZ::s8()) || registerType(AZ::u8());
 
                 if (!registered)
                 {
