@@ -1835,7 +1835,7 @@ bool CCryEditApp::InitInstance()
 
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
     {
-        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CommandLineProcessed", R"({})");
+        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacyCommandLineProcessed", R"({})");
     }
 
     if (IsInRegularEditorMode())

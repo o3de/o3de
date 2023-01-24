@@ -40,8 +40,8 @@ namespace Multiplayer
 
         // Wait to activate the editor-server until:
         // - LegacySystemInterfaceCreated is signaled, so that the logging system is ready. Automated testing listens for these logs.
-        // - CommandLineProcessed is signaled, so that everything has initialized and finished their blocking loads, so that it should
-        // be relatively safe to start receiving packets without as much fear of too much time passing between system ticks.
+        // - LegacyCommandLineProcessed is signaled, so that everything has initialized and finished their blocking loads, so that it
+        // should be relatively safe to start receiving packets without as much fear of too much time passing between system ticks.
         if (editorsv_isDedicated)
         {
             // Server logs will be piped to the editor so turn off buffering,
@@ -61,7 +61,7 @@ namespace Multiplayer
                     {
                         ActivateDedicatedEditorServer();
                     },
-                    "CommandLineProcessed");
+                    "LegacyCommandLineProcessed");
             }
         }
     }
