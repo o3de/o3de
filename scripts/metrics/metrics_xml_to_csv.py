@@ -31,13 +31,7 @@ def now_wrap():
 def _get_default_csv_filename():
     # Format default file name based off of date
     now = now_wrap()
-    month = now.month
-    if month < 10:
-        month = f"0{now.month}"
-    day = now.day
-    if day < 10:
-        day = f"0{now.day}"
-    return f"{now.year}_{month}_{day}.csv"
+    return f"{now.year}_{now.month:02d}_{now.day:02d}.csv"
 
 
 # Setup logging.
