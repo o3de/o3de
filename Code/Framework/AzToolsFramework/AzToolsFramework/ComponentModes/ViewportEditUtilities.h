@@ -16,6 +16,10 @@ namespace AzToolsFramework
     //! Removes the effects of the manipulator local transform, and accounts for world transform scale in
     //! the action local offset.
     template<typename T>
-    AZ::Vector3 GetPositionInManipulatorFrame(float worldUniformScale, const AZ::Transform& manipulatorLocalTransform,
-        const T& action);    
+    AZ::Vector3 GetPositionInManipulatorFrame(float worldUniformScale, const AZ::Transform& manipulatorLocalTransform, const T& action)
+    {
+        return manipulatorLocalTransform.GetInverse().TransformPoint(
+            action.m_start.m_localPosition +
+            action.LocalPositionOffset() / AZ::GetClamp(worldUniformScale, AZ::MinTransformScale, AZ::MaxTransformScale));
+    }
 } // namespace AzToolsFramework

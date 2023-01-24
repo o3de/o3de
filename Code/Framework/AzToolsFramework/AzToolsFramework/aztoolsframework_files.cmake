@@ -647,7 +647,6 @@ set(FILES
     ComponentModes/ShapeTranslationOffsetViewportEdit.h
     ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
     ComponentModes/ViewportEditUtilities.h
-    ComponentModes/ViewportEditUtilities.cpp
     ViewportSelection/EditorBoxSelect.h
     ViewportSelection/EditorBoxSelect.cpp
     ViewportSelection/EditorDefaultSelection.h
