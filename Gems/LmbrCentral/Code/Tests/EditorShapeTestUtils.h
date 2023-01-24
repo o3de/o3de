@@ -26,14 +26,14 @@ namespace LmbrCentral
         const AzToolsFramework::ViewportInteraction::KeyboardModifier keyboardModifier =
         AzToolsFramework::ViewportInteraction::KeyboardModifier::None);
 
-    void EnterComponentMode(AZ::Entity* entity, const AZ::Uuid& componentType);
+    void EnterComponentMode(AZ::EntityId entityId, const AZ::Uuid& componentType);
 
     void SetComponentSubMode(
         AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode subMode);
 
-    void ExpectBoxDimensions(AZ::Entity* entity, const AZ::Vector3& expectedBoxDimensions);
+    void ExpectBoxDimensions(AZ::EntityId entityId, const AZ::Vector3& expectedBoxDimensions);
 
-    void ExpectTranslationOffset(AZ::Entity* entity, const AZ::Vector3& expectedTranslationOffset);
+    void ExpectTranslationOffset(AZ::EntityId entityId, const AZ::Vector3& expectedTranslationOffset);
 
     void ExpectSubMode(
         AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode expectedSubMode);

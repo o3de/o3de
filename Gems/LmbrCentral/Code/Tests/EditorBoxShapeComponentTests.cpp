@@ -77,6 +77,7 @@ namespace LmbrCentral
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_editorSphereShapeComponentDescriptor;
 
         AZ::Entity* m_entity = nullptr;
+        AZ::EntityId m_entityId;
         AZ::EntityComponentIdPair m_entityComponentIdPair;
     };
 
@@ -99,18 +100,20 @@ namespace LmbrCentral
         m_editorBoxShapeComponentDescriptor->Reflect(serializeContext);
 
         UnitTest::CreateDefaultEditorEntity("BoxShapeComponentEntity", &m_entity);
+        m_entityId = m_entity->GetId();
         m_entity->Deactivate();
         m_entity->CreateComponent(AzToolsFramework::Components::EditorNonUniformScaleComponent::RTTI_Type());
         m_entityComponentIdPair =
-            AZ::EntityComponentIdPair(m_entity->GetId(), m_entity->CreateComponent(EditorBoxShapeComponentTypeId)->GetId());
+            AZ::EntityComponentIdPair(m_entityId, m_entity->CreateComponent(EditorBoxShapeComponentTypeId)->GetId());
         m_entity->Activate();
     }
 
     void EditorBoxShapeComponentFixture::TearDownEditorFixtureImpl()
     {
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequestBus::Events::DestroyEditorEntity, m_entity->GetId());
+            &AzToolsFramework::EditorEntityContextRequestBus::Events::DestroyEditorEntity, m_entityId);
         m_entity = nullptr;
+        m_entityId.SetInvalid();
 
         m_editorBoxShapeComponentDescriptor.reset();
         m_editorSphereShapeComponentDescriptor.reset();
@@ -122,16 +125,16 @@ namespace LmbrCentral
         UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<EditorBoxShapeComponentFixture>;
 
     void SetUpBoxShapeComponent(
-        AZ::Entity* entity,
+        AZ::EntityId entityId,
         const AZ::Transform& transform,
         const AZ::Vector3& nonUniformScale,
         const AZ::Vector3& translationOffset,
         const AZ::Vector3& boxDimensions)
     {
-        AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetWorldTM, transform);
-        AZ::NonUniformScaleRequestBus::Event(entity->GetId(), &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
-        ShapeComponentRequestsBus::Event(entity->GetId(), &ShapeComponentRequests::SetTranslationOffset, translationOffset);
-        BoxShapeComponentRequestsBus::Event(entity->GetId(), &BoxShapeComponentRequests::SetBoxDimensions, boxDimensions);
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        AZ::NonUniformScaleRequestBus::Event(entityId, &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
+        ShapeComponentRequestsBus::Event(entityId, &ShapeComponentRequests::SetTranslationOffset, translationOffset);
+        BoxShapeComponentRequestsBus::Event(entityId, &BoxShapeComponentRequests::SetBoxDimensions, boxDimensions);
     }
 
     TEST_F(EditorBoxShapeComponentManipulatorFixture, BoxShapeNonUniformScaleSymmetricalDimensionManipulatorsScaleCorrectly)
@@ -142,8 +145,8 @@ namespace LmbrCentral
         const AZ::Vector3 nonUniformScale(4.0f, 1.5f, 2.0f);
         const AZ::Vector3 boxDimensions(1.0f, 2.0f, 2.5f);
         const AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
-        SetUpBoxShapeComponent(m_entity, boxTransform, nonUniformScale, translationOffset, boxDimensions);
-        EnterComponentMode(m_entity, EditorBoxShapeComponentTypeId);
+        SetUpBoxShapeComponent(m_entity->GetId(), boxTransform, nonUniformScale, translationOffset, boxDimensions);
+        EnterComponentMode(m_entityId, EditorBoxShapeComponentTypeId);
 
         // position the camera so it is looking down at the box
         AzFramework::SetCameraTransform(
@@ -164,7 +167,7 @@ namespace LmbrCentral
 
         DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd, AzToolsFramework::DefaultSymmetricalEditingModifier);
 
-        ExpectBoxDimensions(m_entity, AZ::Vector3(2.0f, 2.0f, 2.5f));
+        ExpectBoxDimensions(m_entityId, AZ::Vector3(2.0f, 2.0f, 2.5f));
     }
 
     TEST_F(EditorBoxShapeComponentManipulatorFixture, BoxShapeNonUniformScaleAsymmetricalDimensionManipulatorsScaleCorrectly)
@@ -174,8 +177,8 @@ namespace LmbrCentral
         const AZ::Vector3 nonUniformScale(2.0f, 0.5f, 1.5f);
         const AZ::Vector3 boxDimensions(3.0f, 6.0f, 2.0f);
         const AZ::Vector3 translationOffset(2.0f, -5.0f, 4.0f);
-        SetUpBoxShapeComponent(m_entity, boxTransform, nonUniformScale, translationOffset, boxDimensions);
-        EnterComponentMode(m_entity, EditorBoxShapeComponentTypeId);
+        SetUpBoxShapeComponent(m_entityId, boxTransform, nonUniformScale, translationOffset, boxDimensions);
+        EnterComponentMode(m_entityId, EditorBoxShapeComponentTypeId);
 
         // position the camera so it is looking down at the box
         AzFramework::SetCameraTransform(
@@ -191,9 +194,9 @@ namespace LmbrCentral
 
         DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
 
-        ExpectBoxDimensions(m_entity, AZ::Vector3(3.0f, 9.0f, 2.0f));
+        ExpectBoxDimensions(m_entityId, AZ::Vector3(3.0f, 9.0f, 2.0f));
         // the offset should have changed because the editing was asymmetrical
-        ExpectTranslationOffset(m_entity, translationOffset - AZ::Vector3::CreateAxisY(1.5f));
+        ExpectTranslationOffset(m_entityId, translationOffset - AZ::Vector3::CreateAxisY(1.5f));
     }
 
     TEST_F(EditorBoxShapeComponentManipulatorFixture, BoxShapeNonUniformScaleTranslationOffsetManipulatorsScaleCorrectly)
@@ -203,8 +206,8 @@ namespace LmbrCentral
         const AZ::Vector3 nonUniformScale(0.5f, 2.0f, 3.0f);
         const AZ::Vector3 boxDimensions(6.0f, 2.0f, 5.0f);
         const AZ::Vector3 translationOffset(4.0f, 5.0f, -3.0f);
-        SetUpBoxShapeComponent(m_entity, boxTransform, nonUniformScale, translationOffset, boxDimensions);
-        EnterComponentMode(m_entity, EditorBoxShapeComponentTypeId);
+        SetUpBoxShapeComponent(m_entityId, boxTransform, nonUniformScale, translationOffset, boxDimensions);
+        EnterComponentMode(m_entityId, EditorBoxShapeComponentTypeId);
         SetComponentSubMode(m_entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode::TranslationOffset);
 
         // position the camera so it is looking horizontally at the box
@@ -220,7 +223,7 @@ namespace LmbrCentral
 
         DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
 
-        ExpectTranslationOffset(m_entity, translationOffset + AZ::Vector3::CreateAxisX());
+        ExpectTranslationOffset(m_entityId, translationOffset + AZ::Vector3::CreateAxisX());
     }
 } // namespace LmbrCentral
 

@@ -36,33 +36,33 @@ namespace LmbrCentral
             ->MouseLButtonUp();
     }
 
-    void EnterComponentMode(AZ::Entity* entity, const AZ::Uuid& componentType)
+    void EnterComponentMode(AZ::EntityId entityId, const AZ::Uuid& componentType)
     {
-        AzToolsFramework::SelectEntity(entity->GetId());
+        AzToolsFramework::SelectEntity(entityId);
         AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
             &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Events::AddSelectedComponentModesOfType,
             componentType);
     }
 
-    void ExpectBoxDimensions(AZ::Entity* entity, const AZ::Vector3& expectedBoxDimensions)
+    void ExpectBoxDimensions(AZ::EntityId entityId, const AZ::Vector3& expectedBoxDimensions)
     {
         AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
-        BoxShapeComponentRequestsBus::EventResult(boxDimensions, entity->GetId(), &BoxShapeComponentRequests::GetBoxDimensions);
+        BoxShapeComponentRequestsBus::EventResult(boxDimensions, entityId, &BoxShapeComponentRequests::GetBoxDimensions);
         EXPECT_THAT(boxDimensions, UnitTest::IsCloseTolerance(expectedBoxDimensions, ManipulatorTolerance));
     }
 
-    void ExpectTranslationOffset(AZ::Entity* entity, const AZ::Vector3& expectedTranslationOffset)
+    void ExpectTranslationOffset(AZ::EntityId entityId, const AZ::Vector3& expectedTranslationOffset)
     {
         AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            translationOffset, entity->GetId(), &LmbrCentral::ShapeComponentRequests::GetTranslationOffset);
+            translationOffset, entityId, &LmbrCentral::ShapeComponentRequests::GetTranslationOffset);
         EXPECT_THAT(translationOffset, UnitTest::IsCloseTolerance(expectedTranslationOffset, ManipulatorTolerance));
     }
 
     void SetComponentSubMode(AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode subMode)
     {
         AzToolsFramework::ShapeComponentModeRequestBus::Event(
-            entityComponentIdPair, &AzToolsFramework::ShapeComponentModeRequests::SetCurrentMode, subMode);
+            entityComponentIdPair, &AzToolsFramework::ShapeComponentModeRequests::SetShapeSubMode, subMode);
     }
 
     void ExpectSubMode(
@@ -70,7 +70,7 @@ namespace LmbrCentral
     {
         AzToolsFramework::ShapeComponentModeRequests::SubMode subMode = AzToolsFramework::ShapeComponentModeRequests::SubMode::NumModes;
         AzToolsFramework::ShapeComponentModeRequestBus::EventResult(
-            subMode, entityComponentIdPair, &AzToolsFramework::ShapeComponentModeRequests::GetCurrentMode);
+            subMode, entityComponentIdPair, &AzToolsFramework::ShapeComponentModeRequests::GetShapeSubMode);
         EXPECT_EQ(subMode, expectedSubMode);
     }
 

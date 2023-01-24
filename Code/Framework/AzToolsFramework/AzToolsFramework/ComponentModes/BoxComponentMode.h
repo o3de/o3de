@@ -48,9 +48,9 @@ namespace AzToolsFramework
         bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
 
         // ShapeComponentModeRequestBus overrides ...
-        ShapeComponentModeRequests::SubMode GetCurrentMode() override;
-        void SetCurrentMode(ShapeComponentModeRequests::SubMode mode) override;
-        void ResetCurrentMode() override;
+        ShapeComponentModeRequests::SubMode GetShapeSubMode() const override;
+        void SetShapeSubMode(ShapeComponentModeRequests::SubMode mode) override;
+        void ResetShapeSubMode() override;
 
         constexpr static const char* const DimensionsTooltip = "Switch to dimensions mode";
         constexpr static const char* const TranslationOffsetTooltip = "Switch to translation offset mode";

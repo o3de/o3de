@@ -157,5 +157,7 @@ namespace AzToolsFramework
     {
         BoxManipulatorRequestBus::Event(
             m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::SetDimensions, AZ::Vector3::CreateOne());
+        ShapeManipulatorRequestBus::Event(
+            m_entityComponentIdPair, &ShapeManipulatorRequestBus::Events::SetTranslationOffset, AZ::Vector3::CreateZero());
     }
 } // namespace AzToolsFramework

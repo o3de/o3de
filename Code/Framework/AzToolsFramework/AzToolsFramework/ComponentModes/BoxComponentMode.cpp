@@ -45,7 +45,7 @@ namespace AzToolsFramework
             m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::TranslationOffset)] =
                 AZStd::make_unique<ShapeTranslationOffsetViewportEdit>();
             SetupCluster();
-            SetCurrentMode(ShapeComponentModeRequests::SubMode::Dimensions);
+            SetShapeSubMode(ShapeComponentModeRequests::SubMode::Dimensions);
         }
         else
         {
@@ -70,7 +70,7 @@ namespace AzToolsFramework
         setDimensionsModeAction.SetCallback(
             [this]()
             {
-                SetCurrentMode(SubMode::Dimensions);
+                SetShapeSubMode(SubMode::Dimensions);
             });
 
         AzToolsFramework::ActionOverride setTranslationOffsetModeAction;
@@ -82,7 +82,7 @@ namespace AzToolsFramework
         setTranslationOffsetModeAction.SetCallback(
             [this]()
             {
-                SetCurrentMode(SubMode::TranslationOffset);
+                SetShapeSubMode(SubMode::TranslationOffset);
             });
 
         AzToolsFramework::ActionOverride resetModeAction;
@@ -94,7 +94,7 @@ namespace AzToolsFramework
         resetModeAction.SetCallback(
             [this]()
             {
-                ResetCurrentMode();
+                ResetShapeSubMode();
             });
 
         return { setDimensionsModeAction, setTranslationOffsetModeAction, resetModeAction };
@@ -130,7 +130,7 @@ namespace AzToolsFramework
                         {
                             ShapeComponentModeRequestBus::Event(
                                 entityComponentIdPair,
-                                &ShapeComponentModeRequests::SetCurrentMode,
+                                &ShapeComponentModeRequests::SetShapeSubMode,
                                 ShapeComponentModeRequests::SubMode::Dimensions);
                         });
                 });
@@ -160,7 +160,7 @@ namespace AzToolsFramework
                         {
                             ShapeComponentModeRequestBus::Event(
                                 entityComponentIdPair,
-                                &ShapeComponentModeRequests::SetCurrentMode,
+                                &ShapeComponentModeRequests::SetShapeSubMode,
                                 ShapeComponentModeRequests::SubMode::TranslationOffset);
                         });
                 });
@@ -188,7 +188,7 @@ namespace AzToolsFramework
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
                         {
-                            ShapeComponentModeRequestBus::Event(entityComponentIdPair, &ShapeComponentModeRequests::ResetCurrentMode);
+                            ShapeComponentModeRequestBus::Event(entityComponentIdPair, &ShapeComponentModeRequests::ResetShapeSubMode);
                         });
                 });
 
@@ -283,11 +283,11 @@ namespace AzToolsFramework
         {
             if (buttonId == m_buttonIds[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)])
             {
-                SetCurrentMode(ShapeComponentModeRequests::SubMode::Dimensions);
+                SetShapeSubMode(ShapeComponentModeRequests::SubMode::Dimensions);
             }
             else if (buttonId == m_buttonIds[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::TranslationOffset)])
             {
-                SetCurrentMode(ShapeComponentModeRequests::SubMode::TranslationOffset);
+                SetShapeSubMode(ShapeComponentModeRequests::SubMode::TranslationOffset);
             }
         };
 
@@ -299,12 +299,12 @@ namespace AzToolsFramework
             m_modeSelectionHandler);
     }
 
-    ShapeComponentModeRequests::SubMode BoxComponentMode::GetCurrentMode()
+    ShapeComponentModeRequests::SubMode BoxComponentMode::GetShapeSubMode() const
     {
         return m_subMode;
     }
 
-    void BoxComponentMode::SetCurrentMode(ShapeComponentModeRequests::SubMode mode)
+    void BoxComponentMode::SetShapeSubMode(ShapeComponentModeRequests::SubMode mode)
     {
         AZ_Assert(mode < ShapeComponentModeRequests::SubMode::NumModes, "Submode not found:%d", static_cast<AZ::u32>(mode));
         m_subModes[static_cast<AZ::u32>(m_subMode)]->Teardown();
@@ -323,7 +323,7 @@ namespace AzToolsFramework
             m_buttonIds[modeIndex]);
     }
 
-    void BoxComponentMode::ResetCurrentMode()
+    void BoxComponentMode::ResetShapeSubMode()
     {
         UndoSystem::URSequencePoint* undoBatch = nullptr;
         ToolsApplicationRequests::Bus::BroadcastResult(
@@ -352,7 +352,7 @@ namespace AzToolsFramework
             AZ::u32 numSubModes = static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::NumModes);
             AZ::u32 nextModeIndex = (currentModeIndex + numSubModes + direction) % m_subModes.size();
             ShapeComponentModeRequests::SubMode nextMode = static_cast<ShapeComponentModeRequests::SubMode>(nextModeIndex);
-            SetCurrentMode(nextMode);
+            SetShapeSubMode(nextMode);
             return true;
         }
         return false;

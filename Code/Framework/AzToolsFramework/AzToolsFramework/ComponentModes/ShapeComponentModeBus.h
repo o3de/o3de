@@ -25,14 +25,14 @@ namespace AzToolsFramework
         };
 
         //! Gets the current shape component mode sub mode.
-        virtual SubMode GetCurrentMode() = 0;
+        virtual SubMode GetShapeSubMode() const = 0;
 
         //! Sets the current shape component mode sub mode.
         //! @param mode The new sub mode to set.
-        virtual void SetCurrentMode(SubMode mode) = 0;
+        virtual void SetShapeSubMode(SubMode mode) = 0;
 
         //! Resets the UI for the current shape component mode sub mode.
-        virtual void ResetCurrentMode() = 0;
+        virtual void ResetShapeSubMode() = 0;
     };
 
     using ShapeComponentModeRequestBus = AZ::EBus<ShapeComponentModeRequests>;
