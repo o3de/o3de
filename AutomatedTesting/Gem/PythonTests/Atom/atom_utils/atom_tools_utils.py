@@ -8,10 +8,15 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import os
 import sys
 import time
+
 import azlmbr.atom
 import azlmbr.atomtools
 import azlmbr.bus as bus
 import azlmbr.paths
+
+from Atom.atom_utils.atom_constants import (
+    AtomToolsDocumentRequestBusEvents, AtomToolsDocumentSystemRequestBusEvents, AtomToolsMainWindowRequestBusEvents,
+    EntityPreviewViewportSettingsRequestBusEvents)
 
 MATERIAL_TYPES_PATH = os.path.join(
     azlmbr.paths.engroot, "Gems", "Atom", "Feature", "Common", "Assets", "Materials", "Types")
@@ -77,49 +82,58 @@ def verify_one_material_document_opened(
 
 
 def open_document(file_path: str) -> azlmbr.math.Uuid:
-    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "OpenDocument", file_path)
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
+        bus.Broadcast, AtomToolsDocumentSystemRequestBusEvents.OPEN_DOCUMENT, file_path)
 
 
 def is_document_open(document_id: azlmbr.math.Uuid) -> bool:
-    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "IsDocumentOpen", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
+        bus.Broadcast, AtomToolsDocumentSystemRequestBusEvents.IS_DOCUMENT_OPEN, document_id)
 
 
 def save_document(document_id: azlmbr.math.Uuid) -> bool:
-    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "SaveDocument", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
+        bus.Broadcast, AtomToolsDocumentSystemRequestBusEvents.SAVE_DOCUMENT, document_id)
 
 
 def save_document_as_copy(document_id: azlmbr.math.Uuid, target_path: str) -> bool:
     return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
-        bus.Broadcast, "SaveDocumentAsCopy", document_id, target_path)
+        bus.Broadcast, AtomToolsDocumentSystemRequestBusEvents.SAVE_DOCUMENT_AS_COPY, document_id, target_path)
 
 
 def save_document_as_child(document_id: azlmbr.math.Uuid, target_path: str) -> bool:
     return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
-        bus.Broadcast, "SaveDocumentAsChild", document_id, target_path)
+        bus.Broadcast, AtomToolsDocumentSystemRequestBusEvents.SAVE_DOCUMENT_AS_CHILD, document_id, target_path)
 
 
 def save_all_documents() -> bool:
-    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "SaveAllDocuments")
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
+        bus.Broadcast, AtomToolsDocumentSystemRequestBusEvents.SAVE_ALL_DOCUMENTS)
 
 
 def close_document(document_id: azlmbr.math.Uuid):
-    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "CloseDocument", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
+        bus.Broadcast, AtomToolsDocumentSystemRequestBusEvents.CLOSE_DOCUMENT, document_id)
 
 
 def close_all_documents() -> bool:
-    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "CloseAllDocuments")
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
+        bus.Broadcast, AtomToolsDocumentSystemRequestBusEvents.CLOSE_ALL_DOCUMENTS)
 
 
 def close_all_except_selected(document_id: azlmbr.math.Uuid) -> bool:
-    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "CloseAllDocumentsExcept", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
+        bus.Broadcast, AtomToolsDocumentSystemRequestBusEvents.CLOSE_ALL_DOCUMENTS_EXCEPT, document_id)
 
 
 def is_pane_visible(pane_name: str) -> bool:
-    return azlmbr.atomtools.AtomToolsMainWindowRequestBus(bus.Broadcast, "IsDockWidgetVisible", pane_name)
+    return azlmbr.atomtools.AtomToolsMainWindowRequestBus(
+        bus.Broadcast, AtomToolsMainWindowRequestBusEvents.IS_DOCK_WIDGET_VISIBLE, pane_name)
 
 
 def set_pane_visibility(pane_name: str, value: bool) -> None:
-    azlmbr.atomtools.AtomToolsMainWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
+    azlmbr.atomtools.AtomToolsMainWindowRequestBus(
+        bus.Broadcast, AtomToolsMainWindowRequestBusEvents.SET_DOCK_WIDGET_VISIBLE, pane_name, value)
 
 
 def load_lighting_preset_by_asset_id(asset_id: azlmbr.math.Uuid) -> bool:
@@ -128,7 +142,7 @@ def load_lighting_preset_by_asset_id(asset_id: azlmbr.math.Uuid) -> bool:
     Returns True if it successfully changes it, False otherwise.
     """
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
-        azlmbr.bus.Broadcast, "LoadLightingPresetByAssetId", asset_id)
+        azlmbr.bus.Broadcast, EntityPreviewViewportSettingsRequestBusEvents.LOAD_LIGHTING_PRESET_BY_ASSET_ID, asset_id)
 
 
 def load_lighting_preset_by_path(asset_path: str) -> bool:
@@ -137,7 +151,7 @@ def load_lighting_preset_by_path(asset_path: str) -> bool:
     Returns True if it successfully changes it, False otherwise.
     """
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
-        azlmbr.bus.Broadcast, "LoadLightingPreset", asset_path)
+        azlmbr.bus.Broadcast, EntityPreviewViewportSettingsRequestBusEvents.LOAD_LIGHTING_PRESET, asset_path)
 
 
 def get_last_lighting_preset_asset_id() -> azlmbr.math.Uuid:
@@ -149,7 +163,7 @@ def get_last_lighting_preset_asset_id() -> azlmbr.math.Uuid:
     {AB7FA1BA-7207-5333-BDD6-69C3F5B7A410}:0
     """
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
-        azlmbr.bus.Broadcast, "GetLastLightingPresetAssetId")
+        azlmbr.bus.Broadcast, EntityPreviewViewportSettingsRequestBusEvents.GET_LAST_LIGHTING_PRESET_ASSET_ID)
 
 
 def get_last_lighting_preset_path() -> str:
@@ -161,7 +175,8 @@ def get_last_lighting_preset_path() -> str:
     "C:/git/o3de/Gems/Atom/TestData/TestData/LightingPresets/beach_parking.lightingpreset.azasset"
     """
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
-        azlmbr.bus.Broadcast, "GetLastLightingPresetPathWithoutAlias")
+        azlmbr.bus.Broadcast,
+        EntityPreviewViewportSettingsRequestBusEvents.GET_LAST_LIGHTING_PRESET_PATH_WITHOUT_ALIAS)
 
 
 def get_last_model_preset_path() -> str:
@@ -173,7 +188,7 @@ def get_last_model_preset_path() -> str:
     "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/ViewportModels/BeveledCone.modelpreset.azasset"
     """
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
-        azlmbr.bus.Broadcast, "GetLastModelPresetPathWithoutAlias")
+        azlmbr.bus.Broadcast, EntityPreviewViewportSettingsRequestBusEvents.GET_LAST_MODEL_PRESET_PATH_WITHOUT_ALIAS)
 
 
 def get_last_model_preset_asset_id() -> azlmbr.math.Uuid:
@@ -184,23 +199,28 @@ def get_last_model_preset_asset_id() -> azlmbr.math.Uuid:
     {56C02199-7B4F-5896-A713-F70E6EBA0726}:0
     {46D4B53F-A900-591B-B4CD-75A79E47749B}:0
     """
-    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastModelPresetAssetId")
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, EntityPreviewViewportSettingsRequestBusEvents.GET_LAST_MODEL_PRESET_ASSET_ID)
 
 
 def set_grid_enabled(value: bool) -> None:
-    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetGridEnabled", value)
+    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, EntityPreviewViewportSettingsRequestBusEvents.SET_GRID_ENABLED, value)
 
 
 def get_grid_enabled() -> bool:
-    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetGridEnabled")
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, EntityPreviewViewportSettingsRequestBusEvents.GET_GRID_ENABLED)
 
 
 def set_shadow_catcher_enabled(value: bool) -> None:
-    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetShadowCatcherEnabled", value)
+    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, EntityPreviewViewportSettingsRequestBusEvents.SET_SHADOW_CATCHER_ENABLED, value)
 
 
 def get_shadow_catcher_enabled() -> bool:
-    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetShadowCatcherEnabled")
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, EntityPreviewViewportSettingsRequestBusEvents.GET_SHADOW_CATCHER_ENABLED)
 
 
 def load_model_preset_by_asset_id(asset_id: azlmbr.math.Uuid) -> bool:
@@ -209,7 +229,7 @@ def load_model_preset_by_asset_id(asset_id: azlmbr.math.Uuid) -> bool:
     Returns True if it successfully changes, False otherwise.
     """
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
-        azlmbr.bus.Broadcast, "LoadModelPresetByAssetId", asset_id)
+        azlmbr.bus.Broadcast, EntityPreviewViewportSettingsRequestBusEvents.LOAD_MODEL_PRESET_BY_ASSET_ID, asset_id)
 
 
 def load_model_preset_by_path(asset_path: str) -> bool:
@@ -217,23 +237,26 @@ def load_model_preset_by_path(asset_path: str) -> bool:
     Takes in an asset path and attempts to select the model in the viewport dropdown using that path.
     Returns True if it successfully changes it, False otherwise.
     """
-    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadModelPreset", asset_path)
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, EntityPreviewViewportSettingsRequestBusEvents.LOAD_MODEL_PRESET, asset_path)
 
 
 def undo(document_id: azlmbr.math.Uuid) -> bool:
-    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "Undo", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, AtomToolsDocumentRequestBusEvents.UNDO, document_id)
 
 
 def redo(document_id: azlmbr.math.Uuid) -> bool:
-    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "Redo", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, AtomToolsDocumentRequestBusEvents.REDO, document_id)
 
 
 def begin_edit(document_id: azlmbr.math.Uuid) -> bool:
-    return azlmbr.atomtools.AtomToolsDocumentRequestBus(azlmbr.bus.Event, "BeginEdit", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentRequestBus(
+        azlmbr.bus.Event, AtomToolsDocumentRequestBusEvents.BEGIN_EDIT, document_id)
 
 
 def end_edit(document_id: azlmbr.math.Uuid) -> bool:
-    return azlmbr.atomtools.AtomToolsDocumentRequestBus(azlmbr.bus.Event, "EndEdit", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentRequestBus(
+        azlmbr.bus.Event, AtomToolsDocumentRequestBusEvents.END_EDIT, document_id)
 
 
 def crash() -> None:
