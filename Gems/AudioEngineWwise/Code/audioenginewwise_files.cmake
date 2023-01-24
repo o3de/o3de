@@ -7,8 +7,6 @@
 #
 
 set(FILES
-    Source/AudioEngineWwiseGemSystemComponent.cpp
-    Source/AudioEngineWwiseGemSystemComponent.h
     Source/Engine/ATLEntities_wwise.h
     Source/Engine/AudioSourceManager.h
     Source/Engine/AudioSystemImpl_wwise.h
@@ -32,9 +30,3 @@ set(FILES
     Source/Engine/AudioInput/WavParser.cpp
     Source/Engine/AudioInput/WavParser.h
 )
-   
-# Skip the following file that is also used in the editor shared target so the compiler will recognize its the same symbol
-set(SKIP_UNITY_BUILD_INCLUSION_FILES
-    Source/AudioEngineWwiseGemSystemComponent.cpp
-)
-

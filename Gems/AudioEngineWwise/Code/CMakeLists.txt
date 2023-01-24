@@ -175,11 +175,14 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             NAMESPACE Gem
             FILES_CMAKE
                 audioenginewwise_editor_tests_files.cmake
+                audioenginewwise_editor_shared_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
-                    Source/Editor
                     Source
+                    Source/Editor
+                    Source/Engine
+                    ${pal_dir}
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest
