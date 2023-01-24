@@ -6,11 +6,13 @@
  *
  */
 
-// --- Pass SRG ---
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
-
-// --- Material ---
 #include "MaterialGraphName_Common.azsli"
+
+// These cannot be included in the common file because the lighting data accesses the pass SRG which is not available on the depth pass
+#include <../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli>
+#include <../Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli>
+#include <../Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli>
 
 // --- Vertex + Pixel Shader ---
 #if MULTI_VIEW_FORWARD

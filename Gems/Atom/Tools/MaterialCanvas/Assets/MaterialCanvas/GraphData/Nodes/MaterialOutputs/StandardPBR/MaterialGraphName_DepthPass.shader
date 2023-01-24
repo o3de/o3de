@@ -1,5 +1,5 @@
 {
-    "Source": "./MaterialGraphName_Depth.azsl",
+    "Source" : "./MaterialGraphName_Depth.azsl",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
@@ -12,10 +12,6 @@
         {
           "name": "MainVS",
           "type": "Vertex"
-        },
-        {
-          "name": "MainPS",
-          "type": "Fragment"
         }
       ]
     },
