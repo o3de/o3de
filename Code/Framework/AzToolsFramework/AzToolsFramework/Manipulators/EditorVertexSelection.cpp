@@ -17,6 +17,8 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
@@ -61,9 +63,6 @@ namespace std
 
 namespace AzToolsFramework
 {
-    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
-    static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
-
     static const char* const s_duplicateVerticesTitle = "Duplicate Vertices";
     static const char* const s_duplicateVerticesDesc = "Duplicate current vertex selection";
     static const char* const s_deleteVerticesTitle = "Delete Vertices";
@@ -92,7 +91,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Vertex Selection";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -122,7 +121,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Vertex Selection";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -152,7 +151,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Vertex Selection";
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorActionContext::MainWindowContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -181,9 +180,9 @@ namespace AzToolsFramework
             menuManagerInterface,
             "EditorVertexSelection - could not get MenuManagerInterface on BindActionsToMenus.");
 
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.vertexSelection.duplicate", 6000);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.vertexSelection.delete", 6001);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.vertexSelection.clearSelection", 6002);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.vertexSelection.duplicate", 6000);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.vertexSelection.delete", 6001);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.vertexSelection.clearSelection", 6002);
     }
 
     static void RefreshUiAfterAddRemove(const AZ::EntityComponentIdPair& entityComponentIdPair)

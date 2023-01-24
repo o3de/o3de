@@ -272,7 +272,7 @@ namespace AZ
                 uint32_t slotIndex = static_cast<uint32_t>(pipelineLayout.GetIndexBySlot(slot));
  
                 //Check explicitly for Bindless SRG. This needs to be data driven (todo)
-                if (srgSlot == RHI::ShaderResourceGroupData::BindlessSRGFrequencyId && shaderResourceGroup == nullptr)
+                if (slotIndex == RHI::ShaderResourceGroupData::BindlessSRGFrequencyId && shaderResourceGroup == nullptr)
                 {
                     //Skip if the global static bindless heap is already bound
                     if (m_state.m_bindBindlessHeap)
