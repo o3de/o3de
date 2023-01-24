@@ -89,7 +89,7 @@ namespace UnitTests
         AZStd::string MakePath(const char* filename, bool intermediate);
 
         void CheckProduct(const char* relativePath, bool exists = true);
-        void CheckIntermediate(const char* relativePath, bool exists = true);
+        void CheckIntermediate(const char* relativePath, bool exists = true, bool hasMetadata = false);
         void ProcessSingleStep(int expectedJobCount = 1, int expectedFileCount = 1, int jobToRun = 0, bool expectSuccess = true);
 
         void ProcessFileMultiStage(

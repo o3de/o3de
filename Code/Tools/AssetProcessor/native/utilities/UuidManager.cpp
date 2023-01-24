@@ -12,6 +12,7 @@
 #include <native/utilities/assetUtils.h>
 #include <Metadata/MetadataManager.h>
 #include <native/AssetManager/FileStateCache.h>
+#include "UuidManager.h"
 
 namespace AssetProcessor
 {
@@ -74,6 +75,11 @@ namespace AssetProcessor
         {
             m_uuids.erase(itr);
         }
+    }
+
+    bool UuidManager::IsGenerationEnabledForFile(AZ::IO::PathView file)
+    {
+        return m_enabledTypes.contains(file.Extension().Native());
     }
 
     void UuidManager::EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types)

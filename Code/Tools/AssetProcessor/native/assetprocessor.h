@@ -205,6 +205,7 @@ namespace AssetProcessor
 
         // UUID of the original source asset.
         // If this job is for an intermediate asset, the UUID is for the source at the top of the processing chain.
+        // If the original source asset is not using metadata files, this value will be empty.
         AZ::Uuid m_topLevelSourceUuid;
 
         AZStd::vector<JobDependencyInternal> m_jobDependencyList;

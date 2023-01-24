@@ -35,6 +35,7 @@
 #include <AssetManager/ProductAsset.h>
 #include <native/AssetManager/SourceAssetReference.h>
 #include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <native/utilities/UuidManager.h>
 
 namespace AssetProcessor
 {
@@ -4089,15 +4090,25 @@ namespace AssetProcessor
                         newJob.m_scanFolder = scanFolder;
                         newJob.m_checkServer = jobDescriptor.m_checkServer;
 
+                        auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+
+                        AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+
                         auto topLevelSource = AssetUtilities::GetTopLevelSourceForIntermediateAsset(sourceAsset, m_stateData);
 
                         if (!topLevelSource)
                         {
-                            newJob.m_topLevelSourceUuid = sourceUUID;
+                            const bool isEnabledType = uuidInterface->IsGenerationEnabledForFile(sourceAsset.AbsolutePath());
+
+                            newJob.m_topLevelSourceUuid = isEnabledType ? sourceUUID : AZ::Uuid{};
                         }
                         else
                         {
-                            newJob.m_topLevelSourceUuid = topLevelSource.value().m_sourceGuid;
+                            SourceAssetReference topLevelSourceReference(
+                                topLevelSource.value().m_scanFolderPK, topLevelSource.value().m_sourceName.c_str());
+                            const bool isEnabledType = uuidInterface->IsGenerationEnabledForFile(topLevelSourceReference.AbsolutePath());
+
+                            newJob.m_topLevelSourceUuid = isEnabledType ? topLevelSource.value().m_sourceGuid : AZ::Uuid{};
                         }
 
                         if (m_builderDebugFlag)
