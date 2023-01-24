@@ -6,7 +6,6 @@
  *
  */
 
-#pragma optimize("", off)
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 
 #include <AzCore/Component/Entity.h>
@@ -24,10 +23,6 @@
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationHandler.h>
-#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-
-#include <QMessageBox>
-#include <QTranslator>
 
 AZ_DEFINE_BUDGET(PrefabSystem);
 
@@ -1222,4 +1217,3 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
-#pragma optimize("", on)
