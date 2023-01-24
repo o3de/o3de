@@ -533,12 +533,13 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
         }
     }
     
-    def o3de_project = ''
-    if (!pipelineConfig.DEFAULT_PROJECT) {
-        o3de_project = 'AutomatedTesting'
+    def engine_project = ''
+    
+    if (pipelineConfig.DEFAULT_PROJECT) {
+        engine_project = pipelineConfig.DEFAULT_PROJECT
     }
     else {
-        o3de_project = pipelineConfig.DEFAULT_PROJECT
+        engine_project = 'AutomatedTesting'
     }
 
     dir(workspace) {
@@ -600,7 +601,7 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
             }
         }
         if(engineAutomatedTestingControlFileFound) {
-            processed_repos = ExecuteControlFile(engineAutomatedTestingControlFile, ENGINE_REPOSITORY_NAME, processed_repos, o3de_project, defer_enable_gems)
+            processed_repos = ExecuteControlFile(engineAutomatedTestingControlFile, ENGINE_REPOSITORY_NAME, processed_repos, engine_project, defer_enable_gems)
         }
 
         //if we are not committing to the engine repo then pull that repo in here
@@ -618,44 +619,47 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
                     automatedTestingControlFileFound = true
                 }
             }
-
+            
+            def external_project = ''
             if(env.PROJECT_OVERRIDE) {
-                o3de_project = env.PROJECT_OVERRIDE
+                external_project = env.PROJECT_OVERRIDE
             }
             else if(params.CMAKE_LY_PROJECTS) {
-                o3de_project = params.CMAKE_LY_PROJECTS
+                external_project = params.CMAKE_LY_PROJECTS
             }
 
             if(automatedTestingControlFileFound) {
-                processed_repos = ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME, processed_repos, o3de_project, defer_enable_gems)
+                processed_repos = ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME, processed_repos, external_project, defer_enable_gems)
             }
             else {
-                processed_repos = NoControlFile(COMMIT_REPOSITORY_NAME, processed_repos, o3de_project, defer_enable_gems)
+                processed_repos = NoControlFile(COMMIT_REPOSITORY_NAME, processed_repos, external_project, defer_enable_gems)
             }
-        }
-
-        //set CMAKE_LY_PROJECTS to the relative project_path so it will work on all platforms
-        dir(ENGINE_REPOSITORY_NAME) {
-            // This is a try/catch in the event that this function is called before the scripts are stashed
-            try {
-                unstash "${COMMIT_REPOSITORY_NAME}-scripts"
-            } catch (e) {
-                print "Unstash failed, ignoring"
+            
+            // For only external projects, set CMAKE_LY_PROJECTS to the relative project_path so it will work on all platforms.
+            dir(ENGINE_REPOSITORY_NAME) {
+                // Try/catch in the event that this function is called before the scripts are stashed
+                try {
+                    unstash "${COMMIT_REPOSITORY_NAME}-scripts"
+                } catch (e) {
+                    print "Unstash failed, ignoring"
+                }
+                def ext = ''
+                if(env.IS_UNIX) {
+                    ext = '.sh'
+                }
+                if (external_project) {
+                    PlatformSh("scripts/o3de${ext} get-registered --project-name ${external_project} > projectpath", "Get the project path")
+                    def project_path = readFile file: 'projectpath'
+                    PlatformRm('projectpath')
+                    project_path = project_path.trim()
+                    project_path = project_path.replace("\\", "/")
+                    workspace_path = "${workspace}"
+                    workspace_path = workspace_path.replace("\\", "/")
+                    project_path = project_path.replace("${workspace}", "..")
+                    env.CMAKE_LY_PROJECTS = project_path
+                    echo "env.CMAKE_LY_PROJECTS = ${env.CMAKE_LY_PROJECTS}"
+                }
             }
-            def ext = ''
-            if(env.IS_UNIX) {
-                ext = '.sh'
-            }
-            PlatformSh("scripts/o3de${ext} get-registered --project-name ${o3de_project} > projectpath", "Get the project path")
-            def project_path = readFile file: 'projectpath'
-            PlatformRm('projectpath')
-            project_path = project_path.trim()
-            project_path = project_path.replace("\\", "/")
-            workspace_path = "${workspace}"
-            workspace_path = workspace_path.replace("\\", "/")
-            project_path = project_path.replace("${workspace}", "..")
-            env.CMAKE_LY_PROJECTS = project_path
-            echo "env.CMAKE_LY_PROJECTS = ${env.CMAKE_LY_PROJECTS}"
         }
 
         //defer enabling gems until after the repos are done registering all objects
