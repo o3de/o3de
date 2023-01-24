@@ -3351,6 +3351,7 @@ namespace AssetProcessor
             m_fileModTimes.clear();
             m_fileHashes.clear();
 
+            QueueIdleCheck();
             m_initialScanSkippingFeature = false;
             return;
         }
