@@ -164,6 +164,12 @@ namespace AZ
                 }
             }
 
+            if (!m_clearShadowDrawPacket)
+            {
+                CreateClearShadowDrawPacket();
+            }
+            RHI::Handle<uint32_t> casterMovedBit = GetScene()->GetViewTagBitRegistry().FindTag(MeshCommon::MeshMovedName);
+
             for (const auto& it : sliceInfo)
             {
                 if (!it.m_hasStaticShadows)
@@ -180,7 +186,7 @@ namespace AZ
                     for (auto* pass : it.m_shadowPasses)
                     {
                         pass->SetClearShadowDrawPacket(m_clearShadowDrawPacket);
-                        pass->SetCasterMovedBit(m_casterMovedBit);
+                        pass->SetCasterMovedBit(casterMovedBit);
                     }
                 }
             }
@@ -196,13 +202,14 @@ namespace AZ
             return m_atlas.GetOrigin(index);
         }
 
-        ShadowmapAtlas& ProjectedShadowmapsPass::GetShadowmapAtlas()
+        const ShadowmapAtlas& ProjectedShadowmapsPass::GetShadowmapAtlas() const
         {
             return m_atlas;
         }
 
         void ProjectedShadowmapsPass::BuildInternal()
         {
+            m_updateChildren = true;
             UpdateChildren();
 
             // [GFX TODO][ATOM-2470] stop caring about attachment
@@ -223,17 +230,6 @@ namespace AZ
             imageDescriptor.m_arraySize = m_atlas.GetArraySliceCount();
 
             Base::BuildInternal();
-        }
-
-        void ProjectedShadowmapsPass::FrameBeginInternal(FramePrepareParams params)
-        {
-            if (!m_clearShadowDrawPacket)
-            {
-                CreateClearShadowDrawPacket();
-                m_updateChildren = true;
-            }
-            m_casterMovedBit = GetScene()->GetViewTagBitRegistry().FindTag(MeshCommon::MeshMovedName);
-            Base::FrameBeginInternal(params);
         }
 
         void ProjectedShadowmapsPass::GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const

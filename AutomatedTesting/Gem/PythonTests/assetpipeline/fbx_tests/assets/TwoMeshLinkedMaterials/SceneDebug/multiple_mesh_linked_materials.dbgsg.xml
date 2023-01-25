@@ -347,6 +347,12 @@
 							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
 						</Class>
 					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="RoughnessFactor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="0.5000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
@@ -400,6 +406,12 @@
 						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="RoughnessFactor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="0.5000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -570,6 +582,12 @@
 							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
 						</Class>
 					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="RoughnessFactor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="0.5000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
@@ -623,6 +641,12 @@
 						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="RoughnessFactor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="0.5000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -849,6 +873,12 @@
 							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
 						</Class>
 					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="RoughnessFactor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="0.5000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
@@ -902,6 +932,12 @@
 						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="RoughnessFactor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="0.5000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1072,6 +1108,12 @@
 							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
 						</Class>
 					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="RoughnessFactor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="0.5000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
@@ -1125,6 +1167,12 @@
 						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="RoughnessFactor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="0.5000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
 						</Class>
 					</Class>
 				</Class>

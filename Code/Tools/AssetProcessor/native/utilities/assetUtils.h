@@ -165,6 +165,9 @@ namespace AssetUtilities
     // UUID generation defaults to lowercase SHA1 of the source name, this does normalization and such
     AZ::Uuid CreateSafeSourceUUIDFromName(const char* sourceName, bool caseInsensitive = true);
 
+    AZ::Uuid GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset);
+    AZStd::unordered_set<AZ::Uuid> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset);
+
     //! Compute a CRC given a null-terminated string
     //! @param[in] priorCRC     If supplied, continues an existing CRC by feeding it more data
     unsigned int ComputeCRC32(const char* inString, unsigned int priorCRC = 0xFFFFFFFF);
@@ -302,6 +305,7 @@ namespace AssetUtilities
         : public AssetBuilderSDK::FilePatternMatcher
     {
     public:
+        AZ_CLASS_ALLOCATOR(BuilderFilePatternMatcher, AZ::SystemAllocator)
         BuilderFilePatternMatcher() = default;
         BuilderFilePatternMatcher(const BuilderFilePatternMatcher& copy);
         BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID);

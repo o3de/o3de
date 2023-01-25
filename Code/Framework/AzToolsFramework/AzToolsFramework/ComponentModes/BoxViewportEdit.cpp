@@ -7,11 +7,13 @@
  */
 
 #include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
+#include <AzToolsFramework/ComponentModes/ViewportEditUtilities.h>
 #include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
+#include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportConstants.h>
@@ -27,11 +29,16 @@ namespace AzToolsFramework
         AZ::Vector3::CreateAxisZ(), -AZ::Vector3::CreateAxisZ()
     } };
 
+    BoxViewportEdit::BoxViewportEdit(bool allowAsymmetricalEditing)
+        : m_allowAsymmetricalEditing(allowAsymmetricalEditing)
+    {
+    }
+
     void BoxViewportEdit::UpdateManipulators()
     {
         AZ::Transform manipulatorSpace = AZ::Transform::CreateIdentity();
-        BoxManipulatorRequestBus::EventResult(
-            manipulatorSpace, m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetManipulatorSpace);
+        ShapeManipulatorRequestBus::EventResult(
+            manipulatorSpace, m_entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetManipulatorSpace);
 
         AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(
@@ -58,10 +65,9 @@ namespace AzToolsFramework
         }
     }
 
-    void BoxViewportEdit::Setup(const AZ::EntityComponentIdPair& entityComponentIdPair, bool allowAsymmetricalEditing)
+    void BoxViewportEdit::Setup(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         m_entityComponentIdPair = entityComponentIdPair;
-        m_allowAsymmetricalEditing = allowAsymmetricalEditing;
 
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(
@@ -117,11 +123,11 @@ namespace AzToolsFramework
                         const AZ::Vector3 transformedAxis = nonUniformScale * boxLocalTransform.TransformVector(action.m_fixed.m_axis);
                         const AZ::Vector3 translationOffsetDelta = 0.5f * (newAxisLength - oldAxisLength) * transformedAxis;
                         AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
-                        BoxManipulatorRequestBus::EventResult(
-                            translationOffset, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetTranslationOffset);
-                        BoxManipulatorRequestBus::Event(
+                        ShapeManipulatorRequestBus::EventResult(
+                            translationOffset, entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetTranslationOffset);
+                        ShapeManipulatorRequestBus::Event(
                             entityComponentIdPair,
-                            &BoxManipulatorRequestBus::Events::SetTranslationOffset,
+                            &ShapeManipulatorRequestBus::Events::SetTranslationOffset,
                             translationOffset + translationOffsetDelta);
                     }
 
@@ -147,11 +153,11 @@ namespace AzToolsFramework
         }
     }
 
-    AZ::Vector3 GetPositionInManipulatorFrame(float worldUniformScale, const AZ::Transform& manipulatorLocalTransform,
-        const LinearManipulator::Action& action)
+    void BoxViewportEdit::ResetValues()
     {
-        return manipulatorLocalTransform.GetInverse().TransformPoint(
-            action.m_start.m_localPosition +
-            action.m_current.m_localPositionOffset / AZ::GetClamp(worldUniformScale, AZ::MinTransformScale, AZ::MaxTransformScale));
+        BoxManipulatorRequestBus::Event(
+            m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::SetDimensions, AZ::Vector3::CreateOne());
+        ShapeManipulatorRequestBus::Event(
+            m_entityComponentIdPair, &ShapeManipulatorRequestBus::Events::SetTranslationOffset, AZ::Vector3::CreateZero());
     }
 } // namespace AzToolsFramework

@@ -21,6 +21,7 @@ namespace AWSClientAuthUnitTest
         : public AWSClientAuth::AWSClientAuthSystemComponent
     {
     public:
+        AZ_CLASS_ALLOCATOR(AWSClientAuthSystemComponentMock, AZ::SystemAllocator)
         using AWSClientAuth::AWSClientAuthSystemComponent::GetCognitoIDPClient;
         using AWSClientAuth::AWSClientAuthSystemComponent::GetCognitoIdentityClient;
 

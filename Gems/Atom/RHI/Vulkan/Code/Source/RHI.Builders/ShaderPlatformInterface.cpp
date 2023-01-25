@@ -25,11 +25,7 @@ namespace AZ
     namespace Vulkan
     {
         [[maybe_unused]] static const char* VulkanShaderPlatformName = "VulkanShaderPlatform";
-        static const char* WindowsPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Vulkan/PlatformHeader.hlsli";
-        static const char* AndroidPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Android/Vulkan/PlatformHeader.hlsli";
-        static const char* WindowsAzslShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Vulkan/AzslcHeader.azsli";
-        static const char* AndroidAzslShaderHeader = "Builders/ShaderHeaders/Platform/Android/Vulkan/AzslcHeader.azsli";
-    
+
         RHI::APIType ShaderPlatformInterface::GetAPIType() const
         {
             return Vulkan::RHIType;
@@ -96,16 +92,9 @@ namespace AZ
             return pipelineLayoutDescriptor->Finalize() == RHI::ResultCode::Success;
         }
 
-        const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
+        const char* ShaderPlatformInterface::GetAzslHeader([[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform) const
         {
-            if(platform.HasTag("mobile"))
-            {
-                return AndroidAzslShaderHeader;
-            }
-            else
-            {
-                return WindowsAzslShaderHeader;
-            }
+            return AZ_TRAIT_ATOM_AZSL_SHADER_HEADER;
         }
 
         // Takes in HLSL source file path and then compiles the HLSL to bytecode and
@@ -161,7 +150,7 @@ namespace AZ
             const RHI::ShaderHardwareStage shaderStageType,
             const RHI::ShaderBuildArguments& shaderBuildArguments,
             AZStd::vector<uint8_t>& compiledShader,
-            const AssetBuilderSDK::PlatformInfo& platform,
+            [[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform,
             ByProducts& byProducts) const
         {
             // Shader compiler executable
@@ -236,15 +225,7 @@ namespace AZ
                 AZ_Assert(false, "Invalid Shader stage.");
             }
 
-            AZStd::string prependFile;
-            if(platform.HasTag("mobile"))
-            {
-                prependFile = AndroidPlatformShaderHeader;
-            }
-            else
-            {
-                prependFile = WindowsPlatformShaderHeader;
-            }
+            AZStd::string prependFile{ AZ_TRAIT_ATOM_AZSL_PLATFORM_HEADER };
 
             RHI::PrependArguments args;
             args.m_sourceFile = shaderSourceFile.c_str();

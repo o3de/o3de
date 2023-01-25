@@ -22,6 +22,7 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -918,6 +919,18 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnEntityPickModeStarted()
     {
+        // If we're in component mode, it's possible the outliner isn't currently enabled. If so,
+        // make sure to enable it while in pick mode.
+        if (!isEnabled())
+        {
+            AZ_Assert(
+                AzToolsFramework::ComponentModeFramework::InComponentMode(),
+                "Unexpectedly starting pick mode with a disabled UI while not in component mode. This likely means that "
+                "the outliner will not re-disable itself after pick mode correctly. Fix the code in OnEntityPickModeStarted/Stopped to "
+                "account for this new case.");
+            EnableUi(true);
+        }
+
         m_gui->m_objectTree->setDragEnabled(false);
         m_gui->m_objectTree->setSelectionMode(QAbstractItemView::NoSelection);
         m_gui->m_objectTree->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -926,6 +939,12 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnEntityPickModeStopped()
     {
+        // If we're in component mode, the outliner shouldn't be enabled once pick mode ends.
+        if (AzToolsFramework::ComponentModeFramework::InComponentMode())
+        {
+            EnableUi(false);
+        }
+
         m_gui->m_objectTree->setDragEnabled(true);
         m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
         SetDefaultTreeViewEditTriggers();

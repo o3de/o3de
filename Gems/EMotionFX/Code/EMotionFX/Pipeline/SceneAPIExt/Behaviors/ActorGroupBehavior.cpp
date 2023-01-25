@@ -66,10 +66,12 @@ namespace EMotionFX
             {
                 AZ::SceneAPI::Events::ManifestMetaInfoBus::Handler::BusConnect();
                 AZ::SceneAPI::Events::AssetImportRequestBus::Handler::BusConnect();
+                AZ::SceneAPI::Events::GraphMetaInfoBus::Handler::BusConnect();
             }
 
             void ActorGroupBehavior::Deactivate()
             {
+                AZ::SceneAPI::Events::GraphMetaInfoBus::Handler::BusDisconnect();
                 AZ::SceneAPI::Events::AssetImportRequestBus::Handler::BusDisconnect();
                 AZ::SceneAPI::Events::ManifestMetaInfoBus::Handler::BusDisconnect();
             }
@@ -239,6 +241,17 @@ namespace EMotionFX
                 auto actorGroup = AZStd::find_if(manifestData.begin(), manifestData.end(), AZ::SceneAPI::Containers::DerivedTypeFilter<Group::IActorGroup>());
                 return actorGroup != manifestData.end();
             }
+
+            void ActorGroupBehavior::GetAppliedPolicyNames(AZStd::set<AZStd::string>& appliedPolicies, const AZ::SceneAPI::Containers::Scene& scene) const
+            {
+                if (SceneHasActorGroup(scene))
+                {
+                    AZStd::string policyName;
+                    GetPolicyName(policyName);
+                    appliedPolicies.insert(AZStd::move(policyName));
+                }
+            }
+
         } // Behavior
     } // Pipeline
 } // EMotionFX

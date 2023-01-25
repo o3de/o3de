@@ -67,8 +67,6 @@ namespace EMStudio
 
         m_app = app;
 
-        AZ::AllocatorInstance<UIAllocator>::Create();
-
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         if (!serializeContext)
@@ -129,8 +127,6 @@ namespace EMStudio
         delete m_notificationWindowManager;
         delete m_mainWindow;
         delete m_commandManager;
-
-        AZ::AllocatorInstance<UIAllocator>::Destroy();
 
         AZ::Interface<EMStudioManager>::Unregister(this);
     }

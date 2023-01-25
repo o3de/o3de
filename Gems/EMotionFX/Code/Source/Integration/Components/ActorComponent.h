@@ -120,6 +120,7 @@ namespace EMotionFX
             bool GetRenderActorVisible() const override;
             SkinningMethod GetSkinningMethod() const override;
             void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset) override;
+            void EnableInstanceUpdate(bool enable) override;
 
             //////////////////////////////////////////////////////////////////////////
             // ActorComponentNotificationBus::Handler
