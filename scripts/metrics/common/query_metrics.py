@@ -5,6 +5,9 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Provides query functionality for .csv metrics from S3 buckets
+
+This file is in a prototype stage and is expected to change. It has many moving parts and when linking all  of them,
+some adjustments will have to happen.
 """
 
 import argparse
@@ -144,6 +147,8 @@ def _parse_row(test_case_metrics, row, desired_columns):
 
 
 if __name__ == '__main__':
+    # This functionality is in a prototype stage, and expected to change
+
     # parse parameters
     parser = argparse.ArgumentParser(prog='MetricsQueryTool', description='Queries the metrics.')
     parser.add_argument('-b', '--branch', required=True)
