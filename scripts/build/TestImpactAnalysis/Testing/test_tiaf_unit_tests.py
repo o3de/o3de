@@ -42,9 +42,6 @@ class ConcreteBaseTestImpact(BaseTestImpact):
 
 class TestTiafDriver():
 
-    def skip_if_test_targets_disabled(skip_if_test_targets_disabled):
-        if not skip_if_test_targets_disabled:
-            pytest.skip("Test targets are disabled for this runtime, test will be skipped.")
 
     def test_run_Tiaf_mars_index_prefix_is_supplied(self, caplog, main_args, skip_if_test_targets_disabled, mock_runtime, mocker):
         # given:

@@ -64,8 +64,9 @@ def storage_config(runtime_type, config_data):
     return args_from_config
 
 @pytest.fixture
-def test_targets_enabled(runtime_type, config_data):
-    return config_data[runtime_type][JENKINS_KEY][ENABLED_KEY]
+def skip_if_test_targets_disabled(runtime_type, config_data):
+    if not config_data[runtime_type][JENKINS_KEY][ENABLED_KEY]:
+        pytest.skip("Test targets are disabled for this runtime, test will be skipped.")
 
 
 @pytest.fixture
