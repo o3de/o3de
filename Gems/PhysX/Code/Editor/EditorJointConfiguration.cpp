@@ -333,7 +333,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorJointConfig::IsInComponentMode)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorJointConfig::m_jointname 
                         , "Joint name"
-                        , "Usually coming from URDF")
+                        , "Name used to easily identify the joint")
                     ->DataElement(0, &PhysX::EditorJointConfig::m_selectLeadOnSnap, "Select Lead on Snap"
                         , "Select lead entity on snap to position in component mode.")
                     ->DataElement(0, &PhysX::EditorJointConfig::m_breakable
