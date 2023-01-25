@@ -10,7 +10,7 @@
 
 #include <AzCore/std/string/string_view.h>
 
-namespace EditorMenu
+namespace Editor
 {
     // Editor main window top MenuBar
     inline constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
@@ -47,4 +47,7 @@ namespace EditorMenu
     inline constexpr AZStd::string_view ViewportSizeRatioMenuIdentifier = "o3de.menu.editor.viewport.size.ratio";
     inline constexpr AZStd::string_view ViewportSizeResolutionMenuIdentifier = "o3de.menu.editor.viewport.size.resolution";
     inline constexpr AZStd::string_view ViewportOptionsMenuIdentifier = "o3de.menu.editor.viewport.options";
+
+    // Entity Outliner context menu
+    inline constexpr AZStd::string_view EntityOutlinerContextMenuIdentifier = "o3de.menu.editor.entityOutliner.context";
 }
