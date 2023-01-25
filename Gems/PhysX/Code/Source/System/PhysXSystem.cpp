@@ -455,8 +455,14 @@ namespace PhysX
         m_physXSdk.m_cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_physXSdk.m_foundation, cookingParams);
 
         // Set up CPU dispatcher
+#if defined(AZ_PLATFORM_LINUX)
+        // Temporary workaround for linux. At the moment using AzPhysXCpuDispatcher results in an assert at
+        // PhysX mutex indicating it must be unlocked only by the thread that has already acquired lock.
+        m_cpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
+#else
         m_cpuDispatcher = PhysXCpuDispatcherCreate();
-
+        m_cpuDispatcher = PhysXCpuDispatcherCreate();
+#endif
         PxSetProfilerCallback(&m_pxAzProfilerCallback);
     }
 
