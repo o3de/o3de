@@ -105,7 +105,17 @@ namespace EditorInternal
         AzFramework::Application::StartupParameters params;
 
         // Must be done before creating QApplication, otherwise asserts when we alloc
-        AzToolsFramework::ToolsApplication::Start({}, params);
+        AzToolsFramework::ToolsApplication::Start({
+                /* .m_useExistingAllocator = */ false,
+                /* .m_allocationRecordsSaveNames = */ false,
+                /* .m_allocationRecordsAttemptDecodeImmediately = */ false,
+                /* .m_autoIntegrityCheck = */ false,
+                /* .m_markUnallocatedMemory = */ false,
+                /* .m_doNotUsePools = */ false,
+                /* .m_enableScriptReflection = */ true,
+                /* .m_memoryBlocksByteSize = */ 0,
+                /* .m_recordingMode = */ AZ::Debug::AllocationRecords::RECORD_NO_RECORDS
+            }, params);
         if (IsStartupAborted() || !m_systemEntity)
         {
             AzToolsFramework::ToolsApplication::Stop();

@@ -110,21 +110,34 @@ namespace AZ
             void  Destroy(void* data) override;
             ///////////////////////////////////////////////
 
+            Descriptor() = default;
+            Descriptor(bool useExistingAllocator, bool allocationRecordsSaveNames, bool allocationRecordsAttemptDecodeImmediately, bool autoIntegrityCheck, bool markUnallocatedMemory, bool doNotUsePools, bool enableScriptReflection, AZ::u64 memoryBlocksByteSize, Debug::AllocationRecords::Mode recordingMode, ModuleDescriptorList modules = {})
+                : m_useExistingAllocator(useExistingAllocator)
+                , m_allocationRecordsSaveNames(allocationRecordsSaveNames)
+                , m_allocationRecordsAttemptDecodeImmediately(allocationRecordsAttemptDecodeImmediately)
+                , m_autoIntegrityCheck(autoIntegrityCheck)
+                , m_markUnallocatedMemory(markUnallocatedMemory)
+                , m_doNotUsePools(doNotUsePools)
+                , m_enableScriptReflection(enableScriptReflection)
+                , m_memoryBlocksByteSize(memoryBlocksByteSize)
+                , m_recordingMode(recordingMode)
+                , m_modules(AZStd::move(modules))
+            {
+            }
+
             /// Reflect the descriptor data.
             static void     Reflect(ReflectContext* context, ComponentApplication* app);
 
-            Descriptor();
+            bool            m_useExistingAllocator = false;     //!< True if the user is creating the system allocation and setup tracking modes, if this is true all other parameters are IGNORED.
+            bool            m_allocationRecordsSaveNames = false; //!< True if we want to allocate space for saving the name/filename of each allocation so unloaded module memory leaks have valid names to read, otherwise false.
+            bool            m_allocationRecordsAttemptDecodeImmediately = false; ///< True if we want to attempt decoding frames at time of allocation, otherwise false. Very expensive, used specifically for debugging allocations that fail to decode.
+            bool            m_autoIntegrityCheck = false;       //!< True to check the heap integrity on each allocation/deallocation.
+            bool            m_markUnallocatedMemory = true;    //!< True to mark all memory with 0xcd when it's freed.
+            bool            m_doNotUsePools = false;            //!< True of we want to pipe all allocation to a generic allocator (not pools), this can help debugging a memory stomp. (default: false)
+            bool            m_enableScriptReflection = true;   //!< True if we want to enable reflection to the script context.
 
-            bool            m_useExistingAllocator;     //!< True if the user is creating the system allocation and setup tracking modes, if this is true all other parameters are IGNORED. (default: false)
-            bool            m_allocationRecordsSaveNames; //!< True if we want to allocate space for saving the name/filename of each allocation so unloaded module memory leaks have valid names to read, otherwise false. (default: false, automatically true with recording mode FULL)
-            bool            m_allocationRecordsAttemptDecodeImmediately; ///< True if we want to attempt decoding frames at time of allocation, otherwise false. Very expensive, used specifically for debugging allocations that fail to decode. (default: false)
-            bool            m_autoIntegrityCheck;       //!< True to check the heap integrity on each allocation/deallocation. (default: false)
-            bool            m_markUnallocatedMemory;    //!< True to mark all memory with 0xcd when it's freed. (default: true)
-            bool            m_doNotUsePools;            //!< True of we want to pipe all allocation to a generic allocator (not pools), this can help debugging a memory stomp. (default: false)
-            bool            m_enableScriptReflection;   //!< True if we want to enable reflection to the script context.
-
-            AZ::u64         m_memoryBlocksByteSize;     //!< Memory block size in bytes.
-            Debug::AllocationRecords::Mode m_recordingMode; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE)
+            AZ::u64         m_memoryBlocksByteSize = 0;     //!< Memory block size in bytes.
+            Debug::AllocationRecords::Mode m_recordingMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE)
 
             ModuleDescriptorList m_modules;             //!< Dynamic modules used by the application.
                                                         //!< These will be loaded on startup.

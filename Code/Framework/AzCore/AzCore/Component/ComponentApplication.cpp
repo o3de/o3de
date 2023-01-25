@@ -149,24 +149,6 @@ namespace AZ
         return environment ? environment->Get() : nullptr;
     }
 
-    //=========================================================================
-    // ComponentApplication::Descriptor
-    // [5/30/2012]
-    //=========================================================================
-    ComponentApplication::Descriptor::Descriptor()
-    {
-        m_useExistingAllocator = false;
-        m_allocationRecordsSaveNames = false;
-        m_allocationRecordsAttemptDecodeImmediately = false;
-        m_autoIntegrityCheck = false;
-        m_markUnallocatedMemory = true;
-        m_doNotUsePools = false;
-        m_enableScriptReflection = true;
-
-        m_memoryBlocksByteSize = 0;
-        m_recordingMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
-    }
-
     bool AppDescriptorConverter(SerializeContext& serialize, SerializeContext::DataElementNode& node)
     {
         if (node.GetVersion() < 2)

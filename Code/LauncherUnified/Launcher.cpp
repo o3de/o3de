@@ -445,7 +445,17 @@ namespace O3DELauncher
             gameApplicationStartupParams.m_loadDynamicModules = false;
         #endif // defined(AZ_MONOLITHIC_BUILD)
 
-            gameApplication.Start({}, gameApplicationStartupParams);
+            gameApplication.Start({
+                /* .m_useExistingAllocator = */ false,
+                /* .m_allocationRecordsSaveNames = */ false,
+                /* .m_allocationRecordsAttemptDecodeImmediately = */ false,
+                /* .m_autoIntegrityCheck = */ false,
+                /* .m_markUnallocatedMemory = */ false,
+                /* .m_doNotUsePools = */ false,
+                /* .m_enableScriptReflection = */ true,
+                /* .m_memoryBlocksByteSize = */ 0,
+                /* .m_recordingMode = */ AZ::Debug::AllocationRecords::RECORD_NO_RECORDS
+            }, gameApplicationStartupParams);
 
 
             //connect to the asset processor using the bootstrap values
