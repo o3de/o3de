@@ -14,11 +14,10 @@ import xml.etree.ElementTree as xmlElementTree
 import datetime
 
 from common import logging
-from common.config import load_config, read_config
 
-CONFIG_FILE = "config/config.yml"
 DEFAULT_CTEST_LOG_FILENAME = 'Test.xml'
-
+TAG_FILE = 'TAG'
+TESTING_DIR = 'Testing'
 
 def now_wrap():
     """
@@ -52,7 +51,6 @@ def main():
 
     # Load global configuration.
     logger.info("Loading configuration")
-    load_config(args.config_file, args.config_override)
 
     # Construct the full path to the xml file
     file_path = _get_test_xml_path(args.build_folder, args.ctest_log)
@@ -79,18 +77,6 @@ def parse_args():
         help=f"The file name for the CTest output log (defaults to '{DEFAULT_CTEST_LOG_FILENAME}').",
     )
     parser.add_argument(
-        "-c", "--config-file", action="store", default=CONFIG_FILE,
-        help=f"The path of the config file relative to the script location (defaults to '{CONFIG_FILE}').",
-    )
-    parser.add_argument(
-        "-e", action="append", nargs=2, metavar=("SETTING", "VALUE"), default=[], dest="config_override",
-        help="Override a configuration file setting. This option can be specified multiple times to override different "
-             "settings (if the same setting is specified multiple times only the latest value will be stored). This"
-             "option consumes two arguments -- the name of the setting and the value. Setting names must be fully "
-             "qualified paths matching their YAML counterparts.\n"
-             "Example: -e key1.key2 <user_name>",
-    )
-    parser.add_argument(
         "--csv-file", action="store", default=_get_default_csv_filename(),
         help=f"The directory and file name for the csv to be saved (defaults to YYYY_MM_DD)."
     )
@@ -109,9 +95,7 @@ def _get_test_xml_path(build_path, xml_file):
     :param xml_file: The name of the xml file
     :return: The full path to the xml file
     """
-    testing_dir = read_config("cmake.testing-dir")
-    tag_file_name = read_config("cmake.tag-file")
-    full_tag_path = os.path.join(build_path, testing_dir, tag_file_name)
+    full_tag_path = os.path.join(build_path, TESTING_DIR, TAG_FILE)
     if not os.path.exists(full_tag_path):
         raise FileNotFoundError(f"Could not find CTest TAG file at: {full_tag_path}")
 
@@ -122,7 +106,7 @@ def _get_test_xml_path(build_path, xml_file):
             raise EOFError("The CTest TAG file did not contain the name of the xml folder")
         folder_name = line.strip()
 
-    xml_full_path = os.path.join(build_path, testing_dir, folder_name, xml_file)
+    xml_full_path = os.path.join(build_path, TESTING_DIR, folder_name, xml_file)
     if not os.path.exists(xml_full_path):
         raise FileNotFoundError(f'Unable to find CTest output log at: {xml_full_path}.')
 
