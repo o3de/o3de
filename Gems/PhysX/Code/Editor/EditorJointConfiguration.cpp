@@ -298,7 +298,7 @@ namespace PhysX
                 ->Field("Display Debug", &EditorJointConfig::m_displayJointSetup)
                 ->Field("Select Lead on Snap", &EditorJointConfig::m_selectLeadOnSnap)
                 ->Field("Self Collide", &EditorJointConfig::m_selfCollide)
-                ->Field("Joint Name", &EditorJointConfig::m_jointname)
+                ->Field("Joint Name", &EditorJointConfig::m_jointName)
                 ;
 
             if (auto* editContext = serializeContext->GetEditContext())
@@ -331,7 +331,7 @@ namespace PhysX
                         "Select = Show setup display when entity is selected."
                         "Always = Always show setup display.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorJointConfig::IsInComponentMode)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorJointConfig::m_jointname 
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorJointConfig::m_jointName 
                         , "Joint name"
                         , "Name used to easily identify the joint")
                     ->DataElement(0, &PhysX::EditorJointConfig::m_selectLeadOnSnap, "Select Lead on Snap"
