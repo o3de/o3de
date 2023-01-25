@@ -6,22 +6,17 @@
  *
  */
 
-#pragma once
-
 #include <AzCore/Component/ComponentBus.h>
 #include <AzToolsFramework/ComponentModes/BaseViewportEdit.h>
-#include <AzToolsFramework/Manipulators/LinearManipulator.h>
+#include <AzToolsFramework/Manipulators/TranslationManipulators.h>
 
 namespace AzToolsFramework
 {
-    class LinearManipulator;
-
-    /// Wraps 6 linear manipulators, providing a viewport experience for 
-    /// modifying the extents of a box
-    class BoxViewportEdit : public BaseViewportEdit
+    //! Wraps translation manipulators for editing shape translation offsets.
+    class ShapeTranslationOffsetViewportEdit : public BaseViewportEdit
     {
     public:
-        BoxViewportEdit(bool allowAsymmetricalEditing = false);
+        ShapeTranslationOffsetViewportEdit() = default;
 
         // BaseViewportEdit overrides ...
         void Setup(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
@@ -31,8 +26,6 @@ namespace AzToolsFramework
 
     private:
         AZ::EntityComponentIdPair m_entityComponentIdPair;
-        using BoxManipulators = AZStd::array<AZStd::shared_ptr<LinearManipulator>, 6>;
-        BoxManipulators m_linearManipulators; ///< Manipulators for editing box size.
-        bool m_allowAsymmetricalEditing = false; ///< Whether moving individual faces independently is allowed.
+        AZStd::shared_ptr<TranslationManipulators> m_translationManipulators; //!< Manipulators for editing shape offset.
     };
 } // namespace AzToolsFramework
