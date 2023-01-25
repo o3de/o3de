@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Scrapes metrics from xml files and creates csv formatted files.
+Scrapes metrics from CTest xml files and creates csv formatted files.
 """
 import os.path
 import sys
@@ -49,13 +49,12 @@ def main():
     # Parse args
     args = parse_args()
 
-    # Load global configuration.
-    logger.info("Loading configuration")
-
     # Construct the full path to the xml file
     file_path = _get_test_xml_path(args.build_folder, args.ctest_log)
 
-    # Create csv files
+    # Create csv file
+    if os.path.exists(args.csv_file):
+        logger.warning(f"The file {args.csv_file} already exists. It will be overriden.")
     with open(args.csv_file, 'w', encoding='UTF8', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=CTEST_FIELDS_HEADER, restval='N/A')
         writer.writeheader()
