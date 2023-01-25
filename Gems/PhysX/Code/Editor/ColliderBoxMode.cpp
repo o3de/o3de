@@ -13,20 +13,25 @@ namespace PhysX
 {
     AZ_CLASS_ALLOCATOR_IMPL(ColliderBoxMode, AZ::SystemAllocator, 0);
 
-    void ColliderBoxMode::Setup(const AZ::EntityComponentIdPair& idPair)
+    ColliderBoxMode::ColliderBoxMode()
     {
         const bool allowAsymmetricalEditing = true;
-        m_boxEdit.Setup(idPair, allowAsymmetricalEditing);
+        m_boxEdit = AZStd::make_unique<AzToolsFramework::BoxViewportEdit>(allowAsymmetricalEditing);
+    }
+
+    void ColliderBoxMode::Setup(const AZ::EntityComponentIdPair& idPair)
+    {
+        m_boxEdit->Setup(idPair);
     }
 
     void ColliderBoxMode::Refresh([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
-        m_boxEdit.UpdateManipulators();
+        m_boxEdit->UpdateManipulators();
     }
 
     void ColliderBoxMode::Teardown([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
-        m_boxEdit.Teardown();
+        m_boxEdit->Teardown();
     }
 
     void ColliderBoxMode::ResetValues(const AZ::EntityComponentIdPair& idPair)
