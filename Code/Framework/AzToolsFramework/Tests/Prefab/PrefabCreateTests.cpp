@@ -7,14 +7,13 @@
  */
 
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-
 #include <Prefab/PrefabTestFixture.h>
 
 namespace UnitTest
 {
-    using PrefabCreateInMemoryTest = PrefabTestFixture;
+    using PrefabCreateTests = PrefabTestFixture;
 
-    TEST_F(PrefabCreateInMemoryTest, CreatePrefabFromEntitiesAndValidateChildEntityOrder)
+    TEST_F(PrefabCreateTests, CreatePrefabFromEntitiesAndValidateChildEntityOrder)
     {
         // Level
         // | Car
@@ -45,17 +44,17 @@ namespace UnitTest
         AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { engineEntityId, batteryEntityId, wheelContainerId });
         auto carInstance = m_instanceEntityMapperInterface->FindOwningInstance(carContainerId);
         ASSERT_TRUE(carInstance.has_value());
-        ASSERT_TRUE(carInstance->get().GetContainerEntityId() == carContainerId);
+        ASSERT_EQ(carInstance->get().GetContainerEntityId(), carContainerId);
 
         // Validate the child entity order of the car instance
         AzToolsFramework::EntityOrderArray entityOrderArray = AzToolsFramework::GetEntityChildOrder(carContainerId);
-        EXPECT_TRUE(entityOrderArray.size() == 3);
+        EXPECT_EQ(entityOrderArray.size(), 3);
         AZStd::string entityName;
         AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationRequests::GetEntityName, entityOrderArray[0]);
-        EXPECT_TRUE(entityName == engineEntityName);
+        EXPECT_EQ(entityName, engineEntityName);
         AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationRequests::GetEntityName, entityOrderArray[1]);
-        EXPECT_TRUE(entityName == wheelPrefabName);
+        EXPECT_EQ(entityName, wheelPrefabName);
         AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationRequests::GetEntityName, entityOrderArray[2]);
-        EXPECT_TRUE(entityName == batteryEntityName);
+        EXPECT_EQ(entityName, batteryEntityName);
     }
-}
+} // namespace UnitTest

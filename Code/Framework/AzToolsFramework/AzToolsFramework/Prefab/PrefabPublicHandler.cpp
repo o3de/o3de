@@ -270,9 +270,10 @@ namespace AzToolsFramework
                     PrefabDom previousPatch;
 
                     // Retrieve the previous patch if it exists
-                    if (nestedInstanceLinkPatchesMap.contains(&nestedInstance))
+                    if (auto nestedInstanceIt = nestedInstanceLinkPatchesMap.find(&nestedInstance);
+                        nestedInstanceIt != nestedInstanceLinkPatchesMap.end())
                     {
-                        previousPatch.Swap(nestedInstanceLinkPatchesMap[&nestedInstance]);
+                        previousPatch.Swap(nestedInstanceIt->second);
                         UpdateLinkPatchesWithNewEntityAliases(previousPatch, oldEntityAliases, instanceToCreate->get());
                     }
 
@@ -289,12 +290,12 @@ namespace AzToolsFramework
 
                     if (IsInstanceContainerEntity(topLevelEntityId))
                     {
-                        InstanceOptionalReference nestedInstance = m_instanceEntityMapperInterface->FindOwningInstance(topLevelEntityId);
+                        InstanceOptionalReference topLevelInstance = m_instanceEntityMapperInterface->FindOwningInstance(topLevelEntityId);
 
-                        AZ_Assert(nestedInstance.has_value(), "Invalid nested instance found in the new prefab created.");
+                        AZ_Assert(topLevelInstance.has_value(), "Invalid nested instance found in the new prefab created.");
 
                         // Create a link for the nested instance
-                        createLinkForNestedInstanceFunc(nestedInstance->get());
+                        createLinkForNestedInstanceFunc(topLevelInstance->get());
 
                         // Update the instance link with the new parent transform data
                         PrefabDom nestedContainerEntityDomBefore;
@@ -313,7 +314,7 @@ namespace AzToolsFramework
                         // We won't parent this undo node to the undo batch so that the newly created template and link will remain
                         // unaffected by undo actions. This is needed so that any future instantiations of the template will work.
                         PrefabUndoUpdateLink linkUpdate = PrefabUndoUpdateLink(AZStd::to_string(static_cast<AZ::u64>(topLevelEntityId)));
-                        linkUpdate.Capture(reparentPatch, nestedInstance->get().GetLinkId());
+                        linkUpdate.Capture(reparentPatch, topLevelInstance->get().GetLinkId());
                         linkUpdate.Redo();
                     }
                     else
@@ -332,8 +333,8 @@ namespace AzToolsFramework
                 }
                 EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::SetForceAddEntitiesToBackFlag, false);
 
-                // Set up remaining links between the created prefab instance and its nested instances without undo/redo support.
-                instanceToCreate->get().GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) {
+                // Set up remaining links for the nested instances that are not at the top level. This is done without undo/redo support.
+                instanceToCreate->get().GetNestedInstances([topLevelEntities, createLinkForNestedInstanceFunc](AZStd::unique_ptr<Instance>& nestedInstance) {
                     AZ_Assert(nestedInstance, "Invalid nested instance found in the new prefab created.");
 
                     EntityOptionalReference nestedInstanceContainerEntity = nestedInstance->GetContainerEntity();
