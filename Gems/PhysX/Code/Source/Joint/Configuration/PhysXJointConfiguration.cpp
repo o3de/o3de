@@ -13,12 +13,13 @@
 
 namespace PhysX
 {
-    JointGenericProperties::JointGenericProperties(GenericJointFlag flags, float forceMax, float torqueMax, AZStd::string joint_name)
+    JointGenericProperties::JointGenericProperties(GenericJointFlag flags, float forceMax, float torqueMax, AZStd::string jointName)
         : m_flags(flags)
         , m_forceMax(forceMax)
         , m_torqueMax(torqueMax)
+        , m_jointName(AZStd::move(jointName))
     {
-        m_jointname = joint_name;
+            
     }
 
     JointLimitProperties::JointLimitProperties(
@@ -178,7 +179,7 @@ namespace PhysX
                 ->Field("Maximum Force", &JointGenericProperties::m_forceMax)
                 ->Field("Maximum Torque", &JointGenericProperties::m_torqueMax)
                 ->Field("Flags", &JointGenericProperties::m_flags)
-                ->Field("Joint Name", &JointGenericProperties::m_jointname)
+                ->Field("Joint Name", &JointGenericProperties::m_jointName)
                 ;
         }
     }
