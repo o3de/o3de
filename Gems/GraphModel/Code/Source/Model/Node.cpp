@@ -376,7 +376,7 @@ namespace GraphModel
 
     bool Node::HasInputConnectionFromNode(ConstNodePtr node) const
     {
-         return AZStd::any_of(m_inputDataSlots.begin(), m_inputDataSlots.end(), [&](const auto& slotPair) {
+        return AZStd::any_of(m_inputDataSlots.begin(), m_inputDataSlots.end(), [&](const auto& slotPair) {
             const auto& slot = slotPair.second;
             AZ_Assert(slot->GetSlotDirection() == GraphModel::SlotDirection::Input, "Slots in this container must be input slots.");
             const auto& connections = slot->GetConnections();

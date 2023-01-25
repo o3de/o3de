@@ -137,7 +137,9 @@ namespace GraphCanvas
     {
         Styling::SelectorVector selectors = m_coreSelectors;
 
-        selectors.reserve(selectors.size() + m_dynamicSelectors.size());
+        // Reserve space for all of these selectors added in this function
+        selectors.reserve(selectors.size() + m_dynamicSelectors.size() + 3);
+
         for (auto& mapPair : m_dynamicSelectors)
         {
             selectors.emplace_back(mapPair.second);
@@ -170,12 +172,6 @@ namespace GraphCanvas
         }
 
         // TODO collapsed and highlighted
-
-        // Why is this repeated?
-        //for (auto& mapPair : m_dynamicSelectors)
-        //{
-        //    selectors.emplace_back(mapPair.second);
-        //}
 
         return selectors;
     }
