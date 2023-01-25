@@ -48,8 +48,46 @@ namespace AtomToolsFramework
             return true;
         }
 
-        m_state = GraphCompiler::State::Canceled;
+        SetState(State::Canceled);
         return false;
+    }
+
+    void GraphCompiler::SetStateChangeHandler(StateChangeHandler handler)
+    {
+        m_stateChangeHandler = handler;
+    }
+
+    void GraphCompiler::SetState(GraphCompiler::State state)
+    {
+        m_state = state;
+
+        switch (m_state)
+        {
+        case State::Idle:
+            ReportStatus(AZStd::string::format("%s (Idle)", GetGraphPath().c_str()));
+            break;
+        case State::Compiling:
+            m_generatedFiles.clear();
+            ReportStatus(AZStd::string::format("%s (Compiling)", GetGraphPath().c_str()));
+            break;
+        case State::Processing:
+            break;
+        case State::Complete:
+            ReportStatus(AZStd::string::format("%s (Complete)", GetGraphPath().c_str()));
+            break;
+        case State::Failed:
+            ReportStatus(AZStd::string::format("%s (Failed)", GetGraphPath().c_str()));
+            break;
+        case State::Canceled:
+            ReportStatus(AZStd::string::format("%s (Cancelled)", GetGraphPath().c_str()));
+            break;
+        }
+
+        // Invoke the optional state change handler function if provided
+        if (m_stateChangeHandler)
+        {
+            m_stateChangeHandler(this);
+        }
     }
 
     GraphCompiler::State GraphCompiler::GetState() const
@@ -71,9 +109,9 @@ namespace AtomToolsFramework
     {
         switch (m_state)
         {
-        case GraphCompiler::State::Idle:
-        case GraphCompiler::State::Failed:
-        case GraphCompiler::State::Complete:
+        case State::Idle:
+        case State::Failed:
+        case State::Complete:
             return true;
         }
         return false;
@@ -89,45 +127,23 @@ namespace AtomToolsFramework
         m_graph = graph;
         m_graphName = graphName;
         m_graphPath = graphPath;
-        CompileGraphStarted();
+        SetState(State::Compiling);
 
         // Skip compilation if there is no graph or this is a template.
         if (!m_graph || m_graphName.empty() || GetGraphPath().empty())
         {
-            CompileGraphFailed();
+            SetState(State::Failed);
             return false;
         }
 
         return true;
     }
 
-    void GraphCompiler::CompileGraphStarted()
-    {
-        m_state = State::Compiling;
-        m_generatedFiles.clear();
-        ReportStatus(AZStd::string::format("Compiling %s (Started)", GetGraphPath().c_str()));
-    }
-
-    void GraphCompiler::CompileGraphFailed()
-    {
-        m_state = State::Failed;
-        m_generatedFiles.clear();
-        ReportStatus(AZStd::string::format("Compiling %s (Failed)", GetGraphPath().c_str()));
-    }
-
-    void GraphCompiler::CompileGraphCompleted()
-    {
-        m_state = State::Complete;
-        ReportStatus(AZStd::string::format("Compiling %s (Completed)", GetGraphPath().c_str()));
-    }
-
     bool GraphCompiler::ReportGeneratedFileStatus()
     {
-        m_state = State::Processing;
-        ReportStatus(AZStd::string::format("Compiling %s (Processing)", GetGraphPath().c_str()));
+        SetState(State::Processing);
 
-        AZStd::vector<AZStd::string> generatedFiles = m_generatedFiles;
-        AZStd::reverse(generatedFiles.begin(), generatedFiles.end());
+        AZStd::vector<AZStd::string> generatedFiles(m_generatedFiles.rbegin(), m_generatedFiles.rend());
 
         // Check asset processor status of each generated file
         while (!generatedFiles.empty())

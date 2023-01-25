@@ -49,7 +49,7 @@ namespace PassCanvas
             return false;
         }
 
-        CompileGraphCompleted();
+        SetState(State::Complete);
         return true;
     }
 } // namespace PassCanvas

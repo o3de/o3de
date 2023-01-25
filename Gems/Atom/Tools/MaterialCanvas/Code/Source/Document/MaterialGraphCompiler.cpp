@@ -104,7 +104,7 @@ namespace MaterialCanvas
             // saved before material file templates to not trigger asset processor dependency errors.
             if (!LoadTemplatesForCurrentNode())
             {
-                CompileGraphFailed();
+                SetState(State::Failed);
                 return false;
             }
 
@@ -136,32 +136,32 @@ namespace MaterialCanvas
                 !ExportTemplatesMatchingRegex(".*\\.azsl\\b") ||
                 !ExportTemplatesMatchingRegex(".*\\.shader\\b"))
             {
-                CompileGraphFailed();
+                SetState(State::Failed);
                 return false;
             }
 
             // Process material type template files, injecting properties from material input nodes.
             if (!BuildMaterialTypeForCurrentNode(currentNode))
             {
-                CompileGraphFailed();
+                SetState(State::Failed);
                 return false;
             }
 
             // After the material types have been processed and saved, save the materials that reference them.
             if (!ExportTemplatesMatchingRegex(".*\\.material\\b"))
             {
-                CompileGraphFailed();
+                SetState(State::Failed);
                 return false;
             }
         }
 
         if (!ReportGeneratedFileStatus())
         {
-            CompileGraphFailed();
+            SetState(State::Failed);
             return false;
         }
 
-        CompileGraphCompleted();
+        SetState(State::Complete);
         return true;
     }
 

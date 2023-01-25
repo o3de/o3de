@@ -47,7 +47,13 @@ namespace AtomToolsFramework
                 ->Attribute(AZ::Script::Attributes::Module, "atomtools")
                 ->Event("GetGraph", &GraphDocumentRequests::GetGraph)
                 ->Event("GetGraphId", &GraphDocumentRequests::GetGraphId)
-                ->Event("GetGraphName", &GraphDocumentRequests::GetGraphName);
+                ->Event("GetGraphName", &GraphDocumentRequests::GetGraphName)
+                ->Event("SetGeneratedFilePaths", &GraphDocumentRequests::SetGeneratedFilePaths)
+                ->Event("GetGeneratedFilePaths", &GraphDocumentRequests::GetGeneratedFilePaths)
+                ->Event("CompileGraph", &GraphDocumentRequests::CompileGraph)
+                ->Event("QueueCompileGraph", &GraphDocumentRequests::QueueCompileGraph)
+                ->Event("IsCompileGraphQueued", &GraphDocumentRequests::IsCompileGraphQueued)
+                ;
         }
     }
 
@@ -320,12 +326,17 @@ namespace AtomToolsFramework
 
     bool GraphDocument::CompileGraph()
     {
+        // If a compiler was supplied But not in a state that can be reinitialized then return failure. If compiling was queued, attempts
+        // will continue to be made until the background compilation job is cancelled or complete.
         if (!m_graphCompiler || !m_graphCompiler->Reset())
         {
             return false;
         }
 
         m_compileGraphQueued = false;
+
+        // Serialize the graph data into a buffer that's copied and deserialized in the compilation job. This will allow
+        // editing to continue while the last serialized version of the graph is compiled in the background.
         AZStd::vector<AZ::u8> graphBuffer;
         AZ::IO::ByteContainerStream<decltype(graphBuffer)> graphBufferStream(&graphBuffer);
         AZ::Utils::SaveObjectToStream(graphBufferStream, AZ::ObjectStream::ST_BINARY, m_graph.get());
@@ -338,27 +349,37 @@ namespace AtomToolsFramework
                              graphName = GetGraphName(),
                              graphPath = GetAbsolutePath()]()
         {
+            // Deserialize the buffer to create a copy of the graph that can be safely transformed from the job thread.
             GraphModel::GraphPtr graph = AZStd::make_shared<GraphModel::Graph>(graphContext);
             AZ::Utils::LoadObjectFromBufferInPlace(graphBuffer.data(), graphBuffer.size(), *graph.get());
             graph->PostLoadSetup(graphContext);
 
-            AZ::SystemTickBus::QueueFunction([toolId, documentId]() {
-                GraphDocumentRequestBus::Event(documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, AZStd::vector<AZStd::string>{});
-                GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphStarted, documentId);
+            graphCompiler->SetStateChangeHandler([toolId, documentId](const GraphCompiler* graphCompiler){
+                AZ::SystemTickBus::QueueFunction([toolId, documentId, state = graphCompiler->GetState(), generatedFiles = graphCompiler->GetGeneratedFilePaths()]() {
+                    switch (state)
+                    {
+                    case GraphCompiler::State::Idle:
+                        break;
+                    case GraphCompiler::State::Compiling:
+                        GraphDocumentRequestBus::Event(documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, AZStd::vector<AZStd::string>{});
+                        GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphStarted, documentId);
+                        break;
+                    case GraphCompiler::State::Processing:
+                        break;
+                    case GraphCompiler::State::Complete:
+                        GraphDocumentRequestBus::Event(documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, generatedFiles);
+                        GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphCompleted, documentId);
+                        break;
+                    case GraphCompiler::State::Failed:
+                        GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphFailed, documentId);
+                        break;
+                    case GraphCompiler::State::Canceled:
+                        break;
+                    }
+                });
             });
-            if (graphCompiler->CompileGraph(graph, graphName, graphPath))
-            {
-                AZ::SystemTickBus::QueueFunction([toolId, documentId, generatedFiles = graphCompiler->GetGeneratedFilePaths()]() {
-                    GraphDocumentRequestBus::Event(documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, generatedFiles);
-                    GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphCompleted, documentId);
-                });
-            }
-            else
-            {
-                AZ::SystemTickBus::QueueFunction([toolId, documentId]() {
-                    GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphFailed, documentId);
-                });
-            }
+
+            graphCompiler->CompileGraph(graph, graphName, graphPath);
         };
 
         auto job = AZ::CreateJobFunction(compileJobFn, true);

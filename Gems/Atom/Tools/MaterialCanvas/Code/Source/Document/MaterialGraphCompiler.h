@@ -134,7 +134,7 @@ namespace MaterialCanvas
         AZStd::vector<AZStd::string> m_classDefinitions;
         AZStd::vector<AZStd::string> m_functionDefinitions;
 
-        // Visit all unique node configurations in the graph to collect their include paths, class definitions, and function definitions.
+        // Container of unique node configurations IDs visited on the graph to collect include paths, class definitions, and function definitions.
         AZStd::unordered_set<AZ::Uuid> m_configIdsVisited;
 
         // Table of values for every slot, on every node, including values redirected from incoming connections, and values upgraded to
@@ -147,9 +147,8 @@ namespace MaterialCanvas
         // Container of template source file data and lines they need to be transformed as part of compiling the graph. 
         AZStd::list<AtomToolsFramework::GraphTemplateFileData> m_templateFileDataVecForCurrentNode;
 
-        AZStd::mutex m_instructionNodesForCurrentNodeMutex;
-
         // A container of all nodes contributing instructions to the current node
+        AZStd::mutex m_instructionNodesForCurrentNodeMutex;
         AZStd::vector<GraphModel::ConstNodePtr> m_instructionNodesForCurrentNode;
     };
 } // namespace MaterialCanvas

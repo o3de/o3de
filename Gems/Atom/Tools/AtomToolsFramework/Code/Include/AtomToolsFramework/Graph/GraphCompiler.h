@@ -47,10 +47,17 @@ namespace AtomToolsFramework
         //! state so that they can return early. This is necessary if the graph compilation is happening on a separate thread.
         virtual bool Reset();
 
-        //! Returns the value of the current graph compiler state.
+        //! Assign the current graph compiler state.
+        using StateChangeHandler = AZStd::function<void(const GraphCompiler*)>;
+        virtual void SetStateChangeHandler(StateChangeHandler handler);
+
+        //! Assign the current graph compiler state.
+        virtual void SetState(State state);
+
+        //! Get the current graph compiler state.
         virtual State GetState() const;
 
-        //! Returns the path that was passed into the compiled graph function unless overridden to provided different value. Generator files
+        //! Returns the path that was passed into the compiled graph function unless overridden to provided different value. Generated files
         //! will be saved to the same folder as this path.
         virtual AZStd::string GetGraphPath() const;
 
@@ -64,11 +71,6 @@ namespace AtomToolsFramework
         virtual bool CompileGraph(GraphModel::GraphPtr graph, const AZStd::string& graphName, const AZStd::string& graphPath);
 
     protected:
-        // These functions trace messages and send notifications relating to the status of the compiler
-        void CompileGraphStarted();
-        void CompileGraphFailed();
-        void CompileGraphCompleted();
-
         // Helper function to log and report status messages.
         void ReportStatus(const AZStd::string& statusMessage);
 
@@ -96,5 +98,8 @@ namespace AtomToolsFramework
 
         // Current state of the graph compiler
         AZStd::atomic<State> m_state = State::Idle;
+
+        // Optional function for handling state changes 
+        StateChangeHandler m_stateChangeHandler;
     };
 } // namespace AtomToolsFramework
