@@ -461,8 +461,8 @@ namespace PhysX
         m_cpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
 #else
         m_cpuDispatcher = PhysXCpuDispatcherCreate();
-        m_cpuDispatcher = PhysXCpuDispatcherCreate();
 #endif
+
         PxSetProfilerCallback(&m_pxAzProfilerCallback);
     }
 
