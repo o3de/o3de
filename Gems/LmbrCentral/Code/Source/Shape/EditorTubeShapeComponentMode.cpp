@@ -84,7 +84,7 @@ namespace LmbrCentral
             actionProperties.m_category = "Tube Shape";
 
             actionManagerInterface->RegisterAction(
-                Editor::MainWindowActionContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -125,7 +125,7 @@ namespace LmbrCentral
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "EditorTubeShapeComponentMode - could not get MenuManagerInterface on BindActionsToMenus.");
 
-        menuManagerInterface->AddActionToMenu(Editor::EditMenuIdentifier, "o3de.action.tubeShape.resetRadii", 6000);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.tubeShape.resetRadii", 6000);
     }
 
     void EditorTubeShapeComponentMode::Refresh()

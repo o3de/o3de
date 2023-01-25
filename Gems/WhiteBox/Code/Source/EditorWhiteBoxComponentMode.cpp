@@ -104,9 +104,9 @@ namespace WhiteBox
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
         AZ_Assert(actionManagerInterface, "EditorWhiteBoxComponentMode - could not get ActionManagerInterface on RegisterActionContextModes.");
 
-        actionManagerInterface->RegisterActionContextMode(Editor::MainWindowActionContextIdentifier, WhiteBoxDefaultSubModeIdentifier);
-        actionManagerInterface->RegisterActionContextMode(Editor::MainWindowActionContextIdentifier, WhiteBoxEdgeRestoreSubModeIdentifier);
-        actionManagerInterface->RegisterActionContextMode(Editor::MainWindowActionContextIdentifier, WhiteBoxTransformSubModeIdentifier);
+        actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxDefaultSubModeIdentifier);
+        actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxEdgeRestoreSubModeIdentifier);
+        actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxTransformSubModeIdentifier);
     }
 
     void EditorWhiteBoxComponentMode::RegisterActionUpdaters()
@@ -366,7 +366,7 @@ namespace WhiteBox
                 if (actionManagerInterface)
                 {
                     actionManagerInterface->SetActiveActionContextMode(
-                        Editor::MainWindowActionContextIdentifier, WhiteBoxDefaultSubModeIdentifier);
+                        EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxDefaultSubModeIdentifier);
                 }
             }
         );
@@ -383,7 +383,7 @@ namespace WhiteBox
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
         if (actionManagerInterface)
         {
-            actionManagerInterface->SetActiveActionContextMode(Editor::MainWindowActionContextIdentifier, WhiteBoxEdgeRestoreSubModeIdentifier);
+            actionManagerInterface->SetActiveActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxEdgeRestoreSubModeIdentifier);
         }
     }
 
@@ -398,7 +398,7 @@ namespace WhiteBox
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
         if (actionManagerInterface)
         {
-            actionManagerInterface->SetActiveActionContextMode(Editor::MainWindowActionContextIdentifier, WhiteBoxTransformSubModeIdentifier);
+            actionManagerInterface->SetActiveActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxTransformSubModeIdentifier);
         }
     }
 

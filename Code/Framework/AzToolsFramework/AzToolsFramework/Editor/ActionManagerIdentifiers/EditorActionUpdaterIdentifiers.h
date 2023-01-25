@@ -10,7 +10,7 @@
 
 #include <AzCore/std/string/string_view.h>
 
-namespace Editor
+namespace EditorIdentifiers
 {
     inline constexpr AZStd::string_view AngleSnappingStateChangedUpdaterIdentifier = "o3de.updater.onAngleSnappingStateChanged";
     inline constexpr AZStd::string_view DrawHelpersStateChangedUpdaterIdentifier = "o3de.updater.onViewportDrawHelpersStateChanged";
