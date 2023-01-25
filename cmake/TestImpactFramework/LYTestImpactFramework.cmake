@@ -570,10 +570,14 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     set(target_dependency_dir "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}")
 
     # Test impact analysis framework native runtime binary
-    set(native_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_NATIVE_CONSOLE_TARGET}>")
+    if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED)
+        set(native_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_NATIVE_CONSOLE_TARGET}>")
+    endif()
 
     # Test impact analysis framework python runtime binary
-    set(python_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_PYTHON_CONSOLE_TARGET}>")
+    if(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
+        set(python_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_PYTHON_CONSOLE_TARGET}>")
+    endif()
     
     # Substitute config file template with above vars
     ly_file_read("${CONFIG_TEMPLATE_FILE}" config_file)
