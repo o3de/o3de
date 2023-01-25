@@ -1132,6 +1132,17 @@ namespace MaterialCanvas
                     materialPropertyName
                     }));
 
+                if (materialPropertyName.empty() || materialPropertySymbolName.empty() || materialPropertyDisplayName.empty())
+                {
+                    AZ_Error(
+                        "MaterialGraphCompiler",
+                        false,
+                        "Material property name could not be resolved for slot '%s' and template '%s'.",
+                        GetSymbolNameFromSlot(materialPropertyValueSlot).c_str(),
+                        templateOutputPath.c_str());
+                    return false;
+                }
+
                 // The group name can be specified in a static setting for shader options or configured for material inputs. Properties that
                 // do not explicitly define a group will fall back to the general group.
                 const auto& materialPropertyGroupName = GetFirstNonEmptyString({
@@ -1144,6 +1155,17 @@ namespace MaterialCanvas
                 // Sanitize the symbol and display names for the group to force casing, spacing, and eliminate any potential erroneous input.
                 const auto& materialPropertyGroupSymbolName = GetSymbolNameFromText(materialPropertyGroupName);
                 const auto& materialPropertyGroupDisplayName = GetDisplayNameFromText(materialPropertyGroupName);
+                if (materialPropertyGroupName.empty() || materialPropertyGroupDisplayName.empty())
+                {
+                    AZ_Error(
+                        "MaterialGraphCompiler",
+                        false,
+                        "Material property group could not be resolved for slot '%s' and template '%s'.",
+                        GetSymbolNameFromSlot(materialPropertyValueSlot).c_str(),
+                        templateOutputPath.c_str());
+                    return false;
+                }
+
 
                 // The property description can also be read from static settings for shader options or a user configurable slot
                 // for material inputs. If no description is specified, it will fall back to using the material property display name.
