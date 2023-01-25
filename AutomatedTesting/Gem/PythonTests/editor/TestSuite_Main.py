@@ -98,3 +98,6 @@ class TestAutomation(EditorTestSuite):
 
     class test_EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform(EditorBatchedTest):
         from .EditorScripts import EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform as test_module
+
+    class test_EditorWorkflow_EditorCameraMovesToEntityTransformWithBeThisCamera(EditorBatchedTest):
+        from .EditorScripts import EditorWorkflow_EditorCameraMovesToEntityTransformWithBeThisCamera as test_module
