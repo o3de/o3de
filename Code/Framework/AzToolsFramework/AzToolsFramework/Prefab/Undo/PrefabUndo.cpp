@@ -54,8 +54,9 @@ namespace AzToolsFramework
                 const PrefabDomValue* entityDomValue = entityDomAndPath.first;
                 if (entityDomValue)
                 {
-                    PrefabUndoUtils::AppendRemovePatch(m_redoPatch, entityDomAndPath.second);
-                    PrefabUndoUtils::AppendAddEntityPatch(m_undoPatch, *entityDomValue, entityDomAndPath.second);
+                    const AZStd::string& entityAliasPath = entityDomAndPath.second;
+                    PrefabUndoUtils::AppendRemovePatch(m_redoPatch, entityAliasPath);
+                    PrefabUndoUtils::AppendAddEntityPatch(m_undoPatch, *entityDomValue, entityAliasPath);
                 }
             }
         }
@@ -90,7 +91,7 @@ namespace AzToolsFramework
             //generate undo/redo patches
             const AZStd::string& entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
             PrefabUndoUtils::GenerateUpdateEntityPatch(m_redoPatch, initialState, endState, entityAliasPath);
-            PrefabUndoUtils::GenerateUpdateEntityPatch(m_redoPatch, endState, initialState, entityAliasPath);
+            PrefabUndoUtils::GenerateUpdateEntityPatch(m_undoPatch, endState, initialState, entityAliasPath);
 
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
             PrefabDomReference cachedOwningInstanceDom = instance.GetCachedInstanceDom();
