@@ -80,7 +80,7 @@ namespace AZ::DocumentPropertyEditor
                     AZ_Warning(
                         "PropertyEditorSystem",
                         false,
-                        "Detected attempt to re-register the exact same attribute definition interface for attribute %s",
+                        "Detected attempt to re-register a registered attribute definition interface for attribute %s",
                         attribute->GetName().GetCStr());
                     return;
                 }

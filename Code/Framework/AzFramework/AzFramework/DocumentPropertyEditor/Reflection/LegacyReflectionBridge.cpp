@@ -557,7 +557,7 @@ namespace AZ::Reflection
 
                 AZ::Name handlerName;
 
-                // This array node is for caching related EnumValue attributes if any are seen
+                // This array node is for caching related GenericValue attributes if any are seen
                 Dom::Value genericValueCache = Dom::Value(Dom::Type::Array);
                 const AZ::Name genericValueName = AZ::Name("GenericValue");
 
@@ -572,8 +572,8 @@ namespace AZ::Reflection
                     if (!name.IsEmpty())
                     {
                         // If an attribute of the same name is already loaded then ignore the new value
-                        // unless it is an EnumValue attribute since each represents an individual value
-                        // in a particular enum and multiple are expected
+                        // unless it is a GenericValue attribute since each represents an individual
+                        // pair destined for a combobox and thus multiple are expected
                         if (visitedAttributes.find(name) != visitedAttributes.end() && name != genericValueName)
                         {
                             return;
@@ -600,7 +600,7 @@ namespace AZ::Reflection
                                 }
                             });
 
-                        // Collect related EnumValue attributes so they can be stored together
+                        // Collect related GenericValue attributes so they can be stored together
                         if (name == genericValueName && !attributeValue.IsNull())
                         {
                             genericValueCache.ArrayPushBack(attributeValue);
