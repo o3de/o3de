@@ -353,7 +353,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
             }
         );
 
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(Editor::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.normal";
@@ -380,7 +380,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         );
 
         m_actionManagerInterface->AddActionToUpdater(
-            EditorActionUpdater::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+            Editor::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.full";
@@ -407,7 +407,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         );
 
         m_actionManagerInterface->AddActionToUpdater(
-            EditorActionUpdater::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+            Editor::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.compact";
@@ -434,7 +434,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         );
 
         m_actionManagerInterface->AddActionToUpdater(
-            EditorActionUpdater::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+            Editor::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.none";
@@ -460,7 +460,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
             });
 
         m_actionManagerInterface->AddActionToUpdater(
-            EditorActionUpdater::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+            Editor::ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
 
     // Viewport Size
