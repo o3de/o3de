@@ -119,7 +119,7 @@ namespace PhysX
 
     AZStd::string JointComponent::GetJointName() const
     {
-        return m_genericProperties.m_jointname;
+        return m_genericProperties.m_jointName;
     }
 
     AZ::Transform JointComponent::GetJointLocalPose(const physx::PxRigidActor* actor, const AZ::Transform& jointPose)
