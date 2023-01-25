@@ -10,6 +10,8 @@
 
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/tuple.h>
 #include <GraphModel/Model/Connection.h>
@@ -26,12 +28,12 @@ namespace AtomToolsFramework
     template<typename NodeContainer>
     void SortNodesInExecutionOrder(NodeContainer& nodes)
     {
-        using NodeValueType = typename NodeContainer::value_type;
         using NodeValueTypeRef = typename NodeContainer::const_reference;
 
         // Pre-calculate and cache sorting scores for all nodes to avoid reprocessing during the sort
         AZStd::mutex nodeScoreMapMutex;
         AZStd::unordered_map<GraphModel::NodeId, AZStd::tuple<bool, bool, uint32_t>> nodeScoreMap;
+        nodeScoreMap.reserve(nodes.size());
 
         AZ::parallel_for_each(nodes.begin(), nodes.end(), [&](NodeValueTypeRef node) {
             AZStd::scoped_lock lock(nodeScoreMapMutex);
