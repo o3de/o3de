@@ -436,7 +436,9 @@ namespace AZ
                             createdAnimationData->AddKeyFrame(localTransform);
                         }
 
-                        const AZStd::string stubBoneAnimForMorphName(AZStd::string::format("%s%s", nodeName.c_str(), nodeAnim->mName.C_Str()));
+                        AZStd::string stubBoneAnimForMorphName(AZStd::string::format("%s%s", nodeName.c_str(), nodeAnim->mName.C_Str()));
+                        RenamedNodesMap::SanitizeNodeName(stubBoneAnimForMorphName, context.m_scene.GetGraph(), context.m_currentGraphPosition);
+
                         Containers::SceneGraph::NodeIndex addNode = context.m_scene.GetGraph().AddChild(
                             context.m_currentGraphPosition, stubBoneAnimForMorphName.c_str(), AZStd::move(createdAnimationData));
                         context.m_scene.GetGraph().MakeEndPoint(addNode);

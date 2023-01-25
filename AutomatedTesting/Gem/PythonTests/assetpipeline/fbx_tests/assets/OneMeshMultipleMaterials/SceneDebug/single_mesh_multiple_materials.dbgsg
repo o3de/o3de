@@ -38,9 +38,9 @@ Node Type: TransformData
 Node Name: custom_properties
 Node Path: RootNode.Torus.custom_properties
 Node Type: CustomPropertyData
-	UserProperties: 
 	IsNull: false
 	DefaultAttributeIndex: 0
+	UserProperties: 
 	InheritType: 1
 
 Node Name: UV0
@@ -65,7 +65,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
@@ -95,7 +95,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
@@ -125,7 +125,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
@@ -151,6 +151,14 @@ Node Path: RootNode.Torus.BitangentSet_0
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 2304. Hash: 6274616552656695154
 	GenerationMethod: 1
+
+Node Name: custom_properties
+Node Path: RootNode.Torus_single_mesh_multiple_materials_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
 
 Node Name: UV0
 Node Path: RootNode.Torus_single_mesh_multiple_materials_optimized.UV0
@@ -180,14 +188,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000, -100.000000, -0.000016>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.Torus_single_mesh_multiple_materials_optimized.custom_properties
-Node Type: CustomPropertyData
-	UserProperties: 
-	IsNull: false
-	DefaultAttributeIndex: 0
-	InheritType: 1
-
 Node Name: OrangeMaterial
 Node Path: RootNode.Torus_single_mesh_multiple_materials_optimized.OrangeMaterial
 Node Type: MaterialData
@@ -204,7 +204,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
@@ -234,7 +234,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
@@ -264,7 +264,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
