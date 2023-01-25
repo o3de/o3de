@@ -8,21 +8,21 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QStandardItemModel>
+#include <QIdentityProxyModel>
 #endif
 
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class AssetBrowserExpandedTableViewProxyModel : public QStandardItemModel
+        class AssetBrowserExpandedTableViewProxyModel : public QIdentityProxyModel
         {
             Q_OBJECT
 
         public:
             explicit AssetBrowserExpandedTableViewProxyModel(QObject* parent = nullptr);
             ~AssetBrowserExpandedTableViewProxyModel() override;
-
+#if 0
             QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
             // Used to keep track of the root index on the view consuming this model, so that the model
@@ -35,6 +35,7 @@ namespace AzToolsFramework
         private:
             QPersistentModelIndex m_rootIndex;
             bool m_searchResultsMode;
+#endif
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

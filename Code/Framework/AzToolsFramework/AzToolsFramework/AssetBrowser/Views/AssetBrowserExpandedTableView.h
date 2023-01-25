@@ -13,13 +13,11 @@
 #include <QItemSelection>
 #include <QWidget>
 #include <QAbstractItemView>
+#include <QstandardItemModel>
 
 #endif
 
-namespace AzQtComponents
-{
-    class AssetFolderExpandedTableView;
-}
+#include <AzQtComponents/Components/Widgets/TableView.h>
 
 namespace AzToolsFramework
 {
@@ -29,7 +27,7 @@ namespace AzToolsFramework
         class AssetBrowserTreeView;
         class AssetBrowserExpandedTableViewProxyModel;
         class AssetBrowserEntry;
-
+#if 0
         class AssetBrowserExpandedTableView : public QWidget
         {
             Q_OBJECT
@@ -54,12 +52,34 @@ namespace AzToolsFramework
         private:
             AssetBrowserTreeView* m_assetTreeView = nullptr;
             AzQtComponents::AssetFolderExpandedTableView* m_expandedTableViewWidget = nullptr;
-            AssetBrowserExpandedTableViewProxyModel* m_expandedTableViewProxyModel = nullptr;
+            /*AssetBrowserExpandedTableViewModel*/QStandardItemModel* m_expandedTableViewModel = nullptr;
             AssetBrowserFilterModel* m_assetFilterModel = nullptr;
 
             void HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
             void UpdateFilterInLocalFilterModel();
         };
+#else
+        class AssetBrowserExpandedTableView : public AzQtComponents::TableView
+        {
+            Q_OBJECT
+        public:
+            AZ_CLASS_ALLOCATOR(AssetBrowserExpandedTableView, AZ::SystemAllocator, 0);
 
+            explicit AssetBrowserExpandedTableView(QWidget* parent = nullptr);
+            ~AssetBrowserExpandedTableView() override;
+
+            void SetAssetTreeView(AssetBrowserTreeView* treeView);
+            void SetShowSearchResultsMode(bool searchMode);
+
+        private:
+            void HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+            void UpdateFilterInLocalFilterModel();
+
+            AssetBrowserTreeView* m_assetTreeView = nullptr;
+            AssetBrowserExpandedTableViewProxyModel* m_expandedTableViewProxyModel = nullptr;
+            AssetBrowserFilterModel* m_assetFilterModel = nullptr;
+            bool m_showSearchResultsMode = false;
+        };
+#endif
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

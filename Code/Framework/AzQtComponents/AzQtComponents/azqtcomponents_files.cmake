@@ -112,9 +112,6 @@ set(FILES
     Components/Widgets/AssetFolderThumbnailView.cpp
     Components/Widgets/AssetFolderThumbnailView.h
     Components/Widgets/AssetFolderThumbnailViewConfig.ini
-    Components/Widgets/AssetFolderExpandedTableView.cpp
-    Components/Widgets/AssetFolderExpandedTableView.h
-    Components/Widgets/AssetFolderExpandedTableViewConfig.ini
     Components/Widgets/BreadCrumbs.cpp
     Components/Widgets/BreadCrumbs.h
     Components/Widgets/BreadCrumbsConfig.ini

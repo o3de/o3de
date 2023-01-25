@@ -62,7 +62,6 @@ namespace AzQtComponents
     private:
         friend class Style;
         friend class AssetFolderThumbnailView;
-        friend class AssetFolderExpandedTableView;
         friend class TableView;
         friend class TreeView;
 

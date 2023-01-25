@@ -10,29 +10,21 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserExpandedTableViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 
-#include <AzQtComponents/Components/Widgets/AssetFolderExpandedTableView.h>
-
-#include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
         AssetBrowserExpandedTableViewProxyModel::AssetBrowserExpandedTableViewProxyModel(QObject* parent)
-            : QStandardItemModel(parent)
+            : QIdentityProxyModel(parent)
         {
-            const QStringList horizontalHeaderLabels = {
-                "Name", "Type", "Disk Size", "Related Asset", "Vertices", "Approximate Size", "Source control Status"
-            };
-            setHorizontalHeaderLabels(horizontalHeaderLabels);
-
         }
 
         AssetBrowserExpandedTableViewProxyModel::~AssetBrowserExpandedTableViewProxyModel() = default;
-
+#if 0
         QVariant AssetBrowserExpandedTableViewProxyModel::data(const QModelIndex& index, int role) const
         {
-            auto assetBrowserEntry = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+//JJS            auto assetBrowserEntry = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            auto assetBrowserEntry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
             AZ_Assert(assetBrowserEntry, "Couldn't fetch asset entry for the given index.");
             if (!assetBrowserEntry)
             {
@@ -95,7 +87,7 @@ namespace AzToolsFramework
                 }
             }
 
-            return QAbstractProxyModel::data(index, role);
+            return QStandardItemModel::data(index, role);
         }
 
         void AssetBrowserExpandedTableViewProxyModel::SetRootIndex(const QModelIndex& index)
@@ -117,5 +109,6 @@ namespace AzToolsFramework
                 endResetModel();
             }
         }
+#endif
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
