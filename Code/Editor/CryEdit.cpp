@@ -1833,6 +1833,11 @@ bool CCryEditApp::InitInstance()
         return true;
     }
 
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacyCommandLineProcessed", R"({})");
+    }
+
     if (IsInRegularEditorMode())
     {
         int startUpMacroIndex = GetIEditor()->GetToolBoxManager()->GetMacroIndex("startup", true);
