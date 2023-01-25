@@ -23,18 +23,18 @@ macro(o3de_read_engine_default output_value key default_value)
     string(JSON tmp_value ERROR_VARIABLE manifest_json_error GET ${engine_json_data} ${key})
 
     # unset engine_json_data because we're in a macro
-    unset(${engine_json_data})
+    unset(engine_json_data)
 
     if(manifest_json_error)
         message(WARNING "Failed to read ${key} from \"${LY_ROOT_FOLDER}/engine.json\" : ${manifest_json_error}")
-        set(${tmp_value} ${default_value})
+        set(tmp_value ${default_value})
     endif()
 
     ly_set(${output_value} ${tmp_value})
     set_property(GLOBAL PROPERTY ${output_value} ${tmp_value})
 
     # unset tmp_value because we're in a macro
-    unset(${tmp_value})
+    unset(tmp_value)
 endmacro()
 
 #! o3de_set_install_default: Sets the output_value to one from the environment
