@@ -219,7 +219,7 @@ namespace PhysX
     {
         if (parameterName == JointsComponentModeCommon::ParameterNames::JointName)
         {
-            m_config.m_jointname = value;
+            m_config.m_jointName = value;
         }
     }
 
