@@ -1607,8 +1607,7 @@ namespace PhysX
         request.m_distance = distance;
         request.m_start = src;
 
-        auto hit = RayCast(request);
-        if (hit)
+        if (auto hit = RayCast(request))
         {
             distance = hit.m_distance;
             return true;
