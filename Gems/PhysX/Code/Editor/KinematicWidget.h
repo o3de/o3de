@@ -10,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
-#include <Editor/ComboBoxEditButtonPair.h>
+#include <AzToolsFramework/UI/PropertyEditor/ComboBoxEditButtonPair.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #endif
 
@@ -21,7 +21,7 @@ namespace PhysX
         /// Widget to connect the KinematicDescriptionDialog with the Kinematic setting for rigid bodies.
         class KinematicWidget
             : public QObject
-            , public AzToolsFramework::PropertyHandler<bool, ComboBoxEditButtonPair>
+            , public AzToolsFramework::PropertyHandler<bool, AzToolsFramework::ComboBoxEditButtonPair>
         {
             Q_OBJECT
 

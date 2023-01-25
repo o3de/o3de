@@ -10,9 +10,9 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzToolsFramework/UI/PropertyEditor/ComboBoxEditButtonPair.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
-#include <Editor/ComboBoxEditButtonPair.h>
 #endif
 
 namespace PhysX
@@ -21,7 +21,7 @@ namespace PhysX
     {
         class CollisionLayerWidget
             : public QObject
-            , public AzToolsFramework::PropertyHandler<AzPhysics::CollisionLayer, ComboBoxEditButtonPair>
+            , public AzToolsFramework::PropertyHandler<AzPhysics::CollisionLayer, AzToolsFramework::ComboBoxEditButtonPair>
         {
             Q_OBJECT
 

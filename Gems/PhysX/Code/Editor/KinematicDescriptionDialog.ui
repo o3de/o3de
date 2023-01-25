@@ -251,9 +251,23 @@
            </property>
           </widget>
          </widget>
+         <widget class="QCheckBox" name="checkBox">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>230</y>
+            <width>231</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Do not show me this again</string>
+          </property>
+         </widget>
          <zorder>kinematicBox</zorder>
          <zorder>dynamicBox</zorder>
          <zorder>groupBox_5</zorder>
+         <zorder>checkBox</zorder>
         </widget>
        </item>
        <item>
@@ -566,7 +580,6 @@ border-right: 1px solid  rgb(136, 136, 136); </string>
  </widget>
  <resources>
   <include location="../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc"/>
-  <include location="Source/PhysX.qrc"/>
  </resources>
  <connections>
   <connection>

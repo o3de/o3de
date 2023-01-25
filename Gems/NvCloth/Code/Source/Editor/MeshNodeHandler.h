@@ -11,7 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <Editor/ComboBoxEditButtonPair.h>
+#include <AzToolsFramework/UI/PropertyEditor/ComboBoxEditButtonPair.h>
 #include <QObject>
 #endif
 
@@ -36,7 +36,7 @@ namespace NvCloth
         */
         class MeshNodeHandler
             : public QObject
-            , public AzToolsFramework::PropertyHandler<AZStd::string, ComboBoxEditButtonPair>
+            , public AzToolsFramework::PropertyHandler<AZStd::string, AzToolsFramework::ComboBoxEditButtonPair>
         {
             Q_OBJECT
 

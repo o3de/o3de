@@ -79,8 +79,6 @@ set(FILES
     Editor/DocumentationLinkWidget.cpp
     Editor/InertiaPropertyHandler.h
     Editor/InertiaPropertyHandler.cpp
-    Editor/ComboBoxEditButtonPair.h
-    Editor/ComboBoxEditButtonPair.cpp
     Editor/ColliderComponentMode.h
     Editor/ColliderComponentMode.cpp
     Editor/ColliderOffsetMode.h

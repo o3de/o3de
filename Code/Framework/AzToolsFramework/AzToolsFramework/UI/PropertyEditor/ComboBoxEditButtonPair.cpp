@@ -6,12 +6,10 @@
  *
  */
 
-#include <Editor/ComboBoxEditButtonPair.h>
+#include <UI/PropertyEditor/ComboBoxEditButtonPair.h>
 
-namespace NvCloth
+namespace AzToolsFramework
 {
-    namespace Editor
-    {
         ComboBoxEditButtonPair::ComboBoxEditButtonPair(QWidget* parent)
             : QWidget(parent)
         {
@@ -29,22 +27,25 @@ namespace NvCloth
 
             layout->addWidget(m_comboBox);
             layout->addWidget(m_editButton);
+
+            connect(
+                m_comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ComboBoxEditButtonPair::onChildComboBoxValueChange);
         }
 
-        bool ComboBoxEditButtonPair::eventFilter(QObject *object, QEvent *event)
+        bool ComboBoxEditButtonPair::eventFilter(QObject* object, QEvent* event)
         {
             AZ_UNUSED(object);
             return event->type() == QEvent::Wheel;
         }
 
         QComboBox* ComboBoxEditButtonPair::GetComboBox()
-        { 
-            return m_comboBox; 
+        {
+            return m_comboBox;
         }
 
         QToolButton* ComboBoxEditButtonPair::GetEditButton()
-        { 
-            return m_editButton; 
+        {
+            return m_editButton;
         }
 
         void ComboBoxEditButtonPair::SetEntityId(AZ::EntityId entityId)
@@ -57,5 +58,20 @@ namespace NvCloth
             return m_entityId;
         }
 
-    } // namespace Editor
-} // namespace NvCloth
+        int ComboBoxEditButtonPair::value() const
+        {
+            return m_comboBox->currentIndex();
+        }
+
+        void ComboBoxEditButtonPair::setValue(int value)
+        {
+            m_comboBox->blockSignals(true);
+            m_comboBox->setCurrentIndex(value);
+            m_comboBox->blockSignals(false);
+        }
+
+        void ComboBoxEditButtonPair::onChildComboBoxValueChange(int value)
+        {
+            emit valueChanged(value);
+        }
+} // namespace AzToolsFramework

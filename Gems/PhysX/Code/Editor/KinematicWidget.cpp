@@ -11,6 +11,7 @@
 
 #include <AzFramework/Physics/PropertyTypes.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 
 namespace PhysX
 {
@@ -27,7 +28,7 @@ namespace PhysX
 
             connect(
                 picker,
-                &ComboBoxEditButtonPair::valueChanged,
+                &AzToolsFramework::ComboBoxEditButtonPair::valueChanged,
                 this,
                 [picker]()
                 {
@@ -36,10 +37,15 @@ namespace PhysX
                     AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
                         &AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, picker);
                 });
-
+            
             auto comboBox = picker->GetComboBox();
             comboBox->addItem("Dynamic");
             comboBox->addItem("Kinematic");
+
+            if (!AzToolsFramework::KinematicWidgetRememberChoice())
+            {
+                comboBox->setEnabled(false);
+            }
 
             picker->GetEditButton()->setToolTip("Open Type dialog for a detailed description on the motion types");
 
@@ -55,7 +61,7 @@ namespace PhysX
             property_t& instance,
             [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
         {
-            bool value = GUI->GetComboBox()->currentIndex() == 1;
+            bool value = GUI->value() == 1;
             instance = static_cast<property_t>(value);
         }
 
@@ -65,11 +71,7 @@ namespace PhysX
             [[maybe_unused]] const property_t& instance,
             [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
         {
-            auto comboBox = GUI->GetComboBox();
-            comboBox->blockSignals(true);
-            comboBox->setCurrentIndex(instance ? 1 : 0);
-            comboBox->blockSignals(false);
-
+            GUI->setValue(instance ? 1 : 0);
             return false;
         }
 
@@ -77,7 +79,8 @@ namespace PhysX
         {
             QWidget* mainWindow = nullptr;
             AzToolsFramework::EditorRequestBus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::GetMainWindow);
-            KinematicDescriptionDialog kinematicDialog(m_widgetComboBox->currentIndex() == 1, mainWindow);
+            KinematicDescriptionDialog kinematicDialog(
+                m_widgetComboBox->currentIndex() == 1, AzToolsFramework::KinematicWidgetRememberChoice() , mainWindow);
 
             int dialogResult = kinematicDialog.exec();
             if (dialogResult == QDialog::Accepted)
@@ -90,6 +93,17 @@ namespace PhysX
                 {
                     m_widgetComboBox->setCurrentIndex(0);
                 }
+
+                AzToolsFramework::SetKinematicWidgetRememberChoice(kinematicDialog.DoNotShowAgain());
+                if (kinematicDialog.DoNotShowAgain())
+                {
+                    m_widgetComboBox->setEnabled(true);
+                }
+                else
+                {
+                    m_widgetComboBox->setEnabled(false);
+                }
+
             }
         }
     } // namespace Editor
