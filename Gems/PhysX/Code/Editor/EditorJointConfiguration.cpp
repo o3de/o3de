@@ -378,7 +378,7 @@ namespace PhysX
             flags |= JointGenericProperties::GenericJointFlag::SelfCollide;
         }
 
-        return JointGenericProperties(flags, m_forceMax, m_torqueMax, m_jointname);
+        return JointGenericProperties(flags, m_forceMax, m_torqueMax, m_jointName);
     }
 
     JointComponentConfiguration EditorJointConfig::ToGameTimeConfig() const
