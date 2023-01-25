@@ -400,6 +400,7 @@ namespace GraphModel
 
         m_graph = graph;
         m_slotDefinition = slotDefinition;
+        ClearCachedData();
 
         if (SupportsValues())
         {
@@ -413,14 +414,20 @@ namespace GraphModel
 
     NodePtr Slot::GetParentNode() const
     {
-        for (auto nodePair : GetGraph()->GetNodes())
+        AZStd::scoped_lock lock(m_parentNodeMutex);
+        if (m_parentNodeDirty)
         {
-            if (nodePair.second->Contains(shared_from_this()))
+            m_parentNodeDirty = false;
+            for (auto nodePair : GetGraph()->GetNodes())
             {
-                return nodePair.second;
+                if (nodePair.second->Contains(shared_from_this()))
+                {
+                    m_parentNode = nodePair.second;
+                    return m_parentNode;
+                }
             }
         }
-        return {};
+        return m_parentNode;
     }
 
     AZStd::any Slot::GetValue() const
@@ -428,19 +435,25 @@ namespace GraphModel
         return !m_value.empty() ? m_value : GetDefaultValue();
     }
 
-    Slot::ConnectionList Slot::GetConnections() const
+    const Slot::ConnectionList& Slot::GetConnections() const
     {
-        ConnectionList connections;
-        for (const auto& connection : GetGraph()->GetConnections())
+        AZStd::scoped_lock lock(m_connectionsMutex);
+        if (m_connectionsDirty)
         {
-            const auto& sourceSlot = connection->GetSourceSlot();
-            const auto& targetSlot = connection->GetTargetSlot();
-            if (targetSlot && sourceSlot && targetSlot != sourceSlot && (targetSlot.get() == this || sourceSlot.get() == this))
+            m_connectionsDirty = false;
+            m_connections.clear();
+            m_connections.reserve(GetGraph()->GetConnectionCount());
+            for (const auto& connection : GetGraph()->GetConnections())
             {
-                connections.insert(connection);
+                const auto& sourceSlot = connection->GetSourceSlot();
+                const auto& targetSlot = connection->GetTargetSlot();
+                if (targetSlot.get() == this || sourceSlot.get() == this)
+                {
+                    m_connections.emplace_back(connection);
+                }
             }
         }
-        return connections;
+        return m_connections;
     }
 
     SlotDefinitionPtr Slot::GetDefinition() const
@@ -625,5 +638,20 @@ namespace GraphModel
         }
 
         return {};
+    }
+
+    void Slot::ClearCachedData()
+    {
+        {
+            AZStd::scoped_lock lock(m_parentNodeMutex);
+            m_parentNodeDirty = true;
+            m_parentNode = {};
+        }
+
+        {
+            AZStd::scoped_lock lock(m_connectionsMutex);
+            m_connectionsDirty = true;
+            m_connections.clear();
+        }
     }
 } // namespace GraphModel
