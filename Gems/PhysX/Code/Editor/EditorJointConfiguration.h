@@ -147,7 +147,7 @@ namespace PhysX
         float m_forceMax = 1.0f;
         float m_torqueMax = 1.0f;
         
-        AZStd::string m_jointname{""};
+        AZStd::string m_jointName{""};
 
         AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();
         AZ::Vector3 m_localRotation = AZ::Vector3::CreateZero(); ///< Local rotation angles about X, Y, Z axes in degrees, relative to lead body.
