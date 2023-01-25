@@ -444,7 +444,7 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_GivenJobDependencies_AffectsOutco
     AZ::u32 fingerprint1 = AssetUtilities::GenerateFingerprint(jobDetail);
 
     // add a job dependency - it should alter the fingerprint, even if the file does not exist.
-    AssetBuilderSDK::JobDependency jobDep("thing", "pc", AssetBuilderSDK::JobDependencyType::Order, AssetBuilderSDK::SourceFileDependency("basicfile2.txt", AZ::Uuid::CreateNull()));
+    AssetBuilderSDK::JobDependency jobDep("thing", "pc", AssetBuilderSDK::JobDependencyType::Order, AssetBuilderSDK::SourceFileDependency(tempPath.absoluteFilePath("basicfile.txt").toUtf8().constData(), AZ::Uuid::CreateNull()));
     AssetProcessor::JobDependencyInternal internalJobDep(jobDep);
     internalJobDep.m_builderUuidList.insert(AZ::Uuid::CreateRandom());
     jobDetail.m_jobDependencyList.push_back(internalJobDep);

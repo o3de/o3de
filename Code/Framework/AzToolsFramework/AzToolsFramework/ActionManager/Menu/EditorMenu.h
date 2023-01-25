@@ -37,7 +37,7 @@ namespace AzToolsFramework
         AZ_RTTI(EditorMenu, "{6B6F6802-C587-4734-A5DB-5732329EED03}");
 
         EditorMenu();
-        explicit EditorMenu(const AZStd::string& name);
+        EditorMenu(AZStd::string identifier, const AZStd::string& name);
 
         static void Initialize(QWidget* defaultParentWidget);
         static void Reflect(AZ::ReflectContext* context);
@@ -95,7 +95,12 @@ namespace AzToolsFramework
             QWidgetAction* m_widgetAction = nullptr;
         };
 
+        // Record if this menu was empty at the last refresh.
+        // Used to trigger a refresh on the parents when the situation changes.
+        bool m_empty = true;
+
         QMenu* m_menu = nullptr;
+        AZStd::string m_identifier;
         AZStd::map<int, AZStd::vector<MenuItem>> m_menuItems;
         AZStd::unordered_map<AZStd::string, int> m_actionToSortKeyMap;
         AZStd::unordered_map<AZStd::string, int> m_widgetToSortKeyMap;

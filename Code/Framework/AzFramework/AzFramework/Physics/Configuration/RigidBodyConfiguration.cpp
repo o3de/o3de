@@ -105,22 +105,22 @@ namespace AzPhysics
         }
     }
 
-    constexpr AZStd::string_view KinematicDescription =
-        "When active, the rigid body is not affected by gravity or other forces and is moved by script. ";
+    static constexpr AZStd::string_view KinematicDescription =
+        "Determines how the movement/position of the rigid body is controlled.";
 
-    constexpr AZStd::string_view KinematicDescriptionReadOnly =
-        "When active, the rigid body is not affected by gravity or other forces and is moved by script. "
+    static constexpr AZStd::string_view KinematicDescriptionReadOnly =
+        "Determines how the movement/position of the rigid body is controlled. \n"
         "<b>The rigid body cannot be set as Kinematic if CCD is enabled, disable CCD to allow changes to be made.</b>";
 
-    constexpr AZStd::string_view CcdDescription =
+    static constexpr AZStd::string_view CcdDescription =
         "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
         "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX "
-        "configuration. ";
+        "configuration.";
 
-    constexpr AZStd::string_view CcdDescriptionReadOnly =
+    static constexpr AZStd::string_view CcdDescriptionReadOnly =
         "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
         "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX "
-        "configuration. <b>CCD cannot be enabled if the rigid body is kinematic, set the rigid body as non-kinematic"
+        "configuration.\n <b>CCD cannot be enabled if the rigid body is Kinematic, set the rigid body as Dynamic "
         "to allow changes to be made.</b>";
 
     AZ_CLASS_ALLOCATOR_IMPL(RigidBodyConfiguration, AZ::SystemAllocator, 0);
@@ -131,6 +131,7 @@ namespace AzPhysics
         {
             serializeContext->Class<RigidBodyConfiguration, AzPhysics::SimulatedBodyConfiguration>()
                 ->Version(5, &Internal::RigidBodyVersionConverter)
+                ->Field("Kinematic", &RigidBodyConfiguration::m_kinematic)
                 ->Field("Initial linear velocity", &RigidBodyConfiguration::m_initialLinearVelocity)
                 ->Field("Initial angular velocity", &RigidBodyConfiguration::m_initialAngularVelocity)
                 ->Field("Linear damping", &RigidBodyConfiguration::m_linearDamping)
@@ -139,7 +140,6 @@ namespace AzPhysics
                 ->Field("Start Asleep", &RigidBodyConfiguration::m_startAsleep)
                 ->Field("Interpolate Motion", &RigidBodyConfiguration::m_interpolateMotion)
                 ->Field("Gravity Enabled", &RigidBodyConfiguration::m_gravityEnabled)
-                ->Field("Kinematic", &RigidBodyConfiguration::m_kinematic)
                 ->Field("CCD Enabled", &RigidBodyConfiguration::m_ccdEnabled)
                 ->Field("Compute Mass", &RigidBodyConfiguration::m_computeMass)
                 ->Field("Lock Linear X", &RigidBodyConfiguration::m_lockLinearX)

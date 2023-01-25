@@ -24,7 +24,7 @@ namespace AssetRegistryInternal
         {
             return {};
         }
-        
+
         // pass over the memory only once
         auto TransformPath = [](const char elem) -> char
         {
@@ -139,25 +139,18 @@ namespace AzFramework
         m_realAssetIdToLegacyAssetIdMap.emplace(newId, legacyId);
     }
 
-    void AssetRegistry::UnregisterLegacyAssetMapping(const AZ::Data::AssetId& legacyId)
+    void AssetRegistry::UnregisterLegacyAssetMappingsForAsset(const AZ::Data::AssetId& id)
     {
-        auto itr = m_legacyAssetIdToRealAssetId.find(legacyId);
+        auto range = m_realAssetIdToLegacyAssetIdMap.equal_range(id);
 
-        if(itr != m_legacyAssetIdToRealAssetId.end())
+        // Use the realId -> legacyId map to find and erase all the legacyId -> realId entries
+        for (auto rangeItr = range.first; rangeItr != range.second; ++rangeItr)
         {
-            auto range = m_realAssetIdToLegacyAssetIdMap.equal_range(itr->second);
-
-            for(auto rangeItr = range.first; rangeItr != range.second; ++rangeItr)
-            {
-                if(rangeItr->second == legacyId)
-                {
-                    m_realAssetIdToLegacyAssetIdMap.erase(rangeItr);
-                    break;
-                }
-            }
-
-            m_legacyAssetIdToRealAssetId.erase(itr);
+            m_legacyAssetIdToRealAssetId.erase(rangeItr->second);
         }
+
+        // Erase the realId -> legacyId lookup
+        m_realAssetIdToLegacyAssetIdMap.erase(id);
     }
 
     void AssetRegistry::SetAssetDependencies(const AZ::Data::AssetId& id, const AZStd::vector<AZ::Data::ProductDependency>& dependencies)

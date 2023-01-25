@@ -159,6 +159,8 @@ namespace AZ
             bool GetVisibility() const override;
             void SetRayTracingEnabled(bool enabled) override;
             bool GetRayTracingEnabled() const override;
+            void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) override;
+            bool GetExcludeFromReflectionCubeMaps() const override;
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

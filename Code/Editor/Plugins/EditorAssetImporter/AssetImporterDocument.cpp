@@ -65,6 +65,13 @@ void AssetImporterDocument::SaveScene(AZStd::shared_ptr<AZ::ActionOutput>& outpu
         return;
     }
 
+    // If a save is requested, the user is going to want to see the asset re-processed, even if they didn't actually make a change.
+    bool fingerprintCleared = false;
+    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+        fingerprintCleared, &AzToolsFramework::AssetSystemRequestBus::Events::ClearFingerprintForAsset, m_scene->GetManifestFilename());
+    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+        fingerprintCleared, &AzToolsFramework::AssetSystemRequestBus::Events::ClearFingerprintForAsset, m_scene->GetSourceFilename());
+
     m_saveRunner = AZStd::make_shared<AZ::AsyncSaveRunner>();
 
     // Add a no-op saver to put the FBX into source control. The benefit of doing it this way

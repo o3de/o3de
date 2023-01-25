@@ -793,7 +793,9 @@ class MultiTestSuite(object):
         if type(executable) in [WinEditor, LinuxEditor]:  # Handle Editor CLI args since we need workspace context to populate them.
             test_cmdline_args += [
                 "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-                f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
+                f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}",
+                "--log_IncludeTime=1"
+            ]
         if self.use_null_renderer:
             test_cmdline_args += ["-rhi=null"]
         if any([t.attach_debugger for t in test_spec_list]):

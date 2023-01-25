@@ -316,6 +316,12 @@ void ApplicationManagerBase::FastScan()
 void ApplicationManagerBase::InitAssetCatalog()
 {
     using namespace AssetProcessor;
+
+    if (m_assetCatalog)
+    {
+        return;
+    }
+
     ThreadController<AssetCatalog>* assetCatalogHelper = new ThreadController<AssetCatalog>();
 
     addRunningThread(assetCatalogHelper);
@@ -328,12 +334,38 @@ void ApplicationManagerBase::InitAssetCatalog()
                 connect(m_assetProcessorManager, &AssetProcessorManager::SourceQueued, catalog, &AssetCatalog::OnSourceQueued);
                 connect(m_assetProcessorManager, &AssetProcessorManager::SourceFinished, catalog, &AssetCatalog::OnSourceFinished);
                 connect(m_assetProcessorManager, &AssetProcessorManager::PathDependencyResolved, catalog, &AssetCatalog::OnDependencyResolved);
+                connect(
+                    catalog,
+                    &AssetCatalog::SendAssetMessage,
+                    this,
+                    [](auto message)
+                    {
+                        AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::SendPerPlatform, 0, message, QString::fromUtf8(message.m_platform.c_str()));
+                    },
+                    Qt::QueuedConnection);
+                connect(m_connectionManager, &ConnectionManager::ConnectionReady, catalog, &AssetCatalog::OnConnect, Qt::QueuedConnection);
+                connect(catalog, &AssetCatalog::CatalogLoaded, m_assetProcessorManager, &AssetProcessorManager::OnCatalogReady);
 
                 return catalog;
             });
 
+    ConnectAssetCatalog();
+
     // schedule the asset catalog to build its registry in its own thread:
     QMetaObject::invokeMethod(m_assetCatalog, "BuildRegistry", Qt::QueuedConnection);
+}
+
+void ApplicationManagerBase::ConnectAssetCatalog()
+{
+    using namespace AssetProcessor;
+
+    auto router = AZ::Interface<IRequestRouter>::Get();
+
+    if (router)
+    {
+        router->RegisterQueuedCallbackHandler(GetAssetCatalog(), &AssetCatalog::HandleSaveAssetCatalogRequest);
+        router->RegisterQueuedCallbackHandler(GetAssetCatalog(), &AssetCatalog::HandleGetUnresolvedDependencyCountsRequest);
+    }
 }
 
 void ApplicationManagerBase::InitRCController()
@@ -365,8 +397,19 @@ void ApplicationManagerBase::InitAssetScanner()
     m_assetScanner = new AssetScanner(m_platformConfiguration);
 
     // asset processor manager
+    QObject::connect(
+        m_assetScanner,
+        &AssetScanner::AssetScanningStatusChanged,
+        m_assetProcessorManager,
+        [this](auto status)
+        {
+            if (status == AssetProcessor::AssetScanningStatus::Completed)
+            {
+                InitAssetCatalog();
+            }
+        });
     QObject::connect(m_assetScanner, &AssetScanner::AssetScanningStatusChanged, m_assetProcessorManager, &AssetProcessorManager::OnAssetScannerStatusChange);
-    QObject::connect(m_assetScanner, &AssetScanner::FilesFound,                 m_assetProcessorManager, &AssetProcessorManager::AssessFilesFromScanner);
+    QObject::connect(m_assetScanner, &AssetScanner::FilesFound,                 m_assetProcessorManager, &AssetProcessorManager::RecordFilesFromScanner);
     QObject::connect(m_assetScanner, &AssetScanner::FoldersFound,               m_assetProcessorManager, &AssetProcessorManager::RecordFoldersFromScanner);
     QObject::connect(m_assetScanner, &AssetScanner::ExcludedFound,              m_assetProcessorManager, &AssetProcessorManager::RecordExcludesFromScanner);
 
@@ -455,7 +498,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcherBase> 
         const ScanFolderInfo& info = m_platformConfiguration->GetScanFolderAt(folderIdx);
         m_fileWatcher->AddFolderWatch(info.ScanPath(), info.RecurseSubFolders());
     }
-  
+
     const auto OnFileAdded = [this](QString path)
     {
         m_fileStateCache->AddFile(path);
@@ -542,24 +585,10 @@ void ApplicationManagerBase::InitConnectionManager()
 
     m_connectionManager = new ConnectionManager();
 
-    QObject* connectionAndChangeMessagesThreadContext = this;
-
-    // AssetProcessor Manager related stuff
-    auto forwardMessageFunction = [](AzFramework::AssetSystem::AssetNotificationMessage message)
-        {
-            EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, QString::fromUtf8(message.m_platform.c_str()));
-        };
-
-    [[maybe_unused]] bool result = QObject::connect(GetAssetCatalog(), &AssetProcessor::AssetCatalog::SendAssetMessage, connectionAndChangeMessagesThreadContext, forwardMessageFunction, Qt::QueuedConnection);
-    AZ_Assert(result, "Failed to connect to AssetCatalog signal");
-
-    result = QObject::connect(m_connectionManager, &ConnectionManager::ConnectionReady, GetAssetCatalog(), &AssetProcessor::AssetCatalog::OnConnect, Qt::QueuedConnection);
-    AZ_Assert(result, "Failed to connect to AssetCatalog signal");
-
     //Application manager related stuff
 
     // The AssetCatalog has to be rebuilt on connection, so we force the incoming connection messages to be serialized as they connect to the ApplicationManagerBase
-    result = QObject::connect(m_applicationServer, &ApplicationServer::newIncomingConnection, m_connectionManager, &ConnectionManager::NewConnection, Qt::QueuedConnection);
+    [[maybe_unused]] bool result = QObject::connect(m_applicationServer, &ApplicationServer::newIncomingConnection, m_connectionManager, &ConnectionManager::NewConnection, Qt::QueuedConnection);
 
     AZ_Assert(result, "Failed to connect to ApplicationServer signal");
 
@@ -751,11 +780,10 @@ void ApplicationManagerBase::InitAssetRequestHandler(AssetProcessor::AssetReques
 
     if (router)
     {
+        router->RegisterQueuedCallbackHandler(GetAssetProcessorManager(), &AssetProcessorManager::ProcessFingerprintClearRequest);
         router->RegisterQueuedCallbackHandler(GetAssetProcessorManager(), &AssetProcessorManager::ProcessGetAssetJobsInfoRequest);
         router->RegisterQueuedCallbackHandler(GetAssetProcessorManager(), &AssetProcessorManager::ProcessGetAssetJobLogRequest);
         router->RegisterQueuedCallbackHandler(GetAssetProcessorManager(), &AssetProcessorManager::ProcessGetAbsoluteAssetDatabaseLocationRequest);
-        router->RegisterQueuedCallbackHandler(GetAssetCatalog(), &AssetCatalog::HandleSaveAssetCatalogRequest);
-        router->RegisterQueuedCallbackHandler(GetAssetCatalog(), &AssetCatalog::HandleGetUnresolvedDependencyCountsRequest);
     }
 
     // connect the "Does asset exist?" loop to each other:
@@ -874,6 +902,7 @@ ApplicationManager::BeforeRunStatus ApplicationManagerBase::BeforeRun()
     qRegisterMetaType<QSet<QString> >("QSet<QString>");
     qRegisterMetaType<QSet<AssetProcessor::AssetFileInfo>>("QSet<AssetFileInfo>");
     qRegisterMetaType<AssetProcessor::SourceAssetReference>("SourceAssetReference");
+    qRegisterMetaType<AZStd::unordered_set<AZ::Uuid>>("AZStd::unordered_set<AZ::Uuid>");
 
     AssetBuilderSDK::AssetBuilderBus::Handler::BusConnect();
     AssetProcessor::AssetBuilderRegistrationBus::Handler::BusConnect();
@@ -1486,7 +1515,6 @@ bool ApplicationManagerBase::Activate()
         notifyUuidManagerAndFileProcessor,
         Qt::QueuedConnection);
 
-    InitAssetCatalog();
     InitFileMonitor(AZStd::make_unique<FileWatcher>());
     InitAssetScanner();
     InitAssetServerHandler();
@@ -1577,6 +1605,9 @@ bool ApplicationManagerBase::Activate()
 
     builderRegistrationThread.detach();
 
+    // While waiting for builder registration, start scanning
+    GetAssetScanner()->StartScan();
+
     return true;
 }
 
@@ -1596,11 +1627,6 @@ bool ApplicationManagerBase::PostActivate()
             AZ::SystemTickBus::ExecuteQueuedEvents();
             AZ::SystemTickBus::Broadcast(&AZ::SystemTickEvents::OnSystemTick);
         });
-
-    // now that everything is up and running, we start scanning.  Before this, we don't want file events to start percolating through the
-    // asset system.
-
-    GetAssetScanner()->StartScan();
 
     return true;
 }

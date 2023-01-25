@@ -9,12 +9,20 @@
 #include <AzCore/Math/Geometry2DUtils.h>
 #include <AzCore/std/sort.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsWindow.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 namespace AzToolsFramework
@@ -116,6 +124,8 @@ namespace AzToolsFramework
         // Start listening for any changes to the Paint Brush Settings
         GlobalPaintBrushSettingsNotificationBus::Handler::BusConnect();
 
+        AzToolsFramework::EditorPickModeNotificationBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
+
         m_paintBrush.BeginPaintMode();
     }
 
@@ -128,6 +138,8 @@ namespace AzToolsFramework
         }
 
         m_paintBrush.EndPaintMode();
+
+        AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
 
         // Stop listening for any changes to the Paint Brush Settings
         GlobalPaintBrushSettingsNotificationBus::Handler::BusDisconnect();
@@ -158,6 +170,12 @@ namespace AzToolsFramework
         const ManipulatorManagerState& managerState, AzFramework::DebugDisplayRequests& debugDisplay,
         const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
+        if (m_pickEntitySelectionMode)
+        {
+            m_pickEntitySelectionMode->HighlightSelectedEntity();
+            return;
+        }
+
         // Always set our manipulator state to say that the mouse isn't over the manipulator so that we always use our base
         // manipulator color. The paintbrush isn't a "selectable" manipulator, so it wouldn't make sense for it to change color when the
         // mouse is over it.
@@ -201,6 +219,11 @@ namespace AzToolsFramework
     bool PaintBrushManipulator::HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(Entity);
+
+        if (m_pickEntitySelectionMode)
+        {
+            return m_pickEntitySelectionMode->HandleMouseViewportInteraction(mouseInteraction);
+        }
 
         if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Move)
         {
@@ -301,6 +324,20 @@ namespace AzToolsFramework
 
     AZStd::vector<AzToolsFramework::ActionOverride> PaintBrushManipulator::PopulateActionsImpl()
     {
+        if (m_pickEntitySelectionMode)
+        {
+            ActionOverride backAction = CreateBackAction(
+                "Stop Entity Pick Mode",
+                "Exit out of the entity pick mode",
+                []()
+                {
+                    AzToolsFramework::EditorPickModeRequestBus::Broadcast(&AzToolsFramework::EditorPickModeRequests::StopEntityPickMode);
+                });
+
+            backAction.SetEntityComponentIdPair(m_ownerEntityComponentId);
+            return { backAction };
+        }
+
         // Paint brush manipulators should be able to easily adjust the radius of the brush with the [ and ] keys
         return {
             AzToolsFramework::ActionOverride()
@@ -310,7 +347,7 @@ namespace AzToolsFramework
                 .SetTip(PaintbrushIncreaseSizeDesc)
                 .SetEntityComponentIdPair(m_ownerEntityComponentId)
                 .SetCallback(
-                    [this]()
+                    []()
                     {
                         AdjustSize(ed_paintBrushSizeAdjustAmount);
                     }),
@@ -321,7 +358,7 @@ namespace AzToolsFramework
                 .SetTip(PaintbrushDecreaseSizeDesc)
                 .SetEntityComponentIdPair(m_ownerEntityComponentId)
                 .SetCallback(
-                    [this]()
+                    []()
                     {
                         AdjustSize(-ed_paintBrushSizeAdjustAmount);
                     }),
@@ -332,7 +369,7 @@ namespace AzToolsFramework
                 .SetTip(PaintbrushIncreaseHardnessDesc)
                 .SetEntityComponentIdPair(m_ownerEntityComponentId)
                 .SetCallback(
-                    [this]()
+                    []()
                     {
                         AdjustHardnessPercent(ed_paintBrushHardnessPercentAdjustAmount);
                     }),
@@ -343,11 +380,135 @@ namespace AzToolsFramework
                 .SetTip(PaintbrushDecreaseHardnessDesc)
                 .SetEntityComponentIdPair(m_ownerEntityComponentId)
                 .SetCallback(
-                    [this]()
+                    []()
                     {
                         AdjustHardnessPercent(-ed_paintBrushHardnessPercentAdjustAmount);
                     }),
         };
+    }
+
+    void PaintBrushManipulator::RegisterActions()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "PaintBrushManipulator - could not get ActionManagerInterface on RegisterActions.");
+
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        AZ_Assert(hotKeyManagerInterface, "PaintBrushManipulator - could not get HotKeyManagerInterface on RegisterActions.");
+
+        // Increase Paintbrush Size
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.paintBrushManipulator.increaseSize";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = PaintbrushIncreaseSizeTitle;
+            actionProperties.m_description = PaintbrushIncreaseSizeDesc;
+            actionProperties.m_category = "PaintBrush Manipulator";
+
+            actionManagerInterface->RegisterAction(
+                EditorActionContext::MainWindowContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    AdjustSize(ed_paintBrushSizeAdjustAmount);
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "]");
+        }
+
+        // Decrease Paintbrush Size
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.paintBrushManipulator.decreaseSize";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = PaintbrushDecreaseSizeTitle;
+            actionProperties.m_description = PaintbrushDecreaseSizeDesc;
+            actionProperties.m_category = "PaintBrush Manipulator";
+
+            actionManagerInterface->RegisterAction(
+                EditorActionContext::MainWindowContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    AdjustSize(-ed_paintBrushSizeAdjustAmount);
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "[");
+        }
+
+        // Increase Paintbrush Hardness
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.paintBrushManipulator.increaseHardness";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = PaintbrushIncreaseHardnessTitle;
+            actionProperties.m_description = PaintbrushIncreaseHardnessDesc;
+            actionProperties.m_category = "PaintBrush Manipulator";
+
+            actionManagerInterface->RegisterAction(
+                EditorActionContext::MainWindowContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    AdjustHardnessPercent(ed_paintBrushHardnessPercentAdjustAmount);
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "}");
+        }
+
+        // Decrease Paintbrush Size
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.paintBrushManipulator.decreaseHardness";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = PaintbrushDecreaseHardnessTitle;
+            actionProperties.m_description = PaintbrushDecreaseHardnessDesc;
+            actionProperties.m_category = "PaintBrush Manipulator";
+
+            actionManagerInterface->RegisterAction(
+                EditorActionContext::MainWindowContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    AdjustHardnessPercent(-ed_paintBrushHardnessPercentAdjustAmount);
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "{");
+        }
+    }
+
+    void PaintBrushManipulator::BindActionsToMode(AZ::Uuid componentModeTypeId)
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "PaintBrushManipulator - could not get ActionManagerInterface on RegisterActions.");
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        AZStd::string modeIdentifier =
+            AZStd::string::format("o3de.context.mode.%s", serializeContext->FindClassData(componentModeTypeId)->m_name);
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.increaseSize");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.decreaseSize");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.increaseHardness");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.paintBrushManipulator.decreaseHardness");
+    }
+
+    void PaintBrushManipulator::BindActionsToMenus()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "PaintBrushManipulator - could not get MenuManagerInterface on BindActionsToMenus.");
+
+        constexpr int baseSortKey = 6000; // arbitrary starting sort number
+
+        // leave space between entries in case something wants to add menu items in-between
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseSize", baseSortKey);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseSize", baseSortKey + 10);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseHardness", baseSortKey + 20);
+        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseHardness", baseSortKey + 30);
     }
 
     void PaintBrushManipulator::AdjustSize(float sizeDelta)
@@ -366,5 +527,29 @@ namespace AzToolsFramework
         hardnessPercent += hardnessPercentDelta;
         GlobalPaintBrushSettingsRequestBus::Broadcast(&GlobalPaintBrushSettingsRequestBus::Events::SetHardnessPercent, hardnessPercent);
     }
+
+    void PaintBrushManipulator::OnEntityPickModeStarted()
+    {
+        const EditorVisibleEntityDataCacheInterface* entityDataCache = nullptr;
+        AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::EventResult(
+            entityDataCache,
+            GetEntityContextId(), &AzToolsFramework::EditorInteractionSystemViewportSelection::GetEntityDataCache);
+
+        auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get();
+
+        m_pickEntitySelectionMode.emplace(entityDataCache, viewportEditorModeTracker);
+
+        ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &ComponentModeFramework::ComponentModeSystemRequests::RefreshActions);
+    }
+
+    void PaintBrushManipulator::OnEntityPickModeStopped()
+    {
+        m_pickEntitySelectionMode.reset();
+
+        ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &ComponentModeFramework::ComponentModeSystemRequests::RefreshActions);
+    }
+
 
 } // namespace AzToolsFramework

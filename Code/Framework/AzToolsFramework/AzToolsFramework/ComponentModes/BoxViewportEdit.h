@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzToolsFramework/ComponentModes/BaseViewportEdit.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 
 namespace AzToolsFramework
@@ -17,14 +18,16 @@ namespace AzToolsFramework
 
     /// Wraps 6 linear manipulators, providing a viewport experience for 
     /// modifying the extents of a box
-    class BoxViewportEdit
+    class BoxViewportEdit : public BaseViewportEdit
     {
     public:
-        BoxViewportEdit() = default;
+        BoxViewportEdit(bool allowAsymmetricalEditing = false);
 
-        void Setup(const AZ::EntityComponentIdPair& entityComponentIdPair, bool allowAsymmetricalEditing = false);
-        void Teardown();
-        void UpdateManipulators();
+        // BaseViewportEdit overrides ...
+        void Setup(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
+        void Teardown() override;
+        void UpdateManipulators() override;
+        void ResetValues() override;
 
     private:
         AZ::EntityComponentIdPair m_entityComponentIdPair;
@@ -32,10 +35,4 @@ namespace AzToolsFramework
         BoxManipulators m_linearManipulators; ///< Manipulators for editing box size.
         bool m_allowAsymmetricalEditing = false; ///< Whether moving individual faces independently is allowed.
     };
-
-    /// Calculates the position of the manipulator in its own reference frame.
-    /// Removes the effects of the manipulator local transform, and accounts for world transform scale in
-    /// the action local offset.
-    AZ::Vector3 GetPositionInManipulatorFrame(float worldUniformScale, const AZ::Transform& manipulatorLocalTransform,
-        const LinearManipulator::Action& action);
 } // namespace AzToolsFramework

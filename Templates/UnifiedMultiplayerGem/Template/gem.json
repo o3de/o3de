@@ -1,0 +1,25 @@
+{
+    "gem_name": "${Name}",
+    "display_name": "${DisplayName}",
+    "license": "${License}",
+    "license_url": "${LicenseURL}",
+    "origin": "${Origin}",
+    "origin_url": "${OriginURL}",
+    "type": "Code",
+    "summary": "${Summary}",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "${UserTags}"
+    ],
+    "platforms": [
+        "${Platforms}"
+    ],
+    "icon_path": "${IconPath}",
+    "requirements": "${Requirements}",
+    "documentation_url": "${DocumentationURL}",
+    "dependencies": [
+    ],
+    "repo_uri": "${RepoURI}"
+}

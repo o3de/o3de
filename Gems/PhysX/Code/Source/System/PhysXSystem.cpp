@@ -116,12 +116,16 @@ namespace PhysX
         AZStd::string platformName = AZ::GetPlatformName(AZ::g_currentPlatform);
         auto logCategory =
             AZStd::string::format("%.*s-%s", AZ_STRING_ARG(PerformanceLogCategory), platformName.c_str());
+        auto fileExtension =
+            AZStd::string::format("%.*s.json", AZ_STRING_ARG(PerformanceLogCategory));
+        AZStd::to_lower(fileExtension.begin(), fileExtension.end());
         m_performanceCollector = AZStd::make_unique<AZ::Debug::PerformanceCollector>(
             logCategory,
             performanceMetrics,
             [](AZ::u32)
             {
-            });
+            },
+            fileExtension);
 
         m_performanceCollector->UpdateDataLogType(GetDataLogTypeFromCVar(physx_metricsDataLogType));
         m_performanceCollector->UpdateFrameCountPerCaptureBatch(physx_metricsFrameCountPerCaptureBatch);

@@ -101,6 +101,8 @@ namespace AzToolsFramework
 
             void HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId = AZ::Crc32());
 
+            bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
+
         Q_SIGNALS:
             void RequestOpenItemForEditing(const QModelIndex& index);
 
@@ -115,7 +117,6 @@ namespace AzToolsFramework
             AZStd::unordered_map<AssetBrowserEntry*, AZ::Crc32> m_assetEntriesToCreatorBusIds;
             AZStd::unordered_map<AZStd::string, AZ::Crc32> m_newlyCreatedAssetPathsToCreatorBusIds;
 
-            bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
             void WatchForExpectedAssets(AssetBrowserEntry* entry);
         };
     } // namespace AssetBrowser
