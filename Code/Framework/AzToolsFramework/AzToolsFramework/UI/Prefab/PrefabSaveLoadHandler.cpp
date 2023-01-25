@@ -23,11 +23,11 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
-#include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerDragAndDropContext.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
@@ -132,7 +132,6 @@ namespace AzToolsFramework
                 AZ_Assert(false, "PrefabSaveHandler - Could not get PrefabFocusPublicInterface on construction.");
                 return;
             }
-            
 
             m_templateInstanceMapperInterface = AZ::Interface<TemplateInstanceMapperInterface>::Get();
             if (m_templateInstanceMapperInterface == nullptr)

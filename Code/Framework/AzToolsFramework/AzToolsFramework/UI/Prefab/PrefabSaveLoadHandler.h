@@ -128,7 +128,6 @@ namespace AzToolsFramework
             //! Called by the AssetProcessor when the source file has been removed.
             void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
             //! @}
-            
 
             AZStd::shared_ptr<QDialog> ConstructClosePrefabDialog(TemplateId templateId);
             AZStd::unique_ptr<AzQtComponents::Card> ConstructUnsavedPrefabsCard(TemplateId templateId);
