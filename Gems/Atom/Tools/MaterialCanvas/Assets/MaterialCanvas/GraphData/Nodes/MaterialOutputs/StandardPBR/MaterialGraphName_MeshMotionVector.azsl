@@ -6,11 +6,7 @@
  *
  */
 
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
-
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include "MaterialGraphName_Common.azsli"
 
 struct VSInput
 {
@@ -80,3 +76,4 @@ PSOutput MainPS(VSOutput IN)
     
     return OUT;
 }
+

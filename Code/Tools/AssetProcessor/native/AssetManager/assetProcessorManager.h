@@ -72,6 +72,9 @@ namespace AzToolsFramework
         class AssetJobLogRequest;
         class AssetJobLogResponse;
 
+        class AssetFingerprintClearRequest;
+        class AssetFingerprintClearResponse;
+
         class AssetJobsInfoRequest;
         class AssetJobsInfoResponse;
 
@@ -97,6 +100,8 @@ namespace AssetProcessor
         , public AssetProcessor::ProcessingJobInfoBus::Handler
     {
         using BaseAssetProcessorMessage = AzFramework::AssetSystem::BaseAssetProcessorMessage;
+        using AssetFingerprintClearRequest = AzToolsFramework::AssetSystem::AssetFingerprintClearRequest;
+        using AssetFingerprintClearResponse = AzToolsFramework::AssetSystem::AssetFingerprintClearResponse;
         using AssetJobsInfoRequest = AzToolsFramework::AssetSystem::AssetJobsInfoRequest;
         using AssetJobsInfoResponse = AzToolsFramework::AssetSystem::AssetJobsInfoResponse;
         using JobInfo = AzToolsFramework::AssetSystem::JobInfo;
@@ -307,6 +312,9 @@ namespace AssetProcessor
 
         void QuitRequested();
 
+        //! A network request to clear the fingerprint for a given asset, so that the next time the timestamp changes, the file will re-process.
+        AssetFingerprintClearResponse ProcessFingerprintClearRequest(MessageData<AssetFingerprintClearRequest> messageData);
+
         //! A network request came in asking, for a given input asset, what the status is of any jobs related to that request
         AssetJobsInfoResponse ProcessGetAssetJobsInfoRequest(MessageData<AssetJobsInfoRequest> messageData);
 
@@ -325,6 +333,7 @@ namespace AssetProcessor
         void ProcessFilesToExamineQueue();
         void CheckForIdle();
         void CheckMissingFiles();
+        void ProcessFingerprintClearRequest(AssetFingerprintClearRequest& request, AssetFingerprintClearResponse& response);
         void ProcessGetAssetJobsInfoRequest(AssetJobsInfoRequest& request, AssetJobsInfoResponse& response);
         void ProcessGetAssetJobLogRequest(const AssetJobLogRequest& request, AssetJobLogResponse& response);
         void ScheduleNextUpdate();
