@@ -5738,9 +5738,9 @@ namespace UnitTest
         AZ::Attribute* attribute = AZ::FindAttribute(invokableCrc, classData->m_attributes);
         ASSERT_NE(nullptr, attribute);
         void* instance = &baseNoRttiInstance;
-        AZ::UnsafeAttributeInvoker unsafeAttributeInvoker = attribute->GetUnsafeAttributeReader(instance);
+        auto voidAttributeInvocable = attribute->GetVoidInstanceAttributeInvocable();
 
-        AZ::AttributeReader reader = unsafeAttributeInvoker.GetAttributeReader();
+        AZ::AttributeReader reader(instance, voidAttributeInvocable.get());
         float value = 0;
         EXPECT_TRUE(reader.Read<float>(value));
         EXPECT_FLOAT_EQ(2.0f, value);

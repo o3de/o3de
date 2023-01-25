@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_ATTRIBUTE_READER_H
-#define AZCORE_ATTRIBUTE_READER_H
+#pragma once
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/string.h>
@@ -36,7 +35,7 @@ namespace AZ
                 value = static_cast<DestType>(invocable->operator()(AZStd::forward<InstType>(instance), AZStd::forward<Args>(args)...));
                 return true;
             }
-            // try a type with an invocable function that takes no arguments
+            // try a type with an invocable function that takes no "this" instance
             if (auto invocable = azrtti_cast<AttributeInvocable<AttrType(Args...)>*>(attr); invocable != nullptr)
             {
                 value = static_cast<DestType>(invocable->operator()(AZStd::forward<Args>(args)...));
@@ -61,7 +60,7 @@ namespace AZ
                 invocable->operator()(AZStd::forward<InstType>(instance), AZStd::forward<Args>(args)...);
                 return true;
             }
-            // try a type with an invocable function that takes no arguments
+            // try a type with an invocable function that takes no "this" instance
             if (auto invocable = azrtti_cast<AttributeInvocable<RetType(Args...)>*>(attr); invocable != nullptr)
             {
                 invocable->operator()(AZStd::forward<Args>(args)...);
@@ -242,115 +241,5 @@ namespace AZ
     };
 
     using AZ::Internal::AttributeRead;
-
-    struct UnsafeAttributeInvoker
-    {
-        AttributeReader GetAttributeReader()
-        {
-            return m_reader;
-        }
-    private:
-        UnsafeAttributeInvoker(AZStd::unique_ptr<AZ::Attribute> attribute, AZ::AttributeReader reader)
-            : m_callableAttribute(AZStd::move(attribute))
-            , m_reader(AZStd::move(reader))
-        {}
-
-        AZStd::unique_ptr<AZ::Attribute> m_callableAttribute;
-        AttributeReader m_reader;
-
-        friend class ::AZ::Attribute;
-
-        template<class Invocable>
-        friend class ::AZ::AttributeInvocable;
-    };
-
-    namespace Internal
-    {
-        template<class RetType, class... Args>
-        struct ClassToVoidInvoker;
-
-        // Specialization for function object with no parameters
-        template<class RetType>
-        struct ClassToVoidInvoker<RetType>
-        {
-            explicit ClassToVoidInvoker(AZStd::function<RetType()> callable)
-                : m_callable(AZStd::move(callable))
-            {}
-
-            // In the case of the function object not accepting at least one argument, then the class type is assumed to be non-existent
-            RetType operator()() const
-            {
-                return m_callable();
-            }
-
-        private:
-            AZStd::function<RetType()> m_callable;
-        };
-
-        // Specialization for function object with at least one parameter
-        // The first parameter is assumed to be the class type
-        // The void pointer instance will be cast to that type
-        template<class RetType, class ClassType, class... Args>
-        struct ClassToVoidInvoker<RetType, ClassType, Args...>
-        {
-            explicit ClassToVoidInvoker(AZStd::function<RetType(ClassType, Args...)> callable)
-                : m_callable(AZStd::move(callable))
-            {}
-            RetType operator()(void* instancePtr, Args... args) const
-            {
-                if constexpr (AZStd::is_pointer_v<ClassType>)
-                {
-                    // ClassType is a pointer so cast directly from the void pointer
-                    return m_callable(static_cast<ClassType>(instancePtr), static_cast<Args&&>(args)...);
-                }
-                else
-                {
-                    // If the ClassType parameter accepts a value type, then cast the void pointer to a class type pointer
-                    // and deference
-                    return m_callable(*static_cast<AZStd::remove_cvref_t<ClassType>*>(instancePtr), static_cast<Args&&>(args)...);
-                }
-            }
-
-        private:
-            AZStd::function<RetType(ClassType, Args...)> m_callable;
-        };
-
-        template<class RetType>
-        struct FunctionObjectInvoker
-        {
-            template<class... Args>
-            using ClassToVoidArgsInvoker = ClassToVoidInvoker<RetType, Args...>;
-        };
-    } // namespace Internal
-
-    inline UnsafeAttributeInvoker Attribute::GetUnsafeAttributeReader(void* instance)
-    {
-        return UnsafeAttributeInvoker{ nullptr, AttributeReader(instance, this) };
-    }
-
-    template<class Invocable>
-    inline UnsafeAttributeInvoker AttributeInvocable<Invocable>::GetUnsafeAttributeReader(void* instance)
-    {
-        // Make a temporary AttributeInvocable attribute that can cast from a void pointer
-        // to the class type needed by this AttributeInvocable
-
-        if constexpr (AZStd::function_traits<Callable>::value)
-        {
-            using CallableReturnType = typename AZStd::function_traits<Callable>::return_type;
-            using VoidInstanceCallWrapper = typename AZStd::function_traits<Callable>::template expand_args<
-                Internal::FunctionObjectInvoker<CallableReturnType>::template ClassToVoidArgsInvoker>;
-            VoidInstanceCallWrapper voidWrapper{ m_callable };
-            auto wrappedAttributeInvocable = new AttributeInvocable<typename AZStd::function_traits<VoidInstanceCallWrapper>::function_type>(voidWrapper);
-            return UnsafeAttributeInvoker{ AZStd::unique_ptr<AZ::Attribute>(wrappedAttributeInvocable),
-                AttributeReader(instance, wrappedAttributeInvocable) };
-        }
-        else
-        {
-            // Otherwise if the type being wrapped is not callable then assume it is a regular value type and use
-            // Invoke base Attribute class GetUnsafeAttributeReader function to get an AttributeInvoker
-            return Attribute::GetUnsafeAttributeReader(instance);
-        }
-    }
 } // namespace AZ
 
-#endif // AZCORE_ATTRIBUTE_READER_H
