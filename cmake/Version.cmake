@@ -37,19 +37,6 @@ macro(o3de_read_engine_default output_value key default_value)
     unset(tmp_value)
 endmacro()
 
-#! o3de_set_install_default: Sets the output_value to one from the environment
-#  or the default, if the environment variable is empty
-# \arg:output_value - name of output variable to set 
-# \arg:env_var - name of environment variable to use 
-# \arg:default_value - value to use if environment var is empty
-macro(o3de_set_install_default output_value env_var default_value description)
-    set(${output_value} ${default_value} CACHE STRING ${description})
-    if(NOT ${env_var} STREQUAL "")
-        set(${output_value} ${env_var})
-    endif()
-    string(CONFIGURE ${${output_value}} ${output_value} @ONLY)
-endmacro()
-
 #! o3de_set_major_minor_patch_with_prefix: Parses a SemVer string and sets
 #  separate major, minor and patch global properties.  
 #  e.g. given "1.2.3" and prefix VER the following properties are set:
@@ -101,7 +88,7 @@ o3de_set_major_minor_patch_with_prefix(O3DE_VERSION ${O3DE_VERSION_STRING})
 
 # set variables for INSTALL targets
 # these ARE cached variables and can be configured by the user
-o3de_set_install_default(O3DE_INSTALL_VERSION_STRING "$ENV{O3DE_INSTALL_VERSION}" "@O3DE_VERSION_STRING@" "Open 3D Engine's version for the INSTALL target")
-o3de_set_install_default(O3DE_INSTALL_DISPLAY_VERSION_STRING "$ENV{O3DE_INSTALL_DISPLAY_VERSION}" "@O3DE_DISPLAY_VERSION_STRING@" "Open 3D Engine's display version for the INSTALL target")
-o3de_set_install_default(O3DE_INSTALL_BUILD_VERSION "$ENV{O3DE_INSTALL_BUILD_VERSION}" "@O3DE_BUILD_VERSION@" "Open 3D Engine's build number for the INSTALL target")
-o3de_set_install_default(O3DE_INSTALL_ENGINE_NAME "$ENV{O3DE_INSTALL_ENGINE_NAME}" "@O3DE_ENGINE_NAME@" "Open 3D Engine's engine name for the INSTALL target")
+o3de_set_from_env_with_default(O3DE_INSTALL_VERSION_STRING O3DE_INSTALL_VERSION "@O3DE_VERSION_STRING@" CACHE STRING "Open 3D Engine's version for the INSTALL target")
+o3de_set_from_env_with_default(O3DE_INSTALL_DISPLAY_VERSION_STRING O3DE_INSTALL_DISPLAY_VERSION "@O3DE_DISPLAY_VERSION_STRING@" CACHE STRING "Open 3D Engine's display version for the INSTALL target")
+o3de_set_from_env_with_default(O3DE_INSTALL_BUILD_VERSION O3DE_INSTALL_BUILD_VERSION "@O3DE_BUILD_VERSION@" CACHE STRING "Open 3D Engine's build number for the INSTALL target")
+o3de_set_from_env_with_default(O3DE_INSTALL_ENGINE_NAME O3DE_INSTALL_ENGINE_NAME "@O3DE_ENGINE_NAME@" CACHE STRING "Open 3D Engine's engine name for the INSTALL target")
