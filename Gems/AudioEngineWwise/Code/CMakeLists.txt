@@ -52,7 +52,7 @@ ly_add_target(
         PUBLIC
             3rdParty::Wwise
             Legacy::CryCommon
-            Gem::AudioSystem.Static
+            Gem::AudioSystem.API
 )
 
 ly_add_target(
@@ -246,5 +246,5 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Test.Assets/Gems/AudioEngineWwise/sounds/wwise
         )
 
-    endif()
-endif()
+    endif() # PAL_TRAIT_BUILD_TESTS_SUPPORTED
+endif() # PAL_TRAIT_BUILD_HOST_TOOLS

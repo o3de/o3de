@@ -6,7 +6,7 @@
  *
  */
 
-#include <AudioSystemGemSystemComponent.h>
+#include "AudioSystemGemSystemComponent.h"
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>

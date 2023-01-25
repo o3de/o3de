@@ -8,7 +8,6 @@
 
 set(FILES
     Include/Engine/ATLEntityData.h
-    Include/Engine/AudioAllocators.h
     Include/Engine/AudioFileUtils.h
     Include/Engine/AudioRingBuffer.h
     Include/Engine/ATLCommon.h
