@@ -9,7 +9,6 @@
 #include <QApplication>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QShortcutEvent>
-#include <QTimer>
 
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 

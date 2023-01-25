@@ -34,7 +34,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
-#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -3292,51 +3291,12 @@ namespace AzToolsFramework
             static constexpr AZStd::string_view EditorEntityPropertyEditorActionContextIdentifier = "o3de.context.editor.entitypropertyeditor";
 
             m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-            m_hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
 
             AzToolsFramework::ActionContextProperties contextProperties;
             contextProperties.m_name = "O3DE Entity Editor";
 
+            // Register a custom action context to allow duplicated shortcut hotkeys to work
             m_actionManagerInterface->RegisterActionContext("", EditorEntityPropertyEditorActionContextIdentifier, contextProperties, this);
-
-            {
-                constexpr AZStd::string_view actionIdentifier = "o3de.action.entitypropertyeditor.delete";
-                AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Delete Component";
-                actionProperties.m_category = "Entity Properties";
-
-                m_actionManagerInterface->RegisterAction(
-                    EditorEntityPropertyEditorActionContextIdentifier,
-                    actionIdentifier,
-                    actionProperties,
-                    [this]
-                    {
-                        DeleteComponents();
-                    }
-                );
-
-                m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Delete");
-            }
-
-            {
-                // FIXME: This currently gets triggered twice
-                constexpr AZStd::string_view actionIdentifier = "o3de.action.entitypropertyeditor.test";
-                AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Test Hotkey";
-                actionProperties.m_category = "Entity Properties";
-
-                m_actionManagerInterface->RegisterAction(
-                    EditorEntityPropertyEditorActionContextIdentifier,
-                    actionIdentifier,
-                    actionProperties,
-                    [this]
-                    {
-                        DeleteComponents();
-                    }
-                    );
-
-                m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+J");
-            }
         }
 
         m_actionToAddComponents = new QAction(tr("Add component"), this);
@@ -3345,15 +3305,12 @@ namespace AzToolsFramework
         addAction(m_actionToAddComponents);
         m_entityComponentActions.push_back(m_actionToAddComponents);
 
-        if (!AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            m_actionToDeleteComponents = new QAction(tr("Delete component"), this);
-            m_actionToDeleteComponents->setShortcut(QKeySequence::Delete);
-            m_actionToDeleteComponents->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-            connect(m_actionToDeleteComponents, &QAction::triggered, this, [this]() { DeleteComponents(); });
-            addAction(m_actionToDeleteComponents);
-            m_entityComponentActions.push_back(m_actionToDeleteComponents);
-        }
+        m_actionToDeleteComponents = new QAction(tr("Delete component"), this);
+        m_actionToDeleteComponents->setShortcut(QKeySequence::Delete);
+        m_actionToDeleteComponents->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        connect(m_actionToDeleteComponents, &QAction::triggered, this, [this]() { DeleteComponents(); });
+        addAction(m_actionToDeleteComponents);
+        m_entityComponentActions.push_back(m_actionToDeleteComponents);
 
         QAction* seperator1 = new QAction(this);
         seperator1->setSeparator(true);
@@ -3443,10 +3400,7 @@ namespace AzToolsFramework
         const bool allowRemove = hasComponents && AreComponentsRemovable(componentsToEdit) && !m_selectionContainsReadOnlyEntity;
         const bool allowCopy = hasComponents && AreComponentsCopyable(componentsToEdit);
 
-        if (m_actionToDeleteComponents)
-        {
-            m_actionToDeleteComponents->setEnabled(allowRemove);
-        }
+        m_actionToDeleteComponents->setEnabled(allowRemove);
         m_actionToCutComponents->setEnabled(allowRemove && allowCopy);
         m_actionToCopyComponents->setEnabled(allowCopy);
         m_actionToPasteComponents->setEnabled(!m_selectedEntityIds.empty() && CanPasteComponentsOnSelectedEntities());

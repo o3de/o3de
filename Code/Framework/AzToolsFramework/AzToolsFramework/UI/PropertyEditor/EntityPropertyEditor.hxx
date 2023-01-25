@@ -65,7 +65,6 @@ namespace AzToolsFramework
     class ComponentEditor;
     class ComponentPaletteWidget;
     class ComponentModeCollectionInterface;
-    class HotKeyManagerInterface;
     struct SourceControlFileInfo;
     class ReadOnlyEntityPublicInterface;
     class FocusModeInterface;
@@ -405,7 +404,6 @@ namespace AzToolsFramework
         QAction* m_resetToSliceAction = nullptr;
 
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
-        AzToolsFramework::HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
 
         void CreateActions();
         void UpdateActions();
