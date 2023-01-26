@@ -1,6 +1,7 @@
 {
     "project_name": "AutomatedTesting",
     "product_name": "AutomatedTesting",
+    "version": "1.0.0",
     "executable_name": "AutomatedTestingLauncher",
     "modules": [],
     "project_id": "{D816AFAE-4BB7-4FEF-88F4-E2B786DCF29D}",

@@ -469,6 +469,15 @@ namespace UnitTest
             return false;
         }
 
+        void SetExcludeFromReflectionCubeMaps([[maybe_unused]] bool excludeFromReflectionCubeMaps) override
+        {
+        }
+
+        bool GetExcludeFromReflectionCubeMaps() const override
+        {
+            return false;
+        }
+
         AZ::Data::AssetId m_assetIdOutput;
         void SetModelAssetId(AZ::Data::AssetId modelAssetId) override
         {

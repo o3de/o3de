@@ -133,6 +133,9 @@ namespace AZ
             void SetRayTracingEnabled(bool enabled) override;
             bool GetRayTracingEnabled() const override;
 
+            void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) override;
+            bool GetExcludeFromReflectionCubeMaps() const override;
+
             // BoundsRequestBus and MeshComponentRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;
             AZ::Aabb GetLocalBounds() override;

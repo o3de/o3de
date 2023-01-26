@@ -11,9 +11,7 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
-#include <AtomToolsFramework/Graph/GraphCompilerManager.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
-#include <Document/PassGraphCompiler.h>
 #include <GraphModel/Model/GraphContext.h>
 #include <Window/PassCanvasMainWindow.h>
 
@@ -60,7 +58,6 @@ namespace PassCanvas
         AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
         AZStd::unique_ptr<AtomToolsFramework::DynamicNodeManager> m_dynamicNodeManager;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
-        AZStd::shared_ptr<AtomToolsFramework::GraphCompilerManager> m_graphCompilerManager;
         AtomToolsFramework::GraphViewSettingsPtr m_graphViewSettingsPtr;
     };
 } // namespace PassCanvas

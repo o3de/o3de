@@ -1,10 +1,4 @@
 {
-    // Note: "LowEnd" shaders are for supporting the low end pipeline
-    // These shaders can be safely added to materials without incurring additional runtime draw
-    // items as draw items for shaders are only created if the scene has a pass with a matching
-    // DrawListTag. If your pipeline doesn't have a "multiViewForward" DrawListTag, no draw items
-    // for this shader will be created.
-
     "Source" : "./MaterialGraphName_Forward.azsl",
 
     "Definitions" : ["QUALITY_LOW_END_TIER1=1", "QUALITY_LOW_END_TIER2=1", "MULTI_VIEW_FORWARD=1"],

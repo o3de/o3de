@@ -138,7 +138,6 @@ namespace AZ
             bool m_needsInit = false;
             bool m_objectSrgNeedsUpdate = true;
             bool m_isAlwaysDynamic = false;
-            bool m_excludeFromReflectionCubeMaps = false;
             bool m_visible = true;
             bool m_hasForwardPassIblSpecularMaterial = false;
             bool m_needsSetRayTracingData = false;
@@ -211,6 +210,7 @@ namespace AZ
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const override;
 
             void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) override;
+            bool GetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle) const override;
             void SetIsAlwaysDynamic(const MeshHandle& meshHandle, bool isAlwaysDynamic) override;
             bool GetIsAlwaysDynamic(const MeshHandle& meshHandle) const override;
             void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;

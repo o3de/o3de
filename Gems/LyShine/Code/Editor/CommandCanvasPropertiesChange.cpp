@@ -70,7 +70,7 @@ void CommandCanvasPropertiesChange::Recreate(bool isUndo)
         m_editorWindow->ReplaceEntityContext(newEntityContext);
 
         // Tell the UI animation system that the active canvas has changed
-        EBUS_EVENT(UiEditorAnimationBus, ActiveCanvasChanged);
+        UiEditorAnimationBus::Broadcast(&UiEditorAnimationBus::Events::ActiveCanvasChanged);
 
         // Some toolbar sections display canvas properties
         ViewportWidget* viewportWidget = m_editorWindow->GetViewport();

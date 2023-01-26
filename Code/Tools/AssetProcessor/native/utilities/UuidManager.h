@@ -35,10 +35,10 @@ namespace AssetProcessor
 
         //! Notifies the manager a metadata file has changed so the cache can be cleared.
         //! @param file Absolute path to the metadata file that changed.
-        virtual void FileChanged(AZ::IO::Path file) = 0;
+        virtual void FileChanged(AZ::IO::PathView file) = 0;
         //! Notifies the manager a metadata file has been removed so the cache can be cleared.
         //! @param file Absolute path to the metadata file that was removed.
-        virtual void FileRemoved(AZ::IO::Path file) = 0;
+        virtual void FileRemoved(AZ::IO::PathView file) = 0;
         //! Sets the file types (based on file extension) which the manager will generate random UUIDs and store in a metadata file.  Types
         //! which are not enabled will use legacy path-based UUIDs.
         //! @param types Set of file extensions to enable generation for.
@@ -67,8 +67,8 @@ namespace AssetProcessor
 
         AZ::Uuid GetUuid(const SourceAssetReference& sourceAsset) override;
         AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(const SourceAssetReference& sourceAsset) override;
-        void FileChanged(AZ::IO::Path file) override;
-        void FileRemoved(AZ::IO::Path file) override;
+        void FileChanged(AZ::IO::PathView file) override;
+        void FileRemoved(AZ::IO::PathView file) override;
         void EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types) override;
 
     private:
@@ -94,7 +94,7 @@ namespace AssetProcessor
         UuidEntry CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType);
         AZ::Uuid CreateUuid();
         AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file);
-        void InvalidateCacheEntry(AZ::IO::Path file);
+        void InvalidateCacheEntry(AZ::IO::FixedMaxPath file);
 
         AZStd::recursive_mutex m_uuidMutex;
         // Cache of uuids.  AbsPath -> UUIDEntry

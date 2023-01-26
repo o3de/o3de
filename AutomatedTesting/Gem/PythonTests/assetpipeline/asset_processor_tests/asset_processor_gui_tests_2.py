@@ -319,7 +319,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         # Expected test asset sources and products
         # *.assetinfo and *.fbx files are not produced in cache, and file.fbx produces file.actor in cache
         expected_test_assets = ["Jack.fbx", "Jack.fbx.assetinfo"]
-        expected_cache_assets = ["jack.actor"]
+        expected_cache_assets = ["jack.actor", "jack.assetinfo.dbg", "jack.dbgsg", "jack.dbgsg.xml", "jack.dbgsg.json"]
 
         # Copy test assets to project folder and verify test assets folder exists
         test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], "C24168802")

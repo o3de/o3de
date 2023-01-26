@@ -21,6 +21,7 @@
             "name": "windows-mono-default",
             "displayName": "Windows Monolithic with Unity and Visual Studio",
             "description": "Configures Windows to build the Monolithic permutation using Visual Studio with Unity builds",
+            "binaryDir": "${sourceDir}/build/windows_mono",
             "inherits": [
                 "windows-unity",
                 "windows-monolithic"

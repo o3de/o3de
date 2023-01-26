@@ -23,6 +23,7 @@
             "name": "linux-mono-default",
             "displayName": "Linux Monolithic with Unity and Ninja",
             "description": "Configures Mac to build the Monolithic permutation using Ninja with Unity builds",
+            "binaryDir": "${sourceDir}/build/linux_mono",
             "inherits": [
                 "linux-ninja",
                 "linux-unity",

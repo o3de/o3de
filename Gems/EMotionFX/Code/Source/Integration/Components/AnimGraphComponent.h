@@ -160,7 +160,8 @@ namespace EMotionFX
             void UpdateActorExternal(float deltatime) override;
             void SetNetworkRandomSeed(AZ::u64 seed) override;
             AZ::u64 GetNetworkRandomSeed() const override;
-
+            void SetActorThreadIndex(AZ::u32 threadIndex) override;
+            AZ::u32 GetActorThreadIndex() const override;
             //////////////////////////////////////////////////////////////////////////
             // AnimGraphComponentNotificationBus::Handler
             void OnAnimGraphSynced(EMotionFX::AnimGraphInstance* /*animGraphInstance(Follower)*/) override;

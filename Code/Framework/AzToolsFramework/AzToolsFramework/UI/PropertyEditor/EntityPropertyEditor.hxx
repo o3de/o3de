@@ -61,6 +61,7 @@ namespace AZ
 
 namespace AzToolsFramework
 {
+    class ActionManagerInterface;
     class ComponentEditor;
     class ComponentPaletteWidget;
     class ComponentModeCollectionInterface;
@@ -401,6 +402,8 @@ namespace AzToolsFramework
         QAction* m_actionToMoveComponentsTop = nullptr;
         QAction* m_actionToMoveComponentsBottom = nullptr;
         QAction* m_resetToSliceAction = nullptr;
+
+        AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
 
         void CreateActions();
         void UpdateActions();
