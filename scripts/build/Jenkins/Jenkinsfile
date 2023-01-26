@@ -825,18 +825,8 @@ def UploadCrashArtifacts(String platform) {
 
 def UploadBuildArtifacts(String workspace, String s3sisUploadParams = "") {
     catchError(message: "Error uploading build artifacts (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-        dir(workspace) {
-            checkout scm: [
-                $class: 'GitSCM',
-                branches: [[name: '*/configure']],
-                extensions: [
-                    [$class: 'AuthorInChangelog'],
-                    [$class: 'RelativeTargetDirectory', relativeTargetDir: 's3sis']
-                ],
-                userRemoteConfigs: [[url: "https://github.com/aws-lumberyard/s3sis.git", credentialsId: "${env.GITHUB_USER}"]]
-            ]
-        }
         dir("${workspace}/s3sis") {
+            PlatformSh("aws s3 cp ${env.S3SIS_SOURCE} . --recursive")
             if (env.IS_UNIX) {
                 PlatformSh("sudo python3 setup.py install", "Installing S3SIS")
             } else {
