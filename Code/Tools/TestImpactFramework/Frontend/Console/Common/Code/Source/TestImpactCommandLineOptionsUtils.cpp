@@ -13,11 +13,25 @@
 
 namespace TestImpact
 {
-    //! Attempts to parse a path option value.
+    AZStd::set<AZStd::string> ParseMultiValueOption(const AZStd::string& optionName, const AZ::CommandLine& cmd)
+    {
+        AZStd::set<AZStd::string> values;
+        if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
+            numSwitchValues > 0)
+        {
+            for (size_t i = 0; i < numSwitchValues; i++)
+            {
+                values.insert(cmd.GetSwitchValue(optionName, i));
+            }
+        }
+
+        return values;
+    }
+
     AZStd::optional<RepoPath> ParsePathOption(const AZStd::string& optionName, const AZ::CommandLine& cmd)
     {  
         if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
-            numSwitchValues)
+            numSwitchValues > 0)
         {
             AZ_TestImpact_Eval(
                 numSwitchValues == 1,
@@ -36,11 +50,10 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    //! Attempts to pass an unsigned integer option value.
     AZStd::optional<size_t> ParseUnsignedIntegerOption(const AZStd::string& optionName, const AZ::CommandLine& cmd)
     {
         if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
-            numSwitchValues)
+            numSwitchValues > 0)
         {
             AZ_TestImpact_Eval(
                 numSwitchValues == 1,
@@ -62,7 +75,6 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    //! Attempts to parse an option value in seconds.
     AZStd::optional<AZStd::chrono::milliseconds> ParseSecondsOption(const AZStd::string& optionName, const AZ::CommandLine& cmd)
     {
         if (const auto option = ParseUnsignedIntegerOption(optionName, cmd);
@@ -74,7 +86,6 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    //! Attempts to parse the JSON in fileData into an array of test names.
     AZStd::vector<ExcludedTarget> ParseExcludedTestTargetsFromFile(const AZStd::string& fileData)
     {
         rapidjson::Document excludeData;

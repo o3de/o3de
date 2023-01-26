@@ -91,7 +91,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Vertex Selection";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -121,7 +121,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Vertex Selection";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -151,7 +151,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Vertex Selection";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -180,9 +180,9 @@ namespace AzToolsFramework
             menuManagerInterface,
             "EditorVertexSelection - could not get MenuManagerInterface on BindActionsToMenus.");
 
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.vertexSelection.duplicate", 6000);
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.vertexSelection.delete", 6001);
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.vertexSelection.clearSelection", 6002);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.vertexSelection.duplicate", 6000);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.vertexSelection.delete", 6001);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.vertexSelection.clearSelection", 6002);
     }
 
     static void RefreshUiAfterAddRemove(const AZ::EntityComponentIdPair& entityComponentIdPair)
