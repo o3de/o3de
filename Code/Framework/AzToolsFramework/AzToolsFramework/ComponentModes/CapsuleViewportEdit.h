@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
+#include <AzToolsFramework/ComponentModes/BaseViewportEdit.h>
 
 namespace AzToolsFramework
 {

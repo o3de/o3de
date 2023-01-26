@@ -7,10 +7,14 @@
  */
 
 #include "BoxComponentMode.h"
+#include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
+#include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 
 namespace AzToolsFramework
 {
@@ -38,18 +42,79 @@ namespace AzToolsFramework
         , m_entityComponentIdPair(entityComponentIdPair)
         , m_allowAsymmetricalEditing(allowAsymmetricalEditing)
     {
-        m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)] =
-            AZStd::make_unique<BoxViewportEdit>(m_allowAsymmetricalEditing);
+        auto boxViewportEdit = AZStd::make_unique<BoxViewportEdit>(m_allowAsymmetricalEditing);
+
+        auto getManipulatorSpace = [this]()
+        {
+            AZ::Transform manipulatorSpace = AZ::Transform::CreateIdentity();
+            ShapeManipulatorRequestBus::EventResult(
+                manipulatorSpace, m_entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetManipulatorSpace);
+            return manipulatorSpace;
+        };
+        auto getNonUniformScale = [this]()
+        {
+            AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+            AZ::NonUniformScaleRequestBus::EventResult(
+                nonUniformScale, m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequestBus::Events::GetScale);
+            return nonUniformScale;
+        };
+        auto getBoxDimensions = [this]()
+        {
+            AZ::Vector3 boxDimensions = AZ::Vector3::CreateOne();
+            BoxManipulatorRequestBus::EventResult(boxDimensions, m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetDimensions);
+            return boxDimensions;
+        };
+        auto getTranslationOffset = [this]()
+        {
+            AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
+            ShapeManipulatorRequestBus::EventResult(
+                translationOffset, m_entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetTranslationOffset);
+            return translationOffset;
+        };
+        auto getLocalTransform = [this]()
+        {
+            AZ::Transform boxLocalTransform = AZ::Transform::CreateIdentity();
+            BoxManipulatorRequestBus::EventResult(
+                boxLocalTransform, m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetCurrentLocalTransform);
+            return boxLocalTransform;
+        };
+        auto setBoxDImensions = [this](const AZ::Vector3& boxDimensions)
+        {
+            BoxManipulatorRequestBus::Event(m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::SetDimensions, boxDimensions);
+        };
+        auto setTranslationOffset = [this](const AZ::Vector3& translationOffset)
+        {
+            ShapeManipulatorRequestBus::Event(
+                m_entityComponentIdPair, &ShapeManipulatorRequestBus::Events::SetTranslationOffset, translationOffset);
+        };
+
+        boxViewportEdit->InstallGetManipulatorSpaceFunction(getManipulatorSpace);
+        boxViewportEdit->InstallGetNonUniformScaleFunction(getNonUniformScale);
+        boxViewportEdit->InstallGetBoxDimensionsFunction(getBoxDimensions);
+        boxViewportEdit->InstallGetTranslationOffsetFunction(getTranslationOffset);
+        boxViewportEdit->InstallGetLocalTransformFunction(getLocalTransform);
+        boxViewportEdit->InstallSetBoxDimensionsFunction(setBoxDImensions);
+        boxViewportEdit->InstallSetTranslationOffsetFunction(setTranslationOffset);
+           
+        m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)] = AZStd::move(boxViewportEdit);
+            
         if (m_allowAsymmetricalEditing)
         {
+            auto shapeTranslationOffsetViewportEdit = AZStd::make_unique<ShapeTranslationOffsetViewportEdit>();
+
+            shapeTranslationOffsetViewportEdit->InstallGetManipulatorSpaceFunction(getManipulatorSpace);
+            shapeTranslationOffsetViewportEdit->InstallGetNonUniformScaleFunction(getNonUniformScale);
+            shapeTranslationOffsetViewportEdit->InstallGetTranslationOffsetFunction(getTranslationOffset);
+            shapeTranslationOffsetViewportEdit->InstallSetTranslationOffsetFunction(setTranslationOffset);
+
             m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::TranslationOffset)] =
-                AZStd::make_unique<ShapeTranslationOffsetViewportEdit>();
+                AZStd::move(shapeTranslationOffsetViewportEdit);
             SetupCluster();
             SetShapeSubMode(ShapeComponentModeRequests::SubMode::Dimensions);
         }
         else
         {
-            m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->Setup(entityComponentIdPair);
+            m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->Setup();
         }
         ShapeComponentModeRequestBus::Handler::BusConnect(m_entityComponentIdPair);
     }
@@ -311,7 +376,7 @@ namespace AzToolsFramework
         const auto modeIndex = static_cast<AZ::u32>(mode);
         AZ_Assert(modeIndex < m_buttonIds.size(), "Invalid mode index %i.", modeIndex);
         m_subMode = mode;
-        m_subModes[modeIndex]->Setup(m_entityComponentIdPair);
+        m_subModes[modeIndex]->Setup();
 
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::ClearClusterActiveButton, m_clusterId);
