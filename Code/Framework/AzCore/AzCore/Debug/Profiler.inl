@@ -35,14 +35,14 @@ namespace AZ::Debug
             // Initialize the cached pointer with the current handler or nullptr if no handlers are registered.
             // We do it here because Interface::Get will do a full mutex lock if no handlers are registered
             // causing big performance hit.
-            if (m_cachedProfiler == InvalidCachedProfiler)
+            if (!m_cachedProfiler.has_value())
             {
                 m_cachedProfiler = AZ::Interface<Profiler>::Get();
             }
 
-            if (m_cachedProfiler)
+            if (m_cachedProfiler.value())
             {
-                m_cachedProfiler->BeginRegion(budget, eventName, sizeof...(T), args...);
+                m_cachedProfiler.value()->BeginRegion(budget, eventName, sizeof...(T), args...);
             }
         }
     #endif // !defined(_RELEASE)
@@ -55,14 +55,9 @@ namespace AZ::Debug
         {
             budget->EndProfileRegion();
 
-            if (m_cachedProfiler == InvalidCachedProfiler)
+            if (m_cachedProfiler.value())
             {
-                m_cachedProfiler = AZ::Interface<Profiler>::Get();
-            }
-
-            if (m_cachedProfiler)
-            {
-                m_cachedProfiler->EndRegion(budget);
+                m_cachedProfiler.value()->EndRegion(budget);
             }
 
             Platform::EndProfileRegion(budget);

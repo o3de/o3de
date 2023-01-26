@@ -15,7 +15,7 @@
 
 namespace AZ::Debug
 {
-    Profiler* ProfileScope::m_cachedProfiler = ProfileScope::InvalidCachedProfiler;
+    AZStd::optional<Profiler*> ProfileScope::m_cachedProfiler;
 
     AZStd::string GenerateOutputFile(const char* nameHint)
     {
