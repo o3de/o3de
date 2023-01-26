@@ -66,9 +66,6 @@ ly_add_target(
             Source/Engine
             ${pal_dir}
             ${common_dir}
-    COMPILE_DEFINITIONS
-        PUBLIC
-            ${AUDIOENGINEWWISE_COMPILEDEFINITIONS}
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::${gem_name}.Private.Object
@@ -133,17 +130,14 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         COMPILE_DEFINITIONS
             PUBLIC
                 ${AUDIOENGINEWWISE_COMPILEDEFINITIONS}
-                AUDIO_ENGINE_WWISE_EDITOR
         INCLUDE_DIRECTORIES
             PRIVATE
-                Source/Builder
                 Source/Engine
                 Source/Editor
                 ${pal_dir}
         BUILD_DEPENDENCIES
             PUBLIC
                 3rdParty::Wwise
-                AZ::AssetBuilderSDK
                 Gem::AudioSystem.Editor.API
                 Legacy::CryCommon
             PRIVATE
@@ -159,12 +153,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         FILES_CMAKE
             audioenginewwise_editor_shared_files.cmake
         COMPILE_DEFINITIONS
-            PUBLIC
-                ${AUDIOENGINEWWISE_COMPILEDEFINITIONS}
+            PRIVATE
                 AUDIO_ENGINE_WWISE_EDITOR
         INCLUDE_DIRECTORIES
             PRIVATE
-                Source/Builder
                 Source/Engine
                 Source/Editor
                 ${pal_dir}
@@ -177,8 +169,55 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AudioSystem.Editor
     )
 
-    # by default, we'll load the above "Gem::AudioEngineWwise.Editor" module in builders and tools.
-    ly_create_alias(NAME ${gem_name}.Builders   NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_add_target(
+        NAME ${gem_name}.Builder.Private.Object STATIC
+        NAMESPACE Gem
+        FILES_CMAKE
+            audioenginewwise_builder_files.cmake
+        TARGET_PROPERTIES
+            O3DE_PRIVATE_TARGET TRUE
+        COMPILE_DEFINITIONS
+            PUBLIC
+                ${AUDIOENGINEWWISE_COMPILEDEFINITIONS}
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source/Builder
+                Source/Engine
+                ${pal_dir}
+        BUILD_DEPENDENCIES
+            PUBLIC
+                3rdParty::Wwise
+                AZ::AssetBuilderSDK
+                Gem::AudioSystem.API
+            PRIVATE
+                Legacy::EditorCore
+    )
+
+    ly_add_target(
+        NAME ${gem_name}.Builder GEM_MODULE
+        NAMESPACE Gem
+        FILES_CMAKE
+            audioenginewwise_builder_shared_files.cmake
+        COMPILE_DEFINITIONS
+            PRIVATE
+                AUDIO_ENGINE_WWISE_BUILDER
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source/Builder
+                Source/Editor
+                Source/Engine
+                ${pal_dir}
+        BUILD_DEPENDENCIES
+            PUBLIC
+                Gem::AudioSystem.API
+                Gem::AudioSystem.Editor.API
+                Legacy::CryCommon
+            PRIVATE
+                Gem::${gem_name}.Builder.Private.Object
+                Gem::${gem_name}.Private.Object
+    )
+
+    ly_create_alias(NAME ${gem_name}.Builders   NAMESPACE Gem TARGETS Gem::${gem_name}.Builder)
     ly_create_alias(NAME ${gem_name}.Tools      NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
     if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
@@ -201,6 +240,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 PRIVATE
                     AZ::AzTest
                     Gem::${gem_name}.Editor.Private.Object
+                    Gem::${gem_name}.Builder.Private.Object
                     Legacy::CryCommon
         )
 
