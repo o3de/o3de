@@ -40,12 +40,16 @@ namespace UnitTest
         void SetUp() override
         {
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             AZ::AllocatorManager::Instance().EnterProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
         }
         void TearDown() override
         {
             AZ::AllocatorManager::Instance().GarbageCollect();
             AZ::AllocatorManager::Instance().ExitProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
         }
     };
