@@ -62,7 +62,6 @@ ly_add_target(
         audiosystem_shared_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            Include/Engine
             Source/Engine
             ${pal_dir}
     COMPILE_DEFINITIONS
@@ -202,6 +201,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         AUTORCC
         FILES_CMAKE
             audiosystem_editor_files.cmake
+        TARGET_PROPERTIES
+            O3DE_PRIVATE_TARGET TRUE
         INCLUDE_DIRECTORIES
             PRIVATE
                 .               # <-- This is needed for Automoc, Autouic, Autorcc

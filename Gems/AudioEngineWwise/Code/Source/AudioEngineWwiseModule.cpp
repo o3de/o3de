@@ -11,7 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <IGem.h>
 
-#include <AudioEngineWwiseGemSystemComponent.h>
+#include "AudioEngineWwiseGemSystemComponent.h"
 
 #if defined(AUDIO_ENGINE_WWISE_EDITOR)
     #include <AudioControlBuilderComponent.h>
