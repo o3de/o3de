@@ -404,7 +404,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "PaintBrush Manipulator";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -425,7 +425,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "PaintBrush Manipulator";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -446,7 +446,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "PaintBrush Manipulator";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -467,7 +467,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "PaintBrush Manipulator";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -505,10 +505,10 @@ namespace AzToolsFramework
         constexpr int baseSortKey = 6000; // arbitrary starting sort number
 
         // leave space between entries in case something wants to add menu items in-between
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseSize", baseSortKey);
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseSize", baseSortKey + 10);
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseHardness", baseSortKey + 20);
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseHardness", baseSortKey + 30);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseSize", baseSortKey);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseSize", baseSortKey + 10);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.paintBrushManipulator.increaseHardness", baseSortKey + 20);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.paintBrushManipulator.decreaseHardness", baseSortKey + 30);
     }
 
     void PaintBrushManipulator::AdjustSize(float sizeDelta)
