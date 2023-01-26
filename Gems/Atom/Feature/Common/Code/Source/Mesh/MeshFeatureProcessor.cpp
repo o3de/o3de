@@ -202,13 +202,13 @@ namespace AZ
                              meshDataIndex < meshDataIndices.m_startIndex + meshDataIndices.m_count;
                              ++meshDataIndex)
                         {
-                            uint32_t instanceIndex = static_cast<uint32_t>(m_meshData[meshDataIndex] & 0xFFFFFFFF);
+                            uint32_t instanceIndex = m_meshData[meshDataIndex].m_instanceGroupHandle_metaDataMeshOffset;
                             m_instanceGroupIndices.insert(instanceIndex);
                         }
                     }
                 }
 
-                for (uint32_t instanceIndex : m_instanceGroupIndices)
+                for (MeshInstanceManager::Handle instanceIndex : m_instanceGroupIndices)
                 {
                     MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
                     RPI::MeshDrawPacket& drawPacket = instanceData.m_drawPacket;
@@ -419,17 +419,16 @@ namespace AZ
                     visibleInstanceIndices.reserve(instanceBufferCount);
                     for (const RPI::VisiblityEntryProperties& visibilityEntry : visibilityList)
                     {
-                        const uint64_t* meshData = reinterpret_cast<const uint64_t*>(visibilityEntry.m_userData);
-                        const uint64_t* meshCountAndOffset = meshData + visibilityEntry.m_lodIndex;
-                        uint32_t meshOffset = static_cast<uint32_t>(*meshCountAndOffset & 0xFFFFFFFF);
-                        uint32_t meshCount = static_cast<uint32_t>(*meshCountAndOffset >> 32);
+                        const MeshData* meshData = reinterpret_cast<const MeshData*>(visibilityEntry.m_userData);
+                        // The metadata store offset in m_instanceGroupHandle_metaDataMeshOffset and count in m_objectId_metaDataMeshCount
+                        uint32_t meshOffset = (meshData + visibilityEntry.m_lodIndex)->m_instanceGroupHandle_metaDataMeshOffset;
+                        uint32_t meshCount = (meshData + visibilityEntry.m_lodIndex)->m_objectId_metaDataMeshCount;
                         {
                             for (uint32_t meshDataIndex = meshOffset; meshDataIndex < meshOffset + meshCount;
                                  ++meshDataIndex)
                             {
-                                uint64_t encodedObjectIdAndInstanceIndex = m_meshData[meshDataIndex];
-                                uint32_t instanceIndex = static_cast<uint32_t>(encodedObjectIdAndInstanceIndex & 0xFFFFFFFF);
-                                uint32_t objectId = static_cast<uint32_t>(encodedObjectIdAndInstanceIndex >> 32);
+                                uint32_t instanceIndex = m_meshData[meshDataIndex].m_instanceGroupHandle_metaDataMeshOffset;
+                                uint32_t objectId = m_meshData[meshDataIndex].m_objectId_metaDataMeshCount;
                                 MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
 
                                 // The per-instance data is just the objectId, which is used to look up the object transform
@@ -1053,6 +1052,7 @@ namespace AZ
         {
             AZStd::lock_guard<AZStd::mutex> guard(m_meshDataMutex);
             MeshFP::MeshDataIndicesForLod result;
+            // We use lodCount + meshCount so that we can store the metadata for each lod before the mesh data
             result.m_startIndex = static_cast<uint32_t>(m_meshDataAllocator.Allocate(lodCount + meshCount, 1).m_ptr);
             result.m_count = meshCount;
             return result;
@@ -1274,13 +1274,18 @@ namespace AZ
                              meshDataIndex < meshDataIndices.m_startIndex + meshDataIndices.m_count;
                              ++meshDataIndex)
                         {
-                            uint64_t encodedInstanceIndex = meshFeatureProcessor->m_meshData[meshDataIndex];
-                            meshInstanceManager.RemoveInstance(static_cast<uint32_t>(encodedInstanceIndex & 0xFFFFFFFF));
+                            meshInstanceManager.RemoveInstance(
+                                meshFeatureProcessor->m_meshData[meshDataIndex].m_instanceGroupHandle_metaDataMeshOffset);
                         }
-                        meshFeatureProcessor->ReleaseMeshIndices(meshDataIndices);
                     }
                 }
                 endCullingData->m_instanceIndicesByLod.clear();
+                // Need to verify that this thing has actually been initialized with valid indices
+                // TODO: Maybe skip the whole function if !m_needsInit
+                if (!m_needsInit)
+                {
+                    meshFeatureProcessor->ReleaseMeshIndices(m_meshDataIndices);
+                }
             }
             m_materialAssignments.clear();
             m_materialChangeIds.clear();
@@ -1325,11 +1330,14 @@ namespace AZ
                 // This way, culling can know where the data is and how many meshes there are, without
                 // needing to fetch any data from the model data instance
                 RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
-                uint64_t meshCount = static_cast<uint64_t>(modelLod.GetMeshes().size());
-                uint64_t encodedMeshOffsetAndCount = meshCount << 32;
-                encodedMeshOffsetAndCount |= meshOffset;
-                meshFeatureProcessor->m_meshData[m_meshDataIndices.m_startIndex + modelLodIndex] = encodedMeshOffsetAndCount;
-                meshOffset += static_cast<uint32_t>(meshCount);
+
+                // Store the metadata for the lod
+                uint32_t meshCount = static_cast<uint32_t>(modelLod.GetMeshes().size());
+                meshFeatureProcessor->m_meshData[m_meshDataIndices.m_startIndex + modelLodIndex].m_instanceGroupHandle_metaDataMeshOffset =
+                    meshOffset;
+                meshFeatureProcessor->m_meshData[m_meshDataIndices.m_startIndex + modelLodIndex].m_objectId_metaDataMeshCount = meshCount;
+                    
+                meshOffset += meshCount;
                 BuildDrawPacketList(meshFeatureProcessor, endCullingData, meshInstanceManager, modelLodIndex);
             }
 
@@ -1377,12 +1385,12 @@ namespace AZ
             else
             {
                 MeshFP::MeshDataIndicesForLod& meshInstanceIndices = endCullingData->m_instanceIndicesByLod[modelLodIndex];
-                meshInstanceIndices.m_startIndex = static_cast<uint32_t>(meshFeatureProcessor->m_meshData[m_meshDataIndices.m_startIndex + modelLodIndex] & 0xFFFFFFFF);
+                meshInstanceIndices.m_startIndex = meshFeatureProcessor->m_meshData[m_meshDataIndices.m_startIndex + modelLodIndex].m_instanceGroupHandle_metaDataMeshOffset;
                 meshInstanceIndices.m_count = static_cast<uint32_t>(meshCount);
             }
-            uint64_t encodedMeshDataStartForLod =
-                meshFeatureProcessor->m_meshData[m_meshDataIndices.m_startIndex + static_cast<uint32_t>(modelLodIndex)];
-            uint32_t meshDataStartForLod = static_cast<uint32_t>(encodedMeshDataStartForLod & 0xFFFFFFFF);
+
+            uint32_t meshDataStartForLod =
+                meshFeatureProcessor->m_meshData[m_meshDataIndices.m_startIndex + modelLodIndex].m_instanceGroupHandle_metaDataMeshOffset;
             // Get the offset for the lod
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
@@ -1464,9 +1472,9 @@ namespace AZ
                     key.m_sortKey = m_sortKey;
                     index = meshInstanceManager.AddInstance(key);
                     [[maybe_unused]]MeshFP::MeshDataIndicesForLod& meshInstanceIndices = endCullingData->m_instanceIndicesByLod[modelLodIndex];
-                    uint64_t encodedObjectIdAndInstanceIndex = static_cast<uint64_t>(m_objectId.GetIndex()) << 32;
-                    encodedObjectIdAndInstanceIndex |= index.m_index;
-                    meshFeatureProcessor->m_meshData[meshDataStartForLod + meshIndex] = encodedObjectIdAndInstanceIndex;
+                    meshFeatureProcessor->m_meshData[meshDataStartForLod + meshIndex].m_instanceGroupHandle_metaDataMeshOffset =
+                        index.m_handle.GetUint();
+                    meshFeatureProcessor->m_meshData[meshDataStartForLod + meshIndex].m_objectId_metaDataMeshCount = m_objectId.GetIndex();
                 }
 
                 // We're dealing with a new, uninitialized draw packet, so we need to initialize it
@@ -1492,7 +1500,7 @@ namespace AZ
                     }
                     else
                     {
-                        MeshInstanceData& instanceData = meshInstanceManager[index.m_index];
+                        MeshInstanceData& instanceData = meshInstanceManager[index.m_handle];
                         instanceData.m_drawPacket = drawPacket;
                         // We're going to need an index for m_instanceOffset every frame for each draw item, so cache those here
                         for (auto& drawSrg : instanceData.m_drawPacket.GetDrawSrgs())
@@ -2102,8 +2110,7 @@ namespace AZ
                     else
                     {
                         uint32_t meshDataIndex = endCullingData->m_instanceIndicesByLod[lodIndex].m_startIndex + static_cast<uint32_t>(meshIndex);
-                        //uint32_t meshDataIndex = meshFeatureProcessor->m_meshData[m_meshDataIndices.m_startIndex + lodIndex];
-                        rhiDrawPacket = meshInstanceManager[meshFeatureProcessor->m_meshData[meshDataIndex] & 0xFFFFFFFF].m_drawPacket.GetRHIDrawPacket();
+                        rhiDrawPacket = meshInstanceManager[meshFeatureProcessor->m_meshData[meshDataIndex].m_instanceGroupHandle_metaDataMeshOffset].m_drawPacket.GetRHIDrawPacket();
                     }
 
                     if (rhiDrawPacket)

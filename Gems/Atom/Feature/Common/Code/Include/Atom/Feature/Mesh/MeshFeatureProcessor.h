@@ -305,14 +305,21 @@ namespace AZ
             MultiIndexedStableDynamicArray<512, AZStd::allocator, Render::ModelDataInstance, MeshFP::EndCullingData> m_modelData;
 
         public:
-            AZStd::vector<uint64_t> m_meshData;
+            struct MeshData
+            {
+                // In the metadata, this holds the meshOffset for an lod
+                uint32_t m_instanceGroupHandle_metaDataMeshOffset;
+                // In the metadata, this holds the mesh count for an lod
+                uint32_t m_objectId_metaDataMeshCount;
+            };
+            AZStd::vector<MeshData> m_meshData;
 
         private:
             AZStd::mutex m_meshDataMutex;
             RHI::FreeListAllocator m_meshDataAllocator;
             MeshInstanceManager m_meshInstanceManager;
             // TODO: handle this in a better way, but for now we're using this to iterate over each instance group exactly once
-            AZStd::unordered_set<uint32_t> m_instanceGroupIndices;
+            AZStd::unordered_set<MeshInstanceManager::Handle> m_instanceGroupIndices;
             TransformServiceFeatureProcessor* m_transformService;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             ReflectionProbeFeatureProcessor* m_reflectionProbeFeatureProcessor = nullptr;

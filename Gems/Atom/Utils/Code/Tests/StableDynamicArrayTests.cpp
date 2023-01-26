@@ -573,12 +573,18 @@ namespace UnitTest
             m_testArray.erase(handle);
         }
 
+        TestItemImplementation& GetData(AZ::StableDynamicArrayWeakHandle<StableDynamicArrayOwner::TestItemImplementation> handle)
+        {
+            return m_testArray.GetData(handle);
+        }
+
     private:
         AZ::StableDynamicArray<TestItemImplementation> m_testArray;
     };
 
     using TestItemInterfaceHandle = AZ::StableDynamicArrayHandle<StableDynamicArrayOwner::TestItemInterface>;
     using TestItemHandle = AZ::StableDynamicArrayHandle<StableDynamicArrayOwner::TestItemImplementation>;
+    using TestItemWeakHandle = AZ::StableDynamicArrayWeakHandle<StableDynamicArrayOwner::TestItemImplementation>;
     using TestItemHandleSibling = AZ::StableDynamicArrayHandle<StableDynamicArrayOwner::TestItemImplementation2>;
     using TestItemHandleUnrelated = AZ::StableDynamicArrayHandle<StableDynamicArrayOwner::TestItemImplementationUnrelated>;
 
@@ -912,6 +918,18 @@ namespace UnitTest
         EXPECT_EQ(handle->GetValue(), testValue);
     }
 
+    TEST_F(StableDynamicArrayHandleTests, WeakHandle_GetDataFromOwner_CanAccessData)
+    {
+        StableDynamicArrayOwner owner;
+        TestItemHandle handle = owner.AcquireItem(1);
+        TestItemWeakHandle weakHandle = handle.GetWeakHandle();
+
+        int testValue = 12;
+        owner.GetData(weakHandle).SetValue(testValue);
+        EXPECT_EQ(handle->GetValue(), testValue);
+        EXPECT_EQ(owner.GetData(weakHandle).GetValue(), testValue);
+    }
+
     //
     // Invalid cases
     //
@@ -935,8 +953,6 @@ namespace UnitTest
         }
         EXPECT_EQ(s_testItemsConstructed, s_testItemsDestructed);
     }
-
-
 }
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);

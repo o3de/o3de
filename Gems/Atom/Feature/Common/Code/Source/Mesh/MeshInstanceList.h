@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/Feature/Utils/PagedDataVector.h>
+#include <Atom/Utils/StableDynamicArray.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/View.h>
 #include <AzCore/std/containers/array.h>
@@ -44,7 +44,7 @@ namespace AZ::Render
     // a pre-existing entry for that key was found
     struct InsertResult
     {
-        uint32_t m_index = AZStd::numeric_limits<uint32_t>::max();
+        StableDynamicArrayWeakHandle<MeshInstanceData> m_handle;
         bool m_wasInserted = false;
     };
 
@@ -59,6 +59,8 @@ namespace AZ::Render
     class MeshInstanceList
     {
     public:
+        using WeakHandle = StableDynamicArrayWeakHandle<MeshInstanceData>;
+        using OwningHandle = StableDynamicArrayHandle<MeshInstanceData>;
         // adds a data entry to the list, or increments the reference count, and returns the index of the data
         // Note: the index returned is an indirection index, meaning it is stable when other entries are removed
         InsertResult Add(const MeshInstanceKey& key);
@@ -72,16 +74,24 @@ namespace AZ::Render
 
         uint32_t GetItemCount() const
         {
-            return m_pagedDataVector.GetItemCount();
+            return static_cast<uint32_t>(m_pagedDataVector.size());
         }
 
-        MeshInstanceData& operator[](uint32_t index);
-        const MeshInstanceData& operator[](uint32_t index) const;
+        MeshInstanceData& operator[](WeakHandle handle);
+        const MeshInstanceData& operator[](WeakHandle handle) const;
 
         struct IndexMapEntry
         {
+            IndexMapEntry() = default;
+
+            IndexMapEntry(IndexMapEntry&& rhs)
+            {
+                m_handle = AZStd::move(rhs.m_handle);
+                m_count = rhs.m_count;
+            }
+
             // index of the entry in the main list
-            uint32_t m_index = Invalid32BitIndex;
+            OwningHandle m_handle;
 
             // reference count
             uint32_t m_count = 0;
@@ -90,7 +100,7 @@ namespace AZ::Render
         using DataMap = AZStd::unordered_map<MeshInstanceKey, IndexMapEntry>;
 
     private:
-        PagedDataVector<MeshInstanceKey, MeshInstanceData> m_pagedDataVector;
+        StableDynamicArray<MeshInstanceData> m_pagedDataVector;
         DataMap m_dataMap;
     };
 } // namespace AZ::Render

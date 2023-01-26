@@ -22,7 +22,7 @@ namespace AZ
                 // the higher level ModelDataInstance to only have to track the index,
                 // not the key, while enabling the underlying SlotMap structure to remove
                 // by key, without needing to iterate over the entire DataMap
-                m_instanceData[result.m_index].m_key = meshInstanceKey;
+                m_instanceData[result.m_handle].m_key = meshInstanceKey;
             }
             return result;
         }
@@ -33,10 +33,10 @@ namespace AZ
             m_instanceData.Remove(meshInstanceKey);
         }
 
-        void MeshInstanceManager::RemoveInstance(MeshInstanceIndex meshInstanceIndex)
+        void MeshInstanceManager::RemoveInstance(Handle handle)
         {
             AZStd::scoped_lock lock(m_instanceDataMutex);
-            m_instanceData.Remove(m_instanceData[meshInstanceIndex].m_key);
+            m_instanceData.Remove(m_instanceData[handle].m_key);
         }
     } // namespace Render
 } // namespace AZ

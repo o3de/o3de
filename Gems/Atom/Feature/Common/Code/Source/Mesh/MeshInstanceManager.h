@@ -20,18 +20,19 @@ namespace AZ::Render
     class MeshInstanceManager
     {
     public:
+        using Handle = MeshInstanceList::WeakHandle;
 
         InsertResult AddInstance(MeshInstanceKey meshInstanceData);
         void RemoveInstance(MeshInstanceKey meshInstanceData);
-        void RemoveInstance(MeshInstanceIndex index);
+        void RemoveInstance(Handle handle);
         uint32_t GetItemCount() const
         {
             return m_instanceData.GetItemCount();
         }
 
-        MeshInstanceData& operator[](uint32_t index)
+        MeshInstanceData& operator[](Handle handle)
         {
-            return m_instanceData[index];
+            return m_instanceData[handle];
         }
 
     private:
