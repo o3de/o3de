@@ -6,40 +6,28 @@
  *
  */
 
+#pragma once
+
 #include <AzCore/Component/ComponentBus.h>
-#include <AzToolsFramework/ComponentModes/BaseViewportEdit.h>
+#include <AzToolsFramework/ComponentModes/BaseShapeViewportEdit.h>
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
 
 namespace AzToolsFramework
 {
     //! Wraps translation manipulators for editing shape translation offsets.
-    class ShapeTranslationOffsetViewportEdit : public BaseViewportEdit
+    class ShapeTranslationOffsetViewportEdit : public BaseShapeViewportEdit
     {
     public:
         ShapeTranslationOffsetViewportEdit() = default;
 
-        // BaseViewportEdit overrides ...
+        // BaseShapeViewportEdit overrides ...
         void Setup() override;
         void Teardown() override;
         void UpdateManipulators() override;
         void ResetValues() override;
         void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
 
-        void InstallGetManipulatorSpaceFunction(const AZStd::function<AZ::Transform()>& getManipulatorSpaceFunction);
-        void InstallGetNonUniformScaleFunction(const AZStd::function<AZ::Vector3()>& getNonUniformScaleFunction);
-        void InstallGetTranslationOffsetFunction(const AZStd::function<AZ::Vector3()>& getTranslationOffsetFunction);
-        void InstallSetTranslationOffsetFunction(const AZStd::function<void(const AZ::Vector3)>& setTranslationOffsetFunction);
     private:
-        AZ::Transform GetManipulatorSpace() const;
-        AZ::Vector3 GetNonUniformScale() const;
-        AZ::Vector3 GetTranslationOffset() const;
-        void SetTranslationOffset(const AZ::Vector3& translationOffset);
-
         AZStd::shared_ptr<TranslationManipulators> m_translationManipulators; //!< Manipulators for editing shape offset.
-
-        AZStd::function<AZ::Transform()> m_getManipulatorSpaceFunction;
-        AZStd::function<AZ::Vector3()> m_getNonUniformScaleFunction;
-        AZStd::function<AZ::Vector3()> m_getTranslationOffsetFunction;
-        AZStd::function<void(const AZ::Vector3)> m_setTranslationOffsetFunction;
     };
 } // namespace AzToolsFramework

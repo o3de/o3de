@@ -30,24 +30,9 @@ namespace AzToolsFramework
     {
     }
 
-    void BoxViewportEdit::InstallGetManipulatorSpaceFunction(const AZStd::function<AZ::Transform()>& getManipulatorSpaceFunction)
-    {
-        m_getManipulatorSpaceFunction = getManipulatorSpaceFunction;
-    }
-
-    void BoxViewportEdit::InstallGetNonUniformScaleFunction(const AZStd::function<AZ::Vector3()>& getNonUniformScaleFunction)
-    {
-        m_getNonUniformScaleFunction = getNonUniformScaleFunction;
-    }
-
     void BoxViewportEdit::InstallGetBoxDimensionsFunction(const AZStd::function<AZ::Vector3()>& getBoxDimensionsFunction)
     {
         m_getBoxDimensionsFunction = getBoxDimensionsFunction;
-    }
-
-    void BoxViewportEdit::InstallGetTranslationOffsetFunction(const AZStd::function<AZ::Vector3()>& getTranslationOffsetFunction)
-    {
-        m_getTranslationOffsetFunction = getTranslationOffsetFunction;
     }
 
     void BoxViewportEdit::InstallGetLocalTransformFunction(const AZStd::function<AZ::Transform()>& getLocalTransformFunction)
@@ -60,31 +45,6 @@ namespace AzToolsFramework
         m_setBoxDimensionsFunction = setBoxDimensionsFunction;
     }
 
-    void BoxViewportEdit::InstallSetTranslationOffsetFunction(const AZStd::function<void(const AZ::Vector3)>& setTranslationOffsetFunction)
-    {
-        m_setTranslationOffsetFunction = setTranslationOffsetFunction;
-    }
-
-    AZ::Transform BoxViewportEdit::GetManipulatorSpace() const
-    {
-        if (m_getManipulatorSpaceFunction)
-        {
-            return m_getManipulatorSpaceFunction();
-        }
-        AZ_WarningOnce("BoxViewportEdit", false, "No implementation provided for GetManipulatorSpace");
-        return AZ::Transform::CreateIdentity();
-    }
-
-    AZ::Vector3 BoxViewportEdit::GetNonUniformScale() const
-    {
-        if (m_getNonUniformScaleFunction)
-        {
-            return m_getNonUniformScaleFunction();
-        }
-        AZ_WarningOnce("BoxViewportEdit", false, "No implementation provided for GetNonUniformScale");
-        return AZ::Vector3::CreateOne();
-    }
-
     AZ::Vector3 BoxViewportEdit::GetBoxDimensions() const
     {
         if (m_getBoxDimensionsFunction)
@@ -93,16 +53,6 @@ namespace AzToolsFramework
         }
         AZ_WarningOnce("BoxViewportEdit", false, "No implementation provided for GetBoxDimensions");
         return AZ::Vector3::CreateOne();
-    }
-
-    AZ::Vector3 BoxViewportEdit::GetTranslationOffset() const
-    {
-        if (m_getTranslationOffsetFunction)
-        {
-            return m_getTranslationOffsetFunction();
-        }
-        AZ_WarningOnce("BoxViewportEdit", false, "No implementation provided for GetTranslationOffset");
-        return AZ::Vector3::CreateZero();
     }
 
     AZ::Transform BoxViewportEdit::GetLocalTransform() const
@@ -124,18 +74,6 @@ namespace AzToolsFramework
         else
         {
             AZ_WarningOnce("BoxViewportEdit", false, "No implementation provided for SetBoxDimensions");
-        }
-    }
-
-    void BoxViewportEdit::SetTranslationOffset(const AZ::Vector3& translationOffset)
-    {
-        if (m_setTranslationOffsetFunction)
-        {
-            m_setTranslationOffsetFunction(translationOffset);
-        }
-        else
-        {
-            AZ_WarningOnce("BoxViewportEdit", false, "No implementation provided for SetTranslationOffset");
         }
     }
 
