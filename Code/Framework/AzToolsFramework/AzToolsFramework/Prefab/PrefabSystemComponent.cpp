@@ -1208,6 +1208,7 @@ namespace AzToolsFramework
 
                 if (removed)
                 {
+                    templateIterator->second.MarkAsDirty(true);
                     PropagateTemplateChanges(targetTemplateId);
                 }
             }
