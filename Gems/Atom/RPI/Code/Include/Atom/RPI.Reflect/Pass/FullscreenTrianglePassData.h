@@ -24,16 +24,7 @@ namespace AZ
             FullscreenTrianglePassData() = default;
             virtual ~FullscreenTrianglePassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<FullscreenTrianglePassData, RenderPassData>()
-                        ->Version(0)
-                        ->Field("ShaderAsset", &FullscreenTrianglePassData::m_shaderAsset)
-                        ->Field("StencilRef", &FullscreenTrianglePassData::m_stencilRef);
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             //! Reference to the shader asset used by the fullscreen triangle pass
             AssetReference m_shaderAsset;
