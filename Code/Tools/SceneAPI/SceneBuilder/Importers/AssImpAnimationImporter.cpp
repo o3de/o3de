@@ -452,10 +452,29 @@ namespace AZ
                 for (unsigned int meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
                 {
                     aiMesh* mesh = scene->mMeshes[meshIndex];
+                    if (!mesh)
+                    {
+                        AZ_Error(
+                            "AnimationImporter",
+                            false,
+                            "Mesh at index %d is invalid. This scene file may be corrupt and may need to be re-exported.",
+                            meshIndex);
+                        continue;
+                    }
 
                     for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
                     {
                         aiBone* bone = mesh->mBones[boneIndex];
+                        if (!bone)
+                        {
+                            AZ_Error(
+                                "AnimationImporter",
+                                false,
+                                "Bone at index %d for mesh %s is invalid. This scene file may be corrupt and may need to be re-exported.",
+                                boneIndex,
+                                mesh->mName.C_Str());
+                            continue;
+                        }
 
                         if (!IsPivotNode(bone->mName))
                         {
