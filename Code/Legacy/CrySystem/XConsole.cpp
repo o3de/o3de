@@ -199,6 +199,7 @@ CXConsole::CXConsole()
 
     m_intWrappers.reserve(128);
     m_floatWrappers.reserve(128);
+    m_stringWrappers.reserve(128);
 
     AzFramework::ConsoleRequestBus::Handler::BusConnect();
     AzFramework::CommandRegistrationBus::Handler::BusConnect();

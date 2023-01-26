@@ -669,12 +669,13 @@ public:
                         {
                             AZ::CVarFixedString valueString;
                             functor->GetValue(valueString);
-                            gEnv->pConsole->RegisterString(
-                                functor->GetName(),
-                                valueString.c_str(),
-                                cryFlags,
-                                functor->GetDesc(),
-                                AzConsoleToCryConsoleBinder::OnVarChanged);
+                            return (
+                                gEnv->pConsole->RegisterString(
+                                    functor->GetName(),
+                                    valueString.c_str(),
+                                    cryFlags,
+                                    functor->GetDesc(),
+                                    AzConsoleToCryConsoleBinder::OnVarChanged) != nullptr);
                         }
                         else if constexpr (AZStd::is_integral_v<type>)
                         {
@@ -696,26 +697,17 @@ public:
                                     functor->GetDesc(),
                                     AzConsoleToCryConsoleBinder::OnVarChanged) != nullptr);
                         }
-                        else
-                        {
-                            return (
-                                gEnv->pConsole->RegisterString(
-                                    functor->GetName(),
-                                    value.c_str(),
-                                    cryFlags,
-                                    functor->GetDesc(),
-                                    AzConsoleToCryConsoleBinder::OnVarChanged) != nullptr);
-                        }
                     }
                     return false;
                 };
-                const bool registered = registerType(AZStd::string()) || registerType(AZ::CVarFixedString()) || registerType(bool()) ||
-                    registerType(AZ::s32()) || registerType(AZ::u32()) || registerType(float()) || registerType(double()) ||
-                    registerType(AZ::s16()) || registerType(AZ::u16()) || registerType(AZ::s64()) || registerType(AZ::u64()) ||
-                    registerType(AZ::s8()) || registerType(AZ::u8());
+                // register fundamental types
+                bool registered = registerType(bool()) || registerType(AZ::s32()) || registerType(AZ::u32()) || registerType(float()) ||
+                    registerType(double()) || registerType(AZ::s16()) || registerType(AZ::u16()) || registerType(AZ::s64()) ||
+                    registerType(AZ::u64()) || registerType(AZ::s8()) || registerType(AZ::u8());
 
                 if (!registered)
                 {
+                    // register all other types as strings, if possible
                     AZ::CVarFixedString value;
                     functor->GetValue(value);
                     gEnv->pConsole->RegisterString(
