@@ -11,35 +11,31 @@
 
 namespace AzToolsFramework
 {
-    void BaseShapeViewportEdit::InstallGetManipulatorSpaceFunction(
-        const AZStd::function<AZ::Transform()>& getManipulatorSpaceFunction)
+    void BaseShapeViewportEdit::InstallGetManipulatorSpace(const AZStd::function<AZ::Transform()>& getManipulatorSpace)
     {
-        m_getManipulatorSpaceFunction = getManipulatorSpaceFunction;
+        m_getManipulatorSpace = getManipulatorSpace;
     }
 
-    void BaseShapeViewportEdit::InstallGetNonUniformScaleFunction(
-        const AZStd::function<AZ::Vector3()>& getNonUniformScaleFunction)
+    void BaseShapeViewportEdit::InstallGetNonUniformScale(const AZStd::function<AZ::Vector3()>& getNonUniformScale)
     {
-        m_getNonUniformScaleFunction = getNonUniformScaleFunction;
+        m_getNonUniformScale = getNonUniformScale;
     }
 
-    void BaseShapeViewportEdit::InstallGetTranslationOffsetFunction(
-        const AZStd::function<AZ::Vector3()>& getTranslationOffsetFunction)
+    void BaseShapeViewportEdit::InstallGetTranslationOffset(const AZStd::function<AZ::Vector3()>& getTranslationOffset)
     {
-        m_getTranslationOffsetFunction = getTranslationOffsetFunction;
+        m_getTranslationOffset = getTranslationOffset;
     }
 
-    void BaseShapeViewportEdit::InstallSetTranslationOffsetFunction(
-        const AZStd::function<void(const AZ::Vector3)>& setTranslationOffsetFunction)
+    void BaseShapeViewportEdit::InstallSetTranslationOffset(const AZStd::function<void(const AZ::Vector3)>& setTranslationOffset)
     {
-        m_setTranslationOffsetFunction = setTranslationOffsetFunction;
+        m_setTranslationOffset = setTranslationOffset;
     }
 
     AZ::Transform BaseShapeViewportEdit::GetManipulatorSpace() const
     {
-        if (m_getManipulatorSpaceFunction)
+        if (m_getManipulatorSpace)
         {
-            return m_getManipulatorSpaceFunction();
+            return m_getManipulatorSpace();
         }
         AZ_WarningOnce("BaseShapeViewportEdit", false, "No implementation provided for GetManipulatorSpace");
         return AZ::Transform::CreateIdentity();
@@ -47,9 +43,9 @@ namespace AzToolsFramework
 
     AZ::Vector3 BaseShapeViewportEdit::GetNonUniformScale() const
     {
-        if (m_getNonUniformScaleFunction)
+        if (m_getNonUniformScale)
         {
-            return m_getNonUniformScaleFunction();
+            return m_getNonUniformScale();
         }
         AZ_WarningOnce("BaseShapeViewportEdit", false, "No implementation provided for GetNonUniformScale");
         return AZ::Vector3::CreateOne();
@@ -57,9 +53,9 @@ namespace AzToolsFramework
 
     AZ::Vector3 BaseShapeViewportEdit::GetTranslationOffset() const
     {
-        if (m_getTranslationOffsetFunction)
+        if (m_getTranslationOffset)
         {
-            return m_getTranslationOffsetFunction();
+            return m_getTranslationOffset();
         }
         AZ_WarningOnce("BaseShapeViewportEdit", false, "No implementation provided for GetTranslationOffset");
         return AZ::Vector3::CreateZero();
@@ -67,9 +63,9 @@ namespace AzToolsFramework
 
     void BaseShapeViewportEdit::SetTranslationOffset(const AZ::Vector3& translationOffset)
     {
-        if (m_setTranslationOffsetFunction)
+        if (m_setTranslationOffset)
         {
-            m_setTranslationOffsetFunction(translationOffset);
+            m_setTranslationOffset(translationOffset);
         }
         else
         {

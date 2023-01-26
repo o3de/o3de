@@ -30,26 +30,26 @@ namespace AzToolsFramework
     {
     }
 
-    void BoxViewportEdit::InstallGetBoxDimensionsFunction(const AZStd::function<AZ::Vector3()>& getBoxDimensionsFunction)
+    void BoxViewportEdit::InstallGetBoxDimensions(const AZStd::function<AZ::Vector3()>& getBoxDimensions)
     {
-        m_getBoxDimensionsFunction = getBoxDimensionsFunction;
+        m_getBoxDimensions = getBoxDimensions;
     }
 
-    void BoxViewportEdit::InstallGetLocalTransformFunction(const AZStd::function<AZ::Transform()>& getLocalTransformFunction)
+    void BoxViewportEdit::InstallGetLocalTransform(const AZStd::function<AZ::Transform()>& getLocalTransform)
     {
-        m_getLocalTransformFunction = getLocalTransformFunction;
+        m_getLocalTransform = getLocalTransform;
     }
 
-    void BoxViewportEdit::InstallSetBoxDimensionsFunction(const AZStd::function<void(const AZ::Vector3)>& setBoxDimensionsFunction)
+    void BoxViewportEdit::InstallSetBoxDimensions(const AZStd::function<void(const AZ::Vector3)>& setBoxDimensions)
     {
-        m_setBoxDimensionsFunction = setBoxDimensionsFunction;
+        m_setBoxDimensions = setBoxDimensions;
     }
 
     AZ::Vector3 BoxViewportEdit::GetBoxDimensions() const
     {
-        if (m_getBoxDimensionsFunction)
+        if (m_getBoxDimensions)
         {
-            return m_getBoxDimensionsFunction();
+            return m_getBoxDimensions();
         }
         AZ_WarningOnce("BoxViewportEdit", false, "No implementation provided for GetBoxDimensions");
         return AZ::Vector3::CreateOne();
@@ -57,9 +57,9 @@ namespace AzToolsFramework
 
     AZ::Transform BoxViewportEdit::GetLocalTransform() const
     {
-        if (m_getLocalTransformFunction)
+        if (m_getLocalTransform)
         {
-            return m_getLocalTransformFunction();
+            return m_getLocalTransform();
         }
         AZ_WarningOnce("BoxViewportEdit", false, "No implementation provided for GetLocalTransform");
         return AZ::Transform::CreateIdentity();
@@ -67,9 +67,9 @@ namespace AzToolsFramework
 
     void BoxViewportEdit::SetBoxDimensions(const AZ::Vector3& boxDimensions)
     {
-        if (m_setBoxDimensionsFunction)
+        if (m_setBoxDimensions)
         {
-            m_setBoxDimensionsFunction(boxDimensions);
+            m_setBoxDimensions(boxDimensions);
         }
         else
         {

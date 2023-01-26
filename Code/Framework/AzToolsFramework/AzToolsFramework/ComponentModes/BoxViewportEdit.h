@@ -30,9 +30,9 @@ namespace AzToolsFramework
         void ResetValues() override;
         void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
 
-        void InstallGetBoxDimensionsFunction(const AZStd::function<AZ::Vector3()>& getBoxDimensionsFunction);
-        void InstallGetLocalTransformFunction(const AZStd::function<AZ::Transform()>& getLocalTransformFunction);
-        void InstallSetBoxDimensionsFunction(const AZStd::function<void(const AZ::Vector3)>& setBoxDimensionsFunction);
+        void InstallGetBoxDimensions(const AZStd::function<AZ::Vector3()>& getBoxDimensions);
+        void InstallGetLocalTransform(const AZStd::function<AZ::Transform()>& getLocalTransform);
+        void InstallSetBoxDimensions(const AZStd::function<void(const AZ::Vector3)>& setBoxDimensions);
 
     private:
         AZ::Vector3 GetBoxDimensions() const;
@@ -43,8 +43,8 @@ namespace AzToolsFramework
         BoxManipulators m_linearManipulators; ///< Manipulators for editing box size.
         bool m_allowAsymmetricalEditing = false; ///< Whether moving individual faces independently is allowed.
 
-        AZStd::function<AZ::Vector3()> m_getBoxDimensionsFunction;
-        AZStd::function<AZ::Transform()> m_getLocalTransformFunction;
-        AZStd::function<void(const AZ::Vector3)> m_setBoxDimensionsFunction;
+        AZStd::function<AZ::Vector3()> m_getBoxDimensions;
+        AZStd::function<AZ::Transform()> m_getLocalTransform;
+        AZStd::function<void(const AZ::Vector3)> m_setBoxDimensions;
     };
 } // namespace AzToolsFramework

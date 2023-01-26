@@ -31,10 +31,10 @@ namespace AzToolsFramework
         virtual void ResetValues() = 0;
         virtual void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) = 0;
 
-        void InstallGetManipulatorSpaceFunction(const AZStd::function<AZ::Transform()>& getManipulatorSpaceFunction);
-        void InstallGetNonUniformScaleFunction(const AZStd::function<AZ::Vector3()>& getNonUniformScaleFunction);
-        void InstallGetTranslationOffsetFunction(const AZStd::function<AZ::Vector3()>& getTranslationOffsetFunction);
-        void InstallSetTranslationOffsetFunction(const AZStd::function<void(const AZ::Vector3)>& setTranslationOffsetFunction);
+        void InstallGetManipulatorSpace(const AZStd::function<AZ::Transform()>& getManipulatorSpace);
+        void InstallGetNonUniformScale(const AZStd::function<AZ::Vector3()>& getNonUniformScale);
+        void InstallGetTranslationOffset(const AZStd::function<AZ::Vector3()>& getTranslationOffset);
+        void InstallSetTranslationOffset(const AZStd::function<void(const AZ::Vector3)>& setTranslationOffset);
 
     protected:
         AZ::Transform GetManipulatorSpace() const;
@@ -42,9 +42,9 @@ namespace AzToolsFramework
         AZ::Vector3 GetTranslationOffset() const;
         void SetTranslationOffset(const AZ::Vector3& translationOffset);
 
-        AZStd::function<AZ::Transform()> m_getManipulatorSpaceFunction;
-        AZStd::function<AZ::Vector3()> m_getNonUniformScaleFunction;
-        AZStd::function<AZ::Vector3()> m_getTranslationOffsetFunction;
-        AZStd::function<void(const AZ::Vector3)> m_setTranslationOffsetFunction;
+        AZStd::function<AZ::Transform()> m_getManipulatorSpace;
+        AZStd::function<AZ::Vector3()> m_getNonUniformScale;
+        AZStd::function<AZ::Vector3()> m_getTranslationOffset;
+        AZStd::function<void(const AZ::Vector3)> m_setTranslationOffset;
     };
 } // namespace AzToolsFramework

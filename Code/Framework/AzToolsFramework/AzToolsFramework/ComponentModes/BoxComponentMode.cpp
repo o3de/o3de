@@ -88,13 +88,13 @@ namespace AzToolsFramework
                 m_entityComponentIdPair, &ShapeManipulatorRequestBus::Events::SetTranslationOffset, translationOffset);
         };
 
-        boxViewportEdit->InstallGetManipulatorSpaceFunction(getManipulatorSpace);
-        boxViewportEdit->InstallGetNonUniformScaleFunction(getNonUniformScale);
-        boxViewportEdit->InstallGetBoxDimensionsFunction(getBoxDimensions);
-        boxViewportEdit->InstallGetTranslationOffsetFunction(getTranslationOffset);
-        boxViewportEdit->InstallGetLocalTransformFunction(getLocalTransform);
-        boxViewportEdit->InstallSetBoxDimensionsFunction(setBoxDImensions);
-        boxViewportEdit->InstallSetTranslationOffsetFunction(setTranslationOffset);
+        boxViewportEdit->InstallGetManipulatorSpace(getManipulatorSpace);
+        boxViewportEdit->InstallGetNonUniformScale(getNonUniformScale);
+        boxViewportEdit->InstallGetBoxDimensions(getBoxDimensions);
+        boxViewportEdit->InstallGetTranslationOffset(getTranslationOffset);
+        boxViewportEdit->InstallGetLocalTransform(getLocalTransform);
+        boxViewportEdit->InstallSetBoxDimensions(setBoxDImensions);
+        boxViewportEdit->InstallSetTranslationOffset(setTranslationOffset);
            
         m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)] = AZStd::move(boxViewportEdit);
             
@@ -102,10 +102,10 @@ namespace AzToolsFramework
         {
             auto shapeTranslationOffsetViewportEdit = AZStd::make_unique<ShapeTranslationOffsetViewportEdit>();
 
-            shapeTranslationOffsetViewportEdit->InstallGetManipulatorSpaceFunction(getManipulatorSpace);
-            shapeTranslationOffsetViewportEdit->InstallGetNonUniformScaleFunction(getNonUniformScale);
-            shapeTranslationOffsetViewportEdit->InstallGetTranslationOffsetFunction(getTranslationOffset);
-            shapeTranslationOffsetViewportEdit->InstallSetTranslationOffsetFunction(setTranslationOffset);
+            shapeTranslationOffsetViewportEdit->InstallGetManipulatorSpace(getManipulatorSpace);
+            shapeTranslationOffsetViewportEdit->InstallGetNonUniformScale(getNonUniformScale);
+            shapeTranslationOffsetViewportEdit->InstallGetTranslationOffset(getTranslationOffset);
+            shapeTranslationOffsetViewportEdit->InstallSetTranslationOffset(setTranslationOffset);
 
             m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::TranslationOffset)] =
                 AZStd::move(shapeTranslationOffsetViewportEdit);
