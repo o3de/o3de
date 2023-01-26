@@ -543,7 +543,7 @@ namespace EMotionFX
 
             // We'll defer actor creation until the next tick on the tick bus. This is because OnAssetReady() can sometimes get
             // triggered while in the middle of the render tick, since the rendering system sometimes contains blocking loads
-            // which will still process any pending OnAssetReady() commands whlie waiting. If that occurs, the actor creation
+            // which will still process any pending OnAssetReady() commands while waiting. If that occurs, the actor creation
             // would generate errors from trying to create a rendering actor while in the middle of processing the rendering data.
             // We can avoid the problem by just always waiting until the next tick to create the actor.
             m_processLoadedAsset = true;

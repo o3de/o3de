@@ -204,6 +204,7 @@ namespace EMotionFX
             AZStd::unique_ptr<RenderActorInstance>          m_renderActorInstance;
 
             AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
+            bool m_processLoadedAsset = false;
         };
     } //namespace Integration
 } // namespace EMotionFX
