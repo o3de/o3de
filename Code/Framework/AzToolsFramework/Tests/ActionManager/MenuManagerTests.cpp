@@ -290,6 +290,16 @@ namespace UnitTest
         auto outcome = m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
         EXPECT_FALSE(outcome.IsSuccess());
     }
+
+    TEST_F(ActionManagerFixture, AddSubMenuToItself)
+    {
+        // Register menu.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+
+        // Add the menu to itself.
+        auto outcome = m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testMenu", 42);
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
     
     TEST_F(ActionManagerFixture, AddSubMenusToMenu)
     {

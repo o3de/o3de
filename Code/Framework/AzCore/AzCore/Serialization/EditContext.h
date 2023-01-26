@@ -788,7 +788,6 @@ namespace AZ
     //=========================================================================
     // Attribute
     //=========================================================================
-
     namespace Edit
     {
         template <class EnumType>
@@ -840,6 +839,15 @@ namespace AZ
     template <class T>
     constexpr bool IsInvocableThatReturnsVectorOfEnumConstants_v = IsVectorOfEnumConstants_v<InvocableReturnType<T>>;
 
+    template<class T>
+    constexpr bool IsVectorOfPairTypeToString_v = false;
+
+    template<class T>
+    constexpr bool IsVectorOfPairTypeToString_v<AZStd::vector<AZStd::pair<T, AZStd::string>>> = true;
+
+    template<class T>
+    constexpr bool IsInvocableThatReturnsVectorOfPairs_v = IsVectorOfPairTypeToString_v<InvocableReturnType<T>>;
+
     template <class T>
     struct EnumTypeFromVectorOfEnumConstants
     {
@@ -890,47 +898,63 @@ namespace AZ
             {
                 m_editElement->m_attributes.push_back(Edit::AttributePair(idCrc, aznew ContainerType(value)));
 
-                if constexpr (IsInvocableThatReturnsVectorOfEnumConstants_v<T>)
+                if (idCrc == AZ::Edit::Attributes::EnumValues)
                 {
-                    if (idCrc == AZ::Edit::Attributes::EnumValues)
+                    if constexpr (IsInvocableThatReturnsVectorOfEnumConstants_v<T>)
                     {
                         using EnumVectorType = AZStd::conditional_t<
                             AZStd::function_traits<T>::value,
                             typename AZStd::function_traits<T>::return_type,
                             T>;
                         using EnumType = EnumTypeFromVectorOfEnumConstants_t<EnumVectorType>;
-                        using FuncType = AZStd::conditional_t<
-                            AZStd::function_traits<T>::value,
-                            typename AZStd::function_traits<T>::function_type,
-                            T(T)>;
-                        using EnumValueWrapperFuncType = AZStd::function<ReplaceInvocableReturnType_t<
-                            AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>>,
-                            FuncType>>;
 
-                        EnumValueWrapperFuncType EnumValuesWrapper = [value]([[maybe_unused]] auto&&... args)
-                            -> AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>>
+                        if constexpr (AZStd::function_traits<T>::value)
                         {
-                            AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>> genericValueVector;
-                            EnumVectorType enumConstantVector;
-                            if constexpr (AZStd::function_traits<T>::value)
-                            {
-                                enumConstantVector = AZStd::invoke(value, AZStd::forward<decltype(args)>(args)...);
-                            }
-                            else
-                            {
-                                enumConstantVector = value;
-                            }
+                            using FuncType = typename AZStd::function_traits<T>::function_type;
+                            using EnumValueWrapperFuncType = AZStd::function<ReplaceInvocableReturnType_t<
+                                AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>>,
+                                FuncType>>;
 
-                            for (const Edit::EnumConstant<EnumType>& enumConstant : enumConstantVector)
+                            EnumValueWrapperFuncType EnumValuesWrapper = [value]([[maybe_unused]] auto&&... args)
                             {
-                                genericValueVector.emplace_back(enumConstant());
-                            }
+                                AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>> genericValueVector;
+                                EnumVectorType enumConstantVector = AZStd::invoke(value, AZStd::forward<decltype(args)>(args)...);
 
-                            return genericValueVector;
-                        };
+                                for (const Edit::EnumConstant<EnumType>& enumConstant : enumConstantVector)
+                                {
+                                    genericValueVector.emplace_back(enumConstant());
+                                }
 
+                                return genericValueVector;
+                            };
+
+                            m_editElement->m_attributes.push_back(
+                                Edit::AttributePair(AZ::Edit::Attributes::GenericValueList, aznew AttributeInvocable(EnumValuesWrapper)));
+                        }
+                        else
+                        {
+                            using GenericValueVector = AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>>;
+                            using EnumValueWrapperFuncType = AZStd::function<GenericValueVector()>;
+                            EnumValueWrapperFuncType EnumValuesWrapper = [value]([[maybe_unused]] auto&&... args)
+                            {
+                                AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>> genericValueVector;
+
+                                for (const Edit::EnumConstant<EnumType>& enumConstant : value)
+                                {
+                                    genericValueVector.emplace_back(enumConstant());
+                                }
+
+                                return genericValueVector;
+                            };
+
+                            m_editElement->m_attributes.push_back(
+                                Edit::AttributePair(AZ::Edit::Attributes::GenericValueList, aznew AttributeInvocable(EnumValuesWrapper)));
+                        }
+                    }
+                    else if constexpr (IsInvocableThatReturnsVectorOfPairs_v<T>)
+                    {
                         m_editElement->m_attributes.push_back(
-                            Edit::AttributePair(AZ::Edit::Attributes::GenericValueList, aznew AttributeInvocable(EnumValuesWrapper)));
+                            Edit::AttributePair(AZ::Edit::Attributes::GenericValueList, aznew ContainerType(value)));
                     }
                 }
             }

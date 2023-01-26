@@ -240,7 +240,7 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::OnActionUpdaterRegistrationHook()
         {
             // Update actions whenever a new root prefab is loaded.
-            m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier);
+            m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
 
             // Update actions whenever Prefab Focus changes (or is refreshed).
             m_actionManagerInterface->RegisterActionUpdater(PrefabFocusChangedUpdaterIdentifier);
@@ -256,7 +256,7 @@ namespace AzToolsFramework
                 actionProperties.m_iconPath = ":/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg";
 
                 m_actionManagerInterface->RegisterAction(
-                    EditorActionContext::MainWindowContextIdentifier,
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
                     "o3de.action.prefabs.upOneLevel",
                     actionProperties,
                     [prefabFocusPublicInterface = s_prefabFocusPublicInterface, editorEntityContextId = s_editorEntityContextId]()
@@ -299,8 +299,8 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::OnToolBarBindingHook()
         {
             // Populate Viewport top menu with Prefab actions and widgets
-            m_toolBarManagerInterface->AddActionToToolBar(EditorToolBar::ViewportTopToolBarIdentifier, "o3de.action.prefabs.upOneLevel", 100);
-            m_toolBarManagerInterface->AddWidgetToToolBar(EditorToolBar::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.focusPath", 200);
+            m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.prefabs.upOneLevel", 100);
+            m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.focusPath", 200);
         }
 
         int PrefabIntegrationManager::GetMenuPosition() const
@@ -618,15 +618,29 @@ namespace AzToolsFramework
 
                 if (!selectionContainsDescendantOfReadOnlyEntity)
                 {
-                    QAction* duplicateAction = menu->addAction(QObject::tr("Duplicate"));
-                    duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
-                    QObject::connect(
-                        duplicateAction, &QAction::triggered, duplicateAction,
-                        [this]
+                    if (s_prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntities))
+                    {
+                        AZ::EntityId entityToCheck = selectedEntities[0];
+
+                        // If it is a container entity, then check its parent entity's owning instance instead.
+                        if (s_prefabPublicInterface->IsInstanceContainerEntity(entityToCheck))
                         {
-                            ContextMenu_Duplicate();
+                            AZ::TransformBus::EventResult(entityToCheck, entityToCheck, &AZ::TransformBus::Events::GetParentId);
                         }
-                    );
+
+                        // Do not show the option when it is not a prefab edit.
+                        if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityToCheck))
+                        {
+                            QAction* duplicateAction = menu->addAction(QObject::tr("Duplicate"));
+                            duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+                            QObject::connect(
+                                duplicateAction, &QAction::triggered, duplicateAction,
+                                [this]
+                                {
+                                    ContextMenu_Duplicate();
+                                });
+                        }
+                    }
                 }
             }
 
@@ -1206,7 +1220,7 @@ namespace AzToolsFramework
         {
             if (m_actionManagerInterface)
             {
-                m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier);
+                m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
             }
         }
 

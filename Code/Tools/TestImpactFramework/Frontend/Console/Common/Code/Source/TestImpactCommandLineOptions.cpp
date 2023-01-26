@@ -34,7 +34,8 @@ namespace TestImpact
             TargetOutputCaptureKey,
             TestTargetTimeoutKey,
             GlobalTimeoutKey,
-            SuiteFilterKey,
+            SuiteSetKey,
+            SuiteLabelExcludeKey,
             DraftFailingTestsKey,
             ExcludedTestsKey,
             SafeModeKey,
@@ -72,7 +73,8 @@ namespace TestImpact
             "targetout",
             "ttimeout",
             "gtimeout",
-            "suite",
+            "suites",
+            "labelexcludes",
             "draftfailingtests",
             "excluded",
             "safemode",
@@ -259,17 +261,14 @@ namespace TestImpact
             return ParseOnOffOption(OptionKeys[DraftFailingTestsKey], states, cmd).value_or(false);
         }
 
-        SuiteType ParseSuiteFilter(const AZ::CommandLine& cmd)
+        SuiteSet ParseSuiteSet(const AZ::CommandLine& cmd)
         {
-            const AZStd::vector<AZStd::pair<AZStd::string, SuiteType>> states =
-            {
-                { SuiteTypeAsString(SuiteType::Main), SuiteType::Main },
-                { SuiteTypeAsString(SuiteType::Periodic), SuiteType::Periodic },
-                { SuiteTypeAsString(SuiteType::Sandbox), SuiteType::Sandbox },
-                { SuiteTypeAsString(SuiteType::AWSI), SuiteType::AWSI }
-            };
+            return ParseMultiValueOption(OptionKeys[SuiteSetKey], cmd);
+        }
 
-            return ParseMultiStateOption(OptionKeys[SuiteFilterKey], states, cmd).value_or(SuiteType::Main);
+        SuiteLabelExcludeSet ParseSuiteLabelExcludeSet(const AZ::CommandLine& cmd)
+        {
+            return ParseMultiValueOption(OptionKeys[SuiteLabelExcludeKey], cmd);
         }
 
         AZStd::vector<ExcludedTarget> ParseExcludedTestsFile(const AZ::CommandLine& cmd)
@@ -309,7 +308,8 @@ namespace TestImpact
         m_targetOutputCapture = ParseTargetOutputCapture(cmd);
         m_globalTimeout = ParseGlobalTimeout(cmd);
         m_draftFailingTests = ParseDraftFailingTests(cmd);
-        m_suiteFilter = ParseSuiteFilter(cmd);
+        m_suiteSet = ParseSuiteSet(cmd);
+        m_suiteLabelExcludes = ParseSuiteLabelExcludeSet(cmd);
         m_excludedTests = ParseExcludedTestsFile(cmd);
         m_safeMode = ParseSafeMode(cmd);
         m_testTargetTimeout = ParseTestTargetTimeout(cmd);
@@ -421,9 +421,14 @@ namespace TestImpact
         return m_globalTimeout;
     }
 
-    SuiteType CommandLineOptions::GetSuiteFilter() const
+    const SuiteSet& CommandLineOptions::GetSuiteSet() const
     {
-        return m_suiteFilter;
+        return m_suiteSet;
+    }
+
+    const SuiteLabelExcludeSet& CommandLineOptions::GetSuiteLabelExcludeSet() const
+    {
+        return m_suiteLabelExcludes;
     }
 
     bool CommandLineOptions::HasExcludedTests() const
@@ -512,7 +517,9 @@ namespace TestImpact
             "    -safemode=<on,off>                                          Flag to specify a safe mode sequence where the set of unselected \n"
             "    -testrunner=<live,null>                                     Whether to use the null test runner (on) or run the tests (off). \n"
             "                                                                If not set, defaults to running the tests.                          \n"
-            "    -suite=<main, periodic, sandbox, awsi>                      The test suite to select from for this test sequence.";
+            "    -suite=<...>                                                The test suites to select from for this test sequence.\n"
+            "    -labelexcludes=<...>                                        The list of labels that will exclude any tests with any of these labels\n"
+            "                                                                in their suite.";
 
         return help;
     }

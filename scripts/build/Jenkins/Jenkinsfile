@@ -68,8 +68,7 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Deletes the contents of the workspace and forces a complete pull.', name: 'CLEAN_WORKSPACE'),
     booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME'),
     booleanParam(defaultValue: false, description: 'Cancels AR immediately on any failure in the pipeline and marks it as failed', name: 'FAIL_FAST'),
-    booleanParam(defaultValue: false, description: 'Deletes the volume used for the workspace after the pipeline steps are completed.', name: 'DISCARD_VOLUME'),
-    stringParam(defaultValue: 'AutomatedTesting', description: 'Name of the project to build.', name: 'PROJECT_NAME')
+    booleanParam(defaultValue: false, description: 'Deletes the volume used for the workspace after the pipeline steps are completed.', name: 'DISCARD_VOLUME')
 ]
 
 def PlatformSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
@@ -360,7 +359,7 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
 }
 
 //this should assume it will always be executed from the workspace root
-def NoControlFile(repoName, processed_repos) {
+def NoControlFile(repoName, processed_repos, o3de_project, defer_enable_gems) {
     echo "NoControlFile(reponame:${repoName}, processed_repos:${processed_repos})"
 
     processed_repos.add(repoName)
@@ -371,7 +370,7 @@ def NoControlFile(repoName, processed_repos) {
     }
 
     //There is no control file so we must determine if this is a composite repo or a singular repo
-    dir(repo.NAME) {
+    dir(repoName) {
 
         //a singular object repo will have one of these o3de json files in the root
         if(fileExists("engine.json")) {
@@ -382,7 +381,7 @@ def NoControlFile(repoName, processed_repos) {
         }
         else if(fileExists("gem.json")) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --gem-path ${workspace}/${repoName} || ver>nul", "Registering gem in ${workspace}/${repoName}")
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${env.PROJECT_NAME} || ver>nul", "Enabling ${gemName} in ${env.PROJECT_NAME}")
+            defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${o3de_project} || ver>nul", ECHO: "Enabling ${gemName} in ${o3de_project}"])
         }
         else if(fileExists("template.json")) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --template-path ${workspace}/${repoName} || ver>nul", "Registering template in ${workspace}/${repoName}")
@@ -409,7 +408,7 @@ def NoControlFile(repoName, processed_repos) {
             }
             if(fileExists("Gems")) {
                 PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-gems-path ${workspace}/${repoName}/Gems || ver>nul", "Registering all gems in ${workspace}/${repoName}/Gems")
-                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${env.PROJECT_NAME} || ver>nul", "Enabling all gems in ${env.PROJECT_NAME}")
+                defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${o3de_project} || ver>nul", ECHO: "Enabling all gems in ${o3de_project}"])
                 found = true
             }
             if(fileExists("Templates")) {
@@ -421,7 +420,7 @@ def NoControlFile(repoName, processed_repos) {
                 found = true
             }
             if(!found) {
-                echo "WARNING: No objects found in repo ${repo.NAME}!"
+                echo "WARNING: No objects found in repo ${repoName}!"
             }
         }
     }
@@ -430,7 +429,7 @@ def NoControlFile(repoName, processed_repos) {
 }
 
 //this should assume it will always be executed from the workspace root
-def ExecuteControlFile(controlFile, repoName, processed_repos) {
+def ExecuteControlFile(controlFile, repoName, processed_repos, o3de_project, defer_enable_gems) {
     echo "ExecuteControlFile(controlFile:${controlFile}, reponame:${repoName}, processed_repos:${processed_repos})"
 
     processed_repos.add(repoName)
@@ -471,11 +470,10 @@ def ExecuteControlFile(controlFile, repoName, processed_repos) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --restricted-path ${workspace}/${repoName}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repoName}/${restrictedName}")
         }
     }
-    //enable all gems specified in the control file
+    //queue enable all gems specified in the control file
     if(controlFile.ENABLE_GEMS) {
-        echo 'ENABLE_GEMS'
         controlFile.ENABLE_GEMS.each { gemName ->
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${env.PROJECT_NAME} || ver>nul", "Enabling ${workspace}/${repoName}/${gemName} for ${env.PROJECT_NAME}")
+            defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${o3de_project} || ver>nul", ECHO: "Enabling ${workspace}/${repoName}/${gemName} for ${o3de_project}"])
         }
     }
 
@@ -502,9 +500,9 @@ def ExecuteControlFile(controlFile, repoName, processed_repos) {
 
                 if(foundRepoControlFile) {
                     //There is a control file, execute it
-                    processed_repos = ExecuteControlFile(repoControlFile, repo.NAME, processed_repos)
+                    processed_repos = ExecuteControlFile(repoControlFile, repo.NAME, processed_repos, o3de_project, defer_enable_gems)
                 } else {
-                    processed_repos = NoControlFile(repo.NAME, processed_repos)
+                    processed_repos = NoControlFile(repo.NAME, processed_repos, o3de_project, defer_enable_gems)
                 }
             }
         }
@@ -513,7 +511,7 @@ def ExecuteControlFile(controlFile, repoName, processed_repos) {
     return processed_repos
 }
 
-def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false) {
+def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false) {
     echo 'Starting pre-build common steps...'
 
     if (mount) {
@@ -534,6 +532,15 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             PlatformRmDir(workspace)
         }
     }
+    
+    def engine_project = ''
+    
+    if (pipelineConfig.DEFAULT_PROJECT) {
+        engine_project = pipelineConfig.DEFAULT_PROJECT
+    }
+    else {
+        engine_project = 'AutomatedTesting'
+    }
 
     dir(workspace) {
 
@@ -542,6 +549,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         }
 
         def processed_repos = []
+        def defer_enable_gems = []
 
         //we always get the engine repo first and get python, setEnvCommit only if the repo is the engine repo
         def engineAutomatedTestingControlFile = {}
@@ -593,10 +601,10 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             }
         }
         if(engineAutomatedTestingControlFileFound) {
-            processed_repos = ExecuteControlFile(engineAutomatedTestingControlFile, ENGINE_REPOSITORY_NAME, processed_repos)
+            processed_repos = ExecuteControlFile(engineAutomatedTestingControlFile, ENGINE_REPOSITORY_NAME, processed_repos, engine_project, defer_enable_gems)
         }
 
-        //lastly, if we are not committing to the engine repo then pull that repo in here
+        //if we are not committing to the engine repo then pull that repo in here
         if(COMMIT_REPOSITORY_NAME != ENGINE_REPOSITORY_NAME) {
             echo "Commit repo: ${scm.userRemoteConfigs.url[0]}"
             def automatedTestingControlFile = {}
@@ -611,30 +619,55 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                     automatedTestingControlFileFound = true
                 }
             }
+            
+            def external_project = ''
+            if(env.PROJECT_OVERRIDE) {
+                external_project = env.PROJECT_OVERRIDE
+            }
+            else if(params.CMAKE_LY_PROJECTS) {
+                external_project = params.CMAKE_LY_PROJECTS
+            }
 
             if(automatedTestingControlFileFound) {
-                processed_repos = ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME, processed_repos)
+                processed_repos = ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME, processed_repos, external_project, defer_enable_gems)
             }
             else {
-                processed_repos = NoControlFile(COMMIT_REPOSITORY_NAME, processed_repos)
+                processed_repos = NoControlFile(COMMIT_REPOSITORY_NAME, processed_repos, external_project, defer_enable_gems)
+            }
+            
+            // For only external projects, set CMAKE_LY_PROJECTS to the relative project_path so it will work on all platforms.
+            dir(ENGINE_REPOSITORY_NAME) {
+                // Try/catch in the event that this function is called before the scripts are stashed
+                try {
+                    unstash "${COMMIT_REPOSITORY_NAME}-scripts"
+                } catch (e) {
+                    print "Unstash failed, ignoring"
+                }
+                def ext = ''
+                if(env.IS_UNIX) {
+                    ext = '.sh'
+                }
+                if (external_project) {
+                    PlatformSh("scripts/o3de${ext} get-registered --project-name ${external_project} > projectpath", "Get the project path")
+                    def project_path = readFile file: 'projectpath'
+                    PlatformRm('projectpath')
+                    project_path = project_path.trim()
+                    project_path = project_path.replace("\\", "/")
+                    workspace_path = "${workspace}"
+                    workspace_path = workspace_path.replace("\\", "/")
+                    project_path = project_path.replace("${workspace}", "..")
+                    env.CMAKE_LY_PROJECTS = project_path
+                    echo "env.CMAKE_LY_PROJECTS = ${env.CMAKE_LY_PROJECTS}"
+                }
             }
         }
 
-        dir(ENGINE_REPOSITORY_NAME) {
-            def ext = ''
-            if(env.IS_UNIX) {
-                ext = '.sh'
+        //defer enabling gems until after the repos are done registering all objects
+        if(defer_enable_gems) {
+            echo 'ENABLE_GEMS'
+            defer_enable_gems.each { enableGemCommands ->
+                PlatformSh(enableGemCommands.COMMAND, enableGemCommands.ECHO)
             }
-            PlatformSh("scripts/o3de${ext} get-registered --project-name ${projectName} > projectpath", "Get the project path")
-            def project_path = readFile file: 'projectpath'
-            PlatformRm('projectpath')
-            project_path = project_path.trim()
-            project_path = project_path.replace("\\", "/")
-            workspace_path = "${workspace}"
-            workspace_path = workspace_path.replace("\\", "/")
-            project_path = project_path.replace("${workspace}", "..")
-            env.CMAKE_LY_PROJECTS = project_path
-            echo "env.CMAKE_LY_PROJECTS = ${env.CMAKE_LY_PROJECTS}"
         }
     }
 }
@@ -838,13 +871,13 @@ def HandleDriveSnapshots(String repositoryName, String projectName, String pipel
     }
 }
 
-def CreateSetupStage(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipelineName, String branchName, String platformName, String jobName, Map environmentVars, boolean onlyMountEBSVolume = false) {
+def CreateSetupStage(Map pipelineConfig, Map params, String snapshot, String repositoryName, String projectName, String pipelineName, String branchName, String platformName, String jobName, Map environmentVars, boolean onlyMountEBSVolume = false) {
     return {
         stage('Setup') {
             if(onlyMountEBSVolume) {
                 HandleDriveMount(snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName, environmentVars['WORKSPACE'], false)
             } else {
-                PreBuildCommonSteps(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'], false)
+                PreBuildCommonSteps(pipelineConfig, params, snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'], false)
             }
         }
     }
@@ -937,7 +970,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                     def build_job_name = build_job.key
                     def params = platform.value.build_types[build_job_name].PARAMETERS
                     try {
-                        CreateSetupStage(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars, onlyMountEBSVolume).call()
+                        CreateSetupStage(pipelineConfig, params, snapshot, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars, onlyMountEBSVolume).call()
 
                         if(build_job.value.steps) { // This is a pipe with many steps so create all the build stages
                             pipelineEnvVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
@@ -1106,15 +1139,6 @@ try {
                         env.REPOSITORY_NAME = repositoryName
                         (projectName, pipelineName) = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
 
-                        //this can happen on the first run, the pipeline parameters are not yet defined
-                        if(!env.PROJECT_NAME) {
-                            env.PROJECT_NAME = 'AutomatedTesting'
-                        }
-
-                        if(env.PROJECT_NAME != projectName) {
-                            echo "Overriding ProjectName: ${projectName} -> ${env.PROJECT_NAME}"
-                            projectName = env.PROJECT_NAME
-                        }
                         env.PIPELINE_NAME = pipelineName
                         if(env.BRANCH_NAME) {
                             branchName = env.BRANCH_NAME
@@ -1142,11 +1166,14 @@ try {
                         echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${scm.GIT_COMMIT}\"..."
 
                         CheckoutEngineBootstrapScripts(branchName, scm.userRemoteConfigs)
+                        // Stash any project based build configs
+                        stash name: "${COMMIT_REPOSITORY_NAME}-scripts", includes: "scripts/build/**", allowEmpty: true
                         // Project or external repos may not have the bootstrapping scripts. For these cases, pull the bootstrap scripts from the engine repo at the default branch
                         if (!fileExists(SCRIPTS_PATH) || !fileExists(PIPELINE_CONFIG_FILE) || !(COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME)) {
                             echo "No bootstrap scripts found in ${SCRIPTS_PATH} or working repo is not the engine repo, downloading it from the engine repo at ${ENGINE_DEVELOPMENT_BRANCH}"
                             CheckoutEngineBootstrapScripts(ENGINE_DEVELOPMENT_BRANCH)
                         }
+                        unstash "${COMMIT_REPOSITORY_NAME}-scripts"
                         
                         // Load configs
                         pipelineConfig = LoadPipelineConfig(pipelineName, branchName)
@@ -1154,7 +1181,7 @@ try {
                         // Add each platform as a parameter that the user can disable if needed
                         if (!IsPullRequest(branchName) || IsPeriodicPipeline(pipelineName)) {
                             pipelineParameters.add(stringParam(defaultValue: '', description: 'Filters and overrides the list of jobs to run for each of the below platforms (comma-separated). Can\'t be used during a pull request.', name: 'JOB_LIST_OVERRIDE'))
-
+                            pipelineParameters.add(stringParam(defaultValue: '', description: 'Name of the project to build. Overrides default project', name: 'PROJECT_OVERRIDE'))
                             pipelineConfig.platforms.each { platform ->
                                 pipelineParameters.add(booleanParam(defaultValue: true, description: '', name: platform.key))
                             }
@@ -1286,7 +1313,7 @@ finally {
                     "clean_output_directory": env.CLEAN_OUTPUT_DIRECTORY,
                     "clean_assets": env.CLEAN_ASSETS,
                     "fail_fast": env.FAIL_FAST,
-                    "project_name": env.PROJECT_NAME
+                    "project_name": env.CMAKE_LY_PROJECTS
                 ]
                 snsPublish(
                     topicArn: env.POST_AR_BUILD_SNS_TOPIC,

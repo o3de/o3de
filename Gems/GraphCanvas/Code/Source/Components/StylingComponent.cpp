@@ -137,13 +137,16 @@ namespace GraphCanvas
     {
         Styling::SelectorVector selectors = m_coreSelectors;
 
-        QGraphicsItem* root = nullptr;
-        SceneMemberUIRequestBus::EventResult(root, GetEntityId(), &SceneMemberUIRequests::GetRootGraphicsItem);
+        // Reserve space for all of these selectors added in this function
+        selectors.reserve(selectors.size() + m_dynamicSelectors.size() + 3);
 
         for (auto& mapPair : m_dynamicSelectors)
         {
             selectors.emplace_back(mapPair.second);
         }
+
+        QGraphicsItem* root = nullptr;
+        SceneMemberUIRequestBus::EventResult(root, GetEntityId(), &SceneMemberUIRequests::GetRootGraphicsItem);
 
         if (!root)
         {
@@ -169,11 +172,6 @@ namespace GraphCanvas
         }
 
         // TODO collapsed and highlighted
-
-        for (auto& mapPair : m_dynamicSelectors)
-        {
-            selectors.emplace_back(mapPair.second);
-        }
 
         return selectors;
     }

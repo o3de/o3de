@@ -158,7 +158,7 @@ namespace WhiteBox
             actionProperties.m_category = "White Box Component Mode - Transform";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -190,7 +190,7 @@ namespace WhiteBox
             actionProperties.m_category = "White Box Component Mode - Transform";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -222,7 +222,7 @@ namespace WhiteBox
             actionProperties.m_category = "White Box Component Mode - Transform";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -263,9 +263,9 @@ namespace WhiteBox
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "WhiteBoxTransformMode - could not get MenuManagerInterface on BindActionsToMenus.");
 
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.translation", 6000);
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.rotation", 6001);
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.scale", 6002);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.translation", 6000);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.rotation", 6001);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.scale", 6002);
     }
 
     void TransformMode::DestroyManipulators()
