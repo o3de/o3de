@@ -184,7 +184,7 @@ namespace AzToolsFramework
                 case JobStatus::Completed: return "Completed";
                 case JobStatus::Missing: return "Missing";
             }
-            return nullptr;
+            return "";
         }
 
 
@@ -281,6 +281,9 @@ namespace AzToolsFramework
 
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // single listener
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; //single bus
+
+            using MutexType = AZStd::recursive_mutex;
+            static const bool LocklessDispatch = true;
 
             virtual ~AssetSystemJobRequest() = default;
 

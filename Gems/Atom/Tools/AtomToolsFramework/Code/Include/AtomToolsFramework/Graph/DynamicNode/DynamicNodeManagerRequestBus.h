@@ -25,6 +25,7 @@ namespace AtomToolsFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::Crc32 BusIdType;
+        using MutexType = AZStd::mutex;
 
         virtual ~DynamicNodeManagerRequests() = default;
 

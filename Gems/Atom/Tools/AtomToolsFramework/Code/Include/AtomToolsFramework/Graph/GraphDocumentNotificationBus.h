@@ -12,8 +12,8 @@
 
 namespace AtomToolsFramework
 {
-    //! Bus interface with notification about the status of an individual compile emitted from a graph compiler
-    class GraphCompilerNotifications : public AZ::EBusTraits
+    //! Interface for handling graph document status notifications
+    class GraphDocumentNotifications : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
@@ -30,5 +30,5 @@ namespace AtomToolsFramework
         virtual void OnCompileGraphFailed([[maybe_unused]] const AZ::Uuid& documentId){};
     };
 
-    using GraphCompilerNotificationBus = AZ::EBus<GraphCompilerNotifications>;
+    using GraphDocumentNotificationBus = AZ::EBus<GraphDocumentNotifications>;
 } // namespace AtomToolsFramework

@@ -24,6 +24,7 @@ namespace AtomToolsFramework
 
     GraphTemplateFileData GraphTemplateFileDataCache::Load(const AZStd::string& path)
     {
+        AZStd::scoped_lock lock(m_graphTemplateFileDataMapMutex);
         const auto& itr = m_graphTemplateFileDataMap.find(path);
         if (itr != m_graphTemplateFileDataMap.end() && !itr->second.IsReloadRequired())
         {
