@@ -18,8 +18,8 @@ namespace AZ::DocumentPropertyEditor
     public:
         void SetSourceAdapter(DocumentAdapterPtr sourceAdapter);
 
-        virtual Dom::Path MapFromSourcePath(const Dom::Path& sourcePath) = 0;
-        virtual Dom::Path MapToSourcePath(const Dom::Path& filterPath) = 0;
+        virtual Dom::Path MapFromSourcePath(const Dom::Path& sourcePath) const = 0;
+        virtual Dom::Path MapToSourcePath(const Dom::Path& filterPath) const = 0;
 
     protected:
         // handlers for source adapter's messages

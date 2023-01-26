@@ -24,7 +24,7 @@ namespace AZ::DocumentPropertyEditor
         UpdateMatchDescendants(m_root);
     }
 
-    Dom::Path RowFilterAdapter::MapFromSourcePath(const Dom::Path& sourcePath)
+    Dom::Path RowFilterAdapter::MapFromSourcePath(const Dom::Path& sourcePath) const
     {
         if (!m_filterActive)
         {
@@ -78,7 +78,7 @@ namespace AZ::DocumentPropertyEditor
         return filterPath;
     }
 
-    Dom::Path RowFilterAdapter::MapToSourcePath(const Dom::Path& filterPath)
+    Dom::Path RowFilterAdapter::MapToSourcePath(const Dom::Path& filterPath) const
     {
         if (!m_filterActive)
         {

@@ -39,7 +39,7 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
-    Dom::Path RowSortAdapter::MapPath(const Dom::Path& path, bool mapToSource)
+    Dom::Path RowSortAdapter::MapPath(const Dom::Path& path, bool mapToSource) const
     {
         if (!m_sortActive)
         {
@@ -83,12 +83,12 @@ namespace AZ::DocumentPropertyEditor
         return mappedPath;
     }
 
-    Dom::Path RowSortAdapter::MapFromSourcePath(const Dom::Path& sourcePath)
+    Dom::Path RowSortAdapter::MapFromSourcePath(const Dom::Path& sourcePath) const
     {
         return MapPath(sourcePath, true);
     }
 
-    Dom::Path RowSortAdapter::MapToSourcePath(const Dom::Path& filterPath)
+    Dom::Path RowSortAdapter::MapToSourcePath(const Dom::Path& filterPath) const
     {
         return MapPath(filterPath, false);
     }
@@ -123,7 +123,6 @@ namespace AZ::DocumentPropertyEditor
         if (m_sortActive)
         {
             bool needsReset = false;
-            //const auto& sourceContents = m_sourceAdapter->GetContents();
 
             Dom::Patch outgoingPatch;
             for (auto operationIterator = patch.begin(), endIterator = patch.end(); !needsReset && operationIterator != endIterator;

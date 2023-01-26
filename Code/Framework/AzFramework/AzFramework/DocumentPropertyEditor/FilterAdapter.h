@@ -22,8 +22,8 @@ namespace AZ::DocumentPropertyEditor
         void SetIncludeAllMatchDescendants(bool includeAll);
 
         // MetaAdapter overrides
-        Dom::Path MapFromSourcePath(const Dom::Path& sourcePath) override;
-        Dom::Path MapToSourcePath(const Dom::Path& filterPath) override;
+        Dom::Path MapFromSourcePath(const Dom::Path& sourcePath) const override;
+        Dom::Path MapToSourcePath(const Dom::Path& filterPath) const override;
 
     protected:
         struct MatchInfoNode

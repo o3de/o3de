@@ -22,10 +22,10 @@ namespace AZ::DocumentPropertyEditor
         void InvalidateSort();
 
         // MetaAdapter overrides
-        Dom::Path MapFromSourcePath(const Dom::Path& sourcePath) override;
-        Dom::Path MapToSourcePath(const Dom::Path& filterPath) override;
+        Dom::Path MapFromSourcePath(const Dom::Path& sourcePath) const override;
+        Dom::Path MapToSourcePath(const Dom::Path& filterPath) const override;
 
-        Dom::Path MapPath(const Dom::Path& sourcePath, bool mapToSource);
+        Dom::Path MapPath(const Dom::Path& sourcePath, bool mapToSource) const;
 
     protected:
         Dom::Value GenerateContents() override;
