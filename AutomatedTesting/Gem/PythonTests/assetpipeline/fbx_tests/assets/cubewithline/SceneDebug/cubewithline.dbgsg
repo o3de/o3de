@@ -38,9 +38,9 @@ Node Type: TransformData
 Node Name: custom_properties
 Node Path: RootNode.Cube.custom_properties
 Node Type: CustomPropertyData
-	UserProperties: 
 	IsNull: false
 	DefaultAttributeIndex: 0
+	UserProperties: 
 	InheritType: 1
 
 Node Name: UVMap
@@ -92,6 +92,14 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 24. Hash: 15376921172580871250
 	GenerationMethod: 1
 
+Node Name: custom_properties
+Node Path: RootNode.Cube_cubewithline_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
 Node Name: UVMap
 Node Path: RootNode.Cube_cubewithline_optimized.UVMap
 Node Type: MeshVertexUVData
@@ -119,14 +127,6 @@ Node Type: TransformData
 		BasisY: < 0.000009, -100.000000,  0.000000>
 		BasisZ: < 0.000000,  0.000000,  100.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
-
-Node Name: custom_properties
-Node Path: RootNode.Cube_cubewithline_optimized.custom_properties
-Node Type: CustomPropertyData
-	UserProperties: 
-	IsNull: false
-	DefaultAttributeIndex: 0
-	InheritType: 1
 
 Node Name: DefaultMaterial
 Node Path: RootNode.Cube_cubewithline_optimized.DefaultMaterial

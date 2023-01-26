@@ -310,13 +310,64 @@ namespace AZ::SceneAPI
         const Containers::Scene& scene,
         const AZStd::string& relativeSourcePath) const
     {
-        const auto meshNodeIndex = nodeData.m_meshIndex;
+        AZStd::shared_ptr<SceneData::MeshGroup> meshGroup(BuildMeshGroupForNode(scene, nodeData, nodeDataMap));
+        manifestUpdates.emplace_back(meshGroup);
+
+        if (AddEditorMeshComponent(entityId, relativeSourcePath, meshGroup->GetName()) == false)
+        {
+            return false;
+        }
+
+        const auto& graph = scene.GetGraph();
         const auto propertyDataIndex = nodeData.m_propertyMapIndex;
+        if (propertyDataIndex.IsValid())
+        {
+            const auto customPropertyData = azrtti_cast<const DataTypes::ICustomPropertyData*>(graph.GetNodeContent(propertyDataIndex));
+            if (!customPropertyData)
+            {
+                AZ_Error("prefab", false, "Missing custom property data content for node.");
+                return false;
+            }
+
+            if (AddEditorMaterialComponent(entityId, *(customPropertyData.get())) == false)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> DefaultProceduralPrefabGroup::GenerateDefaultPrefabMeshGroups(
+        const Scene& scene) const
+    {
+        AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> newMeshGroups;
+        auto nodeDataMap = CalculateNodeDataMap(scene);
+        if (nodeDataMap.empty())
+        {
+            return newMeshGroups;
+        }
+
+        for (const auto& entry : nodeDataMap)
+        {
+            newMeshGroups.push_back(BuildMeshGroupForNode(scene, entry.second, nodeDataMap));
+
+        }
+
+        return newMeshGroups;
+    }
+
+    AZStd::shared_ptr<SceneData::MeshGroup> DefaultProceduralPrefabGroup::BuildMeshGroupForNode(
+            const Scene& scene,
+            const NodeDataForEntity& nodeData,
+            const NodeDataMap& nodeDataMap) const
+    {
+        const auto meshNodeIndex = nodeData.m_meshIndex;
 
         const auto& graph = scene.GetGraph();
         const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
         const auto meshSubId =
-            DataTypes::Utilities::CreateStableUuid(scene, azrtti_typeid<AZ::SceneAPI::SceneData::MeshGroup>(), meshNodeName.GetPath());
+            DataTypes::Utilities::CreateStableUuid(scene, azrtti_typeid<SceneData::MeshGroup>(), meshNodeName.GetPath());
 
         AZStd::string meshGroupName = "default_";
         meshGroupName += scene.GetName();
@@ -333,13 +384,12 @@ namespace AZ::SceneAPI
             '_');
 
         AZStd::string meshNodePath{ meshNodeName.GetPath() };
-        auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
+        auto meshGroup = AZStd::make_shared<SceneData::MeshGroup>();
         meshGroup->SetName(meshGroupName);
         meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
         for (const auto& meshGoupNamePair : nodeDataMap)
         {
-            if (meshGoupNamePair.second.m_meshIndex.IsValid()
-                && meshGoupNamePair.second.m_meshIndex != meshNodeIndex)
+            if (meshGoupNamePair.second.m_meshIndex.IsValid() && meshGoupNamePair.second.m_meshIndex != meshNodeIndex)
             {
                 const auto nodeName = graph.GetNodeName(meshGoupNamePair.second.m_meshIndex);
                 meshGroup->GetSceneNodeSelectionList().RemoveSelectedNode(nodeName.GetPath());
@@ -364,30 +414,7 @@ namespace AZ::SceneAPI
 
         // create an empty LOD rule in order to skip the LOD buffer creation
         meshGroup->GetRuleContainer().AddRule(AZStd::make_shared<AZ::SceneAPI::SceneData::LodRule>());
-
-        manifestUpdates.emplace_back(meshGroup);
-
-        if (AddEditorMeshComponent(entityId, relativeSourcePath, meshGroupName) == false)
-        {
-            return false;
-        }
-
-        if (propertyDataIndex.IsValid())
-        {
-            const auto customPropertyData = azrtti_cast<const DataTypes::ICustomPropertyData*>(graph.GetNodeContent(propertyDataIndex));
-            if (!customPropertyData)
-            {
-                AZ_Error("prefab", false, "Missing custom property data content for node.");
-                return false;
-            }
-
-            if (AddEditorMaterialComponent(entityId, *(customPropertyData.get())) == false)
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return meshGroup;
     }
 
     DefaultProceduralPrefabGroup::NodeEntityMap DefaultProceduralPrefabGroup::CreateNodeEntityMap(

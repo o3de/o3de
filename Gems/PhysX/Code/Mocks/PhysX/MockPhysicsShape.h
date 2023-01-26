@@ -15,6 +15,7 @@ namespace UnitTest
     class MockPhysicsShape : public Physics::Shape
     {
     public:
+        AZ_CLASS_ALLOCATOR(MockPhysicsShape, AZ::SystemAllocator)
         MOCK_METHOD1(AttachedToActor, void (void*));
         MOCK_METHOD0(DetachedFromActor, void ());
         MOCK_CONST_METHOD1(GetAabb, AZ::Aabb (const AZ::Transform&));

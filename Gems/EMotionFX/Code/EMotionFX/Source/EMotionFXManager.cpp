@@ -49,9 +49,6 @@ namespace EMotionFX
             return true;
         }
 
-        // Create EMotion FX allocators
-        Allocators::Create();
-
         // create the new object
         gEMFX = AZ::Environment::CreateVariable<EMotionFXManager*>(kEMotionFXInstanceVarName);
         gEMFX.Set(EMotionFXManager::Create());
@@ -99,8 +96,6 @@ namespace EMotionFX
         // delete the global object and reset it to nullptr
         gEMFX.Get()->Destroy();
         gEMFX.Reset();
-
-        Allocators::Destroy();
     }
 
     //-----------------------------------------------------------------------------

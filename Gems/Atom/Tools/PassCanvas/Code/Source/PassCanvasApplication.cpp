@@ -112,6 +112,7 @@ namespace PassCanvas
         m_window.reset();
         m_viewportSettingsSystem.reset();
         m_graphContext.reset();
+        m_graphCompilerManager.reset();
         m_dynamicNodeManager.reset();
 
         Base::Destroy();
@@ -125,34 +126,6 @@ namespace PassCanvas
     QWidget* PassCanvasApplication::GetAppMainWindow()
     {
         return m_window.get();
-    }
-
-    void PassCanvasApplication::OnDocumentOpened(const AZ::Uuid& documentId)
-    {
-        AtomToolsFramework::GraphCompilerRequestBus::Event(
-            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
-    }
-
-    void PassCanvasApplication::OnDocumentSaved(const AZ::Uuid& documentId)
-    {
-        AtomToolsFramework::GraphCompilerRequestBus::Event(
-            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
-    }
-
-    void PassCanvasApplication::OnDocumentUndoStateChanged(const AZ::Uuid& documentId)
-    {
-        AtomToolsFramework::GraphCompilerRequestBus::Event(
-            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
-    }
-
-    void PassCanvasApplication::OnDocumentClosed(const AZ::Uuid& documentId)
-    {
-        m_graphCompilerMap.erase(documentId);
-    }
-
-    void PassCanvasApplication::OnDocumentDestroyed(const AZ::Uuid& documentId)
-    {
-        m_graphCompilerMap.erase(documentId);
     }
 
     void PassCanvasApplication::InitDynamicNodeManager()
@@ -223,6 +196,8 @@ namespace PassCanvas
 
     void PassCanvasApplication::InitPassGraphDocumentType()
     {
+        m_graphCompilerManager.reset(aznew AtomToolsFramework::GraphCompilerManager(m_toolId));
+
         // Acquiring default Pass Canvas document type info so that it can be customized before registration
         auto documentTypeInfo = AtomToolsFramework::GraphDocument::BuildDocumentTypeInfo(
             "Pass Graph",
@@ -238,7 +213,10 @@ namespace PassCanvas
         {
             m_window->AddDocumentTab(
                 documentId, aznew AtomToolsFramework::GraphDocumentView(toolId, documentId, m_graphViewSettingsPtr, m_window.get()));
-            m_graphCompilerMap.emplace(documentId, AZStd::make_unique<PassGraphCompiler>(toolId, documentId));
+
+            // Create and register a material graph compiler for this document with the graph compiler manager. The manager will monitor
+            // document notifications, process queued graph compiler requests, and report status of generated files from the AP.
+            m_graphCompilerManager->RegisterGraphCompiler(documentId, aznew PassGraphCompiler(toolId, documentId));
             return true;
         };
 

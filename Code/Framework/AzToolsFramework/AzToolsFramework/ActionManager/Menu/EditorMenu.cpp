@@ -21,8 +21,9 @@ namespace AzToolsFramework
     {
     }
 
-    EditorMenu::EditorMenu(const AZStd::string& name)
-        : m_menu(new QMenu(name.c_str()))
+    EditorMenu::EditorMenu(AZStd::string identifier, const AZStd::string& name)
+        : m_identifier(AZStd::move(identifier))
+        , m_menu(new QMenu(name.c_str()))
     {
     }
 
@@ -198,7 +199,7 @@ namespace AzToolsFramework
                     }
                 case MenuItemType::SubMenu:
                     {
-                        if (QMenu* menu = s_menuManagerInternalInterface->GetMenu(menuItem.m_identifier))
+                        if (QMenu* menu = s_menuManagerInternalInterface->GetMenu(menuItem.m_identifier); menu && !menu->isEmpty())
                         {
                             m_menu->addMenu(menu);
                         }
@@ -218,6 +219,13 @@ namespace AzToolsFramework
                     break;
                 }
             }
+        }
+
+        // If the menu contents changed from empty to full or viceversa, refresh all the menus containing this menu.
+        if (m_menu->isEmpty() != m_empty)
+        {
+            s_menuManagerInternalInterface->QueueRefreshForMenusContainingSubMenu(m_identifier);
+            m_empty = m_menu->isEmpty();
         }
     }
 

@@ -42,6 +42,7 @@ namespace AZ
             bool m_isRayTracingEnabled = true;
             bool m_useForwardPassIblSpecular = false;
             bool m_isAlwaysDynamic = false;
+            bool m_excludeFromReflectionCubeMaps = false;
         };
 
         //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying MeshFeatureProcessor
@@ -120,6 +121,8 @@ namespace AZ
             virtual RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const = 0;
             //! Sets the option to exclude this mesh from baked reflection probe cubemaps
             virtual void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) = 0;
+            //! Gets the if this mesh is excluded from baked reflection probe cubemaps
+            virtual bool GetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle) const = 0;
             //! Sets a mesh to be considered to be always moving even if the transform hasn't changed. This is useful for meshes that are skinned or have vertex animation.
             virtual void SetIsAlwaysDynamic(const MeshHandle& meshHandle, bool isAlwaysDynamic) = 0;
             //! Gets if a mesh is considered to always be moving.

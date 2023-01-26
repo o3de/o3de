@@ -118,6 +118,7 @@ namespace GraphModel
             AZStd::any defaultValue,
             AZStd::string_view description,
             ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            const AZStd::vector<AZStd::string>& enumValues = {},
             bool visibleOnNode = true,
             bool editableOnNode = true);
 
@@ -128,6 +129,7 @@ namespace GraphModel
             AZStd::any defaultValue,
             AZStd::string_view description,
             ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            const AZStd::vector<AZStd::string>& enumValues = {},
             bool visibleOnNode = true,
             bool editableOnNode = true);
 
@@ -137,6 +139,7 @@ namespace GraphModel
             DataTypePtr dataType,
             AZStd::string_view description,
             ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            const AZStd::vector<AZStd::string>& enumValues = {},
             bool visibleOnNode = true,
             bool editableOnNode = true);
 
@@ -163,6 +166,7 @@ namespace GraphModel
             AZStd::any defaultValue,
             AZStd::string_view description,
             ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            const AZStd::vector<AZStd::string>& enumValues = {},
             bool visibleOnNode = true,
             bool editableOnNode = true);
 
@@ -196,6 +200,8 @@ namespace GraphModel
         const DataTypeList& GetSupportedDataTypes() const;  //!< Valid for Data and Property slots. Otherwise returns an empty DataTypeList.
         AZStd::any GetDefaultValue() const;                 //!< Valid for Input Data and Property slots. Otherwise returns an empty AZStd::any.
 
+        const AZStd::vector<AZStd::string>& GetEnumValues() const; //!< Options exposed if this slot type is an enumeration with multiple values
+
         //! These methods are only pertinent for extendable slots
         const int GetMinimumSlots() const;                  //!< Retrieve the minimum configured number of extendable slots (returns a default value if not configured)
         const int GetMaximumSlots() const;                  //!< Retrieve the maximum configured number of extendable slots (returns a default value if not configured)
@@ -211,6 +217,7 @@ namespace GraphModel
         SlotName m_name;
         AZStd::string m_displayName;
         AZStd::string m_description;
+        AZStd::vector<AZStd::string> m_enumValues;
         DataTypeList m_supportedDataTypes;
         AZStd::any m_defaultValue;
         bool m_visibleOnNode = true;
@@ -231,15 +238,12 @@ namespace GraphModel
     //! class hierarchy).
     class Slot : public GraphElement, public AZStd::enable_shared_from_this<Slot>
     {
-        friend class Graph; // So the Graph can update the Slot's cache of Connection pointers
-
     public:
         AZ_CLASS_ALLOCATOR(Slot, AZ::SystemAllocator, 0);
         AZ_RTTI(Slot, "{50494867-04F1-4785-BB9C-9D6C96DCBFC9}", GraphElement);
         static void Reflect(AZ::ReflectContext* context);
 
-        using ConnectionList = AZStd::set<AZStd::shared_ptr<Connection>>; // AZStd::unordered_set doesn't work with shared_ptr so use set
-        using WeakConnectionList = AZStd::list<AZStd::weak_ptr<Connection>>; // AZStd::set doesn't work with weak_ptr so use list
+        using ConnectionList = AZStd::vector<AZStd::shared_ptr<Connection>>;
 
         Slot() = default; // Needed by SerializeContext
         ~Slot() override = default;
@@ -271,6 +275,7 @@ namespace GraphModel
         const SlotName& GetName() const;
         const AZStd::string& GetDisplayName() const;
         const AZStd::string& GetDescription() const;
+        const AZStd::vector<AZStd::string>& GetEnumValues() const;
         DataTypePtr GetDataType() const; //!< Valid for Data and Property slots. Otherwise returns null.
         DataTypePtr GetDefaultDataType() const; //!< Valid for Data and Property slots. Otherwise returns null.
         AZStd::any GetDefaultValue() const; //!< Valid for Data and Property slots. Otherwise returns an empty AZStd::any.
@@ -316,19 +321,36 @@ namespace GraphModel
 
         //! Returns the list of connections to this Slot.
         //! (Property slots will never have connections)
-        ConnectionList GetConnections() const;
+        const ConnectionList& GetConnections() const;
+
+        //! Reset any data that was cached for this slot
+        void ClearCachedData();
 
     private:
-
 #if defined(AZ_ENABLE_TRACING)
         void AssertWithTypeInfo(bool expression, DataTypePtr dataTypeRequested, const char* message) const;
 #endif
         DataTypePtr GetDataTypeForTypeId(const AZ::Uuid& typeId) const;
         DataTypePtr GetDataTypeForValue(const AZStd::any& value) const;
 
-        SlotDefinitionPtr m_slotDefinition;         //!< Pointer to the SlotDefinition in the parent Node, that defines this slot.
-        AZStd::any m_value;                         //!< This is the value that gets used for a Property slot or an Input Data slot that doesn't have any connection.
-        SlotSubId m_subId = 0;                      //!< SubId to uniquely identify extendable slots of the same name (regular slots will always have a SubId of 0)
+        // Pointer to the SlotDefinition in the parent Node, that defines this slot.
+        SlotDefinitionPtr m_slotDefinition;
+
+        // This is the value that gets used for a Property slot or an Input Data slot that doesn't have any connection.
+        AZStd::any m_value;
+
+        // SubId to uniquely identify extendable slots of the same name (regular slots will always have a SubId of 0)
+        SlotSubId m_subId = 0;
+
+        // Storing the parent node so that it only needs to be looked up once unless the graph state and cached data is clear
+        mutable AZStd::mutex m_parentNodeMutex;
+        mutable bool m_parentNodeDirty = true;
+        mutable NodePtr m_parentNode;
+
+        // Storing a list of connections for this slot, copied From the owner graph object.
+        mutable AZStd::mutex m_connectionsMutex;
+        mutable bool m_connectionsDirty = true;
+        mutable ConnectionList m_connections;
     };
 
     template<typename T>
@@ -353,9 +375,8 @@ namespace GraphModel
 
 namespace AZStd
 {
-    // This must be defined so that our custom data type SlotId can be used as a key
-    // in AZStd::unordered_map
-    template <>
+    // This must be defined so that our custom data type SlotId can be used as a key in AZStd::unordered_map
+    template<>
     struct hash<GraphModel::SlotId>
     {
         typedef GraphModel::SlotId argument_type;
@@ -365,4 +386,4 @@ namespace AZStd
             return id.GetHash();
         }
     };
-}
+} // namespace AZStd

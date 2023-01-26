@@ -8,7 +8,6 @@
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzFramework/PaintBrush/PaintBrush.h>
 
 #include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>

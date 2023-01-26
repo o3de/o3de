@@ -356,7 +356,7 @@ namespace EMotionFX
             }
             else
             {
-                AZ_Error("EMotionFX", false, "Cannot create snapshot as anim graph instance has not been created yet. "
+                AZ_ErrorOnce("EMotionFX", false, "Cannot create snapshot as anim graph instance has not been created yet. "
                     "Please make sure you selected an anim graph in the anim graph component.");
             }
         }

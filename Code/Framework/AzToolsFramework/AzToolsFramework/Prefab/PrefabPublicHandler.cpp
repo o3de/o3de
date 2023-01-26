@@ -1201,6 +1201,14 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("Failed to duplicate : Couldn't get a valid owning instance for the common root entity of the entities provided."));
             }
 
+            // Block duplicating as overrides since it is not supported.
+            if (!m_prefabFocusHandler.IsOwningPrefabBeingFocused(commonOwningInstance->get().GetContainerEntityId()))
+            {
+                return AZ::Failure(AZStd::string(
+                    "Duplicating entities and prefabs as override edits is currently not supported.\n"
+                    "To perform a prefab edit, please first enter Prefab Edit Mode on the direct owning prefab."));
+            }
+
             // This will cull out any entities that have ancestors in the list, since we will end up duplicating
             // the full nested hierarchy with what is returned from RetrieveAndSortPrefabEntitiesAndInstances
             AzToolsFramework::EntityIdSet duplicationSet = AzToolsFramework::GetCulledEntityHierarchy(entityIdsNoFocusContainer);

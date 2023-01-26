@@ -24,7 +24,7 @@ if(NOT PROJECT_NAME)
     include(cmake/CompilerSettings.cmake)
     project(O3DE
         LANGUAGES C CXX
-        VERSION ${LY_VERSION_STRING}
+        VERSION ${O3DE_VERSION_STRING}
     )
 endif()
 
@@ -46,6 +46,7 @@ include(cmake/Install.cmake)
 include(cmake/LYWrappers.cmake)
 include(cmake/Gems.cmake)
 include(cmake/UnitTest.cmake)
+include(cmake/TestImpactFramework/TestImpactTestTargetConfig.cmake) # LYTestWrappers dependency
 include(cmake/LYTestWrappers.cmake)
 include(cmake/Monolithic.cmake)
 include(cmake/SettingsRegistry.cmake)

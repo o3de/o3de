@@ -40,6 +40,15 @@ namespace AtomToolsFramework
     void CollectDynamicNodeSettings(
         const DynamicNodeSettingsMap& settings, const AZStd::string& settingName, AZStd::vector<AZStd::string>& container);
 
+    // Search for a settings group with the specified name. If the group is found and not empty, return the first value. Otherwise return
+    // the default value.
+    AZStd::string GetSettingValueByName(
+        const DynamicNodeSettingsMap& settings, const AZStd::string& settingName, const AZStd::string& defaultValue = {});
+
+    // Search for a settings group with the specified name. If the group is found, return true if it contains a value with the same name as
+    // flag. Otherwise return false.
+    bool FindSettingWithValue(const DynamicNodeSettingsMap& settings, const AZStd::string& settingName, const AZStd::string& flag);
+
     // Convenience function to get a list of all currently registered slot data type names.
     AZStd::vector<AZStd::string> GetRegisteredDataTypeNames();
 
