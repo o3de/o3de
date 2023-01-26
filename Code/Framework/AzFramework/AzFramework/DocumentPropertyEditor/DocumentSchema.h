@@ -337,16 +337,17 @@ namespace AZ::DocumentPropertyEditor
         {
             if (attribute == nullptr)
             {
-                return AZ::Dom::Value();
+                return {};
             }
 
-            AZ::UnsafeAttributeInvoker unsafeInvoker = attribute->GetUnsafeAttributeReader(instance);
-            GenericValueList value;
-            if (!unsafeInvoker.GetAttributeReader().Read<GenericValueList>(value))
+            auto attributeInvocable = attribute->GetVoidInstanceAttributeInvocable();
+            AttributeReader reader = AttributeReader(instance, attributeInvocable.get());
+            if (GenericValueList value; reader.Read<GenericValueList>(value))
             {
-                return AZ::Dom::Value();
+                return ValueToDom(value);
             }
-            return ValueToDom(value);
+
+            return {};
         }
 
         AZStd::optional<GenericValueList> DomToValue(const Dom::Value& value) const override
