@@ -68,8 +68,10 @@ namespace AZ
             protected:
                 //! Callback that's triggered when the add button has multiple entries.
                 virtual void OnMultiGroupAdd(const Uuid& id);
+                virtual void OnHelpButtonClicked();
 
                 virtual void BuildAndConnectAddButton();
+                virtual void BuildHelpButton();
                 
                 virtual AZStd::string ClassIdToName(const Uuid& id) const;
                 virtual void AddNewObject(const Uuid& id);
@@ -99,6 +101,7 @@ namespace AZ
                 AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor;
                 SerializeContext* m_context;
                 size_t m_capSize;
+                QString m_helpUrl;
             };
         } // namespace UI
     } // namespace SceneAPI

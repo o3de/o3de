@@ -7,12 +7,14 @@
  */
 
 #pragma once
+
+#include <AZTestShared/Utils/Utils.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
 #include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ViewportInteraction.h>
-#include <AZTestShared/Utils/Utils.h>
+#include <AzToolsFramework/ComponentModes/ShapeComponentModeBus.h>
 
 namespace LmbrCentral
 {
@@ -24,9 +26,17 @@ namespace LmbrCentral
         const AzToolsFramework::ViewportInteraction::KeyboardModifier keyboardModifier =
         AzToolsFramework::ViewportInteraction::KeyboardModifier::None);
 
-    void EnterComponentMode(AZ::Entity* entity, const AZ::Uuid& componentType);
+    void EnterComponentMode(AZ::EntityId entityId, const AZ::Uuid& componentType);
 
-    void ExpectBoxDimensions(AZ::Entity* entity, const AZ::Vector3& expectedBoxDimensions);
+    void SetComponentSubMode(
+        AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode subMode);
 
-    void ExpectTranslationOffset(AZ::Entity* entity, const AZ::Vector3& expectedTranslationOffset);
+    void ExpectBoxDimensions(AZ::EntityId entityId, const AZ::Vector3& expectedBoxDimensions);
+
+    void ExpectTranslationOffset(AZ::EntityId entityId, const AZ::Vector3& expectedTranslationOffset);
+
+    void ExpectSubMode(
+        AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode expectedSubMode);
+
+    AzToolsFramework::ViewportInteraction::MouseInteractionResult CtrlScroll(float wheelDelta);
 } // namespace LmbrCentral

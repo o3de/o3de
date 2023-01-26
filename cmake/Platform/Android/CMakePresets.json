@@ -25,6 +25,7 @@
       "displayName": "Android Monolithic with Unity and Ninja",
       "description": "Configures Android to build the Monolithic permutation using Ninja with Unity builds",
       "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
+      "binaryDir": "${sourceDir}/build/android_mono",
       "inherits": [
         "android-ninja",
         "android-unity",

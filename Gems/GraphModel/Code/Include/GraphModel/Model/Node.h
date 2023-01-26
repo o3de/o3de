@@ -113,6 +113,7 @@ namespace GraphModel
         //! other types, such as wrapper nodes
         virtual NodeType GetNodeType() const;
 
+        //! Return the unique ID for this node in the containing graph
         NodeId GetId() const;
 
         //! Return the greatest distance, number of connected nodes, between this node and other root nodes.
@@ -219,6 +220,9 @@ namespace GraphModel
         //! will be handled automatically by PostLoadSetup()).
         void CreateSlotData();
 
+        //! Clear any data that was cached for this node
+        void ClearCachedData();
+
     private:
 
         //! Common implementation for RegisterSlot() to a specific SlotDefinitionList
@@ -268,6 +272,13 @@ namespace GraphModel
         SlotDefinitionList m_outputEventSlotDefinitions; //!< For slots with configuration = SlotDirection::Output SlotType::Event
         SlotDefinitionList m_extendableSlotDefinitions;  //!< For all extendable slot configurations
         SlotDefinitionList m_allSlotDefinitions; //!< Provies a single list of all of the above SlotDefinitionLists for convenient looping over them all
+
+        // Storing the minimum and maximum input depth for this node so that it does not have to be calculated every time
+        mutable AZStd::mutex m_maxInputDepthMutex;
+        mutable uint32_t m_maxInputDepth = AZStd::numeric_limits<uint32_t>::max();
+
+        mutable AZStd::mutex m_maxOutputDepthMutex;
+        mutable uint32_t m_maxOutputDepth = AZStd::numeric_limits<uint32_t>::max();
     };
 
 } // namespace GraphModel

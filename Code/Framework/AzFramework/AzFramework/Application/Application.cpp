@@ -14,7 +14,6 @@
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
@@ -282,7 +281,6 @@ namespace AzFramework
         // This is internal Amazon code, so register it's components for metrics tracking, otherwise the name of the component won't get sent back.
         AZStd::vector<AZ::Uuid> componentUuidsForMetricsCollection
         {
-            azrtti_typeid<AZ::MemoryComponent>(),
             azrtti_typeid<AZ::StreamerComponent>(),
             azrtti_typeid<AZ::JobManagerComponent>(),
             azrtti_typeid<AZ::AssetManagerComponent>(),
@@ -348,7 +346,6 @@ namespace AzFramework
         AZ::ComponentTypeList components = ComponentApplication::GetRequiredSystemComponents();
 
         components.insert(components.end(), {
-            azrtti_typeid<AZ::MemoryComponent>(),
             azrtti_typeid<AZ::StreamerComponent>(),
             azrtti_typeid<AZ::AssetManagerComponent>(),
             azrtti_typeid<AZ::UserSettingsComponent>(),

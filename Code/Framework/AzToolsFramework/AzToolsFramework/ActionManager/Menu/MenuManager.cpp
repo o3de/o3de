@@ -59,8 +59,7 @@ namespace AzToolsFramework
 
         m_menus.insert(
             {
-                menuIdentifier,
-                EditorMenu(properties.m_name)
+                menuIdentifier, EditorMenu(menuIdentifier, properties.m_name)
             }
         );
 
@@ -273,6 +272,14 @@ namespace AzToolsFramework
                 subMenuIdentifier.c_str(), menuIdentifier.c_str()));
         }
 
+        if (menuIdentifier == subMenuIdentifier)
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" - the two menus are the same.",
+                subMenuIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
         if (menuIterator->second.ContainsSubMenu(subMenuIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
@@ -280,7 +287,15 @@ namespace AzToolsFramework
                 subMenuIdentifier.c_str(), menuIdentifier.c_str()));
         }
 
+        if (WouldGenerateCircularDependency(menuIdentifier, subMenuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" as this would generate a circular dependency.",
+                subMenuIdentifier.c_str(), menuIdentifier.c_str()));
+        }
+
         menuIterator->second.AddSubMenu(sortIndex, subMenuIdentifier);
+        m_subMenusToMenusMap[subMenuIdentifier].insert(menuIdentifier);
         m_menusToRefresh.insert(menuIdentifier);
         return AZ::Success();
     }
@@ -315,6 +330,7 @@ namespace AzToolsFramework
             }
 
             menuIterator->second.AddSubMenu(pair.second, pair.first);
+            m_subMenusToMenusMap[pair.first].insert(menuIdentifier);
         }
 
         m_menusToRefresh.insert(menuIdentifier);
@@ -560,11 +576,22 @@ namespace AzToolsFramework
 
     MenuManagerOperationResult MenuManager::QueueRefreshForMenusContainingAction(const AZStd::string& actionIdentifier)
     {
-        auto actionIterator = m_actionsToMenusMap.find(actionIdentifier);
-
-        if (actionIterator != m_actionsToMenusMap.end())
+        if (auto actionIterator = m_actionsToMenusMap.find(actionIdentifier); actionIterator != m_actionsToMenusMap.end())
         {
             for (const AZStd::string& menuIdentifier : actionIterator->second)
+            {
+                m_menusToRefresh.insert(menuIdentifier);
+            }
+        }
+
+        return AZ::Success();
+    }
+
+    MenuManagerOperationResult MenuManager::QueueRefreshForMenusContainingSubMenu(const AZStd::string& subMenuIdentifier)
+    {
+        if (auto menuIterator = m_subMenusToMenusMap.find(subMenuIdentifier); menuIterator != m_subMenusToMenusMap.end())
+        {
+            for (const AZStd::string& menuIdentifier : menuIterator->second)
             {
                 m_menusToRefresh.insert(menuIdentifier);
             }
@@ -587,7 +614,12 @@ namespace AzToolsFramework
 
     void MenuManager::RefreshMenus()
     {
-        for (const AZStd::string& menuIdentifier : m_menusToRefresh)
+        // RefreshMenu can add more menus to the refresh queue.
+        // Since it's unordered, we're making a copy of it to prevent issues with the iterator.
+        auto menusToRefreshTemp = m_menusToRefresh;
+        m_menusToRefresh.clear();
+
+        for (const AZStd::string& menuIdentifier : menusToRefreshTemp)
         {
             auto menuIterator = m_menus.find(menuIdentifier);
             if (menuIterator != m_menus.end())
@@ -596,7 +628,26 @@ namespace AzToolsFramework
             }
         }
 
-        m_menusToRefresh.clear();
+        // If more menus were added during the refresh process, do this again.
+        if (!m_menusToRefresh.empty())
+        {
+            RefreshMenus();
+        }
+    }
+
+    bool MenuManager::WouldGenerateCircularDependency(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier)
+    {
+        // Iterate through all menus that have menuIdentifier as their submenu.
+        for (auto identifier : m_subMenusToMenusMap[menuIdentifier])
+        {
+            // Return true if the menu is the submenu we're trying to add, or keep checking with the ancestors.
+            if (identifier == subMenuIdentifier || WouldGenerateCircularDependency(identifier, subMenuIdentifier))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     void MenuManager::RefreshMenuBars()

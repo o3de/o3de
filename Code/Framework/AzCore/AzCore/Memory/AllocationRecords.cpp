@@ -369,21 +369,20 @@ namespace AZ::Debug
             return;
         }
 
-        Debug::AllocationInfo* ai{};
-        const bool addressAlreadyRecorded = [this, address, newAddress, &ai]
+        const auto [addressAlreadyRecorded, ai] = [this, address, newAddress]() -> std::pair<bool, Debug::AllocationInfo*>
         {
             AZStd::scoped_lock lock(m_recordsMutex);
             auto node = m_records.extract(address);
             if (node.empty())
             {
-                return false;
+                return {false, nullptr};
             }
 
             // Make a best effort to avoid reallocations from mutating the
             // records map when recording a reallocation
             node.key() = newAddress;
-            ai = &m_records.insert(AZStd::move(node)).position->second;
-            return true;
+            auto ai = &m_records.insert(AZStd::move(node)).position->second;
+            return {true, ai};
         }();
         if (!addressAlreadyRecorded)
         {

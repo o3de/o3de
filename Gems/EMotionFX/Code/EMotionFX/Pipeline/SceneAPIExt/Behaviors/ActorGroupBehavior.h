@@ -11,6 +11,7 @@
 #include <SceneAPI/SceneCore/Components/BehaviorComponent.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
+#include <SceneAPI/SceneCore/Events/GraphMetaInfoBus.h>
 
 namespace EMotionFX
 {
@@ -22,6 +23,7 @@ namespace EMotionFX
                 : public AZ::SceneAPI::SceneCore::BehaviorComponent
                 , public AZ::SceneAPI::Events::ManifestMetaInfoBus::Handler
                 , public AZ::SceneAPI::Events::AssetImportRequestBus::Handler
+                , public AZ::SceneAPI::Events::GraphMetaInfoBus::Handler
             {
             public:
                 AZ_COMPONENT(ActorGroupBehavior, "{D470A655-31ED-491E-A3FD-4BA3C75C0EDE}", AZ::SceneAPI::SceneCore::BehaviorComponent);
@@ -46,6 +48,9 @@ namespace EMotionFX
                 {
                     result = "ActorGroupBehavior";
                 }
+
+                // GraphMetaInfo
+                void GetAppliedPolicyNames(AZStd::set<AZStd::string>& appliedPolicies, const AZ::SceneAPI::Containers::Scene& scene) const override;
 
             private:
                 AZ::SceneAPI::Events::ProcessingResult BuildDefault(AZ::SceneAPI::Containers::Scene& scene) const;
