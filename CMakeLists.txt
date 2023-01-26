@@ -17,6 +17,8 @@ if(NOT ${CMAKE_VERSION} VERSION_LESS "3.24")
 endif()
 
 include(cmake/LySet.cmake)
+include(cmake/GeneralSettings.cmake)
+include(cmake/FileUtil.cmake)
 include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
 
@@ -24,7 +26,7 @@ if(NOT PROJECT_NAME)
     include(cmake/CompilerSettings.cmake)
     project(O3DE
         LANGUAGES C CXX
-        VERSION ${O3DE_VERSION_STRING}
+        VERSION ${O3DE_INSTALL_VERSION_STRING}
     )
 endif()
 
@@ -32,8 +34,6 @@ endif()
 # Initialize
 ################################################################################
 include(CTest)
-include(cmake/GeneralSettings.cmake)
-include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
 include(cmake/RuntimeDependencies.cmake)
