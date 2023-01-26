@@ -33,7 +33,7 @@ namespace AzToolsFramework
             {
             case QEvent::Shortcut:
             {
-                QShortcutEvent* shortcutEvent = static_cast<QShortcutEvent*>(event);
+                auto shortcutEvent = static_cast<QShortcutEvent*>(event);
                 if (shortcutEvent->isAmbiguous())
                 {
                     QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
@@ -50,27 +50,27 @@ namespace AzToolsFramework
             }
             case QEvent::ShortcutOverride:
             {
-                QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-                int keyInt = keyEvent->key();
+                auto keyEvent = static_cast<QKeyEvent*>(event);
+                int keyCode = keyEvent->key();
                 Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
                 if (modifiers & Qt::ShiftModifier)
                 {
-                    keyInt += Qt::SHIFT;
+                    keyCode += Qt::SHIFT;
                 }
                 if (modifiers & Qt::ControlModifier)
                 {
-                    keyInt += Qt::CTRL;
+                    keyCode += Qt::CTRL;
                 }
                 if (modifiers & Qt::AltModifier)
                 {
-                    keyInt += Qt::ALT;
+                    keyCode += Qt::ALT;
                 }
                 if (modifiers & Qt::MetaModifier)
                 {
-                    keyInt += Qt::META;
+                    keyCode += Qt::META;
                 }
 
-                QKeySequence keySequence(keyInt);
+                QKeySequence keySequence(keyCode);
 
                 auto globalShortcutMap = &QGuiApplicationPrivate::instance()->shortcutMap;
                 bool isAmbiguous = globalShortcutMap->hasShortcutForKeySequence(keySequence);
