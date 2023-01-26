@@ -207,6 +207,8 @@ namespace AZ
             nodeHandle.key() = newContextName;
             // insert the updated view group back into the map with the new name
             m_viewportViews.insert(AZStd::move(nodeHandle));
+            // update name of element
+            viewportContext->m_name = newContextName;
 
             UpdateViewForContext(newContextName);
             // Ensure anyone listening on per-name viewport size updates gets notified.
