@@ -823,6 +823,37 @@ def UploadCrashArtifacts(String platform) {
     }
 }
 
+def UploadBuildArtifacts(String workspace, String s3sisUploadParams = "") {
+    dir(workspace) {
+        checkout scm: [
+            $class: 'GitSCM',
+            branches: [[name: '*/configure']],
+            extensions: [
+                [$class: 'AuthorInChangelog'],
+                [$class: 'RelativeTargetDirectory', relativeTargetDir: 's3sis']
+            ],
+            userRemoteConfigs: [[url: "https://github.com/aws-lumberyard/s3sis.git", credentialsId: "${env.GITHUB_USER}"]]
+        ]
+    }
+    dir("${workspace}/s3sis") {
+        if (env.IS_UNIX) {
+            PlatformSh("sudo python3 -m pip install PyGithub", "Installing PyGithub")
+            PlatformSh("sudo python3 setup.py install", "Installing S3SIS")
+        } else {
+            PlatformSh("python3 -m pip install PyGithub", "Installing PyGithub")
+            PlatformSh("python3 setup.py install", "Installing S3SIS")
+        }
+        PlatformSh("s3siscli configure", "Configuring S3SIS")
+    }
+    dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+        try {
+            PlatformSh("s3siscli upload ${s3sisUploadParams}")
+        } catch (Exception e) {
+            echo "WARN: Failed to upload build artifacts. \n${e}"
+        }
+    }
+}
+
 def PostBuildCommonSteps(String workspace, Map params, String projectName, String pipelineName, String branchName, String platform, String buildType, boolean mount = true) {
     echo 'Starting post-build common steps...'
     if (params && params.containsKey('OUTPUT_DIRECTORY')){
@@ -940,6 +971,19 @@ def CreateUploadCrashArtifactStage(String jobName, String platform) {
     }
 }
 
+def CreateUploadBuildArtifactStage(String workspace, String jobName, String s3sisUploadParams="") {
+    if(env.S3SIS_UPLOAD_PARAMS?.trim()) {
+        s3sisUploadParams = env.S3SIS_UPLOAD_PARAMS
+    }
+    if(s3sisUploadParams?.trim()) {
+        return {
+            stage("${jobName}_upload_build_artifacts") {
+                UploadBuildArtifacts(workspace, s3sisUploadParams)
+            }
+        }
+    }
+}
+
 def CreateTeardownStage(Map environmentVars, Map params, String projectName, String pipelineName, String branchName, String platformName, String buildType) {
     return {
         stage('Teardown') {
@@ -1025,6 +1069,8 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
                             CreateExportTestScreenshotsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars, params).call()
                         }
+                        uploadBuildArtifactsStage = CreateUploadBuildArtifactStage(envVars['WORKSPACE'], build_job_name, envVars['S3SIS_UPLOAD_PARAMS'])
+                        if (uploadBuildArtifactsStage) uploadBuildArtifactsStage.call()
                         CreateTeardownStage(envVars, params, projectName, pipelineName, branchName, platform.key, build_job.key).call()
                         if (envVars['CREATE_SNAPSHOT']?.toBoolean()) {
                             CreateSnapshotStage(repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, build_job_name).call()
@@ -1182,6 +1228,7 @@ try {
                         if (!IsPullRequest(branchName) || IsPeriodicPipeline(pipelineName)) {
                             pipelineParameters.add(stringParam(defaultValue: '', description: 'Filters and overrides the list of jobs to run for each of the below platforms (comma-separated). Can\'t be used during a pull request.', name: 'JOB_LIST_OVERRIDE'))
                             pipelineParameters.add(stringParam(defaultValue: '', description: 'Name of the project to build. Overrides default project', name: 'PROJECT_OVERRIDE'))
+                            pipelineParameters.add(stringParam(defaultValue: '', description: 'S3SIS upload parameters, upload won\'t be performed if this is empty', name: 'S3SIS_UPLOAD_PARAMS'))
                             pipelineConfig.platforms.each { platform ->
                                 pipelineParameters.add(booleanParam(defaultValue: true, description: '', name: platform.key))
                             }
