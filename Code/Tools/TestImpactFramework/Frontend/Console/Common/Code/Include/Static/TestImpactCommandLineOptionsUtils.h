@@ -106,6 +106,9 @@ namespace TestImpact
         return ParseBinaryStateOption(optionName, BinaryStateOption<T>{ { "live", states.first }, { "null" , states.second } }, cmd);
     }
 
+    //! Attempts to parse a multi-value option.
+    AZStd::set<AZStd::string> ParseMultiValueOption(const AZStd::string& optionName, const AZ::CommandLine& cmd);
+
     //! Attempts to parse a path option value.
     AZStd::optional<RepoPath> ParsePathOption(const AZStd::string& optionName, const AZ::CommandLine& cmd);
 
