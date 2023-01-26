@@ -101,3 +101,7 @@ class TestAutomation(EditorTestSuite):
 
     class test_EditorWorkflow_EditorCameraMovesToEntityTransformWithBeThisCamera(EditorBatchedTest):
         from .EditorScripts import EditorWorkflow_EditorCameraMovesToEntityTransformWithBeThisCamera as test_module
+
+    class test_EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenTogglingBeThisCamera(EditorBatchedTest):
+        from .EditorScripts import EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenTogglingBeThisCamera as test_module
+
