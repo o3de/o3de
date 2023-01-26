@@ -10,8 +10,6 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QShortcutEvent>
 
-#include <AzQtComponents/Components/WindowDecorationWrapper.h>
-
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 
@@ -37,13 +35,19 @@ namespace AzToolsFramework
                 if (shortcutEvent->isAmbiguous())
                 {
                     QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
+                    bool triggered = false;
                     for (QAction* action : watchedWidget->actions())
                     {
-                        if (action->shortcut() == shortcutEvent->key())
+                        if (action->isEnabled() && action->shortcut() == shortcutEvent->key())
                         {
                             action->trigger();
-                            return true;
+                            triggered = true;
                         }
+                    }
+
+                    if (triggered)
+                    {
+                        return true;
                     }
                 }
                 break;
@@ -77,17 +81,22 @@ namespace AzToolsFramework
                 if (isAmbiguous)
                 {
                     QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
+                    bool triggered = false;
                     for (QAction* action : watchedWidget->actions())
                     {
-                        if (action->shortcut() == keySequence)
+                        if (action->isEnabled() && action->shortcut() == keySequence)
                         {
                             action->trigger();
-
-                            // We need to accept the event in addition to return true on this event filter
-                            // to ensure the event doesn't get propagated to any parent widgets.
-                            event->accept();
-                            return true;
+                            triggered = true;
                         }
+                    }
+
+                    if (triggered)
+                    {
+                        // We need to accept the event in addition to return true on this event filter
+                        // to ensure the event doesn't get propagated to any parent widgets.
+                        event->accept();
+                        return true;
                     }
                 }
                 break;
@@ -140,30 +149,7 @@ namespace AzToolsFramework
             }
         );
 
-        // If this action context is registered on a top level widget, then we don't need to watch it for handling ambiguous shortcuts
-        // since if the shortcut reaches a top-level it shouldn't be ambiguous.
-        bool isTopLevelWidget = false;
-        for (QWidget* topLevelWidget : QApplication::topLevelWidgets())
-        {
-            if (widget == topLevelWidget)
-            {
-                isTopLevelWidget = true;
-                break;
-            }
-            else if (auto wrapper = qobject_cast<const AzQtComponents::WindowDecorationWrapper*>(topLevelWidget))
-            {
-                if (widget->parentWidget() == topLevelWidget)
-                {
-                    isTopLevelWidget = true;
-                    break;
-                }
-            }
-        }
-
-        if (!isTopLevelWidget)
-        {
-            widget->installEventFilter(new ActionContextWidgetWatcher(widget));
-        }
+        widget->installEventFilter(new ActionContextWidgetWatcher(widget));
 
         return AZ::Success();
     }
