@@ -19,7 +19,11 @@ namespace AZ
 
 namespace AzToolsFramework
 {
-    //! Base class for objects used in sub component modes which use viewport editing.
+    //! Base class for objects used in shape component mode sub modes which use viewport editing.
+    //! This class and its descendants are intended to be viewport independent, so avoid using buses addressed by EntityId or
+    //! EntityComponentIdPair.
+    //! To facilitate uses in the main viewport, an EntityComponentIdPair can optionally be specified using AddEntityComponentIdPair, in
+    //! order to hook manipulators up to undo/redo behavior and UI refreshing.
     class BaseShapeViewportEdit
     {
     public:
