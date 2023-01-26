@@ -25,10 +25,6 @@ set(FILES
     Source/Editor/QSimpleAudioControlListWidget.h
     Source/Editor/QTreeWidgetFilter.cpp
     Source/Editor/QTreeWidgetFilter.h
-    Include/Editor/ACETypes.h
-    Include/Editor/IAudioConnection.h
-    Include/Editor/IAudioSystemControl.h
-    Include/Editor/IAudioSystemEditor.h
     Source/Editor/ATLControlsModel.cpp
     Source/Editor/ATLControlsPanel.cpp
     Source/Editor/ATLControlsResourceDialog.cpp

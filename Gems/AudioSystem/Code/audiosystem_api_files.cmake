@@ -5,9 +5,14 @@
 #
 
 set(FILES
-    Include/AudioAllocators.h
-    Include/IAudioInterfacesCommonData.h
-    Include/IAudioSystem.h
-    Include/MicrophoneBus.h
-    Include/NullAudioSystem.h
+    Include/Engine/ATLCommon.h
+    Include/Engine/ATLEntityData.h
+    Include/Engine/AudioAllocators.h
+    Include/Engine/AudioFileUtils.h
+    Include/Engine/AudioRingBuffer.h
+    Include/Engine/IAudioInterfacesCommonData.h
+    Include/Engine/IAudioSystem.h
+    Include/Engine/IAudioSystemImplementation.h
+    Include/Engine/MicrophoneBus.h
+    Include/Engine/NullAudioSystem.h
 )

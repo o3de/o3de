@@ -138,7 +138,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AssetBuilderSDK
                 Gem::AudioEngineWwise.Static
-                Gem::AudioSystem.Editor
+                Gem::AudioSystem.Editor.API
         RUNTIME_DEPENDENCIES
             Gem::AudioSystem.Editor
     )

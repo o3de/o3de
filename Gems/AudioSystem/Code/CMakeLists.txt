@@ -22,7 +22,7 @@ ly_add_target(
         audiosystem_api_files.cmake
     INCLUDE_DIRECTORIES
         INTERFACE
-            Include
+            Include/Engine
     BUILD_DEPENDENCIES
         INTERFACE
             AZ::AzCore
@@ -93,13 +93,14 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests
-                Include/Engine
                 Source/Engine
         BUILD_DEPENDENCIES
+            PUBLIC
+                Gem::${gem_name}.API
             PRIVATE
                 AZ::AzTest
                 Gem::${gem_name}.Private.Object
-                Legacy::CryCommon
+                Legacy::CryCommon   # Temporary, needs to be removed
     )
 
     ly_add_googletest(
@@ -181,6 +182,19 @@ endif() # PAL_TRAIT_BUILD_TESTS_SUPPORTED
 ################################################################################
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
+        NAME ${gem_name}.Editor.API INTERFACE
+        NAMESPACE Gem
+        FILES_CMAKE
+            audiosystem_editor_api_files.cmake
+        INCLUDE_DIRECTORIES
+            INTERFACE
+                Include/Editor
+        BUILD_DEPENDENCIES
+            INTERFACE
+                AZ::AzCore
+    )
+
+    ly_add_target(
         NAME ${gem_name}.Editor.Private.Object STATIC
         NAMESPACE Gem
         AUTOMOC
@@ -191,8 +205,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         INCLUDE_DIRECTORIES
             PRIVATE
                 .               # <-- This is needed for Automoc, Autouic, Autorcc
-                Include/Editor
-                Include/Engine
                 Source/Engine
                 Source/Editor
                 ${pal_dir}
@@ -207,7 +219,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::EditorCore
                 Legacy::EditorCommon
                 Gem::${gem_name}.API
-                Legacy::CryCommon # Todo: remove this dependency
+                Gem::${gem_name}.Editor.API
+                Legacy::CryCommon   # Temporary, needs to be removed
             PRIVATE
                 Gem::${gem_name}.Private.Object
                 3rdParty::Qt::Core
@@ -222,8 +235,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             audiosystem_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Include/Editor
-                Include/Engine
                 Source/Editor
                 Source/Engine
         COMPILE_DEFINITIONS
@@ -233,6 +244,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 Gem::${gem_name}.API
+                Gem::${gem_name}.Editor.API
             PRIVATE
                 3rdParty::Qt::Core
                 Gem::Atom_RPI.Public
@@ -253,11 +265,12 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
-                    Include/Editor
-                    Include/Engine
                     Source/Editor
                     Source/Engine
             BUILD_DEPENDENCIES
+                PUBLIC
+                    Gem::${gem_name}.API
+                    Gem::${gem_name}.Editor.API
                 PRIVATE
                     AZ::AzTest
                     3rdParty::Qt::Core
