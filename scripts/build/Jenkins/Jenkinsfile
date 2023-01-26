@@ -838,10 +838,8 @@ def UploadBuildArtifacts(String workspace, String s3sisUploadParams = "") {
         }
         dir("${workspace}/s3sis") {
             if (env.IS_UNIX) {
-                PlatformSh("sudo python3 -m pip install PyGithub", "Installing PyGithub")
                 PlatformSh("sudo python3 setup.py install", "Installing S3SIS")
             } else {
-                PlatformSh("python3 -m pip install PyGithub", "Installing PyGithub")
                 PlatformSh("python3 setup.py install", "Installing S3SIS")
             }
             PlatformSh("s3siscli configure", "Configuring S3SIS")
