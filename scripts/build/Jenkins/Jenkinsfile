@@ -824,32 +824,34 @@ def UploadCrashArtifacts(String platform) {
 }
 
 def UploadBuildArtifacts(String workspace, String s3sisUploadParams = "") {
-    dir(workspace) {
-        checkout scm: [
-            $class: 'GitSCM',
-            branches: [[name: '*/configure']],
-            extensions: [
-                [$class: 'AuthorInChangelog'],
-                [$class: 'RelativeTargetDirectory', relativeTargetDir: 's3sis']
-            ],
-            userRemoteConfigs: [[url: "https://github.com/aws-lumberyard/s3sis.git", credentialsId: "${env.GITHUB_USER}"]]
-        ]
-    }
-    dir("${workspace}/s3sis") {
-        if (env.IS_UNIX) {
-            PlatformSh("sudo python3 -m pip install PyGithub", "Installing PyGithub")
-            PlatformSh("sudo python3 setup.py install", "Installing S3SIS")
-        } else {
-            PlatformSh("python3 -m pip install PyGithub", "Installing PyGithub")
-            PlatformSh("python3 setup.py install", "Installing S3SIS")
+    catchError(message: "Error uploading build artifacts (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+        dir(workspace) {
+            checkout scm: [
+                $class: 'GitSCM',
+                branches: [[name: '*/configure']],
+                extensions: [
+                    [$class: 'AuthorInChangelog'],
+                    [$class: 'RelativeTargetDirectory', relativeTargetDir: 's3sis']
+                ],
+                userRemoteConfigs: [[url: "https://github.com/aws-lumberyard/s3sis.git", credentialsId: "${env.GITHUB_USER}"]]
+            ]
         }
-        PlatformSh("s3siscli configure", "Configuring S3SIS")
-    }
-    dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
-        try {
-            PlatformSh("s3siscli upload ${s3sisUploadParams}")
-        } catch (Exception e) {
-            echo "WARN: Failed to upload build artifacts. \n${e}"
+        dir("${workspace}/s3sis") {
+            if (env.IS_UNIX) {
+                PlatformSh("sudo python3 -m pip install PyGithub", "Installing PyGithub")
+                PlatformSh("sudo python3 setup.py install", "Installing S3SIS")
+            } else {
+                PlatformSh("python3 -m pip install PyGithub", "Installing PyGithub")
+                PlatformSh("python3 setup.py install", "Installing S3SIS")
+            }
+            PlatformSh("s3siscli configure", "Configuring S3SIS")
+        }
+        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+            try {
+                PlatformSh("s3siscli upload ${s3sisUploadParams}")
+            } catch (Exception e) {
+                echo "WARN: Failed to upload build artifacts. \n${e}"
+            }
         }
     }
 }
