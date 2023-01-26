@@ -17,6 +17,11 @@ namespace AzToolsFramework
 {
     class LinearManipulator;
 
+    void InstallBaseShapeViewportEditFunctions(
+        BaseShapeViewportEdit* baseShapeViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
+
+    void InstallBoxViewportEditFunctions(BoxViewportEdit* boxViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
+
     //! The specific ComponentMode responsible for handling box editing.
     class BoxComponentMode
         : public ComponentModeFramework::EditorBaseComponentMode
