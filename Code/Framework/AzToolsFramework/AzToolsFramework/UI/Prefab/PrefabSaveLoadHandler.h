@@ -39,6 +39,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class InstanceEntityMapperInterface;
+        class PrefabFocusInterface;
         class PrefabFocusPublicInterface;
         class PrefabLoaderInterface;
         class PrefabPublicInterface;
@@ -143,6 +144,7 @@ namespace AzToolsFramework
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             PrefabEditorEntityOwnershipInterface* m_prefabEditorEntityOwnershipInterface = nullptr;
+            PrefabFocusInterface* m_prefabFocusInterface = nullptr;
             PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
 

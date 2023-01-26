@@ -1193,9 +1193,9 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::SaveCurrentPrefab()
         {
-            if (s_prefabFocusPublicInterface)
+            if (s_prefabFocusInterface)
             {
-                TemplateId currentTemplateId = s_prefabFocusPublicInterface->GetFocusedPrefabTemplateId(s_editorEntityContextId);
+                TemplateId currentTemplateId = s_prefabFocusInterface->GetFocusedPrefabTemplateId(s_editorEntityContextId);
                 m_prefabSaveHandler.ExecuteSavePrefabDialog(currentTemplateId, true);
             }
         }

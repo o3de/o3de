@@ -38,6 +38,11 @@ namespace AzToolsFramework::Prefab
         //! @return PrefabFocusOperationResult that shows if the operation succeeds.
         virtual PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) = 0;
 
+        //! Returns the template id of the currently focused instance.
+        //! @param entityContextId The entity context id.
+        //! @return TemplateId of the focused instance.
+        virtual TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const = 0;
+
         //! Returns a reference to the currently focused instance.
         //! @param EntityContextId The entity context id.
         //! @return The focused instance.

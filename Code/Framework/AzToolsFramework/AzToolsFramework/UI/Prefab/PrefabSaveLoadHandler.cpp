@@ -24,6 +24,7 @@
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
@@ -123,6 +124,13 @@ namespace AzToolsFramework
             if (m_prefabEditorEntityOwnershipInterface == nullptr)
             {
                 AZ_Assert(false, "PrefabSaveHandler - could not get PrefabEditorEntityOwnershipInterface on construction.");
+                return;
+            }
+
+            m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+            if (m_prefabFocusInterface == nullptr)
+            {
+                AZ_Assert(false, "PrefabSaveHandler - Could not get PrefabFocusInterface on construction.");
                 return;
             }
 
@@ -1049,7 +1057,7 @@ namespace AzToolsFramework
                         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
                             editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
 
-                        if (m_prefabFocusPublicInterface->GetFocusedPrefabTemplateId(editorEntityContextId) == loadedTemplateId)
+                        if (m_prefabFocusInterface->GetFocusedPrefabTemplateId(editorEntityContextId) == loadedTemplateId)
                         {
                             m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(editorEntityContextId);
                         }
