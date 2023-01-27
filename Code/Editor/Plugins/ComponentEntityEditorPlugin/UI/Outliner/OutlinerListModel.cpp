@@ -1163,7 +1163,7 @@ bool OutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const 
         for (AZ::EntityId entityId : selectedEntityIds)
         {
             AZ::EntityId oldParentId;
-            EBUS_EVENT_ID_RESULT(oldParentId, entityId, AZ::TransformBus, GetParentId);
+            AZ::TransformBus::EventResult(oldParentId, entityId, &AZ::TransformBus::Events::GetParentId);
 
             if (oldParentId != newParentId
                 && AzToolsFramework::SliceUtilities::IsReparentNonTrivial(entityId, newParentId))

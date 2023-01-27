@@ -360,7 +360,8 @@ namespace AzToolsFramework
                 for (const AZ::Component* component : components)
                 {
                     AZ::ComponentDescriptor* componentDescriptor = nullptr;
-                    EBUS_EVENT_ID_RESULT(componentDescriptor, component->RTTI_GetType(), AZ::ComponentDescriptorBus, GetDescriptor);
+                    AZ::ComponentDescriptorBus::EventResult(
+                        componentDescriptor, component->RTTI_GetType(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
                     AZ::ComponentDescriptor::DependencyArrayType providedServices;
                     componentDescriptor->GetProvidedServices(providedServices, component);
                     for (int serviceIdx = azlossy_cast<int>(unmatchedServices.size() - 1); serviceIdx >= 0; --serviceIdx)
@@ -478,7 +479,10 @@ namespace AzToolsFramework
         bool supportsViewportEntityIdPicking = true;
         if (!m_acceptedEntityContextId.IsNull())
         {
-            EBUS_EVENT_ID_RESULT(supportsViewportEntityIdPicking, m_acceptedEntityContextId, AzToolsFramework::EditorEntityContextPickingRequestBus, SupportsViewportEntityIdPicking);
+            AzToolsFramework::EditorEntityContextPickingRequestBus::EventResult(
+                supportsViewportEntityIdPicking,
+                m_acceptedEntityContextId,
+                &AzToolsFramework::EditorEntityContextPickingRequestBus::Events::SupportsViewportEntityIdPicking);
         }
         m_pickButton->setVisible(supportsViewportEntityIdPicking);
     }
@@ -574,7 +578,8 @@ namespace AzToolsFramework
         AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
         if (entityId.IsValid())
         {
-            EBUS_EVENT_ID_RESULT(contextId, entityId, AzFramework::EntityIdContextQueryBus, GetOwningContextId);
+            AzFramework::EntityIdContextQueryBus::EventResult(
+                contextId, entityId, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
         }
         GUI->SetAcceptedEntityContext(contextId);
 

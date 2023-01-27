@@ -380,7 +380,8 @@ void CObjectManager::DeleteSelection(CSelectionGroup* pSelection)
         else
         {
             AZ::EntityId id;
-            EBUS_EVENT_ID_RESULT(id, object, AzToolsFramework::ComponentEntityObjectRequestBus, GetAssociatedEntityId);
+            AzToolsFramework::ComponentEntityObjectRequestBus::EventResult(
+                id, object, &AzToolsFramework::ComponentEntityObjectRequestBus::Events::GetAssociatedEntityId);
             if (id.IsValid())
             {
                 selectedComponentEntities.push_back(id);

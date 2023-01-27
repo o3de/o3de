@@ -810,7 +810,7 @@ namespace AzToolsFramework
             output.insert(id);
 
             tempList.clear();
-            EBUS_EVENT_ID_RESULT(tempList, id, AZ::TransformBus, GetAllDescendants);
+            AZ::TransformBus::EventResult(tempList, id, &AZ::TransformBus::Events::GetAllDescendants);
             output.insert(tempList.begin(), tempList.end());
         }
 

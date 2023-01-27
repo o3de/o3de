@@ -608,7 +608,8 @@ namespace AzToolsFramework
                         bool isEditorComponent = componentClassData->m_azRtti && componentClassData->m_azRtti->IsTypeOf(Components::EditorComponentBase::RTTI_Type());
                         if (isEditorComponent)
                         {
-                            EBUS_EVENT_ID_RESULT(component, componentClassData->m_typeId, AZ::ComponentDescriptorBus, CreateComponent);
+                            AZ::ComponentDescriptorBus::EventResult(
+                                component, componentClassData->m_typeId, &AZ::ComponentDescriptorBus::Events::CreateComponent);
                         }
                         else
                         {

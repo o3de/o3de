@@ -712,7 +712,8 @@ XmlNodeRef CComponentEntityObject::Export([[maybe_unused]] const QString& levelP
 CComponentEntityObject* CComponentEntityObject::FindObjectForEntity(AZ::EntityId id)
 {
     CEntityObject* object = nullptr;
-    EBUS_EVENT_ID_RESULT(object, id, AzToolsFramework::ComponentEntityEditorRequestBus, GetSandboxObject);
+    AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
+        object, id, &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
 
     if (object && (object->GetType() == OBJTYPE_AZENTITY))
     {

@@ -63,7 +63,8 @@ namespace AzToolsFramework
 
         GenericComponentWrapper::GenericComponentWrapper(const AZ::SerializeContext::ClassData* templateClassData)
         {
-            EBUS_EVENT_ID_RESULT(m_template, templateClassData->m_typeId, AZ::ComponentDescriptorBus, CreateComponent);
+            AZ::ComponentDescriptorBus::EventResult(
+                m_template, templateClassData->m_typeId, &AZ::ComponentDescriptorBus::Events::CreateComponent);
         }
 
         GenericComponentWrapper::GenericComponentWrapper(AZ::Component* templateClassInstance)
@@ -360,7 +361,8 @@ namespace AzToolsFramework
         AZ::ComponentDescriptor* GenericComponentWrapper::CreateDescriptor()
         {
             AZ::ComponentDescriptor* descriptor = nullptr;
-            EBUS_EVENT_ID_RESULT(descriptor, GenericComponentWrapper::RTTI_Type(), AZ::ComponentDescriptorBus, GetDescriptor);
+            AZ::ComponentDescriptorBus::EventResult(
+                descriptor, GenericComponentWrapper::RTTI_Type(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
 
             return descriptor ? descriptor : aznew GenericComponentWrapperDescriptor();
         }

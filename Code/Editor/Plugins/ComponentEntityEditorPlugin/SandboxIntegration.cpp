@@ -1063,7 +1063,8 @@ bool SandboxIntegrationManager::DestroyEditorRepresentation(AZ::EntityId entityI
     if (editor->GetObjectManager())
     {
         CEntityObject* object = nullptr;
-        EBUS_EVENT_ID_RESULT(object, entityId, AzToolsFramework::ComponentEntityEditorRequestBus, GetSandboxObject);
+        AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
+            object, entityId, &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
 
         if (object && (object->GetType() == OBJTYPE_AZENTITY))
         {

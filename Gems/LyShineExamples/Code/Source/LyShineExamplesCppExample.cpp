@@ -247,11 +247,11 @@ namespace LyShineExamples
         AZ::Entity* button = nullptr;
         if (atRoot)
         {
-            EBUS_EVENT_ID_RESULT(button, parent, UiCanvasBus, CreateChildElement, name);
+            UiCanvasBus::EventResult(button, parent, &UiCanvasBus::Events::CreateChildElement, name);
         }
         else
         {
-            EBUS_EVENT_ID_RESULT(button, parent, UiElementBus, CreateChildElement, name);
+            UiElementBus::EventResult(button, parent, &UiElementBus::Events::CreateChildElement, name);
         }
 
         AZ::EntityId buttonId = button->GetId();
@@ -281,7 +281,7 @@ namespace LyShineExamples
         }
 
         AZ::Entity* textElem = nullptr;
-        EBUS_EVENT_ID_RESULT(textElem, buttonId, UiElementBus, CreateChildElement, "ButtonText");
+        UiElementBus::EventResult(textElem, buttonId, &UiElementBus::Events::CreateChildElement, "ButtonText");
         AZ::EntityId textId = textElem->GetId();
 
         // Create and set up the text element (text displayed on the button)
@@ -317,11 +317,11 @@ namespace LyShineExamples
         AZ::Entity* checkbox = nullptr;
         if (atRoot)
         {
-            EBUS_EVENT_ID_RESULT(checkbox, parent, UiCanvasBus, CreateChildElement, name);
+            UiCanvasBus::EventResult(checkbox, parent, &UiCanvasBus::Events::CreateChildElement, name);
         }
         else
         {
-            EBUS_EVENT_ID_RESULT(checkbox, parent, UiElementBus, CreateChildElement, name);
+            UiElementBus::EventResult(checkbox, parent, &UiElementBus::Events::CreateChildElement, name);
         }
 
         AZ::EntityId checkboxId = checkbox->GetId();
@@ -350,7 +350,7 @@ namespace LyShineExamples
 
         // Create the On element (the checkmark that will be displayed when the checkbox is "on")
         AZ::Entity* onElement;
-        EBUS_EVENT_ID_RESULT(onElement, checkboxId, UiElementBus, CreateChildElement, "onElem");
+        UiElementBus::EventResult(onElement, checkboxId, &UiElementBus::Events::CreateChildElement, "onElem");
 
         AZ::EntityId onId = onElement->GetId();
 
@@ -386,11 +386,11 @@ namespace LyShineExamples
         AZ::Entity* textElem = nullptr;
         if (atRoot)
         {
-            EBUS_EVENT_ID_RESULT(textElem, parent, UiCanvasBus, CreateChildElement, name);
+            UiCanvasBus::EventResult(textElem, parent, &UiCanvasBus::Events::CreateChildElement, name);
         }
         else
         {
-            EBUS_EVENT_ID_RESULT(textElem, parent, UiElementBus, CreateChildElement, name);
+            UiElementBus::EventResult(textElem, parent, &UiElementBus::Events::CreateChildElement, name);
         }
 
         AZ::EntityId textId = textElem->GetId();
@@ -429,11 +429,11 @@ namespace LyShineExamples
         AZ::Entity* textInputElem = nullptr;
         if (atRoot)
         {
-            EBUS_EVENT_ID_RESULT(textInputElem, parent, UiCanvasBus, CreateChildElement, name);
+            UiCanvasBus::EventResult(textInputElem, parent, &UiCanvasBus::Events::CreateChildElement, name);
         }
         else
         {
-            EBUS_EVENT_ID_RESULT(textInputElem, parent, UiElementBus, CreateChildElement, name);
+            UiElementBus::EventResult(textInputElem, parent, &UiElementBus::Events::CreateChildElement, name);
         }
 
         AZ::EntityId textInputId = textInputElem->GetId();
@@ -507,11 +507,11 @@ namespace LyShineExamples
         AZ::Entity* image = nullptr;
         if (atRoot)
         {
-            EBUS_EVENT_ID_RESULT(image, parent, UiCanvasBus, CreateChildElement, name);
+            UiCanvasBus::EventResult(image, parent, &UiCanvasBus::Events::CreateChildElement, name);
         }
         else
         {
-            EBUS_EVENT_ID_RESULT(image, parent, UiElementBus, CreateChildElement, name);
+            UiElementBus::EventResult(image, parent, &UiElementBus::Events::CreateChildElement, name);
         }
 
         AZ::EntityId imageId = image->GetId();

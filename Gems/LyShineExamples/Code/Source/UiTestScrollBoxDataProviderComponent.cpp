@@ -58,7 +58,7 @@ namespace LyShineExamples
             {
                 AZ::Entity* entity = nullptr;
 
-                EBUS_EVENT_ID_RESULT(entity, entityId, UiElementBus, FindChildByName, "Name");
+                UiElementBus::EventResult(entity, entityId, &UiElementBus::Events::FindChildByName, "Name");
                 if (entity)
                 {
                     AZStd::string text = uiDynamicContentDB->GetColorName(UiDynamicContentDatabaseInterface::ColorType::PaidColors, index);
@@ -66,7 +66,7 @@ namespace LyShineExamples
                 }
 
                 entity = nullptr;
-                EBUS_EVENT_ID_RESULT(entity, entityId, UiElementBus, FindChildByName, "Price");
+                UiElementBus::EventResult(entity, entityId, &UiElementBus::Events::FindChildByName, "Price");
                 if (entity)
                 {
                     AZStd::string text = uiDynamicContentDB->GetColorPrice(UiDynamicContentDatabaseInterface::ColorType::PaidColors, index);
@@ -74,7 +74,7 @@ namespace LyShineExamples
                 }
 
                 entity = nullptr;
-                EBUS_EVENT_ID_RESULT(entity, entityId, UiElementBus, FindChildByName, "Icon");
+                UiElementBus::EventResult(entity, entityId, &UiElementBus::Events::FindChildByName, "Icon");
                 if (entity)
                 {
                     AZ::Color color = uiDynamicContentDB->GetColor(UiDynamicContentDatabaseInterface::ColorType::PaidColors, index);

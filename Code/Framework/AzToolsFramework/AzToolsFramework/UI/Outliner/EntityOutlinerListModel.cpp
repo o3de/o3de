@@ -1000,7 +1000,7 @@ namespace AzToolsFramework
             for (AZ::EntityId entityId : selectedEntityIds)
             {
                 AZ::EntityId oldParentId;
-                EBUS_EVENT_ID_RESULT(oldParentId, entityId, AZ::TransformBus, GetParentId);
+                AZ::TransformBus::EventResult(oldParentId, entityId, &AZ::TransformBus::Events::GetParentId);
 
                 //  Guarding this to prevent the entity from being marked dirty when the parent doesn't change.
                 EBUS_EVENT_ID(entityId, AZ::TransformBus, SetParent, newParentId);

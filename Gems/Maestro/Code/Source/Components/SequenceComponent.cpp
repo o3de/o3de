@@ -238,7 +238,8 @@ namespace Maestro
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
         bool changed = false;
         
-        EBUS_EVENT_ID_RESULT(changed, ebusId, Maestro::SequenceAgentComponentRequestBus, SetAnimatedPropertyValue, animatableAddress, value);
+        Maestro::SequenceAgentComponentRequestBus::EventResult(
+            changed, ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::SetAnimatedPropertyValue, animatableAddress, value);
         
         return changed;
     }

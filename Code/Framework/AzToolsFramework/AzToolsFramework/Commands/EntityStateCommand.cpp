@@ -57,7 +57,8 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         m_entityID = pSourceEntity->GetId();
-        EBUS_EVENT_ID_RESULT(m_entityContextId, m_entityID, AzFramework::EntityIdContextQueryBus, GetOwningContextId);
+        AzFramework::EntityIdContextQueryBus::EventResult(
+            m_entityContextId, m_entityID, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
         AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(m_isSelected,
             &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsSelected, m_entityID);
 

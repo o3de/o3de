@@ -303,7 +303,8 @@ namespace Maestro
             AZ::TickBus::Handler::BusConnect();
         }
 
-        EBUS_EVENT_ID_RESULT(changed, ebusId, Maestro::SequenceAgentComponentRequestBus, SetAnimatedPropertyValue, animatableAddress, value);
+        Maestro::SequenceAgentComponentRequestBus::EventResult(
+            changed, ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::SetAnimatedPropertyValue, animatableAddress, value);
 
         return changed;
     }
@@ -341,7 +342,8 @@ namespace Maestro
         {
             CEntityObject* entityObject = nullptr;
 
-            EBUS_EVENT_ID_RESULT(entityObject, GetEntityId(), AzToolsFramework::ComponentEntityEditorRequestBus, GetSandboxObject);
+            AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
+                entityObject, GetEntityId(), &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
             if (entityObject)
             {
                 entityObject->SetModified(false);
