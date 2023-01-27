@@ -83,13 +83,12 @@ namespace AZ::Render
 
     void TaaPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
     {
+        Base::SetupFrameGraphDependencies(frameGraph);
         if (ShouldCopyHistoryBuffer)
         {
             // Override the estimated item count to include the copy item.
             frameGraph.SetEstimatedItemCount(2);
         }
-
-        Base::SetupFrameGraphDependencies(frameGraph);
     }
 
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
