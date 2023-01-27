@@ -139,8 +139,10 @@ namespace AzToolsFramework
 
     void EditorAction::SetHotKey(const AZStd::string& hotKey)
     {
-        m_action->setShortcut(QKeySequence(hotKey.c_str()));
+        // Set the shortcut context first before setting the shortcut itself,
+        // since otherwise Qt's internal QShortcutMap will get rebuilt twice
         m_action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        m_action->setShortcut(QKeySequence(hotKey.c_str()));
         UpdateTooltipText();
     }
 
