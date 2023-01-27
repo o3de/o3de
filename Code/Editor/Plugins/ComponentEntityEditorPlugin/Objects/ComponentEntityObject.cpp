@@ -103,7 +103,8 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
 
         if (destroyOld && m_entityId != newEntityId)
         {
-            EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, DestroyEditorEntity, m_entityId);
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequestBus::Events::DestroyEditorEntity, m_entityId);
         }
 
         m_entityId.SetInvalid();
@@ -135,7 +136,8 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
             }
         }
 
-        EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, AddRequiredComponents, *entity);
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
 
         AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
         LmbrCentral::RenderBoundsNotificationBus::Handler::BusConnect(m_entityId);
@@ -258,7 +260,8 @@ void CComponentEntityObject::SetHighlight(bool bHighlight)
 
     if (m_entityId.IsValid())
     {
-        EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, SetEntityHighlighted, m_entityId, bHighlight);
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetEntityHighlighted, m_entityId, bHighlight);
     }
 }
 
@@ -289,7 +292,8 @@ void CComponentEntityObject::AttachChild(CBaseObject* child, bool /*bKeepPos*/)
                 undoBatch.MarkEntityDirty(childEntityId);
             }
 
-            EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
         }
     }
 }
@@ -311,7 +315,8 @@ void CComponentEntityObject::DetachThis(bool /*bKeepPos*/)
             undoBatch.MarkEntityDirty(m_entityId);
         }
 
-        EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
     }
 }
 

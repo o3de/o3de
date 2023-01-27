@@ -2194,7 +2194,8 @@ int CCryEditApp::ExitInstance(int exitCode)
     {
         // Ensure component entities are wiped prior to unloading plugins,
         // since components may be implemented in those plugins.
-        EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, ResetEditorContext);
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequestBus::Events::ResetEditorContext);
 
         // vital, so that the Qt integration can unhook itself!
         m_pEditor->UnloadPlugins();
@@ -2318,11 +2319,11 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
         // launcher so this is only needed on windows.
         if (bActive)
         {
-            EBUS_EVENT(AzFramework::WindowsLifecycleEvents::Bus, OnSetFocus);
+            AzFramework::WindowsLifecycleEvents::Bus::Broadcast(&AzFramework::WindowsLifecycleEvents::Bus::Events::OnSetFocus);
         }
         else
         {
-            EBUS_EVENT(AzFramework::WindowsLifecycleEvents::Bus, OnKillFocus);
+            AzFramework::WindowsLifecycleEvents::Bus::Broadcast(&AzFramework::WindowsLifecycleEvents::Bus::Events::OnKillFocus);
         }
     #endif
     }

@@ -81,7 +81,7 @@ namespace UnitTest
                 Data::Asset<ScriptAsset> scriptAsset = Data::AssetManager::Instance().CreateAsset<ScriptAsset>(Data::AssetId(id));
                 scriptAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
                 scriptAsset.Get()->m_data = compileRequest.m_luaScriptDataOut;
-                EBUS_EVENT(Data::AssetManagerBus, OnAssetReady, scriptAsset);
+                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReady, scriptAsset);
                 m_app.Tick();
                 m_app.TickSystem(); // flush assets etc.
 

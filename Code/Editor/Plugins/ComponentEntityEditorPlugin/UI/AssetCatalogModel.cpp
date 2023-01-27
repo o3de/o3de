@@ -105,7 +105,7 @@ AssetCatalogModel::AssetCatalogModel(QObject* parent)
     AZStd::vector<AZ::Data::AssetType> assetTypes;
     //  Discover all types that the Asset system recognizes.
     //  Create a one-to-many map that associates extensions with AssetTypes.
-    EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, GetHandledAssetTypes, assetTypes);
+    AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::GetHandledAssetTypes, assetTypes);
     for (auto type : assetTypes)
     {
         AZStd::vector<AZStd::string> extensions;
@@ -212,7 +212,8 @@ AZ::Data::AssetType AssetCatalogModel::GetAssetType(const QString &filename) con
 
         //  There are multiple types with this extension. Search for a handler that can handle this data type.
         AZStd::string azFilename = filename.toStdString().c_str();
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, MakePathAssetRootRelative, azFilename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::MakePathAssetRootRelative, azFilename);
         AZ::Data::AssetId assetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(
             assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, azFilename.c_str(), AZ::Data::s_invalidAssetType, false);
@@ -464,7 +465,7 @@ void AssetCatalogModel::LoadDatabase()
             Q_EMIT SetTotalProgress(static_cast<int>(m_fileCache.size()));
         };
 
-    EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, EnumerateAssets, startCB, enumerateCB, endCB);
+    AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, startCB, enumerateCB, endCB);
 
     AzFramework::AssetCatalogEventBus::Handler::BusConnect();
 

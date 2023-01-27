@@ -721,7 +721,8 @@ void OutlinerWidget::DoShowSlice()
         QString commonSliceName = FindCommonSliceAssetName(m_selectedEntityIds);
         if (!commonSliceName.isEmpty())
         {
-            EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, ShowAssetInBrowser, commonSliceName.toStdString().c_str());
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::Bus::Events::ShowAssetInBrowser, commonSliceName.toStdString().c_str());
         }
     }
 }
@@ -735,7 +736,7 @@ void OutlinerWidget::DoDuplicateSelection()
         AzToolsFramework::ScopedUndoBatch undo("Duplicate Entity(s)");
 
         bool handled = false;
-        EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, CloneSelection, handled);
+        AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::Bus::Events::CloneSelection, handled);
     }
 }
 
@@ -743,7 +744,7 @@ void OutlinerWidget::DoDeleteSelection()
 {
     PrepareSelection();
 
-    EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, DeleteSelectedEntities, false);
+    AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::Bus::Events::DeleteSelectedEntities, false);
 
     PrepareSelection();
 }
@@ -752,7 +753,7 @@ void OutlinerWidget::DoDeleteSelectionAndDescendants()
 {
     PrepareSelection();
 
-    EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, DeleteSelectedEntities, true);
+    AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::Bus::Events::DeleteSelectedEntities, true);
 
     PrepareSelection();
 }

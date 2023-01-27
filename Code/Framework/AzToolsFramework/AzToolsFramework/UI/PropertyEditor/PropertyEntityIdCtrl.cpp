@@ -492,7 +492,7 @@ namespace AzToolsFramework
         PropertyEntityIdCtrl* newCtrl = aznew PropertyEntityIdCtrl(pParent);
         connect(newCtrl, &PropertyEntityIdCtrl::OnEntityIdChanged, this, [newCtrl](AZ::EntityId)
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
             });
         return newCtrl;
@@ -589,7 +589,8 @@ namespace AzToolsFramework
 
     void RegisterEntityIdPropertyHandler()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew EntityIdPropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew EntityIdPropertyHandler());
     }
 
 }

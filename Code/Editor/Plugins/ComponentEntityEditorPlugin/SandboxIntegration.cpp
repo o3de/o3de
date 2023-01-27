@@ -1305,7 +1305,8 @@ AZ::EntityId SandboxIntegrationManager::CreateNewEntityAtPosition(const AZ::Vect
             selectionCommand->SetParent(undo.GetUndoBatch());
             selectionCommand.release();
 
-            EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, SetSelectedEntities, selection);
+            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selection);
         }
     }
     else
@@ -1375,7 +1376,8 @@ AZStd::string SandboxIntegrationManager::GetLevelName()
 void SandboxIntegrationManager::OnContextReset()
 {
     // Deselect everything.
-    EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, SetSelectedEntities, AzToolsFramework::EntityIdList());
+    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList());
 
     std::vector<CBaseObject*> objects;
     objects.reserve(128);

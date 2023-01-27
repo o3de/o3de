@@ -277,10 +277,11 @@ namespace LUAEditor
             {
                 const char* buffer = NULL;
                 AZStd::size_t actualSize = 0;
-                EBUS_EVENT(Context_DocumentManagement::Bus, GetDocumentData, newInfo.m_assetId, &buffer, actualSize);
+                Context_DocumentManagement::Bus::Broadcast(
+                    &Context_DocumentManagement::Bus::Events::GetDocumentData, newInfo.m_assetId, &buffer, actualSize);
                 m_gui->m_luaTextEdit->setPlainText(buffer);
 
-                EBUS_EVENT(LUAViewMessages::Bus, OnDataLoadedAndSet, newInfo, this);
+                LUAViewMessages::Bus::Broadcast(&LUAViewMessages::Bus::Events::OnDataLoadedAndSet, newInfo, this);
             }
 
             //remove the loading shield
@@ -478,13 +479,13 @@ namespace LUAEditor
         {
             m_gui->m_breakpoints->setEnabled(true);
             m_gui->m_folding->setEnabled(true);
-            EBUS_EVENT(LUAEditorMainWindowMessages::Bus, OnFocusInEvent, m_Info.m_assetId);
+            LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::OnFocusInEvent, m_Info.m_assetId);
         }
         else
         {
             m_gui->m_breakpoints->setEnabled(false);
             m_gui->m_folding->setEnabled(false);
-            EBUS_EVENT(LUAEditorMainWindowMessages::Bus, OnFocusOutEvent, m_Info.m_assetId);
+            LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::OnFocusOutEvent, m_Info.m_assetId);
         }
     }
 
@@ -513,7 +514,8 @@ namespace LUAEditor
         auto breakpoint = m_Breakpoints.find(fromLineNumber);
         if (breakpoint != m_Breakpoints.end())
         {
-            EBUS_EVENT(Context_DebuggerManagement::Bus, MoveBreakpoint, breakpoint->second.m_editorId, toLineNumber);
+            Context_DebuggerManagement::Bus::Broadcast(
+                &Context_DebuggerManagement::Bus::Events::MoveBreakpoint, breakpoint->second.m_editorId, toLineNumber);
         }
     }
 
@@ -522,13 +524,14 @@ namespace LUAEditor
         auto breakpoint = m_Breakpoints.find(removedLineNumber);
         if (breakpoint != m_Breakpoints.end())
         {
-            EBUS_EVENT(Context_DebuggerManagement::Bus, DeleteBreakpoint, breakpoint->second.m_editorId);
+            Context_DebuggerManagement::Bus::Broadcast(
+                &Context_DebuggerManagement::Bus::Events::DeleteBreakpoint, breakpoint->second.m_editorId);
         }
     }
 
     void LUAViewWidget::modificationChanged(bool m)
     {
-        EBUS_EVENT(Context_DocumentManagement::Bus, NotifyDocumentModified, m_Info.m_assetId, m);
+        Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::NotifyDocumentModified, m_Info.m_assetId, m);
         UpdateModifyFlag();
     }
 
@@ -632,11 +635,12 @@ namespace LUAEditor
         auto breakpoint = m_Breakpoints.find(line);
         if (breakpoint == m_Breakpoints.end())
         {
-            EBUS_EVENT(Context_DebuggerManagement::Bus, CreateBreakpoint, m_Info.m_assetId, line);
+            Context_DebuggerManagement::Bus::Broadcast(&Context_DebuggerManagement::Bus::Events::CreateBreakpoint, m_Info.m_assetId, line);
         }
         else
         {
-            EBUS_EVENT(Context_DebuggerManagement::Bus, DeleteBreakpoint, breakpoint->second.m_editorId);
+            Context_DebuggerManagement::Bus::Broadcast(
+                &Context_DebuggerManagement::Bus::Events::DeleteBreakpoint, breakpoint->second.m_editorId);
         }
     }
 
@@ -674,7 +678,8 @@ namespace LUAEditor
                 int ret = msgBox.exec();
                 if (ret == QMessageBox::Ok)
                 {
-                    EBUS_EVENT(LUAEditorMainWindowMessages::Bus, OnRequestCheckOut, m_Info.m_assetId);
+                    LUAEditorMainWindowMessages::Bus::Broadcast(
+                        &LUAEditorMainWindowMessages::Bus::Events::OnRequestCheckOut, m_Info.m_assetId);
                 }
             }
         }

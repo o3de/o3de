@@ -47,11 +47,13 @@ namespace AzToolsFramework
 
     void SelectionCommand::Undo()
     {
-        EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, SetSelectedEntities, m_previousSelectionList);
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, m_previousSelectionList);
     }
 
     void SelectionCommand::Redo()
     {
-        EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, SetSelectedEntities, m_proposedSelectionList);
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, m_proposedSelectionList);
     }
 }

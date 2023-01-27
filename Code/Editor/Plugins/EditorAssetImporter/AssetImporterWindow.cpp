@@ -180,7 +180,8 @@ void AssetImporterWindow::Init()
 
     // Filling the initial browse prompt text to be programmatically set from available extensions
     AZStd::unordered_set<AZStd::string> extensions;
-    EBUS_EVENT(AZ::SceneAPI::Events::AssetImportRequestBus, GetSupportedFileExtensions, extensions);
+    AZ::SceneAPI::Events::AssetImportRequestBus::Broadcast(
+        &AZ::SceneAPI::Events::AssetImportRequestBus::Events::GetSupportedFileExtensions, extensions);
     AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, !extensions.empty(), "No file extensions defined for assets.");
     if (!extensions.empty())
     {

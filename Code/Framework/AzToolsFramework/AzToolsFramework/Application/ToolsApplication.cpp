@@ -177,7 +177,7 @@ namespace AzToolsFramework
 
             if (createdUndo)
             {
-                EBUS_EVENT(ToolsApplicationRequests::Bus, EndUndoBatch);
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
             }
         }
 
@@ -488,7 +488,7 @@ namespace AzToolsFramework
 
         if (result)
         {
-            EBUS_EVENT(ToolsApplicationEvents::Bus, EntityRegistered, entity->GetId());
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::EntityRegistered, entity->GetId());
         }
 
         return result;
@@ -507,7 +507,7 @@ namespace AzToolsFramework
         MarkEntityDeselected(entity->GetId());
         SetEntityHighlighted(entity->GetId(), false);
 
-        EBUS_EVENT(ToolsApplicationEvents::Bus, EntityDeregistered, entity->GetId());
+        ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::EntityDeregistered, entity->GetId());
 
         {
             AZ_PROFILE_SCOPE(AzToolsFramework, "ToolsApplication::RemoveEntity:CallApplicationRemoveEntity");
@@ -1451,9 +1451,9 @@ namespace AzToolsFramework
             if (m_undoStack->CanUndo())
             {
                 m_isDuringUndoRedo = true;
-                EBUS_EVENT(ToolsApplicationEvents::Bus, BeforeUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::BeforeUndoRedo);
                 m_undoStack->Undo();
-                EBUS_EVENT(ToolsApplicationEvents::Bus, AfterUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::AfterUndoRedo);
                 m_isDuringUndoRedo = false;
 
 #if defined(ENABLE_UNDOCACHE_CONSISTENCY_CHECKS)
@@ -1470,9 +1470,9 @@ namespace AzToolsFramework
             if (m_undoStack->CanRedo())
             {
                 m_isDuringUndoRedo = true;
-                EBUS_EVENT(ToolsApplicationEvents::Bus, BeforeUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::BeforeUndoRedo);
                 m_undoStack->Redo();
-                EBUS_EVENT(ToolsApplicationEvents::Bus, AfterUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::AfterUndoRedo);
                 m_isDuringUndoRedo = false;
 
 #if defined(ENABLE_UNDOCACHE_CONSISTENCY_CHECKS)
@@ -1518,7 +1518,7 @@ namespace AzToolsFramework
             // notify Cry undo has started (SandboxIntegrationManager)
             // Only do this at the root level. OnEndUndo will be called at the root
             // level when EndUndoBatch is called.
-            EBUS_EVENT(ToolsApplicationEvents::Bus, OnBeginUndo, label);
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::OnBeginUndo, label);
         }
         else
         {

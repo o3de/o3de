@@ -163,7 +163,7 @@ namespace AzToolsFramework
         else
         {
             // Normal entities will be deleted and loaded anew
-            //EBUS_EVENT(AZ::ComponentApplicationBus, DeleteEntity, m_entityID);
+            //AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::DeleteEntity, m_entityID);
             AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::DeleteEntity, m_entityID);
         }
 
@@ -231,7 +231,7 @@ namespace AzToolsFramework
             EntityStateCommandNotificationBus::Event(m_entityID, &EntityStateCommandNotificationBus::Events::PostRestore, entity);
         }
 
-        EBUS_EVENT(ToolsApplicationRequests::Bus, SetSelectedEntities, selectedEntities);
+        ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selectedEntities);
     }
 
     void EntityStateCommand::Undo()
@@ -263,7 +263,7 @@ namespace AzToolsFramework
     void EntityDeleteCommand::Redo()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-        EBUS_EVENT(AZ::ComponentApplicationBus, DeleteEntity, m_entityID);
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::DeleteEntity, m_entityID);
         PreemptiveUndoCache::Get()->PurgeCache(m_entityID);
     }
 
@@ -281,7 +281,7 @@ namespace AzToolsFramework
     void EntityCreateCommand::Undo()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-        EBUS_EVENT(AZ::ComponentApplicationBus, DeleteEntity, m_entityID);
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::DeleteEntity, m_entityID);
         PreemptiveUndoCache::Get()->PurgeCache(m_entityID);
     }
 

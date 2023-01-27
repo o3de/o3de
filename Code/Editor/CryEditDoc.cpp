@@ -244,7 +244,8 @@ void CCryEditDoc::DeleteContents()
     GetIEditor()->Notify(eNotify_OnCloseScene);
     CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorCloseScene);
 
-    EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, ResetEditorContext);
+    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+        &AzToolsFramework::EditorEntityContextRequestBus::Events::ResetEditorContext);
 
     //////////////////////////////////////////////////////////////////////////
     // Clear all undo info.

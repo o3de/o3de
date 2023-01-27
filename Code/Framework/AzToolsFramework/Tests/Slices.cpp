@@ -403,7 +403,7 @@ namespace UnitTest
                 while (m_stressLoadPending > 0)
                 {
                     AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
-                    EBUS_EVENT(AZ::TickBus, OnTick, 0.3f, AZ::ScriptTimePoint());
+                    AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.3f, AZ::ScriptTimePoint());
                 }
 
                 const AZStd::chrono::steady_clock::time_point assetLoadFinishTime = AZStd::chrono::steady_clock::now();

@@ -623,7 +623,7 @@ namespace AzToolsFramework
         SetCurrentAssetHint(AZStd::string());
         SetSelectedAssetID(AZ::Data::AssetId());
         // To clear the asset we only need to refresh the values.
-        EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_Values);
+        ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_Values);
     }
 
     void PropertyAssetCtrl::SourceFileChanged(AZStd::string /*relativePath*/, AZStd::string /*scanFolder*/, AZ::Uuid sourceUUID)
@@ -1401,7 +1401,7 @@ namespace AzToolsFramework
         connect(newCtrl, &PropertyAssetCtrl::OnAssetIDChanged, this, [newCtrl](AZ::Data::AssetId newAssetID)
         {
             (void)newAssetID;
-            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
         return newCtrl;
@@ -1685,7 +1685,7 @@ namespace AzToolsFramework
         connect(newCtrl, &PropertyAssetCtrl::OnAssetIDChanged, this, [newCtrl](AZ::Data::AssetId newAssetID)
         {
             (void)newAssetID;
-            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
         return newCtrl;
@@ -1721,7 +1721,7 @@ namespace AzToolsFramework
         connect(newCtrl, &PropertyAssetCtrl::OnAssetIDChanged, this, [newCtrl](AZ::Data::AssetId newAssetID)
         {
             (void)newAssetID;
-            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
         return newCtrl;

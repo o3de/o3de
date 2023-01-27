@@ -2811,7 +2811,10 @@ namespace AzToolsFramework
                     assets[asset.GetId()] = asset;
 
                     AZStd::string assetFullPath;
-                    EBUS_EVENT(AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, sliceAssetPath, assetFullPath);
+                    AzToolsFramework::AssetSystemRequestBus::Broadcast(
+                        &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                        sliceAssetPath,
+                        assetFullPath);
                     if (fileIO->IsReadOnly(assetFullPath.c_str()))
                     {
                         // Issue checkout order for each affected slice.

@@ -78,9 +78,9 @@ namespace LUAEditor
 
     void LUAEditorSettingsDialog::OnSave()
     {
-        EBUS_EVENT(AZ::UserSettingsComponentRequestBus, Save);
+        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequestBus::Events::Save);
 
-        EBUS_EVENT(LUAEditorMainWindowMessages::Bus, Repaint);
+        LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::Repaint);
     }
 
     void LUAEditorSettingsDialog::OnSaveClose()
@@ -96,7 +96,7 @@ namespace LUAEditor
         // Revert the stored copy, no changes will be stored.
         *syntaxStyleSettings = m_originalSettings;
 
-        EBUS_EVENT(LUAEditorMainWindowMessages::Bus, Repaint);
+        LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::Repaint);
 
         close();
     }

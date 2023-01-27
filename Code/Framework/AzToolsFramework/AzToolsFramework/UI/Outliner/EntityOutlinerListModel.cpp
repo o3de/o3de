@@ -496,7 +496,8 @@ namespace AzToolsFramework
                             entity->SetName(newName);
                             undo.MarkEntityDirty(entity->GetId());
 
-                            EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_EntireTree);
+                            ToolsApplicationEvents::Bus::Broadcast(
+                                &ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_EntireTree);
                         }
                     }
                     else
@@ -1058,7 +1059,7 @@ namespace AzToolsFramework
         // reselect the entities to ensure they're visible if appropriate
         ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, processedEntityIds);
 
-        EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_Values);
+        ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_Values);
         return true;
     }
 

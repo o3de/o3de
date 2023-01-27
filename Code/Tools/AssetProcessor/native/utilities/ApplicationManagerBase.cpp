@@ -602,7 +602,7 @@ void ApplicationManagerBase::InitConnectionManager()
                 QString msg = QCoreApplication::translate("O3DE Asset Processor", "Processing %1 (%2)...\n", "%1 is the name of the file, and %2 is the platform to process it for").arg(inputFile, platform);
                 AZ_Printf(AssetProcessor::ConsoleChannel, "%s", msg.toUtf8().constData());
                 AssetNotificationMessage message(inputFile.toUtf8().constData(), AssetNotificationMessage::JobStarted, AZ::Data::s_invalidAssetType, platform.toUtf8().constData());
-                EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, platform);
+                AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::SendPerPlatform, 0, message, platform);
             }
             );
     AZ_Assert(result, "Failed to connect to RCController signal");
@@ -611,7 +611,11 @@ void ApplicationManagerBase::InitConnectionManager()
             [](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse /*response*/)
             {
                 AssetNotificationMessage message(entry.m_sourceAssetReference.RelativePath().c_str(), AssetNotificationMessage::JobCompleted, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
-                EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
+            AssetProcessor::ConnectionBus::Broadcast(
+                &AssetProcessor::ConnectionBus::Events::SendPerPlatform,
+                0,
+                message,
+                QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
             }
             );
     AZ_Assert(result, "Failed to connect to RCController signal");
@@ -620,7 +624,11 @@ void ApplicationManagerBase::InitConnectionManager()
             [](AssetProcessor::JobEntry entry)
             {
                 AssetNotificationMessage message(entry.m_sourceAssetReference.RelativePath().c_str(), AssetNotificationMessage::JobFailed, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
-                EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
+            AssetProcessor::ConnectionBus::Broadcast(
+                &AssetProcessor::ConnectionBus::Events::SendPerPlatform,
+                0,
+                message,
+                QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
             }
             );
     AZ_Assert(result, "Failed to connect to RCController signal");
@@ -629,7 +637,7 @@ void ApplicationManagerBase::InitConnectionManager()
             [](QString platform, int count)
             {
                 AssetNotificationMessage message(QByteArray::number(count).constData(), AssetNotificationMessage::JobCount, AZ::Data::s_invalidAssetType, platform.toUtf8().constData());
-                EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, platform);
+                AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::SendPerPlatform, 0, message, platform);
             }
             );
     AZ_Assert(result, "Failed to connect to RCController signal");

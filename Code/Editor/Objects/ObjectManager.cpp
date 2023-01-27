@@ -392,11 +392,13 @@ void CObjectManager::DeleteSelection(CSelectionGroup* pSelection)
     // Delete AZ (component) entities.
     if (QApplication::keyboardModifiers() & Qt::ShiftModifier)
     {
-        EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, DeleteEntities, selectedComponentEntities);
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::DeleteEntities, selectedComponentEntities);
     }
     else
     {
-        EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, DeleteEntitiesAndAllDescendants, selectedComponentEntities);
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::DeleteEntitiesAndAllDescendants, selectedComponentEntities);
     }
 }
 
@@ -767,7 +769,8 @@ void CObjectManager::UnselectCurrent()
 
     // Unselect all component entities as one bulk operation instead of individually
     AzToolsFramework::EntityIdList selectedEntities;
-    EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, SetSelectedEntities, selectedEntities);
+    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selectedEntities);
 
     for (int i = 0; i < m_currSelection->GetCount(); i++)
     {

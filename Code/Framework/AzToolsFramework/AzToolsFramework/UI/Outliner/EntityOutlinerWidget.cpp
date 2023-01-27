@@ -728,7 +728,7 @@ namespace AzToolsFramework
             ScopedUndoBatch undo("Duplicate Entity(s)");
 
             bool handled = false;
-            EBUS_EVENT(EditorRequests::Bus, CloneSelection, handled);
+            EditorRequests::Bus::Broadcast(&EditorRequests::Bus::Events::CloneSelection, handled);
         }
     }
 
@@ -736,7 +736,7 @@ namespace AzToolsFramework
     {
         PrepareSelection();
 
-        EBUS_EVENT(EditorRequests::Bus, DeleteSelectedEntities, false);
+        EditorRequests::Bus::Broadcast(&EditorRequests::Bus::Events::DeleteSelectedEntities, false);
 
         PrepareSelection();
     }
@@ -745,7 +745,7 @@ namespace AzToolsFramework
     {
         PrepareSelection();
 
-        EBUS_EVENT(EditorRequests::Bus, DeleteSelectedEntities, true);
+        EditorRequests::Bus::Broadcast(&EditorRequests::Bus::Events::DeleteSelectedEntities, true);
 
         PrepareSelection();
     }

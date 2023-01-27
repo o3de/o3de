@@ -141,7 +141,7 @@ namespace AssetBuilderSDK
     {
         va_list args;
         va_start(args, message);
-        EBUS_EVENT(AssetBuilderSDK::AssetBuilderBus, BuilderLog, builderId, message, args);
+        AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Events::BuilderLog, builderId, message, args);
         va_end(args);
     }
 

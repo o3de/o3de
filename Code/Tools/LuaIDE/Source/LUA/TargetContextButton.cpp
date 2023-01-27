@@ -22,7 +22,8 @@ namespace LUA
         LUAEditor::Context_ControlManagement::Handler::BusConnect();
 
         AZStd::string context("Default");
-        EBUS_EVENT(LUAEditor::LUATargetContextRequestMessages::Bus, SetCurrentTargetContext, context);
+        LUAEditor::LUATargetContextRequestMessages::Bus::Broadcast(
+            &LUAEditor::LUATargetContextRequestMessages::Bus::Events::SetCurrentTargetContext, context);
         this->setText("Context: Default");
 
         QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -62,7 +63,8 @@ namespace LUA
         {
             AZStd::string context = resultAction->property("context").toString().toUtf8().data();
             this->setText("Context: None"); // prepare for failure
-            EBUS_EVENT(LUAEditor::LUATargetContextRequestMessages::Bus, SetCurrentTargetContext, context);
+            LUAEditor::LUATargetContextRequestMessages::Bus::Broadcast(
+                &LUAEditor::LUATargetContextRequestMessages::Bus::Events::SetCurrentTargetContext, context);
         }
     }
 

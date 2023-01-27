@@ -258,7 +258,15 @@ namespace AzToolsFramework
         QTimer::singleShot(0, this, SLOT(BootStrapRemainingSystems()));
 
         // register global hotkeys:
-        EBUS_EVENT(FrameworkMessages::Bus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("GeneralOpenAssetBrowser", 0xa15ceb44), "Alt+Shift+O", "Open Asset Browser", "General", 1, HotkeyDescription::SCOPE_WINDOW));
+        FrameworkMessages::Bus::Broadcast(
+            &FrameworkMessages::Bus::Events::RegisterHotkey,
+            AzToolsFramework::HotkeyDescription(
+                AZ_CRC("GeneralOpenAssetBrowser", 0xa15ceb44),
+                "Alt+Shift+O",
+                "Open Asset Browser",
+                "General",
+                1,
+                HotkeyDescription::SCOPE_WINDOW));
 
         // run our message loop.  for now, we'll use a timer to do polling.
         // we can always change that to a zero-timed timer which always tick, and sleep ourselves if we want to manage the event loop ourself...
@@ -313,8 +321,8 @@ namespace AzToolsFramework
 
     void Framework::BootStrapRemainingSystems()
     {
-        EBUS_EVENT(LegacyFramework::CoreMessageBus, OnRestoreState);
-        EBUS_EVENT(LegacyFramework::CoreMessageBus, OnReady);
+        LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::OnRestoreState);
+        LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::OnReady);
     }
 
     void Framework::OnSystemTick()
@@ -344,11 +352,11 @@ namespace AzToolsFramework
     {
         if (event->type() == QEvent::ApplicationDeactivate)
         {
-            EBUS_EVENT(LegacyFramework::CoreMessageBus, ApplicationDeactivated);
+            LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::ApplicationDeactivated);
         }
         else if (event->type() == QEvent::ApplicationActivate)
         {
-            EBUS_EVENT(LegacyFramework::CoreMessageBus, ApplicationActivated);
+            LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::ApplicationActivated);
         }
         return QObject::eventFilter(obj, event); // Unhandled events are passed to the base class
     }
@@ -455,7 +463,7 @@ namespace AzToolsFramework
         }
 
         // save current project specific and global settings in case shutdown is a crash.
-        EBUS_EVENT(AZ::UserSettingsComponentRequestBus, Save);
+        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequestBus::Events::Save);
 
 
         CheckForReadyToQuit();
@@ -476,8 +484,8 @@ namespace AzToolsFramework
             return;
         }
 
-        EBUS_EVENT(LegacyFramework::CoreMessageBus, OnSaveState);
-        EBUS_EVENT(LegacyFramework::CoreMessageBus, OnDestroyState);
+        LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::OnSaveState);
+        LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::OnDestroyState);
 
         // we successfully got permission to quit!
         // pump the tickbus one last time!
@@ -517,12 +525,12 @@ namespace AzToolsFramework
         // trigger a callback accumulator incremented by contexts via ApplicationCensusReply
         // this is not asynchronous
         m_ApplicationCensusResults = 0;
-        EBUS_EVENT(LegacyFramework::CoreMessageBus, ApplicationCensus);
+        LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::ApplicationCensus);
 
         if (m_ApplicationCensusResults > 1)
         {
             // if more than one window is open then simply tell it to close
-            EBUS_EVENT(LegacyFramework::CoreMessageBus, ApplicationHide, id);
+            LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::ApplicationHide, id);
         }
         else
         {
@@ -567,8 +575,8 @@ namespace AzToolsFramework
                 char output[64];
                 (*mwlIter).ContextID.ToString(output, AZ_ARRAY_SIZE(output), true, true);
                 a->setData(output);
-                EBUS_EVENT(HotkeyBus, RegisterHotkey, (*mwlIter).hotkeyDesc);
-                EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, (*mwlIter).hotkeyDesc.m_HotKeyIDCRC, a);
+                HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, (*mwlIter).hotkeyDesc);
+                HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, (*mwlIter).hotkeyDesc.m_HotKeyIDCRC, a);
                 m_ComponentWindowsActions.push_back(a);
                 ++mwlIter;
             }
@@ -602,8 +610,8 @@ namespace AzToolsFramework
 
             m_ActionQuit = new QAction("Quit", this);
             AzToolsFramework::HotkeyDescription hk(AZ_CRC_CE("GlobalQuitStandaloneTools"), "Alt+Q", "Quit", "General", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW);
-            EBUS_EVENT(HotkeyBus, RegisterHotkey, hk);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, hk.m_HotKeyIDCRC, m_ActionQuit);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, hk);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, hk.m_HotKeyIDCRC, m_ActionQuit);
             connect(m_ActionQuit, SIGNAL(triggered()), this, SLOT(OnMenuQuit()));
         }
         theMenu->addAction(m_ActionQuit);
@@ -625,7 +633,7 @@ namespace AzToolsFramework
         if (qv.isValid())
         {
             AZ::Uuid id(qv.toString().toUtf8().constData());
-            EBUS_EVENT(LegacyFramework::CoreMessageBus, ApplicationShow, id);
+            LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::ApplicationShow, id);
         }
     }
 }   // END namespace AzToolsFramework

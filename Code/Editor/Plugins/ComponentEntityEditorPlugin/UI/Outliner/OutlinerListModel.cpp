@@ -601,7 +601,9 @@ bool OutlinerListModel::setData(const QModelIndex& index, const QVariant& value,
                         entity->SetName(newName);
                         undo.MarkEntityDirty(entity->GetId());
 
-                        EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+                        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                            &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay,
+                            AzToolsFramework::Refresh_EntireTree);
                     }
                 }
                 else
@@ -1225,7 +1227,8 @@ bool OutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const 
     // reselect the entities to ensure they're visible if appropriate
     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, processedEntityIds);
 
-    EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+    AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+        &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
     return true;
 }
 
