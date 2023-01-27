@@ -15,25 +15,25 @@ import ctest_metrics_xml_to_csv
 
 class TestMetricsXMLtoCSV(unittest.TestCase):
 
-    @mock.patch("ctest_metrics_xml_to_csv.now_wrap")
-    def test_GetDefaultCSVFilename_SingleDigit_HasZeroes(self, mock_now):
-        mock_datetime = mock.MagicMock()
-        mock_datetime.month = 1
-        mock_datetime.day = 2
-        mock_datetime.year = "xxxx"
-        mock_now.return_value = mock_datetime
+    @mock.patch("ctest_metrics_xml_to_csv.datetime.datetime")
+    def test_GetDefaultCSVFilename_SingleDigit_HasZeroes(self, mock_datetime):
+        mock_date = mock.MagicMock()
+        mock_date.month = 1
+        mock_date.day = 2
+        mock_date.year = "xxxx"
+        mock_datetime.now.return_value = mock_date
 
         under_test = ctest_metrics_xml_to_csv._get_default_csv_filename()
 
         assert under_test == "xxxx_01_02.csv"
 
-    @mock.patch("ctest_metrics_xml_to_csv.now_wrap")
-    def test_GetDefaultCSVFilename_DoubleDigit_NoZeroes(self, mock_now):
-        mock_datetime = mock.MagicMock()
-        mock_datetime.month = 11
-        mock_datetime.day = 12
-        mock_datetime.year = "xxxx"
-        mock_now.return_value = mock_datetime
+    @mock.patch("ctest_metrics_xml_to_csv.datetime.datetime")
+    def test_GetDefaultCSVFilename_DoubleDigit_NoZeroes(self, mock_datetime):
+        mock_date = mock.MagicMock()
+        mock_date.month = 11
+        mock_date.day = 12
+        mock_date.year = "xxxx"
+        mock_datetime.now.return_value = mock_date
 
         under_test = ctest_metrics_xml_to_csv._get_default_csv_filename()
 

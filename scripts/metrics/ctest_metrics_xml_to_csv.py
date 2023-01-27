@@ -19,17 +19,10 @@ DEFAULT_CTEST_LOG_FILENAME = 'Test.xml'
 TAG_FILE = 'TAG'
 TESTING_DIR = 'Testing'
 
-def now_wrap():
-    """
-    Wrapper function for now() for unit testing purposes.
-    @return: datetime.now()
-    """
-    return datetime.datetime.now()
-
 
 def _get_default_csv_filename():
     # Format default file name based off of date
-    now = now_wrap()
+    now = datetime.datetime.now()
     return f"{now.year}_{now.month:02d}_{now.day:02d}.csv"
 
 
