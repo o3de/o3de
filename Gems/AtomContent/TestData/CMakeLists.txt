@@ -19,5 +19,8 @@ endif()
 # This path is the gem root directory
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem)
+    # Allows Tool applications to have this gem be active as well
+    # This allows @gemroot:${gem_name}@ alias to be used to resolve the path to this gem
+    ly_create_alias(NAME ${gem_name}.Tools NAMESPACE Gem)
 endif()
 
