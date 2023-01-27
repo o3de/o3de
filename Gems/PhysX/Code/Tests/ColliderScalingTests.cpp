@@ -13,6 +13,7 @@
 #include <CapsuleColliderComponent.h>
 #include <EditorColliderComponent.h>
 #include <EditorRigidBodyComponent.h>
+#include <EditorStaticRigidBodyComponent.h>
 #include <EditorTestUtilities.h>
 #include <RigidBodyComponent.h>
 #include <RigidBodyStatic.h>
@@ -39,6 +40,7 @@ namespace PhysXEditorTests
     {
         EntityPtr editorEntity = CreateInactiveEditorEntity("Box");
         editorEntity->CreateComponent<PhysX::EditorColliderComponent>(Physics::ColliderConfiguration(), Physics::BoxShapeConfiguration());
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
         editorEntity->Activate();
 
@@ -60,6 +62,7 @@ namespace PhysXEditorTests
         Physics::BoxShapeConfiguration boxShapeConfig(AZ::Vector3(0.5f, 0.7f, 0.9f));
         editorEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, boxShapeConfig);
         editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->Activate();
 
         AZ::EntityId editorId = editorEntity->GetId();
@@ -116,6 +119,7 @@ namespace PhysXEditorTests
         EntityPtr editorEntity = CreateInactiveEditorEntity("Capsule");
         editorEntity->CreateComponent<PhysX::EditorColliderComponent>(Physics::ColliderConfiguration(), Physics::CapsuleShapeConfiguration());
         editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->Activate();
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
@@ -136,6 +140,7 @@ namespace PhysXEditorTests
         Physics::CapsuleShapeConfiguration capsuleShapeConfig(1.4f, 0.3f);
         editorEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, capsuleShapeConfig);
         editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->Activate();
 
         AZ::EntityId capsuleId = editorEntity->GetId();
@@ -194,6 +199,7 @@ namespace PhysXEditorTests
         EntityPtr editorEntity = CreateInactiveEditorEntity("Sphere");
         editorEntity->CreateComponent<PhysX::EditorColliderComponent>(Physics::ColliderConfiguration(), Physics::SphereShapeConfiguration());
         editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->Activate();
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
@@ -214,6 +220,7 @@ namespace PhysXEditorTests
         Physics::SphereShapeConfiguration sphereShapeConfig(0.7f);
         editorEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, sphereShapeConfig);
         editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->Activate();
 
         AZ::EntityId sphereId = editorEntity->GetId();

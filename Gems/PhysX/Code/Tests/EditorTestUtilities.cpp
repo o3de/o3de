@@ -12,6 +12,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <EditorColliderComponent.h>
 #include <EditorRigidBodyComponent.h>
+#include <EditorStaticRigidBodyComponent.h>
 #include <EditorShapeColliderComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <LmbrCentral/Shape/CapsuleShapeComponentBus.h>
@@ -62,6 +63,10 @@ namespace PhysXEditorTests
         {
             editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
         }
+        else
+        {
+            editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
+        }
         editorEntity->Activate();
         AZ::EntityId editorEntityId = editorEntity->GetId();
 
@@ -84,6 +89,10 @@ namespace PhysXEditorTests
         if (rigidBodyType == RigidBodyType::Dynamic)
         {
             editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        }
+        else
+        {
+            editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         }
         editorEntity->Activate();
         AZ::EntityId editorEntityId = editorEntity->GetId();
@@ -109,6 +118,10 @@ namespace PhysXEditorTests
         {
             editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
         }
+        else
+        {
+            editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
+        }
         editorEntity->Activate();
         AZ::EntityId editorEntityId = editorEntity->GetId();
 
@@ -133,6 +146,10 @@ namespace PhysXEditorTests
         if (rigidBodyType == RigidBodyType::Dynamic)
         {
             editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        }
+        else
+        {
+            editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         }
         editorEntity->Activate();
 
@@ -263,6 +280,7 @@ namespace PhysXEditorTests
         // create an editor entity with a shape collider component and a cylinder shape component
         EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->CreateComponent(LmbrCentral::EditorCylinderShapeComponentTypeId);
         editorEntity->Activate();
 

@@ -115,7 +115,7 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
     collider_entity = hydra.Entity("Collider Surface")
     collider_entity.create_entity(
         entity_center_point,
-        ["PhysX Collider", "PhysX Collider Surface Tag Emitter"]
+        ["PhysX Collider", "PhysX Collider Surface Tag Emitter", "PhysX Static Rigid Body"]
         )
     Report.result(collider_entity_created, collider_entity.id.IsValid())
 
@@ -176,12 +176,12 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
     collider_entity.add_component("PhysX Collider")
     helper.wait_for_condition(lambda: editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled',
                                                                    collider_entity.components[1]), 5.0)
-    hydra.get_set_test(collider_entity, 1, "Shape Configuration|Shape", 7)
-    hydra.get_set_test(collider_entity, 1, "Shape Configuration|Asset|PhysX Mesh", test_physx_mesh_asset_id)
+    hydra.get_set_test(collider_entity, 2, "Shape Configuration|Shape", 7)
+    hydra.get_set_test(collider_entity, 2, "Shape Configuration|Asset|PhysX Mesh", test_physx_mesh_asset_id)
 
     # Set the asset scale to match the test heights of the shapes tested
     asset_scale = math.Vector3(1.0, 1.0, 9.0)
-    collider_entity.get_set_test(1, "Shape Configuration|Asset|Configuration|Asset Scale", asset_scale)
+    collider_entity.get_set_test(2, "Shape Configuration|Asset|Configuration|Asset Scale", asset_scale)
 
     # Test:  Generate a new surface on the collider.
     # There should be one instance at the very top of the collider mesh, and none on the baseline surface
