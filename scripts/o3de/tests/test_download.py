@@ -29,8 +29,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "templates": [],
     "restricted": [],
     "repos": ["http://o3de.org"],
-    "engines": [],
-    "engines_path": {}
+    "engines": []
 }
 '''
 
@@ -49,8 +48,7 @@ TEST_O3DE_MANIFEST_EXISTING_GEM_JSON_PAYLOAD = '''
     "templates": [],
     "restricted": [],
     "repos": ["http://o3de.org"],
-    "engines": [],
-    "engines_path": {}
+    "engines": []
 }
 '''
 

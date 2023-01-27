@@ -57,7 +57,7 @@ namespace AZ::Internal
 
     AZ::IO::FixedMaxPath ReconcileEngineRootFromProjectPath(SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& projectPath)
     {
-        // Find the engine root via the engine manifest file and project.json
+        // Find the engine root via user/project_settings.json, engine manifest and project.json
         // Locate the engine manifest file and merge it to settings registry.
         // Visit over the engine paths list and merge the engine.json files to settings registry.
         // Merge project.json to settings registry.  That will give us an "engine" key.
@@ -110,8 +110,8 @@ namespace AZ::Internal
             EnginePathsVisitor pathVisitor;
             if (manifestLoaded)
             {
-                auto enginePathsKey = FixedValueString::format("%s/engines_path", O3deManifestSettingsRootKey);
-                settingsRegistry.Visit(pathVisitor, enginePathsKey);
+                auto enginesKey = FixedValueString::format("%s/engines", O3deManifestSettingsRootKey);
+                settingsRegistry.Visit(pathVisitor, enginesKey);
             }
 
             const auto engineMonikerKey = FixedValueString::format("%s/engine_name", EngineSettingsRootKey);
@@ -128,13 +128,7 @@ namespace AZ::Internal
                     {
                         FixedValueString engineName;
                         settingsRegistry.Get(engineName, engineMonikerKey);
-                        AZ_Warning("SettingsRegistryMergeUtils", engineInfo.m_moniker == engineName,
-                            R"(The engine name key "%s" mapped to engine path "%s" within the global manifest of "%s")"
-                            R"( does not match the "engine_name" field "%s" in the engine.json)" "\n"
-                            "This engine should be re-registered.",
-                            engineInfo.m_moniker.c_str(), engineInfo.m_path.c_str(), o3deManifestPath.c_str(),
-                            engineName.c_str());
-                        engineInfo.m_moniker = engineName;
+                        engineInfo.m_moniker = engineName; 
                     }
                 }
 
@@ -337,8 +331,9 @@ namespace AZ::SettingsRegistryMergeUtils
             return engineRoot;
         }
 
-        // Step 3 locate the project root and attempt to find the engine root using the registered engine
-        // for the project in the project.json file
+        // Step 3 locate the project root and attempt to find the engine using the engine_path
+        // in user/project_settings.json or find the first registered engine with the same name
+        // as the one in project.json
         AZ::IO::FixedMaxPath projectRoot;
         settingsRegistry.Get(projectRoot.Native(), FilePathKey_ProjectPath);
         if (projectRoot.empty())
@@ -346,7 +341,7 @@ namespace AZ::SettingsRegistryMergeUtils
             return {};
         }
 
-        // Use the project.json and engine manifest to locate the engine root.
+        // Use user/project_settings.json, project.json and engine manifest to locate the engine root.
         if (engineRoot = Internal::ReconcileEngineRootFromProjectPath(settingsRegistry, projectRoot); !engineRoot.empty())
         {
             settingsRegistry.Set(engineRootKey, engineRoot.c_str());

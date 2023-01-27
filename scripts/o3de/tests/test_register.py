@@ -22,8 +22,8 @@ string_manifest_data = '{}'
         pytest.param(pathlib.PurePath('D:/o3de/o3de'), "o3de", False, 0),
         # Same engine_name and path should result in valid registration
         pytest.param(pathlib.PurePath('D:/o3de/o3de'), "o3de", False, 0),
-        # Same engine_name and but different path should fail
-        pytest.param(pathlib.PurePath('D:/o3de/engine-path'), "o3de", False, 1),
+        # Same engine_name but different path succeeds 
+        pytest.param(pathlib.PurePath('D:/o3de/engine-path'), "o3de", False, 0),
         # New engine_name should result in valid registration
         pytest.param(pathlib.PurePath('D:/o3de/engine-path'), "o3de-other", False, 0),
         # Same engine_name and but different path with --force should result in valid registration
@@ -76,9 +76,14 @@ def init_manifest_data(request):
 class TestRegisterThisEngine:
     @pytest.mark.parametrize(
         "engine_path, engine_name, force, expected_result", [
+            # registering a new engine succeeds
             pytest.param(pathlib.PurePath('D:/o3de/o3de'), "o3de", False, 0),
-            pytest.param(pathlib.PurePath('F:/Open3DEngine'), "o3de", False, 1),
-            pytest.param(pathlib.PurePath('F:/Open3DEngine'), "o3de", True, 0)
+            # registering an engine with the same name at a new location succeeds
+            pytest.param(pathlib.PurePath('F:/Open3DEngine'), "o3de", False, 0),
+            # re-registering an engine with the same name at the same location succeeds
+            pytest.param(pathlib.PurePath('F:/Open3DEngine'), "o3de", False, 0),
+            # forcing re-registering an engine with the same name at the same location succeeds
+            pytest.param(pathlib.PurePath('F:/Open3DEngine'), "o3de", True, 0),
         ]
     )
     def test_register_this_engine(self, engine_path, engine_name, force, expected_result):
@@ -167,8 +172,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "templates": [],
     "restricted": [],
     "repos": [],
-    "engines": [],
-    "engines_path": {}
+    "engines": []
 }
 '''
 @pytest.fixture(scope='function')

@@ -106,10 +106,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "repos": [],
     "engines": [
         "D:/o3de/o3de"
-    ],
-    "engines_path": {
-        "o3de": "D:/o3de/o3de"
-    }
+    ]
 }
 '''
 

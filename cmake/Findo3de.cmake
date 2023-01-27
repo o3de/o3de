@@ -36,7 +36,7 @@ if(this_engine_name STREQUAL LY_ENGINE_NAME_TO_USE)
 endif()
 
 find_package_handle_standard_args(o3de
-    "Could not find an engine with matching ${LY_ENGINE_NAME_TO_USE}"
+    "The engine name for this engine '${this_engine_name}' does not match the projects engine name '${LY_ENGINE_NAME_TO_USE}'."
     found_matching_engine
 )
 

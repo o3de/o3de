@@ -216,54 +216,6 @@ def register_all_repos_in_folder(repos_path: pathlib.Path,
     return register_all_o3de_objects_of_type_in_folder(repos_path, 'repo', remove, force, None, engine_path=engine_path)
 
 
-def remove_engine_name_to_path(json_data: dict,
-                               engine_path: pathlib.Path) -> int:
-    """
-    Remove the engine at the specified path if it exist in the o3de manifest
-    :param json_data in-memory json view of the o3de_manifest.json data
-    :param engine_path path to engine to remove from the manifest data
-
-    returns 0 to indicate no issues has occurred with removal
-    """
-    if engine_path.is_dir() and validation.valid_o3de_engine_json(pathlib.Path(engine_path).resolve() / 'engine.json'):
-        engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
-        if 'engine_name' in engine_json_data and 'engines_path' in json_data:
-            engine_name = engine_json_data['engine_name']
-            try:
-                del json_data['engines_path'][engine_name]
-            except KeyError:
-                # Attempting to remove a non-existent engine_name is fine
-                pass
-    else:
-        logger.warning(f'Unable to find engine.json file or file is invalid at path {engine_path.as_posix()}')
-
-    return 0
-
-
-def add_engine_name_to_path(json_data: dict, engine_path: pathlib.Path, force: bool):
-    # Add an engine path JSON object which maps the "engine_name" -> "engine_path"
-    engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
-    if not engine_json_data:
-        logger.error(f'Unable to retrieve json data from engine.json at path {engine_path.as_posix()}')
-        return 1
-    engines_path_json = json_data.setdefault('engines_path', {})
-    if 'engine_name' not in engine_json_data:
-        logger.error(f'engine.json at path {engine_path.as_posix()} is missing "engine_name" key')
-        return 1
-
-    engine_name = engine_json_data['engine_name']
-    if not force and engine_name in engines_path_json and \
-            pathlib.PurePath(engines_path_json[engine_name]) != engine_path:
-        logger.error(
-            f'Attempting to register existing engine "{engine_name}" with a new path of {engine_path.as_posix()}.'
-            f' The current path is {pathlib.Path(engines_path_json[engine_name]).as_posix()}.'
-            f' To force registration of a new engine path, specify the -f/--force option.'
-            f'\nAlternatively the engine can be registered with a different name by changing the "engine_name" field in the engine.json.')
-        return 1
-    engines_path_json[engine_name] = engine_path.as_posix()
-    return 0
-
-
 def register_o3de_object_path(json_data: dict,
                               o3de_object_path: str or pathlib.Path,
                               o3de_object_key: str,
@@ -364,15 +316,8 @@ def register_engine_path(json_data: dict,
     def transform_engine_dict_to_string(engine): return engine.get('path', '') if isinstance(engine, dict) else engine
     json_data['engines'] = list(map(transform_engine_dict_to_string, engine_list))
 
-    result = register_o3de_object_path(json_data, engine_path, 'engines', 'engine.json',
+    return register_o3de_object_path(json_data, engine_path, 'engines', 'engine.json',
                                        validation.valid_o3de_engine_json, remove)
-    if result != 0:
-        return result
-
-    if remove:
-        return remove_engine_name_to_path(json_data, engine_path)
-    else:
-        return add_engine_name_to_path(json_data, engine_path, force)
 
 
 def register_external_subdirectory(json_data: dict,
