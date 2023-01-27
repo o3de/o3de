@@ -63,7 +63,7 @@ namespace Maestro
         }
 
         IEditor* editor = nullptr;
-        EBUS_EVENT_RESULT(editor, AzToolsFramework::EditorRequests::Bus, GetEditor);
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
         if (editor)
         {
             IAnimSequence* sequence = editor->GetMovieSystem()->FindSequenceById(m_sequenceId);
@@ -127,7 +127,7 @@ namespace Maestro
         EditorComponentBase::Init();
         m_sequenceId = s_invalidSequenceId;
         IEditor* editor = nullptr;
-        EBUS_EVENT_RESULT(editor, AzToolsFramework::EditorRequests::Bus, GetEditor);
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
 
         if (editor)
         {
@@ -170,7 +170,7 @@ namespace Maestro
         Maestro::SequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
 
         IEditor* editor = nullptr;
-        EBUS_EVENT_RESULT(editor, AzToolsFramework::EditorRequests::Bus, GetEditor);
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
         if (editor)
         {
             editor->GetSequenceManager()->OnSequenceActivated(GetEntityId());
@@ -336,7 +336,7 @@ namespace Maestro
         bool retSuccess = false;
         AZ::Entity* entity = nullptr;
 
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, GetEntityId());
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, GetEntityId());
         if (entity)
         {
             CEntityObject* entityObject = nullptr;

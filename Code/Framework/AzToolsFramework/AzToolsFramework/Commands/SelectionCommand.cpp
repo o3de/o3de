@@ -14,7 +14,8 @@ namespace AzToolsFramework
     SelectionCommand::SelectionCommand(const AZStd::vector<AZ::EntityId>& proposedSelection, const AZStd::string& friendlyName)
         : UndoSystem::URSequencePoint(friendlyName)
     {
-        EBUS_EVENT_RESULT(m_previousSelectionList, AzToolsFramework::ToolsApplicationRequests::Bus, GetSelectedEntities);
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(m_previousSelectionList,
+            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
         m_proposedSelectionList = proposedSelection;
     }
@@ -35,7 +36,8 @@ namespace AzToolsFramework
     void SelectionCommand::Post()
     {
         UndoSystem::UndoStack* undoStack = nullptr;
-        EBUS_EVENT_RESULT(undoStack, AzToolsFramework::ToolsApplicationRequests::Bus, GetUndoStack);
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(undoStack,
+            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetUndoStack);
 
         if (undoStack)
         {

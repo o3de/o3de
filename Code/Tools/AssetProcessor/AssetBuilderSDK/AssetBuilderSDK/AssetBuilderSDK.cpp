@@ -1213,7 +1213,7 @@ namespace AssetBuilderSDK
     {
         AZ::SerializeContext* serializeContext = nullptr;
 
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Unable to retrieve serialize context.");
 
         InitializeReflectContext(serializeContext);
@@ -1223,7 +1223,7 @@ namespace AssetBuilderSDK
     {
         AZ::BehaviorContext* behaviorContext = nullptr;
 
-        EBUS_EVENT_RESULT(behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
         AZ_Error("asset", behaviorContext, "Unable to retrieve behavior context.");
         if (behaviorContext)
         {

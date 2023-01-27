@@ -581,7 +581,7 @@ void AssetRequestHandler::DeleteFenceFile_Retry(unsigned int fenceId, QString fe
 void AssetRequestHandler::OnNewIncomingRequest(unsigned int connId, unsigned int serial, QByteArray payload, QString platform)
 {
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(serializeContext, "Unable to retrieve serialize context.");
     AZStd::shared_ptr<BaseAssetProcessorMessage> message{ AZ::Utils::LoadObjectFromBuffer<BaseAssetProcessorMessage>(payload.constData(), payload.size(), serializeContext) };
 

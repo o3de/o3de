@@ -350,7 +350,7 @@ namespace AzToolsFramework
             bool servicesMismatch = false;
 
             AZ::Entity* entity = nullptr;
-            EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, newEntityId);
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, newEntityId);
 
             if (entity)
             {
@@ -414,7 +414,8 @@ namespace AzToolsFramework
     QString PropertyEntityIdCtrl::BuildTooltip()
     {
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityIdLineEdit->GetEntityId());
+        AZ::ComponentApplicationBus::BroadcastResult(
+            entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_entityIdLineEdit->GetEntityId());
 
         if (!entity)
         {

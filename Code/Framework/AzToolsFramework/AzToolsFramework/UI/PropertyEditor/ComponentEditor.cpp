@@ -646,7 +646,8 @@ namespace AzToolsFramework
         GetHeader()->SetTitle(ComponentEditorConstants::kUnknownComponentTitle);
 
         AZStd::string iconPath;
-        EBUS_EVENT_RESULT(iconPath, AzToolsFramework::EditorRequests::Bus, GetDefaultComponentEditorIcon);
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(
+            iconPath, &AzToolsFramework::EditorRequests::Bus::Events::GetDefaultComponentEditorIcon);
         GetHeader()->SetIcon(QIcon(iconPath.c_str()));
     }
 

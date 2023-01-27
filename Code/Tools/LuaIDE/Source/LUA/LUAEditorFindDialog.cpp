@@ -514,7 +514,8 @@ namespace LUAEditor
         {
             AZ_Assert(false, "Fix assets!");
             //AZ::u32 platformFeatureFlags = PLATFORM_FEATURE_FLAGS_ALL;
-            //EBUS_EVENT_RESULT(platformFeatureFlags, EditorFramework::EditorAssetCatalogMessages::Bus, GetCurrentPlatformFeatureFlags);
+            //EditorFramework::EditorAssetCatalogMessages::Bus::BroadcastResult(
+            //    platformFeatureFlags, &EditorFramework::EditorAssetCatalogMessages::Bus::Events::GetCurrentPlatformFeatureFlags);
             //EBUS_EVENT(EditorFramework::EditorAssetCatalogMessages::Bus, FindEditorAssetsByType, m_dFindAllLUAAssetsInfo, AZ::ScriptAsset::StaticAssetType(), platformFeatureFlags);
         }
 
@@ -984,7 +985,8 @@ namespace LUAEditor
         AZ_Assert(false, "Fix assets!");
 
         //AZ::u32 platformFeatureFlags = PLATFORM_FEATURE_FLAGS_ALL;
-        //EBUS_EVENT_RESULT(platformFeatureFlags, EditorFramework::EditorAssetCatalogMessages::Bus, GetCurrentPlatformFeatureFlags);
+        //EditorFramework::EditorAssetCatalogMessages::Bus::BroadcastResult(
+        //    platformFeatureFlags, &EditorFramework::EditorAssetCatalogMessages::Bus::Events::GetCurrentPlatformFeatureFlags);
         //EBUS_EVENT(EditorFramework::EditorAssetCatalogMessages::Bus, FindEditorAssetsByType, m_RIFData.m_dReplaceAllLUAAssetsInfo, AZ::ScriptAsset::StaticAssetType(), platformFeatureFlags);
 
         m_RIFData.m_OpenView = pLUAEditorMainWindow->GetAllViews();

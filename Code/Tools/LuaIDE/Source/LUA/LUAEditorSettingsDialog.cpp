@@ -39,7 +39,7 @@ namespace LUAEditor
 
         AZ::SerializeContext* context = nullptr;
         {
-            EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(context, "We should have a valid context!");
         }
 

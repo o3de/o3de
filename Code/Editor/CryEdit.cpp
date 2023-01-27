@@ -1168,7 +1168,8 @@ void CCryEditApp::InitLevel(const CEditCommandLineInfo& cmdInfo)
         const bool runningPythonScript = cmdInfo.m_bRunPythonScript || cmdInfo.m_bRunPythonTestScript;
 
         AZ::EBusLogicalResult<bool, AZStd::logical_or<bool> > skipStartupUIProcess(false);
-        EBUS_EVENT_RESULT(skipStartupUIProcess, AzToolsFramework::EditorEvents::Bus, SkipEditorStartupUI);
+        AzToolsFramework::EditorEvents::Bus::BroadcastResult(
+            skipStartupUIProcess, &AzToolsFramework::EditorEvents::Bus::Events::SkipEditorStartupUI);
 
         if (!skipStartupUIProcess.value)
         {

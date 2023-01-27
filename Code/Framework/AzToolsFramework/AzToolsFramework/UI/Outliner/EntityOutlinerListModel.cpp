@@ -904,7 +904,8 @@ namespace AzToolsFramework
             }
 
             bool isEntityEditable = true;
-            EBUS_EVENT_RESULT(isEntityEditable, ToolsApplicationRequests::Bus, IsEntityEditable, entityId);
+            ToolsApplicationRequests::Bus::BroadcastResult(
+                isEntityEditable, &ToolsApplicationRequests::Bus::Events::IsEntityEditable, entityId);
             if (!isEntityEditable)
             {
                 return false;

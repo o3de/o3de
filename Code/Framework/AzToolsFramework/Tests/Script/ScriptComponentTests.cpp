@@ -53,9 +53,9 @@ namespace UnitTest
             systemEntity->Init();
             systemEntity->Activate();
 
-            EBUS_EVENT_RESULT(m_scriptContext, ScriptSystemRequestBus, GetContext, DefaultScriptContextId);
-            EBUS_EVENT_RESULT(m_behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
-            EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+            ScriptSystemRequestBus::BroadcastResult(m_scriptContext, &ScriptSystemRequestBus::Events::GetContext, DefaultScriptContextId);
+            AZ::ComponentApplicationBus::BroadcastResult(m_behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
+            AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
             AzToolsFramework::Components::ScriptEditorComponent::CreateDescriptor(); // descriptor is deleted by app
             AzToolsFramework::Components::ScriptEditorComponent::Reflect(m_serializeContext);

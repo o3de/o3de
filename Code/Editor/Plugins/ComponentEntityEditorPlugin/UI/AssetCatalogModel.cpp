@@ -135,7 +135,7 @@ AssetCatalogModel::AssetCatalogModel(QObject* parent)
     }
 
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(serializeContext, "Failed to acquire application serialize context.");
 
     serializeContext->EnumerateDerived<AZ::Component>([this](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
@@ -214,7 +214,8 @@ AZ::Data::AssetType AssetCatalogModel::GetAssetType(const QString &filename) con
         AZStd::string azFilename = filename.toStdString().c_str();
         EBUS_EVENT(AzFramework::ApplicationRequests::Bus, MakePathAssetRootRelative, azFilename);
         AZ::Data::AssetId assetId;
-        EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, azFilename.c_str(), AZ::Data::s_invalidAssetType, false);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, azFilename.c_str(), AZ::Data::s_invalidAssetType, false);
 
         for (const AZ::Uuid& type : pair.second)
         {
@@ -507,7 +508,7 @@ void AssetCatalogModel::StopProcessingAssets()
 void AssetCatalogModel::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
 {
     AZ::Data::AssetInfo assetInfo;
-    EBUS_EVENT_RESULT(assetInfo, AZ::Data::AssetCatalogRequestBus, GetAssetInfoById, assetId);
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
 
     // note that this will get called twice, once with the real assetId and once with legacy assetId.
     // we only want to add the real asset to the list, in which the assetId passed in is equal to the final assetId returned

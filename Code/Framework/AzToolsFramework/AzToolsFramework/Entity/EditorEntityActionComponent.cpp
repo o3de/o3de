@@ -334,7 +334,8 @@ namespace AzToolsFramework
                 AZ::Entity* entity = component->GetEntity();
 
                 bool isEntityEditable = false;
-                EBUS_EVENT_RESULT(isEntityEditable, AzToolsFramework::ToolsApplicationRequests::Bus, IsEntityEditable, entity->GetId());
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isEntityEditable,
+                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsEntityEditable, entity->GetId());
                 if (!isEntityEditable)
                 {
                     continue;
@@ -390,7 +391,8 @@ namespace AzToolsFramework
                 AZ::Entity* entity = component->GetEntity();
 
                 bool isEntityEditable = false;
-                EBUS_EVENT_RESULT(isEntityEditable, AzToolsFramework::ToolsApplicationRequests::Bus, IsEntityEditable, entity->GetId());
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isEntityEditable,
+                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsEntityEditable, entity->GetId());
                 if (!isEntityEditable)
                 {
                     continue;
@@ -461,7 +463,8 @@ namespace AzToolsFramework
                     AZ::Entity* entity = componentToRemove->GetEntity();
 
                     bool isEntityEditable = false;
-                    EBUS_EVENT_RESULT(isEntityEditable, AzToolsFramework::ToolsApplicationRequests::Bus, IsEntityEditable, entity->GetId());
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isEntityEditable,
+                        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsEntityEditable, entity->GetId());
                     if (!isEntityEditable)
                     {
                         continue;

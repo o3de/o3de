@@ -881,7 +881,7 @@ bool CCryEditDoc::OnSaveDocument(const QString& lpszPathName)
         // Don't allow saving in AI/Physics mode.
         // Prompt the user to exit Simulation Mode (aka AI/Phyics mode) before saving.
         QWidget* mainWindow = nullptr;
-        EBUS_EVENT_RESULT(mainWindow, AzToolsFramework::EditorRequests::Bus, GetMainWindow);
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::Bus::Events::GetMainWindow);
 
         QMessageBox msgBox(mainWindow);
         msgBox.setText(tr("You must exit AI/Physics mode before saving."));

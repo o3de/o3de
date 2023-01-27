@@ -988,7 +988,8 @@ bool OutlinerListModel::DropMimeDataAssets(const QMimeData* data, [[maybe_unused
         if (createdNewEntity && &pair == &componentAssetPairs.front())
         {
             AZStd::string assetPath;
-            EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
             if (!assetPath.empty())
             {
                 AZStd::string entityName;
@@ -1068,7 +1069,8 @@ bool OutlinerListModel::CanReparentEntities(const AZ::EntityId& newParentId, con
         }
 
         bool isEntityEditable = true;
-        EBUS_EVENT_RESULT(isEntityEditable, AzToolsFramework::ToolsApplicationRequests::Bus, IsEntityEditable, entityId);
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            isEntityEditable, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsEntityEditable, entityId);
         if (!isEntityEditable)
         {
             return false;

@@ -117,7 +117,7 @@ namespace UnitTest
             m_propertyEditor = aznew AzToolsFramework::EntityPropertyEditor(nullptr);
 
             AZ::SerializeContext* serializeContext = nullptr;
-            EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
             m_window->setMinimumHeight(600);
             m_propertyEditor->setMinimumWidth(600);

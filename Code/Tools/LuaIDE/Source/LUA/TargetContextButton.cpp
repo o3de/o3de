@@ -46,7 +46,8 @@ namespace LUA
         QMenu menu;
 
         AZStd::vector<AZStd::string> contexts;
-        EBUS_EVENT_RESULT(contexts, LUAEditor::LUATargetContextRequestMessages::Bus, RequestTargetContexts);
+        LUAEditor::LUATargetContextRequestMessages::Bus::BroadcastResult(
+            contexts, &LUAEditor::LUATargetContextRequestMessages::Bus::Events::RequestTargetContexts);
 
         for (AZStd::vector<AZStd::string>::const_iterator it = contexts.begin(); it != contexts.end(); ++it)
         {

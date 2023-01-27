@@ -30,7 +30,8 @@ DHBreakpointsWidget::~DHBreakpointsWidget()
 void DHBreakpointsWidget::PullFromContext()
 {
     const LUAEditor::BreakpointMap* myData = NULL;
-    EBUS_EVENT_RESULT(myData, LUAEditor::LUABreakpointRequestMessages::Bus, RequestBreakpoints);
+    LUAEditor::LUABreakpointRequestMessages::Bus::BroadcastResult(
+        myData, &LUAEditor::LUABreakpointRequestMessages::Bus::Events::RequestBreakpoints);
     AZ_Assert(myData, "Nobody responded to the request breakpoints message.");
     BreakpointsUpdate(*myData);
 }

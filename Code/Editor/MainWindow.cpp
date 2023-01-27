@@ -359,7 +359,7 @@ MainWindow::MainWindow(QWidget* parent)
 void MainWindow::SystemTick()
 {
     AZ::ComponentApplication* componentApplication = nullptr;
-    EBUS_EVENT_RESULT(componentApplication, AZ::ComponentApplicationBus, GetApplication);
+    AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationBus::Events::GetApplication);
     if (componentApplication)
     {
         componentApplication->TickSystem();

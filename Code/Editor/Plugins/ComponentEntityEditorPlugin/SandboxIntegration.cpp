@@ -430,7 +430,8 @@ DisplayContext* SandboxIntegrationManager::GetDC()
 void SandboxIntegrationManager::OnBeginUndo([[maybe_unused]] const char* label)
 {
     AzToolsFramework::UndoSystem::URSequencePoint* currentBatch = nullptr;
-    EBUS_EVENT_RESULT(currentBatch, AzToolsFramework::ToolsApplicationRequests::Bus, GetCurrentUndoBatch);
+    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+        currentBatch, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetCurrentUndoBatch);
 
     AZ_Assert(currentBatch, "No undo batch is active.");
 
@@ -993,7 +994,8 @@ void SandboxIntegrationManager::SetupSliceContextMenu_Modify(QMenu* menu, const 
 
     // Gather the set of relevant entities from the selected entities and all descendants
     AzToolsFramework::EntityIdSet relevantEntitiesSet;
-    EBUS_EVENT_RESULT(relevantEntitiesSet, AzToolsFramework::ToolsApplicationRequests::Bus, GatherEntitiesAndAllDescendents, selectedEntities);
+    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+        relevantEntitiesSet, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GatherEntitiesAndAllDescendents, selectedEntities);
     AzToolsFramework::EntityIdList relevantEntities;
     relevantEntities.reserve(relevantEntitiesSet.size());
     for (AZ::EntityId& id : relevantEntitiesSet)
@@ -1763,7 +1765,7 @@ void SandboxIntegrationManager::ContextMenu_PushEntitiesToSlice(AzToolsFramework
     (void)affectEntireHierarchy;
 
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(serializeContext, "No serialize context");
 
     AzToolsFramework::SliceUtilities::PushEntitiesModal(GetMainWindow(), entities, serializeContext);
@@ -1843,7 +1845,7 @@ AZStd::string SandboxIntegrationManager::GetComponentIconPath(const AZ::Uuid& co
     AZStd::string iconPath;
 
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(serializeContext, "No serialize context");
 
     auto classData = serializeContext->FindClassData(componentType);

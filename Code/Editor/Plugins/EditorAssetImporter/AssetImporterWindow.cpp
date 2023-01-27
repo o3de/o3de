@@ -142,7 +142,7 @@ void AssetImporterWindow::closeEvent(QCloseEvent* ev)
 void AssetImporterWindow::Init()
 {
     // Serialization and reflection framework setup
-    EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(m_serializeContext, "Serialization context not available");
 
     // Load the style sheets
@@ -433,8 +433,12 @@ void AssetImporterWindow::OnSceneResetRequested()
             m_assetImporterDocument->GetScene()->GetManifest().Clear();
 
             AZ::SceneAPI::Events::ProcessingResultCombiner result;
-            EBUS_EVENT_RESULT(result, AssetImportRequestBus, UpdateManifest, *m_assetImporterDocument->GetScene(),
-                AssetImportRequest::ManifestAction::ConstructDefault, AssetImportRequest::RequestingApplication::Editor);
+            AssetImportRequestBus::BroadcastResult(
+                result,
+                &AssetImportRequestBus::Events::UpdateManifest,
+                *m_assetImporterDocument->GetScene(),
+                AssetImportRequest::ManifestAction::ConstructDefault,
+                AssetImportRequest::RequestingApplication::Editor);
 
             // Specifically using success, because ignore would be an invalid case.
             // Whenever we do construct default, it should always be done

@@ -38,7 +38,7 @@ namespace LyShineExamples
     int UiTestScrollBoxDataProviderComponent::GetNumElements()
     {
         UiDynamicContentDatabase *uiDynamicContentDB = nullptr;
-        EBUS_EVENT_RESULT(uiDynamicContentDB, LyShineExamplesInternalBus, GetUiDynamicContentDatabase);
+        LyShineExamplesInternalBus::BroadcastResult(uiDynamicContentDB, &LyShineExamplesInternalBus::Events::GetUiDynamicContentDatabase);
         if (uiDynamicContentDB)
         {
             return uiDynamicContentDB->GetNumColors(UiDynamicContentDatabaseInterface::ColorType::PaidColors);
@@ -51,7 +51,7 @@ namespace LyShineExamples
     void UiTestScrollBoxDataProviderComponent::OnElementBecomingVisible(AZ::EntityId entityId, int index)
     {
         UiDynamicContentDatabase *uiDynamicContentDB = nullptr;
-        EBUS_EVENT_RESULT(uiDynamicContentDB, LyShineExamplesInternalBus, GetUiDynamicContentDatabase);
+        LyShineExamplesInternalBus::BroadcastResult(uiDynamicContentDB, &LyShineExamplesInternalBus::Events::GetUiDynamicContentDatabase);
         if (uiDynamicContentDB)
         {
             if ((index >= 0) && (index < uiDynamicContentDB->GetNumColors(UiDynamicContentDatabaseInterface::ColorType::PaidColors)))

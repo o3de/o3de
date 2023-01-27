@@ -292,7 +292,8 @@ namespace LUAEditor
 
             // scan the breakpoint store from our context and pre-set the markers to get in sync
             const LUAEditor::BreakpointMap* myData = NULL;
-            EBUS_EVENT_RESULT(myData, LUAEditor::LUABreakpointRequestMessages::Bus, RequestBreakpoints);
+            LUAEditor::LUABreakpointRequestMessages::Bus::BroadcastResult(
+                myData, &LUAEditor::LUABreakpointRequestMessages::Bus::Events::RequestBreakpoints);
             AZ_Assert(myData, "LUAEditor::LUABreakpointRequestMessages::Bus, RequestBreakpoints failed to return any data.");
             BreakpointsUpdate(*myData);
             UpdateCurrentEditingLine(newInfo.m_PresetLineAtOpen);
@@ -595,7 +596,8 @@ namespace LUAEditor
         m_gui->m_breakpoints->ClearBreakpoints();
 
         const LUAEditor::BreakpointMap* myData = NULL;
-        EBUS_EVENT_RESULT(myData, LUAEditor::LUABreakpointRequestMessages::Bus, RequestBreakpoints);
+        LUAEditor::LUABreakpointRequestMessages::Bus::BroadcastResult(
+            myData, &LUAEditor::LUABreakpointRequestMessages::Bus::Events::RequestBreakpoints);
         AZ_Assert(myData, "Nobody responded to the request breakpoints message.");
 
         // and slam down a new set

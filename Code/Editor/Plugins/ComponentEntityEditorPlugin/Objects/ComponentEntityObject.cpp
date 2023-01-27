@@ -194,7 +194,7 @@ void CComponentEntityObject::SetName(const QString& name)
         EditorActionScope nameChange(m_nameReentryGuard);
 
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityId);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_entityId);
 
         if (entity)
         {

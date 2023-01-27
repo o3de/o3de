@@ -898,7 +898,8 @@ namespace LUAEditor
         if (SyncDocumentToContext(m_lastFocusedAssetId))
         {
             bool saveSuccess = false;
-            EBUS_EVENT_RESULT(saveSuccess, Context_DocumentManagement::Bus, OnSaveDocumentAs, m_lastFocusedAssetId, false);
+            Context_DocumentManagement::Bus::BroadcastResult(
+                saveSuccess, &Context_DocumentManagement::Bus::Events::OnSaveDocumentAs, m_lastFocusedAssetId, false);
         }
     }
 

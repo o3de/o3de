@@ -186,7 +186,8 @@ namespace AzToolsFramework
         pApplication->setApplicationName("O3DE Editor");
 
         bool GUIMode = true;
-        EBUS_EVENT_RESULT(GUIMode, LegacyFramework::FrameworkApplicationMessages::Bus, IsRunningInGUIMode);
+        LegacyFramework::FrameworkApplicationMessages::Bus::BroadcastResult(GUIMode,
+            &LegacyFramework::FrameworkApplicationMessages::Bus::Events::IsRunningInGUIMode);
 
         // if we're not in GUI Mode why bother reigstering fonts and style sheets?
         if (GUIMode)
@@ -278,7 +279,7 @@ namespace AzToolsFramework
             m_ptrTicker->cancel();
             QApplication::processEvents();
             AZ::ComponentApplication* pApp = nullptr;
-            EBUS_EVENT_RESULT(pApp, AZ::ComponentApplicationBus, GetApplication);
+            AZ::ComponentApplicationBus::BroadcastResult(pApp, &AZ::ComponentApplicationBus::Events::GetApplication);
             if (pApp)
             {
                 pApp->Tick();
@@ -363,7 +364,7 @@ namespace AzToolsFramework
         m_bTicking = true;
         // Tick the component app.
         AZ::ComponentApplication* pApp = nullptr;
-        EBUS_EVENT_RESULT(pApp, AZ::ComponentApplicationBus, GetApplication);
+        AZ::ComponentApplicationBus::BroadcastResult(pApp, &AZ::ComponentApplicationBus::Events::GetApplication);
         if (pApp && m_ptrTicker)
         {
             AZ::SystemTickBus::ExecuteQueuedEvents();
@@ -447,7 +448,7 @@ namespace AzToolsFramework
         // start the shutdown sequence:
         Ebus_Event_AllOkay check;
 
-        EBUS_EVENT_RESULT(check, LegacyFramework::CoreMessageBus, OnGetPermissionToShutDown);
+        LegacyFramework::CoreMessageBus::BroadcastResult(check, &LegacyFramework::CoreMessageBus::Events::OnGetPermissionToShutDown);
         if (!check.Accepted())
         {
             return;
@@ -466,7 +467,7 @@ namespace AzToolsFramework
 
         Ebus_Event_AllOkay check;
 
-        EBUS_EVENT_RESULT(check, LegacyFramework::CoreMessageBus, CheckOkayToShutDown);
+        LegacyFramework::CoreMessageBus::BroadcastResult(check, &LegacyFramework::CoreMessageBus::Events::CheckOkayToShutDown);
         if (!check.Accepted())
         {
             // the above could cause contexts to generate threaded requests that are outstanding (like a long data save).
@@ -482,7 +483,7 @@ namespace AzToolsFramework
         // pump the tickbus one last time!
        // QApplication::processEvents();
         AZ::ComponentApplication* pApp = nullptr;
-        EBUS_EVENT_RESULT(pApp, AZ::ComponentApplicationBus, GetApplication);
+        AZ::ComponentApplicationBus::BroadcastResult(pApp, &AZ::ComponentApplicationBus::Events::GetApplication);
         if (pApp)
         {
             pApp->Tick();

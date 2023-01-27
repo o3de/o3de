@@ -787,7 +787,7 @@ void CGameEngine::Update()
     }
 
     AZ::ComponentApplication* componentApplication = nullptr;
-    EBUS_EVENT_RESULT(componentApplication, AZ::ComponentApplicationBus, GetApplication);
+    AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationBus::Events::GetApplication);
 
     if (m_bInGameMode)
     {

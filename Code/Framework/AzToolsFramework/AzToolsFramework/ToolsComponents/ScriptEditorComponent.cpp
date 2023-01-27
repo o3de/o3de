@@ -233,7 +233,7 @@ namespace AzToolsFramework
 
                     // Create an EntityId instance
                     const AZ::SerializeContext* context = nullptr;
-                    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+                    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
                     const AZ::SerializeContext::ClassData* entityIdClassData = context->FindClassData(azrtti_typeid<AZ::EntityId>());
                     AZ_Assert(entityIdClassData && entityIdClassData->m_factory, "AZ::EntityId is missing ClassData or factory in the SerializeContext");
                     AZ::EntityId* entityId = static_cast<AZ::EntityId*>(entityIdClassData->m_factory->Create(name));
@@ -940,7 +940,8 @@ namespace AzToolsFramework
             AZStd::string scriptFilename;
             if (assetId.IsValid())
             {
-                EBUS_EVENT_RESULT(scriptFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(scriptFilename,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
             }
             EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, LaunchLuaEditor, scriptFilename.c_str());
         }

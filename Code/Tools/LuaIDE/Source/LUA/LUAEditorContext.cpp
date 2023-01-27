@@ -175,7 +175,11 @@ namespace LUAEditor
         desc.hotkeyDesc = AzToolsFramework::HotkeyDescription(AZ_CRC("LUAOpenEditor", 0x5870cf6d), "Ctrl+Shift+L", "Open LUA Editor", "General", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW);
         EBUS_EVENT(AzToolsFramework::FrameworkMessages::Bus, AddComponentInfo, desc);
 
-        EBUS_EVENT_RESULT(m_ipcOpenFilesHandle, LegacyFramework::IPCCommandBus, RegisterIPCHandler, "open_files", AZStd::bind(&Context::OnIPCOpenFiles, this, AZStd::placeholders::_1));
+        LegacyFramework::IPCCommandBus::BroadcastResult(
+            m_ipcOpenFilesHandle,
+            &LegacyFramework::IPCCommandBus::Events::RegisterIPCHandler,
+            "open_files",
+            AZStd::bind(&Context::OnIPCOpenFiles, this, AZStd::placeholders::_1));
 
         bool connectedToAssetProcessor = false;
 
@@ -682,7 +686,8 @@ namespace LUAEditor
         EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAResetZoom", 0xbe0787ad),               "Ctrl+0",           "Reset Default Zoom",                   "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
 
         bool GUIMode = true;
-        EBUS_EVENT_RESULT(GUIMode, LegacyFramework::FrameworkApplicationMessages::Bus, IsRunningInGUIMode);
+        LegacyFramework::FrameworkApplicationMessages::Bus::BroadcastResult(
+            GUIMode, &LegacyFramework::FrameworkApplicationMessages::Bus::Events::IsRunningInGUIMode);
         if (!GUIMode)
         {
             // do not auto create lua editor main window in batch mode.
@@ -963,7 +968,12 @@ namespace LUAEditor
             }
 
             AZ::Data::AssetId catalogAssetId;
-            EBUS_EVENT_RESULT(catalogAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, newAssetName.c_str(), AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid(), false);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                catalogAssetId,
+                &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                newAssetName.c_str(),
+                AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid(),
+                false);
 
             if (catalogAssetId.IsValid() || m_fileIO->Exists(newAssetName.c_str()))
             {
@@ -1487,7 +1497,8 @@ namespace LUAEditor
         // Register the script into the asset catalog
         AZ::Data::AssetType assetType = AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid();
         AZ::Data::AssetId catalogAssetId;
-        EBUS_EVENT_RESULT(catalogAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, normalizedAssetId.c_str(), assetType, true);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            catalogAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, normalizedAssetId.c_str(), assetType, true);
 
         uint64_t modTime = m_fileIO->ModificationTime(assetId.c_str());
 
@@ -1619,7 +1630,8 @@ namespace LUAEditor
         if (executeLocally)
         {
             AZ::ScriptContext* sc = nullptr;
-            EBUS_EVENT_RESULT(sc, AZ::ScriptSystemRequestBus, GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
+            AZ::ScriptSystemRequestBus::BroadcastResult(
+                sc, &AZ::ScriptSystemRequestBus::Events::GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
             if (sc)
             {
                 // we might want to bracket this with some sort of error or warning protection, to collect
