@@ -107,3 +107,6 @@ class TestAutomation(EditorTestSuite):
 
     class test_EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenLeavingGameMode(EditorBatchedTest):
         from .EditorScripts import EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenLeavingGameMode as test_module
+
+    class test_EditorWorkflow_EditorCameraTransformCanBeModifiedWhileInBeThisCamera(EditorBatchedTest):
+        from .EditorScripts import EditorWorkflow_EditorCameraTransformCanBeModifiedWhileInBeThisCamera as test_module

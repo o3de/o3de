@@ -76,7 +76,6 @@ def EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenLeavingGameMode():
 
     # note: this won't match the entity transform, this will be the default camera position
     initial_camera_position = get_current_view_position_as_vector3()
-    print(initial_camera_position)
 
     # enter/exit game mode
     general.enter_game_mode()
@@ -97,7 +96,6 @@ def EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenLeavingGameMode():
 
     # verify the position has been updated
     Report.result(Tests.camera_returned_to_initial_position, position_restored)
-    print(position_restored)
 
 
 if __name__ == "__main__":
