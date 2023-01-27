@@ -26,7 +26,7 @@ ViewportAddGuideInteraction::ViewportAddGuideInteraction(
     , m_cursorViewportPos(0.0f, 0.0f)
 {
     // store whether snapping is enabled for this canvas
-    EBUS_EVENT_ID_RESULT(m_isSnapping, canvasId, UiEditorCanvasBus, GetIsSnapEnabled);
+    UiEditorCanvasBus::EventResult(m_isSnapping, canvasId, &UiEditorCanvasBus::Events::GetIsSnapEnabled);
 
     m_addingGuideAtPosition = CanvasHelpers::GetSnappedCanvasPoint(m_canvasId, startDragMousePos, m_isSnapping);
 }
@@ -63,11 +63,11 @@ void ViewportAddGuideInteraction::EndInteraction(EndState endState)
         // Add the new guide to the canvas
         if (m_guideIsVertical)
         {
-            EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, AddVerticalGuide, m_addingGuideAtPosition.GetX());
+            UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::AddVerticalGuide, m_addingGuideAtPosition.GetX());
         }
         else
         {
-            EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, AddHorizontalGuide, m_addingGuideAtPosition.GetY());
+            UiEditorCanvasBus::Event(canvasEntityId, &UiEditorCanvasBus::Events::AddHorizontalGuide, m_addingGuideAtPosition.GetY());
         }
 
         // force guides to be visible so that you can see the added guide
