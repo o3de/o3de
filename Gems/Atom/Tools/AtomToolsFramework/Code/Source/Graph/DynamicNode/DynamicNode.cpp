@@ -79,6 +79,46 @@ namespace AtomToolsFramework
         AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
             m_config, m_toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetConfigById, m_configId);
 
+        for (const auto& slotConfig : m_config.m_propertySlots)
+        {
+            // Property slots only support one data type. Search for the first valid supported data type.
+            GraphModel::DataTypePtr dataType = slotConfig.GetDefaultDataType();
+            if (!dataType)
+            {
+                AZ_Error(
+                    "DynamicNode",
+                    false,
+                    "Unable to register property slot \"%s\" with no supported data types, from DynamicNodeConfig \"%s\"",
+                    slotConfig.m_displayName.c_str(),
+                    m_configId.ToFixedString().c_str());
+                continue;
+            }
+
+            // Assigning the default value from the slot configuration or the first data type
+            const AZStd::any& defaultValue = slotConfig.GetDefaultValue();
+            if (defaultValue.empty())
+            {
+                AZ_Error(
+                    "DynamicNode",
+                    false,
+                    "Unable to register property slot \"%s\" with invalid default value, from DynamicNodeConfig \"%s\"",
+                    slotConfig.m_displayName.c_str(),
+                    m_configId.ToFixedString().c_str());
+                continue;
+            }
+
+            RegisterSlot(GraphModel::SlotDefinition::CreateProperty(
+                slotConfig.m_name,
+                slotConfig.m_displayName,
+                dataType,
+                defaultValue,
+                slotConfig.m_description,
+                nullptr,
+                slotConfig.m_enumValues,
+                slotConfig.m_visibleOnNode,
+                slotConfig.m_editableOnNode));
+        }
+
         // Register all of the input data slots with the dynamic node
         for (const auto& slotConfig : m_config.m_inputSlots)
         {
@@ -116,6 +156,7 @@ namespace AtomToolsFramework
                 defaultValue,
                 slotConfig.m_description,
                 nullptr,
+                slotConfig.m_enumValues,
                 slotConfig.m_visibleOnNode,
                 slotConfig.m_editableOnNode));
         }
@@ -141,45 +182,7 @@ namespace AtomToolsFramework
                 dataType,
                 slotConfig.m_description,
                 nullptr,
-                slotConfig.m_visibleOnNode,
-                slotConfig.m_editableOnNode));
-        }
-
-        for (const auto& slotConfig : m_config.m_propertySlots)
-        {
-            // Property slots only support one data type. Search for the first valid supported data type.
-            GraphModel::DataTypePtr dataType = slotConfig.GetDefaultDataType();
-            if (!dataType)
-            {
-                AZ_Error(
-                    "DynamicNode",
-                    false,
-                    "Unable to register property slot \"%s\" with no supported data types, from DynamicNodeConfig \"%s\"",
-                    slotConfig.m_displayName.c_str(),
-                    m_configId.ToFixedString().c_str());
-                continue;
-            }
-
-            // Assigning the default value from the slot configuration or the first data type
-            const AZStd::any& defaultValue = slotConfig.GetDefaultValue();
-            if (defaultValue.empty())
-            {
-                AZ_Error(
-                    "DynamicNode",
-                    false,
-                    "Unable to register property slot \"%s\" with invalid default value, from DynamicNodeConfig \"%s\"",
-                    slotConfig.m_displayName.c_str(),
-                    m_configId.ToFixedString().c_str());
-                continue;
-            }
-
-            RegisterSlot(GraphModel::SlotDefinition::CreateProperty(
-                slotConfig.m_name,
-                slotConfig.m_displayName,
-                dataType,
-                defaultValue,
-                slotConfig.m_description,
-                nullptr,
+                slotConfig.m_enumValues,
                 slotConfig.m_visibleOnNode,
                 slotConfig.m_editableOnNode));
         }

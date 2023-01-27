@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntityAsOverride.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoDelete.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoDeleteAsOverride.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoEntityOverrides.h>
 
 namespace AzToolsFramework
 {
@@ -86,10 +87,10 @@ namespace AzToolsFramework
                 TemplateId templateId,
                 UndoSystem::URSequencePoint* undoBatch)
             {
-                PrefabUndoRemoveEntities* removeEntitiesUndoState = aznew PrefabUndoRemoveEntities("Undo Removing Entities");
-                removeEntitiesUndoState->SetParent(undoBatch);
-                removeEntitiesUndoState->Capture(entityDomAndPathList, templateId);
-                removeEntitiesUndoState->Redo();
+                PrefabUndoRemoveEntityDoms* state = aznew PrefabUndoRemoveEntityDoms("Undo Removing Entity DOMs");
+                state->SetParent(undoBatch);
+                state->Capture(entityDomAndPathList, templateId);
+                state->Redo();
             }
 
             void UpdateEntity(
@@ -102,6 +103,17 @@ namespace AzToolsFramework
                 state->SetParent(undoBatch);
                 state->Capture(entityDomBeforeUpdatingEntity, entityDomAfterUpdatingEntity, entityId);
                 state->Redo();
+            }
+
+            void UpdateEntitiesAsOverrides(
+                const AZStd::vector<const AZ::Entity*>& entityList,
+                Instance& owningInstance,
+                const Instance& focusedInstance,
+                UndoSystem::URSequencePoint* undoBatch)
+            {
+                PrefabUndoEntityOverrides* state = aznew PrefabUndoEntityOverrides("Undo Updating Entity List As Override");
+                state->SetParent(undoBatch);
+                state->CaptureAndRedo(entityList, owningInstance, focusedInstance);
             }
 
             void DeleteEntities(
@@ -124,9 +136,6 @@ namespace AzToolsFramework
                 const Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch)
             {
-                AZ_Assert(&owningInstance != &focusedInstance,
-                    "DeleteEntitiesAndPrefabsAsOverride does not support source template editing.");
-
                 PrefabUndoDeleteAsOverride* deleteUndoAsOverrideState =
                     aznew PrefabUndoDeleteAsOverride("Undo Deleting Entities and Prefab Instances As Override");
                 deleteUndoAsOverrideState->SetParent(undoBatch);

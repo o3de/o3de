@@ -11,6 +11,7 @@
 #include <native/utilities/UuidManager.h>
 #include <native/utilities/assetUtils.h>
 #include <Metadata/MetadataManager.h>
+#include <native/AssetManager/FileStateCache.h>
 
 namespace AssetProcessor
 {
@@ -55,17 +56,17 @@ namespace AssetProcessor
         return entry.m_legacyUuids;
     }
 
-    void UuidManager::FileChanged(AZ::IO::Path file)
+    void UuidManager::FileChanged(AZ::IO::PathView file)
     {
-        InvalidateCacheEntry(AZStd::move(file));
+        InvalidateCacheEntry(file);
     }
 
-    void UuidManager::FileRemoved(AZ::IO::Path file)
+    void UuidManager::FileRemoved(AZ::IO::PathView file)
     {
-        InvalidateCacheEntry(AZStd::move(file));
+        InvalidateCacheEntry(file);
     }
 
-    void UuidManager::InvalidateCacheEntry(AZ::IO::Path file)
+    void UuidManager::InvalidateCacheEntry(AZ::IO::FixedMaxPath file)
     {
         AZStd::string extension = file.Extension().Native();
 
@@ -112,14 +113,38 @@ namespace AssetProcessor
             return itr->second;
         }
 
-        UuidEntry uuidInfo;
+        auto* fileStateInterface = AZ::Interface<IFileStateRequests>::Get();
 
-        // Check if there's a metadata file that already contains a saved UUID
-        if (GetMetadataManager()->GetValue(sourceAsset.AbsolutePath(), UuidKey, uuidInfo))
+        if (!fileStateInterface)
         {
-            m_uuids[normalizedPath] = uuidInfo;
+            AZ_Assert(false, "Programmer Error - IFileStateRequests interface is not available");
+            return {};
+        }
 
-            return uuidInfo;
+        const bool fileExists = fileStateInterface->Exists(AzToolsFramework::MetadataManager::ToMetadataPath(sourceAsset.AbsolutePath().c_str()).c_str());
+
+        // Metadata manager can't use the file state cache since it is in AzToolsFramework, so it's faster to do an Exists check up-front.
+        if (fileExists)
+        {
+            UuidEntry uuidInfo;
+
+            // Check if there's a metadata file that already contains a saved UUID
+            if (GetMetadataManager()->GetValue(sourceAsset.AbsolutePath(), UuidKey, uuidInfo))
+            {
+                m_uuids[normalizedPath] = uuidInfo;
+
+                return uuidInfo;
+            }
+        }
+
+        if (!fileStateInterface->Exists(sourceAsset.AbsolutePath().c_str()))
+        {
+            AZ_Error(
+                "UuidManager",
+                false,
+                "Programmer Error - cannot request UUID for file which does not exist - %s",
+                sourceAsset.AbsolutePath().c_str());
+            return {};
         }
 
         const bool isEnabledType = m_enabledTypes.contains(sourceAsset.AbsolutePath().Extension().Native());

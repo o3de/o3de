@@ -8,7 +8,5 @@
         "scripts/build/Platform/*/build_config.json",
         "restricted/*/scripts/build/build_config.json"
     ],
-    "PYTHON_DIR": "python",
-    "EXTERNAL_REPOS": [
-    ]
+    "PYTHON_DIR": "python"
 }

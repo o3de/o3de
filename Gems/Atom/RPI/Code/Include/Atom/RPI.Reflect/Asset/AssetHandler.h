@@ -24,6 +24,7 @@ namespace AZ
         {
             using Base = AzFramework::GenericAssetHandler<AssetDataT>;
         public:
+            AZ_CLASS_ALLOCATOR(AssetHandler, AZ::SystemAllocator)
             AssetHandler()
                 : Base(AssetDataT::DisplayName, AssetDataT::Group, AssetDataT::Extension)
             {}

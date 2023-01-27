@@ -32,6 +32,7 @@ namespace AZ
         struct AliasedHeapDescriptor
             : public ResourcePoolDescriptor
         {
+            AZ_CLASS_ALLOCATOR(AliasedHeapDescriptor, SystemAllocator)
             static const uint32_t DefaultCacheSize = 256;
             static const size_t DefaultAlignment = 256;
 

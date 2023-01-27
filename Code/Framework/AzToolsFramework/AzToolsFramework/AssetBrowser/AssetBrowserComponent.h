@@ -36,6 +36,7 @@ namespace AzToolsFramework
         class FolderAssetBrowserEntry;
         class RootAssetBrowserEntry;
         class AssetEntryChangeset;
+        class AssetBrowserEntityInspectorWidget;
 
         //! AssetBrowserComponent caches database entries
         /*!

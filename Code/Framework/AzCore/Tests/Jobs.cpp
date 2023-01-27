@@ -78,9 +78,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-
             JobManagerDesc desc;
             JobManagerThreadDesc threadDesc;
 #if AZ_TRAIT_SET_JOB_PROCESSOR_ID
@@ -112,9 +109,6 @@ namespace UnitTest
 
             delete m_jobContext;
             delete m_jobManager;
-
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }
@@ -1608,9 +1602,6 @@ namespace Benchmark
 
         void internalSetUp()
         {
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-
             JobManagerDesc desc;
             JobManagerThreadDesc threadDesc;
 #if AZ_TRAIT_SET_JOB_PROCESSOR_ID
@@ -1669,9 +1660,6 @@ namespace Benchmark
             m_randomDepths = {};
             delete m_jobContext;
             delete m_jobManager;
-
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
         }
         void TearDown(::benchmark::State&) override
         {

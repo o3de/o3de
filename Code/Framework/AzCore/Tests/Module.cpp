@@ -74,6 +74,7 @@ namespace UnitTest
         , public ModuleTestRequestBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(StaticModule, AZ::SystemAllocator)
         static bool s_loaded;
         static bool s_reflected;
 

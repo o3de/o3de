@@ -45,7 +45,7 @@ namespace EMotionFX
     {
         if (attrValue)
         {
-            AnimGraphNode* node = static_cast<AnimGraphNode*>(attrValue->GetInstancePointer());
+            AnimGraphNode* node = static_cast<AnimGraphNode*>(attrValue->GetInstance());
             m_object = azdynamic_cast<ObjectAffectedByParameterChanges*>(node);
             GUI->SetObjectAffectedByParameterChanges(m_object);
         }

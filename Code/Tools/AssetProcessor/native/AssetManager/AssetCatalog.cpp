@@ -141,14 +141,7 @@ namespace AssetProcessor
                 m_catalogIsDirty = true;
 
                 m_registries[assetPlatform].UnregisterAsset(message.m_assetId);
-
-                for (const AZ::Data::AssetId& mapping : message.m_legacyAssetIds)
-                {
-                    if (mapping != message.m_assetId)
-                    {
-                        m_registries[assetPlatform].UnregisterLegacyAssetMapping(mapping);
-                    }
-                }
+                m_registries[assetPlatform].UnregisterLegacyAssetMappingsForAsset(message.m_assetId);
 
                 if (m_registryBuiltOnce)
                 {
@@ -469,35 +462,77 @@ namespace AssetProcessor
         m_catalogIsDirty = true;
         m_registryBuiltOnce = true;
 
-        AZStd::lock_guard<AZStd::mutex> lock(m_databaseMutex);
-        QMutexLocker locker(&m_registriesMutex);
-
-        for (QString platform : m_platforms)
         {
-            auto inserted = m_registries.insert(platform, AzFramework::AssetRegistry());
-            AzFramework::AssetRegistry& currentRegistry = inserted.value();
+            AZStd::lock_guard<AZStd::mutex> lock(m_databaseMutex);
+            QMutexLocker locker(&m_registriesMutex);
 
-            QElapsedTimer timer;
-            timer.start();
-            auto databaseQueryCallback = [&](AzToolsFramework::AssetDatabase::CombinedDatabaseEntry& combined)
+            for (QString platform : m_platforms)
+            {
+                auto inserted = m_registries.insert(platform, AzFramework::AssetRegistry());
+                AzFramework::AssetRegistry& currentRegistry = inserted.value();
+                // list of source entries in the database that need to have their UUID updated
+                AZStd::vector<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> sourceEntriesToUpdate;
+
+                QElapsedTimer timer;
+                timer.start();
+                auto databaseQueryCallback = [&](AzToolsFramework::AssetDatabase::CombinedDatabaseEntry& combined)
                 {
-                    AZ::Data::AssetId assetId(combined.m_sourceGuid, combined.m_subID);
+                    SourceAssetReference sourceAsset(combined.m_scanFolderPK, combined.m_scanFolder.c_str(), combined.m_sourceName.c_str());
+                    AZ::Data::AssetId assetId;
+
+                    auto* fileStateInterface = AZ::Interface<IFileStateRequests>::Get();
+
+                    if (!fileStateInterface)
+                    {
+                        AZ_Assert(false, "Programmer Error - IFileStateRequests interface is not available");
+                        return false;
+                    }
+
+                    const bool fileExists = fileStateInterface->Exists(sourceAsset.AbsolutePath().c_str());
+
+                    // Only try to update for files which actually exist
+                    if (fileExists)
+                    {
+                        auto canonicalUuid = AssetUtilities::GetSourceUuid(sourceAsset);
+                        assetId = AZ::Data::AssetId(canonicalUuid, combined.m_subID);
+
+                        if (canonicalUuid.IsNull())
+                        {
+                            // Error is already handled by GetSourceUuid
+                            return true;
+                        }
+
+                        if (canonicalUuid != combined.m_sourceGuid)
+                        {
+                            // Canonical UUID does not match stored UUID, this entry needs to be updated
+                            sourceEntriesToUpdate.emplace_back(
+                                combined.m_sourceID,
+                                combined.m_scanFolderID,
+                                combined.m_sourceName.c_str(),
+                                canonicalUuid, // Updated UUID
+                                combined.m_analysisFingerprint.c_str());
+                        }
+                    }
+                    else
+                    {
+                        assetId = AZ::Data::AssetId(combined.m_sourceGuid, combined.m_subID);
+                    }
 
                     // relative file path is gotten by removing the platform and game from the product name
                     AZStd::string_view relativeProductPath = AssetUtilities::StripAssetPlatformNoCopy(combined.m_productName);
                     QString fullProductPath = m_cacheRoot.absoluteFilePath(combined.m_productName.c_str());
 
+                    AZ::u64 productFileSize = 0;
+                    AZ::IO::FileIOBase::GetInstance()->Size(fullProductPath.toUtf8().constData(), productFileSize);
+
                     AZ::Data::AssetInfo info;
                     info.m_assetType = combined.m_assetType;
                     info.m_relativePath = relativeProductPath;
                     info.m_assetId = assetId;
-                    info.m_sizeBytes = AZ::IO::SystemFile::Length(fullProductPath.toUtf8().constData());
+                    info.m_sizeBytes = productFileSize;
 
                     // also register it at the legacy id(s) if its different:
                     AZ::Data::AssetId legacyAssetId(combined.m_legacyGuid, 0);
-                    AZ::Uuid  legacySourceUuid = AssetUtilities::CreateSafeSourceUUIDFromName(combined.m_sourceName.c_str(), false);
-                    AZ::Data::AssetId legacySourceAssetId(legacySourceUuid, combined.m_subID);
-
                     currentRegistry.RegisterAsset(assetId, info);
 
                     if (legacyAssetId != assetId)
@@ -505,44 +540,76 @@ namespace AssetProcessor
                         currentRegistry.RegisterLegacyAssetMapping(legacyAssetId, assetId);
                     }
 
-                    if (legacySourceAssetId != assetId)
+                    AZStd::unordered_set<AZ::Data::AssetId> legacySourceAssetIds;
+
+                    if (fileExists)
                     {
-                        currentRegistry.RegisterLegacyAssetMapping(legacySourceAssetId, assetId);
+                        auto legacySourceUuids = AssetUtilities::GetLegacySourceUuids(sourceAsset);
+                        legacySourceAssetIds.reserve(legacySourceUuids.size());
+
+                        for (const auto& legacyUuid : legacySourceUuids)
+                        {
+                            AZ::Data::AssetId legacySourceAssetId(legacyUuid, combined.m_subID);
+
+                            if (legacySourceAssetId != assetId)
+                            {
+                                legacySourceAssetIds.emplace(legacySourceAssetId);
+                                currentRegistry.RegisterLegacyAssetMapping(legacySourceAssetId, assetId);
+                            }
+                        }
                     }
 
                     // now include the additional legacies based on the SubIDs by which this asset was previously referred to.
                     for (const auto& entry : combined.m_legacySubIDs)
                     {
                         AZ::Data::AssetId legacySubID(combined.m_sourceGuid, entry.m_subID);
-                        if ((legacySubID != assetId) && (legacySubID != legacyAssetId) && (legacySubID != legacySourceAssetId))
+                        if ((legacySubID != assetId) && (legacySubID != legacyAssetId) && !legacySourceAssetIds.contains(legacySubID))
                         {
                             currentRegistry.RegisterLegacyAssetMapping(legacySubID, assetId);
                         }
-
                     }
 
-                    return true;//see them all
+                    return true; // see them all
                 };
 
-            m_db->QueryCombined(
-                databaseQueryCallback, AZ::Uuid::CreateNull(),
-                nullptr,
-                platform.toUtf8().constData(),
-                AzToolsFramework::AssetSystem::JobStatus::Any,
-                true); /*we still need legacy IDs - hardly anyone else does*/
+                m_db->QueryCombined(
+                    databaseQueryCallback,
+                    AZ::Uuid::CreateNull(),
+                    nullptr,
+                    platform.toUtf8().constData(),
+                    AzToolsFramework::AssetSystem::JobStatus::Any,
+                    true); /*we still need legacy IDs - hardly anyone else does*/
 
-            m_db->QueryProductDependenciesTable([this, &platform](AZ::Data::AssetId& assetId, AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry)
-            {
-                if (AzFramework::StringFunc::Equal(entry.m_platform.c_str(), platform.toUtf8().data()))
+                m_db->QueryProductDependenciesTable(
+                    [this, &platform](AZ::Data::AssetId& assetId, AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry)
+                    {
+                        if (AzFramework::StringFunc::Equal(entry.m_platform.c_str(), platform.toUtf8().data()))
+                        {
+                            m_registries[platform].RegisterAssetDependency(
+                                assetId,
+                                AZ::Data::ProductDependency{ AZ::Data::AssetId(entry.m_dependencySourceGuid, entry.m_dependencySubID),
+                                                             entry.m_dependencyFlags });
+                        }
+
+                        return true;
+                    });
+
+                // Update any old source UUIDs
+                for (auto& sourceDatabaseEntry : sourceEntriesToUpdate)
                 {
-                    m_registries[platform].RegisterAssetDependency(assetId, AZ::Data::ProductDependency{ AZ::Data::AssetId(entry.m_dependencySourceGuid, entry.m_dependencySubID), entry.m_dependencyFlags });
+                    m_db->SetSource(sourceDatabaseEntry);
                 }
 
-                return true;
-            });
-
-            AZ_TracePrintf("Catalog", "Read %u assets from database for %s in %fs\n", currentRegistry.m_assetIdToInfo.size(), platform.toUtf8().constData(), timer.elapsed() / 1000.0f);
+                AZ_TracePrintf(
+                    "Catalog",
+                    "Read %u assets from database for %s in %fs\n",
+                    currentRegistry.m_assetIdToInfo.size(),
+                    platform.toUtf8().constData(),
+                    timer.elapsed() / 1000.0f);
+            }
         }
+
+        Q_EMIT CatalogLoaded();
     }
 
     void AssetCatalog::OnDependencyResolved(const AZ::Data::AssetId& assetId, const AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry)
@@ -637,19 +704,22 @@ namespace AssetProcessor
         }
     }
 
-    void AssetCatalog::OnSourceQueued(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid, const SourceAssetReference& sourceAsset)
+    void AssetCatalog::OnSourceQueued(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids, const SourceAssetReference& sourceAsset)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceNameMapMutex);
 
         m_sourceUUIDToSourceAssetMap.insert({ sourceUuid, sourceAsset });
 
         //adding legacy source uuid as well
+        for (const auto legacyUuid : legacyUuids)
+        {
         m_sourceUUIDToSourceAssetMap.insert({ legacyUuid, sourceAsset });
+        }
 
         m_sourceAssetToSourceUUIDMap.insert({ sourceAsset, sourceUuid });
     }
 
-    void AssetCatalog::OnSourceFinished(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid)
+    void AssetCatalog::OnSourceFinished(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceNameMapMutex);
 
@@ -660,7 +730,11 @@ namespace AssetProcessor
         }
 
         m_sourceUUIDToSourceAssetMap.erase(sourceUuid);
+
+        for (const auto& legacyUuid : legacyUuids)
+        {
         m_sourceUUIDToSourceAssetMap.erase(legacyUuid);
+    }
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -1148,6 +1222,43 @@ namespace AssetProcessor
         return false;
     }
 
+    bool AssetCatalog::ClearFingerprintForAsset(const AZStd::string& sourcePath)
+    {
+        AZStd::lock_guard<AZStd::mutex> lock(m_databaseMutex);
+
+        SourceAssetReference sourceAsset;
+
+        if (QFileInfo(sourcePath.c_str()).isAbsolute())
+        {
+            sourceAsset = SourceAssetReference(sourcePath.c_str());
+        }
+        else
+        {
+            QString absolutePath = m_platformConfig->FindFirstMatchingFile(sourcePath.c_str());
+
+            if (absolutePath.isEmpty())
+            {
+                return false;
+            }
+
+            sourceAsset = SourceAssetReference(absolutePath.toUtf8().constData());
+        }
+
+        if(!m_db->UpdateFileHashByFileNameAndScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), 0))
+        {
+            return false;
+        }
+
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
+        if (!m_db->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source))
+        {
+            return false;
+        }
+
+        // if setting the file hash failed, still try to clear the job fingerprints.
+        return m_db->SetJobFingerprintsBySourceID(source.m_sourceID, 0);
+    }
+
     bool AssetCatalog::GetScanFolders(AZStd::vector<AZStd::string>& scanFolders)
     {
         int scanFolderCount = m_platformConfig->GetScanFolderCount();
@@ -1621,7 +1732,13 @@ namespace AssetProcessor
 
     bool AssetCatalog::GetUncachedSourceInfoFromDatabaseNameAndWatchFolder(const SourceAssetReference& sourceAsset, AZ::Data::AssetInfo& assetInfo)
     {
-        AZ::Uuid sourceUUID = AssetUtilities::CreateSafeSourceUUIDFromName(sourceAsset.RelativePath().c_str());
+        // Make sure the source file exists first
+        if (!AZ::IO::SystemFile::Exists(sourceAsset.AbsolutePath().c_str()))
+        {
+            return false;
+        }
+
+        AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(sourceAsset);
         if (sourceUUID.IsNull())
         {
             return false;
@@ -1633,12 +1750,6 @@ namespace AssetProcessor
         assetInfo.m_relativePath = sourceAsset.RelativePath().c_str();
         assetInfo.m_sizeBytes = AZ::IO::SystemFile::Length(sourceAsset.AbsolutePath().c_str());
         assetInfo.m_assetType = AZ::Uuid::CreateNull();
-
-        // Make sure the source file exists
-        if (assetInfo.m_sizeBytes == 0 && !AZ::IO::SystemFile::Exists(sourceAsset.AbsolutePath().c_str()))
-        {
-            return false;
-        }
 
         // Go through the list of source assets and see if this asset's file path matches any of the filters
         for (const auto& pair : m_sourceAssetTypeFilters)

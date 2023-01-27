@@ -140,7 +140,7 @@ namespace AssetProcessor
         for (const QMetaObject::Connection& connection : m_assetProcessorConnections)
         {
             QObject::disconnect(connection);
-        }        
+        }
 
         QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -207,7 +207,7 @@ namespace AssetProcessor
                     << AZStd::string::format("Failed to modify the creation time of %s", expect.toUtf8().data()).c_str();
                 file.close();
 
-                //Add 2 seconds to the next file timestamp since the file time resolution is one second on platforms other than Windows. 
+                //Add 2 seconds to the next file timestamp since the file time resolution is one second on platforms other than Windows.
                 fileTime = fileTime.addSecs(2);
             }
         }
@@ -289,7 +289,7 @@ namespace AssetProcessor
         ignore_rec.m_platformSpecs.insert({"android", AssetInternalSpec::Skip});
         m_config.AddRecognizer(ignore_rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(ignore_rec);
-     
+
         QSet<QString> expectedFiles;
         // subfolder3 is not recursive so none of these should show up in any scan or override check
         expectedFiles << m_sourceRoot.absoluteFilePath("subfolder3/aaa/basefile.txt");
@@ -1423,7 +1423,7 @@ namespace AssetProcessor
         rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
         m_config.AddRecognizer(rec);
         EXPECT_TRUE(mockAppManager.RegisterAssetRecognizerAsBuilder(rec));
-        
+
         QString absolutePath = AssetUtilities::NormalizeFilePath(m_sourceRoot.absoluteFilePath("subfolder3/somerandomfile.random"));
         AssetProcessorManagerUnitTestUtils::CreateExpectedFiles({absolutePath});
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
@@ -2271,7 +2271,7 @@ namespace AssetProcessor
 
             // note, uuid does not include watch folder name.  This is a quick test to make sure that the source file UUID actually makes it into the CreateJobRequest.
             // the ProcessJobRequest is populated frmo the CreateJobRequest.
-            EXPECT_EQ(builder->GetLastCreateJobRequest().m_sourceFileUUID, AssetUtilities::CreateSafeSourceUUIDFromName("uniquefile.txt"));
+            EXPECT_EQ(builder->GetLastCreateJobRequest().m_sourceFileUUID, AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath)));
             QString watchedFolder(AssetUtilities::NormalizeFilePath(builder->GetLastCreateJobRequest().m_watchFolder.c_str()));
             QString expectedWatchedFolder(m_sourceRoot.absoluteFilePath("subfolder3"));
             EXPECT_EQ(QString::compare(watchedFolder, expectedWatchedFolder, Qt::CaseInsensitive), 0); // verify watchfolder
@@ -2667,7 +2667,14 @@ namespace AssetProcessor
         QString sourceFileAPath = m_sourceRoot.absoluteFilePath("subfolder1/some/random/folders/FileA.txt");
         QString sourceFileBPath = m_sourceRoot.absoluteFilePath("subfolder1/FileB.txt");
         QString sourceFileCPath = m_sourceRoot.absoluteFilePath("FileC.txt");
-        sourceFileBUuid = AssetUtilities::CreateSafeSourceUUIDFromName("FileB.txt");
+
+        EXPECT_TRUE(CreateDummyFile(sourceFileAPath, ""));
+        EXPECT_TRUE(CreateDummyFile(sourceFileBPath, ""));
+        EXPECT_TRUE(CreateDummyFile(sourceFileCPath, ""));
+
+        sourceFileBUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(sourceFileBPath));
+
+        EXPECT_FALSE(sourceFileBUuid.IsNull());
 
         constexpr const char* productFileAFilename = "fileaproduct.txt";
         constexpr const char* productFileBFilename = "filebproduct1.txt";
@@ -2681,9 +2688,6 @@ namespace AssetProcessor
         QString productFileCPath = m_cacheRoot.filePath(QString("pc/") + productFileCFilename);
         QString product2FileCPath = m_cacheRoot.filePath(QString("pc/") + product2FileCFilename);
 
-        EXPECT_TRUE(CreateDummyFile(sourceFileAPath, ""));
-        EXPECT_TRUE(CreateDummyFile(sourceFileBPath, ""));
-        EXPECT_TRUE(CreateDummyFile(sourceFileCPath, ""));
         EXPECT_TRUE(CreateDummyFile(productFileAPath, "product"));
         EXPECT_TRUE(CreateDummyFile(productFileBPath, "product"));
         EXPECT_TRUE(CreateDummyFile(product2FileBPath, "product"));
@@ -2963,4 +2967,134 @@ namespace AssetProcessor
 
         assetBuilderInfoHandler.BusDisconnect();
     }
+
+    // Helper function, processes assets and blocks until complete
+    void AssetProcessorManagerUnitTests::ProcessAssetBlockUntilComplete(QString& assetToProcess)
+    {
+        m_processResults.clear();
+        QMetaObject::invokeMethod(
+            m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, assetToProcess));
+        EXPECT_TRUE(BlockUntil(m_idling, 5000));
+        QCoreApplication::processEvents(QEventLoop::AllEvents);
+
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
+    }
+
+    // This test verifies the fingerprint clearing command causes assets to reprocess.
+    // It does this by processing assets once to setup. Then processes them a second time, to verify
+    // they don't reprocess due to identical fingerprints. After that, it clears the fingerprint from the DB,
+    // and processes a final time, to verify the assets process because of the fingerprint change.
+    TEST_F(AssetProcessorManagerUnitTests, FingerprintClearRequest_ClearsFingerprints_AssetsReprocess)
+    {
+        // Step 1: Setup.
+        //  1. Create the asset recognizer.
+        //  2. Create the source asset.
+        //  3. Add the source asset to the file table.
+        //      This is normally handled by the file processor,
+        //      which is not enabled for this test to restrict dependencies.
+        //  4. Process assets.
+        //  5. Write job information to the database.
+        MockApplicationManager mockAppManager;
+        mockAppManager.BusConnect();
+
+        // Create the recognizer, so the assets can be setup with a source/product and a job.
+        AssetRecognizer rec;
+        rec.m_name = "txt files";
+        rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
+        rec.m_platformSpecs.insert({ "pc", AssetInternalSpec::Copy });
+        rec.m_platformSpecs.insert({ "android", AssetInternalSpec::Copy });
+        m_config.AddRecognizer(rec);
+        mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
+
+        // Define the source asset, and the path to it.
+        QString watchFolder("subfolder1");
+        QString fileName("basefile.txt");
+        QString relativePathToSourceFile = watchFolder + QDir::separator() + fileName;
+        QString absoluteFilePath = m_sourceRoot.absoluteFilePath(relativePathToSourceFile);
+
+        // Create the source asset.
+        QSet<QString> expectedFiles;
+        expectedFiles << absoluteFilePath;
+        AssetProcessorManagerUnitTestUtils::CreateExpectedFiles(expectedFiles);
+
+        // Add the source asset to the asset database
+        const ScanFolderInfo* scanFolderInfo = m_config.GetScanFolderByPath(m_sourceRoot.absoluteFilePath(watchFolder));
+        ASSERT_TRUE(scanFolderInfo != nullptr);
+        AzToolsFramework::AssetDatabase::FileDatabaseEntry file;
+        file.m_scanFolderPK = scanFolderInfo->ScanFolderID();
+        file.m_fileName = fileName.toUtf8().constData();
+        file.m_isFolder = false;
+
+        // Create a scoped asset database connection, so it's only kept as long as it's needed.
+        {
+            AssetDatabaseConnection connection;
+            EXPECT_TRUE(connection.OpenDatabase());
+            // Init to the opposite of the expected value, to verify that it gets set to what's expected.
+            bool entryAlreadyExists = true;
+            connection.InsertFile(file, entryAlreadyExists);
+            EXPECT_FALSE(entryAlreadyExists);
+        }
+
+        // ProcessAssetBlockUntilComplete calls AssessModifiedFile, but the file needs to get added first.
+        QMetaObject::invokeMethod(
+            m_assetProcessorManager.get(),
+            "AssessAddedFile",
+            Qt::QueuedConnection, Q_ARG(QString, absoluteFilePath));
+
+        // Process once, to setup the test and have the asset processed.
+        ProcessAssetBlockUntilComplete(absoluteFilePath);
+        EXPECT_EQ(m_processResults.size(), 2);
+        EXPECT_EQ(m_processResults[0].m_jobEntry.m_platformInfo.m_identifier, "android");
+        EXPECT_NE(m_processResults[0].m_jobEntry.m_computedFingerprint, 0);
+        EXPECT_EQ(m_processResults[1].m_jobEntry.m_platformInfo.m_identifier, "pc");
+        EXPECT_NE(m_processResults[1].m_jobEntry.m_computedFingerprint, 0);
+
+        // Create the product assets.
+        EXPECT_TRUE(CreateDummyFile(m_cacheRoot.filePath(QString("android") + QDir::separator() + fileName), ""));
+        EXPECT_TRUE(CreateDummyFile(m_cacheRoot.filePath(QString("pc") + QDir::separator() + fileName), ""));
+
+        // Create the job response, so the asset processor writes the fingerprints to the database.
+        AssetBuilderSDK::ProcessJobResponse response;
+        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(fileName.toUtf8().data(), AZ::Uuid::CreateNull(), 1));
+
+        for (auto& processResult : m_processResults)
+        {
+            QMetaObject::invokeMethod(
+                m_assetProcessorManager.get(),
+                "AssetProcessed",
+                Qt::QueuedConnection,
+                Q_ARG(JobEntry, processResult.m_jobEntry),
+                Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
+        }
+
+        // Wait on asset processing events, so everything runs.
+        EXPECT_TRUE(BlockUntil(m_idling, 5000));
+        QCoreApplication::processEvents(QEventLoop::AllEvents);
+
+        // Step 2: Verify assets don't re-process on a second call to process them.
+        //  This occurs because the fingerprints are identical.
+        ProcessAssetBlockUntilComplete(absoluteFilePath);
+        EXPECT_EQ(m_processResults.size(), 0);
+
+        // Step 3: Clear the fingerprint from the database.
+        AssetFingerprintClearRequest fingerprintClearRequest;
+        fingerprintClearRequest.m_searchTerm = absoluteFilePath.toUtf8().data();
+        AssetFingerprintClearResponse fingerprintClearResponse;
+        m_assetProcessorManager->ProcessFingerprintClearRequest(fingerprintClearRequest, fingerprintClearResponse);
+        QCoreApplication::processEvents(QEventLoop::AllEvents);
+
+        EXPECT_TRUE(fingerprintClearResponse.m_isSuccess);
+
+        // Step 4: Process again, and verify the assets did re-process, because the fingerprint changed.
+        ProcessAssetBlockUntilComplete(absoluteFilePath);
+        EXPECT_EQ(m_processResults.size(), 2);
+        EXPECT_EQ(m_processResults[0].m_jobEntry.m_platformInfo.m_identifier, "android");
+        EXPECT_NE(m_processResults[0].m_jobEntry.m_computedFingerprint, 0);
+        EXPECT_EQ(m_processResults[1].m_jobEntry.m_platformInfo.m_identifier, "pc");
+        EXPECT_NE(m_processResults[1].m_jobEntry.m_computedFingerprint, 0);
+
+        mockAppManager.BusDisconnect();
+    }
+
 } // namespace AssetProcessor

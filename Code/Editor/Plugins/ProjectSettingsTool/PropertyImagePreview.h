@@ -31,6 +31,7 @@ namespace ProjectSettingsTool
         Q_OBJECT
 
     public:
+        AZ_CLASS_ALLOCATOR(PropertyImagePreviewCtrl, AZ::SystemAllocator)
         PropertyImagePreviewCtrl(QWidget* parent = nullptr);
 
         // Sets path for the image preview
