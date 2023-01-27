@@ -403,6 +403,13 @@ namespace AzToolsFramework
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            // wrap BeginUndoBatch so we do not have to return a pointer to URSequencePoint which is not currently exposed to Python
+            // note: This could be added as a 'handle' that could then be resolved as a pointer but this functionality is not needed yet
+            auto BeginUndoBatchWrapper = [](ToolsApplicationRequests*, const char* name) {
+                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequestBus::Events::BeginUndoBatch, name);
+            };
+
             behaviorContext->EBus<ToolsApplicationRequestBus>("ToolsApplicationRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
@@ -425,6 +432,9 @@ namespace AzToolsFramework
                 ->Event("IsSelected", &ToolsApplicationRequests::IsSelected)
                 ->Event("AreAnyEntitiesSelected", &ToolsApplicationRequests::AreAnyEntitiesSelected)
                 ->Event("GetSelectedEntitiesCount", &ToolsApplicationRequests::GetSelectedEntitiesCount)
+                ->Event("BeginUndoBatch", BeginUndoBatchWrapper)
+                ->Event("EndUndoBatch", &ToolsApplicationRequests::EndUndoBatch)
+                ->Event("AddDirtyEntity", &ToolsApplicationRequests::AddDirtyEntity)
                 ;
 
             behaviorContext->EBus<ToolsApplicationNotificationBus>("ToolsApplicationNotificationBus")
