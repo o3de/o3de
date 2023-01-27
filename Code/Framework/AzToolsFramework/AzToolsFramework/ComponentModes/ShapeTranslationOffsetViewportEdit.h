@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #include <AzCore/Component/ComponentBus.h>
 #include <AzToolsFramework/ComponentModes/BaseViewportEdit.h>
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>

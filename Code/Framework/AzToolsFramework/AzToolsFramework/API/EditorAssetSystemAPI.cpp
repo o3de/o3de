@@ -73,19 +73,5 @@ namespace AzToolsFramework
                     ;
             }
         }
-
-        const char* GetHostAssetPlatform()
-        {
-#if defined(AZ_PLATFORM_MAC)
-            return "mac";
-#elif defined(AZ_PLATFORM_WINDOWS)
-            return "pc";
-#elif defined(AZ_PLATFORM_LINUX)
-            return "linux";
-#else
-            #error Unimplemented Host Asset Platform
-#endif
-        }
-
     } // end namespace AssetSystem
 } // end namespace AzToolsFramework
