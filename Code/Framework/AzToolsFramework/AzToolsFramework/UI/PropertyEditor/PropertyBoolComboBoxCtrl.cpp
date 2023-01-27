@@ -95,7 +95,7 @@ namespace AzToolsFramework
         return m_editButton;
     }
 
-    void PropertyBoolComboBoxCtrl::SetEditButtonCallBack(AZ::Edit::AttributeFunction<int(int)>* function)
+    void PropertyBoolComboBoxCtrl::SetEditButtonCallBack(AZ::Edit::AttributeFunction<bool(bool)>* function)
     {
         m_editButtonCallback = function;
     }
@@ -104,13 +104,9 @@ namespace AzToolsFramework
     {
         if (m_editButtonCallback)
         {
-            // intValue refers to the index value the comboBox will be set to on the return of the invoked callback
-            auto intValue = m_editButtonCallback->Invoke(nullptr, m_pComboBox->currentIndex());
-
-            if (intValue == 0 || intValue == 1)
-            {
-                m_pComboBox->setCurrentIndex(intValue);
-            }
+            // indexBool refers to the bool of the index value that will be set to on the return of the invoked callback
+            auto indexBool = m_editButtonCallback->Invoke(nullptr, m_pComboBox->currentIndex());
+            m_pComboBox->setCurrentIndex(indexBool ? 1 : 0);
         }
     }
 
@@ -151,8 +147,8 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ_CRC_CE("EditButtonCallback"))
         {
-            AZ::Edit::AttributeFunction<int(int)>* function =
-                azdynamic_cast<AZ::Edit::AttributeFunction<int(int)>*>(attrValue->GetAttribute());
+            AZ::Edit::AttributeFunction<bool(bool)>* function =
+                azdynamic_cast<AZ::Edit::AttributeFunction<bool(bool)>*>(attrValue->GetAttribute());
 
             if (function)
             {

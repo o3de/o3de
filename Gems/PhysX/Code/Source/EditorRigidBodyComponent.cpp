@@ -127,28 +127,20 @@ namespace PhysX
             &AzToolsFramework::EditorRequests::OpenViewPane, LyViewPane::PhysXConfigurationEditor);
     }
 
-    static int OnEditButtonClicked(int index)
+    static bool OnEditButtonClicked(bool comboBoxValue)
     {
         QWidget* mainWindow = nullptr;
         AzToolsFramework::EditorRequestBus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::GetMainWindow);
 
-        PhysX::Editor::KinematicDescriptionDialog kinematicDialog(
-            index, mainWindow);
+        PhysX::Editor::KinematicDescriptionDialog kinematicDialog(comboBoxValue, mainWindow);
         
         int dialogResult = kinematicDialog.exec();
         if (dialogResult == QDialog::Accepted)
         {
-            if (kinematicDialog.GetResult())
-            {
-                return 1;
-            }
-            else
-            {
-                return 0;
-            }
+            return kinematicDialog.GetResult();
         }
 
-        return -1;
+        return comboBoxValue;
     }
 
     void EditorRigidBodyConfiguration::Reflect(AZ::ReflectContext* context)

@@ -46,7 +46,7 @@ namespace AzToolsFramework
         QComboBox* GetComboBox();
         QToolButton* GetEditButton();
 
-        void SetEditButtonCallBack(AZ::Edit::AttributeFunction<int(int)>* function);
+        void SetEditButtonCallBack(AZ::Edit::AttributeFunction<bool(bool)>* function);
 
     signals:
         void valueChanged(bool newValue);
@@ -58,11 +58,11 @@ namespace AzToolsFramework
         void onChildComboBoxValueChange(int value);
 
     private:
-        virtual void OnEditButtonClicked();
+        void OnEditButtonClicked();
 
         QComboBox* m_pComboBox;
         QToolButton* m_editButton = nullptr;
-        AZ::Edit::AttributeFunction<int(int)>* m_editButtonCallback = nullptr;
+        AZ::Edit::AttributeFunction<bool(bool)>* m_editButtonCallback = nullptr;
     };
 
     class BoolPropertyComboBoxHandler

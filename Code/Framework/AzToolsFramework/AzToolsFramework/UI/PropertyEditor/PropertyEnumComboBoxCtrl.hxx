@@ -64,7 +64,7 @@ namespace AzToolsFramework
     private:
         QComboBox* m_pComboBox = nullptr;
         QToolButton* m_editButton = nullptr;
-        AZStd::vector< AZStd::pair<AZ::s64, AZStd::string>  > m_enumValues;
+        AZStd::vector<AZStd::pair<AZ::s64, AZStd::string>> m_enumValues;
     };
 
     template <class ValueType>
@@ -184,10 +184,10 @@ namespace AzToolsFramework
                     genericGUI->setElements(enumValues);
                 }
             }
-        else
-        {
-            GenericComboBoxHandler<ValueType>::ConsumeAttribute(GUI, attrib, attrValue, debugName);
-        }
+            else
+            {
+                GenericComboBoxHandler<ValueType>::ConsumeAttribute(GUI, attrib, attrValue, debugName);
+            }
         }
 
         bool HandlesType(const AZ::Uuid& id) const override
