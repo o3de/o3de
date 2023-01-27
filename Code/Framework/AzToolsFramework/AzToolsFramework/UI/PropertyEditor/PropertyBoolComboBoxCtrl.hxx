@@ -15,7 +15,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <QtWidgets/QWidget>
-#include <QtWidgets/QToolButton>
+#include <QToolButton>
 #include "PropertyEditorAPI.h"
 #endif
 
