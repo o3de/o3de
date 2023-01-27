@@ -13,8 +13,6 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem:
 #include <QtWidgets/QHBoxLayout>
 AZ_POP_DISABLE_WARNING
 
-//just a test to see how it would work to pop a dialog
-
 namespace AzToolsFramework
 {
     PropertyBoolComboBoxCtrl::PropertyBoolComboBoxCtrl(QWidget* pParent)
@@ -30,7 +28,14 @@ namespace AzToolsFramework
         pLayout->setSpacing(4);
         pLayout->setContentsMargins(1, 0, 1, 0);
 
+        m_editButton = new QToolButton();
+        m_editButton->setAutoRaise(true);
+        m_editButton->setToolTip(QString("Edit"));
+        m_editButton->setIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
+        m_editButton->setVisible(false);
+
         pLayout->addWidget(m_pComboBox);
+        pLayout->addWidget(m_editButton);
 
         m_pComboBox->setMinimumWidth(PropertyQTConstant_MinimumWidth);
         m_pComboBox->setFixedHeight(PropertyQTConstant_DefaultHeight);
@@ -42,6 +47,7 @@ namespace AzToolsFramework
         setFocusPolicy(m_pComboBox->focusPolicy());
 
         connect(m_pComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onChildComboBoxValueChange(int)));
+        connect(m_editButton, &QToolButton::clicked, this, &PropertyBoolComboBoxCtrl::OnEditButtonClicked);
     };
 
     void PropertyBoolComboBoxCtrl::setValue(bool value)
@@ -71,14 +77,42 @@ namespace AzToolsFramework
     }
     QWidget* PropertyBoolComboBoxCtrl::GetLastInTabOrder()
     {
-        return m_pComboBox;
+        return m_editButton;
     }
 
     void PropertyBoolComboBoxCtrl::UpdateTabOrder()
     {
-        // There's only one QT widget on this property.
+        setTabOrder(GetFirstInTabOrder(), GetLastInTabOrder());
     }
 
+    QComboBox* PropertyBoolComboBoxCtrl::GetComboBox()
+    {
+        return m_pComboBox;
+    }
+
+    QToolButton* PropertyBoolComboBoxCtrl::GetEditButton()
+    {
+        return m_editButton;
+    }
+
+    void PropertyBoolComboBoxCtrl::SetEditButtonCallBack(AZ::Edit::AttributeFunction<int(int)>* function)
+    {
+        m_editButtonCallback = function;
+    }
+
+    void PropertyBoolComboBoxCtrl::OnEditButtonClicked()
+    {
+        if (m_editButtonCallback)
+        {
+            // intValue refers to the index value the comboBox will be set to on the return of the invoked callback
+            auto intValue = m_editButtonCallback->Invoke(nullptr, m_pComboBox->currentIndex());
+
+            if (intValue == 0 || intValue == 1)
+            {
+                m_pComboBox->setCurrentIndex(intValue);
+            }
+        }
+    }
 
     QWidget* BoolPropertyComboBoxHandler::CreateGUI(QWidget* pParent)
     {
@@ -93,16 +127,53 @@ namespace AzToolsFramework
 
     void BoolPropertyComboBoxHandler::ConsumeAttribute(PropertyBoolComboBoxCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
     {
-        AZ_UNUSED(GUI);
-        AZ_UNUSED(attrib);
-        AZ_UNUSED(attrValue);
         AZ_UNUSED(debugName);
+
+        if (attrib == AZ_CRC_CE("EditButtonVisible"))
+        {
+            bool visible;
+            if (attrValue->Read<bool>(visible))
+            {
+                GUI->GetEditButton()->setVisible(visible);
+            }
+        }
+        else if (attrib == AZ_CRC_CE("SetTrueLabel"))
+        {
+            const char* label;
+            attrValue->Read<const char*>(label);
+            GUI->GetComboBox()->setItemText(1, label);
+        }
+        else if (attrib == AZ_CRC_CE("SetFalseLabel"))
+        {
+            const char* label;
+            attrValue->Read<const char*>(label);
+            GUI->GetComboBox()->setItemText(0, label);
+        }
+        else if (attrib == AZ_CRC_CE("EditButtonCallback"))
+        {
+            AZ::Edit::AttributeFunction<int(int)>* function =
+                azdynamic_cast<AZ::Edit::AttributeFunction<int(int)>*>(attrValue->GetAttribute());
+
+            if (function)
+            {
+                GUI->SetEditButtonCallBack(function);
+            }
+        }
+        else if (attrib == AZ_CRC_CE("EditButtonToolTip"))
+        {
+            const char* toolTip;
+            if (attrValue->Read<const char*>(toolTip))
+            {
+                GUI->GetEditButton()->setToolTip(toolTip);
+            }
+        }
     }
 
     void BoolPropertyComboBoxHandler::WriteGUIValuesIntoProperty(size_t index, PropertyBoolComboBoxCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
         AZ_UNUSED(index);
         AZ_UNUSED(node);
+
         bool val = GUI->value();
         instance = static_cast<property_t>(val);
     }
@@ -111,6 +182,7 @@ namespace AzToolsFramework
     {
         AZ_UNUSED(index);
         AZ_UNUSED(node);
+
         bool val = instance;
         GUI->setValue(val);
         return false;

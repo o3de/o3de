@@ -10,7 +10,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QDialog>
-#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #endif
 
 class QTreeView;
@@ -30,12 +29,10 @@ namespace PhysX
             Q_OBJECT
 
         public:
-            explicit KinematicDescriptionDialog(bool kinematicSetting, bool rememberChoiceSetting, QWidget* parent = nullptr);
+            explicit KinematicDescriptionDialog(bool kinematicSetting, QWidget* parent = nullptr);
             ~KinematicDescriptionDialog();
 
             bool GetResult() const;
-            bool DoNotShowAgain() const;
-
 
         private:
             void OnButtonClicked();

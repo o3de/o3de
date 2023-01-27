@@ -27,7 +27,6 @@ namespace AzToolsFramework
     constexpr AZStd::string_view OnlyShowHelpersForSelectedEntitiesSetting = "/Amazon/Preferences/Editor/OnlyShowHelpersForSelectedEntities";
     constexpr AZStd::string_view ComponentSwitcherEnabledSetting = "/Amazon/Preferences/Editor/ComponentSwitcherEnabled";
     constexpr AZStd::string_view PrefabEditModeEffectEnabledSetting = "/Amazon/Preferences/Editor/PrefabEditModeEffectEnabled";
-    constexpr AZStd::string_view KinematicWidgetRememberChoiceSetting = "/Amazon/Preferences/Editor/KinematicWidgetRememberChoice";
 
     bool FlipManipulatorAxesTowardsView()
     {
@@ -172,15 +171,5 @@ namespace AzToolsFramework
     void SetPrefabEditModeEffectEnabled(const bool enabled)
     {
         SetRegistry(PrefabEditModeEffectEnabledSetting, enabled);
-    }
-
-    bool KinematicWidgetRememberChoice()
-    {
-        return GetRegistry(KinematicWidgetRememberChoiceSetting, false);
-    }
-
-    void SetKinematicWidgetRememberChoice(const bool remember)
-    {
-        SetRegistry(KinematicWidgetRememberChoiceSetting, remember);
     }
 } // namespace AzToolsFramework

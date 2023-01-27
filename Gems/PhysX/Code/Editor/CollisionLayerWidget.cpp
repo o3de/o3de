@@ -29,6 +29,7 @@ namespace PhysX
         {
             widget_t* picker = new widget_t(parent);
 
+            picker->GetEditButton()->setVisible(true);
             picker->GetEditButton()->setToolTip("Edit Collision Layers");
 
             connect(picker->GetComboBox(), &QComboBox::currentTextChanged, this, [picker]()

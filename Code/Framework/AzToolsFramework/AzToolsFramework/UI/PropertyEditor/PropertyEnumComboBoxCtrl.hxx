@@ -22,6 +22,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
 
 #include <QWidget>
+#include <QtWidgets/QToolButton>
 #endif
 
 class QComboBox;
@@ -48,6 +49,9 @@ namespace AzToolsFramework
         QWidget* GetLastInTabOrder();
         void UpdateTabOrder();
 
+        QComboBox* GetComboBox();
+        QToolButton* GetEditButton();
+
     signals:
         void valueChanged(AZ::s64 newValue);
 
@@ -56,9 +60,10 @@ namespace AzToolsFramework
 
     protected slots:
         void onChildComboBoxValueChange(int comboBoxIndex);
-
+        
     private:
-        QComboBox* m_pComboBox;
+        QComboBox* m_pComboBox = nullptr;
+        QToolButton* m_editButton = nullptr;
         AZStd::vector< AZStd::pair<AZ::s64, AZStd::string>  > m_enumValues;
     };
 
@@ -179,10 +184,10 @@ namespace AzToolsFramework
                     genericGUI->setElements(enumValues);
                 }
             }
-            else
-            {
-                GenericComboBoxHandler<ValueType>::ConsumeAttribute(GUI, attrib, attrValue, debugName);
-            }
+        else
+        {
+            GenericComboBoxHandler<ValueType>::ConsumeAttribute(GUI, attrib, attrValue, debugName);
+        }
         }
 
         bool HandlesType(const AZ::Uuid& id) const override

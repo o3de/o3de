@@ -451,8 +451,6 @@ set(FILES
     UI/Layer/NameConflictWarning.hxx
     UI/Layer/NameConflictWarning.cpp
     UI/PropertyEditor/EntityPropertyEditor.ui
-    UI/PropertyEditor/ComboBoxEditButtonPair.h
-    UI/PropertyEditor/ComboBoxEditButtonPair.cpp
     UI/PropertyEditor/ComponentEditor.hxx
     UI/PropertyEditor/ComponentEditor.cpp
     UI/PropertyEditor/ComponentEditorHeader.hxx

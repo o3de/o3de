@@ -8,7 +8,6 @@
 #include "PropertyStringComboBoxCtrl.hxx"
 #include "PropertyQTConstants.h"
 #include "DHQComboBox.hxx"
-#include <QtWidgets/QComboBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
 #include <QtWidgets/QHBoxLayout>
 AZ_POP_DISABLE_WARNING
@@ -23,6 +22,12 @@ namespace AzToolsFramework
         QHBoxLayout* pLayout = new QHBoxLayout(this);
         m_pComboBox = aznew DHQComboBox(this);
 
+        m_editButton = new QToolButton();
+        m_editButton->setAutoRaise(true);
+        m_editButton->setToolTip(QString("Edit"));
+        m_editButton->setIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
+        m_editButton->setVisible(false);
+
         // many UI elements hide 1 pixel of their size in a border area that only shows up when they are selected.
         // The combo box used in this layout does not do this, so adding 1 to the left and right margins will make
         // sure that it has the same dimensions as the other UI elements when they are unselected.
@@ -30,6 +35,7 @@ namespace AzToolsFramework
         pLayout->setContentsMargins(1, 0, 1, 0);
 
         pLayout->addWidget(m_pComboBox);
+        pLayout->addWidget(m_editButton);
 
         m_pComboBox->setMinimumWidth(PropertyQTConstant_MinimumWidth);
         m_pComboBox->setFixedHeight(PropertyQTConstant_DefaultHeight);
@@ -152,14 +158,23 @@ namespace AzToolsFramework
     }
     QWidget* PropertyStringComboBoxCtrl::GetLastInTabOrder()
     {
-        return m_pComboBox;
+        return m_editButton;
     }
 
     void PropertyStringComboBoxCtrl::UpdateTabOrder()
     {
-        // There's only one QT widget on this property.
+        setTabOrder(GetFirstInTabOrder(), GetLastInTabOrder());
     }
 
+    QComboBox* PropertyStringComboBoxCtrl::GetComboBox()
+    {
+        return m_pComboBox;
+    }
+
+    QToolButton* PropertyStringComboBoxCtrl::GetEditButton()
+    {
+        return m_editButton;
+    }
 
     template<class ValueType>
     void PropertyComboBoxHandlerCommon<ValueType>::ConsumeAttribute(PropertyStringComboBoxCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
@@ -190,6 +205,14 @@ namespace AzToolsFramework
                 AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'EditableCombBox' attribute from property '%s' into string combo box", debugName);
             }
             return;
+        }
+        else if (attrib == AZ_CRC_CE("EditButtonVisible"))
+        {
+            bool visible;
+            if (attrValue->Read<bool>(visible))
+            {
+                GUI->GetEditButton()->setVisible(visible);
+            }
         }
     }
 

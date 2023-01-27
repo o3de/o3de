@@ -32,7 +32,8 @@ namespace PhysX
         QWidget* CollisionGroupWidget::CreateGUI(QWidget* parent)
         {
             widget_t* picker = new widget_t(parent);
-            
+
+            picker->GetEditButton()->setVisible(true);
             picker->GetEditButton()->setToolTip("Edit Collision Groups");
 
             connect(picker->GetComboBox(), &QComboBox::currentTextChanged, this, [picker]()

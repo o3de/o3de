@@ -15,12 +15,14 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <QtWidgets/QWidget>
+#include <QtWidgets/QToolButton>
 #include "PropertyEditorAPI.h"
 #endif
 
 class QComboBox;
 class QLineEdit;
 class QPushButton;
+class QToolButton;
 
 namespace AzToolsFramework
 {
@@ -42,6 +44,11 @@ namespace AzToolsFramework
         QWidget* GetLastInTabOrder();
         void UpdateTabOrder();
 
+        QComboBox* GetComboBox();
+        QToolButton* GetEditButton();
+
+        void SetEditButtonCallBack(AZ::Edit::AttributeFunction<int(int)>* function);
+
     signals:
         void valueChanged(bool newValue);
 
@@ -52,7 +59,11 @@ namespace AzToolsFramework
         void onChildComboBoxValueChange(int value);
 
     private:
+        virtual void OnEditButtonClicked();
+
         QComboBox* m_pComboBox;
+        QToolButton* m_editButton = nullptr;
+        AZ::Edit::AttributeFunction<int(int)>* m_editButtonCallback = nullptr;
     };
 
     class BoolPropertyComboBoxHandler

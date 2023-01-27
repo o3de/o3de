@@ -17,9 +17,10 @@
 #include "PropertyEditorAPI.h"
 
 #include <QWidget>
-#endif
+#include <QToolButton>
+#include <QComboBox>
 
-class QComboBox;
+#endif
 
 namespace AzToolsFramework
 {
@@ -47,6 +48,9 @@ namespace AzToolsFramework
         QWidget* GetLastInTabOrder();
         void UpdateTabOrder();
 
+        QComboBox* GetComboBox();
+        QToolButton* GetEditButton();
+
     signals:
         void valueChanged(const AZStd::string& newValue);
 
@@ -57,7 +61,8 @@ namespace AzToolsFramework
         void onChildComboBoxValueChange(int comboBoxIndex);
 
     private:
-        QComboBox* m_pComboBox;
+        QComboBox* m_pComboBox = nullptr;
+        QToolButton* m_editButton = nullptr;
         AZStd::vector<AZStd::string> m_values;
     };
 

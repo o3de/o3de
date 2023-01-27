@@ -29,11 +29,12 @@ static constexpr const char* const GravityIcon = "<img src=\":/stylesheet/img/16
 static constexpr const char* const MoveManuallyIcon = "<img src=\":/stylesheet/img/16x16/move_manually.svg\"/>";
 static constexpr const char* const MoveWithCodeIcon = "<img src=\":/stylesheet/img/16x16/move_with_code.svg\"/>";
 
+
 namespace PhysX
 {
     namespace Editor
     {
-        KinematicDescriptionDialog::KinematicDescriptionDialog(bool kinematicSetting, bool rememberChoiceSetting, QWidget* parent)
+        KinematicDescriptionDialog::KinematicDescriptionDialog(bool kinematicSetting, QWidget* parent)
             : QDialog(parent)
             , m_ui(new Ui::KinematicDescriptionDialog)
             , m_kinematicSetting(kinematicSetting)
@@ -42,8 +43,6 @@ namespace PhysX
 
             InitializeButtons();
             UpdateDialogText();
-
-            m_ui->checkBox->setChecked(rememberChoiceSetting);
         }
 
         KinematicDescriptionDialog::~KinematicDescriptionDialog()
@@ -130,11 +129,6 @@ namespace PhysX
         bool KinematicDescriptionDialog::GetResult() const
         {
             return m_kinematicSetting;
-        }
-
-        bool KinematicDescriptionDialog::DoNotShowAgain() const
-        {
-            return m_ui->checkBox->isChecked();
         }
     } // namespace Editor
 } // namespace PhysX

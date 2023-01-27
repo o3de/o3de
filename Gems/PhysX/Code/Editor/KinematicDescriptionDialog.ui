@@ -251,23 +251,9 @@
            </property>
           </widget>
          </widget>
-         <widget class="QCheckBox" name="checkBox">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>230</y>
-            <width>231</width>
-            <height>17</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Do not show me this again</string>
-          </property>
-         </widget>
          <zorder>kinematicBox</zorder>
          <zorder>dynamicBox</zorder>
          <zorder>groupBox_5</zorder>
-         <zorder>checkBox</zorder>
         </widget>
        </item>
        <item>
@@ -611,6 +597,38 @@ border-right: 1px solid  rgb(136, 136, 136); </string>
     <hint type="destinationlabel">
      <x>320</x>
      <y>153</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dynamicBox</sender>
+   <signal>clicked()</signal>
+   <receiver>dynamicRadioButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>168</x>
+     <y>94</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>298</x>
+     <y>78</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>kinematicBox</sender>
+   <signal>clicked()</signal>
+   <receiver>kinematicRadioButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>168</x>
+     <y>174</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>298</x>
+     <y>158</y>
     </hint>
    </hints>
   </connection>
