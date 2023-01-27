@@ -308,9 +308,8 @@ namespace AzToolsFramework
                 const GenericComponentWrapper* wrapper = azrtti_cast<const GenericComponentWrapper*>(instance);
                 if (wrapper && wrapper->GetTemplate())
                 {
-                    EBUS_EVENT_ID_RESULT(
-                        templateDescriptor, wrapper->GetTemplate()->RTTI_GetType(),
-                        AZ::ComponentDescriptorBus, GetDescriptor);
+                    AZ::ComponentDescriptorBus::EventResult(
+                        templateDescriptor, wrapper->GetTemplate()->RTTI_GetType(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
                 }
 
                 return templateDescriptor;

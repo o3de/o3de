@@ -1225,8 +1225,11 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         AZ::IO::ByteContainerStream<AZStd::vector<char>> entitySaveStream(&entitySaveBuffer);
         {
             AZ_PROFILE_SCOPE(Editor, "CCryEditDoc::SaveLevel Save Entities To Stream");
-            EBUS_EVENT_RESULT(
-                savedEntities, AzToolsFramework::EditorEntityContextRequestBus, SaveToStreamForEditor, entitySaveStream, layerEntities,
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                savedEntities,
+                &AzToolsFramework::EditorEntityContextRequestBus::Events::SaveToStreamForEditor,
+                entitySaveStream,
+                layerEntities,
                 instancesInLayers);
         }
 
@@ -1480,8 +1483,10 @@ bool CCryEditDoc::LoadEntitiesFromLevel(const QString& levelPakFile)
                     {
                         AZ::IO::ByteContainerStream<AZStd::vector<char>> fileStream(&fileBuffer);
 
-                        EBUS_EVENT_RESULT(
-                            loadedSuccessfully, AzToolsFramework::EditorEntityContextRequestBus, LoadFromStreamWithLayers, fileStream,
+                        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                            loadedSuccessfully,
+                            &AzToolsFramework::EditorEntityContextRequestBus::Events::LoadFromStreamWithLayers,
+                            fileStream,
                             levelPakFile);
                     }
                     else

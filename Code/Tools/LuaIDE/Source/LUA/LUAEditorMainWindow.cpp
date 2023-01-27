@@ -1736,11 +1736,9 @@ namespace LUAEditor
         {
             // the document was probably closed, request it be reopened
             m_dProcessFindListClicked.push_back(result);
-            /*EBUS_EVENT_ID(    LUAEditor::ContextID,
-                            EditorFramework::AssetManagementMessages::Bus,
-                            AssetOpenRequested,
-                            result.m_assetId,
-                            AZ::ScriptAsset::StaticAssetType());*/
+            //EditorFramework::AssetManagementMessages::Bus::Event(LUAEditor::ContextID, &EditorFramework::AssetManagementMessages::Bus::Events::AssetOpenRequested,
+            //    result.m_assetId,
+            //    AZ::ScriptAsset::StaticAssetType());
             AZ_Assert(false, "Fix assets!");
         }
     }

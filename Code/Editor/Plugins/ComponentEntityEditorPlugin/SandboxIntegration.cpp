@@ -1754,8 +1754,8 @@ void SandboxIntegrationManager::ContextMenu_SelectSlice()
         }
     }
 
-    EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus,
-        SetSelectedEntities, newSelectedEntities);
+    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, newSelectedEntities);
 }
 
 void SandboxIntegrationManager::ContextMenu_PushEntitiesToSlice(AzToolsFramework::EntityIdList entities,
@@ -1793,9 +1793,8 @@ void SandboxIntegrationManager::ContextMenu_ResetToSliceDefaults(AzToolsFramewor
 
 void SandboxIntegrationManager::GetSelectedEntities(AzToolsFramework::EntityIdList& entities)
 {
-    EBUS_EVENT_RESULT(entities,
-        AzToolsFramework::ToolsApplicationRequests::Bus,
-        GetSelectedEntities);
+    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+        entities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 }
 
 void SandboxIntegrationManager::GetSelectedOrHighlightedEntities(AzToolsFramework::EntityIdList& entities)
@@ -1803,13 +1802,11 @@ void SandboxIntegrationManager::GetSelectedOrHighlightedEntities(AzToolsFramewor
     AzToolsFramework::EntityIdList selectedEntities;
     AzToolsFramework::EntityIdList highlightedEntities;
 
-    EBUS_EVENT_RESULT(selectedEntities,
-        AzToolsFramework::ToolsApplicationRequests::Bus,
-        GetSelectedEntities);
+    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
-    EBUS_EVENT_RESULT(highlightedEntities,
-        AzToolsFramework::ToolsApplicationRequests::Bus,
-        GetHighlightedEntities);
+    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+        highlightedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetHighlightedEntities);
 
     entities = AZStd::move(selectedEntities);
 

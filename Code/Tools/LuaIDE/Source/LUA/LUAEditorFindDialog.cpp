@@ -952,9 +952,8 @@ namespace LUAEditor
                      pLUAViewWidget->m_Info.m_bSourceControl_CanCheckOut)
             {
                 // check it out for edit
-                EBUS_EVENT(Context_DocumentManagement::Bus,
-                    DocumentCheckOutRequested,
-                    pLUAViewWidget->m_Info.m_assetId);
+                Context_DocumentManagement::Bus::Broadcast(
+                    &Context_DocumentManagement::Bus::Events::DocumentCheckOutRequested, pLUAViewWidget->m_Info.m_assetId);
                 AZ::SystemTickBus::QueueFunction(&LUAEditorFindDialog::OnReplace, this);
             }
             else if (!pLUAViewWidget->m_Info.m_bSourceControl_CanWrite)
@@ -1180,11 +1179,11 @@ namespace LUAEditor
             //  return;
 
             //request it be opened
-            //EBUS_EVENT_ID(    LUAEditor::ContextID,
-            //EditorFramework::AssetManagementMessages::Bus,
-            // AssetOpenRequested,
-            // dAssetInfo[0].m_databaseAsset.m_assetId,
-            // AZ::ScriptAsset::StaticAssetType());
+            //EditorFramework::AssetManagementMessages::Bus::Event(
+            //    LUAEditor::ContextID,
+            //    &EditorFramework::AssetManagementMessages::Bus::Events::AssetOpenRequested,
+            //    dAssetInfo[0].m_databaseAsset.m_assetId,
+            //    AZ::ScriptAsset::StaticAssetType());
 
             QTimer::singleShot(0, this, &LUAEditorFindDialog::ProcessReplaceItems);
         }
@@ -1279,9 +1278,8 @@ namespace LUAEditor
                  pLUAViewWidget->m_Info.m_bSourceControl_CanCheckOut)
         {
             // check it out for edit
-            EBUS_EVENT(Context_DocumentManagement::Bus,
-                DocumentCheckOutRequested,
-                pLUAViewWidget->m_Info.m_assetId);
+            Context_DocumentManagement::Bus::Broadcast(
+                &Context_DocumentManagement::Bus::Events::DocumentCheckOutRequested, pLUAViewWidget->m_Info.m_assetId);
             return -2;
         }
         else if (!pLUAViewWidget->m_Info.m_bSourceControl_CanWrite)
