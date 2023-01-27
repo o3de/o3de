@@ -260,7 +260,7 @@ namespace AzToolsFramework
         };
 
         //! Returns "mac", "pc", or "linux" statically.
-        extern const char* GetHostAssetPlatform();
+        const char* GetHostAssetPlatform();
 
     } // namespace AssetSystem
     using AssetSystemBus = AZ::EBus<AssetSystem::AssetSystemNotifications>;
