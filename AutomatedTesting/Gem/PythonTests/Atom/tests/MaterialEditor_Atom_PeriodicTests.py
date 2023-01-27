@@ -8,20 +8,20 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 class Tests:
     changed_original_material_document_color = (
-        "original_material_document_color baseColor property value was changed successfully.",
-        "P0: original_material_document_color failed to change baseColor property value.")
+        "original_material_document_color baseColor.color property value was changed successfully.",
+        "P0: original_material_document_color failed to change baseColor.color property value.")
     changed_new_material_document_color = (
-        "new_material_document_color baseColor property value was changed successfully.",
-        "P0: new_material_document_color failed to change baseColor property value.")
+        "new_material_document_color baseColor.color property value was changed successfully.",
+        "P0: new_material_document_color failed to change baseColor.color property value.")
     changed_child_material_document_color = (
-        "child_material_document baseColor property value was changed successfully.",
-        "P0: child_material_document failed to change baseColor property value.")
-    changed_first_material_document_metallic_factor = (
-        "first_material_document metallic factor property value changed successfully.",
-        "P0: Failed to change the first_material_document metallic factor property.")
+        "child_material_document baseColor.color property value was changed successfully.",
+        "P0: child_material_document failed to change baseColor.color property value.")
+    changed_first_material_document_color = (
+        "first_material_document color factor property value changed successfully.",
+        "P0: Failed to change the first_material_document color factor property.")
     changed_second_material_document_color = (
-        "second_material_document baseColor property value was changed successfully.",
-        "P0: second_material_document failed to change baseColor property value.")
+        "second_material_document baseColor.color property value was changed successfully.",
+        "P0: second_material_document failed to change baseColor.color property value.")
     closed_original_new_and_child_material_documents = (
         "Closed original_material_document, new_material_document, & child_material_document successfully.",
         "P0: Failed to close original_material_document, new_material_document, & child_material_document.")
@@ -71,14 +71,14 @@ class Tests:
         "second_material_document was re-saved successfully.",
         "P0: second_material_document could not be re-saved.")
     reverted_original_material_document_color = (
-        "original_material_document baseColor property value reverted to original value before changing it.",
-        "P0: Failed to revert original_material_document baseColor property value to original value.")
-    reverted_first_material_document_metallic_factor = (
-        "first_material_document metallic.factor property value reverted to original value before changing it.",
-        "P0: Failed to revert first_material_document metallic.factor property value to original value.")
+        "original_material_document baseColor.color property value reverted to original value before changing it.",
+        "P0: Failed to revert original_material_document baseColor.color property value to original value.")
+    reverted_first_material_document_color = (
+        "first_material_document baseColor.color property value reverted to original value before changing it.",
+        "P0: Failed to revert first_material_document baseColor.color property value to original value.")
     reverted_second_material_document_color = (
-        "second_material_document baseColor property value reverted to original value before changing it.",
-        "P0: Failed to revert second_material_document baseColor property value to original value.")
+        "second_material_document baseColor.color property value reverted to original value before changing it.",
+        "P0: Failed to revert second_material_document baseColor.color property value to original value.")
     saved_original_material_document = (
         "original_material_document was saved successfully.",
         "P0: original_material_document could not be saved.")
@@ -103,12 +103,12 @@ class Tests:
     saved_second_material_document = (
         "Changes saved successfully for second_material_document",
         "P0: second_material_document changes could not be saved.")
-    verified_first_material_document_metallic_factor = (
-        "Verified first_material_document property value for metallic.factor is accurate",
-        "P0: Unexpected first_material_document property value for metallic.factor returned.")
+    verified_first_material_document_color = (
+        "Verified first_material_document property value for baseColor.color is accurate",
+        "P0: Unexpected first_material_document property value for baseColor.color returned.")
     verified_second_material_document_color = (
-        "Verified second_material_document property value for baseColor is accurate",
-        "P0: Unexpected second_material_document property value for baseColor returned.")
+        "Verified second_material_document property value for baseColor.color is accurate",
+        "P0: Unexpected second_material_document property value for baseColor.color returned.")
 
 
 def MaterialEditor_FileSaveChecks_AllChecksPass():
@@ -134,7 +134,7 @@ def MaterialEditor_FileSaveChecks_AllChecksPass():
     12) Revert changes to original_material_document and save them.
     13) Close all currently opened documents.
     14) Open a material document referred to as "first_material_document".
-    15) Change the metallic.factor property value of first_material_document to 0.444.
+    15) Change the baseColor.color property value of first_material_document to 0.4156, 0.0196, 0.6862, 1.0.
     16) Save the first_material_document as a new material document file.
     17) Open a second material document referred to as "second_material_document".
     18) Change the baseColor.color property value of the second_material_document to 0.4156, 0.0196, 0.6862, 1.0.
@@ -162,7 +162,6 @@ def MaterialEditor_FileSaveChecks_AllChecksPass():
 
         # Set constants before starting test steps.
         base_color_property_name = "baseColor.color"
-        metallic_factor_property_name = "metallic.factor"
         original_material_document = os.path.join(
             atom_tools_utils.TEST_DATA_MATERIALS_PATH, "StandardPbrTestCases", "001_DefaultWhite.material")
         new_material_document = os.path.join(
@@ -289,16 +288,16 @@ def MaterialEditor_FileSaveChecks_AllChecksPass():
             Tests.opened_first_material_document,
             atom_tools_utils.is_document_open(first_material_document_id) is True)
 
-        # 15. Change the metallic.factor property value of first_material_document to 0.444.
-        starting_first_material_document_metallic_factor = material_editor_utils.get_property(
-            first_material_document_id, metallic_factor_property_name)
-        first_material_document_metallic_factor = 0.444
+        # 15. Change the baseColor.color property value of first_material_document to 0.0156, 0.0196, 0.0862, 1.0.
+        starting_first_material_document_color = material_editor_utils.get_property(
+            first_material_document_id, base_color_property_name)
+        first_material_document_color = azlmbr.math.Color(0.0156, 0.0196, 0.0862, 1.0)
         material_editor_utils.set_property(
-            first_material_document_id, metallic_factor_property_name, first_material_document_metallic_factor)
+            first_material_document_id, base_color_property_name, first_material_document_color)
         Report.result(
-            Tests.changed_first_material_document_metallic_factor,
+            Tests.changed_first_material_document_color,
             material_editor_utils.get_property(
-                first_material_document_id, metallic_factor_property_name) == first_material_document_metallic_factor)
+                first_material_document_id, base_color_property_name) == first_material_document_color)
 
         # 16. Save the first_material_document as a new material document file.
         first_material_document_saved = atom_tools_utils.save_document(first_material_document_id)
@@ -345,9 +344,9 @@ def MaterialEditor_FileSaveChecks_AllChecksPass():
             Tests.reopened_first_material_document,
             atom_tools_utils.is_document_open(first_material_document_id))
         Report.result(
-            Tests.verified_first_material_document_metallic_factor,
+            Tests.verified_first_material_document_color,
             material_editor_utils.get_property(
-                first_material_document_id, metallic_factor_property_name) == first_material_document_metallic_factor)
+                first_material_document_id, base_color_property_name) == first_material_document_color)
 
         # 22. Open the second_material_document & verify the changes are saved.
         second_material_document_id = atom_tools_utils.open_document(second_material_document)
@@ -361,19 +360,19 @@ def MaterialEditor_FileSaveChecks_AllChecksPass():
 
         # 23. Revert changes to first_material_document and second_material_document.
         material_editor_utils.set_property(
-            first_material_document_id, metallic_factor_property_name, starting_first_material_document_metallic_factor)
+            first_material_document_id, base_color_property_name, starting_first_material_document_color)
         Report.result(
-            Tests.reverted_first_material_document_metallic_factor,
+            Tests.reverted_first_material_document_color,
             material_editor_utils.get_property(
                 first_material_document_id,
-                metallic_factor_property_name) == starting_first_material_document_metallic_factor)
+                base_color_property_name) == starting_first_material_document_color)
         material_editor_utils.set_property(
             second_material_document_id, base_color_property_name, starting_second_material_document_color)
         Report.result(
             Tests.reverted_second_material_document_color,
             material_editor_utils.get_property(
                 second_material_document_id,
-                metallic_factor_property_name) == starting_second_material_document_color)
+                base_color_property_name) == starting_second_material_document_color)
 
         # 24. Re-save first_material_document and second_material_document to restore their original values.
         first_material_document_resaved = atom_tools_utils.save_document(first_material_document_id)
