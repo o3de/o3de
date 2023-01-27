@@ -405,7 +405,12 @@ namespace EMotionFX
             m_configuration.m_actorAsset = asset;
             AZ_Assert(m_configuration.m_actorAsset.IsReady() && m_configuration.m_actorAsset->GetActor(), "Actor asset should be loaded and actor valid.");
 
-            CheckActorCreation();
+            // We'll defer actor creation until the next tick on the tick bus. This is because OnAssetReady() can sometimes get
+            // triggered while in the middle of the render tick, since the rendering system sometimes contains blocking loads
+            // which will still process any pending OnAssetReady() commands while waiting. If that occurs, the actor creation
+            // would generate errors from trying to create a rendering actor while in the middle of processing the rendering data.
+            // We can avoid the problem by just always waiting until the next tick to create the actor.
+            m_processLoadedAsset = true;
         }
 
         void ActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -592,6 +597,13 @@ namespace EMotionFX
         void ActorComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
             AZ_PROFILE_FUNCTION(Animation);
+
+            // If we've got an asset that finished loading (denoted by an OnAssetReady() call), create the actor instance here.
+            if (m_processLoadedAsset)
+            {
+                CheckActorCreation();
+                m_processLoadedAsset = false;
+            }
 
             if (!m_actorInstance || !m_actorInstance->GetIsEnabled())
             {
