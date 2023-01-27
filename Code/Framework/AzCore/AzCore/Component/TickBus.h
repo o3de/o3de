@@ -228,5 +228,9 @@ namespace AZ
     using SystemTickBus = AZ::EBus<SystemTickEvents>;
 }
 
+DECLARE_EBUS_EXTERN_NO_TRAITS(TickEvents);
+DECLARE_EBUS_EXTERN_NO_TRAITS(SystemTickEvents);
+DECLARE_EBUS_EXTERN_NO_TRAITS(TickRequests);
+
 #endif // AZCORE_COMPONENT_TICK_BUS_H
 #pragma once

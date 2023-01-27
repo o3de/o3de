@@ -471,3 +471,7 @@ namespace AZ
     using TransformHierarchyInformationBus = AZ::EBus<TransformHierarchyInformation>;
     /// @endcond
 }
+
+DECLARE_EBUS_EXTERN_NO_TRAITS(TransformInterface);
+DECLARE_EBUS_EXTERN_NO_TRAITS(TransformNotification);
+DECLARE_EBUS_EXTERN_NO_TRAITS(TransformHierarchyInformation);

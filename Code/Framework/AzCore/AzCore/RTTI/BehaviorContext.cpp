@@ -10,6 +10,8 @@
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Component/EntityBus.h>
 
+DECLARE_EBUS_INSTANTIATION_NO_TRAITS(BehaviorContextEvents);
+
 namespace AZ
 {
     bool MethodReturnsAzEventByReferenceOrPointer(const AZ::BehaviorMethod& method)

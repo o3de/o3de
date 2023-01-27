@@ -1524,7 +1524,7 @@ namespace AZ
         virtual void OnAddEBus(const char* ebusName, BehaviorEBus* ebus)    { (void)ebusName; (void)ebus; }
         virtual void OnRemoveEBus(const char* ebusName, BehaviorEBus* ebus) { (void)ebusName; (void)ebus; }
     };
-
+    
     using BehaviorContextBus = AZ::EBus<BehaviorContextEvents>;
 
     /**
@@ -5455,3 +5455,4 @@ namespace AZ
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflection.inl>
 
+DECLARE_EBUS_EXTERN_NO_TRAITS(BehaviorContextEvents);

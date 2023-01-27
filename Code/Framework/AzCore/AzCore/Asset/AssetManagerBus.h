@@ -298,5 +298,9 @@ namespace AZ
     }   // namespace Data
 }   // namespace AZ
 
+DECLARE_EBUS_EXTERN_NO_TRAITS(Data::AssetManagerNotifications);
+DECLARE_EBUS_EXTERN_NO_TRAITS(Data::AssetCatalogRequests);
+DECLARE_EBUS_EXTERN_NO_TRAITS(Data::AssetManagerEvents);
+
 #endif  // AZCORE_ASSET_DATABASE_BUS_H
 #pragma once

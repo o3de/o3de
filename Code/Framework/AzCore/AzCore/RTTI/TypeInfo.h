@@ -28,6 +28,7 @@
 
 namespace AZStd
 {
+    class allocator;
     template <class T>
     struct less;
     template <class T>
@@ -390,6 +391,7 @@ namespace AZ
             }
         };
 
+        extern template struct AggregateTypes<Crc32>;
 
         // Represents the "*" typeid that can be combined with non-pointer types T to form a unique T* typeid
         inline constexpr AZ::TypeId PointerTypeId_v{ "{35C8A027-FE00-4769-AE36-6997CFFAF8AE}" };
@@ -1486,4 +1488,6 @@ namespace AZ
     }
 
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::tuple, "AZStd::tuple", "{F99F9308-DC3E-4384-9341-89CBF1ABD51E}", AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
+
+    extern template struct AzTypeInfo<AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::allocator >, false>;
 }

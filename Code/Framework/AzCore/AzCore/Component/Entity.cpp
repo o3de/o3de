@@ -34,6 +34,11 @@
 
 #include <AzCore/Debug/Profiler.h>
 
+DECLARE_EBUS_INSTANTIATION_NO_TRAITS(EntityEvents);
+DECLARE_EBUS_INSTANTIATION_NO_TRAITS(TransformInterface);
+DECLARE_EBUS_INSTANTIATION_NO_TRAITS(TransformNotification);
+DECLARE_EBUS_INSTANTIATION_NO_TRAITS(TransformHierarchyInformation);
+
 namespace AZ
 {
     class SerializeEntityFactory

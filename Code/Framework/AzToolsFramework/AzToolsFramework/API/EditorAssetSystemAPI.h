@@ -172,67 +172,17 @@ namespace AzToolsFramework
             Missing //indicate that the job is not present for example if the source file is not there, or if job key is not there
         };
 
-        inline const char* JobStatusString(JobStatus status)
-        {
-            switch(status)
-            {
-                case JobStatus::Any: return "Any";
-                case JobStatus::Queued: return "Queued";
-                case JobStatus::InProgress: return "InProgress";
-                case JobStatus::Failed: return "Failed";
-                case JobStatus::Failed_InvalidSourceNameExceedsMaxLimit: return "Failed_InvalidSourceNameExceedsMaxLimit";
-                case JobStatus::Completed: return "Completed";
-                case JobStatus::Missing: return "Missing";
-            }
-            return "";
-        }
-
+        extern const char* JobStatusString(JobStatus status);
 
         //! This struct is used for responses and requests about Asset Processor Jobs
         struct JobInfo
         {
             AZ_TYPE_INFO(JobInfo, "{276C9DE3-0C81-4721-91FE-F7C961D28DA8}")
-            JobInfo()
-            {
-                m_jobRunKey = rand();
-            }
+            JobInfo();
 
-            AZ::u32 GetHash() const
-            {
-                AZ::Crc32 crc(m_watchFolder.c_str());
-                crc.Add(m_sourceFile.c_str());
-                crc.Add(m_platform.c_str());
-                crc.Add(m_jobKey.c_str());
-                crc.Add(m_builderGuid.ToString<AZStd::string>().c_str());
-                return crc;
-            }
+            AZ::u32 GetHash() const;
 
-            static void Reflect(AZ::ReflectContext* context)
-            {
-                AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
-                if (serialize)
-                {
-                    serialize->Class<JobInfo>()
-                        ->Version(4)
-                        ->Field("sourceFile", &JobInfo::m_sourceFile)
-                        ->Field("platform", &JobInfo::m_platform)
-                        ->Field("builderUuid", &JobInfo::m_builderGuid)
-                        ->Field("jobKey", &JobInfo::m_jobKey)
-                        ->Field("jobRunKey", &JobInfo::m_jobRunKey)
-                        ->Field("status", &JobInfo::m_status)
-                        ->Field("firstFailLogTime", &JobInfo::m_firstFailLogTime)
-                        ->Field("firstFailLogFile", &JobInfo::m_firstFailLogFile)
-                        ->Field("lastFailLogTime", &JobInfo::m_lastFailLogTime)
-                        ->Field("lastFailLogFile", &JobInfo::m_lastFailLogFile)
-                        ->Field("lastLogTime", &JobInfo::m_lastLogTime)
-                        ->Field("lastLogFile", &JobInfo::m_lastLogFile)
-                        ->Field("jobID", &JobInfo::m_jobID)
-                        ->Field("watchFolder", &JobInfo::m_watchFolder)
-                        ->Field("errorCount", &JobInfo::m_errorCount)
-                        ->Field("warningCount", &JobInfo::m_warningCount)
-                        ;
-                }
-            }
+            static void Reflect(AZ::ReflectContext* context);
 
             //! the file from which this job was originally spawned.  Is just the relative source file name ("whatever/something.tif", not an absolute path)
             AZStd::string m_sourceFile;
@@ -271,7 +221,7 @@ namespace AzToolsFramework
             AZ::s64 m_jobID = 0; // this is the actual database row.   Client is unlikely to need this.
         };
 
-        typedef AZStd::vector<JobInfo> JobInfoContainer;
+        using JobInfoContainer = ::AZStd::vector<JobInfo>;
 
         //! This Ebus will be used to retrieve all the job related information from AP
         class AssetSystemJobRequest
@@ -309,21 +259,16 @@ namespace AzToolsFramework
             virtual AZ::Outcome<AZStd::string> GetJobLog(AZ::u64 jobrunkey) = 0;
         };
 
-        inline const char* GetHostAssetPlatform()
-        {
-#if defined(AZ_PLATFORM_MAC)
-            return "mac";
-#elif defined(AZ_PLATFORM_WINDOWS)
-            return "pc";
-#elif defined(AZ_PLATFORM_LINUX)
-            return "linux";
-#else
-            #error Unimplemented Host Asset Platform
-#endif
-        }
+        //! Returns "mac", "pc", or "linux" statically.
+        extern const char* GetHostAssetPlatform();
 
     } // namespace AssetSystem
     using AssetSystemBus = AZ::EBus<AssetSystem::AssetSystemNotifications>;
     using AssetSystemRequestBus = AZ::EBus<AssetSystem::AssetSystemRequest>;
     using AssetSystemJobRequestBus = AZ::EBus<AssetSystem::AssetSystemJobRequest>;
 } // namespace AzToolsFramework
+
+namespace AZStd
+{
+    extern template class vector<AzToolsFramework::AssetSystem::JobInfo>;
+}

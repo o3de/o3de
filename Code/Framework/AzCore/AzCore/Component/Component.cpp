@@ -14,6 +14,9 @@
 #include <AzCore/Math/Sfmt.h>
 #include <AzCore/Math/Crc.h>
 
+
+DECLARE_EBUS_INSTANTIATION(ComponentDescriptor, ComponentDescriptorBusTraits);
+
 namespace AZ
 {
     //=========================================================================
