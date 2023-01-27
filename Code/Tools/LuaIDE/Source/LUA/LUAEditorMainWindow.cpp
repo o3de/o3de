@@ -516,7 +516,7 @@ namespace LUAEditor
             QApplication::processEvents();
         }
 
-        EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorMainWindow::OnDockWidgetLocationChanged, this, docInfo.m_assetId);
+        AZ::SystemTickBus::QueueFunction(&LUAEditorMainWindow::OnDockWidgetLocationChanged, this, docInfo.m_assetId);
 
         luaDockWidget->show();
         luaDockWidget->raise();
@@ -559,7 +559,7 @@ namespace LUAEditor
             connect(pBar, &QTabBar::tabCloseRequested, this,
                 [assetId, this]()
                 {
-                    EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorMainWindow::RequestCloseDocument, this, assetId);
+                    AZ::SystemTickBus::QueueFunction(&LUAEditorMainWindow::RequestCloseDocument, this, assetId);
                 });
 
             pBar->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -611,7 +611,7 @@ namespace LUAEditor
         {
             if (it->first != m_currentTabContextMenuUUID)
             {
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorMainWindow::RequestCloseDocument, this, it->first);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorMainWindow::RequestCloseDocument, this, it->first);
             }
         }
         m_currentTabContextMenuUUID = "";
@@ -996,7 +996,7 @@ namespace LUAEditor
     {
         for (TrackedLUAViewMap::iterator it = m_dOpenLUAView.begin(); it != m_dOpenLUAView.end(); ++it)
         {
-            EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorMainWindow::RequestCloseDocument, this, it->first);
+            AZ::SystemTickBus::QueueFunction(&LUAEditorMainWindow::RequestCloseDocument, this, it->first);
         }
     }
 
@@ -1006,7 +1006,7 @@ namespace LUAEditor
         {
             if (it->first != m_lastFocusedAssetId)
             {
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorMainWindow::RequestCloseDocument, this, it->first);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorMainWindow::RequestCloseDocument, this, it->first);
             }
         }
     }
@@ -1755,7 +1755,7 @@ namespace LUAEditor
                 iter->m_assetId = pLUAViewWidget->m_Info.m_assetId;
                 iter->m_assignAssetId(info.m_assetName, pLUAViewWidget->m_Info.m_assetId);
 
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorMainWindow::OnFindResultClicked, this, *iter);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorMainWindow::OnFindResultClicked, this, *iter);
                 m_dProcessFindListClicked.erase(iter);
                 return;
             }

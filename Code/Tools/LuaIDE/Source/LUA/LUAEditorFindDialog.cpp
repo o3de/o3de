@@ -790,7 +790,7 @@ namespace LUAEditor
             if (!m_bCancelFindSignal)
             {
                 PostProcessOn();
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorFindDialog::ProcessFindItems, this);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorFindDialog::ProcessFindItems, this);
             }
             else
             {
@@ -946,7 +946,7 @@ namespace LUAEditor
                 pLUAViewWidget->m_Info.m_bSourceControl_BusyGettingStats ||
                 pLUAViewWidget->m_Info.m_bSourceControl_Ready == false)
             {
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorFindDialog::OnReplace, this);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorFindDialog::OnReplace, this);
             }
             else if (!pLUAViewWidget->m_Info.m_bSourceControl_CanWrite &&
                      pLUAViewWidget->m_Info.m_bSourceControl_CanCheckOut)
@@ -955,7 +955,7 @@ namespace LUAEditor
                 EBUS_EVENT(Context_DocumentManagement::Bus,
                     DocumentCheckOutRequested,
                     pLUAViewWidget->m_Info.m_assetId);
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorFindDialog::OnReplace, this);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorFindDialog::OnReplace, this);
             }
             else if (!pLUAViewWidget->m_Info.m_bSourceControl_CanWrite)
             {

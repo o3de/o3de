@@ -408,7 +408,7 @@ namespace LUAEditor
                             if (!m_bReloadCheckQueued)
                             {
                                 m_bReloadCheckQueued = true;
-                                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &Context::ProcessReloadCheck, this);
+                                AZ::SystemTickBus::QueueFunction(&Context::ProcessReloadCheck, this);
                             }
                         }
                     }
@@ -491,7 +491,7 @@ namespace LUAEditor
                 {
                     AZ_TracePrintf(LUAEditorDebugName, "ProcessReloadCheck user queueing reload for assetId '%s' '%s'\n", info.m_assetId.c_str(), info.m_assetName.c_str());
                 }
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &Context::OnReloadDocument, this, info.m_assetId);
+                AZ::SystemTickBus::QueueFunction(&Context::OnReloadDocument, this, info.m_assetId);
             }
             else
             {
@@ -1476,7 +1476,7 @@ namespace LUAEditor
                 return;
             }
 
-            EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &Context::OpenMostRecentDocumentView, this);
+            AZ::SystemTickBus::QueueFunction(&Context::OpenMostRecentDocumentView, this);
             return;
         }
 
@@ -1567,7 +1567,7 @@ namespace LUAEditor
         }
 
         mostRecentlyOpenedDocumentView = normalizedAssetId;
-        EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &Context::OpenMostRecentDocumentView, this);
+        AZ::SystemTickBus::QueueFunction(&Context::OpenMostRecentDocumentView, this);
     }
 
     void Context::RunAsAnotherInstance()
@@ -2424,7 +2424,7 @@ namespace LUAEditor
             AZStd::lock_guard<AZStd::mutex> lock(m_failedAssetMessagesMutex);
             m_failedAssets.push(assetPath);
 
-            EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &Context::ProcessFailedAssetMessages, this);
+            AZ::SystemTickBus::QueueFunction(&Context::ProcessFailedAssetMessages, this);
         }
     }
 
