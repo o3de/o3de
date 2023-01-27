@@ -125,6 +125,8 @@ namespace AZ
             {
                 AZ_PROFILE_SCOPE(RHI, "CommandListBase: FlushBarriers");
 
+                // Some barriers needs a specific state before being emitted (e.g. Depth/Stencil resources with custom sample locations).
+                // We first search for barriers using the same state, then set the state in the commandlist and finally emit the barriers.
                 auto beginIt = m_queuedBarriers.begin();
                 decltype(beginIt) endIt;
                 AZStd::vector<D3D12_RESOURCE_BARRIER> barriers(m_queuedBarriers.size());

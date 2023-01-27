@@ -48,7 +48,9 @@ namespace AZ
                 }
             }
 
+            //! Resource barrier to be emitted.
             D3D12_RESOURCE_BARRIER m_barrier;
+            //! Optional state that the command list needs to be before emitting the barrier.
             AZStd::optional<CommandListState> m_cmdListState;
         };
 
@@ -103,7 +105,9 @@ namespace AZ
 
         protected:
             void Init(Device& device, RHI::HardwareQueueClass hardwareQueueClass, ID3D12CommandAllocator* commandAllocator);
+           //! Sets the state of the command list for emitting a barrier.
             void SetBarrierState(const BarrierOp::CommandListState& state);
+            //! Sets the sample positions of the command list.
             void SetSamplePositions(const RHI::MultisampleState& state);
 
             CommandListBase() = default;
