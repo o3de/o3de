@@ -18,7 +18,10 @@
 
 namespace WhiteBox
 {
-    //! Runtime White Box Collider.
+    //! Component that provides a White box Collider and associated Rigid Body.
+    //! 
+    //! This component directly implements both the collider and rigid body instead of
+    //! using BaseColliderComponent and StaticRigidBodyComponent/RigidBodyComponent.
     class WhiteBoxColliderComponent
         : public AZ::Component
         , private AZ::TransformNotificationBus::Handler

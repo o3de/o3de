@@ -34,7 +34,7 @@ namespace PhysX
     //! The heightfield collider is a bit different from the other shape colliders in that it gets the heightfield data from a
     //! HeightfieldProvider, which can control position, rotation, size, and even change its data at runtime.
     //! 
-    //! Due to these differences, this component directly implements both the collider and static rigid body services instead of
+    //! This component directly implements both the collider and static rigid body instead of
     //! using BaseColliderComponent and StaticRigidBodyComponent.
     class HeightfieldColliderComponent
         : public AZ::Component
