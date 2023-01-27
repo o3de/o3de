@@ -320,6 +320,7 @@ namespace AZ
                 AZ_Assert(created, "Failed to build streaming image pool");
 
                 m_systemStreamingPool = StreamingImagePool::FindOrCreate(poolAsset);
+                m_systemStreamingPool->SetMemoryBudget(r_streamingImagePoolBudgetMb);
             }
 
             // Create the system attachment pool.
