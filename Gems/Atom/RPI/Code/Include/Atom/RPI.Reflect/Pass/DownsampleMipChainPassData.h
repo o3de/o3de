@@ -24,16 +24,7 @@ namespace AZ
             DownsampleMipChainPassData() = default;
             virtual ~DownsampleMipChainPassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<DownsampleMipChainPassData, PassData>()
-                        ->Version(0)
-                        ->Field("ShaderAsset", &DownsampleMipChainPassData::m_shaderReference)
-                        ;
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             //! Reference to the Compute Shader that will be used by DownsampleMipeChainPass
             AssetReference m_shaderReference;
