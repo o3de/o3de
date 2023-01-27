@@ -100,7 +100,7 @@ if(EXISTS ${manifest_path})
             file(READ ${engine_path}/engine.json engine_json)
             string(JSON engine_name ERROR_VARIABLE json_error GET ${engine_json} engine_name)
             if(json_error)
-                message(FATAL_ERROR "Unable to read key 'engine_name' from '${engine_path}/engine.json'\nError: ${json_error}")
+                message(WARNING "Unable to read key 'engine_name' from '${engine_path}/engine.json'\nError: ${json_error}")
             elseif(LY_ENGINE_NAME_TO_USE STREQUAL engine_name)
                 list(APPEND CMAKE_MODULE_PATH "${engine_path}/cmake")
 
