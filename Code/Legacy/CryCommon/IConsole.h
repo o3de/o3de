@@ -19,6 +19,11 @@ struct ICVar;
 class ITexture;
 struct ISystem;
 
+namespace AZ
+{
+    class Name;
+}
+
 #define     CVAR_INT              1
 #define     CVAR_FLOAT          2
 #define     CVAR_STRING         3
@@ -597,7 +602,7 @@ struct ICVar
     // Adds a new on change functor to the list.
     // It will add from index 1 on (0 is reserved).
     // Returns an ID to use when getting or removing the functor
-    virtual uint64 AddOnChangeFunctor(const AZStd::function<void()>& pChangeFunctor) = 0;
+    virtual bool AddOnChangeFunctor(AZ::Name functorName, const AZStd::function<void()>& pChangeFunctor) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Get the current callback function.

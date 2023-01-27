@@ -289,7 +289,7 @@ void UiStateActionManager::ResetAllOverrides()
     AZStd::vector<AZ::EntityId> entityIdList = GetTargetEntitiesInAllStates();
     for (auto targetEntityId : entityIdList)
     {
-        EBUS_EVENT_ID(targetEntityId, UiVisualBus, ResetOverrides);
+        UiVisualBus::Event(targetEntityId, &UiVisualBus::Events::ResetOverrides);
     }
 }
 

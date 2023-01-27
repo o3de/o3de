@@ -6,15 +6,12 @@
  *
  */
 
-#include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AtomToolsFramework/Graph/GraphCompiler.h>
-#include <AtomToolsFramework/Graph/GraphCompilerNotificationBus.h>
-#include <AtomToolsFramework/Graph/GraphDocumentRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
-#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
@@ -28,33 +25,15 @@ namespace AtomToolsFramework
                 ->Version(0)
                 ;
         }
-
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->EBus<GraphCompilerRequestBus>("GraphCompilerRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "atomtools")
-                ->Event("GetGraphPath", &GraphCompilerRequests::GetGraphPath)
-                ->Event("GetGeneratedFilePaths", &GraphCompilerRequests::GetGeneratedFilePaths)
-                ->Event("CompileGraph", &GraphCompilerRequests::CompileGraph)
-                ->Event("QueueCompileGraph", &GraphCompilerRequests::QueueCompileGraph)
-                ->Event("IsCompileGraphQueued", &GraphCompilerRequests::IsCompileGraphQueued)
-                ->Event("ReportGeneratedFileStatus", &GraphCompilerRequests::ReportGeneratedFileStatus)
-                ;
-        }
     }
 
-    GraphCompiler::GraphCompiler(const AZ::Crc32& toolId, const AZ::Uuid& documentId)
+    GraphCompiler::GraphCompiler(const AZ::Crc32& toolId)
         : m_toolId(toolId)
-        , m_documentId(documentId)
     {
-        GraphCompilerRequestBus::Handler::BusConnect(documentId);
     }
 
     GraphCompiler::~GraphCompiler()
     {
-        GraphCompilerRequestBus::Handler::BusDisconnect();
     }
 
     bool GraphCompiler::IsCompileLoggingEnabled()
@@ -62,11 +41,63 @@ namespace AtomToolsFramework
         return GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileLoggingEnabled", false);
     }
 
+    bool GraphCompiler::Reset()
+    {
+        if (CanCompileGraph())
+        {
+            return true;
+        }
+
+        SetState(State::Canceled);
+        return false;
+    }
+
+    void GraphCompiler::SetStateChangeHandler(StateChangeHandler handler)
+    {
+        m_stateChangeHandler = handler;
+    }
+
+    void GraphCompiler::SetState(GraphCompiler::State state)
+    {
+        m_state = state;
+
+        switch (m_state)
+        {
+        case State::Idle:
+            ReportStatus(AZStd::string::format("%s (Idle)", GetGraphPath().c_str()));
+            break;
+        case State::Compiling:
+            m_generatedFiles.clear();
+            ReportStatus(AZStd::string::format("%s (Compiling)", GetGraphPath().c_str()));
+            break;
+        case State::Processing:
+            break;
+        case State::Complete:
+            ReportStatus(AZStd::string::format("%s (Complete)", GetGraphPath().c_str()));
+            break;
+        case State::Failed:
+            ReportStatus(AZStd::string::format("%s (Failed)", GetGraphPath().c_str()));
+            break;
+        case State::Canceled:
+            ReportStatus(AZStd::string::format("%s (Cancelled)", GetGraphPath().c_str()));
+            break;
+        }
+
+        // Invoke the optional state change handler function if provided
+        if (m_stateChangeHandler)
+        {
+            m_stateChangeHandler(this);
+        }
+    }
+
+    GraphCompiler::State GraphCompiler::GetState() const
+    {
+        return m_state;
+    }
+
     AZStd::string GraphCompiler::GetGraphPath() const
     {
-        AZStd::string absolutePath;
-        AtomToolsDocumentRequestBus::EventResult(absolutePath, m_documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
-        return absolutePath;
+        return m_graphPath;
     }
 
     const AZStd::vector<AZStd::string>& GraphCompiler::GetGeneratedFilePaths() const
@@ -74,87 +105,70 @@ namespace AtomToolsFramework
         return m_generatedFiles;
     }
 
-    bool GraphCompiler::CompileGraph()
+    bool GraphCompiler::CanCompileGraph() const
     {
-        CompileGraphStarted();
+        switch (m_state)
+        {
+        case State::Idle:
+        case State::Failed:
+        case State::Complete:
+            return true;
+        }
+        return false;
+    }
 
-        GraphModel::GraphPtr graph;
-        GraphDocumentRequestBus::EventResult(graph, m_documentId, &GraphDocumentRequestBus::Events::GetGraph);
+    bool GraphCompiler::CompileGraph(GraphModel::GraphPtr graph, const AZStd::string& graphName, const AZStd::string& graphPath)
+    {
+        if (!CanCompileGraph())
+        {
+            return false;
+        }
 
-        AZStd::string graphName;
-        GraphDocumentRequestBus::EventResult(graphName, m_documentId, &GraphDocumentRequestBus::Events::GetGraphName);
+        m_graph = graph;
+        m_graphName = graphName;
+        m_graphPath = graphPath;
+        SetState(State::Compiling);
 
         // Skip compilation if there is no graph or this is a template.
-        if (!graph || graphName.empty())
+        if (!m_graph || m_graphName.empty() || GetGraphPath().empty())
         {
-            CompileGraphFailed();
+            SetState(State::Failed);
             return false;
         }
 
         return true;
     }
 
-    void GraphCompiler::QueueCompileGraph()
-    {
-        m_compileGraph = true;
-    }
-
-    bool GraphCompiler::IsCompileGraphQueued() const
-    {
-        return m_compileGraph;
-    }
-
-    void GraphCompiler::CompileGraphStarted()
-    {
-        m_compileGraph = false;
-        m_generatedFiles.clear();
-        m_generatedFileIndexToProcess = 0;
-        m_lastStatusMessage.clear();
-
-        ReportStatus(AZStd::string::format("Compiling %s (Started)", GetGraphPath().c_str()));
-
-        GraphCompilerNotificationBus::Event(m_toolId, &GraphCompilerNotificationBus::Events::OnCompileGraphStarted, m_documentId);
-    }
-
-    void GraphCompiler::CompileGraphFailed()
-    {
-        m_generatedFiles.clear();
-        m_generatedFileIndexToProcess = 0;
-        m_lastStatusMessage.clear();
-
-        ReportStatus(AZStd::string::format("Compiling %s (Failed)", GetGraphPath().c_str()));
-
-        GraphCompilerNotificationBus::Event(m_toolId, &GraphCompilerNotificationBus::Events::OnCompileGraphFailed, m_documentId);
-    }
-
-    void GraphCompiler::CompileGraphCompleted()
-    {
-        ReportStatus(AZStd::string::format("Compiling %s (Completed)", GetGraphPath().c_str()));
-
-        GraphCompilerNotificationBus::Event(m_toolId, &GraphCompilerNotificationBus::Events::OnCompileGraphCompleted, m_documentId);
-    }
-
     bool GraphCompiler::ReportGeneratedFileStatus()
     {
+        SetState(State::Processing);
+
+        AZStd::vector<AZStd::string> generatedFiles(m_generatedFiles.rbegin(), m_generatedFiles.rend());
+
         // Check asset processor status of each generated file
-        for (; m_generatedFileIndexToProcess < m_generatedFiles.size(); ++m_generatedFileIndexToProcess)
+        while (!generatedFiles.empty())
         {
-            // Prevent status requests from blocking the main thread when monitoring several files.
-            if (AZStd::chrono::steady_clock::now() < (m_lastStatusRequestTime + AZStd::chrono::milliseconds(10)))
+            if (m_state != State::Processing)
             {
                 return false;
             }
 
-            const auto& generatedFile = m_generatedFiles[m_generatedFileIndexToProcess];
+            // Forcing the string to be copied before it's captured and since to the main thread.
+            const AZStd::string generatedFile = generatedFiles.back();
             AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
             AzToolsFramework::AssetSystemJobRequestBus::BroadcastResult(
-                jobOutcome, &AzToolsFramework::AssetSystemJobRequestBus::Events::GetAssetJobsInfo, generatedFile, true);
-            m_lastStatusRequestTime = AZStd::chrono::steady_clock::now();
+                jobOutcome, &AzToolsFramework::AssetSystemJobRequestBus::Events::GetAssetJobsInfo, generatedFile, false);
 
+            bool jobsComplete = true;
             if (jobOutcome.IsSuccess())
             {
                 for (const auto& job : jobOutcome.GetValue())
                 {
+                    if (m_state != State::Processing)
+                    {
+                        return false;
+                    }
+
                     ReportStatus(AZStd::string::format(
                         "Processing %s (%s)", generatedFile.c_str(), AzToolsFramework::AssetSystem::JobStatusString(job.m_status)));
 
@@ -164,15 +178,22 @@ namespace AtomToolsFramework
                     case AzToolsFramework::AssetSystem::JobStatus::InProgress:
                         // If any of the asset jobs are still processing then return early instead of allowing the completion
                         // notification to be sent.
-                        return false;
+                        jobsComplete = false;
+                        break;
                     case AzToolsFramework::AssetSystem::JobStatus::Failed:
                     case AzToolsFramework::AssetSystem::JobStatus::Failed_InvalidSourceNameExceedsMaxLimit:
                         // If any of the asset jobs failed, cancel compilation.
-                        CompileGraphFailed();
-                        return true;
+                        return false;
                     }
                 }
             }
+
+            if (jobsComplete)
+            {
+                generatedFiles.pop_back();
+            }
+
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
         }
 
         return true;
@@ -180,13 +201,14 @@ namespace AtomToolsFramework
 
     void GraphCompiler::ReportStatus(const AZStd::string& statusMessage)
     {
+        AZStd::scoped_lock lock(m_lastStatusMessageMutex);
         if (m_lastStatusMessage != statusMessage)
         {
             m_lastStatusMessage = statusMessage;
-
-            AZ_TracePrintf_IfTrue("GraphCompiler", IsCompileLoggingEnabled(), "%s\n", statusMessage.c_str());
-
-            AtomToolsMainWindowRequestBus::Event(m_toolId, &AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
+            AZ_TracePrintf_IfTrue("GraphCompiler", IsCompileLoggingEnabled(), "%s\n", m_lastStatusMessage.c_str());
+            AZ::SystemTickBus::QueueFunction([toolId = m_toolId, statusMessage]() {
+                AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
+            });
         }
     }
 } // namespace AtomToolsFramework

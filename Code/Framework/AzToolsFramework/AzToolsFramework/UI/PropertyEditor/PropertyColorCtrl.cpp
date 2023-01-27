@@ -246,9 +246,11 @@ namespace AzToolsFramework
     {
         // Update the color but don't need to update the dialog color since
         // this signal came from the dialog
-        SetColor(color, false);
-
-        emit valueChanged(m_color);
+        if (m_color != color)
+        {
+            SetColor(color, false);
+            emit valueChanged(m_color);
+        }
     }
 
     QColor PropertyColorCtrl::convertFromString(const QString& string)

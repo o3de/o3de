@@ -840,7 +840,8 @@ void UiTransform2dComponent::NotifyAndResetCanvasSpaceRectChange()
         Rect prevRect = m_prevRect;
         m_prevRect = m_rect;
         m_rectChangedByInitialization = false;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformChangeNotificationBus, OnCanvasSpaceRectChanged, GetEntityId(), prevRect, m_rect);
+        UiTransformChangeNotificationBus::Event(
+            GetEntityId(), &UiTransformChangeNotificationBus::Events::OnCanvasSpaceRectChanged, GetEntityId(), prevRect, m_rect);
     }
 }
 
@@ -1388,7 +1389,7 @@ bool UiTransform2dComponent::IsControlledByParent() const
         AZ::Entity* parentElement = GetElementComponent()->GetParent();
         if (parentElement)
         {
-            EBUS_EVENT_ID_RESULT(isControlledByParent, parentElement->GetId(), UiLayoutBus, IsControllingChild, GetEntityId());
+            UiLayoutBus::EventResult(isControlledByParent, parentElement->GetId(), &UiLayoutBus::Events::IsControllingChild, GetEntityId());
         }
     }
     else
@@ -1403,7 +1404,7 @@ bool UiTransform2dComponent::IsControlledByParent() const
 UiLayoutFitterInterface::FitType UiTransform2dComponent::GetLayoutFitterType() const
 {
     UiLayoutFitterInterface::FitType fitType = UiLayoutFitterInterface::FitType::None;
-    EBUS_EVENT_ID_RESULT(fitType, GetEntityId(), UiLayoutFitterBus, GetFitType);
+    UiLayoutFitterBus::EventResult(fitType, GetEntityId(), &UiLayoutFitterBus::Events::GetFitType);
 
     return fitType;
 }
@@ -1423,11 +1424,11 @@ AZ::EntityId UiTransform2dComponent::GetAncestorWithSameDimensionScaleToDevice(S
     {
         AZ::EntityId prevParent;
         AZ::EntityId parent;
-        EBUS_EVENT_ID_RESULT(parent, GetEntityId(), UiElementBus, GetParentEntityId);
+        UiElementBus::EventResult(parent, GetEntityId(), &UiElementBus::Events::GetParentEntityId);
         while (parent.IsValid())
         {
             ScaleToDeviceMode parentScaleToDeviceMode = ScaleToDeviceMode::None;
-            EBUS_EVENT_ID_RESULT(parentScaleToDeviceMode, parent, UiTransformBus, GetScaleToDeviceMode);
+            UiTransformBus::EventResult(parentScaleToDeviceMode, parent, &UiTransformBus::Events::GetScaleToDeviceMode);
             if (parentScaleToDeviceMode != ScaleToDeviceMode::None)
             {
                 if ((DoesScaleToDeviceModeAffectX(scaleToDeviceMode) && DoesScaleToDeviceModeAffectX(parentScaleToDeviceMode))
@@ -1440,7 +1441,7 @@ AZ::EntityId UiTransform2dComponent::GetAncestorWithSameDimensionScaleToDevice(S
 
             prevParent = parent;
             parent.SetInvalid();
-            EBUS_EVENT_ID_RESULT(parent, prevParent, UiElementBus, GetParentEntityId);
+            UiElementBus::EventResult(parent, prevParent, &UiElementBus::Events::GetParentEntityId);
         }
     }
     else
@@ -1458,14 +1459,14 @@ LyShine::EntityArray UiTransform2dComponent::GetDescendantsWithSameDimensionScal
     auto HasSameDimensionScaleToDevice = [scaleToDeviceMode](const AZ::Entity* entity)
     {
         ScaleToDeviceMode descendantScaleToDeviceMode = ScaleToDeviceMode::None;
-        EBUS_EVENT_ID_RESULT(descendantScaleToDeviceMode, entity->GetId(), UiTransformBus, GetScaleToDeviceMode);
+        UiTransformBus::EventResult(descendantScaleToDeviceMode, entity->GetId(), &UiTransformBus::Events::GetScaleToDeviceMode);
 
         return ((DoesScaleToDeviceModeAffectX(descendantScaleToDeviceMode) && DoesScaleToDeviceModeAffectX(scaleToDeviceMode))
             || (DoesScaleToDeviceModeAffectY(descendantScaleToDeviceMode) && DoesScaleToDeviceModeAffectY(scaleToDeviceMode)));
     };
 
     LyShine::EntityArray descendants;
-    EBUS_EVENT_ID(GetEntityId(), UiElementBus, FindDescendantElements, HasSameDimensionScaleToDevice, descendants);
+    UiElementBus::Event(GetEntityId(), &UiElementBus::Events::FindDescendantElements, HasSameDimensionScaleToDevice, descendants);
 
     return descendants;
 }
@@ -1535,7 +1536,7 @@ AZStd::string UiTransform2dComponent::GetScaleToDeviceModeWarningTooltipText() c
             {
                 const char* ancestorName = "";
                 AZ::Entity* ancestorEntity = nullptr;
-                EBUS_EVENT_RESULT(ancestorEntity, AZ::ComponentApplicationBus, FindEntity, ancestor);
+                AZ::ComponentApplicationBus::BroadcastResult(ancestorEntity, &AZ::ComponentApplicationBus::Events::FindEntity, ancestor);
                 if (ancestorEntity)
                 {
                     ancestorName = ancestorEntity->GetName().c_str();
@@ -1582,7 +1583,7 @@ AZ::EntityId UiTransform2dComponent::GetCanvasEntityId()
     }
     else
     {
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     }
 
     return canvasEntityId;
@@ -1629,7 +1630,7 @@ void UiTransform2dComponent::RecomputeTransformToViewportIfNeeded()
 
     m_recomputeTransformToViewport = false;
 
-    EBUS_EVENT_ID(GetEntityId(), UiTransformChangeNotificationBus, OnTransformToViewportChanged);
+    UiTransformChangeNotificationBus::Event(GetEntityId(), &UiTransformChangeNotificationBus::Events::OnTransformToViewportChanged);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
