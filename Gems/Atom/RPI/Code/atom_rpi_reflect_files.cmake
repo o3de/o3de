@@ -151,6 +151,7 @@ set(FILES
     Source/RPI.Reflect/Material/MaterialVersionUpdate.cpp
     Source/RPI.Reflect/Pass/PassAsset.cpp
     Source/RPI.Reflect/Pass/PassAttachmentReflect.cpp
+    Source/RPI.Reflect/Pass/PassData.cpp
     Source/RPI.Reflect/Pass/PassRequest.cpp
     Source/RPI.Reflect/Pass/PassTemplate.cpp
     Source/RPI.Reflect/Shader/ShaderStageType.cpp
@@ -166,6 +167,7 @@ set(FILES
     Source/RPI.Reflect/Shader/PrecompiledShaderAssetSourceData.cpp
     Source/RPI.Reflect/System/AnyAsset.cpp
     Source/RPI.Reflect/System/AssetAliases.cpp
+    Source/RPI.Reflect/System/PipelineRenderSettings.cpp
     Source/RPI.Reflect/System/RenderPipelineDescriptor.cpp
     Source/RPI.Reflect/System/SceneDescriptor.cpp
 )
