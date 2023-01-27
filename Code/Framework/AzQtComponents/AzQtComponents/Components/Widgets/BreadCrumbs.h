@@ -63,7 +63,8 @@ namespace AzQtComponents
         //! Style configuration for the Breadcrumbs class.
         struct Config
         {
-            QString linkColor;      //!< Color for links. Must be a string using the hex format #rrggbb.
+            QString disabledLinkColor;  //!< Color for disabled links. Must be a string using the hex format #rrggbb.
+            QString linkColor;          //!< Color for links. Must be a string using the hex format #rrggbb.
         };
 
         explicit BreadCrumbs(QWidget* parent = nullptr);
@@ -159,6 +160,7 @@ namespace AzQtComponents
     protected:
         void resizeEvent(QResizeEvent* event) override;
         bool eventFilter(QObject* obj, QEvent* ev) override;
+        void fillLabel();
 
     private Q_SLOTS:
         void onLinkActivated(const QString& link);
@@ -167,7 +169,6 @@ namespace AzQtComponents
 
     private:
         QString generateIconHtml(int index);
-        void fillLabel();
         void changePath(const QString& newPath);
 
         void getButtonStates(BreadCrumbButtonStates buttonStates);
