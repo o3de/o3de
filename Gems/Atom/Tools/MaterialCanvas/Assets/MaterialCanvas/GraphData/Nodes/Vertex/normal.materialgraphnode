@@ -3,25 +3,25 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{AD1CEDD5-B944-4817-B157-586B0A6C9406}",
-        "category": "Object",
-        "title": "Position",
-        "titlePaletteName": "ObjectNodeTitlePalette",
-        "description": "The local position of the current vertex or fragment",
+        "id": "{0F7B6190-E8B8-4CCD-AE61-D5B8E2C22CDE}",
+        "category": "Vertex",
+        "title": "Normal",
+        "titlePaletteName": "VertexNodeTitlePalette",
+        "description": "The surface normal of the current vertex or fragment",
         "slotDataTypeGroups": [
-            "outPosition",
+            "outNormal",
             "outX|outY|outZ"
         ],
         "outputSlots": [
             {
-                "name": "outPosition",
-                "displayName": "Position",
-                "description": "Position",
+                "name": "outNormal",
+                "displayName": "Normal",
+                "description": "Normal",
                 "supportedDataTypeRegex": "float3",
                 "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL;"
                     ]
                 }
             },
@@ -33,7 +33,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION.x;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL.x;"
                     ]
                 }
             },
@@ -45,7 +45,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION.y;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL.y;"
                     ]
                 }
             },
@@ -57,7 +57,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION.z;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL.z;"
                     ]
                 }
             }

@@ -299,18 +299,27 @@ namespace MaterialCanvas
                     "O3DE_GENERATED_INCLUDES_END",
                     [&, this]([[maybe_unused]] const AZStd::string& blockHeader)
                     {
-                        const auto& templateOutputPath = GetOutputPathFromTemplatePath(templateFileData.GetPath());
-
                         // Include file paths will need to be converted to include statements.
                         AZStd::vector<AZStd::string> includeStatements;
                         includeStatements.reserve(m_includePaths.size());
 
                         for (const auto& path : m_includePaths)
                         {
-                            // TODO Replace relative path reference function
-                            // The relative path reference function will only work for include files in the same gem.
-                            includeStatements.push_back(AZStd::string::format(
-                                "#include <%s>;", AtomToolsFramework::GetPathToExteralReference(templateOutputPath, path).c_str()));
+                            bool relativePathFound = false;
+                            AZStd::string relativePath;
+                            AZStd::string relativePathFolder;
+
+                            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                                relativePathFound,
+                                &AzToolsFramework::AssetSystem::AssetSystemRequest::GenerateRelativeSourcePath,
+                                AtomToolsFramework::GetPathWithoutAlias(path),
+                                relativePath,
+                                relativePathFolder);
+
+                            if (relativePathFound)
+                            {
+                                includeStatements.push_back(AZStd::string::format("#include <%s>", relativePath.c_str()));
+                            }
                         }
                         return includeStatements;
                     });
