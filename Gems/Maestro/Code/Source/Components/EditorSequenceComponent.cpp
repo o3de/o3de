@@ -238,7 +238,7 @@ namespace Maestro
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), removedEntityId);
 
         // Notify the SequenceAgentComponent that we're disconnecting from it
-        EBUS_EVENT_ID(ebusId, Maestro::SequenceAgentComponentRequestBus, DisconnectSequence);
+        Maestro::SequenceAgentComponentRequestBus::Event(ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::DisconnectSequence);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -254,7 +254,8 @@ namespace Maestro
     {
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
 
-        EBUS_EVENT_ID(ebusId, Maestro::EditorSequenceAgentComponentRequestBus, GetAnimatableComponents, componentIds);
+        Maestro::EditorSequenceAgentComponentRequestBus::Event(
+            ebusId, &Maestro::EditorSequenceAgentComponentRequestBus::Events::GetAnimatableComponents, componentIds);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -272,7 +273,8 @@ namespace Maestro
     void EditorSequenceComponent::GetAssetDuration(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId)
     {
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
-        EBUS_EVENT_ID(ebusId, Maestro::SequenceAgentComponentRequestBus, GetAssetDuration, returnValue, componentId, assetId);
+        Maestro::SequenceAgentComponentRequestBus::Event(
+            ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::GetAssetDuration, returnValue, componentId, assetId);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -328,7 +330,8 @@ namespace Maestro
     void EditorSequenceComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
     {
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
-        EBUS_EVENT_ID(ebusId, Maestro::SequenceAgentComponentRequestBus, GetAnimatedPropertyValue, returnValue, animatableAddress);
+        Maestro::SequenceAgentComponentRequestBus::Event(
+            ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::GetAnimatedPropertyValue, returnValue, animatableAddress);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////

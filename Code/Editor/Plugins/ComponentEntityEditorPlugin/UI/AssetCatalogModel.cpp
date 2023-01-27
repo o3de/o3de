@@ -110,7 +110,7 @@ AssetCatalogModel::AssetCatalogModel(QObject* parent)
     {
         AZStd::vector<AZStd::string> extensions;
         allExtensions.clear();
-        EBUS_EVENT_ID(type, AZ::AssetTypeInfoBus, GetAssetTypeExtensions, extensions);
+        AZ::AssetTypeInfoBus::Event(type, &AZ::AssetTypeInfoBus::Events::GetAssetTypeExtensions, extensions);
         for (int i = 0; i < extensions.size(); i++)
         {
             if (i > 0)

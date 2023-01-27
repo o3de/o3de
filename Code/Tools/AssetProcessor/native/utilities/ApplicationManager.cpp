@@ -225,7 +225,7 @@ ApplicationManager::~ApplicationManager()
     }
 
     //Unregistering and deleting all the components
-    EBUS_EVENT_ID(azrtti_typeid<AzFramework::LogComponent>(), AZ::ComponentDescriptorBus, ReleaseDescriptor);
+    AZ::ComponentDescriptorBus::Event(azrtti_typeid<AzFramework::LogComponent>(), &AZ::ComponentDescriptorBus::Events::ReleaseDescriptor);
 
     //Stop AZFramework
     m_frameworkApp.Stop();

@@ -62,7 +62,7 @@ namespace LyShineExamples
                 if (entity)
                 {
                     AZStd::string text = uiDynamicContentDB->GetColorName(UiDynamicContentDatabaseInterface::ColorType::PaidColors, index);
-                    EBUS_EVENT_ID(entity->GetId(), UiTextBus, SetText, text.c_str());
+                    UiTextBus::Event(entity->GetId(), &UiTextBus::Events::SetText, text.c_str());
                 }
 
                 entity = nullptr;
@@ -70,7 +70,7 @@ namespace LyShineExamples
                 if (entity)
                 {
                     AZStd::string text = uiDynamicContentDB->GetColorPrice(UiDynamicContentDatabaseInterface::ColorType::PaidColors, index);
-                    EBUS_EVENT_ID(entity->GetId(), UiTextBus, SetText, text.c_str());
+                    UiTextBus::Event(entity->GetId(), &UiTextBus::Events::SetText, text.c_str());
                 }
 
                 entity = nullptr;
@@ -78,7 +78,7 @@ namespace LyShineExamples
                 if (entity)
                 {
                     AZ::Color color = uiDynamicContentDB->GetColor(UiDynamicContentDatabaseInterface::ColorType::PaidColors, index);
-                    EBUS_EVENT_ID(entity->GetId(), UiImageBus, SetColor, color);
+                    UiImageBus::Event(entity->GetId(), &UiImageBus::Events::SetColor, color);
                 }
             }
         }

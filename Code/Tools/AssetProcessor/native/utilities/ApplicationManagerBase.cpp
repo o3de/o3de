@@ -638,7 +638,7 @@ void ApplicationManagerBase::InitConnectionManager()
         AZStd::bind([](unsigned int connId, unsigned int /*type*/, unsigned int serial, QByteArray /*payload*/)
             {
                 ResponsePing responsePing;
-                EBUS_EVENT_ID(connId, AssetProcessor::ConnectionBus, SendResponse, serial, responsePing);
+                AssetProcessor::ConnectionBus::Event(connId, &AssetProcessor::ConnectionBus::Events::SendResponse, serial, responsePing);
             }, AZStd::placeholders::_1, AZStd::placeholders::_2, AZStd::placeholders::_3, AZStd::placeholders::_4)
         );
 
@@ -713,7 +713,8 @@ void ApplicationManagerBase::InitConnectionManager()
                     Q_EMIT ConnectionStatusMsg(QString(" Critical assets need to be processed for %1 platform. Editor/Game will launch once they are processed.").arg(requestAssetProcessorMessage.m_platform.c_str()));
                     m_highestConnId = connId;
                 }
-                EBUS_EVENT_ID(connId, AssetProcessor::ConnectionBus, SendResponse, serial, responseAssetProcessorMessage);
+                AssetProcessor::ConnectionBus::Event(
+                    connId, &AssetProcessor::ConnectionBus::Events::SendResponse, serial, responseAssetProcessorMessage);
             }
         };
     // connect the network messages to the Request handler:

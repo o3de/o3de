@@ -335,7 +335,7 @@ namespace LyShineExamples
     void UiCustomImageComponent::RenderToCache(LyShine::IRenderGraph* renderGraph)
     {
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
 
         // points are a clockwise quad
         const AZ::Vector2 uvs[4] = {
@@ -443,7 +443,7 @@ namespace LyShineExamples
         // tell the canvas to invalidate the render graph (never want to do this while rendering)
         AZ::EntityId canvasEntityId;
         UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+        UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
     }
 
 }

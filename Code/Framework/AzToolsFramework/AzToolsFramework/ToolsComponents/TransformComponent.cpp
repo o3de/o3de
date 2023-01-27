@@ -742,7 +742,8 @@ namespace AzToolsFramework
 
             // This is for Create Entity as child / Drag+drop parent update / add component
             EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, EntityParentChanged, GetEntityId(), parentId, oldParentId);
-            EBUS_EVENT_ID(GetEntityId(), AZ::TransformNotificationBus, OnParentChanged, oldParentId, parentId);
+            AZ::TransformNotificationBus::Event(
+                GetEntityId(), &AZ::TransformNotificationBus::Events::OnParentChanged, oldParentId, parentId);
             m_parentChangedEvent.Signal(oldParentId, parentId);
 
             TransformChanged();

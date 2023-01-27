@@ -480,7 +480,7 @@ void AssetRequestHandler::SendAssetStatus(NetworkRequestID groupID, unsigned int
 {
     ResponseAssetStatus resp;
     resp.m_assetStatus = status;
-    EBUS_EVENT_ID(groupID.first, AssetProcessor::ConnectionBus, SendResponse, groupID.second, resp);
+    AssetProcessor::ConnectionBus::Event(groupID.first, &AssetProcessor::ConnectionBus::Events::SendResponse, groupID.second, resp);
 }
 
 AssetRequestHandler::AssetRequestHandler()

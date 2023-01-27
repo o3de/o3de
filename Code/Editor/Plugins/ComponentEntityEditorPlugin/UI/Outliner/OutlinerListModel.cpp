@@ -1173,7 +1173,7 @@ bool OutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const 
             else
             {
                 //  Guarding this to prevent the entity from being marked dirty when the parent doesn't change.
-                EBUS_EVENT_ID(entityId, AZ::TransformBus, SetParent, newParentId);
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetParent, newParentId);
             }
 
             // The old parent is dirty due to sort change

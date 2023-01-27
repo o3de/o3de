@@ -784,7 +784,11 @@ namespace AzToolsFramework
                     newParentWorldTM.SetTranslation(sliceRootEntityPosition);
 
                     //signal entities that parent is about to move
-                    EBUS_EVENT_ID(entity->GetId(), AZ::TransformNotificationBus, OnParentTransformWillChange, oldParentWorldTM, newParentWorldTM);
+                    AZ::TransformNotificationBus::Event(
+                        entity->GetId(),
+                        &AZ::TransformNotificationBus::Events::OnParentTransformWillChange,
+                        oldParentWorldTM,
+                        newParentWorldTM);
 
                     ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entity->GetId());
 

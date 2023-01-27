@@ -1003,7 +1003,7 @@ namespace AzToolsFramework
                 AZ::TransformBus::EventResult(oldParentId, entityId, &AZ::TransformBus::Events::GetParentId);
 
                 //  Guarding this to prevent the entity from being marked dirty when the parent doesn't change.
-                EBUS_EVENT_ID(entityId, AZ::TransformBus, SetParent, newParentId);
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetParent, newParentId);
 
                 // The old parent is dirty due to sort change
                 undo2.MarkEntityDirty(GetEntityIdForSortInfo(oldParentId));

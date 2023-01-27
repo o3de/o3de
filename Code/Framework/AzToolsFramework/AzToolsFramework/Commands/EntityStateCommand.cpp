@@ -187,7 +187,8 @@ namespace AzToolsFramework
             {
                 if (!m_entityContextId.IsNull() && !isSliceMetadataEntity)
                 {
-                    EBUS_EVENT_ID(m_entityContextId, AzFramework::EntityContextRequestBus, AddEntity, entity);
+                    AzFramework::EntityContextRequestBus::Event(
+                        m_entityContextId, &AzFramework::EntityContextRequestBus::Events::AddEntity, entity);
                 }
 
                 if (m_entityState == AZ::Entity::State::Init || m_entityState == AZ::Entity::State::Active)

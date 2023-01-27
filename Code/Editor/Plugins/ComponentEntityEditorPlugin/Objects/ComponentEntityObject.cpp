@@ -285,7 +285,7 @@ void CComponentEntityObject::AttachChild(CBaseObject* child, bool /*bKeepPos*/)
 
             {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Editor Parent");
-                EBUS_EVENT_ID(childEntityId, AZ::TransformBus, SetParent, m_entityId);
+                AZ::TransformBus::Event(childEntityId, &AZ::TransformBus::Events::SetParent, m_entityId);
                 undoBatch.MarkEntityDirty(childEntityId);
             }
 
@@ -307,7 +307,7 @@ void CComponentEntityObject::DetachThis(bool /*bKeepPos*/)
         if (m_entityId.IsValid())
         {
             AzToolsFramework::ScopedUndoBatch undoBatch("Editor Unparent");
-            EBUS_EVENT_ID(m_entityId, AZ::TransformBus, SetParent, AZ::EntityId());
+            AZ::TransformBus::Event(m_entityId, &AZ::TransformBus::Events::SetParent, AZ::EntityId());
             undoBatch.MarkEntityDirty(m_entityId);
         }
 
@@ -563,7 +563,7 @@ void CComponentEntityObject::InvalidateTM(int nWhyFlags)
         if (m_entityId.IsValid())
         {
             Matrix34 worldTransform = GetWorldTM();
-            EBUS_EVENT_ID(m_entityId, AZ::TransformBus, SetWorldTM, LYTransformToAZTransform(worldTransform));
+            AZ::TransformBus::Event(m_entityId, &AZ::TransformBus::Events::SetWorldTM, LYTransformToAZTransform(worldTransform));
         }
     }
 }
