@@ -107,6 +107,7 @@ namespace AzQtComponents
         m_label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
         m_lineEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
         connect(m_label, &QLabel::linkActivated, this, &BreadCrumbs::onLinkActivated);
+        setMinimumWidth(25);
     }
 
     BreadCrumbs::~BreadCrumbs()
