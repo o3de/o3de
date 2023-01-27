@@ -95,6 +95,4 @@ namespace AzToolsFramework
     bool PrefabEditModeEffectEnabled();
     void SetPrefabEditModeEffectEnabled(bool enabled);
 
-    bool KinematicWidgetDoNotShow();
-    void SetKinematicWidgetDoNotShow(const bool remember);
 } // namespace AzToolsFramework

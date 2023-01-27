@@ -60,7 +60,7 @@ namespace AzToolsFramework
 
     protected slots:
         void onChildComboBoxValueChange(int comboBoxIndex);
-        
+
     private:
         QComboBox* m_pComboBox = nullptr;
         QToolButton* m_editButton = nullptr;

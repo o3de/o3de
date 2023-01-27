@@ -29,7 +29,6 @@ static constexpr const char* const GravityIcon = "<img src=\":/stylesheet/img/16
 static constexpr const char* const MoveManuallyIcon = "<img src=\":/stylesheet/img/16x16/move_manually.svg\"/>";
 static constexpr const char* const MoveWithCodeIcon = "<img src=\":/stylesheet/img/16x16/move_with_code.svg\"/>";
 
-
 namespace PhysX
 {
     namespace Editor

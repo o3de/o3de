@@ -22,7 +22,6 @@
 class QComboBox;
 class QLineEdit;
 class QPushButton;
-class QToolButton;
 
 namespace AzToolsFramework
 {

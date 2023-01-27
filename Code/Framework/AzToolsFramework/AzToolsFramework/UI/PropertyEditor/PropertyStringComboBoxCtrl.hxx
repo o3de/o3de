@@ -19,7 +19,6 @@
 #include <QWidget>
 #include <QToolButton>
 #include <QComboBox>
-
 #endif
 
 namespace AzToolsFramework
