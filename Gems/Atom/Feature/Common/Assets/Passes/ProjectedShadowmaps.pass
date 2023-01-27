@@ -21,7 +21,7 @@
             "ImageAttachments": [
                 {
                     "Name": "ShadowmapImage",
-                    "Lifetime":  "Imported",
+                    "Lifetime":  "Imported"
                 }
             ],
             "Connections": [
