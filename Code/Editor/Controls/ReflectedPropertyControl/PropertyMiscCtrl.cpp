@@ -99,10 +99,10 @@ QWidget* UserPopupWidgetHandler::CreateGUI(QWidget *pParent)
 {
     UserPropertyEditor* newCtrl = aznew UserPropertyEditor(pParent);
     connect(newCtrl, &UserPropertyEditor::ValueChanged, newCtrl, [newCtrl]()
-    {
+        {
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
                 &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
-    });
+        });
 
     return newCtrl;
 }

@@ -192,10 +192,10 @@ public:
     {
         ListEditWidget* newCtrl = aznew T(pParent);
         connect(newCtrl, &ListEditWidget::ValueChanged, newCtrl, [newCtrl]()
-        {
+            {
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
                     &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
-        });
+            });
         return newCtrl;
     }
     virtual void ConsumeAttribute(ListEditWidget* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override {

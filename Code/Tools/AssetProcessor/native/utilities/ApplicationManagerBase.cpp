@@ -607,30 +607,42 @@ void ApplicationManagerBase::InitConnectionManager()
             );
     AZ_Assert(result, "Failed to connect to RCController signal");
 
-    result = QObject::connect(GetRCController(), &AssetProcessor::RCController::FileCompiled, this,
-            [](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse /*response*/)
-            {
-                AssetNotificationMessage message(entry.m_sourceAssetReference.RelativePath().c_str(), AssetNotificationMessage::JobCompleted, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
+    result = QObject::connect(
+        GetRCController(),
+        &AssetProcessor::RCController::FileCompiled,
+        this,
+        [](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse /*response*/)
+        {
+            AssetNotificationMessage message(
+                entry.m_sourceAssetReference.RelativePath().c_str(),
+                AssetNotificationMessage::JobCompleted,
+                AZ::Data::s_invalidAssetType,
+                entry.m_platformInfo.m_identifier.c_str());
             AssetProcessor::ConnectionBus::Broadcast(
                 &AssetProcessor::ConnectionBus::Events::SendPerPlatform,
                 0,
                 message,
                 QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
-            }
-            );
+        });
     AZ_Assert(result, "Failed to connect to RCController signal");
 
-    result = QObject::connect(GetRCController(), &AssetProcessor::RCController::FileFailed, this,
-            [](AssetProcessor::JobEntry entry)
-            {
-                AssetNotificationMessage message(entry.m_sourceAssetReference.RelativePath().c_str(), AssetNotificationMessage::JobFailed, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
+    result = QObject::connect(
+        GetRCController(),
+        &AssetProcessor::RCController::FileFailed,
+        this,
+        [](AssetProcessor::JobEntry entry)
+        {
+            AssetNotificationMessage message(
+                entry.m_sourceAssetReference.RelativePath().c_str(),
+                AssetNotificationMessage::JobFailed,
+                AZ::Data::s_invalidAssetType,
+                entry.m_platformInfo.m_identifier.c_str());
             AssetProcessor::ConnectionBus::Broadcast(
                 &AssetProcessor::ConnectionBus::Events::SendPerPlatform,
                 0,
                 message,
                 QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
-            }
-            );
+        });
     AZ_Assert(result, "Failed to connect to RCController signal");
 
     result = QObject::connect(GetRCController(), &AssetProcessor::RCController::JobsInQueuePerPlatform, this,
