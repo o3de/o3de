@@ -100,7 +100,6 @@ namespace AzToolsFramework::Prefab
             // Disable the widgets to prevent it from being used to change selection.
             m_backButton->setEnabled(false);
             m_breadcrumbsWidget->setEnabled(false);
-            m_breadcrumbsWidget->repaint();
         }
     }
 
@@ -113,7 +112,6 @@ namespace AzToolsFramework::Prefab
             // Enable the widgets when leaving component mode.
             m_backButton->setEnabled(true);
             m_breadcrumbsWidget->setEnabled(true);
-            m_breadcrumbsWidget->repaint();
         }
     }
 
@@ -195,7 +193,6 @@ namespace AzToolsFramework::Prefab
         {
             // Disable the widgets to prevent it from being used to change selection.
             setEnabled(false);
-            fillLabel();
         }
     }
 
@@ -207,7 +204,6 @@ namespace AzToolsFramework::Prefab
         {
             // Enable the widgets when leaving component mode.
             setEnabled(true);
-            fillLabel();
         }
     }
 

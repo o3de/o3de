@@ -365,6 +365,15 @@ namespace AzQtComponents
         QFrame::resizeEvent(event);
     }
 
+    void BreadCrumbs::changeEvent(QEvent* event)
+    {
+        if (event->type() == QEvent::EnabledChange)
+        {
+            fillLabel();
+        }
+        QFrame::changeEvent(event);
+    }
+
     bool BreadCrumbs::eventFilter(QObject* obj, QEvent* ev)
     {
         if (obj == m_label)
@@ -409,6 +418,7 @@ namespace AzQtComponents
             default:;
             }
         }
+
         return QFrame::eventFilter(obj, ev);
     }
 

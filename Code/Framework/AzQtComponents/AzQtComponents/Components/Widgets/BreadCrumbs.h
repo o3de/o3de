@@ -159,8 +159,8 @@ namespace AzQtComponents
 
     protected:
         void resizeEvent(QResizeEvent* event) override;
+        void changeEvent(QEvent* event) override;
         bool eventFilter(QObject* obj, QEvent* ev) override;
-        void fillLabel();
 
     private Q_SLOTS:
         void onLinkActivated(const QString& link);
@@ -169,6 +169,7 @@ namespace AzQtComponents
 
     private:
         QString generateIconHtml(int index);
+        void fillLabel();
         void changePath(const QString& newPath);
 
         void getButtonStates(BreadCrumbButtonStates buttonStates);
