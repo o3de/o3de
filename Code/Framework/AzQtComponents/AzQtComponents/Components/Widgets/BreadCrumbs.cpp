@@ -369,6 +369,7 @@ namespace AzQtComponents
     {
         if (event->type() == QEvent::EnabledChange)
         {
+            // Refresh the contents of the label since they are different based on the enabled state of the widget.
             fillLabel();
         }
         QFrame::changeEvent(event);
@@ -418,7 +419,6 @@ namespace AzQtComponents
             default:;
             }
         }
-
         return QFrame::eventFilter(obj, ev);
     }
 
