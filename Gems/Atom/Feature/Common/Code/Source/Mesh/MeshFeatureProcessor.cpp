@@ -1434,15 +1434,6 @@ namespace AZ
 
                         // We do a simple 'multiply' blend with the base color
                         // Note: other blend modes are currently not supported
-                        propertyIndex = material->FindPropertyIndex(s_baseColor_textureBlendMode_Name);
-                        if (propertyIndex.IsValid())
-                        {
-                            AZ::Name textureBlendMode = material->GetMaterialPropertiesLayout()
-                                     ->GetPropertyDescriptor(propertyIndex)
-                                     ->GetEnumName(material->GetPropertyValue<uint32_t>(propertyIndex));
-                        }
-
-                        // 'Multiply' blend mode:
                         subMesh.m_irradianceColor = avgColor * subMesh.m_baseColor;
                     }
                     else
