@@ -519,7 +519,7 @@ namespace AzToolsFramework
                 // Do not show the option when it is not a prefab edit.
                 if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(parentEntityId))
                 {
-                    QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
+                    QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab"));
                     QObject::connect(
                         detachPrefabAction, &QAction::triggered, detachPrefabAction,
                         [this, selectedEntityId]
