@@ -52,6 +52,9 @@ namespace AtomToolsFramework
     // Convenience function to get a list of all currently registered slot data type names.
     AZStd::vector<AZStd::string> GetRegisteredDataTypeNames();
 
+    // Select from a set of registered settings groups and add them to a settings map.
+    bool AddRegisteredSettingGroupsToMap(DynamicNodeSettingsMap& settings);
+
     // Search the settings map and the dynamic node manager for dynamic edit data for the setting mapped to elementPtr
     const AZ::Edit::ElementData* FindDynamicEditDataForSetting(const DynamicNodeSettingsMap& settings, const void* elementPtr);
 
