@@ -38,7 +38,7 @@ namespace AtomToolsFramework
 
     bool GraphCompiler::IsCompileLoggingEnabled()
     {
-        return GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileLoggingEnabled", false);
+        return GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/EnableLogging", false);
     }
 
     bool GraphCompiler::Reset()

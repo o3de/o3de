@@ -28,20 +28,7 @@ namespace AZ
             RasterPassData() = default;
             virtual ~RasterPassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<RasterPassData, RenderPassData>()
-                        ->Version(3) // ATOM-15472
-                        ->Field("DrawListTag", &RasterPassData::m_drawListTag)
-                        ->Field("PassSrgShaderAsset", &RasterPassData::m_passSrgShaderReference)
-                        ->Field("Viewport", &RasterPassData::m_overrideViewport)
-                        ->Field("Scissor", &RasterPassData::m_overrideScissor)
-                        ->Field("DrawListSortType", &RasterPassData::m_drawListSortType)
-                        ;
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             Name m_drawListTag;
 

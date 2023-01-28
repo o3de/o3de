@@ -21,9 +21,7 @@
             "ImageAttachments": [
                 {
                     "Name": "ShadowmapImage",
-                    "ImageDescriptor": {
-                        "Format": "D32_FLOAT"
-                    }
+                    "Lifetime":  "Imported"
                 }
             ],
             "Connections": [
