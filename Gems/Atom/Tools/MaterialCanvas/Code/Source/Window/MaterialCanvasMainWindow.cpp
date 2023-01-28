@@ -188,7 +188,7 @@ namespace MaterialCanvas
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/GraphCompiler/EnableLogging",
                   "Enable Compiler Logging",
-                  "Toggle verbose login for material graph generation.",
+                  "Toggle verbose logging for material graph generation.",
                   false),
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/DynamicNode/EnablePropertyEditingOnNodeUI",
