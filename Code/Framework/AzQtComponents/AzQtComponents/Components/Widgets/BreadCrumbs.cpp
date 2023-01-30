@@ -32,9 +32,11 @@ namespace AzQtComponents
     static const QChar g_windowsSeparator = '\\';
     static const QString g_labelName = QStringLiteral("BreadCrumbLabel");
     static const QString g_buttonName = QStringLiteral("MenuButton");
+    AZ_PUSH_DISABLE_WARNING(4566, "-Wunknown-warning-option")//4566:character represented by universal-character-name 'u00a0' and 'u203a' cannot be represented in the current code page (ex.cp932)
     // Separator is two non-breaking spaces, Right-Pointing Angle Quotation Mark (U+203A) and two more
     // non-breaking spaces
     static const QString g_plainTextSeparator = QStringLiteral("\u00a0\u00a0\u203a\u00a0\u00a0");
+    AZ_POP_DISABLE_WARNING
     static constexpr int g_iconWidth = 16;
     static constexpr int g_leftMargin = 5;
     //! This reserved space is used to make sure that for editable breadcrumbs user has at least some empty space to click and initiate the
@@ -212,8 +214,9 @@ namespace AzQtComponents
         const QFontMetrics fm(m_label->font());
         const qreal separatorWidth = fm.horizontalAdvance(g_plainTextSeparator);
         // Icon adds the icon itself plus two spaces, see generateIconHtml()
+        AZ_PUSH_DISABLE_WARNING(4566, "-Wunknown-warning-option")//4566:character represented by universal-character-name 'u00a0' and 'u203a' cannot be represented in the current code page (ex.cp932)
         const qreal iconWidth = g_iconWidth + fm.horizontalAdvance("\u00a0\u00a0");
-
+        AZ_POP_DISABLE_WARNING
         // TODO(Qt 5.15.2): replace with:
         // const QList<QStringView> fullPath = QStringView(m_currentPath).split(g_separator, Qt::SkipEmptyParts);
         // to use views for avoiding allocations
@@ -480,8 +483,9 @@ namespace AzQtComponents
         const QFontMetricsF fm(m_label->font());
 
         // Icon adds the icon itself plus two non-breaking spaces, see generateIconHtml()
+        AZ_PUSH_DISABLE_WARNING(4566, "-Wunknown-warning-option")//4566:character represented by universal-character-name 'u00a0' and 'u203a' cannot be represented in the current code page (ex.cp932)
         const qreal iconSpaceWidth = g_iconWidth + fm.horizontalAdvance(QStringLiteral("\u00a0\u00a0"));
-
+        AZ_POP_DISABLE_WARNING
         QString plainTextPath;
 
         auto formatLink = [this](const QString& fullPath, const QString& shortPath) -> QString {
