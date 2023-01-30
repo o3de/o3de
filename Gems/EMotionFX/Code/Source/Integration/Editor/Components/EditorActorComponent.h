@@ -189,6 +189,7 @@ namespace EMotionFX
             AZ::Render::ModelReloadedEvent::Handler m_modelReloadedEventHandler;
 
             bool m_reloading = false;
+            bool m_processLoadedAsset = false;
         };
     } // namespace Integration
 } // namespace EMotionFX

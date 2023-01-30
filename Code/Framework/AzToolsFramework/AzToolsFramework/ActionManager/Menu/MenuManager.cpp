@@ -272,6 +272,14 @@ namespace AzToolsFramework
                 subMenuIdentifier.c_str(), menuIdentifier.c_str()));
         }
 
+        if (menuIdentifier == subMenuIdentifier)
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" - the two menus are the same.",
+                subMenuIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
         if (menuIterator->second.ContainsSubMenu(subMenuIdentifier))
         {
             return AZ::Failure(AZStd::string::format(

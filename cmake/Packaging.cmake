@@ -53,10 +53,10 @@ set(CPACK_PACKAGE_CONTACT "info@o3debinaries.org")
 # prefer the display engine version if available.
 # during development, the display version will be "00.00" or "" in which case we want
 # to use the actual engine version  
-if(NOT ((${O3DE_DISPLAY_VERSION_STRING} STREQUAL "00.00") OR (${O3DE_DISPLAY_VERSION_STRING} STREQUAL "")))
-    set(CPACK_PACKAGE_VERSION "${O3DE_DISPLAY_VERSION_STRING}")
+if(NOT ((${O3DE_INSTALL_DISPLAY_VERSION_STRING} STREQUAL "00.00") OR (${O3DE_INSTALL_DISPLAY_VERSION_STRING} STREQUAL "")))
+    set(CPACK_PACKAGE_VERSION "${O3DE_INSTALL_DISPLAY_VERSION_STRING}")
 else()
-    set(CPACK_PACKAGE_VERSION "${O3DE_VERSION_STRING}")
+    set(CPACK_PACKAGE_VERSION "${O3DE_INSTALL_VERSION_STRING}")
 endif()
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
 

@@ -341,6 +341,13 @@ namespace AzToolsFramework
     }
 
     template<typename T>
+    void GenericComboBoxHandler<T>::RegisterWithPropertySystem(AZ::DocumentPropertyEditor::PropertyEditorSystemInterface* system)
+    {
+        system->RegisterNodeAttribute<AZ::DocumentPropertyEditor::Nodes::PropertyEditor>(
+            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::PropertyEditor::GenericValueList<T>);
+    }
+
+    template<typename T>
     void GenericComboBoxHandler<T>::InvokePostChangeNotify(size_t index, GenericComboBoxCtrl<T>* genericGUI, const typename GenericComboBoxHandler::property_t& oldValue, AzToolsFramework::InstanceDataNode* node) const
     {
         if (genericGUI->m_postChangeNotifyCB)

@@ -18,6 +18,7 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
@@ -240,7 +241,7 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::OnActionUpdaterRegistrationHook()
         {
             // Update actions whenever a new root prefab is loaded.
-            m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier);
+            m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
 
             // Update actions whenever Prefab Focus changes (or is refreshed).
             m_actionManagerInterface->RegisterActionUpdater(PrefabFocusChangedUpdaterIdentifier);
@@ -256,7 +257,7 @@ namespace AzToolsFramework
                 actionProperties.m_iconPath = ":/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg";
 
                 m_actionManagerInterface->RegisterAction(
-                    EditorActionContext::MainWindowContextIdentifier,
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
                     "o3de.action.prefabs.upOneLevel",
                     actionProperties,
                     [prefabFocusPublicInterface = s_prefabFocusPublicInterface, editorEntityContextId = s_editorEntityContextId]()
@@ -269,10 +270,12 @@ namespace AzToolsFramework
                     "o3de.action.prefabs.upOneLevel",
                     [prefabFocusPublicInterface = s_prefabFocusPublicInterface, editorEntityContextId = s_editorEntityContextId]() -> bool
                     {
-                        return prefabFocusPublicInterface->GetPrefabFocusPathLength(editorEntityContextId) > 1;
+                        return !ComponentModeFramework::InComponentMode() &&
+                            prefabFocusPublicInterface->GetPrefabFocusPathLength(editorEntityContextId) > 1;
                     }
                 );
 
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::ComponentModeChangedUpdaterIdentifier, "o3de.action.prefabs.upOneLevel");
                 m_actionManagerInterface->AddActionToUpdater(PrefabFocusChangedUpdaterIdentifier, "o3de.action.prefabs.upOneLevel");
             }
         }
@@ -299,8 +302,8 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::OnToolBarBindingHook()
         {
             // Populate Viewport top menu with Prefab actions and widgets
-            m_toolBarManagerInterface->AddActionToToolBar(EditorToolBar::ViewportTopToolBarIdentifier, "o3de.action.prefabs.upOneLevel", 100);
-            m_toolBarManagerInterface->AddWidgetToToolBar(EditorToolBar::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.focusPath", 200);
+            m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.prefabs.upOneLevel", 100);
+            m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.focusPath", 200);
         }
 
         int PrefabIntegrationManager::GetMenuPosition() const
@@ -1220,7 +1223,7 @@ namespace AzToolsFramework
         {
             if (m_actionManagerInterface)
             {
-                m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier);
+                m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
             }
         }
 

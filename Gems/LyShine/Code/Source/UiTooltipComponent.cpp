@@ -33,7 +33,7 @@ void UiTooltipComponent::Update([[maybe_unused]] float deltaTime)
 {
     if (m_curDisplayElementId.IsValid())
     {
-        EBUS_EVENT_ID(m_curDisplayElementId, UiTooltipDisplayBus, Update);
+        UiTooltipDisplayBus::Event(m_curDisplayElementId, &UiTooltipDisplayBus::Events::Update);
     }
 }
 
@@ -105,11 +105,11 @@ void UiTooltipComponent::OnCanvasPrimaryReleased([[maybe_unused]] AZ::EntityId e
 void UiTooltipComponent::PushDataToDisplayElement(AZ::EntityId displayEntityId)
 {
     AZ::EntityId textEntityId;
-    EBUS_EVENT_ID_RESULT(textEntityId, displayEntityId, UiTooltipDisplayBus, GetTextEntity);
+    UiTooltipDisplayBus::EventResult(textEntityId, displayEntityId, &UiTooltipDisplayBus::Events::GetTextEntity);
 
     if (textEntityId.IsValid())
     {
-        EBUS_EVENT_ID(textEntityId, UiTextBus, SetText, m_text);
+        UiTextBus::Event(textEntityId, &UiTextBus::Events::SetText, m_text);
     }
 }
 
