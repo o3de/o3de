@@ -273,7 +273,7 @@ namespace AzToolsFramework
         connect(m_gui->m_searchWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged, this, &EntityOutlinerWidget::OnFilterChanged);
 
         AZ::SerializeContext* serializeContext = nullptr;
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         if (serializeContext)
         {
@@ -573,7 +573,7 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(Editor);
 
         bool isDocumentOpen = false;
-        EBUS_EVENT_RESULT(isDocumentOpen, EditorRequests::Bus, IsLevelDocumentOpen);
+        EditorRequests::Bus::BroadcastResult(isDocumentOpen, &EditorRequests::Bus::Events::IsLevelDocumentOpen);
         if (!isDocumentOpen)
         {
             return;
@@ -683,7 +683,7 @@ namespace AzToolsFramework
     AzFramework::EntityContextId EntityOutlinerWidget::GetPickModeEntityContextId()
     {
         AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        EBUS_EVENT_RESULT(editorEntityContextId, EditorRequests::Bus, GetEntityContextId);
+        EditorRequests::Bus::BroadcastResult(editorEntityContextId, &EditorRequests::Bus::Events::GetEntityContextId);
 
         return editorEntityContextId;
     }
@@ -691,7 +691,7 @@ namespace AzToolsFramework
     void EntityOutlinerWidget::PrepareSelection()
     {
         m_selectedEntityIds.clear();
-        EBUS_EVENT_RESULT(m_selectedEntityIds, ToolsApplicationRequests::Bus, GetSelectedEntities);
+        ToolsApplicationRequests::Bus::BroadcastResult(m_selectedEntityIds, &ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
     }
 
     void EntityOutlinerWidget::DoCreateEntity()
@@ -716,7 +716,7 @@ namespace AzToolsFramework
         PrepareSelection();
 
         AZ::EntityId entityId;
-        EBUS_EVENT_RESULT(entityId, EditorRequests::Bus, CreateNewEntity, parentId);
+        EditorRequests::Bus::BroadcastResult(entityId, &EditorRequests::Bus::Events::CreateNewEntity, parentId);
     }
 
     void EntityOutlinerWidget::DoDuplicateSelection()
@@ -728,7 +728,7 @@ namespace AzToolsFramework
             ScopedUndoBatch undo("Duplicate Entity(s)");
 
             bool handled = false;
-            EBUS_EVENT(EditorRequests::Bus, CloneSelection, handled);
+            EditorRequests::Bus::Broadcast(&EditorRequests::Bus::Events::CloneSelection, handled);
         }
     }
 
@@ -736,7 +736,7 @@ namespace AzToolsFramework
     {
         PrepareSelection();
 
-        EBUS_EVENT(EditorRequests::Bus, DeleteSelectedEntities, false);
+        EditorRequests::Bus::Broadcast(&EditorRequests::Bus::Events::DeleteSelectedEntities, false);
 
         PrepareSelection();
     }
@@ -745,7 +745,7 @@ namespace AzToolsFramework
     {
         PrepareSelection();
 
-        EBUS_EVENT(EditorRequests::Bus, DeleteSelectedEntities, true);
+        EditorRequests::Bus::Broadcast(&EditorRequests::Bus::Events::DeleteSelectedEntities, true);
 
         PrepareSelection();
     }

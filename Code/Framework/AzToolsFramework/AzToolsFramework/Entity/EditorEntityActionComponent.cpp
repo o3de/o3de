@@ -334,7 +334,8 @@ namespace AzToolsFramework
                 AZ::Entity* entity = component->GetEntity();
 
                 bool isEntityEditable = false;
-                EBUS_EVENT_RESULT(isEntityEditable, AzToolsFramework::ToolsApplicationRequests::Bus, IsEntityEditable, entity->GetId());
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isEntityEditable,
+                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsEntityEditable, entity->GetId());
                 if (!isEntityEditable)
                 {
                     continue;
@@ -390,7 +391,8 @@ namespace AzToolsFramework
                 AZ::Entity* entity = component->GetEntity();
 
                 bool isEntityEditable = false;
-                EBUS_EVENT_RESULT(isEntityEditable, AzToolsFramework::ToolsApplicationRequests::Bus, IsEntityEditable, entity->GetId());
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isEntityEditable,
+                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsEntityEditable, entity->GetId());
                 if (!isEntityEditable)
                 {
                     continue;
@@ -461,7 +463,8 @@ namespace AzToolsFramework
                     AZ::Entity* entity = componentToRemove->GetEntity();
 
                     bool isEntityEditable = false;
-                    EBUS_EVENT_RESULT(isEntityEditable, AzToolsFramework::ToolsApplicationRequests::Bus, IsEntityEditable, entity->GetId());
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isEntityEditable,
+                        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsEntityEditable, entity->GetId());
                     if (!isEntityEditable)
                     {
                         continue;
@@ -605,7 +608,8 @@ namespace AzToolsFramework
                         bool isEditorComponent = componentClassData->m_azRtti && componentClassData->m_azRtti->IsTypeOf(Components::EditorComponentBase::RTTI_Type());
                         if (isEditorComponent)
                         {
-                            EBUS_EVENT_ID_RESULT(component, componentClassData->m_typeId, AZ::ComponentDescriptorBus, CreateComponent);
+                            AZ::ComponentDescriptorBus::EventResult(
+                                component, componentClassData->m_typeId, &AZ::ComponentDescriptorBus::Events::CreateComponent);
                         }
                         else
                         {

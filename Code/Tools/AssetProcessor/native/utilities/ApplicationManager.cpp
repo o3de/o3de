@@ -225,7 +225,7 @@ ApplicationManager::~ApplicationManager()
     }
 
     //Unregistering and deleting all the components
-    EBUS_EVENT_ID(azrtti_typeid<AzFramework::LogComponent>(), AZ::ComponentDescriptorBus, ReleaseDescriptor);
+    AZ::ComponentDescriptorBus::Event(azrtti_typeid<AzFramework::LogComponent>(), &AZ::ComponentDescriptorBus::Events::ReleaseDescriptor);
 
     //Stop AZFramework
     m_frameworkApp.Stop();
@@ -326,10 +326,11 @@ void ApplicationManager::QuitRequested()
     m_duringShutdown = true;
 
     //Inform all the builders to shutdown
-    EBUS_EVENT(AssetBuilderSDK::AssetBuilderCommandBus, ShutDown);
+    AssetBuilderSDK::AssetBuilderCommandBus::Broadcast(&AssetBuilderSDK::AssetBuilderCommandBus::Events::ShutDown);
 
     // the following call will invoke on the main thread of the application, since its a direct bus call.
-    EBUS_EVENT(AssetProcessor::ApplicationManagerNotifications::Bus, ApplicationShutdownRequested);
+    AssetProcessor::ApplicationManagerNotifications::Bus::Broadcast(
+        &AssetProcessor::ApplicationManagerNotifications::Bus::Events::ApplicationShutdownRequested);
 
     // while it may be tempting to just collapse all of this to a bus call,  Qt Objects have the advantage of being
     // able to automatically queue calls onto their own thread, and a lot of these involved objects are in fact

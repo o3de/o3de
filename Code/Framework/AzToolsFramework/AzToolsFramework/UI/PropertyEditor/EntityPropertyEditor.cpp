@@ -5708,7 +5708,7 @@ namespace AzToolsFramework
         {
             DisconnectFromEntityBuses(entityId);
         }
-        EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, ClosePinnedInspector, this);
+        AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::Bus::Events::ClosePinnedInspector, this);
     }
 
     void EntityPropertyEditor::SetSystemEntityEditor(bool isSystemEntityEditor)
