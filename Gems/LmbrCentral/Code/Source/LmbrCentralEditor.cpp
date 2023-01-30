@@ -24,30 +24,32 @@
 #include "Scripting/EditorSpawnerComponent.h"
 #include "Scripting/EditorTagComponent.h"
 
+#include "Editor/EditorCommentComponent.h"
 #include "Shape/EditorAxisAlignedBoxShapeComponent.h"
 #include "Shape/EditorBoxShapeComponent.h"
-#include "Shape/EditorQuadShapeComponent.h"
-#include "Shape/EditorSphereShapeComponent.h"
-#include "Shape/EditorDiskShapeComponent.h"
-#include "Shape/EditorCylinderShapeComponent.h"
 #include "Shape/EditorCapsuleShapeComponent.h"
-#include "Shape/EditorSplineComponent.h"
-#include "Shape/EditorTubeShapeComponent.h"
+#include "Shape/EditorCylinderShapeComponent.h"
+#include "Shape/EditorDiskShapeComponent.h"
 #include "Shape/EditorPolygonPrismShapeComponent.h"
+#include "Shape/EditorQuadShapeComponent.h"
 #include "Shape/EditorReferenceShapeComponent.h"
-#include "Editor/EditorCommentComponent.h"
+#include "Shape/EditorSphereShapeComponent.h"
+#include "Shape/EditorSplineComponent.h"
+#include "Shape/EditorSplineComponentMode.h"
+#include "Shape/EditorTubeShapeComponent.h"
+#include "Shape/EditorTubeShapeComponentMode.h"
 
 #include "Shape/EditorCompoundShapeComponent.h"
 
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
+#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderComponent.h>
 #include <Builders/LevelBuilder/LevelBuilderComponent.h>
 #include <Builders/LuaBuilder/LuaBuilderComponent.h>
 #include <Builders/SliceBuilder/SliceBuilderComponent.h>
 #include <Builders/TranslationBuilder/TranslationBuilderComponent.h>
 #include "Builders/CopyDependencyBuilder/CopyDependencyBuilderComponent.h"
-#include <Builders/DependencyBuilder/DependencyBuilderComponent.h>
 
 namespace LmbrCentral
 {
@@ -83,7 +85,6 @@ namespace LmbrCentral
             EditorRandomTimedSpawnerComponent::CreateDescriptor(),
             EditorSpawnerComponent::CreateDescriptor(),            
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
-            DependencyBuilder::DependencyBuilderComponent::CreateDescriptor(),
             LevelBuilder::LevelBuilderComponent::CreateDescriptor(),
             SliceBuilder::BuilderPluginComponent::CreateDescriptor(),
             TranslationBuilder::BuilderPluginComponent::CreateDescriptor(),
@@ -92,7 +93,6 @@ namespace LmbrCentral
             BenchmarkAssetBuilder::BenchmarkAssetBuilderComponent::CreateDescriptor(),
         });
 
-        // This is internal Amazon code, so register it's components for metrics tracking, otherwise the name of the component won't get sent back.
         AZStd::vector<AZ::Uuid> typeIds;
         typeIds.reserve(m_descriptors.size());
         for (AZ::ComponentDescriptor* descriptor : m_descriptors)
@@ -100,10 +100,13 @@ namespace LmbrCentral
             typeIds.emplace_back(descriptor->GetUuid());
         }
         EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, typeIds);
+
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     LmbrCentralEditorModule::~LmbrCentralEditorModule()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
     }
 
     AZ::ComponentTypeList LmbrCentralEditorModule::GetRequiredSystemComponents() const
@@ -113,6 +116,36 @@ namespace LmbrCentral
         requiredComponents.push_back(azrtti_typeid<AzToolsFramework::Components::EditorSelectionAccentSystemComponent>());
 
         return requiredComponents;
+    }
+
+    void LmbrCentralEditorModule::OnActionRegistrationHook()
+    {
+        EditorSplineComponentMode::RegisterActions();
+        EditorTubeShapeComponentMode::RegisterActions();
+        if (IsShapeComponentTranslationEnabled())
+        {
+            AzToolsFramework::BoxComponentMode::RegisterActions();
+        }
+    }
+
+    void LmbrCentralEditorModule::OnActionContextModeBindingHook()
+    {
+        EditorSplineComponentMode::BindActionsToModes();
+        EditorTubeShapeComponentMode::BindActionsToModes();
+        if (IsShapeComponentTranslationEnabled())
+        {
+            AzToolsFramework::BoxComponentMode::BindActionsToModes();
+        }
+    }
+
+    void LmbrCentralEditorModule::OnMenuBindingHook()
+    {
+        EditorSplineComponentMode::BindActionsToMenus();
+        EditorTubeShapeComponentMode::BindActionsToMenus();
+        if (IsShapeComponentTranslationEnabled())
+        {
+            AzToolsFramework::BoxComponentMode::BindActionsToMenus();
+        }
     }
 } // namespace LmbrCentral
 

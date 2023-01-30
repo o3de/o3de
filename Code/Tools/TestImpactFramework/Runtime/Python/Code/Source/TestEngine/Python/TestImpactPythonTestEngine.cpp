@@ -13,14 +13,22 @@
 #include <TestRunner/Python/TestImpactPythonErrorCodeChecker.h>
 #include <TestEngine/Python/TestImpactPythonTestEngine.h>
 #include <TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.h>
-#include <TestRunner/Python/TestImpactPythonTestRunner.h>
-#include <TestRunner/Python/TestImpactPythonNullTestRunner.h>
+#include <TestRunner/Python/TestImpactPythonInstrumentedTestRunner.h>
+#include <TestRunner/Python/TestImpactPythonInstrumentedNullTestRunner.h>
+#include <TestRunner/Python/TestImpactPythonRegularTestRunner.h>
+#include <TestRunner/Python/TestImpactPythonRegularNullTestRunner.h>
 
 #include <iostream>
 namespace TestImpact
 {
+    AZStd::optional<Client::TestRunResult> PythonRegularTestRunnerErrorCodeChecker(
+        [[maybe_unused]] const typename PythonRegularTestRunner::JobInfo& jobInfo, const JobMeta& meta)
+    {
+        return CheckPythonErrorCode(meta.m_returnCode.value());
+    }
+
     AZStd::optional<Client::TestRunResult> PythonInstrumentedTestRunnerErrorCodeChecker(
-        [[maybe_unused]] const typename PythonTestRunner::JobInfo& jobInfo, const JobMeta& meta)
+        [[maybe_unused]] const typename PythonInstrumentedTestRunner::JobInfo& jobInfo, const JobMeta& meta)
     {
         // The PyTest error code for test failures overlaps with the Python error code for script error so we have no way of
         // discerning at the job meta level whether a test failure or script execution error we will assume the tests failed for now
@@ -37,16 +45,32 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
+    // Type trait for the instrumented test runner
     template<>
-    struct TestJobRunnerTrait<PythonTestRunner>
+    struct TestJobRunnerTrait<PythonInstrumentedTestRunner>
     {
         using TestEngineJobType = TestEngineInstrumentedRun<PythonTestTarget, TestCoverage>;
     };
 
+    // Type trait for the instrumented null test runner
     template<>
-    struct TestJobRunnerTrait<PythonNullTestRunner>
+    struct TestJobRunnerTrait<PythonInstrumentedNullTestRunner>
     {
         using TestEngineJobType = TestEngineInstrumentedRun<PythonTestTarget, TestCoverage>;
+    };
+
+    // Type trait for the regular test runner
+    template<>
+    struct TestJobRunnerTrait<PythonRegularTestRunner>
+    {
+        using TestEngineJobType = TestEngineRegularRun<PythonTestTarget>;
+    };
+
+    // Type trait for the regular null test runner
+    template<>
+    struct TestJobRunnerTrait<PythonRegularNullTestRunner>
+    {
+        using TestEngineJobType = TestEngineRegularRun<PythonTestTarget>;
     };
 
     PythonTestEngine::PythonTestEngine(
@@ -54,10 +78,14 @@ namespace TestImpact
         const RepoPath& buildDir,
         const ArtifactDir& artifactDir,
         Policy::TestRunner testRunnerPolicy)
-        : m_testJobInfoGenerator(AZStd::make_unique<PythonTestRunJobInfoGenerator>(
+        : m_instrumentedTestJobInfoGenerator(AZStd::make_unique<PythonInstrumentedTestRunJobInfoGenerator>(
               repoDir, buildDir, artifactDir))
-        , m_testRunner(AZStd::make_unique<PythonTestRunner>(artifactDir))
-        , m_nullTestRunner(AZStd::make_unique<PythonNullTestRunner>(artifactDir))
+        , m_regularTestJobInfoGenerator(AZStd::make_unique<PythonRegularTestRunJobInfoGenerator>(
+              repoDir, buildDir, artifactDir))
+        , m_instrumentedTestRunner(AZStd::make_unique<PythonInstrumentedTestRunner>())
+        , m_instrumentedNullTestRunner(AZStd::make_unique<PythonInstrumentedNullTestRunner>())
+        , m_regularTestRunner(AZStd::make_unique<PythonRegularTestRunner>())
+        , m_regularNullTestRunner(AZStd::make_unique<PythonRegularNullTestRunner>())
         , m_artifactDir(artifactDir)
         , m_testRunnerPolicy(testRunnerPolicy)
     {
@@ -65,10 +93,55 @@ namespace TestImpact
 
     PythonTestEngine::~PythonTestEngine() = default;
 
-    void PythonTestEngine::DeleteArtifactXmls() const
+    void PythonTestEngine::DeleteXmlArtifacts() const
     {
         DeleteFiles(m_artifactDir.m_testRunArtifactDirectory, "*.xml");
         DeleteFiles(m_artifactDir.m_coverageArtifactDirectory, "*.pycoverage");
+    }
+
+    TestEngineRegularRunResult<PythonTestTarget> PythonTestEngine::RegularRun(
+        const AZStd::vector<const PythonTestTarget*>& testTargets,
+        Policy::ExecutionFailure executionFailurePolicy,
+        Policy::TestFailure testFailurePolicy,
+        Policy::TargetOutputCapture targetOutputCapture,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
+    {
+        DeleteXmlArtifacts();
+
+        const auto jobInfos = m_regularTestJobInfoGenerator->GenerateJobInfos(testTargets);
+
+        if (m_testRunnerPolicy == Policy::TestRunner::UseNullTestRunner)
+        {
+            return RunTests(
+                m_regularNullTestRunner.get(),
+                jobInfos,
+                testTargets,
+                PythonRegularTestRunnerErrorCodeChecker,
+                executionFailurePolicy,
+                testFailurePolicy,
+                targetOutputCapture,
+                testTargetTimeout,
+                globalTimeout,
+                callback,
+                AZStd::nullopt);
+        }
+        else
+        {
+            return RunTests(
+                m_regularTestRunner.get(),
+                jobInfos,
+                testTargets,
+                PythonRegularTestRunnerErrorCodeChecker,
+                executionFailurePolicy,
+                testFailurePolicy,
+                targetOutputCapture,
+                testTargetTimeout,
+                globalTimeout,
+                callback,
+                AZStd::nullopt);
+        }
     }
 
     TestEngineInstrumentedRunResult<PythonTestTarget, TestCoverage>
@@ -76,20 +149,20 @@ namespace TestImpact
         InstrumentedRun(
         const AZStd::vector<const PythonTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
-        Policy::IntegrityFailure integrityFailurePolicy,
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
     {
+        const auto jobInfos = m_instrumentedTestJobInfoGenerator->GenerateJobInfos(testTargets);
+
         if (m_testRunnerPolicy == Policy::TestRunner::UseNullTestRunner)
         {
             // We don't delete the artifacts as they have been left by another test runner (e.g. ctest)
-            return GenerateInstrumentedRunResult(
-            GenerateJobInfosAndRunTests(
-                m_nullTestRunner.get(),
-                m_testJobInfoGenerator.get(),
+            return RunTests(
+                m_instrumentedNullTestRunner.get(),
+                jobInfos,
                 testTargets,
                 PythonInstrumentedTestRunnerErrorCodeChecker,
                 executionFailurePolicy,
@@ -98,16 +171,13 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 callback,
-                std::nullopt), // For real-time stdout/err output of test targets
-            integrityFailurePolicy);
+                std::nullopt);
         }
         else
-        {;
-            DeleteArtifactXmls();
-            return GenerateInstrumentedRunResult(
-                GenerateJobInfosAndRunTests(
-                    m_testRunner.get(),
-                    m_testJobInfoGenerator.get(),
+        {
+            return RunTests(
+                    m_instrumentedTestRunner.get(),
+                    jobInfos,
                     testTargets,
                     PythonInstrumentedTestRunnerErrorCodeChecker,
                     executionFailurePolicy,
@@ -116,8 +186,7 @@ namespace TestImpact
                     testTargetTimeout,
                     globalTimeout,
                     callback,
-                    std::nullopt), // For real-time stdout/err output of test targets
-                integrityFailurePolicy);
+                    std::nullopt);
         }
     }
 } // namespace TestImpact

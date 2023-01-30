@@ -227,21 +227,10 @@ namespace GraphModelIntegration
     {
         using namespace GraphModel;
 
+        // This notification is needed by the graph canvassing component prior to repopulating the entire scene.
+        GraphCanvas::SceneRequestBus::Event(GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::SignalLoadStart);
+
         GraphCanvasMetadata* graphCanvasMetadata = GetGraphMetadata();
-
-        // Load graph canvas metadata for the scene
-        if (graphCanvasMetadata->m_sceneMetadata)
-        {
-            GraphCanvas::EntitySaveDataRequestBus::Event(
-                GetGraphCanvasSceneId(), &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *graphCanvasMetadata->m_sceneMetadata);
-        }
-
-        // Load graph canvas metadata for non data model elements like comment nodes
-        for (const auto& pair : graphCanvasMetadata->m_otherMetadata)
-        {
-            GraphCanvas::EntitySaveDataRequestBus::Event(
-                AZ::Entity::MakeId(), &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *pair.second);
-        }
 
         // Create UI for all the Nodes
         for (const auto& pair : m_graph->GetNodes())
@@ -254,12 +243,11 @@ namespace GraphModelIntegration
             {
                 AZ::Vector2 position(0, 0);
 
-                auto metadataIter = graphCanvasMetadata->m_nodeMetadata.find(nodeId);
-                if (metadataIter != graphCanvasMetadata->m_nodeMetadata.end())
+                const auto metadataIter = graphCanvasMetadata->m_nodeMetadata.find(nodeId);
+                if (metadataIter != graphCanvasMetadata->m_nodeMetadata.end() && metadataIter->second)
                 {
-                    AZStd::shared_ptr<GraphCanvas::EntitySaveDataContainer> saveDataContainer = metadataIter->second;
                     GraphCanvas::EntitySaveDataRequestBus::Event(
-                        nodeUiId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, (*saveDataContainer));
+                        nodeUiId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *metadataIter->second);
                 }
                 else
                 {
@@ -268,7 +256,6 @@ namespace GraphModelIntegration
                 }
 
                 GraphCanvas::GeometryRequestBus::EventResult(position, nodeUiId, &GraphCanvas::GeometryRequests::GetPosition);
-
                 return position;
             };
 
@@ -289,6 +276,18 @@ namespace GraphModelIntegration
         {
             CreateConnectionUi(connection);
         }
+
+        // Load graph canvas metadata for the scene
+        if (graphCanvasMetadata->m_sceneMetadata)
+        {
+            GraphCanvas::EntitySaveDataRequestBus::Event(
+                GetGraphCanvasSceneId(), &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *graphCanvasMetadata->m_sceneMetadata);
+        }
+
+        // After the graph has been reconstructed, this signal will Inform the scene, node groups, and other types to update their state
+        // after all of the graph elements are in place. This is necessary for node groups to reclaim nodes that were contained within them
+        // when the graph was saved.
+        GraphCanvas::SceneRequestBus::Event(GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::SignalLoadEnd);
     }
 
     AZ::Entity* GraphController::CreateSlotUi(GraphModel::SlotPtr slot, AZ::EntityId nodeUiId)
@@ -1484,64 +1483,25 @@ namespace GraphModelIntegration
 
         GraphCanvasMetadata* graphCanvasMetadata = GetGraphMetadata();
 
-        NodePtr node = m_elementMap.Find<Node>(graphCanvasElement);
-
         // Save into m_nodeMetadata
-        if (node)
+        if (const auto node = m_elementMap.Find<Node>(graphCanvasElement))
         {
-            const NodeId nodeId = node->GetId();
-
-            AZStd::shared_ptr<GraphCanvas::EntitySaveDataContainer> container;
-
-            auto mapIter = graphCanvasMetadata->m_nodeMetadata.find(nodeId);
-
-            if (mapIter == graphCanvasMetadata->m_nodeMetadata.end())
-            {
-                container = AZStd::make_shared<GraphCanvas::EntitySaveDataContainer>();
-                graphCanvasMetadata->m_nodeMetadata[nodeId] = container;
-            }
-            else
-            {
-                container = mapIter->second;
-            }
-
+            auto container = AZStd::make_shared<GraphCanvas::EntitySaveDataContainer>();
             GraphCanvas::EntitySaveDataRequestBus::Event(
-                graphCanvasElement, &GraphCanvas::EntitySaveDataRequests::WriteSaveData, (*container));
+                graphCanvasElement, &GraphCanvas::EntitySaveDataRequests::WriteSaveData, *container);
+
+            const NodeId nodeId = node->GetId();
+            graphCanvasMetadata->m_nodeMetadata[nodeId] = container;
 
             GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, node);
         }
         // Save into m_sceneMetadata
         else if (graphCanvasElement == GetGraphCanvasSceneId())
         {
-            if (!graphCanvasMetadata->m_sceneMetadata)
-            {
-                graphCanvasMetadata->m_sceneMetadata = AZStd::make_shared<GraphCanvas::EntitySaveDataContainer>();
-            }
-
+            auto container = AZStd::make_shared<GraphCanvas::EntitySaveDataContainer>();
             GraphCanvas::EntitySaveDataRequestBus::Event(
-                graphCanvasElement, &GraphCanvas::EntitySaveDataRequests::WriteSaveData, (*graphCanvasMetadata->m_sceneMetadata));
-
-            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, nullptr);
-        }
-        // Save into m_otherMetadata
-        else
-        {
-            AZStd::shared_ptr<GraphCanvas::EntitySaveDataContainer> container;
-
-            auto mapIter = graphCanvasMetadata->m_otherMetadata.find(graphCanvasElement);
-
-            if (mapIter == graphCanvasMetadata->m_otherMetadata.end())
-            {
-                container = AZStd::make_shared<GraphCanvas::EntitySaveDataContainer>();
-                graphCanvasMetadata->m_otherMetadata[graphCanvasElement] = container;
-            }
-            else
-            {
-                container = mapIter->second;
-            }
-
-            GraphCanvas::EntitySaveDataRequestBus::Event(
-                graphCanvasElement, &GraphCanvas::EntitySaveDataRequests::WriteSaveData, (*container));
+                graphCanvasElement, &GraphCanvas::EntitySaveDataRequests::WriteSaveData, *container);
+            graphCanvasMetadata->m_sceneMetadata = container;
 
             GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, nullptr);
         }

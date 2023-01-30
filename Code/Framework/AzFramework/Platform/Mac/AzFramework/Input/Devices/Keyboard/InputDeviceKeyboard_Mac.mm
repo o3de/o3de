@@ -648,7 +648,7 @@ namespace AzFramework
             break;
             case NSEventTypeFlagsChanged:
             {
-                QueueRawModifierKeyEvent(nsEvent.keyCode, nsEvent.modifierFlags);
+                QueueRawModifierKeyEvent(nsEvent.keyCode, static_cast<AZ::u32>(nsEvent.modifierFlags));
             }
             break;
             default:

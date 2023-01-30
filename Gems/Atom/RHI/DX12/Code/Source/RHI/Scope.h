@@ -96,6 +96,9 @@ namespace AZ
             /// [optional] Depth stencil attachment.
             const ImageView* m_depthStencilAttachment = nullptr;
 
+            /// [optional] Shading rate attachment.
+            const ImageView* m_shadingRateAttachment = nullptr;
+
             /// Depth stencil attachment access.
             RHI::ScopeAttachmentAccess m_depthStencilAccess = RHI::ScopeAttachmentAccess::ReadWrite;
 

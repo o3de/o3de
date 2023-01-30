@@ -148,6 +148,7 @@ namespace AZ
             TextureType   m_type = TextureType::Unknown;
             bool          m_isReadOnlyType = false;
             uint32_t      m_registerId = RHI::UndefinedRegisterSlot;
+            uint32_t      m_spaceId = RHI::UndefinedRegisterSlot;
         };
 
         // Buffers
@@ -179,6 +180,7 @@ namespace AZ
             BufferType    m_type = BufferType::Unknown;
             bool          m_isReadOnlyType = false;
             uint32_t      m_registerId = RHI::UndefinedRegisterSlot;
+            uint32_t      m_spaceId = RHI::UndefinedRegisterSlot;
         };
 
         struct ConstantBufferData
@@ -189,6 +191,7 @@ namespace AZ
             AZStd::string           m_templateId;
             AZStd::vector<Variable> m_members;
             uint32_t                m_registerId = RHI::UndefinedRegisterSlot;
+            uint32_t                m_spaceId = RHI::UndefinedRegisterSlot;
         };
 
         // SRG Constants
@@ -217,6 +220,7 @@ namespace AZ
             bool m_isDynamic = false;
             uint32_t m_count = 1;
             uint32_t m_registerId = RHI::UndefinedRegisterSlot;
+            uint32_t m_spaceId = RHI::UndefinedRegisterSlot;
         };
 
         MemberType StringToBaseType(const char* baseType);
@@ -246,6 +250,7 @@ namespace AZ
                 ResourceName        m_selfName;  ///< variable name in the high level source
                 FunctionsNameVector m_dependentFunctions;  ///< all global functions where this constant buffer is referenced
                 Register            m_registerId    = ~static_cast<Register>(0x0);                
+                Register            m_registerSpace = ~static_cast<Register>(0);
                 uint32_t            m_registerSpan  = 0;
                 BindingType         m_type;
             };
@@ -264,7 +269,6 @@ namespace AZ
 
                 SrgConstantsConstantBuffer m_srgConstantsDependencies; ///< only 0 or 1 per SRG
                 AZStd::unordered_map<ResourceName, Resource> m_resources;  ///< extended binding information for each resource
-                Register m_registerSpace = RHI::UndefinedRegisterSlot;
             };
 
             /// returns nullptr if not found

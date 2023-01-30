@@ -31,6 +31,7 @@ namespace UnitTest
         , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(MockValidationComponent, AZ::SystemAllocator)
 
         MockValidationComponent()
         {
@@ -141,7 +142,7 @@ namespace UnitTest
     };
 
     struct AssetValidationTest
-        : UnitTest::ScopedAllocatorSetupFixture
+        : UnitTest::LeakDetectionFixture
         , UnitTest::SetRestoreFileIOBaseRAII
         , AzFramework::ApplicationRequests::Bus::Handler
     {

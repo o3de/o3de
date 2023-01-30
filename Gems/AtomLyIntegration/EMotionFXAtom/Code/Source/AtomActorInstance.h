@@ -145,6 +145,8 @@ namespace AZ
             AZ::Data::Instance<RPI::Model> GetModel() const override;
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
+            void SetIsAlwaysDynamic([[maybe_unused]] bool isAlwaysDynamic) override {}
+            bool GetIsAlwaysDynamic() const { return true; }
             void SetLodType(RPI::Cullable::LodType lodType) override;
             RPI::Cullable::LodType GetLodType() const override;
             void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;
@@ -157,6 +159,8 @@ namespace AZ
             bool GetVisibility() const override;
             void SetRayTracingEnabled(bool enabled) override;
             bool GetRayTracingEnabled() const override;
+            void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) override;
+            bool GetExcludeFromReflectionCubeMaps() const override;
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

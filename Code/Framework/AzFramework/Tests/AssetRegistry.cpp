@@ -11,7 +11,7 @@
 
 namespace UnitTest
 {
-    using AssetRegistry = AllocatorsFixture;
+    using AssetRegistry = LeakDetectionFixture;
 
     TEST_F(AssetRegistry, LegacyIdMappingTest)
     {
@@ -41,12 +41,12 @@ namespace UnitTest
 
         EXPECT_THAT(id2Set, ::testing::UnorderedElementsAre(Pair(legacyId3, realId2)));
 
-        registry.UnregisterLegacyAssetMapping(legacyId2);
+        registry.UnregisterLegacyAssetMappingsForAsset(realId);
         id1Set = registry.GetLegacyMappingSubsetFromRealIds({ realId });
 
-        EXPECT_THAT(id1Set, ::testing::UnorderedElementsAre(Pair(legacyId1, realId)));
+        EXPECT_THAT(id1Set, ::testing::UnorderedElementsAre());
 
-        registry.UnregisterLegacyAssetMapping(legacyId3);
+        registry.UnregisterLegacyAssetMappingsForAsset(realId2);
         id2Set = registry.GetLegacyMappingSubsetFromRealIds({ realId2 });
 
         EXPECT_THAT(id2Set, ::testing::UnorderedElementsAre());

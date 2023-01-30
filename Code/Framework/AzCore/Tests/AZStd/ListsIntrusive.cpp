@@ -54,7 +54,7 @@ namespace UnitTest
     AZ_FORCE_INLINE bool operator>(const MyListClass& a, const MyListClass& b)  { return a.m_data > b.m_data; }
 
     class IntrusiveListContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         template <class T>

@@ -874,7 +874,7 @@ namespace AssetBuilderSDK
 
             // this is why new asset types REALLY need to have an extension (or other indicator) on their source or product that are different and can easily determine their
             // intended usage.
-            AZ::rapidxml::xml_document<char>* xmlDoc = azcreate(AZ::rapidxml::xml_document<char>, (), AZ::SystemAllocator, "BuilderSDK Temp XML Reader");
+            AZ::rapidxml::xml_document<char>* xmlDoc = azcreate(AZ::rapidxml::xml_document<char>, (), AZ::SystemAllocator);
             if (xmlDoc->parse<AZ::rapidxml::parse_no_data_nodes>(buffer.data()))
             {
                 // note that PARSE_FASTEST does not null-terminate strings, instead we just PARSE_NO_DATA_NODES so that xdata and other such blobs are ignored since they don't matter

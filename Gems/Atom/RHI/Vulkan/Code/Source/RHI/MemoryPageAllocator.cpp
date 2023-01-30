@@ -28,7 +28,7 @@ namespace AZ
         RHI::Ptr<Memory> MemoryPageFactory::CreateObject(size_t sizeInBytes)
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            if (!heapMemoryUsage.TryReserveMemory(sizeInBytes))
+            if (!heapMemoryUsage.CanAllocate(sizeInBytes))
             {
                 return nullptr;
             }
@@ -40,13 +40,8 @@ namespace AZ
 
             if (memory)
             {
-                heapMemoryUsage.m_residentInBytes += sizeInBytes;
-
+                heapMemoryUsage.m_totalResidentInBytes += sizeInBytes;
                 memory->SetName(m_debugName);
-            }
-            else
-            {
-                heapMemoryUsage.m_reservedInBytes -= sizeInBytes;
             }
 
             return memory;
@@ -55,8 +50,8 @@ namespace AZ
         void MemoryPageFactory::ShutdownObject(Memory& memory, bool isPoolShutdown)
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            heapMemoryUsage.m_residentInBytes -= memory.GetDescriptor().m_sizeInBytes;
-            heapMemoryUsage.m_reservedInBytes -= memory.GetDescriptor().m_sizeInBytes;
+            heapMemoryUsage.m_totalResidentInBytes -= memory.GetDescriptor().m_sizeInBytes;
+            heapMemoryUsage.Validate();
 
             if (isPoolShutdown)
             {

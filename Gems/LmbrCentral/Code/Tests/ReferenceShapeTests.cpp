@@ -10,7 +10,6 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Math/Random.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
 
 #include <LmbrCentral/Shape/MockShapes.h>
@@ -22,7 +21,7 @@
 namespace UnitTest
 {
     class ReferenceComponentTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZ::ComponentApplication m_app;

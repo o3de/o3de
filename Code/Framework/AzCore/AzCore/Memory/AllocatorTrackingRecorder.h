@@ -15,7 +15,7 @@
 
 #if defined(AZ_ENABLE_TRACING)
 #include <AzCore/Debug/StackTracer.h>
-#include <AzCore/Memory/AllocatorDebug.h>
+#include <AzCore/std/allocator_stateless.h>
 #include <AzCore/std/containers/vector.h>
 #endif
 
@@ -86,10 +86,10 @@ namespace AZ
         AZStd::size_t m_requested;
         AZStd::size_t m_allocated;
         AZStd::size_t m_alignment;
-        using StackTrace = AZStd::vector<AZ::Debug::StackFrame, AZ::Debug::DebugAllocator>;
+        using StackTrace = AZStd::vector<AZ::Debug::StackFrame, AZStd::stateless_allocator>;
         StackTrace m_allocationStackTrace;
     };
-    using AllocationRecordVector = AZStd::vector<AllocationRecord, AZ::Debug::DebugAllocator>;
+    using AllocationRecordVector = AZStd::vector<AllocationRecord, AZStd::stateless_allocator>;
 #endif
 
     /// Default implementation of IAllocatorTrackingRecorder.

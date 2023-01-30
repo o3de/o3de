@@ -113,11 +113,11 @@ namespace AZ
         {
             //! @param commandLineString: A string with command line arguments of the form:
             //!             "-<arg1> --<arg2> --<arg3>[=<value3>] ..."
-            //!             Example: "--use-spaces --namespace=vk -W1"
+            //!             Example: "--srg --namespace=vk -W1"
             //! Returns: A list with just the [-|--]<argument name>:
             //!          ["-<arg1>", "--<arg2>", "--arg3"]
             //!          For the example shown above it will return this vector:
-            //!          ["--use-spaces", "--namespace", "-W1]
+            //!          ["--srg", "--namespace", "-W1]
             AZStd::vector<AZStd::string> GetListOfArgumentNames(AZStd::string_view commandLineString);
 
             //! Takes a list of names of command line arguments and removes those arguments from @commandLineString.

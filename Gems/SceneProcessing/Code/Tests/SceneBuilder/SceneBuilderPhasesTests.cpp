@@ -40,6 +40,7 @@ class ComponentSingleton
     : public AZ::ComponentDescriptorDefault<ComponentType>
 {
 public:
+    AZ_CLASS_ALLOCATOR(ComponentSingleton, AZ::SystemAllocator)
     AZ::Component* CreateComponent() override { return m_component; }
     void SetComponent(ComponentType* c) { m_component = c; }
 private:
@@ -131,7 +132,7 @@ public:
 // This fixture attaches the SceneCore and SceneData libraries, and attaches
 // the AZ::Environment to them
 class SceneBuilderPhasesFixture
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override

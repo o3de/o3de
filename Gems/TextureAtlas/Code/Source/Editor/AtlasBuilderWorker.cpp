@@ -286,7 +286,7 @@ namespace TextureAtlasBuilder
                     {
                         AZStd::string color = AZStd::string::format("%s%s%s%s", args[1].substr(7).c_str(), args[1].substr(5, 2).c_str(),
                                                                     args[1].substr(3, 2).c_str(), args[1].substr(1, 2).c_str());
-                        data.m_unusedColor.FromU32(AZStd::stoul(color, nullptr, 16));
+                        data.m_unusedColor.FromU32(static_cast<AZ::u32>(AZStd::stoul(color, nullptr, 16)));
                     }
                 }
                 else if (args[0] == "presetname")

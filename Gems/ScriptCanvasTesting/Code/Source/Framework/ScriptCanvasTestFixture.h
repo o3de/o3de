@@ -11,7 +11,6 @@
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -57,8 +56,6 @@ namespace ScriptCanvasTests
 
         static void SetUpTestCase()
         {
-            s_allocatorSetup.SetupAllocator();
-
             s_asyncOperationActive = false;
 
             if (s_application == nullptr)
@@ -135,8 +132,8 @@ namespace ScriptCanvasTests
                 delete s_application;
                 s_application = nullptr;
             }
-            
-            s_allocatorSetup.CheckAllocatorsForLeaks();
+
+            s_leakDetection.CheckAllocatorsForLeaks();
         }
 
         template<class T>
@@ -409,8 +406,8 @@ namespace ScriptCanvasTests
         
     private:
 
-        static UnitTest::AllocatorsBase s_allocatorSetup;
         static bool s_setupSucceeded;
+        static inline UnitTest::LeakDetectionBase s_leakDetection{};
 
         AZStd::unordered_set< AZ::ComponentDescriptor* > m_descriptors;
         

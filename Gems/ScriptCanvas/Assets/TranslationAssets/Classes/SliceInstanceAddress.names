@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "IsValid",
-                    "context": "SliceInstanceAddress",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsValid"

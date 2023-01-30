@@ -48,6 +48,7 @@ ly_add_target(
 )
 
 ly_create_alias(NAME ScriptAutomation.Servers NAMESPACE Gem TARGETS Gem::ScriptAutomation)
+ly_create_alias(NAME ScriptAutomation.Unified NAMESPACE Gem TARGETS Gem::ScriptAutomation)
 ly_create_alias(NAME ScriptAutomation.Builders NAMESPACE Gem TARGETS Gem::ScriptAutomation)
 ly_create_alias(NAME ScriptAutomation.Clients NAMESPACE Gem TARGETS Gem::ScriptAutomation)
 ly_create_alias(NAME ScriptAutomation.Tools NAMESPACE Gem TARGETS Gem::ScriptAutomation)

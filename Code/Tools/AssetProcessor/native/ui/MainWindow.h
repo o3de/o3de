@@ -112,7 +112,7 @@ public:
 
     explicit MainWindow(GUIApplicationManager* guiApplicationManager, QWidget* parent = 0);
     void Activate();
-    ~MainWindow();
+    ~MainWindow() override;
 
 public Q_SLOTS:
     void ShowWindow();
@@ -256,5 +256,6 @@ private:
 
     AZStd::string m_cachedSourceAssetSelection;
     AZStd::string m_cachedProductAssetSelection;
+    QMetaObject::Connection m_connectionForResettingAssetsView;
 };
 

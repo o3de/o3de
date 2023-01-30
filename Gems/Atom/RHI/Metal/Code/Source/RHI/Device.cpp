@@ -17,6 +17,7 @@
 #include <RHI/Metal.h>
 #include <RHI/PhysicalDevice.h>
 
+
 //Symbols related to Obj-c categories are getting stripped out as part of the link step for monolithic builds
 //This forces the linker to not strip symbols related to categories without actually referencing the dummy function.
 //https://stackoverflow.com/questions/2567498/objective-c-categories-in-static-library
@@ -76,7 +77,7 @@ namespace AZ
             allocatorDescriptor.m_pageSizeInBytes = DefaultConstantBufferPageSize;
             allocatorDescriptor.m_bindFlags = AZ::RHI::BufferBindFlags::Constant;
             allocatorDescriptor.m_getHeapMemoryUsageFunction = [this]() { return &m_argumentBufferConstantsAllocatorMemoryUsage; };
-            allocatorDescriptor.m_recycleOnCollect = true;
+            allocatorDescriptor.m_recycleOnCollect = false;
             m_argumentBufferConstantsAllocator.Init(allocatorDescriptor);
              
             allocatorDescriptor.m_getHeapMemoryUsageFunction = [this]() { return &m_argumentBufferAllocatorMemoryUsage; };
@@ -88,6 +89,7 @@ namespace AZ
             m_samplerCache = [[NSCache alloc]init];
             [m_samplerCache setName:@"SamplerCache"];
 
+            m_bindlessArgumentBuffer.Init(this);
             return RHI::ResultCode::Success;
         }
     
@@ -100,6 +102,7 @@ namespace AZ
             m_asyncUploadQueue.Shutdown();
             m_stagingBufferPool.reset();
             m_nullDescriptorManager.Shutdown();
+            m_bindlessArgumentBuffer.GarbageCollect();
         }
 
         void Device::ShutdownInternal()
@@ -372,6 +375,8 @@ namespace AZ
             m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Compute)] = RHI::QueryTypeFlags::Occlusion | counterSamplingFlags;            
             m_features.m_occlusionQueryPrecise = true;
             
+            m_features.m_unboundedArrays = m_metalDevice.argumentBuffersSupport == MTLArgumentBuffersTier2;
+            
             //Values taken from https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
             m_limits.m_maxImageDimension1D = 8192;
             m_limits.m_maxImageDimension2D = 8192;
@@ -443,6 +448,11 @@ namespace AZ
         AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
         {
             return AZStd::vector<RHI::Format>{RHI::Format::B8G8R8A8_UNORM};
+        }
+    
+        BindlessArgumentBuffer& Device::GetBindlessArgumentBuffer()
+        {
+            return m_bindlessArgumentBuffer;
         }
     }
 }

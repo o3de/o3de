@@ -20,6 +20,7 @@ namespace AzToolsFramework
         PrefabOverridePublicHandler::PrefabOverridePublicHandler()
         {
             AZ::Interface<PrefabOverridePublicInterface>::Register(this);
+            PrefabOverridePublicRequestBus::Handler::BusConnect();
 
             m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
             AZ_Assert(m_instanceToTemplateInterface, "PrefabOverridePublicHandler - InstanceToTemplateInterface could not be found.");
@@ -34,6 +35,20 @@ namespace AzToolsFramework
         PrefabOverridePublicHandler::~PrefabOverridePublicHandler()
         {
             AZ::Interface<PrefabOverridePublicInterface>::Unregister(this);
+            PrefabOverridePublicRequestBus::Handler::BusDisconnect();
+        }
+
+        void PrefabOverridePublicHandler::Reflect(AZ::ReflectContext* context)
+        {
+            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context); behaviorContext)
+            {
+                behaviorContext->EBus<PrefabOverridePublicRequestBus>("PrefabOverridePublicRequestBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "Prefab")
+                    ->Attribute(AZ::Script::Attributes::Module, "prefab")
+                    ->Event("AreOverridesPresent", &PrefabOverridePublicInterface::AreOverridesPresent)
+                    ->Event("RevertOverrides", &PrefabOverridePublicInterface::RevertOverrides);
+            }
         }
 
         bool PrefabOverridePublicHandler::AreOverridesPresent(AZ::EntityId entityId)
@@ -43,7 +58,19 @@ namespace AzToolsFramework
             {
                 return m_prefabOverrideHandler.AreOverridesPresent(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
             }
+
             return false;
+        }
+
+        AZStd::optional<OverrideType> PrefabOverridePublicHandler::GetOverrideType(AZ::EntityId entityId)
+        {
+            AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetPathAndLinkIdFromFocusedPrefab(entityId);
+            if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
+            {
+                return m_prefabOverrideHandler.GetOverrideType(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
+            }
+
+            return {};
         }
 
         bool PrefabOverridePublicHandler::RevertOverrides(AZ::EntityId entityId)

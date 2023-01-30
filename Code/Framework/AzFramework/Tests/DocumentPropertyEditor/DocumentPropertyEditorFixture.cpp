@@ -13,7 +13,7 @@ namespace AZ::DocumentPropertyEditor::Tests
 {
     void DocumentPropertyEditorTestFixture::SetUp()
     {
-        UnitTest::AllocatorsFixture::SetUp();
+        UnitTest::LeakDetectionFixture::SetUp();
         NameDictionary::Create();
         DocumentAdapter::SetDebugModeEnabled(true);
         m_system = AZStd::make_unique<PropertyEditorSystem>();
@@ -26,6 +26,6 @@ namespace AZ::DocumentPropertyEditor::Tests
         m_system.reset();
         DocumentAdapter::SetDebugModeEnabled(false);
         NameDictionary::Destroy();
-        UnitTest::AllocatorsFixture::TearDown();
+        UnitTest::LeakDetectionFixture::TearDown();
     }
 }

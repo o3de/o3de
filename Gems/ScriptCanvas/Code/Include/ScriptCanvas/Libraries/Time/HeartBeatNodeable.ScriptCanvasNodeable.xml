@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Time/HeartBeatNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Time/HeartBeatNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			  xsi:noNamespaceSchemaLocation="../../AutoGen/ScriptCanvasNodeable.xsd">
     <Class Name="HeartBeatNodeable"
         QualifiedName="Nodeables::Time::HeartBeatNodeable"
         PreferredClassName="HeartBeat"
@@ -13,7 +14,7 @@
             <Parameter Name="Interval" Type="Data::NumberType" DefaultValue="0.0" Description="The amount of time between pulses"/>
         </Input>
 
-        <Input Name="Stop"/>
+        <Input Name="Stop" Description=""/>
 
         <Output Name="Pulse" Description="Signaled at each specified interval." />
 

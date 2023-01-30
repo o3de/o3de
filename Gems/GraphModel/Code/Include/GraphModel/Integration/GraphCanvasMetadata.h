@@ -53,9 +53,5 @@ namespace GraphModelIntegration
         //! Graph Canvas metadata that pertains to each node in our data model. For example,
         //! the position of each node.
         NodeMetadataMap m_nodeMetadata;
-
-        //! Graph Canvas metadata that is not related to our data model. For example,
-        //! Comment nodes and Group Box nodes.
-        OtherMetadataMap m_otherMetadata;
     };
 }

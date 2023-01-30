@@ -100,7 +100,7 @@ namespace UnitTest
     };
 
     class SliceUpgradeTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -115,9 +115,6 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_streamer = AZStd::make_unique<AZ::IO::Streamer>(AZStd::thread_desc{}, AZ::StreamerComponent::CreateStreamerStack());
             AZ::Interface<AZ::IO::IStreamer>::Register(m_streamer.get());
 
@@ -159,9 +156,6 @@ namespace UnitTest
 
             AZ::Interface<AZ::IO::IStreamer>::Unregister(m_streamer.get());
             m_streamer.reset();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
         void SaveSliceAssetToStream(AZ::Data::AssetId sliceAssetId)

@@ -16,7 +16,7 @@
 
 namespace UnitTests
 {
-    class BuilderManagerTest : public UnitTest::ScopedAllocatorSetupFixture
+    class BuilderManagerTest : public UnitTest::LeakDetectionFixture
     {
 
     };

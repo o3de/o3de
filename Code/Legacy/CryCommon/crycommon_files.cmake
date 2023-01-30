@@ -101,6 +101,5 @@ set(FILES
     Maestro/Types/AssetBlendKey.h
     Maestro/Types/AssetBlends.h
     Maestro/Types/SequenceType.h
-    StaticInstance.h
     WinBase.cpp
 )

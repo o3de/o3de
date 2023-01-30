@@ -25,12 +25,12 @@ namespace EMStudio
 
         // Use these functions just before showing the widget
         void setBaseSize(QSize sz);
-        void setBaseFontPointSizeF(qreal pointSizeF);
+        void setBaseFontPixelSize(qreal pointSizeF);
 
     private:
         float m_scale = 1.0f;
         QSize m_baseSize;
-        qreal m_fontPointSize;
+        qreal m_fontPixelSize;
 
         void updateScaledSize();
     };

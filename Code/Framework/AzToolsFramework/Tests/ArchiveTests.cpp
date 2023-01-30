@@ -49,7 +49,7 @@ namespace UnitTest
         }
 
         class ArchiveComponentTest :
-            public UnitTest::AllocatorsTestFixture
+            public UnitTest::LeakDetectionFixture
         {
 
         public:

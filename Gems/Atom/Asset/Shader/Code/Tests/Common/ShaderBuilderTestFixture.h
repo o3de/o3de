@@ -24,11 +24,11 @@ namespace UnitTest
      * In the future will be extended as needed.
      */
     class ShaderBuilderTestFixture
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     protected:
         ///////////////////////////////////////////////////////////////////////
-        // AllocatorsTestFixture overrides
+        // LeakDetectionFixture overrides
         void SetUp() override;
         void TearDown() override;
         ///////////////////////////////////////////////////////////////////////

@@ -24,7 +24,7 @@
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntitySystemComponent.h>
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsSystemComponent.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsSystemComponent.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditorComponent.h>
 #include <AzToolsFramework/Render/EditorIntersectorComponent.h>
 #include <AzToolsFramework/Slice/SliceDependencyBrowserComponent.h>
@@ -121,7 +121,7 @@ namespace AzToolsFramework
             AzToolsFramework::Components::EditorEntityUiSystemComponent::CreateDescriptor(),
             AzToolsFramework::Script::LuaSymbolsReporterSystemComponent::CreateDescriptor(),
             AzToolsFramework::Script::LuaEditorSystemComponent::CreateDescriptor(),
-            AzToolsFramework::PaintBrushSettingsSystemComponent::CreateDescriptor(),
+            AzToolsFramework::GlobalPaintBrushSettingsSystemComponent::CreateDescriptor(),
             AzToolsFramework::MetadataManager::CreateDescriptor(),
         });
     }

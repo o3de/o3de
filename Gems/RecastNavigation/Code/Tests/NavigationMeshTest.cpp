@@ -43,7 +43,7 @@ namespace RecastNavigationTests
     using RecastNavigation::DetourNavigationRequestBus;
 
     class NavigationTest
-        : public ::UnitTest::AllocatorsFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         unique_ptr<AZ::SerializeContext> m_sc;
@@ -59,7 +59,7 @@ namespace RecastNavigationTests
 
         void SetUp() override
         {
-            ::UnitTest::AllocatorsFixture::SetUp();
+            ::UnitTest::LeakDetectionFixture::SetUp();
 
             m_console.reset(aznew AZ::Console());
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
@@ -108,7 +108,7 @@ namespace RecastNavigationTests
 
             AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
             m_console = {};
-            ::UnitTest::AllocatorsFixture::TearDown();
+            ::UnitTest::LeakDetectionFixture::TearDown();
         }
 
 

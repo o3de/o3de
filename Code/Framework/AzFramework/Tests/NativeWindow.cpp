@@ -15,7 +15,7 @@ using namespace AzFramework;
 namespace UnitTest
 {
 
-    using NativeWindowTest = AllocatorsFixture;
+    using NativeWindowTest = LeakDetectionFixture;
 
     class NativeWindowListener
         : public WindowNotificationBus::Handler

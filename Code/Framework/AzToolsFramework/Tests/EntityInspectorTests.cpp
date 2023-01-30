@@ -256,11 +256,11 @@ namespace UnitTest
     }
 
     class ComponentPaletteTests
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         ComponentPaletteTests()
-            : AllocatorsTestFixture()
+            : LeakDetectionFixture()
         { }
 
         void SetUp() override

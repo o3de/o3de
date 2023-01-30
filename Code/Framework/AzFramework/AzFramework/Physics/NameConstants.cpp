@@ -100,4 +100,4 @@ namespace Physics
             return densityUnit;
         }
     } // namespace NameConstants
-} // namespace PhysX
+} // namespace Physics

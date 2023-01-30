@@ -32,16 +32,24 @@ namespace AzToolsFramework
             }
 
             ComponentModeRequestBus::Handler::BusConnect(m_entityComponentIdPair);
-            ToolsApplicationNotificationBus::Handler::BusConnect();
+            Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         }
 
         EditorBaseComponentMode::~EditorBaseComponentMode()
         {
-            ToolsApplicationNotificationBus::Handler::BusDisconnect();
+            Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
             ComponentModeRequestBus::Handler::BusDisconnect();
         }
 
-        void EditorBaseComponentMode::AfterUndoRedo()
+        void EditorBaseComponentMode::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<EditorBaseComponentMode>();
+            }
+        }
+
+        void EditorBaseComponentMode::OnPrefabInstancePropagationEnd()
         {
             Refresh();
         }
@@ -101,6 +109,15 @@ namespace AzToolsFramework
         AZStd::vector<ActionOverride> EditorBaseComponentMode::PopulateActions()
         {
             return PopulateActionsImpl();
+        }
+
+        AZ::Uuid EditorBaseComponentMode::GetComponentModeType() const
+        {
+            AZ_Assert(
+                false,
+                "Classes derived from EditorBaseComponentMode need to override this function and return their typeid."
+                "Example: \"return azrtti_typeid<DerivedComponentMode>();\"");
+            return AZ::Uuid::CreateNull();
         }
 
         void EditorBaseComponentMode::PostHandleMouseInteraction()

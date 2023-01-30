@@ -18,7 +18,7 @@ namespace AZ { class DynamicModuleHandle; }
 namespace SceneProcessing
 {
     class InitSceneAPIFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
         using DynamicModuleHandlePtr = AZStd::unique_ptr<AZ::DynamicModuleHandle>;
 
@@ -26,7 +26,7 @@ namespace SceneProcessing
 
         void SetUp() override
         {
-            UnitTest::ScopedAllocatorSetupFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             const AZStd::vector<AZStd::string> moduleNames {"SceneCore", "SceneData"};
             for (const AZStd::string& moduleName : moduleNames)

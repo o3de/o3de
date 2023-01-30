@@ -352,31 +352,40 @@ def get_relative_file_paths(start_dir: str, ignore_list: Optional[List[str]] = N
                 all_files.append(os.path.relpath(full_path, start_dir))
     return all_files
 
+def get_differences_between_lists(first: List[str], second: List[str]) -> (List[str], List[str]):
+    """
+        Returns two lists that contain unique entries in lists, missing from the other list.
+    """
+    first_set = set(first)
+    second_set = set(second)
+    diff_first = [x for x in first_set if x not in second]
+    diff_second = [x for x in second_set if x not in first]
+    
+    if diff_first or diff_second:
+        # Print a simple header if there are differences, to make it easier to follow log output on build machines.
+        logger.info("Differences were found comparing the given lists.")
+
+    # Log difference between actual and expected (if any). Easier for troubleshooting
+    if diff_first:
+        logger.info("The following entries were actually found but not expected:")
+        for list_entry in diff_first:
+            logger.info("   " + list_entry)
+    if diff_second:
+        logger.info("The following entries were expected to be found but were actually not:")
+        for list_entry in diff_second:
+            logger.info("   " + list_entry)
+
+    return diff_first, diff_second
+    
 
 def compare_lists(actual: List[str], expected: List[str]) -> bool:
     """Compares the two lists of strings. Returns false and prints any discrepancies if present."""
 
     # Find difference between expected and actual
-    diff = {"actual": [], "expected": []}
-    for asset in actual:
-        if asset not in expected:
-            diff["actual"].append(asset)
-    for asset in expected:
-        if asset not in actual:
-            diff["expected"].append(asset)
-
-    # Log difference between actual and expected (if any). Easier for troubleshooting
-    if diff["actual"]:
-        logger.info("The following assets were actually found but not expected:")
-        for asset in diff["actual"]:
-            logger.info("   " + asset)
-    if diff["expected"]:
-        logger.info("The following assets were expected to be found but were actually not:")
-        for asset in diff["expected"]:
-            logger.info("   " + asset)
+    diff_actual, diff_expected = get_differences_between_lists(actual, expected)
 
     # True ONLY IF both diffs are empty
-    return not diff["actual"] and not diff["expected"]
+    return not diff_actual and not diff_expected
 
 
 def delete_MoveOutput_folders(search_path: List[str] or str) -> None:

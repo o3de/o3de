@@ -135,13 +135,13 @@ namespace EMotionFX
 
         if (HasConnectionAtInputPort(INPUTPORT_ACTIVATE))
         {
-            GetInputNode(INPUTPORT_ACTIVATE)->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_ACTIVATE), timePassedInSeconds);
         }
 
         if (HasConnectionAtInputPort(INPUTPORT_TARGETPOSE))
         {
             AnimGraphNode* inputNodeTargetPose = GetInputNode(INPUTPORT_TARGETPOSE);
-            inputNodeTargetPose->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, inputNodeTargetPose, timePassedInSeconds);
 
             // Forward the event buffer from the target pose.
             AnimGraphRefCountedData* sourceData = inputNodeTargetPose->FindOrCreateUniqueNodeData(animGraphInstance)->GetRefCountedData();

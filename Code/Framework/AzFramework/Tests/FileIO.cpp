@@ -33,7 +33,7 @@ using namespace AZ::Debug;
 namespace UnitTest
 {
     class NameMatchesFilterTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -85,7 +85,7 @@ namespace UnitTest
      * FileIOStream test
      */
     class FileIOStreamTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         AZ::IO::LocalFileIO m_fileIO;
@@ -97,7 +97,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
         }
@@ -109,7 +109,7 @@ namespace UnitTest
         void TearDown() override
         {
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void run()
@@ -142,7 +142,7 @@ namespace UnitTest
     namespace LocalFileIOTest
     {
         class FolderFixture
-            : public ScopedAllocatorSetupFixture
+            : public LeakDetectionFixture
         {
         public:
             AZ::Test::ScopedAutoTempDirectory m_tempDir;
@@ -176,7 +176,7 @@ namespace UnitTest
             void SetUp() override
             {
                 // lets use a random temp folder name
-                srand(clock());
+                srand(static_cast<unsigned int>(clock()));
                 m_randomFolderKey = rand();
 
                 LocalFileIO local;

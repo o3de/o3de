@@ -30,7 +30,7 @@ namespace UnitTest
     static AZ::Data::AssetType lensFlareAssetType("{CF44D1F0-F178-4A3D-A9E6-D44721F50C20}"); // from LensFlareAsset.h
     static AZ::Data::AssetType fontAssetType("{57767D37-0EBE-43BE-8F60-AB36D2056EF8}"); // form UiAssetTypes.h
 
-    class BuilderSDKUnitTests : public AllocatorsFixture
+    class BuilderSDKUnitTests : public LeakDetectionFixture
     {
     public:
         // QTemporaryDir autodeletes on destruct.

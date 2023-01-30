@@ -100,6 +100,7 @@ namespace LandscapeCanvasEditor
         Q_OBJECT
 
     public:
+        AZ_CLASS_ALLOCATOR(MainWindow, AZ::SystemAllocator)
         explicit MainWindow(QWidget* parent = nullptr);
         ~MainWindow() override;
 
@@ -157,6 +158,10 @@ namespace LandscapeCanvasEditor
         GraphModel::NodePtrList GetAllNodesMatchingEntity(const AZ::EntityId& entityId) override;
         GraphModel::NodePtrList GetAllNodesMatchingEntityComponent(const AZ::EntityComponentIdPair& entityComponentId) override;
         ////////////////////////////////////////////////////////////////////////
+
+        GraphModel::NodePtrList GetAllNodesMatchingEntityInGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityId& entityId);
+        GraphModel::NodePtrList GetAllNodesMatchingEntityComponentInGraph(
+            const GraphCanvas::GraphId& graphId, const AZ::EntityComponentIdPair& entityComponentId);
 
         ////////////////////////////////////////////////////////////////////////
         // GraphCanvas::AssetEditorMainWindow overrides

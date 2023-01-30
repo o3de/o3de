@@ -810,16 +810,6 @@ namespace AzFramework
     // the results.  For this reason, it is a direct call and protects its structures with a lock.
     void AssetCatalog::AssetChanged(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& messages, bool isCatalogInitialize)
     {
-        if (isCatalogInitialize && !m_initialized)
-        {
-            // This can happen when running with VFS, where the AP connection is done first
-            // and it's too early to send asset changed messages since catalog is not initialized yet.
-            AZ_TracePrintf(
-                "AssetCatalog",
-                "Skipping AssetChanged to update the catalog since it's too early, catalog has not been initialized yet.");
-            return;
-        }
-
         for (const auto& message : messages)
         {
             AZStd::string relativePath = message.m_data;
@@ -895,7 +885,9 @@ namespace AzFramework
                             });
                     }
                 }
-                else
+                // This can happen when running with VFS, where the AP connection is done first
+                // and it's too early to send messages since catalog is not initialized yet.
+                else if (!isCatalogInitialize || m_initialized)
                 {
                     AZ::SystemTickBus::QueueFunction(
                         [assetId]()
@@ -914,16 +906,21 @@ namespace AzFramework
                     }
                 }
 
-                AzFramework::LegacyAssetEventBus::QueueEvent(
-                    AZ::Crc32(extension.c_str()), &AzFramework::LegacyAssetEventBus::Events::OnFileChanged, relativePath);
-
-                if (AZ::Data::AssetManager::IsReady())
+                // This can happen when running with VFS, where the AP connection is done first
+                // and it's too early to send asset changed messages since catalog is not initialized yet.
+                if (!isCatalogInitialize || m_initialized)
                 {
-                    AZ::SystemTickBus::QueueFunction(
-                        [assetId]()
-                        {
-                            AZ::Data::AssetManager::Instance().ReloadAsset(assetId, AZ::Data::AssetLoadBehavior::Default, true);
-                        });
+                    AzFramework::LegacyAssetEventBus::QueueEvent(
+                        AZ::Crc32(extension.c_str()), &AzFramework::LegacyAssetEventBus::Events::OnFileChanged, relativePath);
+
+                    if (AZ::Data::AssetManager::IsReady())
+                    {
+                        AZ::SystemTickBus::QueueFunction(
+                            [assetId]()
+                            {
+                                AZ::Data::AssetManager::Instance().ReloadAsset(assetId, AZ::Data::AssetLoadBehavior::Default, true);
+                            });
+                    }
                 }
             }
             else
@@ -955,10 +952,7 @@ namespace AzFramework
                 UnregisterAsset(assetId);
                 {
                     AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
-                    for (const auto& mapping : message.m_legacyAssetIds)
-                    {
-                        m_registry->UnregisterLegacyAssetMapping(mapping);
-                    }
+                    m_registry->UnregisterLegacyAssetMappingsForAsset(assetId);
                 }
                 // queue this for later delivery, since we are not on the main thread:
                 AzFramework::LegacyAssetEventBus::QueueEvent(

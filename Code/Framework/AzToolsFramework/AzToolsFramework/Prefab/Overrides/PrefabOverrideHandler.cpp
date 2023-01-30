@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverrideHandler.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoRevertOverrides.h>
 
@@ -60,5 +61,39 @@
             }
             return false;
         }
-    }
+
+        AZStd::optional<OverrideType> PrefabOverrideHandler::GetOverrideType(AZ::Dom::Path path, LinkId linkId) const
+        {
+            AZStd::optional<OverrideType> overrideType = {};
+
+            LinkReference link = m_prefabSystemComponentInterface->FindLink(linkId);
+            if (link.has_value())
+            {
+                // Look for an override at the exact provided path
+                if (PrefabDomConstReference overridePatch = link->get().GetOverridePatchAtExactPath(path); overridePatch.has_value())
+                {
+                    PrefabDomValue::ConstMemberIterator patchEntryIterator = overridePatch->get().FindMember("op");
+                    if (patchEntryIterator != overridePatch->get().MemberEnd())
+                    {
+                        AZStd::string opPath = patchEntryIterator->value.GetString();
+                        if (opPath == "remove")
+                        {
+                            overrideType = OverrideType::RemoveEntity;
+                        }
+                        else if (opPath == "add")
+                        {
+                            overrideType = OverrideType::AddEntity;
+                        }
+                    }
+                }
+                else if (link->get().AreOverridesPresent(path))
+                {
+                    // Any overrides on descendant paths are edits
+                    overrideType = OverrideType::EditEntity;
+                }
+            }
+
+            return overrideType;
+        }
+    } // namespace Prefab
 } // namespace AzToolsFramework

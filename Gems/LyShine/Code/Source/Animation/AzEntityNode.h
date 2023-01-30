@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include <set>
 #include "AnimNode.h"
 //#include "SoundTrack.h"
 #include "StlUtils.h"
@@ -33,7 +32,6 @@ public:
     CUiAnimAzEntityNode(const int id);
     CUiAnimAzEntityNode();
     ~CUiAnimAzEntityNode();
-    static void Initialize();
 
     void EnableEntityPhysics(bool bEnable);
 
@@ -176,8 +174,8 @@ private:
         SParamInfo animNodeParamInfo;
     };
 
-    std::vector< SScriptPropertyParamInfo > m_entityScriptPropertiesParamInfos;
-    typedef AZStd::unordered_map<AZStd::string, size_t, stl::hash_string_caseless<AZStd::string>, stl::equality_string_caseless<AZStd::string> > TScriptPropertyParamInfoMap;
+    AZStd::vector<SScriptPropertyParamInfo> m_entityScriptPropertiesParamInfos;
+    using TScriptPropertyParamInfoMap = AZStd::unordered_map<AZStd::string, size_t, stl::hash_string_caseless<AZStd::string>, stl::equality_string_caseless<AZStd::string>>;
     TScriptPropertyParamInfoMap m_nameToScriptPropertyParamInfo;
     #ifdef CHECK_FOR_TOO_MANY_ONPROPERTY_SCRIPT_CALLS
     uint32 m_OnPropertyCalls;

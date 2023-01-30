@@ -9,6 +9,7 @@
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/Feature/RenderCommon.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
@@ -29,15 +30,56 @@
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/ShapeIntersection.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Name/NameDictionary.h>
+
 
 namespace AZ
 {
     namespace Render
     {
+        static AZ::Name s_o_meshUseForwardPassIBLSpecular_Name =
+            AZ::Name::FromStringLiteral("o_meshUseForwardPassIBLSpecular", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_Manual_Name = AZ::Name::FromStringLiteral("Manual", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_Multiply_Name = AZ::Name::FromStringLiteral("Multiply", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_BaseColorTint_Name = AZ::Name::FromStringLiteral("BaseColorTint", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_BaseColor_Name = AZ::Name::FromStringLiteral("BaseColor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_baseColor_color_Name = AZ::Name::FromStringLiteral("baseColor.color", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_baseColor_factor_Name = AZ::Name::FromStringLiteral("baseColor.factor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_baseColor_useTexture_Name =
+            AZ::Name::FromStringLiteral("baseColor.useTexture", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_metallic_factor_Name = AZ::Name::FromStringLiteral("metallic.factor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_roughness_factor_Name = AZ::Name::FromStringLiteral("roughness.factor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_emissive_enable_Name = AZ::Name::FromStringLiteral("emissive.enable", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_emissive_color_Name = AZ::Name::FromStringLiteral("emissive.color", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_emissive_intensity_Name =
+            AZ::Name::FromStringLiteral("emissive.intensity", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_baseColor_textureMap_Name =
+            AZ::Name::FromStringLiteral("baseColor.textureMap", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_normal_textureMap_Name =
+            AZ::Name::FromStringLiteral("normal.textureMap", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_metallic_textureMap_Name =
+            AZ::Name::FromStringLiteral("metallic.textureMap", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_roughness_textureMap_Name =
+            AZ::Name::FromStringLiteral("roughness.textureMap", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_irradiance_irradianceColorSource_Name =
+            AZ::Name::FromStringLiteral("irradiance.irradianceColorSource", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_emissive_textureMap_Name =
+            AZ::Name::FromStringLiteral("emissive.textureMap", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_irradiance_manualColor_Name =
+            AZ::Name::FromStringLiteral("irradiance.manualColor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_irradiance_color_Name = AZ::Name::FromStringLiteral("irradiance.color", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_baseColor_textureBlendMode_Name =
+            AZ::Name::FromStringLiteral("baseColor.textureBlendMode", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_irradiance_factor_Name =
+            AZ::Name::FromStringLiteral("irradiance.factor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_opacity_mode_Name = AZ::Name::FromStringLiteral("opacity.mode", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_opacity_factor_Name = AZ::Name::FromStringLiteral("opacity.factor", AZ::Interface<AZ::NameDictionary>::Get());
+
         void MeshFeatureProcessor::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -54,7 +96,7 @@ namespace AZ
             AZ_Assert(m_transformService, "MeshFeatureProcessor requires a TransformServiceFeatureProcessor on its parent scene.");
 
             m_rayTracingFeatureProcessor = GetParentScene()->GetFeatureProcessor<RayTracingFeatureProcessor>();
-
+            m_reflectionProbeFeatureProcessor = GetParentScene()->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
             m_handleGlobalShaderOptionUpdate = RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler
             {
                 [this](const AZ::Name&, RPI::ShaderOptionValue) { m_forceRebuildDrawPackets = true; }
@@ -71,6 +113,8 @@ namespace AZ
                 // push the cvars value so anything in this dll can access it directly.
                 console->PerformCommand(AZStd::string::format("r_enablePerMeshShaderOptionFlags %s", enablePerMeshShaderOptionFlagsCvar ? "true" : "false").c_str());
             }
+
+            m_meshMovedFlag = GetParentScene()->GetViewTagBitRegistry().AcquireTag(MeshCommon::MeshMovedName);
         }
 
         void MeshFeatureProcessor::Deactivate()
@@ -84,7 +128,11 @@ namespace AZ
                 "Deactivating the MeshFeatureProcessor, but there are still outstanding mesh handles.\n"
             );
             m_transformService = nullptr;
+            m_rayTracingFeatureProcessor = nullptr;
+            m_reflectionProbeFeatureProcessor = nullptr;
             m_forceRebuildDrawPackets = false;
+
+            GetParentScene()->GetViewTagBitRegistry().ReleaseTag(m_meshMovedFlag);
         }
 
         TransformServiceFeatureProcessorInterface::ObjectId MeshFeatureProcessor::GetObjectId(const MeshHandle& meshHandle) const
@@ -124,9 +172,19 @@ namespace AZ
                             continue;
                         }
 
+                        if (meshDataIter->m_needsInit)
+                        {
+                            meshDataIter->Init();
+                        }
+
                         if (meshDataIter->m_objectSrgNeedsUpdate)
                         {
-                            meshDataIter->UpdateObjectSrg();
+                            meshDataIter->UpdateObjectSrg(m_reflectionProbeFeatureProcessor, m_transformService);
+                        }
+
+                        if (meshDataIter->m_needsSetRayTracingData)
+                        {
+                            meshDataIter->SetRayTracingData(m_rayTracingFeatureProcessor, m_transformService);
                         }
 
                         // [GFX TODO] [ATOM-1357] Currently all of the draw packets have to be checked for material ID changes because
@@ -194,8 +252,8 @@ namespace AZ
                             drawPacket.Update(*GetParentScene(), true);
                         }
                     }
-                    model.m_cullable.m_flags = 0;
-                    model.m_cullable.m_prevFlags = 0;
+                    model.m_cullable.m_shaderOptionFlags = 0;
+                    model.m_cullable.m_prevShaderOptionFlags = 0;
                     model.m_cullableNeedsRebuild = true;
                     model.BuildCullable();
                 }
@@ -207,7 +265,7 @@ namespace AZ
             {
                 for (auto& model : m_modelData)
                 {
-                    if (model.m_cullable.m_prevFlags != model.m_cullable.m_flags)
+                    if (model.m_cullable.m_prevShaderOptionFlags != model.m_cullable.m_shaderOptionFlags)
                     {
                         // Per mesh shader option flags have changed, so rebuild the draw packet with the new shader options.
                         for (RPI::MeshDrawPacketList& drawPacketList : model.m_drawPacketListsByLod)
@@ -217,7 +275,7 @@ namespace AZ
                                 m_flagRegistry->VisitTags(
                                     [&](AZ::Name shaderOption, FlagRegistry::TagType tag)
                                     {
-                                        bool shaderOptionValue = (model.m_cullable.m_flags & tag.GetIndex()) > 0;
+                                        bool shaderOptionValue = (model.m_cullable.m_shaderOptionFlags & tag.GetIndex()) > 0;
                                         drawPacket.SetShaderOption(shaderOption, AZ::RPI::ShaderOptionValue(shaderOptionValue));
                                     }
                                 );
@@ -243,7 +301,8 @@ namespace AZ
             }
             for (auto& model : m_modelData)
             {
-                model.m_cullable.m_prevFlags = model.m_cullable.m_flags.exchange(0);
+                model.m_cullable.m_prevShaderOptionFlags = model.m_cullable.m_shaderOptionFlags.exchange(0);
+                model.m_cullable.m_flags = model.m_isAlwaysDynamic ? m_meshMovedFlag.GetIndex() : 0;
             }
         }
 
@@ -263,6 +322,12 @@ namespace AZ
             meshDataHandle->m_rayTracingUuid = AZ::Uuid::CreateRandom();
             meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
             meshDataHandle->m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
+            meshDataHandle->m_isAlwaysDynamic = descriptor.m_isAlwaysDynamic;
+
+            if (descriptor.m_excludeFromReflectionCubeMaps)
+            {
+                meshDataHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
+            }
 
             meshDataHandle->UpdateMaterialChangeIds();
 
@@ -285,7 +350,7 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 meshHandle->m_meshLoader.reset();
-                meshHandle->DeInit();
+                meshHandle->DeInit(m_rayTracingFeatureProcessor);
                 m_transformService->ReleaseObjectId(meshHandle->m_objectId);
 
                 AZStd::concurrency_check_scope scopeCheck(m_meshDataChecker);
@@ -356,9 +421,9 @@ namespace AZ
                 if (meshHandle->m_model)
                 {
                     Data::Instance<RPI::Model> model = meshHandle->m_model;
-                    meshHandle->DeInit();
+                    meshHandle->DeInit(m_rayTracingFeatureProcessor);
                     meshHandle->m_materialAssignments = materials;
-                    meshHandle->Init(model);
+                    meshHandle->QueueInit(model);
                 }
                 else
                 {
@@ -391,6 +456,7 @@ namespace AZ
                 ModelDataInstance& modelData = *meshHandle;
                 modelData.m_cullBoundsNeedsUpdate = true;
                 modelData.m_objectSrgNeedsUpdate = true;
+                modelData.m_cullable.m_flags = modelData.m_cullable.m_flags | m_meshMovedFlag.GetIndex();
 
                 m_transformService->SetTransformForId(meshHandle->m_objectId, transform, nonUniformScale);
 
@@ -494,11 +560,29 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::SetIsAlwaysDynamic(const MeshHandle & meshHandle, bool isAlwaysDynamic)
+        {
+            if (meshHandle.IsValid())
+            {
+                meshHandle->m_isAlwaysDynamic = isAlwaysDynamic;
+            }
+        }
+
+        bool MeshFeatureProcessor::GetIsAlwaysDynamic(const MeshHandle& meshHandle) const
+        {
+            if (!meshHandle.IsValid())
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return false;
+            }
+            return meshHandle->m_isAlwaysDynamic;
+        }
+
         void MeshFeatureProcessor::SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps)
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+                meshHandle->m_descriptor.m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
                 if (excludeFromReflectionCubeMaps)
                 {
                     meshHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
@@ -510,6 +594,15 @@ namespace AZ
             }
         }
 
+        bool MeshFeatureProcessor::GetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_descriptor.m_excludeFromReflectionCubeMaps;
+            }
+            return false;
+        }
+
         void MeshFeatureProcessor::SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled)
         {
             if (meshHandle.IsValid())
@@ -518,7 +611,7 @@ namespace AZ
                 if (rayTracingEnabled && !meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // add to ray tracing
-                    meshHandle->SetRayTracingData();
+                    meshHandle->m_needsSetRayTracingData = true;
                 }
                 else if (!rayTracingEnabled && meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
@@ -570,7 +663,7 @@ namespace AZ
                     // now add if it's visible
                     if (visible)
                     {
-                        meshHandle->SetRayTracingData();
+                        meshHandle->m_needsSetRayTracingData = true;
                     }
                 }
             }
@@ -594,8 +687,7 @@ namespace AZ
             }
         }
 
-
-        RHI::Ptr<MeshFeatureProcessor::FlagRegistry> MeshFeatureProcessor::GetFlagRegistry()
+        RHI::Ptr<MeshFeatureProcessor::FlagRegistry> MeshFeatureProcessor::GetShaderOptionFlagRegistry()
         {
             if (m_flagRegistry == nullptr)
             {
@@ -653,7 +745,7 @@ namespace AZ
 
             for (auto& model : m_modelData)
             {
-                ++flagStats[model.m_cullable.m_flags.load()];
+                ++flagStats[model.m_cullable.m_shaderOptionFlags.load()];
             }
 
             for (auto [flag, references] : flagStats)
@@ -731,6 +823,8 @@ namespace AZ
                 // Clone the model asset to force create another model instance.
                 AZ::Data::AssetId newId(AZ::Uuid::CreateRandom(), /*subId=*/0);
                 Data::Asset<RPI::ModelAsset> clonedAsset;
+                // Assume cloned models will involve some kind of geometry deformation
+                m_parent->m_isAlwaysDynamic = true;
                 if (AZ::RPI::ModelAssetCreator::Clone(modelAsset, clonedAsset, newId))
                 {
                     model = RPI::Model::FindOrCreate(clonedAsset);
@@ -749,8 +843,9 @@ namespace AZ
             
             if (model)
             {
-                m_parent->RemoveRayTracingData();
-                m_parent->Init(model);
+                RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_parent->m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+                m_parent->RemoveRayTracingData(rayTracingFeatureProcessor);
+                m_parent->QueueInit(model);
                 m_modelChangedEvent.Signal(AZStd::move(model));
             }
             else
@@ -809,7 +904,7 @@ namespace AZ
             }
         }
 
-        void ModelDataInstance::DeInit()
+        void ModelDataInstance::DeInit(RayTracingFeatureProcessor* rayTracingFeatureProcessor)
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
@@ -822,7 +917,7 @@ namespace AZ
                 }
             }
 
-            RemoveRayTracingData();
+            RemoveRayTracingData(rayTracingFeatureProcessor);
 
             m_drawPacketListsByLod.clear();
             m_materialAssignments.clear();
@@ -831,9 +926,15 @@ namespace AZ
             m_model = {};
         }
 
-        void ModelDataInstance::Init(Data::Instance<RPI::Model> model)
+        void ModelDataInstance::QueueInit(const Data::Instance<RPI::Model>& model)
         {
             m_model = model;
+            m_needsInit = true;
+            m_aabb = m_model->GetModelAsset()->GetAabb();
+        }
+
+        void ModelDataInstance::Init()
+        {
             const size_t modelLodCount = m_model->GetLodCount();
             m_drawPacketListsByLod.resize(modelLodCount);
             for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
@@ -860,14 +961,13 @@ namespace AZ
 
             if (m_visible && m_descriptor.m_isRayTracingEnabled)
             {
-                SetRayTracingData();
+                m_needsSetRayTracingData = true;
             }
-
-            m_aabb = model->GetModelAsset()->GetAabb();
 
             m_cullableNeedsRebuild = true;
             m_cullBoundsNeedsUpdate = true;
             m_objectSrgNeedsUpdate = true;
+            m_needsInit = false;
         }
 
         void ModelDataInstance::BuildDrawPacketList(size_t modelLodIndex)
@@ -937,7 +1037,7 @@ namespace AZ
                 RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, meshObjectSrg, materialAssignment.m_matModUvOverrides);
 
                 // set the shader option to select forward pass IBL specular if necessary
-                if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
+                if (!drawPacket.SetShaderOption(s_o_meshUseForwardPassIBLSpecular_Name, AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
                 {
                     AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                 }
@@ -958,16 +1058,15 @@ namespace AZ
             }
         }
 
-        void ModelDataInstance::SetRayTracingData()
+        void ModelDataInstance::SetRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor, TransformServiceFeatureProcessor* transformServiceFeatureProcessor)
         {
-            RemoveRayTracingData();
+            RemoveRayTracingData(rayTracingFeatureProcessor);
 
             if (!m_model)
             {
                 return;
             }
 
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
             if (!rayTracingFeatureProcessor)
             {
                 return;
@@ -1138,45 +1237,45 @@ namespace AZ
                     RPI::MaterialPropertyIndex propertyIndex;
 
                     // base color
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.color"));
+                    propertyIndex = material->FindPropertyIndex(s_baseColor_color_Name);
                     if (propertyIndex.IsValid())
                     {
                         subMesh.m_baseColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                     }
 
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.factor"));
+                    propertyIndex = material->FindPropertyIndex(s_baseColor_factor_Name);
                     if (propertyIndex.IsValid())
                     {
                         subMesh.m_baseColor *= material->GetPropertyValue<float>(propertyIndex);
                     }
 
                     // metallic
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("metallic.factor"));
+                    propertyIndex = material->FindPropertyIndex(s_metallic_factor_Name);
                     if (propertyIndex.IsValid())
                     {
                         subMesh.m_metallicFactor = material->GetPropertyValue<float>(propertyIndex);
                     }
 
                     // roughness
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("roughness.factor"));
+                    propertyIndex = material->FindPropertyIndex(s_roughness_factor_Name);
                     if (propertyIndex.IsValid())
                     {
                         subMesh.m_roughnessFactor = material->GetPropertyValue<float>(propertyIndex);
                     }
 
                     // emissive color
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.enable"));
+                    propertyIndex = material->FindPropertyIndex(s_emissive_enable_Name);
                     if (propertyIndex.IsValid())
                     {
                         if (material->GetPropertyValue<bool>(propertyIndex))
                         {
-                            propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.color"));
+                            propertyIndex = material->FindPropertyIndex(s_emissive_color_Name);
                             if (propertyIndex.IsValid())
                             {
                                 subMesh.m_emissiveColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                             }
 
-                            propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.intensity"));
+                            propertyIndex = material->FindPropertyIndex(s_emissive_intensity_Name);
                             if (propertyIndex.IsValid())
                             {
                                 subMesh.m_emissiveColor *= material->GetPropertyValue<float>(propertyIndex);
@@ -1186,7 +1285,7 @@ namespace AZ
 
                     // textures
                     Data::Instance<RPI::Image> baseColorImage; // can be used for irradiance color below
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.textureMap"));
+                    propertyIndex = material->FindPropertyIndex(s_baseColor_textureMap_Name);
                     if (propertyIndex.IsValid())
                     {
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
@@ -1198,7 +1297,7 @@ namespace AZ
                         }
                     }
 
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("normal.textureMap"));
+                    propertyIndex = material->FindPropertyIndex(s_normal_textureMap_Name);
                     if (propertyIndex.IsValid())
                     {
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
@@ -1209,7 +1308,7 @@ namespace AZ
                         }
                     }
 
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("metallic.textureMap"));
+                    propertyIndex = material->FindPropertyIndex(s_metallic_textureMap_Name);
                     if (propertyIndex.IsValid())
                     {
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
@@ -1220,7 +1319,7 @@ namespace AZ
                         }
                     }
 
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("roughness.textureMap"));
+                    propertyIndex = material->FindPropertyIndex(s_roughness_textureMap_Name);
                     if (propertyIndex.IsValid())
                     {
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
@@ -1231,7 +1330,7 @@ namespace AZ
                         }
                     }
 
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.textureMap"));
+                    propertyIndex = material->FindPropertyIndex(s_emissive_textureMap_Name);
                     if (propertyIndex.IsValid())
                     {
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
@@ -1249,11 +1348,11 @@ namespace AZ
                 subMeshes.push_back(subMesh);
             }
 
-            TransformServiceFeatureProcessor* transformServiceFeatureProcessor = m_scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
             AZ::Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
             AZ::Vector3 nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
 
             rayTracingFeatureProcessor->AddMesh(m_rayTracingUuid, m_model->GetModelAsset()->GetId(), subMeshes, transform, nonUniformScale);
+            m_needsSetRayTracingData = false;
         }
 
         void ModelDataInstance::SetIrradianceData(
@@ -1261,7 +1360,7 @@ namespace AZ
             const Data::Instance<RPI::Material> material,
             const Data::Instance<RPI::Image> baseColorImage)
         {
-            RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.irradianceColorSource"));
+            RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(s_irradiance_irradianceColorSource_Name);
             if (!propertyIndex.IsValid())
             {
                 return;
@@ -1270,9 +1369,9 @@ namespace AZ
             uint32_t enumVal = material->GetPropertyValue<uint32_t>(propertyIndex);
             AZ::Name irradianceColorSource = material->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex)->GetEnumName(enumVal);
 
-            if (irradianceColorSource.IsEmpty() || irradianceColorSource == AZ::Name("Manual"))
+            if (irradianceColorSource.IsEmpty() || irradianceColorSource == s_Manual_Name)
             {
-                propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.manualColor"));
+                propertyIndex = material->FindPropertyIndex(s_irradiance_manualColor_Name);
                 if (propertyIndex.IsValid())
                 {
                     subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
@@ -1281,7 +1380,7 @@ namespace AZ
                 {
                     // Couldn't find irradiance.manualColor -> check for an irradiance.color in case the material type
                     // doesn't have the concept of manual vs. automatic irradiance color, allow a simpler property name
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.color"));
+                    propertyIndex = material->FindPropertyIndex(s_irradiance_color_Name);
                     if (propertyIndex.IsValid())
                     {
                         subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
@@ -1295,16 +1394,16 @@ namespace AZ
                     }
                 }
             }
-            else if (irradianceColorSource == AZ::Name("BaseColorTint"))
+            else if (irradianceColorSource == s_BaseColorTint_Name)
             {
                 // Use only the baseColor, no texture on top of it
                 subMesh.m_irradianceColor = subMesh.m_baseColor;
             }
-            else if (irradianceColorSource == AZ::Name("BaseColor"))
+            else if (irradianceColorSource == s_BaseColor_Name)
             {
                 // Check if texturing is enabled
                 bool useTexture;
-                propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.useTexture"));
+                propertyIndex = material->FindPropertyIndex(s_baseColor_useTexture_Name);
                 if (propertyIndex.IsValid())
                 {
                     useTexture = material->GetPropertyValue<bool>(propertyIndex);
@@ -1333,23 +1432,8 @@ namespace AZ
                         // characterisation of the full material.
                         Color avgColor = baseColorStreamingImg->GetAverageColor();
 
-                        // We do a simple 'multiply' blend with the base color for now. Warn
-                        // the user if something else was intended.
-                        propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.textureBlendMode"));
-                        if (propertyIndex.IsValid())
-                        {
-                            AZ::Name textureBlendMode = material->GetMaterialPropertiesLayout()
-                                     ->GetPropertyDescriptor(propertyIndex)
-                                     ->GetEnumName(material->GetPropertyValue<uint32_t>(propertyIndex));
-                            if (textureBlendMode != AZ::Name("Multiply"))
-                            {
-                                AZ_Warning("MeshFeatureProcessor", false, "textureBlendMode '%s' is not "
-                                        "yet supported when requesting BaseColor irradiance source, "
-                                        "using 'Multiply' for deriving the irradiance color.",
-                                        textureBlendMode.GetCStr());
-                            }
-                        }
-                        // 'Multiply' blend mode:
+                        // We do a simple 'multiply' blend with the base color
+                        // Note: other blend modes are currently not supported
                         subMesh.m_irradianceColor = avgColor * subMesh.m_baseColor;
                     }
                     else
@@ -1375,7 +1459,7 @@ namespace AZ
 
 
             // Overall scale factor
-            propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.factor"));
+            propertyIndex = material->FindPropertyIndex(s_irradiance_factor_Name);
             if (propertyIndex.IsValid())
             {
                 subMesh.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
@@ -1383,14 +1467,14 @@ namespace AZ
 
             // set the raytracing transparency from the material opacity factor
             float opacity = 1.0f;
-            propertyIndex = material->FindPropertyIndex(AZ::Name("opacity.mode"));
+            propertyIndex = material->FindPropertyIndex(s_opacity_mode_Name);
             if (propertyIndex.IsValid())
             {
                 // only query the opacity factor if it's a non-Opaque mode
                 uint32_t mode = material->GetPropertyValue<uint32_t>(propertyIndex);
                 if (mode > 0)
                 {
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("opacity.factor"));
+                    propertyIndex = material->FindPropertyIndex(s_opacity_factor_Name);
                     if (propertyIndex.IsValid())
                     {
                         opacity = material->GetPropertyValue<float>(propertyIndex);
@@ -1401,10 +1485,9 @@ namespace AZ
             subMesh.m_irradianceColor.SetA(opacity);
         }
 
-        void ModelDataInstance::RemoveRayTracingData()
+        void ModelDataInstance::RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor)
         {
             // remove from ray tracing
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
             if (rayTracingFeatureProcessor)
             {
                 rayTracingFeatureProcessor->RemoveMesh(m_rayTracingUuid);
@@ -1513,7 +1596,7 @@ namespace AZ
             }
 
             cullData.m_hideFlags = RPI::View::UsageNone;
-            if (m_excludeFromReflectionCubeMaps)
+            if (m_descriptor.m_excludeFromReflectionCubeMaps)
             {
                 cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
             }
@@ -1553,12 +1636,10 @@ namespace AZ
             m_cullBoundsNeedsUpdate = false;
         }
 
-        void ModelDataInstance::UpdateObjectSrg()
+        void ModelDataInstance::UpdateObjectSrg(ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor, TransformServiceFeatureProcessor* transformServiceFeatureProcessor)
         {
             for (auto& objectSrg : m_objectSrgList)
             {
-                ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
-
                 if (reflectionProbeFeatureProcessor && (m_descriptor.m_useForwardPassIblSpecular || m_hasForwardPassIblSpecularMaterial))
                 {
                     // retrieve probe constant indices
@@ -1589,7 +1670,6 @@ namespace AZ
                     AZ_Error("ModelDataInstance", reflectionCubeMapImageIndex.IsValid(), "Failed to find shader image index [%s]", reflectionCubeMapImageName.GetCStr());
 
                     // retrieve the list of probes that overlap the mesh bounds
-                    TransformServiceFeatureProcessor* transformServiceFeatureProcessor = m_scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
                     Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
 
                     Aabb aabbWS = m_aabb;
@@ -1628,28 +1708,33 @@ namespace AZ
 
         bool ModelDataInstance::MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const
         {
+            bool requiresForwardPassIbl = false;
+
             // look for a shader that has the o_materialUseForwardPassIBLSpecular option set
             // Note: this should be changed to have the material automatically set the forwardPassIBLSpecular
             // property and look for that instead of the shader option.
             // [GFX TODO][ATOM-5040] Address Property Metadata Feedback Loop
-            for (auto& shaderItem : material->GetShaderCollection())
-            {
-                if (shaderItem.IsEnabled())
+            material->ForAllShaderItems(
+                [&](const Name&, const RPI::ShaderCollection::Item& shaderItem)
                 {
-                    RPI::ShaderOptionIndex index = shaderItem.GetShaderOptionGroup().GetShaderOptionLayout()->FindShaderOptionIndex(Name{ "o_materialUseForwardPassIBLSpecular" });
-                    if (index.IsValid())
+                    if (shaderItem.IsEnabled())
                     {
-                        RPI::ShaderOptionValue value = shaderItem.GetShaderOptionGroup().GetValue(Name{ "o_materialUseForwardPassIBLSpecular" });
-                        if (value.GetIndex() == 1)
+                        RPI::ShaderOptionIndex index = shaderItem.GetShaderOptionGroup().GetShaderOptionLayout()->FindShaderOptionIndex(Name{"o_materialUseForwardPassIBLSpecular"});
+                        if (index.IsValid())
                         {
-                            return true;
+                            RPI::ShaderOptionValue value = shaderItem.GetShaderOptionGroup().GetValue(Name{"o_materialUseForwardPassIBLSpecular"});
+                            if (value.GetIndex() == 1)
+                            {
+                                requiresForwardPassIbl = true;
+                                return false; // break
+                            }
                         }
                     }
 
-                }
-            }
+                    return true; // continue
+                });
 
-            return false;
+            return requiresForwardPassIbl;
         }
 
         void ModelDataInstance::SetVisible(bool isVisible)
@@ -1702,7 +1787,7 @@ namespace AZ
             {
                 if (CheckForMaterialChanges())
                 {
-                    SetRayTracingData();
+                    m_needsSetRayTracingData = true;
 
                     // update the material changeId list with the latest materials
                     UpdateMaterialChangeIds();

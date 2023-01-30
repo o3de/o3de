@@ -78,11 +78,6 @@ namespace AZ
             }
         }
 
-        void DrawPacketBuilder::SetDrawFilterMask(DrawFilterMask filterMask)
-        {
-            m_drawFilterMask = filterMask;
-        }
-
         void DrawPacketBuilder::AddDrawItem(const DrawRequest& request)
         {
             if (request.m_listTag.IsValid())
@@ -135,6 +130,10 @@ namespace AZ
                 sizeof(DrawListTag) * m_drawRequests.size(),
                 AZStd::alignment_of<DrawListTag>::value);
 
+            const VirtualAddress drawFilterMasksOffset = linearAllocator.Allocate(
+                sizeof(DrawFilterMask) * m_drawRequests.size(),
+                AZStd::alignment_of<DrawFilterMask>::value);
+
             const VirtualAddress shaderResourceGroupsOffset = linearAllocator.Allocate(
                 sizeof(const ShaderResourceGroup*) * m_shaderResourceGroups.size(),
                 AZStd::alignment_of<const ShaderResourceGroup*>::value);
@@ -166,7 +165,6 @@ namespace AZ
             drawPacket->m_allocator = m_allocator;
             drawPacket->m_indexBufferView =  m_indexBufferView;
             drawPacket->m_drawListMask = m_drawListMask;
-            drawPacket->m_drawFilterMask = m_drawFilterMask;
 
             if (shaderResourceGroupsOffset.IsValid())
             {
@@ -220,16 +218,19 @@ namespace AZ
             auto drawItems = reinterpret_cast<DrawItem*>(allocationData + drawItemsOffset.m_ptr);
             auto drawItemSortKeys = reinterpret_cast<DrawItemSortKey*>(allocationData + drawItemSortKeysOffset.m_ptr);
             auto drawListTags = reinterpret_cast<DrawListTag*>(allocationData + drawListTagsOffset.m_ptr);
+            auto drawFilterMasks = reinterpret_cast<DrawFilterMask*>(allocationData + drawFilterMasksOffset.m_ptr);
             drawPacket->m_drawItemCount = aznumeric_caster(m_drawRequests.size());
             drawPacket->m_drawItems = drawItems;
             drawPacket->m_drawItemSortKeys = drawItemSortKeys;
             drawPacket->m_drawListTags = drawListTags;
+            drawPacket->m_drawFilterMasks = drawFilterMasks;
 
             for (size_t i = 0; i < m_drawRequests.size(); ++i)
             {
                 const DrawRequest& drawRequest = m_drawRequests[i];
 
                 drawListTags[i] = drawRequest.m_listTag;
+                drawFilterMasks[i] = drawRequest.m_drawFilterMask;
                 drawItemSortKeys[i] = drawRequest.m_sortKey;
 
                 DrawItem& drawItem = drawItems[i];
@@ -290,7 +291,6 @@ namespace AZ
             m_rootConstants = {};
             m_scissors.clear();
             m_viewports.clear();
-            m_drawFilterMask = DrawFilterMaskDefaultValue;
         }
     }
 }

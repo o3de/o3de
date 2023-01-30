@@ -17,7 +17,6 @@
 #include <AzCore/Time/ITime.h>
 
 #include <CryCommon/TimeValue.h>
-#include <CryCommon/StaticInstance.h>
 #include <CryCommon/StlUtils.h>
 
 #include "IMovieSystem.h"
@@ -54,9 +53,9 @@ public:
     static void InvalidateAllNodes();
 
 private:
-    typedef std::map<AZStd::string, CLightAnimWrapper*> LightAnimWrapperCache;
-    static StaticInstance<LightAnimWrapperCache> ms_lightAnimWrapperCache;
-    static AZStd::intrusive_ptr<IAnimSequence> ms_pLightAnimSet;
+    using LightAnimWrapperCache = AZStd::map<AZStd::string, CLightAnimWrapper *>;
+    static inline LightAnimWrapperCache ms_lightAnimWrapperCache{};
+    static inline AZStd::intrusive_ptr<IAnimSequence> ms_pLightAnimSet{};
 
 private:
     static CLightAnimWrapper* FindLightAnim(const char* name);

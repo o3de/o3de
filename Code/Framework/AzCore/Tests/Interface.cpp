@@ -78,7 +78,7 @@ namespace UnitTest
     };
 
     class InterfaceTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     };
 

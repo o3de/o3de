@@ -24,6 +24,108 @@ namespace AZ::DocumentPropertyEditor
         UpdateMatchDescendants(m_root);
     }
 
+    Dom::Path RowFilterAdapter::MapFromSourcePath(const Dom::Path& sourcePath) const
+    {
+        if (!m_filterActive)
+        {
+            return sourcePath;
+        }
+        Dom::Path filterPath;
+        MatchInfoNode* currNode = m_root;
+
+        for (const auto& pathEntry : sourcePath)
+        {
+            if (!pathEntry.IsIndex())
+            {
+                // RowFilterAdapter only affects index entries, pass other types through
+                filterPath.Push(pathEntry);
+            }
+            else
+            {
+                const auto targetIndex = pathEntry.GetIndex();
+                const auto childCount = currNode->m_childMatchState.size();
+
+                if (targetIndex >= childCount)
+                {
+                    AZ_Warning("FilterAdapter", false, "Invalid sourcePath path sent to MapFromSourcePath!");
+                    return Dom::Path();
+                }
+                else if (currNode->m_childMatchState[targetIndex] && !currNode->m_childMatchState[targetIndex]->IncludeInFilter())
+                {
+                    // the entry at this index is a filtered out row, there is no mapped path
+                    return Dom::Path();
+                }
+                else
+                {
+                    // iterate through each sourceIndex keeping track of what the next mapped filterIndex would be
+                    size_t filterIndex = 0;
+                    for (size_t sourceIndex = 0; sourceIndex < targetIndex; ++sourceIndex)
+                    {
+                        const auto currChildState = currNode->m_childMatchState[sourceIndex];
+                        // skip rows that don't match; count null nodes and matching nodes
+                        if (!currChildState || currChildState->IncludeInFilter())
+                        {
+                            ++filterIndex;
+                        }
+                    }
+
+                    // record the filterIndex at this pathEntry and continue deeper
+                    filterPath.Push(filterIndex);
+                    currNode = currNode->m_childMatchState[targetIndex];
+                }
+            }
+        }
+        return filterPath;
+    }
+
+    Dom::Path RowFilterAdapter::MapToSourcePath(const Dom::Path& filterPath) const
+    {
+        if (!m_filterActive)
+        {
+            return filterPath;
+        }
+
+        Dom::Path sourcePath;
+        MatchInfoNode* currNode = m_root;
+
+        for (const auto& pathEntry : filterPath)
+        {
+            if (!pathEntry.IsIndex())
+            {
+                // RowFilterAdapter only affects index entries, pass other types through
+                sourcePath.Push(pathEntry);
+            }
+            else
+            {
+                const auto targetIndex = pathEntry.GetIndex();
+                const auto childCount = currNode->m_childMatchState.size();
+                size_t filterIndex = 0;
+
+                for (size_t sourceIndex = 0; sourceIndex < childCount; ++sourceIndex)
+                {
+                    // skip rows that don't match; count null nodes and matching nodes
+                    if (!currNode->m_childMatchState[sourceIndex] || currNode->m_childMatchState[sourceIndex]->IncludeInFilter())
+                    {
+                        ++filterIndex;
+                        if (filterIndex == targetIndex)
+                        {
+                            sourcePath.Push(sourceIndex);
+                            currNode = currNode->m_childMatchState[sourceIndex];
+                            break;
+                        }
+                    }
+                }
+                if (filterIndex != targetIndex)
+                {
+                    // if we ran out of children before we hit the desired filterIndex, the passed filterPath was invalid
+                    AZ_Warning("FilterAdapter", false, "Invalid filter path sent to MapToSourcePath!");
+                    return Dom::Path();
+                }
+            }
+        }
+        return sourcePath;
+    }
+
     RowFilterAdapter::MatchInfoNode* RowFilterAdapter::MakeNewNode(RowFilterAdapter::MatchInfoNode* parentNode, unsigned int creationFrame)
     {
         MatchInfoNode* newNode = NewMatchInfoNode();

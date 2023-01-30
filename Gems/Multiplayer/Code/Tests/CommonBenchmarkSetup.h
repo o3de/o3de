@@ -333,7 +333,7 @@ namespace Multiplayer
 
     class HierarchyBenchmarkBase
         : public benchmark::Fixture
-        , public AllocatorsBase
+        , public LeakDetectionBase
     {
     public:
         void SetUp(const benchmark::State&) override
@@ -356,7 +356,6 @@ namespace Multiplayer
 
         virtual void internalSetUp()
         {
-            SetupAllocator();
             AZ::NameDictionary::Create();
 
             m_ComponentApplicationRequests = AZStd::make_unique<BenchmarkComponentApplicationRequests>();

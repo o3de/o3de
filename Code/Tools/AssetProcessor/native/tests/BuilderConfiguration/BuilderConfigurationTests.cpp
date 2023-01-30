@@ -16,7 +16,7 @@
 
 
 class BuilderConfigurationTests
-    : public ::UnitTest::ScopedAllocatorSetupFixture
+    : public ::UnitTest::LeakDetectionFixture
 {
 public:
     BuilderConfigurationTests()

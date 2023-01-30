@@ -100,6 +100,11 @@ namespace AZ
             virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
             //! Sets the Esm exponent to use. Higher values produce a steeper falloff in the border areas between light and shadow.
             virtual void SetEsmExponent(LightHandle handle, float exponent) = 0;
+            //! Sets if this shadow should be rendered every frame (not cached) or only when it detects a change (cached).
+            virtual void SetUseCachedShadows(LightHandle handle, bool useCachedShadows) = 0;
+
+            // GI Settings
+
             //! Specifies if this light affects the diffuse global illumination in the scene.
             virtual void SetAffectsGI(LightHandle handle, bool affectsGI) = 0;
             //! Specifies the contribution of this light to the diffuse global illumination in the scene.

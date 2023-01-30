@@ -56,7 +56,7 @@ namespace AZ
                         RHI::ImageSubresourceLayoutPlaced& layout = subresourceLayouts[subresourceIndex];
                         layout.m_bytesPerRow = subresourceLayout.m_bytesPerRow;
                         layout.m_bytesPerImage = subresourceLayout.m_rowCount * subresourceLayout.m_bytesPerRow;
-                        layout.m_offset = subresourceByteCount;
+                        layout.m_offset = static_cast<uint32_t>(subresourceByteCount);
                         layout.m_rowCount = subresourceLayout.m_rowCount;
                         layout.m_size = subresourceLayout.m_size;
                     }

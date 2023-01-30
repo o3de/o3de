@@ -9,6 +9,7 @@
 #include <MultiplayerToolsSystemComponent.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/SimplePlayerSpawnerComponent.h>
 #include <Source/MultiplayerGem.h>
 #include <Source/MultiplayerSystemComponent.h>
 #include <Source/MultiplayerStatSystemComponent.h>
@@ -25,6 +26,7 @@ namespace Multiplayer
                 MultiplayerSystemComponent::CreateDescriptor(),
                 MultiplayerStatSystemComponent::CreateDescriptor(),
                 NetBindComponent::CreateDescriptor(),
+                SimplePlayerSpawnerComponent::CreateDescriptor(),
 #ifdef MULTIPLAYER_EDITOR
                 MultiplayerToolsSystemComponent::CreateDescriptor(),
 #endif
@@ -46,5 +48,9 @@ namespace Multiplayer
 } // namespace Multiplayer
 
 #if !defined(MULTIPLAYER_EDITOR)
+#if defined(AZ_MONOLITHIC_BUILD)
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Client, Multiplayer::MultiplayerModule);
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Server, Multiplayer::MultiplayerModule);
+#endif
 AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer, Multiplayer::MultiplayerModule);
 #endif

@@ -52,6 +52,8 @@ namespace LmbrCentral
                         ;
             }
         }
+
+        EditorTubeShapeComponentMode::Reflect(context);
     }
 
     void EditorTubeShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

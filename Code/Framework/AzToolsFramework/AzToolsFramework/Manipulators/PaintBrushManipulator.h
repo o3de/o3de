@@ -11,10 +11,12 @@
 #include "BaseManipulator.h"
 
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzToolsFramework/PaintBrush/PaintBrush.h>
-#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
+#include <AzFramework/PaintBrush/PaintBrush.h>
+#include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ViewportSelection/EditorPickEntitySelection.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsNotificationBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
@@ -32,7 +34,8 @@ namespace AzToolsFramework
     class PaintBrushManipulator
         : public BaseManipulator
         , public ManipulatorSpace
-        , protected PaintBrushSettingsNotificationBus::Handler
+        , protected GlobalPaintBrushSettingsNotificationBus::Handler
+        , private AzToolsFramework::EditorPickModeNotificationBus::Handler
     {
         //! Private constructor.
         PaintBrushManipulator(
@@ -50,7 +53,8 @@ namespace AzToolsFramework
 
         //! A Manipulator must only be created and managed through a shared_ptr.
         static AZStd::shared_ptr<PaintBrushManipulator> MakeShared(
-            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair, PaintBrushColorMode colorMode);
+            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair,
+            PaintBrushColorMode colorMode);
 
         //! Draw the current manipulator state.
         void Draw(
@@ -63,13 +67,27 @@ namespace AzToolsFramework
         //! Returns the actions that we want any Component Mode using the Paint Brush Manipulator to support.
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl();
 
+        //! Initializes the actions that we want any Component Mode using the Paint Brush Manipulator to support.
+        static void RegisterActions();
+
+        //! Adds the actions that we want any Component Mode using the Paint Brush Manipulator to support to the mode provided.
+        static void BindActionsToMode(AZ::Uuid componentModeTypeId);
+
+        //! Adds the actions that we want any Component Mode using the Paint Brush Manipulator to support to the Edit menu.
+        static void BindActionsToMenus();
+
         //! Adjusts the size of the paintbrush
-        void AdjustSize(float sizeDelta);
+        static void AdjustSize(float sizeDelta);
 
         //! Adjusts the paintbrush hardness percent
-        void AdjustHardnessPercent(float hardnessPercentDelta);
+        static void AdjustHardnessPercent(float hardnessPercentDelta);
 
     private:
+        void OnEntityPickModeStarted() override;
+        void OnEntityPickModeStopped() override;
+
+        void InvalidateImpl() override;
+
         //! Create the manipulator view(s) for the paintbrush.
         void SetView(
             AZStd::shared_ptr<ManipulatorViewProjectedCircle> innerCircle, AZStd::shared_ptr<ManipulatorViewProjectedCircle> outerCircle);
@@ -77,10 +95,10 @@ namespace AzToolsFramework
         //! Calculate the radius for the inner and out circles for the paintbrush manipulator views based on the given brush settings.
         //! @param settings The paint brush settings to use for calculating the two radii
         //! @return The inner radius and the outer radius for the brush manipulator views
-        AZStd::pair<float, float> GetBrushRadii(const PaintBrushSettings& settings) const;
+        AZStd::pair<float, float> GetBrushRadii(const GlobalPaintBrushSettings& settings) const;
 
-        //! PaintBrushSettingsNotificationBus overrides...
-        void OnSettingsChanged(const PaintBrushSettings& newSettings) override;
+        //! GlobalPaintBrushSettingsNotificationBus overrides...
+        void OnSettingsChanged(const GlobalPaintBrushSettings& newSettings) override;
 
         //! Move the paint brush and perform any appropriate brush actions if in the middle of a brush stroke.
         //! @param viewportId The viewport to move the paint brush in.
@@ -93,6 +111,8 @@ namespace AzToolsFramework
         //! The entity/component that owns this paintbrush.
         AZ::EntityComponentIdPair m_ownerEntityComponentId;
 
-        PaintBrush m_paintBrush;
+        AzFramework::PaintBrush m_paintBrush;
+
+        AZStd::optional<EditorPickEntitySelectionHelper> m_pickEntitySelectionMode;
     };
 } // namespace AzToolsFramework

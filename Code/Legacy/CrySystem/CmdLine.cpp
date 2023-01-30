@@ -68,7 +68,7 @@ CCmdLine::CCmdLine(const char* commandLine)
         {
             bool bSecondCharIsNumber = false;
 
-            if (arg[0] && arg[1] >= '0' && arg[1] <= '9')
+            if ((arg.length() > 1) && arg[1] >= '0' && arg[1] <= '9')
             {
                 bSecondCharIsNumber = true;
             }

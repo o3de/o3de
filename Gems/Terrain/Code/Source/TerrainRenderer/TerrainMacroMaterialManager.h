@@ -89,7 +89,7 @@ namespace Terrain
             }
         };
 
-        struct MacroMaterialGridShaderData
+        struct alignas(16) MacroMaterialGridShaderData
         {
             uint32_t m_tileCount1D; // How many x/y tiles along edge of grid. Grid is always square, so total number of tiles is this value squared.
             float m_tileSize; // Size of a tile in meters.

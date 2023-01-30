@@ -74,7 +74,7 @@ namespace UnitTest
 
     // Fixture to support testing EntityIdQLabel functionality
     class EntityIdQLabelTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override

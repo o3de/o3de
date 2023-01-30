@@ -131,7 +131,7 @@ namespace AZ
             AZ_FORCE_INLINE Debug::AllocationRecordsType& GetMap()  { return m_records; }
 
             /// Enumerates all allocations in a thread safe manner.
-            void    EnumerateAllocations(AllocationInfoCBType cb);
+            void    EnumerateAllocations(AllocationInfoCBType cb) const;
 
             /// If marking is enabled it will set all memory we deallocate with 0xcd
             void    MarkUallocatedMemory(bool isMark)           { m_isMarkUnallocatedMemory = isMark; }
@@ -165,7 +165,7 @@ namespace AZ
 
         protected:
             Debug::AllocationRecordsType    m_records;
-            AZStd::spin_mutex               m_recordsMutex;
+            mutable AZStd::spin_mutex       m_recordsMutex;
             Mode                            m_mode;
             bool                            m_isAutoIntegrityCheck;
             bool                            m_isMarkUnallocatedMemory;      ///< True if we want to set value 0xcd in unallocated memory.

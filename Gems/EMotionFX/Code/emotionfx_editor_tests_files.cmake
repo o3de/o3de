@@ -44,6 +44,8 @@ set(FILES
     Tests/UI/CommandRunnerFixture.h
     Tests/UI/LODSkinnedMeshTests.cpp
     Tests/UI/RagdollEditTests.cpp
+    Tests/UI/SkeletonOutlinerTestFixture.cpp
+    Tests/UI/SkeletonOutlinerTestFixture.h
     Tests/UI/UIFixture.cpp
     Tests/UI/UIFixture.h
     Tests/UI/ModalPopupHandler.cpp

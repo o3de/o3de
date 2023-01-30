@@ -71,6 +71,12 @@ namespace UnitTest
         EXPECT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(newEntityId));
         AZ::TransformBus::EventResult(worldX, newEntityId, &AZ::TransformInterface::GetWorldX);
         EXPECT_EQ(worldX, 0.0f);
+
+        // Second undo to validate that override subtree was populated back in previous redo.
+        Undo();
+        EXPECT_TRUE(m_prefabOverridePublicInterface->AreOverridesPresent(newEntityId));
+        AZ::TransformBus::EventResult(worldX, newEntityId, &AZ::TransformInterface::GetWorldX);
+        EXPECT_EQ(worldX, 10.0f);
     }
 
     TEST_F(PrefabOverridePublicInterfaceTest, RevertOverridesOnEntityWithoutOverrides)

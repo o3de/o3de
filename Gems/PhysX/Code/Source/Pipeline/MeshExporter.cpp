@@ -136,7 +136,8 @@ namespace PhysX
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
-                serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()->Version(5);
+                serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()
+                    ->Version(5 + (1<<PX_PHYSICS_VERSION_MAJOR)); // Use PhysX version to trigger assets recompilation
             }
         }
 
@@ -381,16 +382,18 @@ namespace PhysX
             }
         }
 
-        static physx::PxMeshMidPhase::Enum GetMidPhaseStructureType(const AZStd::string& platformIdentifier)
+        static physx::PxMeshMidPhase::Enum GetMidPhaseStructureType([[maybe_unused]] const AZStd::string& platformIdentifier)
         {
             // Use by default 3.4 since 3.3 is being deprecated (despite being default)
             physx::PxMeshMidPhase::Enum ret = physx::PxMeshMidPhase::eBVH34;
 
+#if (PX_PHYSICS_VERSION_MAJOR < 5)
             // Fallback to 3.3 on Android and iOS platforms since they don't support SSE2, which is required for 3.4
             if (platformIdentifier == "android" || platformIdentifier == "ios")
             {
                 ret = physx::PxMeshMidPhase::eBVH33;
             }
+#endif
             return ret;
         }
 

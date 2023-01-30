@@ -54,4 +54,14 @@ namespace AZStd
         timeNowSecond =  ts.tv_sec;
         return timeNowSecond;
     }
+
+    AZStd::chrono::microseconds GetCpuThreadTimeNowMicrosecond()
+    {
+        struct timespec ts;
+        errno = 0;
+        [[maybe_unused]] int result = clock_gettime(CLOCK_THREAD_CPUTIME_ID , &ts);
+
+        AZ_Assert(result != -1, "clock_gettime error using CLOCK_THREAD_CPUTIME_ID: %s\n", strerror(errno));
+        return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::seconds(ts.tv_sec) + AZStd::chrono::nanoseconds(ts.tv_nsec));
+    }
 }

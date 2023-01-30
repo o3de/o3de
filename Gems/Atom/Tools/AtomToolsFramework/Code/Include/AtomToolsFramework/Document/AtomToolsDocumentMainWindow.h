@@ -84,7 +84,7 @@ namespace AtomToolsFramework
         void CreateMenus(QMenuBar* menuBar) override;
         void UpdateMenus(QMenuBar* menuBar) override;
 
-        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> GetSettingsDialogGroups() const override;
+        void PopulateSettingsInspector(InspectorWidget* inspector) const override;
 
     protected:
         // Create menus and actions to open and create files for all registered document types 
@@ -140,5 +140,7 @@ namespace AtomToolsFramework
         QAction* m_actionPreviousTab = {};
 
         AzQtComponents::TabWidget* m_tabWidget = {};
+
+        mutable AZStd::shared_ptr<DynamicPropertyGroup> m_documentSystemSettingsGroup;
     };
 } // namespace AtomToolsFramework

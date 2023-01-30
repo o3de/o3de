@@ -19,9 +19,6 @@ namespace UnitTest
 
         m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
         ASSERT_TRUE(m_prefabFocusPublicInterface);
-
-        m_settingsRegistryInterface = AZ::SettingsRegistry::Get();
-        ASSERT_TRUE(m_settingsRegistryInterface);
     }
 
     void PrefabOverrideTestFixture::CreateEntityInNestedPrefab(

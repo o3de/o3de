@@ -1189,15 +1189,48 @@ namespace LandscapeCanvasEditor
 
     void MainWindow::OnEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name)
     {
-        auto it = m_dockWidgetsByEntity.find(entityId);
-        if (it == m_dockWidgetsByEntity.end())
+        // Update the entity name slot on any nodes for this entity across all graphs.
+        for (GraphCanvas::GraphId graphId : GetOpenGraphIds())
         {
-            return;
+            GraphModel::NodePtrList nodes = GetAllNodesMatchingEntityInGraph(graphId, entityId);
+
+            for (auto& node : nodes)
+            {
+                if (auto baseNodePtr = static_cast<LandscapeCanvas::BaseNode*>(node.get()); baseNodePtr)
+                {
+                    // Refresh the entity name on this node.
+                    baseNodePtr->RefreshEntityName();
+
+                    // Refresh the display for the entity name on this node.
+                    if (GraphModel::SlotPtr slot = node->GetSlot(LandscapeCanvas::ENTITY_NAME_SLOT_ID); slot)
+                    {
+                        GraphCanvas::SlotId slotId;
+                        GraphModelIntegration::GraphControllerRequestBus::EventResult(
+                            slotId, graphId, &GraphModelIntegration::GraphControllerRequests::GetSlotIdBySlot, slot);
+
+                        AZ::EBusAggregateResults<GraphCanvas::NodePropertyDisplay*> nodePropertyDisplays;
+                        GraphCanvas::NodePropertyRequestBus::EventResult(
+                            nodePropertyDisplays, slotId, &GraphCanvas::NodePropertyRequests::GetNodePropertyDisplay);
+
+                        for (auto& nodePropertyDisplay : nodePropertyDisplays.values)
+                        {
+                            if (nodePropertyDisplay)
+                            {
+                                nodePropertyDisplay->UpdateDisplay();
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        // Update the tab name for the graph corresponding to this Vegetation Entity
-        GraphCanvas::DockWidgetId dockWidgetId = it->second;
-        GraphCanvas::EditorDockWidgetRequestBus::Event(dockWidgetId, &GraphCanvas::EditorDockWidgetRequests::SetTitle, name);
+        // If this entity is also the root entity for a graph, update the graph's tab name.
+        auto it = m_dockWidgetsByEntity.find(entityId);
+        if (it != m_dockWidgetsByEntity.end())
+        {
+            GraphCanvas::DockWidgetId dockWidgetId = it->second;
+            GraphCanvas::EditorDockWidgetRequestBus::Event(dockWidgetId, &GraphCanvas::EditorDockWidgetRequests::SetTitle, name);
+        }
     }
 
     bool MainWindow::HandleGraphOpened(const AZ::EntityId& rootEntityId, const GraphCanvas::DockWidgetId& dockWidgetId)
@@ -1909,40 +1942,58 @@ namespace LandscapeCanvasEditor
         m_inObjectPickMode = false;
     }
 
-    GraphModel::NodePtr MainWindow::GetNodeMatchingEntityInGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityId& entityId)
+    GraphModel::NodePtrList MainWindow::GetAllNodesMatchingEntityInGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityId& entityId)
     {
         GraphModel::NodePtrList nodes;
-        GraphModelIntegration::GraphControllerRequestBus::EventResult(nodes, graphId, &GraphModelIntegration::GraphControllerRequests::GetNodes);
+        GraphModelIntegration::GraphControllerRequestBus::EventResult(
+            nodes, graphId, &GraphModelIntegration::GraphControllerRequests::GetNodes);
 
-        for (auto node : nodes)
-        {
-            auto baseNodePtr = static_cast<LandscapeCanvas::BaseNode*>(node.get());
-            if (entityId == baseNodePtr->GetVegetationEntityId())
+        nodes.erase(AZStd::remove_if(
+            nodes.begin(),
+            nodes.end(),
+            [entityId](const GraphModel::NodePtr& nodePtr)
             {
-                return node;
-            }
-        }
+                auto baseNodePtr = static_cast<LandscapeCanvas::BaseNode*>(nodePtr.get());
+                return (!baseNodePtr) || (entityId != baseNodePtr->GetVegetationEntityId());
 
-        return nullptr;
+            }), nodes.end());
+
+        return nodes;
     }
 
-    GraphModel::NodePtr MainWindow::GetNodeMatchingEntityComponentInGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityComponentIdPair& entityComponentId)
+    GraphModel::NodePtrList MainWindow::GetAllNodesMatchingEntityComponentInGraph(
+        const GraphCanvas::GraphId& graphId, const AZ::EntityComponentIdPair& entityComponentId)
     {
         GraphModel::NodePtrList nodes;
         GraphModelIntegration::GraphControllerRequestBus::EventResult(nodes, graphId, &GraphModelIntegration::GraphControllerRequests::GetNodes);
 
         const AZ::EntityId& entityId = entityComponentId.GetEntityId();
         const AZ::ComponentId& componentId = entityComponentId.GetComponentId();
-        for (auto node : nodes)
-        {
-            auto baseNodePtr = static_cast<LandscapeCanvas::BaseNode*>(node.get());
-            if (entityId == baseNodePtr->GetVegetationEntityId() && componentId == baseNodePtr->GetComponentId())
-            {
-                return node;
-            }
-        }
 
-        return nullptr;
+        nodes.erase(AZStd::remove_if(
+            nodes.begin(),
+            nodes.end(),
+            [entityId, componentId](const GraphModel::NodePtr& nodePtr)
+            {
+                auto baseNodePtr = static_cast<LandscapeCanvas::BaseNode*>(nodePtr.get());
+                return (!baseNodePtr)
+                    || (entityId != baseNodePtr->GetVegetationEntityId())
+                    || (componentId != baseNodePtr->GetComponentId());
+            }), nodes.end());
+
+        return nodes;
+    }
+
+    GraphModel::NodePtr MainWindow::GetNodeMatchingEntityInGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityId& entityId)
+    {
+        GraphModel::NodePtrList nodes = GetAllNodesMatchingEntityInGraph(graphId, entityId);
+        return nodes.empty() ? nullptr : nodes.front();
+    }
+
+    GraphModel::NodePtr MainWindow::GetNodeMatchingEntityComponentInGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityComponentIdPair& entityComponentId)
+    {
+        GraphModel::NodePtrList nodes = GetAllNodesMatchingEntityComponentInGraph(graphId, entityComponentId);
+        return nodes.empty() ? nullptr : nodes.front();
     }
 
     GraphModel::NodePtrList MainWindow::GetAllNodesMatchingEntity(const AZ::EntityId& entityId)
@@ -1951,11 +2002,8 @@ namespace LandscapeCanvasEditor
 
         for (GraphCanvas::GraphId graphId : GetOpenGraphIds())
         {
-            GraphModel::NodePtr node = GetNodeMatchingEntityInGraph(graphId, entityId);
-            if (node)
-            {
-                matchingNodes.push_back(node);
-            }
+            GraphModel::NodePtrList nodes = GetAllNodesMatchingEntityInGraph(graphId, entityId);
+            matchingNodes.insert(matchingNodes.end(), nodes.begin(), nodes.end());
         }
 
         return matchingNodes;
@@ -1967,11 +2015,8 @@ namespace LandscapeCanvasEditor
 
         for (GraphCanvas::GraphId graphId : GetOpenGraphIds())
         {
-            GraphModel::NodePtr node = GetNodeMatchingEntityComponentInGraph(graphId, entityComponentId);
-            if (node)
-            {
-                matchingNodes.push_back(node);
-            }
+            GraphModel::NodePtrList nodes = GetAllNodesMatchingEntityComponentInGraph(graphId, entityComponentId);
+            matchingNodes.insert(matchingNodes.end(), nodes.begin(), nodes.end());
         }
 
         return matchingNodes;
@@ -2364,7 +2409,11 @@ namespace LandscapeCanvasEditor
         GraphModel::NodePtrList loadedNodes, disabledNodes, createdNodes;
         GraphModelIntegration::GraphControllerRequestBus::EventResult(loadedNodes, graphId, &GraphModelIntegration::GraphControllerRequests::GetNodes);
 
-        EnumerateEntityComponentTree(targetEntityId, [this, graph, graphId, &loadedNodes, &disabledNodes, &createdNodes](const AZ::EntityId& entityId, AZ::Component* component, bool isDisabled) {
+        EnumerateEntityComponentTree(
+            targetEntityId,
+            [this, graph, graphId, &loadedNodes, &disabledNodes, &createdNodes](
+                const AZ::EntityId& entityId, AZ::Component* component, bool isDisabled)
+            {
             bool foundMatch = false;
             GraphModel::NodePtr validNode = nullptr;
 

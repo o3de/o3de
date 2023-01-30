@@ -12,6 +12,7 @@
 #include <tests/assetmanager/MockAssetProcessorManager.h>
 #include <tests/assetmanager/MockFileProcessor.h>
 #include <AzToolsFramework/Archive/ArchiveComponent.h>
+#include <native/FileWatcher/FileWatcher.h>
 #include <native/utilities/AssetServerHandler.h>
 #include <native/resourcecompiler/rcjob.h>
 #include <AzCore/Utils/Utils.h>
@@ -22,7 +23,7 @@ namespace UnitTests
 {
     void ApplicationManagerTest::SetUp()
     {
-        ScopedAllocatorSetupFixture::SetUp();
+        LeakDetectionFixture::SetUp();
 
         AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 
@@ -56,42 +57,29 @@ namespace UnitTests
         m_applicationManager->m_fileProcessor = AZStd::move(fileProcessor); // The manager is taking ownership
         m_fileProcessorThread->start();
 
+        m_applicationManager->InitUuidManager();
+
         auto fileWatcher = AZStd::make_unique<FileWatcher>();
         m_fileWatcher = fileWatcher.get();
 
         // This is what we're testing, it will set up connections between the fileWatcher and the 2 QObject handlers we'll check
         m_applicationManager->InitFileMonitor(AZStd::move(fileWatcher)); // The manager is going to take ownership of the file watcher
+
+        m_applicationManager->InitUuidManager();
     }
 
     void ApplicationManagerTest::TearDown()
     {
+        m_applicationManager->DestroyFileMonitor();
+
         m_apmThread->exit();
         m_fileProcessorThread->exit();
         m_mockAPM = nullptr;
 
-        ScopedAllocatorSetupFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
-    using BatchApplicationManagerTest = UnitTest::ScopedAllocatorSetupFixture;
-
-    TEST_F(BatchApplicationManagerTest, FileCreatedOnDisk_ShowsUpInFileCache)
-    {
-        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
-        AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
-
-        int argc = 0;
-
-        auto m_applicationManager = AZStd::make_unique<MockBatchApplicationManager>(&argc, nullptr);
-        m_applicationManager->InitFileStateCache();
-
-        auto* fileStateCache = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
-
-        ASSERT_TRUE(fileStateCache);
-
-        EXPECT_FALSE(fileStateCache->Exists((assetRootDir / "test").c_str()));
-        UnitTestUtils::CreateDummyFile((assetRootDir / "test").c_str());
-        EXPECT_TRUE(fileStateCache->Exists((assetRootDir / "test").c_str()));
-    }
+    using BatchApplicationManagerTest = UnitTest::LeakDetectionFixture;
 
     TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread)
     {
@@ -120,8 +108,6 @@ namespace UnitTests
 
     TEST(AssetProcessorAssetServerHandler, AssetServerHandler_FutureCalls_FailsNoExceptions)
     {
-        UnitTest::ScopedAllocatorFixture fixture;
-
         char executablePath[AZ_MAX_PATH_LEN];
         AZ::Utils::GetExecutablePath(executablePath, AZ_MAX_PATH_LEN);
 

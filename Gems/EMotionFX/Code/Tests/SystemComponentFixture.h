@@ -17,7 +17,6 @@
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -55,6 +54,7 @@ namespace EMotionFX
         : public AzFramework::Application
     {
     public:
+        AZ_CLASS_ALLOCATOR(ComponentFixtureApp, AZ::SystemAllocator)
 
         ComponentFixtureApp()
         {
@@ -105,13 +105,13 @@ namespace EMotionFX
     */
     template<class... Components>
     class ComponentFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
 
         void SetUp() override
         {
-            UnitTest::ScopedAllocatorSetupFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             PreStart();
 
@@ -146,7 +146,7 @@ namespace EMotionFX
             // Clear the queue of messages from unit tests on our buses
             EMotionFX::Integration::ActorNotificationBus::ClearQueuedEvents();
 
-            UnitTest::ScopedAllocatorSetupFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         ~ComponentFixture() override
@@ -212,7 +212,6 @@ namespace EMotionFX
     };
 
     using SystemComponentFixture = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,
@@ -223,7 +222,6 @@ namespace EMotionFX
     // Use this fixture if you want to load asset catalog. Some assets (reference anim graph for example)
     // can only be loaded when asset catalog is loaded.
     using SystemComponentFixtureWithCatalog = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,

@@ -8,6 +8,7 @@
 
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include "AnimPostFXNode.h"
 #include "AnimSplineTrack.h"
 #include "CompoundSplineTrack.h"
@@ -28,8 +29,6 @@ public:
         : public _i_reference_target_t
     {
     public:
-        CControlParamBase(){}
-
         virtual void SetDefault(float val) = 0;
         virtual void SetDefault(bool val) = 0;
         virtual void SetDefault(Vec4 val) = 0;
@@ -38,7 +37,7 @@ public:
         virtual void GetDefault(bool& val) const = 0;
         virtual void GetDefault(Vec4& val) const = 0;
 
-        std::string m_name;
+        AZStd::string m_name;
 
     protected:
         virtual ~CControlParamBase(){}
@@ -89,8 +88,8 @@ public:
 
     //-----------------------------------------------------------------------------
     //!
-    StaticInstance<std::vector<CAnimNode::SParamInfo>> m_nodeParams;
-    StaticInstance<std::vector< _smart_ptr<CControlParamBase> >> m_controlParams;
+    AZStd::vector<CAnimNode::SParamInfo> m_nodeParams;
+    AZStd::vector<_smart_ptr<CControlParamBase>> m_controlParams;
 };
 
 //-----------------------------------------------------------------------------
@@ -126,8 +125,7 @@ void CFXNodeDescription::TControlParam<Vec4>::GetDefault(Vec4& val) const
 }
 
 //-----------------------------------------------------------------------------
-StaticInstance<CAnimPostFXNode::FxNodeDescriptionMap> CAnimPostFXNode::s_fxNodeDescriptions;
-bool CAnimPostFXNode::s_initialized = false;
+CAnimPostFXNode::FxNodeDescriptionMap CAnimPostFXNode::s_fxNodeDescriptions;
 
 
 //-----------------------------------------------------------------------------
@@ -153,21 +151,20 @@ void CAnimPostFXNode::Initialize()
         //////////////////////////////////////////////////////////////////////////
         //! Radial Blur
         {
-            CFXNodeDescription* pDesc = new CFXNodeDescription();
-            s_fxNodeDescriptions[AnimNodeType::RadialBlur] = pDesc;
+            auto pDesc = AZStd::make_unique<CFXNodeDescription>();
             pDesc->m_nodeParams.reserve(4);
             pDesc->m_controlParams.reserve(4);
             pDesc->AddSupportedParam<float>("Amount", AnimValueType::Float, "FilterRadialBlurring_Amount", 0.0f);
             pDesc->AddSupportedParam<float>("ScreenPosX", AnimValueType::Float, "FilterRadialBlurring_ScreenPosX", 0.5f);
             pDesc->AddSupportedParam<float>("ScreenPosY", AnimValueType::Float, "FilterRadialBlurring_ScreenPosY", 0.5f);
             pDesc->AddSupportedParam<float>("BlurringRadius", AnimValueType::Float, "FilterRadialBlurring_Radius", 1.0f);
+            s_fxNodeDescriptions.try_emplace(AnimNodeType::RadialBlur, AZStd::move(pDesc));
         }
 
         //////////////////////////////////////////////////////////////////////////
         //! Color Correction
         {
-            CFXNodeDescription* pDesc = new CFXNodeDescription();
-            s_fxNodeDescriptions[AnimNodeType::ColorCorrection] = pDesc;
+            auto pDesc = AZStd::make_unique<CFXNodeDescription>();
             pDesc->m_nodeParams.reserve(8);
             pDesc->m_controlParams.reserve(8);
             pDesc->AddSupportedParam<float>("Cyan", AnimValueType::Float, "Global_User_ColorC", 0.0f);
@@ -178,30 +175,31 @@ void CAnimPostFXNode::Initialize()
             pDesc->AddSupportedParam<float>("Contrast", AnimValueType::Float, "Global_User_Contrast", 1.0f);
             pDesc->AddSupportedParam<float>("Saturation", AnimValueType::Float, "Global_User_Saturation", 1.0f);
             pDesc->AddSupportedParam<float>("Hue", AnimValueType::Float, "Global_User_ColorHue", 0.0f);
+            s_fxNodeDescriptions.try_emplace(AnimNodeType::ColorCorrection, AZStd::move(pDesc));
         }
 
 
         //////////////////////////////////////////////////////////////////////////
         //! Depth of Field
         {
-            CFXNodeDescription* pDesc = new CFXNodeDescription();
-            s_fxNodeDescriptions[AnimNodeType::DepthOfField] = pDesc;
+            auto pDesc = AZStd::make_unique<CFXNodeDescription>();
             pDesc->m_nodeParams.reserve(4);
             pDesc->m_controlParams.reserve(4);
             pDesc->AddSupportedParam<bool>("Enable", AnimValueType::Bool, "Dof_User_Active", false);
             pDesc->AddSupportedParam<float>("FocusDistance", AnimValueType::Float, "Dof_User_FocusDistance", 3.5f);
             pDesc->AddSupportedParam<float>("FocusRange", AnimValueType::Float, "Dof_User_FocusRange", 5.0f);
             pDesc->AddSupportedParam<float>("BlurAmount", AnimValueType::Float, "Dof_User_BlurAmount", 1.0f);
+            s_fxNodeDescriptions.try_emplace(AnimNodeType::DepthOfField, AZStd::move(pDesc));
         }
 
         //////////////////////////////////////////////////////////////////////////
         //! Shadow setup - expose couple shadow controls to cinematics
         {
-            CFXNodeDescription* pDesc = new CFXNodeDescription();
-            s_fxNodeDescriptions[AnimNodeType::ShadowSetup] = pDesc;
+            auto pDesc = AZStd::make_unique<CFXNodeDescription>();
             pDesc->m_nodeParams.reserve(1);
             pDesc->m_controlParams.reserve(1);
             pDesc->AddSupportedParam<float>("GSMCache", AnimValueType::Bool, "GSMCacheParam", true);
+            s_fxNodeDescriptions.try_emplace(AnimNodeType::ShadowSetup, AZStd::move(pDesc));
         }
     }
 }
@@ -217,7 +215,7 @@ void CAnimPostFXNode::Initialize()
 
     if (itr != s_fxNodeDescriptions.end())
     {
-        retDescription = itr->second;
+        retDescription = itr->second.get();
     }
 
     return retDescription;

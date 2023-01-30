@@ -192,7 +192,7 @@ namespace EMotionFX
             }
 
             // post update the input node first
-            inputNode->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, inputNode, timePassedInSeconds);
         }
 
         // request the reference counted data inside the unique data

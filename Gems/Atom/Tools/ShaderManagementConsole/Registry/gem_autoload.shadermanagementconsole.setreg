@@ -235,13 +235,6 @@
                     }
                 }
             },
-            "Blast": {
-                "Targets": {
-                    "Blast.Editor": {
-                        "AutoLoad": false
-                    }
-                }
-            },
             "NvCloth": {
                 "Targets": {
                     "NvCloth.Editor": {

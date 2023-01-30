@@ -12,6 +12,7 @@
 #include <TestImpactFramework/TestImpactPolicy.h>
 
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/set.h>
 
 namespace TestImpact
 {
@@ -25,14 +26,18 @@ namespace TestImpact
         TestInterleaved //!< Tests are interlaced across shards agnostic of fixtures (fastest but prone to inter-test dependency problems).
     };
 
-    //! Test suite types to select from.
-    enum class SuiteType : AZ::u8
-    {
-        Main = 0,
-        Periodic,
-        Sandbox,
-        AWSI
-    };
+    //! Set of test suites that tests can be drawn from.
+    //! @note An ordered set is used so that the serialized string of the set order is always the same regardless of the order that the
+    //! suites are specified.
+    using SuiteSet = AZStd::set<AZStd::string>;
+
+    //! Set of test suite labels that will be used to exclude any test targets that have test suite labels matching any labels in this set.
+    //! @note An ordered set is used so that the serialized string of the set order is always the same regardless of the order that the
+    //! labels are specified.
+    using SuiteLabelExcludeSet = AZStd::set<AZStd::string>;
+
+    //! The CTest label that test target suites need to have in order to be run as part of TIAF.
+    inline constexpr auto RequiresTiafLabel = "REQUIRES_tiaf";
 
     //! Result of a test sequence that was run.
     enum class TestSequenceResult

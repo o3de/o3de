@@ -200,20 +200,12 @@ namespace UnitTest
     };
 
     class SliceTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
-        SliceTest()
-            : AllocatorsFixture()
-        {
-        }
-
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+            LeakDetectionFixture::SetUp();
 
             m_serializeContext = aznew AZ::SerializeContext(true, true);
             m_sliceDescriptor = AZ::SliceComponent::CreateDescriptor();
@@ -250,10 +242,7 @@ namespace UnitTest
             delete m_streamer;
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZ::IO::FileIOBase* m_prevFileIO{ nullptr };
@@ -648,7 +637,7 @@ namespace UnitTest
     };
 
     class DataFlags_CleanupTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
@@ -832,10 +821,7 @@ namespace Benchmark
         AZ::ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
 
-        AZ::ComponentApplication::StartupParameters startupParams;
-        startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-
-        componentApp.Create(desc, startupParams);
+        componentApp.Create(desc, {});
 
         UnitTest::MyTestComponent1::Reflect(componentApp.GetSerializeContext());
         UnitTest::MyTestComponent2::Reflect(componentApp.GetSerializeContext());

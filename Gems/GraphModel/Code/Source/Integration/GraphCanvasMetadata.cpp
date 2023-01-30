@@ -26,7 +26,6 @@ namespace GraphModelIntegration
                 ->Version(0)
                 ->Field("m_sceneMetadata", &GraphCanvasMetadata::m_sceneMetadata)
                 ->Field("m_nodeMetadata", &GraphCanvasMetadata::m_nodeMetadata)
-                ->Field("m_otherMetadata", &GraphCanvasMetadata::m_otherMetadata)
                 ;
         }
     }

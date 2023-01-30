@@ -377,6 +377,24 @@ namespace AZ::Render
         return false;
     }
 
+    void AtomActorInstance::SetExcludeFromReflectionCubeMaps(bool enabled)
+    {
+        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        {
+            m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(*m_meshHandle, enabled);
+        }
+    }
+
+    bool AtomActorInstance::GetExcludeFromReflectionCubeMaps() const
+    {
+        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        {
+            return m_meshFeatureProcessor->GetExcludeFromReflectionCubeMaps(*m_meshHandle);
+        }
+
+        return false;
+    }
+
     AZ::u32 AtomActorInstance::GetJointCount()
     {
         return aznumeric_caster(m_actorInstance->GetActor()->GetSkeleton()->GetNumNodes());
@@ -649,6 +667,8 @@ namespace AZ::Render
 
             // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
             meshDescriptor.m_isRayTracingEnabled = false;
+            meshDescriptor.m_isAlwaysDynamic = true;
+            meshDescriptor.m_excludeFromReflectionCubeMaps = true;
 
             m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
                 m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));

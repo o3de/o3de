@@ -242,14 +242,12 @@ namespace AZ::IO
     };
 
     class StreamerTestBase
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+            LeakDetectionFixture::SetUp();
 
             m_prevFileIO = FileIOBase::GetInstance();
             FileIOBase::SetInstance(&m_fileIO);
@@ -275,9 +273,7 @@ namespace AZ::IO
 
             FileIOBase::SetInstance(m_prevFileIO);
 
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         //! Requests are typically completed by Streamer before it updates it's internal bookkeeping.

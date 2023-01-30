@@ -64,12 +64,11 @@ namespace Multiplayer
     };
 
     class HierarchyTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
             AZ::NameDictionary::Create();
 
             m_mockComponentApplicationRequests = AZStd::make_unique<NiceMock<MockComponentApplicationRequests>>();

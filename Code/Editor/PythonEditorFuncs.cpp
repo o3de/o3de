@@ -12,6 +12,7 @@
 #include "PythonEditorFuncs.h"
 
 // Qt
+#include <QInputDialog>
 #include <QMessageBox>
 #include <QFileDialog>
 
@@ -26,7 +27,6 @@
 #include "CryEdit.h"
 #include "GameEngine.h"
 #include "ViewManager.h"
-#include "StringDlg.h"
 #include "GenericSelectItemDialog.h"
 #include "Objects/BaseObject.h"
 #include "Commands/CommandManager.h"
@@ -61,7 +61,7 @@ namespace
         }
         else if (pCVar->GetType() == CVAR_INT)
         {
-            PySetCVarFromInt(pName, std::stol(pValue));
+            PySetCVarFromInt(pName, static_cast<int>(std::stol(pValue)));
         }
         else if (pCVar->GetType() == CVAR_FLOAT)
         {
@@ -336,22 +336,19 @@ namespace
 
     AZStd::string PyEditBox(AZStd::string_view pTitle)
     {
-        StringDlg stringDialog(pTitle.data());
-        if (stringDialog.exec() == QDialog::Accepted)
+        QString stringValue = QInputDialog::getText(AzToolsFramework::GetActiveWindow(), pTitle.data(), QString());
+        if (!stringValue.isEmpty())
         {
-            return stringDialog.GetString().toUtf8().constData();
+            return stringValue.toUtf8().constData();
         }
         return "";
     }
 
     AZStd::any PyEditBoxAndCheckProperty(const char* pTitle)
     {
-        StringDlg stringDialog(pTitle);
-        stringDialog.SetString(QStringLiteral(""));
-        if (stringDialog.exec() == QDialog::Accepted)
+        QString stringValue = QInputDialog::getText(AzToolsFramework::GetActiveWindow(), pTitle, QString());
+        if (!stringValue.isEmpty())
         {
-            const QString stringValue = stringDialog.GetString();
-
             // detect data type
             QString tempString = stringValue;
             int countComa = 0;

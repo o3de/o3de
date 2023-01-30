@@ -24,7 +24,7 @@ namespace UnitTest
     using namespace AssetBuilderSDK;
 
     class LuaBuilderTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
         void SetUp() override
         {

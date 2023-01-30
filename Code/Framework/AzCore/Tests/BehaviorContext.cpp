@@ -35,7 +35,7 @@ namespace UnitTest
     };
 
     class BehaviorClassTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
@@ -59,7 +59,7 @@ namespace UnitTest
     };
 
     class BehaviorContextTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         AZ::BehaviorContext m_behaviorContext;
@@ -173,7 +173,7 @@ namespace UnitTest
         }
     };
 
-    using BehaviorContextConstTest = AllocatorsFixture;
+    using BehaviorContextConstTest = LeakDetectionFixture;
     TEST_F(BehaviorContextConstTest, BehaviorContext_BindConstMethods_Compiles)
     {
         AZ::BehaviorContext bc;

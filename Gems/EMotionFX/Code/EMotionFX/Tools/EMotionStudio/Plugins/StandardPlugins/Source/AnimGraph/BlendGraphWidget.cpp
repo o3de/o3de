@@ -1243,6 +1243,15 @@ namespace EMStudio
         {
             AZ_Error("EMotionFX", false, outResult.c_str());
         }
+
+        for (int i = 0; i < animGraph->GetNumNodeGroups(); i++)
+        {
+            if (animGraph->GetNodeGroup(i)->GetNumNodes() == 0)
+            {
+                animGraph->RemoveNodeGroup(i);
+                i--;
+            }
+        }
     }
 
     void BlendGraphWidget::CreateNodeGroup()
@@ -1292,18 +1301,22 @@ namespace EMStudio
             }
 
             EMotionFX::AnimGraphNodeGroup* newGroup = animGraph->GetNodeGroup(animGraph->GetNumNodeGroups() - 1);
+            // A new group has just been created. We're making sure that it gets bound to the level that is currently being
+            // shown on the animation graph, so it can be properly filtered later on.
+            auto currentLevelParentIndex = GetActiveGraph()->GetAnimGraphModel().GetFocus();
+            auto currentLevelParentId = currentLevelParentIndex.isValid()
+                ? currentLevelParentIndex.data(AnimGraphModel::ROLE_ID).value<EMotionFX::AnimGraphNodeId>()
+                : EMotionFX::AnimGraphNodeId{};
+            newGroup->SetParentNodeId(currentLevelParentId);
             AZ_Assert(animGraph->GetNumNodeGroups() > 0, "Creating AnimGraphNodeGroup failed");
 
             AssignNodesToGroup(animGraph, nodes, newGroup);
         }
     }
 
-    void BlendGraphWidget::AssignSelectedNodesToGroup()
+    void BlendGraphWidget::AssignSelectedNodesToGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup)
     {
-        AZ_Assert(sender()->inherits("QAction"), "CreateNodeGroup called apart from a connection to a QAction's signal");
-        QAction* action = qobject_cast<QAction*>(sender());
-
-        // find the selected node
+        // find the selected nodes
         const QItemSelection selection = m_plugin->GetAnimGraphModel().GetSelectionModel().selection();
         const QModelIndexList selectionList = selection.indexes();
         if (selectionList.empty())
@@ -1319,10 +1332,6 @@ namespace EMStudio
             return;
         }
 
-        // get the node group name from the action and search the node group
-        const AZStd::string nodeGroupName = FromQtString(action->text());
-        EMotionFX::AnimGraphNodeGroup* newNodeGroup = animGraph->FindNodeGroupByName(nodeGroupName.c_str());
-
         AZStd::vector<EMotionFX::AnimGraphNode*> nodes;
         for (const QModelIndex& selectedIndex : selectionList)
         {
@@ -1336,7 +1345,7 @@ namespace EMStudio
             nodes.push_back(selectedIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>());
         }
 
-        AssignNodesToGroup(animGraph, nodes, newNodeGroup);
+        AssignNodesToGroup(animGraph, nodes, nodeGroup);
     }
 
     bool BlendGraphWidget::PreparePainting()

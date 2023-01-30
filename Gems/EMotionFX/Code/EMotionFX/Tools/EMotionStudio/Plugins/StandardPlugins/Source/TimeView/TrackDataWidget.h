@@ -43,9 +43,6 @@ namespace EMStudio
         TrackDataWidget(TimeViewPlugin* plugin, QWidget* parent = nullptr);
         ~TrackDataWidget();
 
-        static void DoWheelEvent(QWheelEvent* event, TimeViewPlugin* plugin);
-        static void DoMouseYMoveZoom(int32 deltaY, TimeViewPlugin* plugin);
-
         void initializeGL() override;
         void resizeGL(int w, int h) override;
         void paintGL() override;
@@ -96,6 +93,8 @@ namespace EMStudio
         void SetPausedTime(float timeValue, bool emitTimeChangeStart=false);
         void ClearState();
 
+        void DoWheelEvent(QWheelEvent* event, TimeViewPlugin* plugin);
+        void DoMouseYMoveZoom(int32 deltaY, TimeViewPlugin* plugin);
         void wheelEvent(QWheelEvent* event) override;
         void DoPaste(bool useLocation);
         void PaintRecorder(QPainter& painter, const QRect& rect);

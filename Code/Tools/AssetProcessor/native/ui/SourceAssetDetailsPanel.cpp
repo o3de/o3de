@@ -308,6 +308,11 @@ namespace AssetProcessor
                         return false;
                     });
 
+                if (sourceName.empty())
+                {
+                    sourceName = AZStd::string::format("Invalid UUID - %s", sourceFileDependencyEntry.m_sourceGuid.ToFixedString().c_str());
+                }
+
                 // Qt handles cleanup automatically, setting this as the parent means
                 // when this panel is torn down, these widgets will be destroyed.
                 GoToButton* rowGoToButton = new GoToButton(this);

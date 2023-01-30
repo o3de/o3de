@@ -86,7 +86,7 @@ namespace UnitTest
     }
 
     class ViewportUiWidgetAssertFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     TEST_F(ViewportUiWidgetAssertFixture, RegisterUpdateCallbackDoesNotRegisterFunctionForNotAddedObject)

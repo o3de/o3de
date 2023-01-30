@@ -262,6 +262,11 @@ namespace UnitTest
         // Add the sub-menu to the menu.
         m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
 
+        // Add an action to the sub-menu, else it will be empty and not be displayed.
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu", "o3de.action.test", 42);
+
         // Manually trigger Menu refresh - Editor will call this once per tick.
         m_menuManagerInternalInterface->RefreshMenus();
 
@@ -285,6 +290,16 @@ namespace UnitTest
         auto outcome = m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
         EXPECT_FALSE(outcome.IsSuccess());
     }
+
+    TEST_F(ActionManagerFixture, AddSubMenuToItself)
+    {
+        // Register menu.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+
+        // Add the menu to itself.
+        auto outcome = m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testMenu", 42);
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
     
     TEST_F(ActionManagerFixture, AddSubMenusToMenu)
     {
@@ -292,6 +307,12 @@ namespace UnitTest
         m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
         m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu1", {});
         m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu2", {});
+
+        // Add an action to the sub-menus, else they will be empty and not be displayed.
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu1", "o3de.action.test", 42);
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu2", "o3de.action.test", 42);
 
         // Add the sub-menus to the menu.
         AZStd::vector<AZStd::pair<AZStd::string, int>> testMenus;
@@ -368,6 +389,13 @@ namespace UnitTest
         m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu1", {});
         m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu2", {});
         m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu3", {});
+
+        // Add an action to the sub-menus, else they will be empty and not be displayed.
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu1", "o3de.action.test", 42);
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu2", "o3de.action.test", 42);
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu3", "o3de.action.test", 42);
 
         // Add the sub-menus to the menu.
         AZStd::vector<AZStd::pair<AZStd::string, int>> testMenuAdds;
@@ -791,6 +819,132 @@ namespace UnitTest
 
         // Verify the action is still in the menu.
         EXPECT_EQ(menu->actions().size(), 1);
+    }
+
+    TEST_F(ActionManagerFixture, VerifySubMenuIsHiddenWhenEmptied)
+    {
+        // Register menus
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
+        m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
+
+        // Register a new action and add it to the sub-menu.
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu", "o3de.action.test", 42);
+
+        // Add enabled state callback.
+        bool enabledState = true;
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.test",
+            [&]()
+            {
+                return enabledState;
+            }
+        );
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the sub-menu is now in the menu.
+        {
+            QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+            QMenu* submenu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testSubMenu");
+            const auto& actions = menu->actions();
+
+            EXPECT_EQ(actions.size(), 1);
+            EXPECT_EQ(actions[0]->menu(), submenu);
+        }
+
+        // Set the action as disabled.
+        enabledState = false;
+        m_actionManagerInterface->UpdateAction("o3de.action.test");
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the sub-menu is no longer part of the menu since it is empty.
+        {
+            QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+            EXPECT_EQ(menu->actions().size(), 0);
+        }
+    }
+
+    TEST_F(ActionManagerFixture, VerifySubMenuIsShownWhenFilled)
+    {
+        // Register menus
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
+        m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
+
+        // Register a new action and add it to the sub-menu.
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu", "o3de.action.test", 42);
+
+        // Add enabled state callback.
+        bool enabledState = false;
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.test",
+            [&]()
+            {
+                return enabledState;
+            }
+        );
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the sub-menu is not part of the menu since it is empty.
+        {
+            QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+            EXPECT_EQ(menu->actions().size(), 0);
+        }
+
+        // Set the action as enabled.
+        enabledState = true;
+        m_actionManagerInterface->UpdateAction("o3de.action.test");
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the sub-menu is in the menu again.
+        {
+            QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+            QMenu* submenu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testSubMenu");
+            const auto& actions = menu->actions();
+
+            EXPECT_EQ(actions.size(), 1);
+            EXPECT_EQ(actions[0]->menu(), submenu);
+        }
+    }
+
+    TEST_F(ActionManagerFixture, VerifySimpleAddSubMenuCircularDependency)
+    {
+        // Register menus
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
+        m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
+
+        // Verify I can't add "o3de.menu.testMenu" as a sub-menu for "o3de.menu.testSubMenu"
+        // as it would cause a circular dependency.
+        auto outcome = m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testSubMenu", "o3de.menu.testMenu", 42);
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, VerifyNestedAddSubMenuCircularDependency)
+    {
+        // Register menus
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubSubMenu", {});
+        m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
+        m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testSubMenu", "o3de.menu.testSubSubMenu", 42);
+
+        // Verify I can't add "o3de.menu.testMenu" as a sub-menu for "o3de.menu.testSubSubMenu"
+        // as it would cause a circular dependency.
+        auto outcome = m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testSubSubMenu", "o3de.menu.testMenu", 42);
+        EXPECT_FALSE(outcome.IsSuccess());
     }
 
 } // namespace UnitTest

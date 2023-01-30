@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Size.h>
+#include <Atom/RHI/DrawPacket.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 
@@ -46,11 +47,23 @@ namespace AZ
             //! This enable/disable clearing of the image view.
             void SetClearEnabled(bool enabled);
 
+            //! Sets this shadow pass to only update its shadows when a mesh in view moves.
+            void SetIsStatic(bool isStatic);
+
+            //! Sets which bit to check to see if a caster in the view moved.
+            void SetCasterMovedBit(RHI::Handle<uint32_t> bit);
+
+            //! When the shadow is static, this forces the shadow to still re-render next frame (due to the light moving for instance)
+            void ForceRenderNextFrame();
+
             //! This update viewport and scissor for this shadowmap from the given image size.
             void SetViewportScissorFromImageSize(const RHI::Size& imageSize);
 
             //! This updates viewport and scissor for this shadowmap.
             void SetViewportScissor(const RHI::Viewport& viewport, const RHI::Scissor& scissor);
+
+            //! Sets the draw packet used for clearing a shadow viewport.
+            void SetClearShadowDrawPacket(AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> clearShadowDrawPacket);
 
         private:
             ShadowmapPass() = delete;
@@ -61,9 +74,18 @@ namespace AZ
 
             // RHI::Pass overrides...
             void BuildInternal() override;
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
 
+            // RPI::RasterPass overrides...
+            void SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t indexOffset) const override;
+
+            AZ::RHI::ConstPtr<RHI::DrawPacket> m_clearShadowDrawPacket;
+            AZ::RHI::DrawItemProperties m_clearShadowDrawItemProperties;
+            RHI::Handle<uint32_t> m_casterMovedBit;
             uint16_t m_arraySlice = 0;
             bool m_clearEnabled = true;
+            bool m_isStatic = false;
+            mutable bool m_forceRenderNextFrame = false;
         };
     } // namespace Render
 } // namespace AZ

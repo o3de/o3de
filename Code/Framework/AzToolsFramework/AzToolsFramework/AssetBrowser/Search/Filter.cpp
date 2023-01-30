@@ -128,6 +128,11 @@ namespace AzToolsFramework
             return false;
         }
 
+        bool AssetBrowserEntryFilter::MatchWithoutPropagation(const AssetBrowserEntry* entry) const
+        {
+            return MatchInternal(entry);
+        }
+
         void AssetBrowserEntryFilter::Filter(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const
         {
             FilterInternal(result, entry);
@@ -402,6 +407,29 @@ namespace AzToolsFramework
         bool EntryTypeFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
             return entry->GetEntryType() == m_entryType;
+        }
+
+        //////////////////////////////////////////////////////////////////////////
+        // AssetPathFilter
+        //////////////////////////////////////////////////////////////////////////
+        AssetPathFilter::AssetPathFilter()
+        {
+        }
+
+        void AssetPathFilter::SetAssetPath(AZ::IO::Path path)
+        {
+            m_assetPath = path;
+        }
+
+        QString AssetPathFilter::GetNameInternal() const
+        {
+            return QString::fromUtf8(m_assetPath.c_str());
+        }
+
+        bool AssetPathFilter::MatchInternal(const AssetBrowserEntry* entry) const
+        {
+            AZ::IO::Path entryPath = entry->GetFullPath();
+            return entryPath.IsRelativeTo(m_assetPath);
         }
 
         //////////////////////////////////////////////////////////////////////////

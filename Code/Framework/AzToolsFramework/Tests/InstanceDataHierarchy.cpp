@@ -149,7 +149,7 @@ namespace UnitTest
     * InstanceDataHierarchyBasicTest
     */
     class InstanceDataHierarchyBasicTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         InstanceDataHierarchyBasicTest()
@@ -473,7 +473,7 @@ namespace UnitTest
     static AZ::u8 s_persistentIdCounter = 0;
 
     class InstanceDataHierarchyCopyContainerChangesTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 
@@ -652,7 +652,7 @@ namespace AZ
 namespace UnitTest
 {
     class InstanceDataHierarchyEnumContainerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class EnumContainer
@@ -814,7 +814,7 @@ namespace UnitTest
         SubData m_subGroupForToggle;
     };
 
-    class InstanceDataHierarchyGroupTestFixture : public AllocatorsFixture
+    class InstanceDataHierarchyGroupTestFixture : public LeakDetectionFixture
     {
     public:
         InstanceDataHierarchyGroupTestFixture() = default;
@@ -826,12 +826,10 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             using AzToolsFramework::InstanceDataHierarchy;
             using AzToolsFramework::InstanceDataNode;
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
 
             m_serializeContext.reset(aznew AZ::SerializeContext());
             m_serializeContext.get()->CreateEditContext();
@@ -870,13 +868,12 @@ namespace UnitTest
             m_serializeContext.reset();
             testEntity1.reset();
             delete instanceDataHierarchy;
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
     class InstanceDataHierarchyKeyedContainerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class CustomKeyWithoutStringRepresentation
@@ -1132,7 +1129,7 @@ namespace UnitTest
     };
 
     class InstanceDataHierarchyCompareAssociativeContainerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class Container
@@ -1153,8 +1150,6 @@ namespace UnitTest
         void run()
         {
             using namespace AzToolsFramework;
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
 
             AZ::SerializeContext serializeContext;
             Container::Reflect(serializeContext);
@@ -1231,14 +1226,12 @@ namespace UnitTest
             testComparison(c1, c3, {"D", "[0]", "[1]"}, {"B", "C"}, {"A"});
             testComparison(c3, c1, {"B", "C", "[0]", "[1]"}, {"D"}, {"A"});
             testComparison(c1, c2, {}, {}, {"A", "B", "C"});
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
     };
 
 
     class InstanceDataHierarchyElementTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class UIElementContainer
@@ -1317,7 +1310,7 @@ namespace UnitTest
     };
 
     class InstanceDataHierarchyEndGroupTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class EndGroupContainer
@@ -1414,7 +1407,7 @@ namespace UnitTest
     };
 
     class InstanceDataHierarchyAggregateInstanceTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class AggregatedContainer

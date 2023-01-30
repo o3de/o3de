@@ -90,7 +90,7 @@ namespace UnitTest
     };
 
     class LevelBuilderTest
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
         , public UnitTest::TraceBusRedirector
     {
     protected:

@@ -20,7 +20,7 @@
 namespace UnitTest
 {    
     class SpawnableScriptMediatorTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public AzFramework::Scripts::SpawnableScriptNotificationsBus::MultiHandler
     {
     public:
@@ -46,7 +46,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_application = new AzFramework::Application();
             AZ::ComponentApplication::Descriptor descriptor;
@@ -74,7 +74,7 @@ namespace UnitTest
             delete m_application;
             m_application = nullptr;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void WaitForResponse(AzFramework::Scripts::SpawnableScriptMediator& mediator)

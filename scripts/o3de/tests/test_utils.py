@@ -10,6 +10,7 @@ import pytest
 
 from o3de import utils
 
+
 @pytest.mark.parametrize(
     "value, expected_result", [
         pytest.param('Game1', True),
@@ -24,6 +25,7 @@ def test_validate_identifier(value, expected_result):
     result = utils.validate_identifier(value)
     assert result == expected_result
 
+
 @pytest.mark.parametrize(
     "value, expected_result", [
         pytest.param('{018427ae-cd08-4ff1-ad3b-9b95256c17ca}', False),
@@ -37,3 +39,18 @@ def test_validate_identifier(value, expected_result):
 def test_validate_uuid4(value, expected_result):
     result = utils.validate_uuid4(value)
     assert result == expected_result
+
+
+@pytest.mark.parametrize(
+    "in_list, out_list", [
+        pytest.param(['A', 'B', 'C'], ['A', 'B', 'C']),
+        pytest.param(['A', 'B', 'C', 'A', 'C'], ['A', 'B', 'C']),
+        pytest.param(['A', {'name': 'A', 'optional': True}], [{'name': 'A', 'optional': True}]),
+        pytest.param([{'name': 'A', 'optional': True}, 'A'], ['A']),
+        pytest.param([{'name': 'A'}], [{'name': 'A'}]),
+        pytest.param([{'optional': False}], []),
+    ]
+)
+def test_remove_gem_duplicates(in_list, out_list):
+    result = utils.remove_gem_duplicates(in_list)
+    assert result == out_list

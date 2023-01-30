@@ -191,10 +191,12 @@ namespace EMStudio
                 }
 
                 // skip non-processed nodes and nodes that have no output pose
+#if !defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
                 if (!emfxNode->GetHasOutputPose() || !graphNode->GetIsProcessed() || graphNode->GetIsHighlighted())
                 {
                     continue;
                 }
+#endif
 
                 // get the unique data
                 EMotionFX::AnimGraphNodeData* uniqueData = emfxNode->FindOrCreateUniqueNodeData(animGraphInstance);
@@ -219,6 +221,12 @@ namespace EMStudio
                 {
                     requiredHeight += heightSpacing;
                 }
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+                if (plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_UPDATE | AnimGraphPlugin::DISPLAYFLAG_PROFILING_TOPDOWN | AnimGraphPlugin::DISPLAYFLAG_PROFILING_POSTUPDATE | AnimGraphPlugin::DISPLAYFLAG_PROFILING_OUTPUT))
+                {
+                    requiredHeight += heightSpacing;
+                }
+#endif
                 const QRect& nodeRect = graphNode->GetFinalRect();
                 const QRect textRect(nodeRect.center().x() - rectWidth / 2, nodeRect.center().y() - requiredHeight / 2, rectWidth, requiredHeight);
                 const uint32 alpha = (graphNode->GetIsHighlighted()) ? 225 : 175;
@@ -266,6 +274,25 @@ namespace EMStudio
                     painter.drawText(textPosition, m_qtTempString);
                     textPosition.setY(textPosition.y() + heightSpacing);
                 }
+
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+                if (plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_UPDATE | AnimGraphPlugin::DISPLAYFLAG_PROFILING_TOPDOWN | AnimGraphPlugin::DISPLAYFLAG_PROFILING_POSTUPDATE | AnimGraphPlugin::DISPLAYFLAG_PROFILING_OUTPUT))
+                {
+                    AZ::u8 profileFlags = 0;
+                    profileFlags |= plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_UPDATE) ? static_cast<AZ::u8>(EMotionFX::AnimGraphNode::ProfileMode::Update) : 0;
+                    profileFlags |= plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_TOPDOWN) ? static_cast<AZ::u8>(EMotionFX::AnimGraphNode::ProfileMode::TopDown) : 0;
+                    profileFlags |= plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_POSTUPDATE) ? static_cast<AZ::u8>(EMotionFX::AnimGraphNode::ProfileMode::PostUpdate) : 0;
+                    profileFlags |= plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_OUTPUT) ? static_cast<AZ::u8>(EMotionFX::AnimGraphNode::ProfileMode::Output) : 0;
+                    emfxNode->SetProfileMode(profileFlags);
+                    const AZ::u32 updateTime = aznumeric_caster(emfxNode->GetUpdateTime(animGraphInstance).count());
+                    const AZ::u32 totalUpdateTime = aznumeric_caster(emfxNode->GetTotalUpdateTime(animGraphInstance).count());
+                    m_qtTempString = AZStd::fixed_string<32>::format("Update = %u (%u) us", updateTime, totalUpdateTime).c_str();
+                    painter.drawText(textPosition, m_qtTempString);
+                    textPosition.setY(textPosition.y() + heightSpacing);
+
+                    emfxNode->ClearProfileTimers(animGraphInstance);
+                }
+#endif
             }
         }
 
@@ -2550,14 +2577,13 @@ namespace EMStudio
                     m_nodeGroupNameLineEdit->move(m_transform.dx() + x_delta, m_transform.dy() + y_delta);
                     m_nodeGroupNameLineEdit->setBaseSize(
                         QSize(groupRect.width() - 2 * sGroupRectTextHPadding, m_groupFontMetrics->height()));
-                    m_nodeGroupNameLineEdit->setBaseFontPointSizeF(m_groupFont.pointSizeF());
+                    m_nodeGroupNameLineEdit->setBaseFontPixelSize(m_groupFont.pixelSize());
                     m_nodeGroupNameLineEdit->setScale(GetScale());
                     m_nodeGroupNameLineEdit->show();
                 }
                 else
                 {
                     // Draw group name label
-                    m_nodeGroupNameLineEdit->hide();
                     QRect textRect = groupRect;
                     textRect.setHeight(m_groupFontMetrics->height());
                     textRect.setLeft(textRect.left() + sGroupRectTextHPadding);
@@ -2598,6 +2624,10 @@ namespace EMStudio
             m_nodeGroupNameLineEdit->setText({});
             m_currentNameEditNodeGroup->SetNameEditOngoing(false);
             m_currentNameEditNodeGroup = nullptr;
+            // This needs to be done after setting m_currentNameEditNodeGroup = nullptr because
+            // it triggers the QLineEdit::editingFinished signal which this function is connected to,
+            // which is effectively a recursive function call.
+            m_nodeGroupNameLineEdit->hide();
         }
     }
 

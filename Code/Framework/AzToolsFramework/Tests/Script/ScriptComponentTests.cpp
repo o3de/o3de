@@ -31,7 +31,7 @@ namespace UnitTest
     int myReloadValue = 0;
 
     class ScriptComponentTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AZ_TYPE_INFO(ScriptComponentTest, "{85CDBD49-70FF-416A-8154-B5525EDD30D4}");
@@ -44,7 +44,6 @@ namespace UnitTest
             //appDesc.m_stackRecordLevels = 20;
             Entity* systemEntity = m_app.Create(appDesc);
 
-            systemEntity->CreateComponent<MemoryComponent>();
             systemEntity->CreateComponent(AZ::TypeId{ "{CAE3A025-FAC9-4537-B39E-0A800A2326DF}" }); // JobManager component
             systemEntity->CreateComponent<StreamerComponent>();
             systemEntity->CreateComponent<AssetManagerComponent>();

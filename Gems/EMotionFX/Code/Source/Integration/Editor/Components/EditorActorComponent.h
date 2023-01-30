@@ -65,6 +65,7 @@ namespace EMotionFX
             size_t GetNumJoints() const override;
             SkinningMethod GetSkinningMethod() const override;
             void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset) override;
+            void EnableInstanceUpdate(bool enable) override;
 
             // EditorActorComponentRequestBus overrides ...
             const AZ::Data::AssetId& GetActorAssetId() override;
@@ -198,6 +199,7 @@ namespace EMotionFX
             AZ::Render::ModelReloadedEvent::Handler m_modelReloadedEventHandler;
 
             bool m_reloading = false;
+            bool m_processLoadedAsset = false;
         };
     } // namespace Integration
 } // namespace EMotionFX

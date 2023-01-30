@@ -62,21 +62,21 @@ namespace UnitTest
         srgLayout->SetName(Name("MaterialSrg"));
         srgLayout->SetUniqueId(Uuid::CreateRandom().ToString<AZStd::string>()); // Any random string will suffice.
         srgLayout->SetBindingSlot(SrgBindingSlot::Material);
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_unused" }, 0, 4, 0});
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_color" }, 4, 16, 0});
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_float" }, 20, 4, 0});
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_int" }, 24, 4, 0});
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_uint" }, 28, 4, 0});
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_float2" }, 32, 8, 0});
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_float3" }, 40, 12, 0});
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_float4" }, 52, 16, 0});
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_enum" }, 68, 4, 0});
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_bool" }, 72, 4, 0});
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_float3x3" }, 76, 44, 0}); // See ConstantsData::SetConstant<Matrix3x3> for packing rules
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_float4x4" }, 120, 64, 0});
-        srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_unusedImage" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1});
-        srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_image" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 2});
-        srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_attachmentImage" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 2});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_unused" }, 0, 4, 0, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_color" }, 4, 16, 0, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_float" }, 20, 4, 0, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_int" }, 24, 4, 0, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_uint" }, 28, 4, 0, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_float2" }, 32, 8, 0, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_float3" }, 40, 12, 0, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_float4" }, 52, 16, 0, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_enum" }, 68, 4, 0, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_bool" }, 72, 4, 0, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_float3x3" }, 76, 44, 0, 0}); // See ConstantsData::SetConstant<Matrix3x3> for packing rules
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_float4x4" }, 120, 64, 0, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_unusedImage" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_image" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 2, 2});
+        srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_attachmentImage" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 2, 2});
 
         EXPECT_TRUE(srgLayout->Finalize());
 

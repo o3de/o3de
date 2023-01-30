@@ -12,7 +12,7 @@
 namespace UnitTest
 {
     class CommandLineTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 

@@ -79,7 +79,7 @@ namespace EditorPythonBindingsUnitTests
     };
 
     class EditorPythonBindingsFixture
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;

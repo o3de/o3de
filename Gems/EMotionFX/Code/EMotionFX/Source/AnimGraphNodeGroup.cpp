@@ -188,6 +188,16 @@ namespace EMotionFX
         return m_nameEditOngoing;
     }
 
+    AnimGraphNodeId AnimGraphNodeGroup::GetParentNodeId() const
+    {
+        return m_parentNodeId;
+    }
+
+    void AnimGraphNodeGroup::SetParentNodeId(AnimGraphNodeId nodeId)
+    {
+        m_parentNodeId = nodeId;
+    }
+
     void AnimGraphNodeGroup::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -202,6 +212,7 @@ namespace EMotionFX
             ->Field("name", &AnimGraphNodeGroup::m_name)
             ->Field("color", &AnimGraphNodeGroup::m_color)
             ->Field("isVisible", &AnimGraphNodeGroup::m_isVisible)
-            ->Field("isNameEditOngoing", &AnimGraphNodeGroup::m_nameEditOngoing);
+            ->Field("isNameEditOngoing", &AnimGraphNodeGroup::m_nameEditOngoing)
+            ->Field("parentNodeId", &AnimGraphNodeGroup::m_parentNodeId);
     }
 } // namespace EMotionFX

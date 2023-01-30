@@ -7,16 +7,5 @@
 #
 
 set(FILES
-    Application.h
-    Application.cpp
-    Converter.h
-    Converter.cpp
-    Dumper.h
-    Dumper.cpp
     main.cpp
-    SliceConverterEditorEntityContextComponent.h
-    SliceConverter.h
-    SliceConverter.cpp
-    Utilities.h
-    Utilities.cpp
 )

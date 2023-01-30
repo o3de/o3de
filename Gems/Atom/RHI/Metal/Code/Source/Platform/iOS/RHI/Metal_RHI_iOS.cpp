@@ -88,7 +88,7 @@ namespace Platform
         return reinterpret_cast<RHIMetalView*>([nativeWindow.rootViewController view]);
     }
 
-    void SynchronizeBufferOnCPU(id<MTLBuffer> mtlBuffer, size_t bufferOffset, size_t bufferSize)
+    void PublishBufferCpuChangeOnGpu(id<MTLBuffer> mtlBuffer, size_t bufferOffset, size_t bufferSize)
     {
         //No synchronization needed as ios uses shared memory and does not support MTLStorageModeManaged
         AZ_UNUSED(mtlBuffer);
@@ -96,14 +96,14 @@ namespace Platform
         AZ_UNUSED(bufferSize);
     }
 
-    void SynchronizeBufferOnGPU(id<MTLBlitCommandEncoder> blitEncoder, id<MTLBuffer> mtlBuffer)
+    void PublishBufferGpuChangeOnCpu(id<MTLBlitCommandEncoder> blitEncoder, id<MTLBuffer> mtlBuffer)
     {
         //No synchronization needed as ios uses shared memory and does not support MTLStorageModeManaged
         AZ_UNUSED(blitEncoder);
         AZ_UNUSED(mtlBuffer);
     }
 
-    void SynchronizeTextureOnGPU(id<MTLBlitCommandEncoder> blitEncoder, id<MTLTexture> mtlTexture)
+    void PublishTextureGpuChangeOnCpu(id<MTLBlitCommandEncoder> blitEncoder, id<MTLTexture> mtlTexture)
     {
         //No synchronization needed as ios uses shared memory and does not support MTLStorageModeManaged
         AZ_UNUSED(blitEncoder);

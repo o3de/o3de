@@ -35,12 +35,11 @@ namespace Multiplayer
     AZ_CVAR_EXTERNED(bool, sv_versionMismatch_sendManifestToClient);
 
 
-    class MultiplayerSystemTests : public AllocatorsFixture
+    class MultiplayerSystemTests : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
             AZ::NameDictionary::Create();
 
             m_ComponentApplicationRequests = AZStd::make_unique<BenchmarkComponentApplicationRequests>();

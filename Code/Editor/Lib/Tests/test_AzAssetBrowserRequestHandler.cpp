@@ -130,7 +130,7 @@ namespace UnitTest
         MOCK_METHOD1(GetComponentName, AZStd::string(const AZ::Component*));
     };
 
-    class AzAssetBrowserRequestHandlerFixture : public AllocatorsTestFixture
+    class AzAssetBrowserRequestHandlerFixture : public LeakDetectionFixture
     {
     public:
         using MockComponentApplicationBusHandler = UnitTest::MockComponentApplication;
@@ -140,7 +140,7 @@ namespace UnitTest
             using namespace AzToolsFramework::AssetBrowser;
             using namespace AzToolsFramework::AssetDatabase;
 
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_editorComponentDescriptor = MockEditorComponent::CreateDescriptor();
             m_assetTypeOfModel = AZ::Data::AssetType("{8ABC6797-2DB6-4AC1-975B-5B344ABD9105}");
@@ -370,7 +370,7 @@ namespace UnitTest
             m_editorRequestHandlerMock.reset();
             m_entityCompositionRequestBusMock.reset();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
     protected:

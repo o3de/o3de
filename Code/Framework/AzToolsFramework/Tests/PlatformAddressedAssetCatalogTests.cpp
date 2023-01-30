@@ -29,7 +29,7 @@ namespace
 namespace UnitTest
 {
     class PlatformAddressedAssetCatalogManagerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 
@@ -161,6 +161,7 @@ namespace UnitTest
     class PlatformAddressedAssetCatalogMessageTest : public AzToolsFramework::PlatformAddressedAssetCatalog
     {
     public:
+        AZ_CLASS_ALLOCATOR(PlatformAddressedAssetCatalogMessageTest, AZ::SystemAllocator)
         PlatformAddressedAssetCatalogMessageTest(AzFramework::PlatformId platformId) :  AzToolsFramework::PlatformAddressedAssetCatalog(platformId)
         {
 
@@ -180,7 +181,7 @@ namespace UnitTest
     };
 
     class MessageTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override

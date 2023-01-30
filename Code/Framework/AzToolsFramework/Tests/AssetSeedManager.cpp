@@ -49,7 +49,7 @@ namespace // anonymous
 namespace UnitTest
 {
     class AssetSeedManagerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:

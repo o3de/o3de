@@ -113,7 +113,7 @@ namespace UnitTest
     };
 
     class EBusSharedDispatchMutexTestFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 

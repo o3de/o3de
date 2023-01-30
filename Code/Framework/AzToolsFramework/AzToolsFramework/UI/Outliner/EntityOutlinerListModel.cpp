@@ -1349,12 +1349,20 @@ namespace AzToolsFramework
             ExpandAncestors(entityId);
         }
 
-        //notify observers
-        emit SelectEntity(entityId, selected);
+        if (!m_suppressNextSelectEntity)
+        {
+            // notify observers
+            emit SelectEntity(entityId, selected);
+        }
+
+        m_suppressNextSelectEntity = false;
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedLocked(AZ::EntityId entityId, bool /*locked*/)
     {
+        // Prevent a SelectEntity call occurring during the update to stop the item clicked from scrolling away.
+        m_suppressNextSelectEntity = true;
+
         //update all ancestors because they will show partial state for descendants
         QueueEntityUpdate(entityId);
         QueueAncestorUpdate(entityId);
@@ -1362,6 +1370,9 @@ namespace AzToolsFramework
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedVisibility(AZ::EntityId entityId, bool /*visible*/)
     {
+        // Prevent a SelectEntity call occurring during the update to stop the item clicked from scrolling away.
+        m_suppressNextSelectEntity = true;
+
         //update all ancestors because they will show partial state for descendants
         QueueEntityUpdate(entityId);
         QueueAncestorUpdate(entityId);
@@ -2264,7 +2275,7 @@ namespace AzToolsFramework
         painter->restore();
     }
 
-    QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+    QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         // Get the height of a tall character...
         // we do this only once per 'tick'
@@ -2279,8 +2290,15 @@ namespace AzToolsFramework
 
             QTimer::singleShot(0, resetFunction);
         }
-  
-        return QSize(0, m_cachedBoundingRectOfTallCharacter.height() + EntityOutlinerListModel::s_OutlinerSpacing);
+        
+        if (!index.parent().isValid())
+        {
+            return QSize(0, m_cachedBoundingRectOfTallCharacter.height() + EntityOutlinerListModel::s_OutlinerSpacingForLevel);
+        }
+        else
+        {
+            return QSize(0, m_cachedBoundingRectOfTallCharacter.height() + EntityOutlinerListModel::s_OutlinerSpacing);
+        }
     }
 
     bool EntityOutlinerItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)

@@ -17,6 +17,9 @@ import shutil
 import urllib.request
 import logging
 import zipfile
+import re
+from packaging.version import Version
+from packaging.specifiers import SpecifierSet
 
 from o3de import gitproviderinterface, github_utils
 
@@ -56,6 +59,7 @@ class VerbosityAction(argparse.Action):
             log.setLevel(logging.DEBUG)
         elif count == 1:
             log.setLevel(logging.INFO)
+
 
 def add_verbosity_arg(parser: argparse.ArgumentParser) -> None:
     """
@@ -105,6 +109,27 @@ def validate_identifier(identifier: str) -> bool:
         for character in identifier:
             if not (character.isalnum() or character == '_' or character == '-'):
                 return False
+    return True
+
+
+def validate_version_specifier(version_specifier:str) -> bool:
+    try:
+        get_object_name_and_version_specifier(version_specifier)
+    except (InvalidObjectNameException, InvalidVersionSpecifierException):
+        return False
+    return True 
+
+
+def validate_version_specifier_list(version_specifiers:str or list) -> bool:
+    version_specifier_list = version_specifiers.split() if isinstance(version_specifiers, str) else version_specifiers
+    if not isinstance(version_specifier_list, list):
+        logger.error(f'Version specifiers must be in the format <name><version specifiers>. e.g. name==1.2.3 \n {version_specifiers}')
+        return False
+
+    for version_specifier in version_specifier_list:
+        if not validate_version_specifier(version_specifier):
+            logger.error(f'Version specifiers must be in the format <name><version specifiers>. e.g. name==1.2.3 \n {version_specifier}')
+            return False
     return True
 
 
@@ -163,6 +188,7 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
+
 def get_git_provider(parsed_uri):
     """
     Returns a git provider if one exists given the passed uri
@@ -170,6 +196,7 @@ def get_git_provider(parsed_uri):
     :return: A git provider implementation providing functions to get infomration about or clone a repository, see gitproviderinterface
     """
     return github_utils.get_github_provider(parsed_uri)
+
 
 def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """
@@ -255,6 +282,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
 
     return 0
 
+
 def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwrite: bool, object_name: str, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
@@ -319,3 +347,172 @@ def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_
     """
     ancestor_file = find_ancestor_file(target_file_name, start_path, max_scan_up_range)
     return ancestor_file.parent if ancestor_file else None
+
+
+def get_gem_names_set(gems: list) -> set:
+    """
+    For working with the 'gem_names' lists in project.json
+    Returns a set of gem names in a list of gems
+    :param gems: The original list of gems, strings or small dicts (json objects)
+    :return: A set of gem name strings
+    """
+    return set([gem['name'] if isinstance(gem, dict) else gem for gem in gems])
+
+
+def remove_gem_duplicates(gems: list) -> list:
+    """
+    For working with the 'gem_names' lists in project.json
+    Adds names to a dict, and when a collision occurs, eject the existing one in favor of the new one.
+    This is because when adding gems the list is extended, so the override will come last.
+    :param gems: The original list of gems, strings or small dicts (json objects)
+    :return: A new list with duplicate gem entries removed
+    """
+    new_list = []
+    names = {}
+    for gem in gems:
+        if not (isinstance(gem, dict) or isinstance(gem, str)):
+            continue
+        gem_name = gem.get('name', '') if isinstance(gem, dict) else gem
+        if gem_name:
+            if gem_name not in names:
+                names[gem_name] = len(new_list)
+                new_list.append(gem)
+            else:
+                new_list[names[gem_name]] = gem
+    return new_list
+
+
+def update_keys_and_values_in_dict(existing_values: dict, new_values: list or str, remove_values: list or str,
+                      replace_values: list or str):
+    """
+    Updates values within a dictionary by replacing all values or by appending values in the new_values list and 
+    removing values in the remove_values
+    :param existing_values dict to modify
+    :param new_values list of key=value pairs to add to the existing dictionary 
+    :param remove_values list with keys to remove from the existing dictionary 
+    :param replace_values list with key=value pairs to replace existing dictionary with
+
+    returns updated existing dictionary
+    """
+    if replace_values != None:
+        replace_values = replace_values.split() if isinstance(replace_values, str) else replace_values
+        return dict(entry.split('=') for entry in replace_values if '=' in entry)
+    
+    if new_values:
+        new_values = new_values.split() if isinstance(new_values, str) else new_values
+        new_values = dict(entry.split('=') for entry in new_values if '=' in entry)
+        if new_values:
+            existing_values.update(new_values)
+    
+    if remove_values:
+        remove_values = remove_values.split() if isinstance(remove_values, str) else remove_values
+        [existing_values.pop(key) for key in remove_values]
+    
+    return existing_values
+
+
+def update_values_in_key_list(existing_values: list, new_values: list or str, remove_values: list or str,
+                      replace_values: list or str):
+    """
+    Updates values within a list by replacing all values or by appending values in the new_values list, 
+    removing values in the remove_values and then removing duplicates.
+    :param existing_values list with existing values to modify
+    :param new_values list with values to add to the existing value list
+    :param remove_values list with values to remove from the existing value list
+    :param replace_values list with values to replace in the existing value list
+
+    returns updated existing value list
+    """
+    if replace_values != None:
+        replace_values = replace_values.split() if isinstance(replace_values, str) else replace_values
+        return list(dict.fromkeys(replace_values))
+
+    if new_values:
+        new_values = new_values.split() if isinstance(new_values, str) else new_values
+        existing_values.extend(new_values)
+    if remove_values:
+        remove_values = remove_values.split() if isinstance(remove_values, str) else remove_values
+        existing_values = list(filter(lambda value: value not in remove_values, existing_values))
+
+    # replace duplicate values
+    return list(dict.fromkeys(existing_values))
+
+
+class InvalidVersionSpecifierException(Exception):
+    pass
+
+
+class InvalidObjectNameException(Exception):
+    pass
+
+
+def get_object_name_and_version_specifier(input:str) -> (str, str) or None:
+    """
+    Get the object name and version specifier from a string in the form <name><version specifier(s)>
+    Valid input examples:
+        o3de>=1.2.3
+        o3de-sdk==1.2.3,~=2.3.4
+    :param input a string in the form <name><PEP 440 version specifier(s)> where the version specifier includes the relational operator such as ==, >=, ~=
+
+    return an engine name and a version specifier or raises an exception if input is invalid
+    """
+
+    regex_str = r"(?P<object_name>(.*?))(?P<version_specifier>((~=|==|!=|<=|>=|<|>|===)(\s*\S+)+))"
+    regex = re.compile(regex_str, re.IGNORECASE)
+    match = regex.fullmatch(input.strip())
+
+    if not match:
+        raise InvalidVersionSpecifierException(f"Invalid name and/or version specifier {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
+
+    if not match.group("object_name"):
+        raise InvalidObjectNameException(f"Invalid or missing name {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
+
+    # SpecifierSet will raise an exception if invalid
+    if not SpecifierSet(match.group("version_specifier")):
+        return None
+    
+    return match.group("object_name").strip(), match.group("version_specifier").strip()
+
+
+def get_object_name_and_optional_version_specifier(input:str):
+    """
+    Returns an object name and optional version specifier 
+    :param input: The input string
+    """
+    try:
+        return get_object_name_and_version_specifier(input)
+    except (InvalidObjectNameException, InvalidVersionSpecifierException):
+        return input, None
+
+
+def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_name:str = None):
+    """
+    Takes a dictionary of dictionaries and replaces the keys with the value of 
+    a specific value key.
+    For example, if you have a dictionary of gem_paths->gem_json_data, this function can be used
+    to convert the dictionary so the keys are gem names instead of paths (gem_name->gem_json_data)
+    :param input: A dictionary of key->value pairs where every value is a dictionary that has a value_key
+    :param value_key: The value's key to replace the current key with
+    :param replaced_key_name: (Optional) A key name under which to store the replaced key in value
+    """
+
+    # we cannot iterate over the dict while deleting entries
+    # so we iterate over a copy of the keys
+    keys = list(input.keys())
+    for key in keys:
+        value = input[key]
+
+        # if the value is invalid just remove it
+        if value == None:
+            del input[key]
+            continue
+
+        # include the key we're removing if replaced_key_name provided
+        if replaced_key_name:
+            value[replaced_key_name] = key
+
+        # remove the current entry 
+        del input[key]
+
+        # replace with an entry keyed on value_key's value
+        input[value[value_key]] = value

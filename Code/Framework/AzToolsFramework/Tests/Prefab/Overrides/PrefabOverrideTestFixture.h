@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <Prefab/PrefabTestFixture.h>
@@ -44,6 +43,5 @@ namespace UnitTest
 
         PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
         PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
-        AZ::SettingsRegistryInterface* m_settingsRegistryInterface = nullptr;
     };
 } // namespace UnitTest

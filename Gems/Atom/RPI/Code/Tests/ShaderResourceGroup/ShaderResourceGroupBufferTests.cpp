@@ -50,9 +50,9 @@ namespace UnitTest
 
             srgLayout->SetName(Name(nameId));
             srgLayout->SetBindingSlot(0);
-            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferA" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 1 });
-            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferB" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 2 });
-            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferArray" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 3, 4, 3 });
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferA" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 1, 1});
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferB" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 2, 2});
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferArray" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 3, 4, 3, 3});
             srgLayout->Finalize();
 
             return srgLayout;

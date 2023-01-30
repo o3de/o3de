@@ -18,9 +18,15 @@
 #include <PhysX/EditorColliderComponentRequestBus.h>
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 
 namespace PhysX
 {
@@ -34,6 +40,168 @@ namespace PhysX
     } // namespace
 
     AZ_CLASS_ALLOCATOR_IMPL(ColliderComponentMode, AZ::SystemAllocator, 0);
+
+    void ColliderComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<ColliderComponentMode>(context);
+    }
+
+    void ColliderComponentMode::RegisterActions()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "ColliderComponentMode - could not get ActionManagerInterface on RegisterActions.");
+
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        AZ_Assert(hotKeyManagerInterface, "ColliderComponentMode - could not get HotKeyManagerInterface on RegisterActions.");
+
+        // Set Offset Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.colliderComponentMode.setOffsetSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Set Offset Mode";
+            actionProperties.m_description = "Set Offset Mode";
+            actionProperties.m_category = "Collider Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            ColliderComponentModeRequestBus::Event(
+                                entityComponentIdPair, &ColliderComponentModeRequests::SetCurrentMode, SubMode::Offset);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "1");
+        }
+
+        // Set Rotation Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.colliderComponentMode.setRotationSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Set Rotation Mode";
+            actionProperties.m_description = "Set Rotation Mode";
+            actionProperties.m_category = "Collider Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            ColliderComponentModeRequestBus::Event(
+                                entityComponentIdPair, &ColliderComponentModeRequests::SetCurrentMode, SubMode::Rotation);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "2");
+        }
+
+        // Set Resize Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.colliderComponentMode.setResizeSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Set Resize Mode";
+            actionProperties.m_description = "Set Resize Mode";
+            actionProperties.m_category = "Collider Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            ColliderComponentModeRequestBus::Event(
+                                entityComponentIdPair, &ColliderComponentModeRequests::SetCurrentMode, SubMode::Dimensions);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "3");
+        }
+
+        // Reset Current Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.colliderComponentMode.resetCurrentMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Reset Current Mode";
+            actionProperties.m_description = "Reset Current Mode";
+            actionProperties.m_category = "Collider Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            ColliderComponentModeRequestBus::Event(
+                                entityComponentIdPair, &ColliderComponentModeRequests::ResetCurrentMode);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "R");
+        }
+    }
+
+    void ColliderComponentMode::BindActionsToModes()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "ColliderComponentMode - could not get ActionManagerInterface on BindActionsToModes.");
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        AZStd::string modeIdentifier = AZStd::string::format(
+            "o3de.context.mode.%s", serializeContext->FindClassData(azrtti_typeid<ColliderComponentMode>())->m_name);
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.colliderComponentMode.setOffsetSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.colliderComponentMode.setRotationSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.colliderComponentMode.setResizeSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.colliderComponentMode.resetCurrentMode");
+    }
+
+    void ColliderComponentMode::BindActionsToMenus()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "ColliderComponentMode - could not get MenuManagerInterface on BindActionsToMenus.");
+
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.colliderComponentMode.setOffsetSubMode", 6000);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.colliderComponentMode.setRotationSubMode", 6001);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.colliderComponentMode.setResizeSubMode", 6002);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.colliderComponentMode.resetCurrentMode", 6003);
+    }
 
     ColliderComponentMode::ColliderComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
         : AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode(entityComponentIdPair, componentType)
@@ -199,6 +367,11 @@ namespace PhysX
     AZStd::string ColliderComponentMode::GetComponentModeName() const
     {
         return "Collider Edit Mode";
+    }
+
+    AZ::Uuid ColliderComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<ColliderComponentMode>();
     }
 
     void RefreshUI()

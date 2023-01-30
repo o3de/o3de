@@ -39,6 +39,10 @@ namespace AZ
                 return m_format;
             }
 
+            //! Get the index related to the position of the read and readwrite view within the global Bindless Argument Buffer
+            uint32_t GetBindlessReadIndex() const override;
+            uint32_t GetBindlessReadWriteIndex() const override;
+            
         private:
             ImageView() = default;
             void BuildImageSubResourceRange(const RHI::Resource& resourceBase);
@@ -50,12 +54,19 @@ namespace AZ
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////
 
-            //Create a separate own copy of memoryview to be used for rendering.
+            void ReleaseView();
+            void ReleaseBindlessIndices();
+
+            //Create a separate own copy of MemoryView to be used for rendering.
             //Internally it may create a new MTLTexture object that reinterprets the original MTLTexture object from Image
             MemoryView m_memoryView;
             
             MTLPixelFormat m_format;
             RHI::ImageSubresourceRange m_imageSubresourceRange;
+            
+            //! Index related to the position of the read and readwrite view within the global Bindless Argument Buffer
+            uint32_t m_readIndex = InvalidBindlessIndex;
+            uint32_t m_readWriteIndex = InvalidBindlessIndex;
         };
     }
 }

@@ -126,7 +126,7 @@ namespace AssetProcessor
         AZ::u32 m_computedFingerprint = 0;     // what the fingerprint was at the time of job creation.
         qint64 m_computedFingerprintTimeStamp = 0; // stores the number of milliseconds since the universal coordinated time when the fingerprint was computed.
         AZ::u64 m_jobRunKey = 0;
-        bool m_checkExclusiveLock = false;      ///< indicates whether we need to check the input file for exclusive lock before we process this job
+        bool m_checkExclusiveLock = true;      ///< indicates whether we need to check the input file for exclusive lock before we process this job
         bool m_addToDatabase = true; ///< If false, this is just a UI job, and should not affect the database.
 
         QString GetAbsoluteSourcePath() const
@@ -270,7 +270,7 @@ namespace AssetProcessor
 
         AZStd::string ToString() const
         {
-            AZStd::string lowerSourceName = m_sourceAsset.AbsolutePath().Native();
+            AZStd::string lowerSourceName = m_sourceAsset.AbsolutePath().c_str();
             AZStd::to_lower(lowerSourceName.begin(), lowerSourceName.end());
 
             return AZStd::string::format("%s %s %s", lowerSourceName.c_str(), m_platformIdentifier.c_str(), m_jobKey.c_str());

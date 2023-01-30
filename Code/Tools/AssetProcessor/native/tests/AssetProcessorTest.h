@@ -32,7 +32,7 @@ namespace AssetProcessor
     // Any gmock based fixture class can derived from this class and this will automatically do system allocation and teardown for you
     // It is important to note that if you are overriding Setup and Teardown functions of your fixture class than please call the base class functions.
     class AssetProcessorTest
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     protected:
         AZStd::unique_ptr<UnitTestUtils::AssertAbsorber> m_errorAbsorber{};
@@ -71,6 +71,7 @@ namespace AssetProcessor
                 AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "FileIOUnavailable");
                 AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "LegacySystemInterfaceCreated");
                 AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "CriticalAssetsCompiled");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "LegacyCommandLineProcessed");
             }
         }
 

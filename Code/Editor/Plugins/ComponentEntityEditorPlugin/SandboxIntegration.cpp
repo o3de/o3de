@@ -64,7 +64,6 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 
-
 #include "Objects/ComponentEntityObject.h"
 #include "ISourceControl.h"
 #include "UI/QComponentEntityEditorMainWindow.h"
@@ -79,9 +78,9 @@
 #include <Editor/DisplaySettings.h>
 #include <Editor/IconManager.h>
 #include <Editor/Settings.h>
-#include <Editor/StringDlg.h>
 #include <Editor/QtViewPaneManager.h>
 #include <Editor/EditorViewportSettings.h>
+#include <Editor/EditorViewportCamera.h>
 #include <Editor/Util/PathUtil.h>
 #include "CryEdit.h"
 #include "Undo/Undo.h"
@@ -1718,9 +1717,7 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
             const AZ::Transform nextCameraTransform =
                 AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToLookAt), aabb.GetCenter());
 
-            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                viewportContext->GetId(),
-                &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform);
+            SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(nextCameraTransform);
         }
     }
 }
@@ -1820,7 +1817,7 @@ void SandboxIntegrationManager::GetSelectedOrHighlightedEntities(AzToolsFramewor
     }
 }
 
-AZStd::string SandboxIntegrationManager::GetComponentEditorIcon(const AZ::Uuid& componentType, AZ::Component* component)
+AZStd::string SandboxIntegrationManager::GetComponentEditorIcon(const AZ::Uuid& componentType, const AZ::Component* component)
 {
     AZStd::string iconPath = GetComponentIconPath(componentType, AZ::Edit::Attributes::Icon, component);
     return iconPath;
@@ -1832,7 +1829,7 @@ AZStd::string SandboxIntegrationManager::GetComponentTypeEditorIcon(const AZ::Uu
 }
 
 AZStd::string SandboxIntegrationManager::GetComponentIconPath(const AZ::Uuid& componentType,
-    AZ::Crc32 componentIconAttrib, AZ::Component* component)
+    AZ::Crc32 componentIconAttrib, const AZ::Component* component)
 {
     AZ_PROFILE_FUNCTION(AzToolsFramework);
     if (componentIconAttrib != AZ::Edit::Attributes::Icon

@@ -23,34 +23,20 @@ namespace UnitTest
     using namespace AzFramework;
 
     class EntityContextBasicTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public EntityContextEventBus::Handler
     {
     public:
 
-        EntityContextBasicTest()
-        {
-        }
-
         void SetUp() override
         {
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-
             Data::AssetManager::Descriptor desc;
             Data::AssetManager::Create(desc);
-        }
-
-        ~EntityContextBasicTest() override
-        {
         }
 
         void TearDown() override
         {
             Data::AssetManager::Destroy();
-
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
         }
 
         void run()

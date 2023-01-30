@@ -27,11 +27,11 @@
 namespace UnitTest
 {
     class ArchiveTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         ArchiveTestFixture()
-            : ScopedAllocatorSetupFixture()
+            : LeakDetectionFixture()
             , m_application{ AZStd::make_unique<AzFramework::Application>() }
         {
         }

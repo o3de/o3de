@@ -23,7 +23,7 @@ namespace AZ
         DrawItemProperties DrawPacket::GetDrawItem(size_t index) const
         {
             AZ_Assert(index < GetDrawItemCount(), "Out of bounds array access!");
-            return DrawItemProperties(&m_drawItems[index], m_drawItemSortKeys[index], m_drawFilterMask);
+            return DrawItemProperties(&m_drawItems[index], m_drawItemSortKeys[index], m_drawFilterMasks[index]);
         }
 
         DrawListTag DrawPacket::GetDrawListTag(size_t index) const
@@ -32,9 +32,10 @@ namespace AZ
             return m_drawListTags[index];
         }
 
-        DrawFilterMask DrawPacket::GetDrawFilterMask() const
+        DrawFilterMask DrawPacket::GetDrawFilterMask(size_t index) const
         {
-            return m_drawFilterMask;
+            AZ_Assert(index < GetDrawItemCount(), "Out of bounds array access!");
+            return m_drawFilterMasks[index];
         }
 
         DrawListMask DrawPacket::GetDrawListMask() const

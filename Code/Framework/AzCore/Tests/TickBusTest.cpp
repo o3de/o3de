@@ -34,7 +34,7 @@ struct OrderedTicker : public TickBus::Handler
 };
 
 
-class OrderedTickBus : public UnitTest::AllocatorsFixture
+class OrderedTickBus : public UnitTest::LeakDetectionFixture
 {};
 
 TEST_F(OrderedTickBus, OnTick_HandlersFireInSortedOrder)

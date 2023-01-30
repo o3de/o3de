@@ -61,7 +61,7 @@ namespace UnitTest
     static AZStd::sys_time_t s_totalJobsTime = 0;
 
     class DefaultJobManagerSetupFixture
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
 
     {
     protected:
@@ -76,10 +76,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
-
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
+            LeakDetectionFixture::SetUp();
 
             JobManagerDesc desc;
             JobManagerThreadDesc threadDesc;
@@ -113,10 +110,7 @@ namespace UnitTest
             delete m_jobContext;
             delete m_jobManager;
 
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
-
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
@@ -1608,9 +1602,6 @@ namespace Benchmark
 
         void internalSetUp()
         {
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-
             JobManagerDesc desc;
             JobManagerThreadDesc threadDesc;
 #if AZ_TRAIT_SET_JOB_PROCESSOR_ID
@@ -1669,9 +1660,6 @@ namespace Benchmark
             m_randomDepths = {};
             delete m_jobContext;
             delete m_jobManager;
-
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
         }
         void TearDown(::benchmark::State&) override
         {

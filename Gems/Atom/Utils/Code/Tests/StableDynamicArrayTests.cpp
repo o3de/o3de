@@ -16,13 +16,12 @@ namespace UnitTest
     // Fixture that creates a bare-bones app
 
     class StableDynamicArrayTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
+            LeakDetectionFixture::SetUp();
 
             handles.reserve(s_testCount);
         }
@@ -31,8 +30,7 @@ namespace UnitTest
         {
             handles = AZStd::vector<AZ::StableDynamicArray<TestItem>::Handle>(); // force memory deallocation.
             
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         struct TestItem
@@ -425,23 +423,18 @@ namespace UnitTest
 
     // Fixture for testing handles and ensuring the correct number of objects are created, modified, and/or destroyed
     class StableDynamicArrayHandleTests
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
         friend class StableDynamicArrayOwner;
         friend class MoveTest;
     public:
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             s_testItemsConstructed = 0;
             s_testItemsDestructed = 0;
             s_testItemsModified = 0;
         }
 
-        void TearDown() override
-        {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-        }
         // Used to keep track of the number of times a constructor/destructor/function is called
         // to validate that TestItems are being properly created, destroyed, and modified even when accessed via an interface
         static int s_testItemsConstructed;

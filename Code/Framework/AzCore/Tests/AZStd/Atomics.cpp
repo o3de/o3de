@@ -21,7 +21,7 @@
 namespace UnitTest
 {
     class Atomics
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 

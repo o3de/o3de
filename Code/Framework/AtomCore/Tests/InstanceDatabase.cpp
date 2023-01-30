@@ -114,7 +114,7 @@ namespace UnitTest
         }
     };
 
-    class InstanceDatabaseTest : public AllocatorsFixture
+    class InstanceDatabaseTest : public LeakDetectionFixture
     {
     protected:
         MyAssetHandler<TestAssetType>* m_assetHandler;
@@ -122,9 +122,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
+            LeakDetectionFixture::SetUp();
 
             // create the asset database
             {
@@ -155,9 +153,7 @@ namespace UnitTest
 
             InstanceDatabase<TestInstanceA>::Destroy();
 
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 

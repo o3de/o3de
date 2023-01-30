@@ -15,7 +15,7 @@ using namespace AZ;
 namespace UnitTest
 {
     class MATH_SfmtTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
         static const int BLOCK_SIZE = 100000;
         static const int BLOCK_SIZE64 = 50000;
@@ -27,7 +27,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             array1 = (AZ::u64*)azmalloc(sizeof(AZ::u64) * 2 * (BLOCK_SIZE / 4), AZStd::alignment_of<AZ::Vector4>::value);
             array2 = (AZ::u64*)azmalloc(sizeof(AZ::u64) * 2 * (10000 / 4), AZStd::alignment_of<AZ::Vector4>::value);
         }
@@ -37,7 +37,7 @@ namespace UnitTest
             azfree(array1);
             azfree(array2);
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void check32()

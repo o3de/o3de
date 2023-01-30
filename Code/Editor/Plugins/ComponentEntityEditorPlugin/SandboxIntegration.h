@@ -234,9 +234,9 @@ private:
         return m_defaultEntityIconLocation;
     }
 
-    AZStd::string GetComponentEditorIcon(const AZ::Uuid& componentType, AZ::Component* component) override;
+    AZStd::string GetComponentEditorIcon(const AZ::Uuid& componentType, const AZ::Component* component) override;
     AZStd::string GetComponentTypeEditorIcon(const AZ::Uuid& componentType) override;
-    AZStd::string GetComponentIconPath(const AZ::Uuid& componentType, AZ::Crc32 componentIconAttrib, AZ::Component* component) override;
+    AZStd::string GetComponentIconPath(const AZ::Uuid& componentType, AZ::Crc32 componentIconAttrib, const AZ::Component* component) override;
 
     //////////////////////////////////////////////////////////////////////////
     // IUndoManagerListener

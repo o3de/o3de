@@ -72,6 +72,9 @@ namespace AzToolsFramework
         class AssetJobLogRequest;
         class AssetJobLogResponse;
 
+        class AssetFingerprintClearRequest;
+        class AssetFingerprintClearResponse;
+
         class AssetJobsInfoRequest;
         class AssetJobsInfoResponse;
 
@@ -97,6 +100,8 @@ namespace AssetProcessor
         , public AssetProcessor::ProcessingJobInfoBus::Handler
     {
         using BaseAssetProcessorMessage = AzFramework::AssetSystem::BaseAssetProcessorMessage;
+        using AssetFingerprintClearRequest = AzToolsFramework::AssetSystem::AssetFingerprintClearRequest;
+        using AssetFingerprintClearResponse = AzToolsFramework::AssetSystem::AssetFingerprintClearResponse;
         using AssetJobsInfoRequest = AzToolsFramework::AssetSystem::AssetJobsInfoRequest;
         using AssetJobsInfoResponse = AzToolsFramework::AssetSystem::AssetJobsInfoResponse;
         using JobInfo = AzToolsFramework::AssetSystem::JobInfo;
@@ -190,6 +195,9 @@ namespace AssetProcessor
         //! and neither have any builders.
         void SetEnableModtimeSkippingFeature(bool enable);
 
+        //! Controls whether or not startup analysis is enabled or not.
+        void SetInitialScanSkippingFeature(bool enable);
+
         //! Query logging will log every asset database query.
         void SetQueryLogging(bool enableLogging);
 
@@ -262,13 +270,15 @@ namespace AssetProcessor
 
         void SourceDeleted(SourceAssetReference sourceAsset);
         void SourceFolderDeleted(QString folderPath);
-        void SourceQueued(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid, SourceAssetReference sourceAssetReference);
-        void SourceFinished(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid);
+        void SourceQueued(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids, SourceAssetReference sourceAssetReference);
+        void SourceFinished(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids);
         void JobRemoved(AzToolsFramework::AssetSystem::JobInfo jobInfo);
 
         void JobComplete(JobEntry jobEntry, AzToolsFramework::AssetSystem::JobStatus status);
         void JobProcessDurationChanged(JobEntry jobEntry, int durationMs);
         void CreateJobsDurationChanged(QString sourceName);
+
+        void IntermediateAssetCreated(QString newFileAbsolutePath);
 
         //! Send a message when a new path dependency is resolved, so that downstream tools know the AssetId of the resolved dependency.
         void PathDependencyResolved(const AZ::Data::AssetId& assetId, const AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry);
@@ -287,7 +297,9 @@ namespace AssetProcessor
         void AssetCancelled(JobEntry jobEntry);
 
         void AssessFilesFromScanner(QSet<AssetFileInfo> filePaths);
+        void RecordFilesFromScanner(QSet<AssetFileInfo> filePaths);
         void RecordFoldersFromScanner(QSet<AssetFileInfo> folderPaths);
+        void RecordExcludesFromScanner(QSet<AssetFileInfo> excludePaths);
 
         virtual void AssessModifiedFile(QString filePath);
         virtual void AssessAddedFile(QString filePath);
@@ -299,6 +311,9 @@ namespace AssetProcessor
         void CheckAssetProcessorIdleState();
 
         void QuitRequested();
+
+        //! A network request to clear the fingerprint for a given asset, so that the next time the timestamp changes, the file will re-process.
+        AssetFingerprintClearResponse ProcessFingerprintClearRequest(MessageData<AssetFingerprintClearRequest> messageData);
 
         //! A network request came in asking, for a given input asset, what the status is of any jobs related to that request
         AssetJobsInfoResponse ProcessGetAssetJobsInfoRequest(MessageData<AssetJobsInfoRequest> messageData);
@@ -318,6 +333,7 @@ namespace AssetProcessor
         void ProcessFilesToExamineQueue();
         void CheckForIdle();
         void CheckMissingFiles();
+        void ProcessFingerprintClearRequest(AssetFingerprintClearRequest& request, AssetFingerprintClearResponse& response);
         void ProcessGetAssetJobsInfoRequest(AssetJobsInfoRequest& request, AssetJobsInfoResponse& response);
         void ProcessGetAssetJobLogRequest(const AssetJobLogRequest& request, AssetJobLogResponse& response);
         void ScheduleNextUpdate();
@@ -325,18 +341,19 @@ namespace AssetProcessor
         void RemoveEmptyFolders();
 
         void OnBuildersRegistered();
+        void OnCatalogReady();
 
     private:
         template <class R>
         bool Recv(unsigned int connId, QByteArray payload, R& request);
         void AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner = false);
         void CheckSource(const FileEntry& source);
-        void CheckMissingJobs(QString relativeSourceFile, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime);
+        void CheckMissingJobs(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime);
         void CheckDeletedProductFile(QString normalizedPath);
         void CheckDeletedSourceFile(
             const SourceAssetReference& sourceAsset,
             AZStd::chrono::steady_clock::time_point initialProcessTime);
-        void CheckModifiedSourceFile(QString normalizedPath, QString databaseSourceFile, const ScanFolderInfo* scanFolderInfo);
+        void CheckModifiedSourceFile(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolderInfo);
         bool AnalyzeJob(JobDetails& details);
         void CheckDeletedCacheFolder(QString normalizedPath);
         void CheckDeletedSourceFolder(const SourceAssetReference& sourceAsset);
@@ -350,7 +367,6 @@ namespace AssetProcessor
         void AutoFailJob(
             AZStd::string_view consoleMsg,
             AZStd::string_view autoFailReason,
-            const AZ::IO::Path& absoluteFilePath,
             JobEntry jobEntry,
             AZStd::string_view jobLog = "");
         void AutoFailJob(AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter);
@@ -367,7 +383,7 @@ namespace AssetProcessor
         void AddKnownFoldersRecursivelyForFile(QString file, QString root);
         void CleanEmptyFolder(QString folder, QString root);
 
-        void ProcessBuilders(QString normalizedPath, QString relativePathToFile, const ScanFolderInfo* scanFolder, const AssetProcessor::BuilderInfoList& builderInfoList);
+        void ProcessBuilders(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder, const AssetProcessor::BuilderInfoList& builderInfoList);
         AZStd::vector<AZStd::string> GetExcludedFolders();
 
         struct SourceInfoWithFingerprints
@@ -395,7 +411,7 @@ namespace AssetProcessor
         bool SearchSourceInfoBySourceUUID(const AZ::Uuid& sourceUuid, SourceAssetReference& result);
 
         //!  Adds the source to the database and returns the corresponding sourceDatabase Entry
-        void AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const ScanFolderInfo* scanFolder, const SourceAssetReference& sourceAsset);
+        void AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const SourceAssetReference& sourceAsset);
 
         // ! Get the engine, project and active gem root directories which could potentially be separate repositories.
         AZStd::vector<AZStd::string> GetPotentialRepositoryRoots();
@@ -406,6 +422,8 @@ namespace AssetProcessor
         void WarmUpFileCache(QSet<AssetFileInfo> filePaths);
         // Checks whether or not a file can be skipped for processing (ie, file content hasn't changed, builders haven't been added/removed, builders for the file haven't changed)
         bool CanSkipProcessingFile(const AssetFileInfo &fileInfo, AZ::u64& fileHash);
+
+        void CheckReadyToAssessScanFiles();
 
         AZ::s64 GenerateNewJobRunKey();
         // Attempt to erase a log file.  Failing to erase it is not a critical problem, but should be logged.
@@ -504,6 +522,8 @@ namespace AssetProcessor
         bool m_quitRequested = false;
         bool m_processedQueued = false;
         bool m_AssetProcessorIsBusy = true;
+        bool m_catalogReady = false;
+        bool m_buildersReady = false;
 
         bool m_alreadyScheduledUpdate = false;
         QMutex m_processingJobMutex;
@@ -529,6 +549,9 @@ namespace AssetProcessor
         int m_numOfJobsToAnalyze = 0;
         bool m_alreadyQueuedCheckForIdle = false;
 
+        // Files from the scanner, waiting for initial analysis
+        QSet<AssetFileInfo> m_scannerFiles;
+
         //////////////////// Analysis Early-Out feature ///////////////////
         // ComputeBuilderDirty builds the maps of which builders are dirty and how they have changed.
         // note that until ComputeBuilderDirty is called, it is assumed that *all* are dirty, to be conservative.
@@ -542,7 +565,7 @@ namespace AssetProcessor
         };
 
         void ComputeBuilderDirty();
-        AZStd::string ComputeRecursiveDependenciesFingerprint(const AZStd::string& fileAbsolutePath, const AZStd::string& fileDatabaseName);
+        AZStd::string ComputeRecursiveDependenciesFingerprint(const SourceAssetReference& sourceAsset);
         AZStd::unordered_map<AZ::Uuid, BuilderData>  m_builderDataCache;
         bool m_buildersAddedOrRemoved = true; //< true if any new builders exist.  If this happens we actually need to re-analyze everything.
         bool m_anyBuilderChange = true;
@@ -588,7 +611,7 @@ namespace AssetProcessor
         };
 
         // ideally you would already have the absolute path to the file, and call this function with it:
-        void UpdateAnalysisTrackerForFile(const char* fullPathToFile, AnalysisTrackerUpdateType updateType);
+        void UpdateAnalysisTrackerForFile(const SourceAssetReference& sourceAsset, AnalysisTrackerUpdateType updateType);
 
         // convenience overload of the above function when you have a jobEntry but no absolute path to the file.
         void UpdateAnalysisTrackerForFile(const JobEntry &entry, AnalysisTrackerUpdateType updateType);
@@ -610,13 +633,17 @@ namespace AssetProcessor
         // defaults to true (in the settings) for GUI mode, false for batch mode
         bool m_allowModtimeSkippingFeature = false;
 
+        // when true, startup scan is disabled which means modified files when asset processor
+        // was not running won't be processed. this may be useful when working on pure code changes.
+        bool m_initialScanSkippingFeature = false;
+
         // when true, a flag will be sent to builders process job indicating debug output/mode should be used
         bool m_builderDebugFlag = false;
 
         AZStd::unique_ptr<ExcludedFolderCache> m_excludedFolderCache{};
 
 protected Q_SLOTS:
-        void FinishAnalysis(AZStd::string fileToCheck);
+        void FinishAnalysis(SourceAssetReference sourceAsset);
         //////////////////////////////////////////////////////////
     };
 } // namespace AssetProcessor

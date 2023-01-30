@@ -1037,7 +1037,6 @@ bool CCryEditDoc::AfterSaveDocument([[maybe_unused]] const QString& lpszPathName
         CLogFile::WriteLine("$3Document successfully saved");
         SetModifiedFlag(false);
         SetModifiedModules(eModifiedNothing);
-        MainWindow::instance()->ResetAutoSaveTimers();
     }
 
     return bSaved;

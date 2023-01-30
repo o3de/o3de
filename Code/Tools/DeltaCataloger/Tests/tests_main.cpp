@@ -22,7 +22,7 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 class AssetBundleComponentTests
-    : public UnitTest::ScopedAllocatorSetupFixture,
+    : public UnitTest::LeakDetectionFixture,
     public AZ::Debug::TraceMessageBus::Handler
 {
 public:

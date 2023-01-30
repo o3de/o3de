@@ -155,10 +155,11 @@ function(query_gem_paths_from_external_subdirs output_gem_dirs gem_names registe
     if (gem_names)
         foreach(gem_name IN LISTS gem_names)
             unset(gem_path)
+            get_property(gem_optional GLOBAL PROPERTY ${gem_name}_OPTIONAL)
             o3de_find_gem_with_registered_external_subdirs(${gem_name} gem_path "${registered_external_subdirs}")
             if (gem_path)
                 list(APPEND gem_dirs ${gem_path})
-            else()
+            elseif(NOT gem_optional)
                 list(JOIN registered_external_subdirs "\n" external_subdirs_formatted)
                 message(SEND_ERROR "The gem \"${gem_name}\""
                 " could not be found in any gem.json from the following list of registered external subdirectories:\n"
@@ -252,7 +253,23 @@ endfunction()
 function(get_all_external_subdirectories_for_o3de_object output_subdirs object_type object_name object_path object_json_filename)
     # Append the gems referenced by name from "gem_names" field in the <object>.json
     # These gems are registered in the users o3de_manifest.json
-    o3de_read_json_array(gem_names ${object_path}/${object_json_filename} "gem_names")
+    o3de_read_json_array(initial_gem_names ${object_path}/${object_json_filename} "gem_names")
+    set(gem_names "")
+    foreach(gem_name IN LISTS initial_gem_names)
+        # Use the ERROR_VARIABLE to catch the common case when it's a simple string and not a json type.
+        string(JSON json_type ERROR_VARIABLE json_error TYPE ${gem_name})
+        set(gem_optional FALSE)
+        if(${json_type} STREQUAL "OBJECT")
+            string(JSON gem_optional GET ${gem_name} "optional")
+            string(JSON gem_name GET ${gem_name} "name")
+        endif()
+
+        # Set a global "optional" property on the gem name
+        set_property(GLOBAL PROPERTY "${gem_name}_OPTIONAL" ${gem_optional})
+        # Build the gem_names list with extracted names
+        list(APPEND gem_names ${gem_name})
+    endforeach()
+
     add_registered_gems_to_external_subdirs(object_gem_reference_dirs "${gem_names}")
     list(APPEND subdirs_for_object ${object_gem_reference_dirs})
 

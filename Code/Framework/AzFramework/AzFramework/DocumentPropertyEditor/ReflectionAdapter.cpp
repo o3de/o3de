@@ -278,6 +278,11 @@ namespace AZ::DocumentPropertyEditor
             VisitPrimitive(value, attributes);
         }
 
+        void Visit(char& value, const Reflection::IAttributes& attributes) override
+        {
+            VisitPrimitive(value, attributes);
+        }
+
         void Visit(AZ::s8& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);

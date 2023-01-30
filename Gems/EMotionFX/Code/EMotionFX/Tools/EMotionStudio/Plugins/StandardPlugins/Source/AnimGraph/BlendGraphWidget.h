@@ -59,6 +59,7 @@ namespace EMStudio
     class BlendGraphNodePaletteTreeItem : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
+        AZ_CLASS_ALLOCATOR(BlendGraphNodePaletteTreeItem, AZ::SystemAllocator)
         BlendGraphNodePaletteTreeItem(
             const AZStd::string_view name, const QString& typeString, GraphCanvas::EditorId editorId, const AZ::Color& color);
         BlendGraphMimeEvent* CreateMimeEvent() const override;
@@ -111,7 +112,7 @@ namespace EMStudio
         bool CheckIfIsStateMachine();
 
         // context menu shared function (definitions in ContextMenu.cpp)
-        void AddAssignNodeToGroupSubmenu(QMenu* menu, EMotionFX::AnimGraph* animGraph);
+        void AddAssignNodeToGroupSubmenu(QMenu* menu, EMotionFX::AnimGraph* animGraph, EMotionFX::AnimGraphNodeGroup* currentlyAssignedGroup);
         void AddPreviewMotionSubmenu(QMenu* menu, AnimGraphActionManager* actionManager, const EMotionFX::AnimGraphNode* selectedNode);
 
         void OnContextMenuEvent(QWidget* parentWidget, QPoint localMousePos, QPoint globalMousePos, AnimGraphPlugin* plugin,
@@ -146,7 +147,7 @@ namespace EMStudio
         void CreateNodeFromMimeEvent(const BlendGraphMimeEvent* event, const QPoint& location);
 
         void CreateNodeGroup();
-        void AssignSelectedNodesToGroup();
+        void AssignSelectedNodesToGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup);
         void RenameNodeGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup);
         void ChangeNodeGroupColor(EMotionFX::AnimGraphNodeGroup* nodeGroup);
         void DeleteNodeGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup);

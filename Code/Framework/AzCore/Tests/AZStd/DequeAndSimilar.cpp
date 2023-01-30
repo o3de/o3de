@@ -33,7 +33,7 @@
 namespace UnitTest
 {
     class Containers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
     
@@ -675,7 +675,7 @@ namespace UnitTest
         }
     }
 
-    using StackContainerTestFixture = ScopedAllocatorSetupFixture;
+    using StackContainerTestFixture = LeakDetectionFixture;
 
     TEST_F(StackContainerTestFixture, StackEmplaceOperator_SupportsZeroOrMoreArguments)
     {
@@ -691,7 +691,7 @@ namespace UnitTest
     }
 
 
-    using DequeTestFixture = ScopedAllocatorSetupFixture;
+    using DequeTestFixture = LeakDetectionFixture;
 
     TEST_F(DequeTestFixture, RangeConstructors_Succeeds)
     {

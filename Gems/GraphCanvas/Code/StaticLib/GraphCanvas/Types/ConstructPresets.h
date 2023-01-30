@@ -230,7 +230,7 @@ namespace GraphCanvas
 
     protected:
 
-        ConstructTypePresetBucket* ModPresetBuckket(ConstructType presets);
+        ConstructTypePresetBucket* ModPresetBucket(ConstructType presets);
 
     private:
 

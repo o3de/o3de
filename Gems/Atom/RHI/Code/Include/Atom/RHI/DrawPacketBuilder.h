@@ -43,7 +43,9 @@ namespace AZ
                 //! The sort key assigned to this draw item.
                 DrawItemSortKey m_sortKey = 0;
 
-                //! The filter associated to this draw item. 
+                //! Mask for filtering the draw item into specific render pipelines.
+                //! We use a mask because the same item could be reused in multiple pipelines. For example, a simple
+                //! depth pre-pass could be present in multiple pipelines.
                 DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
             };
 
@@ -68,8 +70,6 @@ namespace AZ
 
             void AddShaderResourceGroup(const ShaderResourceGroup* shaderResourceGroup);
 
-            void SetDrawFilterMask(DrawFilterMask filterMask);
-
             void AddDrawItem(const DrawRequest& request);
 
             const DrawPacket* End();
@@ -80,7 +80,6 @@ namespace AZ
             IAllocator* m_allocator = nullptr;
             DrawArguments m_drawArguments;
             DrawListMask m_drawListMask = 0;
-            DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
             size_t m_streamBufferViewCount = 0;
             IndexBufferView m_indexBufferView;
             AZStd::fixed_vector<DrawRequest, DrawItemCountMax> m_drawRequests;

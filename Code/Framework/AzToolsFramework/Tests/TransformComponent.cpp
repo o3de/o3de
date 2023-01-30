@@ -32,12 +32,12 @@ namespace UnitTest
 {
     // Fixture base class for AzFramework::TransformComponent tests.
     class TransformComponentApplication
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
 
@@ -52,7 +52,7 @@ namespace UnitTest
         void TearDown() override
         {
             m_app.Stop();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AzFramework::Application m_app;
@@ -972,7 +972,7 @@ namespace UnitTest
 
     // Fixture base class for AzToolsFramework::Components::TransformComponent tests
     class OldEditorTransformComponentTest
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override

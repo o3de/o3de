@@ -40,7 +40,9 @@
 
 #include <ostream>
 
-AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // warning suppressed: constant used in conditional expression
+// MSVC: warning suppressed: constant used in conditional expression
+// CLANG: warning suppressed: implicit conversion loses integer precision
+AZ_PUSH_DISABLE_WARNING(4127, "-Wshorten-64-to-32")
 #include <QtTest/QtTest>
 AZ_POP_DISABLE_WARNING
 
@@ -220,9 +222,9 @@ namespace UnitTest
     /// Base fixture for ToolsApplication editor tests.
     template<bool CheckForLeaksOnDestruction = true>
     class ToolsApplicationFixture
-        : public AZStd::conditional_t<CheckForLeaksOnDestruction, AllocatorsTestFixture, testing::Test>
+        : public AZStd::conditional_t<CheckForLeaksOnDestruction, LeakDetectionFixture, testing::Test>
     {
-        using Base = AZStd::conditional_t<CheckForLeaksOnDestruction, AllocatorsTestFixture, testing::Test>;
+        using Base = AZStd::conditional_t<CheckForLeaksOnDestruction, LeakDetectionFixture, testing::Test>;
     public:
         void SetUp() override final
         {

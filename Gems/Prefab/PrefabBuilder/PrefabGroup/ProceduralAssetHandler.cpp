@@ -66,7 +66,7 @@ namespace AZ::Prefab
 
     const char* PrefabGroupAssetHandler::AssetTypeInfoHandler::GetGroup() const
     {
-        return "Prefab";
+        return "Procedural Prefab";
     }
 
     const char* PrefabGroupAssetHandler::AssetTypeInfoHandler::GetBrowserIcon() const

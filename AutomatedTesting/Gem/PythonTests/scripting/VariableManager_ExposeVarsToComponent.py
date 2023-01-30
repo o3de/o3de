@@ -19,13 +19,14 @@ def VariableManager_ExposeVarsToComponent():
 
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)
-     2) Get the SC window object
-     3) Open Variable Manager if not opened already
-     4) Create Graph
-     5) Create variable of each type and change their initial value source to from component
-     6) Save the file
-     7) Create an entity w/ component in the O3DE editor and attach the file
-     8) Verify the new variables are accessible and can be modified.
+     2) Get the SC window, variable manager and node inspector objects
+     3) Create Graph
+     4) Create variable of each type and change their initial value source to from component
+     5) Select the new variable in the variable manager so node inspector gets a target
+     6) change the selected variable's intial value source to from Component (on)
+     7) Save the file to disk
+     8) Create an entity w/ component in the O3DE editor and attach the file
+     9) Set the variable on the script canvas component to True then validate the result
 
     Note:
      - Any passed and failed tests are written to the Editor.log file.
@@ -35,9 +36,10 @@ def VariableManager_ExposeVarsToComponent():
     """
 
     # Preconditions
-    from editor_python_test_tools.QtPyO3DEEditor import QtPyO3DEEditor
-    from scripting_utils.script_canvas_component import ScriptCanvasComponent, VariableState
-    from editor_python_test_tools.QtPyCommon import CheckBoxStates
+    from editor_python_test_tools.QtPy.QtPyO3DEEditor import QtPyO3DEEditor
+    from editor_python_test_tools.editor_component.editor_script_canvas import ScriptCanvasComponent, VariableState
+    import editor_python_test_tools.editor_component.editor_component_validation as Validators
+    from editor_python_test_tools.QtPy.QtPyCommon import CheckBoxStates
     import azlmbr.legacy.general as general
     from consts.scripting import (SCRIPT_CANVAS_TEST_FILE_PATH)
     from editor_python_test_tools.editor_entity_utils import EditorEntity
@@ -60,35 +62,37 @@ def VariableManager_ExposeVarsToComponent():
     # 3) Create Graph
     sc_editor.create_new_script_canvas_graph()
 
-    # 5) Create variable of each type and change their initial value source to from component
+    # 4) Create variable of each type and change their initial value source to from component
     # The names of the variables will default to their type
     boolean_type = variable_manager.get_basic_variable_types().Boolean
     selection_index = variable_manager.create_new_variable(VARIABLE_NAME, boolean_type)
 
-    # 6) Select the new variable in the variable manager so node inspector gets a target
+    # 5) Select the new variable in the variable manager so node inspector gets a target
     variable_manager.select_variable_from_table(selection_index)
 
-    # 7) change the selected variable's intial value source to from Component (on)
+    # 6) change the selected variable's intial value source to from Component (on)
     node_inspector.change_variable_initial_value_source(CheckBoxStates.On)
 
-    # 8) Save the file to disk
+    # 7) Save the file to disk
     # This step requires engineering support. See github GH-12668
 
     # 8) Create an entity w/ component in the O3DE editor and attach the file
     position = math.Vector3(512.0, 512.0, 32.0)
     editor_entity = EditorEntity.create_editor_entity_at(position, ENTITY_NAME)
-    editor_entity.add_components(COMPONENT_LIST)
-    script_canvas_component = ScriptCanvasComponent(editor_entity, SCRIPT_CANVAS_TEST_FILE_PATH)
+    script_canvas_component = ScriptCanvasComponent(editor_entity)
+    script_canvas_component.set_component_graph_file_from_path(SCRIPT_CANVAS_TEST_FILE_PATH)
 
-    # 9) Verify the new variables are exposed properly by modifying one of them
-    script_canvas_component.set_variable_value(VARIABLE_NAME, VariableState.UNUSEDVARIABLE, True)
+    # 9) Set the variable on the script canvas component to True then validate the result
+    new_variable_value = True
+    Validators.validate_script_canvas_variable_changed(script_canvas_component.get_variable_value,
+                                                       script_canvas_component.set_variable_value,
+                                                       VARIABLE_NAME, VariableState.UNUSEDVARIABLE, new_variable_value)
 
 
 if __name__ == "__main__":
-
     import ImportPathHelper as imports
 
     imports.init()
-    from editor_python_test_tools.utils import Report
+    from utils import Report
 
     Report.start_test(VariableManager_ExposeVarsToComponent)

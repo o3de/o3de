@@ -12,6 +12,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <Math/MathTest.h>
 
 namespace UnitTest
 {
@@ -103,18 +104,18 @@ namespace UnitTest
     {
         AZ::Vector2 vA(2.0f, 3.0f);
 
-        EXPECT_TRUE(vA == AZ::Vector2(2.0f, 3.0f));
+        EXPECT_THAT(vA, IsClose(AZ::Vector2(2.0f, 3.0f)));
         EXPECT_FLOAT_EQ(vA.GetX(), 2.0f);
         EXPECT_FLOAT_EQ(vA.GetY(), 3.0f);
 
         vA.SetX(10.0f);
-        EXPECT_TRUE(vA == AZ::Vector2(10.0f, 3.0f));
+        EXPECT_THAT(vA, IsClose(AZ::Vector2(10.0f, 3.0f)));
 
         vA.SetY(11.0f);
-        EXPECT_TRUE(vA == AZ::Vector2(10.0f, 11.0f));
+        EXPECT_THAT(vA, IsClose(AZ::Vector2(10.0f, 11.0f)));
 
         vA.Set(15.0f);
-        EXPECT_TRUE(vA == AZ::Vector2(15.0f));
+        EXPECT_THAT(vA, IsClose(AZ::Vector2(15.0f)));
 
         vA.SetElement(0, 20.0f);
         EXPECT_FLOAT_EQ(vA.GetX(), 20.0f);
@@ -148,14 +149,14 @@ namespace UnitTest
 
     TEST(MATH_Vector2, TestGetNormalized)
     {
-        EXPECT_THAT(AZ::Vector2(3.0f, 4.0f).GetNormalized(), IsClose(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f)));
-        EXPECT_THAT(AZ::Vector2(3.0f, 4.0f).GetNormalizedEstimate(), IsClose(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f)));
+        EXPECT_THAT(AZ::Vector2(3.0f, 4.0f).GetNormalized(), IsCloseTolerance(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f), Constants::SimdTolerance));
+        EXPECT_THAT(AZ::Vector2(3.0f, 4.0f).GetNormalizedEstimate(), IsCloseTolerance(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f), Constants::SimdTolerance));
     }
 
     TEST(MATH_Vector2, TestGetNormalizedSafe)
     {
-        EXPECT_THAT(AZ::Vector2(3.0f, 4.0f).GetNormalizedSafe(), IsClose(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f)));
-        EXPECT_THAT(AZ::Vector2(3.0f, 4.0f).GetNormalizedSafeEstimate(), IsClose(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f)));
+        EXPECT_THAT(AZ::Vector2(3.0f, 4.0f).GetNormalizedSafe(), IsCloseTolerance(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f), Constants::SimdTolerance));
+        EXPECT_THAT(AZ::Vector2(3.0f, 4.0f).GetNormalizedSafeEstimate(), IsCloseTolerance(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f), Constants::SimdTolerance));
         EXPECT_THAT(AZ::Vector2(0.0f).GetNormalizedSafe(), IsClose(AZ::Vector2(0.0f, 0.0f)));
         EXPECT_THAT(AZ::Vector2(0.0f).GetNormalizedSafeEstimate(), IsClose(AZ::Vector2(0.0f, 0.0f)));
     }
@@ -164,10 +165,10 @@ namespace UnitTest
     {
         AZ::Vector2 v1(4.0f, 3.0f);
         v1.Normalize();
-        EXPECT_THAT(v1, IsClose(AZ::Vector2(4.0f / 5.0f, 3.0f / 5.0f)));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector2(4.0f / 5.0f, 3.0f / 5.0f), Constants::SimdTolerance));
         v1.Set(4.0f, 3.0f);
         v1.NormalizeEstimate();
-        EXPECT_THAT(v1, IsClose(AZ::Vector2(4.0f / 5.0f, 3.0f / 5.0f)));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector2(4.0f / 5.0f, 3.0f / 5.0f), Constants::SimdTolerance));
     }
 
     TEST(MATH_Vector2, TestNormalizeWithLength)
@@ -175,24 +176,24 @@ namespace UnitTest
         AZ::Vector2 v1(4.0f, 3.0f);
         float length = v1.NormalizeWithLength();
         EXPECT_FLOAT_EQ(length, 5.0f);
-        EXPECT_THAT(v1, IsClose(AZ::Vector2(4.0f / 5.0f, 3.0f / 5.0f)));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector2(4.0f / 5.0f, 3.0f / 5.0f), Constants::SimdTolerance));
         v1.Set(4.0f, 3.0f);
         length = v1.NormalizeWithLengthEstimate();
         EXPECT_FLOAT_EQ(length, 5.0f);
-        EXPECT_THAT(v1, IsClose(AZ::Vector2(4.0f / 5.0f, 3.0f / 5.0f)));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector2(4.0f / 5.0f, 3.0f / 5.0f), Constants::SimdTolerance));
     }
 
     TEST(MATH_Vector2, TestNormalizeSafe)
     {
         AZ::Vector2 v1(3.0f, 4.0f);
         v1.NormalizeSafe();
-        EXPECT_THAT(v1, IsClose(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f)));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f), Constants::SimdTolerance));
         v1.Set(0.0f);
         v1.NormalizeSafe();
         EXPECT_THAT(v1, IsClose(AZ::Vector2(0.0f, 0.0f)));
         v1.Set(3.0f, 4.0f);
         v1.NormalizeSafeEstimate();
-        EXPECT_THAT(v1, IsClose(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f)));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f), Constants::SimdTolerance));
         v1.Set(0.0f);
         v1.NormalizeSafeEstimate();
         EXPECT_THAT(v1, IsClose(AZ::Vector2(0.0f, 0.0f)));
@@ -203,7 +204,7 @@ namespace UnitTest
         AZ::Vector2 v1(3.0f, 4.0f);
         float length = v1.NormalizeSafeWithLength();
         EXPECT_FLOAT_EQ(length, 5.0f);
-        EXPECT_THAT(v1, IsClose(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f)));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f), Constants::SimdTolerance));
         v1.Set(0.0f);
         length = v1.NormalizeSafeWithLength();
         EXPECT_FLOAT_EQ(length, 0.0f);
@@ -211,7 +212,7 @@ namespace UnitTest
         v1.Set(3.0f, 4.0f);
         length = v1.NormalizeSafeWithLengthEstimate();
         EXPECT_FLOAT_EQ(length, 5.0f);
-        EXPECT_THAT(v1, IsClose(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f)));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector2(3.0f / 5.0f, 4.0f / 5.0f), Constants::SimdTolerance));
         v1.Set(0.0f);
         length = v1.NormalizeSafeWithLengthEstimate();
         EXPECT_FLOAT_EQ(length, 0.0f);
@@ -232,7 +233,7 @@ namespace UnitTest
         EXPECT_THAT(v1, IsClose(AZ::Vector2(6.0f, 8.0f)));
         v1.Set(3.0f, 4.0f);
         v1.SetLengthEstimate(10.0f);
-        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector2(6.0f, 8.0f), 1e-3f));
+        EXPECT_THAT(v1, IsCloseTolerance(AZ::Vector2(6.0f, 8.0f), Constants::SimdToleranceEstimateFuncs));
     }
 
     TEST(MATH_Vector2, TestDistance)
@@ -449,13 +450,13 @@ namespace UnitTest
     TEST_P(Vector2AngleTestFixture, TestAngle)
     {
         auto& param = GetParam();
-        EXPECT_FLOAT_EQ(param.current.Angle(param.target), param.angle);
+        EXPECT_NEAR(param.current.Angle(param.target), param.angle, Constants::SimdTolerance);
     }
 
     TEST_P(Vector2AngleTestFixture, TestAngleSafe)
     {
         auto& param = GetParam();
-        EXPECT_FLOAT_EQ(param.current.AngleSafe(param.target), param.angle);
+        EXPECT_NEAR(param.current.AngleSafe(param.target), param.angle, Constants::SimdTolerance);
     }
 
     INSTANTIATE_TEST_CASE_P(
@@ -474,13 +475,13 @@ namespace UnitTest
     TEST_P(Vector2AngleDegTestFixture, TestAngleDeg)
     {
         auto& param = GetParam();
-        EXPECT_FLOAT_EQ(param.current.AngleDeg(param.target), param.angle);
+        EXPECT_NEAR(param.current.AngleDeg(param.target), param.angle, Constants::SimdToleranceAngleDeg);
     }
 
     TEST_P(Vector2AngleDegTestFixture, TestAngleDegSafe)
     {
         auto& param = GetParam();
-        EXPECT_FLOAT_EQ(param.current.AngleSafeDeg(param.target), param.angle);
+        EXPECT_NEAR(param.current.AngleSafeDeg(param.target), param.angle, Constants::SimdToleranceAngleDeg);
     }
 
     INSTANTIATE_TEST_CASE_P(

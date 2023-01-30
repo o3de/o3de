@@ -45,6 +45,6 @@ namespace EMStudio
 
         EMotionFX::MotionEvent* m_motionEvent = nullptr;
         EMotionFX::ObjectEditor* m_baseObjectEditor = nullptr;
-        EMStudio::EventDataEditor m_eventDataEditor;
+        EventDataEditor m_eventDataEditor;
     };
-} // end namespace EMStudio
+} // namespace EMStudio

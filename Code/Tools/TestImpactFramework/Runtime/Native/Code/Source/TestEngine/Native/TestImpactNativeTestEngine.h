@@ -113,7 +113,7 @@ namespace TestImpact
 
     private:
         //! Cleans up the artifacts directory of any artifacts from previous runs.
-        void DeleteArtifactXmls() const;
+        void DeleteXmlArtifacts() const;
 
         size_t m_maxConcurrentRuns = 0;
         AZStd::unique_ptr<NativeRegularTestRunJobInfoGenerator> m_regularTestJobInfoGenerator;

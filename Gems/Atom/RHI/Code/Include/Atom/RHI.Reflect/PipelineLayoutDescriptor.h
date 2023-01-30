@@ -28,9 +28,10 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
 
             ResourceBindingInfo() = default;
-            ResourceBindingInfo(const RHI::ShaderStageMask& mask, uint32_t registerId)
-                : m_shaderStageMask(mask)
-                , m_registerId(registerId)
+            ResourceBindingInfo(const RHI::ShaderStageMask& mask, uint32_t registerId, uint32_t spaceId)
+                : m_shaderStageMask{ mask }
+                , m_registerId{ registerId }
+                , m_spaceId{ spaceId }
             {}
 
             /// Returns the hash computed for the binding info.
@@ -43,6 +44,8 @@ namespace AZ
             RHI::ShaderStageMask    m_shaderStageMask = RHI::ShaderStageMask::None;
             /// Register id of a resource.
             Register                m_registerId = InvalidRegister;
+            /// Space id of the resource.
+            uint32_t                m_spaceId = InvalidRegister;
         };
 
         /**
@@ -63,8 +66,6 @@ namespace AZ
             ResourceBindingInfo m_constantDataBindingInfo;
             /// Register number for the Shader Resource Group resources.
             AZStd::unordered_map<Name, ResourceBindingInfo> m_resourcesRegisterMap;
-            /// SpaceId of the Shader Resource Group.
-            uint32_t m_spaceId = 0;
         };
 
         /**

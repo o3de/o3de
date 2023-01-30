@@ -28,7 +28,6 @@
 #include "ShadowsSetupNode.h"
 
 #include <MathConversion.h>
-#include <StaticInstance.h>
 
 #include <ISystem.h>
 #include <ILog.h>
@@ -962,8 +961,8 @@ void CMovieSystem::StillUpdate()
 void CMovieSystem::ShowPlayedSequencesDebug()
 {
     float y = 10.0f;
-    std::vector<const char*> names;
-    std::vector<float> rows;
+    AZStd::vector<const char*> names;
+    AZStd::vector<float> rows;
     constexpr f32 green[4]  = {0, 1, 0, 1};
     constexpr f32 purple[4] = {1, 0, 1, 1};
     constexpr f32 white[4]  = {1, 1, 1, 1};
@@ -1837,10 +1836,6 @@ void CMovieSystem::OnSequenceActivated(IAnimSequence* sequence)
     // Queue for processing, sequences will be removed after checked for auto start.
     m_newlyActivatedSequences.push_back(sequence);
 }
-
-//////////////////////////////////////////////////////////////////////////
-StaticInstance<CLightAnimWrapper::LightAnimWrapperCache> CLightAnimWrapper::ms_lightAnimWrapperCache;
-AZStd::intrusive_ptr<IAnimSequence> CLightAnimWrapper::ms_pLightAnimSet;
 
 //////////////////////////////////////////////////////////////////////////
 CLightAnimWrapper::CLightAnimWrapper(const char* name)

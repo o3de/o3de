@@ -48,7 +48,7 @@ namespace AtomToolsFramework
         void Clear() override;
         bool IsOpen() const override;
         bool IsModified() const override;
-        bool CanSave() const override;
+        bool CanSaveAsChild() const override;
         bool CanUndo() const override;
         bool CanRedo() const override;
         bool Undo() override;

@@ -174,6 +174,18 @@ namespace EMotionFX
          */
         bool IsNameEditOngoing() const;
 
+        /**
+         * Returns the id of the parent AnimGraphNode to which this group belongs.
+         * If the group belongs to the root level, this function will return an invalid id.
+         * This function is used to make sure that groups can be filtered by level.
+         */
+        AnimGraphNodeId GetParentNodeId() const;
+
+        /**
+         * Sets the id of the parent AnimGraphNode for this group.
+         */
+        void SetParentNodeId(AnimGraphNodeId nodeId);
+
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
@@ -181,6 +193,7 @@ namespace EMotionFX
         AZStd::string           m_name;             /**< The unique identification number for the node group name. */
         AZ::u32                 m_color;            /**< The color the nodes of the group will be filled with. */
         bool                    m_isVisible;
-        bool m_nameEditOngoing = false; /**< Whether the user is currently typing a new name */
+        bool                    m_nameEditOngoing = false; /**< Whether the user is currently typing a new name */
+        AnimGraphNodeId         m_parentNodeId; /**< The id of the parent AnimGraphNode */
     };
 } // namespace EMotionFX

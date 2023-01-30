@@ -6,9 +6,8 @@
 #
 #
 
-ly_set(CMAKE_RC_FLAGS /nologo)
-
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    ly_set(CMAKE_RC_FLAGS /nologo)   
     
     include(cmake/Platform/Common/MSVC/Configurations_msvc.cmake)
 

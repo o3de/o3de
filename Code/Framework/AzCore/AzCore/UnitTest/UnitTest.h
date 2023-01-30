@@ -227,14 +227,17 @@ namespace UnitTest
                 {
                     AZ::AllocatorManager& allocatorManager = AZ::AllocatorManager::Instance();
                     const int numAllocators = allocatorManager.GetNumAllocators();
-                    allocators.resize(numAllocators);
                     // Iterate in reverse order since some allocators could depend on others to do garbage collection.
                     // If allocatorB depends on allocatorA, allocatorA will be registered before into the allocator manager.
                     for (int i = numAllocators - 1; i >= 0; --i)
                     {
-                        AZ::IAllocator* allocator = allocatorManager.GetAllocator(i);
-                        allocator->GarbageCollect();
-                        allocators[i] = allocator; // keep the same order so allocators that depend on others are reporter latter
+                        allocatorManager.GetAllocator(i)->GarbageCollect();
+                    }
+
+                    allocators.reserve(numAllocators);
+                    for (int i = 0; i < numAllocators; ++i)
+                    {
+                        allocators.push_back(allocatorManager.GetAllocator(i));
                     }
                 }
 

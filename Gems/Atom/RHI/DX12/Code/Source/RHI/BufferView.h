@@ -52,6 +52,13 @@ namespace AZ
             DescriptorHandle m_clearDescriptor;
             DescriptorHandle m_constantDescriptor;
             GpuVirtualAddress m_gpuAddress = 0;
+
+            // The following indicies are offsets to the static descriptor associated with this
+            // resource view in the static region of the shader-visible descriptor heap
+            DescriptorHandle m_staticReadDescriptor;
+            DescriptorHandle m_staticReadWriteDescriptor;
+            DescriptorHandle m_staticConstantDescriptor;
+
             ID3D12Resource* m_memory = nullptr;
         };
     }

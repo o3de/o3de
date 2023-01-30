@@ -15,7 +15,7 @@
 namespace AzToolsFramework
 {
     class EditorEntityContextComponentTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override

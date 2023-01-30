@@ -74,6 +74,7 @@ namespace UnitTest
         , public ModuleTestRequestBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(StaticModule, AZ::SystemAllocator)
         static bool s_loaded;
         static bool s_reflected;
 
@@ -118,7 +119,7 @@ namespace UnitTest
         modulesOut.push_back(new UnitTest::StaticModule());
     }
 
-    class ModuleManager : public UnitTest::AllocatorsTestFixture
+    class ModuleManager : public UnitTest::LeakDetectionFixture
     {
     };
 #if AZ_TRAIT_DISABLE_FAILED_MODULE_TESTS

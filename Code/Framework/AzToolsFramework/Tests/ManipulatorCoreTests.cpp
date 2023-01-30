@@ -20,12 +20,12 @@
 
 namespace UnitTest
 {
-    class ManipulatorCoreFixture : public AllocatorsTestFixture
+    class ManipulatorCoreFixture : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
@@ -83,7 +83,7 @@ namespace UnitTest
             m_visibilityComponentDescriptor.reset();
             m_serializeContext.reset();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZ::EntityId m_entityId;
