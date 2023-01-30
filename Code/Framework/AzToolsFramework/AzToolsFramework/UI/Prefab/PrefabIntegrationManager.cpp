@@ -19,6 +19,7 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
@@ -317,10 +318,12 @@ namespace AzToolsFramework
                     actionIdentifier,
                     [prefabFocusPublicInterface = s_prefabFocusPublicInterface, editorEntityContextId = s_editorEntityContextId]() -> bool
                     {
-                        return prefabFocusPublicInterface->GetPrefabFocusPathLength(editorEntityContextId) > 1;
+                        return !ComponentModeFramework::InComponentMode() &&
+                            prefabFocusPublicInterface->GetPrefabFocusPathLength(editorEntityContextId) > 1;
                     }
                 );
 
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::ComponentModeChangedUpdaterIdentifier, actionIdentifier);
                 m_actionManagerInterface->AddActionToUpdater(PrefabFocusChangedUpdaterIdentifier, actionIdentifier);
             }
         }

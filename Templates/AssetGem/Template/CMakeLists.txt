@@ -13,10 +13,12 @@ if (NOT gem_name)
     set(gem_name "${Name}")
 endif()
 
-# This will export the path to the directory containing the gem.json
-# to the "SourcePaths" entry within the "cmake_dependencies.<project>.assetbuilder.setreg"
-# which is generated when cmake is run
-# This path is the gem root directory
+# This indicates to the Builders applications(AssetProcessor, AssetBuilder, AssetBundler)
+# that the gem should be added to the "cmake_dependencies.<project>.assetbuilder.setreg"
+# which is generated when cmake configure occurs.
+# Also tooling applications such as the Editor needs the CMake alias
+# to see the gem as active
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem)
+    ly_create_alias(NAME ${gem_name}.Tool NAMESPACE Gem)
 endif()
