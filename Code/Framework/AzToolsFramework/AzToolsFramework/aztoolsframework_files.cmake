@@ -636,7 +636,8 @@ set(FILES
     ComponentMode/ComponentModeViewportUiRequestBus.h
     ComponentMode/EditorBaseComponentMode.h
     ComponentMode/EditorBaseComponentMode.cpp
-    ComponentModes/BaseViewportEdit.h
+    ComponentModes/BaseShapeViewportEdit.h
+    ComponentModes/BaseShapeViewportEdit.cpp
     ComponentModes/BoxComponentMode.h
     ComponentModes/BoxComponentMode.cpp
     ComponentModes/BoxViewportEdit.h

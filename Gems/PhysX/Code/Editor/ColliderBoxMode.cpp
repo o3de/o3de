@@ -8,6 +8,7 @@
 
 #include "ColliderBoxMode.h"
 #include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
+#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 
 namespace PhysX
 {
@@ -21,7 +22,10 @@ namespace PhysX
 
     void ColliderBoxMode::Setup(const AZ::EntityComponentIdPair& idPair)
     {
-        m_boxEdit->Setup(idPair);
+        AzToolsFramework::InstallBaseShapeViewportEditFunctions(m_boxEdit.get(), idPair);
+        AzToolsFramework::InstallBoxViewportEditFunctions(m_boxEdit.get(), idPair);
+        m_boxEdit->Setup();
+        m_boxEdit->AddEntityComponentIdPair(idPair);
     }
 
     void ColliderBoxMode::Refresh([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
