@@ -47,7 +47,7 @@ namespace Multiplayer
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
     private:
-        // Physics::RigidBodyNotifications overrides...
+        // Physics::RigidBodyNotifications overrides ...
         void OnPhysicsEnabled(const AZ::EntityId& entityId) override;
 
         void OnTransformUpdate(const AZ::Transform& worldTm);
@@ -76,7 +76,7 @@ namespace Multiplayer
 #endif
 
     private:
-        // Physics::RigidBodyNotifications overrides...
+        // Physics::RigidBodyNotifications overrides ...
         void OnPhysicsEnabled(const AZ::EntityId& entityId) override;
 
         Physics::RigidBodyRequests* m_physicsRigidBodyComponent = nullptr;
