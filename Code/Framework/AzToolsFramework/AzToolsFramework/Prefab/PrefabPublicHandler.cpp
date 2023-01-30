@@ -260,7 +260,7 @@ namespace AzToolsFramework
                     newContainerEntityDomInitialStateWithTransform, *newContainerEntity);
 
                 // Helper function to create a link between a nested instance and the newly created instance
-                auto createLinkForNestedInstanceFunc = [&](Instance& nestedInstance)
+                auto createLinkForNestedInstance = [&](Instance& nestedInstance)
                 {
                     EntityOptionalReference nestedInstanceContainerEntity = nestedInstance.GetContainerEntity();
                     AZ_Assert(
@@ -294,7 +294,7 @@ namespace AzToolsFramework
                         AZ_Assert(topLevelInstance.has_value(), "Invalid nested instance found in the new prefab created.");
 
                         // Create a link for the nested instance
-                        createLinkForNestedInstanceFunc(topLevelInstance->get());
+                        createLinkForNestedInstance(topLevelInstance->get());
 
                         // Update the instance link with the new parent transform data
                         PrefabDom nestedContainerEntityDomBefore;
@@ -333,7 +333,7 @@ namespace AzToolsFramework
                 EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::SetForceAddEntitiesToBackFlag, false);
 
                 // Set up remaining links for the nested instances that are not at the top level. This is done without undo/redo support.
-                instanceToCreate->get().GetNestedInstances([topLevelEntities, createLinkForNestedInstanceFunc](AZStd::unique_ptr<Instance>& nestedInstance) {
+                instanceToCreate->get().GetNestedInstances([topLevelEntities, createLinkForNestedInstance](AZStd::unique_ptr<Instance>& nestedInstance) {
                     AZ_Assert(nestedInstance, "Invalid nested instance found in the new prefab created.");
 
                     EntityOptionalReference nestedInstanceContainerEntity = nestedInstance->GetContainerEntity();
@@ -343,7 +343,7 @@ namespace AzToolsFramework
                     // Create a link if this container entity is not a top-level entity. Otherwise, the link has already been created
                     if (AZStd::find(topLevelEntities.begin(), topLevelEntities.end(), &nestedInstanceContainerEntity->get()) == topLevelEntities.end())
                     {
-                        createLinkForNestedInstanceFunc(*nestedInstance);
+                        createLinkForNestedInstance(*nestedInstance);
                     }
                 });
 
