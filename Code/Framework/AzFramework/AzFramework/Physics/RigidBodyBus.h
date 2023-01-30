@@ -110,7 +110,7 @@ namespace Physics
                         // Only immediately dispatch if the entity is a RigidBodyRequestBus' handler.
                         RigidBodyRequestBus::EnumerateHandlersId(
                             id,
-                            [handler, id](const RigidBodyRequests* rigidBodyhandler)
+                            [&handler, id](const RigidBodyRequests* rigidBodyhandler)
                             {
                                 if (rigidBodyhandler->IsPhysicsEnabled())
                                 {
