@@ -20,13 +20,13 @@
 
 namespace PhysX
 {
-    void FixPrefabsWithColliderComponents(const AZ::ConsoleCommandContainer& commandArgs);
+    void UpdatePrefabsWithColliderComponents(const AZ::ConsoleCommandContainer& commandArgs);
 
     AZ_CONSOLEFREEFUNC(
-        "ed_physxFixPrefabsWithColliderComponents",
-        FixPrefabsWithColliderComponents,
+        "ed_physxUpdatePrefabsWithColliderComponents",
+        UpdatePrefabsWithColliderComponents,
         AZ::ConsoleFunctorFlags::Null,
-        "Finds entities with collider components and no rigid bodies and fixes them by adding a static rigid body component.");
+        "Finds entities with collider components and no rigid bodies and updates them to the new pattern which requires a static rigid body component.");
 
     bool AddStaticRigidBodyToPrefabEntity(
         Utils::PrefabInfo& prefabInfo,
@@ -71,7 +71,7 @@ namespace PhysX
         return true;
     }
 
-    void FixPrefabPhysXColliders(Utils::PrefabInfo& prefabInfo)
+    void UpdatePrefabPhysXColliders(Utils::PrefabInfo& prefabInfo)
     {
         bool prefabModified = false;
         for (auto* entity : Utils::GetPrefabEntities(prefabInfo.m_template->GetPrefabDom()))
@@ -115,7 +115,7 @@ namespace PhysX
         }
     }
 
-    void FixPrefabsWithColliderComponents([[maybe_unused]] const AZ::ConsoleCommandContainer& commandArgs)
+    void UpdatePrefabsWithColliderComponents([[maybe_unused]] const AZ::ConsoleCommandContainer& commandArgs)
     {
         bool prefabSystemEnabled = false;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
@@ -142,7 +142,7 @@ namespace PhysX
 
         for (auto& prefab : prefabs)
         {
-            FixPrefabPhysXColliders(prefab);
+            UpdatePrefabPhysXColliders(prefab);
         }
 
         AZ_TracePrintf("PhysXColliderConversion", "Prefab conversion finished.\n");

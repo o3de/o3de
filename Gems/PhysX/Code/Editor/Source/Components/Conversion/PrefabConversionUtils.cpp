@@ -80,7 +80,7 @@ namespace PhysX::Utils
         };
 
         AZ::Data::AssetCatalogRequestBus::Broadcast(
-            &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, assetEnumerationCB, nullptr);
+            &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, /*beginCB*/nullptr, assetEnumerationCB, /*endCB*/nullptr);
 
         return prefabs;
     }
@@ -96,7 +96,7 @@ namespace PhysX::Utils
         AzToolsFramework::SourceControlCommandBus::Broadcast(
             &AzToolsFramework::SourceControlCommandBus::Events::RequestEdit,
             prefabInfo.m_prefabFullPath.c_str(),
-            true,
+            /*allowMultiCheckout*/true,
             [prefabInfo]([[maybe_unused]] bool success, const AzToolsFramework::SourceControlFileInfo& info)
             {
                 // This is called from the main thread on the next frame from TickBus,
@@ -192,7 +192,7 @@ namespace PhysX::Utils
             return context.Report(
                 AZ::JsonSerializationResult::Tasks::ReadField,
                 AZ::JsonSerializationResult::Outcomes::TypeMismatch,
-                "Unexpected type for prefab id.");
+                "Unexpected json type for prefab id, expected a String type.");
         }
 
         const size_t entityIdHash = AZStd::hash<AZStd::string_view>()(inputValue.GetString());
@@ -202,7 +202,7 @@ namespace PhysX::Utils
         return context.Report(
             AZ::JsonSerializationResult::Tasks::ReadField,
             AZ::JsonSerializationResult::Outcomes::Success,
-            "Successfully mapped string id to Entity Id For Prefab Entity load");
+            "Successfully mapped string id to entity id.");
     }
 
     AZ::JsonSerializationResult::Result PrefabEntityIdMapper::MapIdToJson(
@@ -222,7 +222,7 @@ namespace PhysX::Utils
         return context.Report(
             AZ::JsonSerializationResult::Tasks::WriteValue,
             AZ::JsonSerializationResult::Outcomes::Success,
-            "Successfully mapped Entity Id to string id for Prefab Entity store");
+            "Successfully mapped entity id to string id.");
     }
 
     bool LoadPrefabEntity(
@@ -246,7 +246,7 @@ namespace PhysX::Utils
         settings.m_metadata.Add(static_cast<const AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&prefabEntityIdMapper));
 
         auto result = AZ::JsonSerialization::Store(
-            prefabEntity, prefabDom.GetAllocator(), &entity, nullptr, azrtti_typeid<AZ::Entity>(), settings);
+            prefabEntity, prefabDom.GetAllocator(), &entity, /*defaultObject*/nullptr, azrtti_typeid<AZ::Entity>(), settings);
 
         return result.GetProcessing() == AZ::JsonSerializationResult::Processing::Completed;
     }
