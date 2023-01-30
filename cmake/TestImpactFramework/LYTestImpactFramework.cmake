@@ -517,6 +517,8 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
 
     if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED)
         set(native_test_targets_enabled true)
+        # Testrunner binary
+        set(native_test_runner_bin $<TARGET_FILE:AzTestRunner>)
     else()
         set(native_test_targets_enabled false)
     endif()
@@ -526,9 +528,6 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     else()
         set(python_test_targets_enabled false)
     endif()
-
-    # Testrunner binary
-    set(native_test_runner_bin $<TARGET_FILE:AzTestRunner>)
 
     # Python command
     set(python_cmd "${LY_ROOT_FOLDER}/python/python.cmd")
@@ -568,11 +567,6 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     
     # Build dependency artifact dir
     set(target_dependency_dir "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}")
-
-    # Test impact analysis framework native runtime binary
-    if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED)
-        set(native_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_NATIVE_CONSOLE_TARGET}>")
-    endif()
 
     # Test impact analysis framework python runtime binary
     if(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
@@ -639,6 +633,11 @@ endfunction()
 
 #! ly_test_impact_post_step: runs the post steps to be executed after all other cmake scripts have been executed.
 function(ly_test_impact_post_step)
+    # TIAF not supported for monolithic games
+    if(LY_MONOLITHIC_GAME)
+        return()
+    endif()
+
     if(NOT O3DE_TEST_IMPACT_ACTIVE)
         message("TIAF is deactivated but configs and meta-data will still be generated.")
     endif()
