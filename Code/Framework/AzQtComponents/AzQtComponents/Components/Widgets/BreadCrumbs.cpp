@@ -365,6 +365,16 @@ namespace AzQtComponents
         QFrame::resizeEvent(event);
     }
 
+    void BreadCrumbs::changeEvent(QEvent* event)
+    {
+        if (event->type() == QEvent::EnabledChange)
+        {
+            // Refresh the contents of the label since they are different based on the enabled state of the widget.
+            fillLabel();
+        }
+        QFrame::changeEvent(event);
+    }
+
     bool BreadCrumbs::eventFilter(QObject* obj, QEvent* ev)
     {
         if (obj == m_label)
@@ -483,9 +493,10 @@ namespace AzQtComponents
         const qreal iconSpaceWidth = g_iconWidth + fm.horizontalAdvance(QStringLiteral("\u00a0\u00a0"));
 
         QString plainTextPath;
-
-        auto formatLink = [this](const QString& fullPath, const QString& shortPath) -> QString {
-            return QString("<a href=\"%1\" style=\"color: %2\">%3</a>").arg(fullPath, m_config.linkColor, shortPath);
+        QString linkColor = isEnabled() ? m_config.linkColor : m_config.disabledLinkColor;
+        auto formatLink = [linkColor](const QString& fullPath, const QString& shortPath) -> QString
+        {
+            return QString("<a href=\"%1\" style=\"color: %2\">%3</a>").arg(fullPath, linkColor, shortPath);
         };
 
         const QString nonBreakingSpace = QStringLiteral("&nbsp;");
@@ -583,6 +594,7 @@ namespace AzQtComponents
     {
         Config config = defaultConfig();
 
+        ConfigHelpers::read<QString>(settings, QStringLiteral("DisabledLinkColor"), config.disabledLinkColor);
         ConfigHelpers::read<QString>(settings, QStringLiteral("LinkColor"), config.linkColor);
 
         return config;
@@ -592,6 +604,7 @@ namespace AzQtComponents
     {
         Config config;
 
+        config.disabledLinkColor = QStringLiteral("#999999");
         config.linkColor = QStringLiteral("white");
 
         return config;
