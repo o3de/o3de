@@ -16,6 +16,8 @@ set(FILES
     Source/EditorComponentDescriptors.h
     Source/EditorRigidBodyComponent.cpp
     Source/EditorRigidBodyComponent.h
+    Source/EditorStaticRigidBodyComponent.cpp
+    Source/EditorStaticRigidBodyComponent.h
     Source/EditorColliderComponent.cpp
     Source/EditorColliderComponent.h
     Source/EditorShapeColliderComponent.cpp
