@@ -266,7 +266,6 @@ namespace AzToolsFramework
                     AZ_Assert(
                         nestedInstanceContainerEntity, "Invalid container entity found for the nested instance used in prefab creation.");
 
-                    AZ::EntityId nestedInstanceContainerEntityId = nestedInstanceContainerEntity->get().GetId();
                     PrefabDom previousPatch;
 
                     // Retrieve the previous patch if it exists
