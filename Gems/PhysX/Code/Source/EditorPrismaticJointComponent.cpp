@@ -55,7 +55,7 @@ namespace PhysX
     void EditorPrismaticJointComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
-        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+        required.push_back(AZ_CRC_CE("PhysicsDynamicRigidBodyService"));
     }
 
     void EditorPrismaticJointComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
