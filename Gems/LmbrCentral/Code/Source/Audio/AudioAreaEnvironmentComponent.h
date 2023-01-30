@@ -72,7 +72,7 @@ namespace LmbrCentral
 
         static void Reflect(AZ::ReflectContext* context);
 
-        // Physics::RigidBodyNotifications overrides...
+        // Physics::RigidBodyNotifications overrides ...
         void OnPhysicsEnabled(const AZ::EntityId& entityId) override;
         void OnPhysicsDisabled(const AZ::EntityId& entityId) override;
 
