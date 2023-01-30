@@ -42,6 +42,12 @@ namespace AZ::DocumentPropertyEditor
                 return (m_matchesSelf || m_hasMatchingAncestor || !m_matchingDescendants.empty());
             };
 
+            void RemoveChildAtIndex(size_t index)
+            {
+                AZ_Assert(m_childMatchState.size() > index, "MatchInfoNode child out of bounds!");
+                m_childMatchState.erase(m_childMatchState.begin() + index);
+            }
+
             bool m_matchesSelf = false;
 
             //! this will only be set and checked if the FilterAdapter has m_includeAllMatchDescendants set

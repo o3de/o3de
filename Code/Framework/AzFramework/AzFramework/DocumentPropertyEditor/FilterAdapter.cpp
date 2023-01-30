@@ -240,14 +240,12 @@ namespace AZ::DocumentPropertyEditor
                     if (patchPath == owningRowPath)
                     {
                         // Patch says row is being removed, we need to remove it from our graph
-                        auto& parentNode = owningRow->m_parentNode;
-                        auto& parentContainer = parentNode->m_childMatchState;
                         auto& lastPathEntry = *(patchPath.end() - 1);
                         AZ_Assert(lastPathEntry.IsIndex(), "this removal entry must be an index!");
-                        parentContainer.erase(parentContainer.begin() + lastPathEntry.GetIndex());
+                        owningRow->m_parentNode->RemoveChildAtIndex(lastPathEntry.GetIndex());
 
                         // update former parent's match state, as its m_matchingDescendants may have changed
-                        nodesToUpdate.insert(parentNode);
+                        nodesToUpdate.insert(owningRow->m_parentNode);
                     }
                     else
                     {
@@ -260,56 +258,76 @@ namespace AZ::DocumentPropertyEditor
                     auto rowPath = GetRowPath(patchPath);
 
                     // replace operations can change child values from or into rows. Handle all cases
-                    auto existingMatchInfo = GetMatchNodeAtPath(patchPath);
+                    auto existingRowNode = GetMatchNodeAtPath(patchPath);
 
                     /* <apm> replace is hard. The possibilities are:
                     * row->row - generate the remove (if mapping exists), Incremental patch generates Add if necessary
                     * row->column - if the row was filtered out, this is an Add. If not, this is a Replace
                     * column->row - treat this as a remove (if mapping exists), Incremental patch generates Add if necessary
                     * column->column - always a Replace, if the mapping exists
-                    * 
-                    * <apm> modify PopulateNodesAtPath to have a flag to not update hierarchy?
                     * */
-                    
-                    
-                    if (patchPath == rowPath) // check if the new entry at this path is a row
+
+                    const bool replacementIsRow = (patchPath == rowPath);
+                    if (!replacementIsRow && !existingRowNode)
                     {
-                        // we don't know yet if the replacement row will be filtered out, so generate
-                        // a remove operation, and then GeneratePatch(Incremental) will add the new
-                        // incarnation, if necessary
+                        // neither the value being replaced nor its replacement is a row. Map the path and pass it on
+                        auto mappedPath = MapFromSourcePath(patchPath);
+                        if (!mappedPath.IsEmpty())
+                        {
+                            outgoingPatch.PushBack(Dom::PatchOperation::ReplaceOperation(mappedPath, sourceContents[patchPath]));
+                        }
+                    }
+                    else
+                    {
+                        // either the replacing value or the value being replaced is a row
+                        // treat this as a remove operation with the possibility of a corresponding
+                        // add operation, if the new value matches the filter
                         auto mappedPath = MapFromSourcePath(patchPath);
                         if (!mappedPath.IsEmpty())
                         {
                             outgoingPatch.PushBack(Dom::PatchOperation::RemoveOperation(mappedPath));
                         }
 
-                        // replacement value is a row, populate it
-                        // <apm> this needs to be deferred like the UpdateMatchState, because it also calls UpdateMatchState and can screw up paths
-                        PopulateNodesAtPath(patchPath, true); 
-
-                        if (!existingMatchInfo)
+                        if (existingRowNode)
                         {
-                            // this value wasn't a row before, so its owning row needs to re-cache its info
-                            nodesToUpdate.insert(GetMatchNodeAtPath(rowPath));
-                        }
-                    }
-                    else
-                    {
-                        // not a row now. Check if it was before
-                        if (existingMatchInfo)
-                        {
-                            // node being replaced was a row. We need to remove it from our graph
-                            auto& parentContainer = existingMatchInfo->m_parentNode->m_childMatchState;
-                            parentContainer.erase(parentContainer.begin() + (patchPath.end() - 1)->GetIndex());
+                            // value being replaced was a row; remove its node
+                            auto& lastPathEntry = *(patchPath.end() - 1);
+                            AZ_Assert(lastPathEntry.IsIndex(), "this removal entry must be an index!");
+                            existingRowNode->m_parentNode->RemoveChildAtIndex(lastPathEntry.GetIndex());
 
                             // update former parent's match state, as its m_matchingDescendants may have changed
-                            nodesToUpdate.insert(existingMatchInfo->m_parentNode);
+                            nodesToUpdate.insert(existingRowNode->m_parentNode);
                         }
                         else
                         {
                             // replaced node wasn't a row, so we need to re-cache the owning row's cached info
                             auto matchingRow = GetMatchNodeAtPath(rowPath);
                             nodesToUpdate.insert(matchingRow);
+                        }
+
+                        // if new value is a row, populate it but don't update the hierarchy yet
+                        if (replacementIsRow)
+                        {
+                            PopulateNodesAtPath(patchPath, false);
+
+                            auto* addedNode = GetMatchNodeAtPath(patchPath);
+                            nodesToUpdate.insert(addedNode);
+                            if (!existingRowNode)
+                            {
+                                // this value wasn't a row before, so its owning row needs to re-cache its info
+                                nodesToUpdate.insert(addedNode->m_parentNode);
+                            }
+                        }
+                        else
+                        {
+                            // replacement node isn't a row. Map the path and generate a patch operation
+                            if (!mappedPath.IsEmpty())
+                            {
+                                outgoingPatch.PushBack(Dom::PatchOperation::AddOperation(mappedPath, sourceContents[patchPath]));
+                            }
+
+                            // non-row added so we need to re-cache the owning row's cached info
+                            nodesToUpdate.insert(GetMatchNodeAtPath(rowPath));
                         }
                     }
                 }
@@ -320,9 +338,11 @@ namespace AZ::DocumentPropertyEditor
                     {
                         // given path is a new row, populate our tree with match information for this node and any row descendants
                         // no need to generate a patch operation, that will be handled by GeneratePatch at the end
-                        // <apm> this needs to be deferred like the UpdateMatchState, because it also calls UpdateMatchState and can screw
-                        // up paths
                         PopulateNodesAtPath(rowPath, false);
+
+                        // defer updating to the end
+                        auto* addedNode = GetMatchNodeAtPath(patchPath);
+                        nodesToUpdate.insert(addedNode);
                     }
                     else
                     {
@@ -423,7 +443,7 @@ namespace AZ::DocumentPropertyEditor
         return sourcePath;
     }
 
-    void RowFilterAdapter::PopulateNodesAtPath(const Dom::Path& sourcePath, bool replaceExisting)
+    void RowFilterAdapter::PopulateNodesAtPath(const Dom::Path& sourcePath, bool updateMatchState)
     {
         Dom::Path startingPath = GetRowPath(sourcePath);
 
@@ -454,7 +474,10 @@ namespace AZ::DocumentPropertyEditor
                     }
                 }
                 // update ours and our ancestors' matching states
-                UpdateMatchState(matchState);
+                if (updateMatchState)
+                {
+                    UpdateMatchState(matchState);
+                }
             };
 
             // we should start with the parentPath, so peel off the new index from the end of the address
@@ -463,34 +486,11 @@ namespace AZ::DocumentPropertyEditor
             parentPath.Pop();
             auto parentMatchState = GetMatchNodeAtPath(parentPath);
 
-            MatchInfoNode* addedChild = nullptr;
-            if (replaceExisting)
-            {
-                // destroy existing entry, if present
-                AZ_Assert(lastPathEntry.IsIndex(), "if we're replacing, the last entry in the the path must by a valid index");
-                auto newRowIndex = lastPathEntry.GetIndex();
-                const bool hasEntryToReplace = (parentMatchState->m_childMatchState.size() > newRowIndex);
-                AZ_Assert(hasEntryToReplace, "PopulateNodesAtPath was called with replaceExisting, but no existing entry exists!");
-                if (hasEntryToReplace)
-                {
-                    delete parentMatchState->m_childMatchState[newRowIndex];
-                    addedChild = MakeNewNode(parentMatchState, m_updateFrame);
-                    parentMatchState->m_childMatchState[newRowIndex] = addedChild;
-                }
-                else
-                {
-                    // this shouldn't happen!
-                    return;
-                }
-            }
-            else
-            {
-                auto newRowIndex = lastPathEntry.GetIndex();
+            auto newRowIndex = lastPathEntry.GetIndex();
 
-                // inserting or appending child entry, add it to the correct position
-                addedChild = MakeNewNode(parentMatchState, m_updateFrame);
-                parentMatchState->m_childMatchState.insert(parentMatchState->m_childMatchState.begin() + newRowIndex, addedChild);
-            }
+            // inserting or appending child entry, add it to the correct position
+            MatchInfoNode* addedChild = MakeNewNode(parentMatchState, m_updateFrame);
+            parentMatchState->m_childMatchState.insert(parentMatchState->m_childMatchState.begin() + newRowIndex, addedChild);
 
             // recursively add descendants and cache their match status
             const auto& sourceContents = m_sourceAdapter->GetContents();
@@ -507,7 +507,7 @@ namespace AZ::DocumentPropertyEditor
         // we can assume all direct children of an adapter must be rows; populate each of them
         for (size_t topIndex = 0; topIndex < sourceContents.ArraySize(); ++topIndex)
         {
-            PopulateNodesAtPath(Dom::Path({ Dom::PathEntry(topIndex) }), false);
+            PopulateNodesAtPath(Dom::Path({ Dom::PathEntry(topIndex) }), true);
         }
     }
 
