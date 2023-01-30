@@ -190,4 +190,4 @@ namespace AZ
 #endif // AZCORE_ENTITY_BUS_H
 #pragma once
 
-DECLARE_EBUS_EXTERN_NO_TRAITS(EntityEvents);
+DECLARE_EBUS_EXTERN(EntityEvents);

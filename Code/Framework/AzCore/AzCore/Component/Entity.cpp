@@ -34,10 +34,10 @@
 
 #include <AzCore/Debug/Profiler.h>
 
-DECLARE_EBUS_INSTANTIATION_NO_TRAITS(EntityEvents);
-DECLARE_EBUS_INSTANTIATION_NO_TRAITS(TransformInterface);
-DECLARE_EBUS_INSTANTIATION_NO_TRAITS(TransformNotification);
-DECLARE_EBUS_INSTANTIATION_NO_TRAITS(TransformHierarchyInformation);
+DECLARE_EBUS_INSTANTIATION(EntityEvents);
+DECLARE_EBUS_INSTANTIATION(TransformInterface);
+DECLARE_EBUS_INSTANTIATION(TransformNotification);
+DECLARE_EBUS_INSTANTIATION(TransformHierarchyInformation);
 
 namespace AZ
 {

@@ -2002,15 +2002,15 @@ AZ_POP_DISABLE_WARNING
 
 // The following allow heavily-used busses to be declared extern, in order to speed up compile time where the same header
 // with the same bus is included in many different source files.
-// to use it, declare the EBus extern using DECLARE_EBUS_EXTERN or DECLARE_EBUS_EXTERN_NO_TRAITS in the header file
-// and then use DECLARE_EBUS_INSTANTIATION or DECLARE_EBUS_INSTANTIATION_NO_TRAITS in a file that everything that includes the header
+// to use it, declare the EBus extern using DECLARE_EBUS_EXTERN or DECLARE_EBUS_EXTERN_WITH_TRAITS in the header file
+// and then use DECLARE_EBUS_INSTANTIATION or DECLARE_EBUS_INSTANTIATION_WITH_TRAITS in a file that everything that includes the header
 // will link to (for example, in a static library, dynamic library with export library, or .inl that everyone must include in a compile unit).
 
 // The following must be declared AT GLOBAL SCOPE and the namespace AZ is assumed due to the rule that extern template declarations must occur
 // in their enclosing scope.
 
 //! Externs an EBus class template with both the interface and bus traits arguments
-#define DECLARE_EBUS_EXTERN(a,b) \
+#define DECLARE_EBUS_EXTERN_WITH_TRAITS(a,b) \
 namespace AZ \
 { \
    extern template class EBus<a, b>; \
@@ -2018,14 +2018,14 @@ namespace AZ \
 
 //! Externs an EBus class template using only the interface argument
 //! for both the EBus Interface and BusTraits template parameters
-#define DECLARE_EBUS_EXTERN_NO_TRAITS(a) \
+#define DECLARE_EBUS_EXTERN(a) \
 namespace AZ \
 { \
    extern template class EBus<a, a>; \
 }
 
 //! Instantiates an EBus class template with both the interface and bus traits arguments
-#define DECLARE_EBUS_INSTANTIATION(a,b) \
+#define DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(a,b) \
 namespace AZ \
 { \
    template class EBus<a, b>; \
@@ -2033,7 +2033,7 @@ namespace AZ \
 //! Instantiates an EBus class template using only the interface argument
 //! for both the EBus Interface and BusTraits template parameters
 
-#define DECLARE_EBUS_INSTANTIATION_NO_TRAITS(a) \
+#define DECLARE_EBUS_INSTANTIATION(a) \
 namespace AZ \
 { \
    template class EBus<a, a>; \

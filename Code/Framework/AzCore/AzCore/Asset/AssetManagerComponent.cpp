@@ -19,9 +19,9 @@
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Math/Crc.h>
 
-DECLARE_EBUS_INSTANTIATION_NO_TRAITS(Data::AssetManagerNotifications);
-DECLARE_EBUS_INSTANTIATION_NO_TRAITS(Data::AssetCatalogRequests);
-DECLARE_EBUS_INSTANTIATION_NO_TRAITS(Data::AssetManagerEvents);
+DECLARE_EBUS_INSTANTIATION(Data::AssetManagerNotifications);
+DECLARE_EBUS_INSTANTIATION(Data::AssetCatalogRequests);
+DECLARE_EBUS_INSTANTIATION(Data::AssetManagerEvents);
 
 namespace AZ
 {

@@ -73,5 +73,5 @@ namespace AzToolsFramework
                     ;
             }
         }
-    } // end namespace AssetSystem
-} // end namespace AzToolsFramework
+    }
+}

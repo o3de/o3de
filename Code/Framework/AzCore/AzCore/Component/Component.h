@@ -618,4 +618,4 @@ namespace AZ
     };
 }
 
-DECLARE_EBUS_EXTERN(ComponentDescriptor, ComponentDescriptorBusTraits);
+DECLARE_EBUS_EXTERN_WITH_TRAITS(ComponentDescriptor, ComponentDescriptorBusTraits);

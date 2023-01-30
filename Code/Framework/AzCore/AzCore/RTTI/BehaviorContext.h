@@ -5455,4 +5455,4 @@ namespace AZ
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflection.inl>
 
-DECLARE_EBUS_EXTERN_NO_TRAITS(BehaviorContextEvents);
+DECLARE_EBUS_EXTERN(BehaviorContextEvents);

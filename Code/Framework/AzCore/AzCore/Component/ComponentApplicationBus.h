@@ -212,4 +212,4 @@ namespace AZ
     using ComponentApplicationBus = AZ::EBus<ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits>;
 }
 
-DECLARE_EBUS_EXTERN(ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
+DECLARE_EBUS_EXTERN_WITH_TRAITS(ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);

@@ -472,6 +472,6 @@ namespace AZ
     /// @endcond
 }
 
-DECLARE_EBUS_EXTERN_NO_TRAITS(TransformInterface);
-DECLARE_EBUS_EXTERN_NO_TRAITS(TransformNotification);
-DECLARE_EBUS_EXTERN_NO_TRAITS(TransformHierarchyInformation);
+DECLARE_EBUS_EXTERN(TransformInterface);
+DECLARE_EBUS_EXTERN(TransformNotification);
+DECLARE_EBUS_EXTERN(TransformHierarchyInformation);

@@ -78,10 +78,10 @@
 
 #include <AzCore/Outcome/Outcome.h> // for unexpect_t
 
-DECLARE_EBUS_INSTANTIATION(ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
-DECLARE_EBUS_INSTANTIATION_NO_TRAITS(TickEvents);
-DECLARE_EBUS_INSTANTIATION_NO_TRAITS(SystemTickEvents);
-DECLARE_EBUS_INSTANTIATION_NO_TRAITS(TickRequests);
+DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
+DECLARE_EBUS_INSTANTIATION(TickEvents);
+DECLARE_EBUS_INSTANTIATION(SystemTickEvents);
+DECLARE_EBUS_INSTANTIATION(TickRequests);
 
 namespace AZ::Metrics
 {
