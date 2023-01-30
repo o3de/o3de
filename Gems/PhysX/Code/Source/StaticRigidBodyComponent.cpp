@@ -228,32 +228,32 @@ namespace PhysX
 
     AZ::Vector3 StaticRigidBodyComponent::GetCenterOfMassWorld() const
     {
-        return {};
+        return AZ::Vector3::CreateZero();
     }
 
     AZ::Vector3 StaticRigidBodyComponent::GetCenterOfMassLocal() const
     {
-        return {};
+        return AZ::Vector3::CreateZero();
     }
 
     AZ::Matrix3x3 StaticRigidBodyComponent::GetInertiaWorld() const
     {
-        return {};
+        return AZ::Matrix3x3::CreateIdentity();
     }
 
     AZ::Matrix3x3 StaticRigidBodyComponent::GetInertiaLocal() const
     {
-        return {};
+        return AZ::Matrix3x3::CreateIdentity();
     }
 
     AZ::Matrix3x3 StaticRigidBodyComponent::GetInverseInertiaWorld() const
     {
-        return {};
+        return AZ::Matrix3x3::CreateIdentity();
     }
 
     AZ::Matrix3x3 StaticRigidBodyComponent::GetInverseInertiaLocal() const
     {
-        return {};
+        return AZ::Matrix3x3::CreateIdentity();
     }
 
     float StaticRigidBodyComponent::GetMass() const
@@ -276,7 +276,7 @@ namespace PhysX
 
     AZ::Vector3 StaticRigidBodyComponent::GetLinearVelocity() const
     {
-        return {};
+        return AZ::Vector3::CreateZero();
     }
 
     void StaticRigidBodyComponent::SetLinearVelocity(const AZ::Vector3&)
@@ -285,7 +285,7 @@ namespace PhysX
 
     AZ::Vector3 StaticRigidBodyComponent::GetAngularVelocity() const
     {
-        return {};
+        return AZ::Vector3::CreateZero();
     }
 
     void StaticRigidBodyComponent::SetAngularVelocity(const AZ::Vector3&)
@@ -294,7 +294,7 @@ namespace PhysX
 
     AZ::Vector3 StaticRigidBodyComponent::GetLinearVelocityAtWorldPoint(const AZ::Vector3&) const
     {
-        return {};
+        return AZ::Vector3::CreateZero();
     }
 
     void StaticRigidBodyComponent::ApplyLinearImpulse(const AZ::Vector3&)

@@ -44,7 +44,7 @@ namespace PhysX
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        // RigidBodyRequests + SimulatedBodyComponentRequests overrides...
+        // RigidBodyRequests + SimulatedBodyComponentRequests overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
@@ -63,15 +63,15 @@ namespace PhysX
         void Activate() override;
         void Deactivate() override;
 
-        // AZ::EntityBus overrides...
+        // AZ::EntityBus overrides ...
         void OnEntityActivated(const AZ::EntityId& entityId) override;
 
         // AZ::TransformNotificationsBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
         // -------------------------------------------
-        // Unimplemented part of RigidBodyRequests overrides...
-        // In the future RigidBodyRequests can be splitted more to avoid
+        // Unimplemented part of RigidBodyRequests overrides ...
+        // In the future RigidBodyRequests can be split more to avoid
         // having to override these functions.
         AZ::Vector3 GetCenterOfMassWorld() const override;
         AZ::Vector3 GetCenterOfMassLocal() const override;

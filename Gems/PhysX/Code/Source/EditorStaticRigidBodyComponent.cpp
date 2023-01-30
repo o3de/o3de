@@ -26,7 +26,7 @@ namespace PhysX
             {
                 editContext
                     ->Class<EditorStaticRigidBodyComponent>(
-                        "PhysX Static Rigid Body", "The entity behaves as a static rigid object in PhysX.")
+                        "PhysX Static Rigid Body", "The entity behaves as a non-movable rigid object in PhysX.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXStaticRigidBody.svg")

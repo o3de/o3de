@@ -99,7 +99,7 @@ namespace Physics
                 AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
 
                 AZ::Entity* entity = nullptr;
-                EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, id);
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
                 if (entity)
                 {
                     // Only immediately dispatch if the entity is already active, otherwise when
@@ -110,7 +110,7 @@ namespace Physics
                         // Only immediately dispatch if the entity is a RigidBodyRequestBus' handler.
                         RigidBodyRequestBus::EnumerateHandlersId(
                             id,
-                            [handler, id](RigidBodyRequests* rigidBodyhandler)
+                            [handler, id](const RigidBodyRequests* rigidBodyhandler)
                             {
                                 if (rigidBodyhandler->IsPhysicsEnabled())
                                 {
@@ -128,11 +128,9 @@ namespace Physics
         };
 
     public:
-        /**
-         * With this connection policy, RigidBodyNotifications::OnPhysicsEnabled and
-         * RigidBodyNotifications::OnPhysicsDisabled events will be immediately
-         * dispatched when a handler connects to the bus.
-         */
+        //! With this connection policy, RigidBodyNotifications::OnPhysicsEnabled and
+        //! RigidBodyNotifications::OnPhysicsDisabled events will be immediately
+        //! dispatched when a handler connects to the bus.
         template<class Bus>
         using ConnectionPolicy = RigidBodyNotificationsConnectionPolicy<Bus>;
 

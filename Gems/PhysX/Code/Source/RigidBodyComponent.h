@@ -139,7 +139,7 @@ namespace PhysX
         void Activate() override;
         void Deactivate() override;
 
-        // AZ::EntityBus overrides...
+        // AZ::EntityBus overrides ...
         void OnEntityActivated(const AZ::EntityId& entityId) override;
 
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
