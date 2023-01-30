@@ -212,7 +212,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         COMPILE_DEFINITIONS
             PUBLIC
                 ${AUDIOSYSTEM_COMPILEDEFINITIONS}
-                AUDIO_SYSTEM_EDITOR
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzCore
@@ -239,8 +238,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Source/Editor
                 Source/Engine
         COMPILE_DEFINITIONS
-            PUBLIC
-                ${AUDIOSYSTEM_COMPILEDEFINITIONS}
+            PRIVATE
                 AUDIO_SYSTEM_EDITOR
         BUILD_DEPENDENCIES
             PUBLIC
