@@ -58,7 +58,7 @@ namespace PhysXEditorTests
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
         AddEditorBoxShapeComponent(editorEntity);
 
-        // Create game entity and verify StaticRigidBodyComponent was NOTcreated
+        // Create game entity and verify StaticRigidBodyComponent was NOT created
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
         const auto* staticRigidBody = gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>();
 
