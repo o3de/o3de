@@ -507,7 +507,7 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     # Instrumentation binary
     if(NOT O3DE_TEST_IMPACT_INSTRUMENTATION_BIN)
         # No binary specified is not an error, it just means that the test impact analysis part of the framework is disabled
-        message("No test impact framework instrumentation binary was specified, test impact analysis framework will fall back to regular test sequences instead")
+        message(DEBUG "No test impact framework instrumentation binary was specified, test impact analysis framework will fall back to regular test sequences instead")
         set(use_tiaf false)
         set(instrumentation_bin "")
     else()
@@ -617,9 +617,7 @@ function(ly_test_impact_clean_directories)
 
     # Clean the output folders of native and python tests to ensure only the most current run is in there.
     file(REMOVE_RECURSE ${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR})
-    message("${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR}")
     file(REMOVE_RECURSE ${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR})
-    message("${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR}")
 
     # For each build configuration type, delete the persistent and temp folders
     foreach(config_type ${LY_CONFIGURATION_TYPES})
@@ -639,7 +637,7 @@ function(ly_test_impact_post_step)
     endif()
 
     if(NOT O3DE_TEST_IMPACT_ACTIVE)
-        message("TIAF is deactivated but configs and meta-data will still be generated.")
+        message(DEBUG "TIAF is deactivated but configs and meta-data will still be generated.")
     endif()
 
     # Clean temporary and persistent directories
