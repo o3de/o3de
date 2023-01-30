@@ -92,8 +92,9 @@ namespace PhysX
         // Invoked when one of the involved rigid bodies is disabled.
         void DestroyNativeJoint();
 
-        /// Specific joint types will instantiate native joint pointer.
-        virtual void InitNativeJoint() {};
+        // Specific joint types will instantiate native joint pointer.
+        virtual void InitNativeJoint(){};
+        virtual void DeinitNativeJoint(){};
 
         AZ::Transform GetJointLocalPose(const physx::PxRigidActor* actor, const AZ::Transform& jointPose);
 

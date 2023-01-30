@@ -88,19 +88,18 @@ namespace PhysX
             m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
         }
         m_nativeJoint = GetPhysXNativeRevoluteJoint();
+
+        if (m_nativeJoint)
+        {
+            const AZ::EntityComponentIdPair id(GetEntityId(), GetId());
+            PhysX::JointRequestBus::Handler::BusConnect(id);
+        }
     }
 
-    void HingeJointComponent::Activate()
+    void HingeJointComponent::DeinitNativeJoint()
     {
-        JointComponent::Activate();
-        const AZ::EntityComponentIdPair id(GetEntityId(), GetId());
-        PhysX::JointRequestBus::Handler::BusConnect(id);
-    }
-
-    void HingeJointComponent::Deactivate()
-    {
-        PhysX::JointRequestBus::Handler::BusDisconnect();
-        JointComponent::Deactivate();
+        JointRequestBus::Handler::BusDisconnect();
+        m_nativeJoint = nullptr;
     }
 
     physx::PxRevoluteJoint* HingeJointComponent::GetPhysXNativeRevoluteJoint()

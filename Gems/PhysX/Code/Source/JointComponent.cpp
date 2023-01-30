@@ -187,6 +187,8 @@ namespace PhysX
             return;
         }
 
+        DeinitNativeJoint();
+
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
             if (auto* scene = physicsSystem->GetScene(m_jointSceneOwner))
