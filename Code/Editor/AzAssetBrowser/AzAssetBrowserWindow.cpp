@@ -475,6 +475,7 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         connect(projectSourceAssets, &QAction::triggered, this,
             [this, projectSourceAssets]
             {
+                m_ui->m_thumbnailView->HideProductAssets(projectSourceAssets->isChecked());
                 m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
             });
         m_toolsMenu->addAction(projectSourceAssets);
