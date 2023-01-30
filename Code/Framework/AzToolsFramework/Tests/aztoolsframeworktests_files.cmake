@@ -100,6 +100,7 @@ set(FILES
     Prefab/Overrides/PrefabOverrideTestFixture.h
     Prefab/PrefabDeleteTests.cpp
     Prefab/PrefabDeleteAsOverrideTests.cpp
+    Prefab/PrefabDetachPrefabTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabInstanceDomGeneratorTestFixture.cpp
