@@ -95,7 +95,7 @@ namespace AzToolsFramework
         return m_editButton;
     }
 
-    void PropertyBoolComboBoxCtrl::SetEditButtonCallBack(ComboBoxSelectFunc function)
+    void PropertyBoolComboBoxCtrl::SetEditButtonCallBack(ComboBoxSelectFunc* function)
     {
         m_editButtonCallback = function;
     }
@@ -151,7 +151,7 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ_CRC_CE("EditButtonCallback"))
         {
-            ComboBoxSelectFunc function = azdynamic_cast<ComboBoxSelectFunc>(attrValue->GetAttribute());
+            ComboBoxSelectFunc* function = azdynamic_cast<ComboBoxSelectFunc*>(attrValue->GetAttribute());
 
             if (function)
             {

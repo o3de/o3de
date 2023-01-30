@@ -25,7 +25,7 @@ class QPushButton;
 
 namespace AzToolsFramework
 {
-    using ComboBoxSelectFunc = AZ::Edit::AttributeFunction<bool(bool)>*;
+    using ComboBoxSelectFunc = AZ::Edit::AttributeFunction<bool(bool)>;
 
     class PropertyBoolComboBoxCtrl
         : public QWidget
@@ -46,7 +46,7 @@ namespace AzToolsFramework
         QComboBox* GetComboBox();
         QToolButton* GetEditButton();
 
-        void SetEditButtonCallBack(ComboBoxSelectFunc function);
+        void SetEditButtonCallBack(ComboBoxSelectFunc* function);
 
     signals:
         void valueChanged(bool newValue);
@@ -62,7 +62,7 @@ namespace AzToolsFramework
 
         QComboBox* m_pComboBox;
         QToolButton* m_editButton = nullptr;
-        ComboBoxSelectFunc m_editButtonCallback = nullptr;
+        ComboBoxSelectFunc* m_editButtonCallback = nullptr;
     };
 
     class BoolPropertyComboBoxHandler
