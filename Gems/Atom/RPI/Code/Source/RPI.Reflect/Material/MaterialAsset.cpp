@@ -33,12 +33,10 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialAsset, AZ::Data::AssetData>()
-                    ->Version(14) // added m_rawPropertyValues
+                    ->Version(15) // Forcing materials to be fully baked by builder
                     ->Field("materialTypeAsset", &MaterialAsset::m_materialTypeAsset)
                     ->Field("materialTypeVersion", &MaterialAsset::m_materialTypeVersion)
                     ->Field("propertyValues", &MaterialAsset::m_propertyValues)
-                    ->Field("rawPropertyValues", &MaterialAsset::m_rawPropertyValues)
-                    ->Field("finalized", &MaterialAsset::m_wasPreFinalized)
                     ;
             }
         }
@@ -107,23 +105,8 @@ namespace AZ
             return m_materialTypeAsset->GetMaterialPropertiesLayout();
         }
         
-        bool MaterialAsset::WasPreFinalized() const
-        {
-            return m_wasPreFinalized;
-        }
-
         void MaterialAsset::Finalize(AZStd::function<void(const char*)> reportWarning, AZStd::function<void(const char*)> reportError)
         {
-            if (m_wasPreFinalized)
-            {
-                m_isFinalized = true;
-            }
-
-            if (m_isFinalized)
-            {
-                return;
-            }
-
             if (!reportWarning)
             {
                 reportWarning = []([[maybe_unused]] const char* message)
@@ -199,20 +182,10 @@ namespace AZ
             }
 
             m_propertyValues.swap(finalizedPropertyValues);
-
-            m_isFinalized = true;
         }
 
-        const AZStd::vector<MaterialPropertyValue>& MaterialAsset::GetPropertyValues()
+        const AZStd::vector<MaterialPropertyValue>& MaterialAsset::GetPropertyValues() const
         {
-            // This can't be done in MaterialAssetHandler::LoadAssetData because the MaterialTypeAsset isn't necessarily loaded at that point.
-            // And it can't be done in PostLoadInit() because that happens on the next frame which might be too late.
-            // And overriding AssetHandler::InitAsset in MaterialAssetHandler didn't work, because there seems to be non-determinism on the order
-            // of InitAsset calls when a ModelAsset references a MaterialAsset, the model gets initialized first and then fails to use the material.
-            // So we finalize just-in-time when properties are accessed.
-            // If we could solve the problem with InitAsset, that would be the ideal place to call Finalize() and we could make GetPropertyValues() const again.
-            Finalize();
-
             AZ_Assert(GetMaterialPropertiesLayout() && m_propertyValues.size() == GetMaterialPropertiesLayout()->GetPropertyCount(), "MaterialAsset should be finalized but does not have the right number of property values.");
         
             return m_propertyValues;
@@ -227,26 +200,15 @@ namespace AZ
         {
             m_status = AssetStatus::Ready;
 
-            // If this was created dynamically using MaterialAssetCreator (which is what calls SetReady()),
-            // we need to connect to the AssetBus for reloads.
             PostLoadInit();
         }
 
         bool MaterialAsset::PostLoadInit()
         {
-            if (!m_materialTypeAsset.Get())
-            {
-                AssetInitBus::Handler::BusDisconnect();
+            AssetInitBus::Handler::BusDisconnect();
 
-                // Any MaterialAsset with invalid MaterialTypeAsset is not a successfully-loaded asset.
-                return false;
-            }
-            else
-            {
-                AssetInitBus::Handler::BusDisconnect();
-
-                return true;
-            }
+            // Any MaterialAsset with invalid MaterialTypeAsset is not a successfully-loaded asset.
+            return m_materialTypeAsset.IsReady();
         }
 
         void MaterialAsset::ApplyVersionUpdates(AZStd::function<void(const char*)> reportError)
