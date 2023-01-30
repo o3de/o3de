@@ -629,7 +629,9 @@ namespace AzToolsFramework
             {
                 AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
                 EntityIdList selectedEntities;
-                EBUS_EVENT_RESULT(selectedEntities, ToolsApplicationRequests::Bus, GetSelectedEntities);
+                ToolsApplicationRequests::Bus::BroadcastResult(
+                    selectedEntities,
+                    &ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
                 if (AZStd::find(selectedEntities.begin(), selectedEntities.end(), id) != selectedEntities.end())
                 {
                     handler->OnSelected();

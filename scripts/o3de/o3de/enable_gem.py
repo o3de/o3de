@@ -120,8 +120,8 @@ def enable_gem_in_project(gem_name: str = None,
             # it takes about 150ms to populate this structure with 137 gems, 4696 bytes in total
             all_gems_json_data = manifest.get_gems_json_data_by_name(project_path=project_path, include_manifest_gems=True, include_engine_gems=True)
 
-            # remove any gems that are not active or dependencies
-            manifest.remove_non_dependency_gem_json_data(enabled_gem_names, all_gems_json_data)
+            # Note: we don't remove gems that are not active or dependencies
+            # because they will be implicitely found and activated via cmake 
 
             incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path, all_gems_json_data)
             if incompatible_objects:

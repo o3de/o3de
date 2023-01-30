@@ -115,6 +115,7 @@ namespace AzToolsFramework
         void ConsumeAttribute(ComboBoxCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, ComboBoxCtrl* GUI, typename GenericComboBoxHandler::property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, ComboBoxCtrl* GUI, const typename GenericComboBoxHandler::property_t& instance, AzToolsFramework::InstanceDataNode* node)  override;
+        void RegisterWithPropertySystem(AZ::DocumentPropertyEditor::PropertyEditorSystemInterface* system) override;
 
         bool AutoDelete() const override { return true; }
 
