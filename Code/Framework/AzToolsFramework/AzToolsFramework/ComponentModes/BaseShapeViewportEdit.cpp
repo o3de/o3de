@@ -11,24 +11,24 @@
 
 namespace AzToolsFramework
 {
-    void BaseShapeViewportEdit::InstallGetManipulatorSpace(const AZStd::function<AZ::Transform()>& getManipulatorSpace)
+    void BaseShapeViewportEdit::InstallGetManipulatorSpace(AZStd::function<AZ::Transform()> getManipulatorSpace)
     {
-        m_getManipulatorSpace = getManipulatorSpace;
+        m_getManipulatorSpace = AZStd::move(getManipulatorSpace);
     }
 
-    void BaseShapeViewportEdit::InstallGetNonUniformScale(const AZStd::function<AZ::Vector3()>& getNonUniformScale)
+    void BaseShapeViewportEdit::InstallGetNonUniformScale(AZStd::function<AZ::Vector3()> getNonUniformScale)
     {
-        m_getNonUniformScale = getNonUniformScale;
+        m_getNonUniformScale = AZStd::move(getNonUniformScale);
     }
 
-    void BaseShapeViewportEdit::InstallGetTranslationOffset(const AZStd::function<AZ::Vector3()>& getTranslationOffset)
+    void BaseShapeViewportEdit::InstallGetTranslationOffset(AZStd::function<AZ::Vector3()> getTranslationOffset)
     {
-        m_getTranslationOffset = getTranslationOffset;
+        m_getTranslationOffset = AZStd::move(getTranslationOffset);
     }
 
-    void BaseShapeViewportEdit::InstallSetTranslationOffset(const AZStd::function<void(const AZ::Vector3)>& setTranslationOffset)
+    void BaseShapeViewportEdit::InstallSetTranslationOffset(AZStd::function<void(const AZ::Vector3&)> setTranslationOffset)
     {
-        m_setTranslationOffset = setTranslationOffset;
+        m_setTranslationOffset = AZStd::move(setTranslationOffset);
     }
 
     AZ::Transform BaseShapeViewportEdit::GetManipulatorSpace() const
@@ -37,7 +37,7 @@ namespace AzToolsFramework
         {
             return m_getManipulatorSpace();
         }
-        AZ_WarningOnce("BaseShapeViewportEdit", false, "No implementation provided for GetManipulatorSpace");
+        AZ_ErrorOnce("BaseShapeViewportEdit", false, "No implementation provided for GetManipulatorSpace");
         return AZ::Transform::CreateIdentity();
     }
 
@@ -47,7 +47,7 @@ namespace AzToolsFramework
         {
             return m_getNonUniformScale();
         }
-        AZ_WarningOnce("BaseShapeViewportEdit", false, "No implementation provided for GetNonUniformScale");
+        AZ_ErrorOnce("BaseShapeViewportEdit", false, "No implementation provided for GetNonUniformScale");
         return AZ::Vector3::CreateOne();
     }
 
@@ -57,7 +57,7 @@ namespace AzToolsFramework
         {
             return m_getTranslationOffset();
         }
-        AZ_WarningOnce("BaseShapeViewportEdit", false, "No implementation provided for GetTranslationOffset");
+        AZ_ErrorOnce("BaseShapeViewportEdit", false, "No implementation provided for GetTranslationOffset");
         return AZ::Vector3::CreateZero();
     }
 
@@ -69,7 +69,7 @@ namespace AzToolsFramework
         }
         else
         {
-            AZ_WarningOnce("BaseShapeViewportEdit", false, "No implementation provided for SetTranslationOffset");
+            AZ_ErrorOnce("BaseShapeViewportEdit", false, "No implementation provided for SetTranslationOffset");
         }
     }
 } // namespace AzToolsFramework

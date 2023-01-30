@@ -30,9 +30,9 @@ namespace AzToolsFramework
         void ResetValues() override;
         void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
 
-        void InstallGetBoxDimensions(const AZStd::function<AZ::Vector3()>& getBoxDimensions);
-        void InstallGetLocalTransform(const AZStd::function<AZ::Transform()>& getLocalTransform);
-        void InstallSetBoxDimensions(const AZStd::function<void(const AZ::Vector3)>& setBoxDimensions);
+        void InstallGetBoxDimensions(AZStd::function<AZ::Vector3()> getBoxDimensions);
+        void InstallGetLocalTransform(AZStd::function<AZ::Transform()> getLocalTransform);
+        void InstallSetBoxDimensions(AZStd::function<void(const AZ::Vector3&)> setBoxDimensions);
 
     private:
         AZ::Vector3 GetBoxDimensions() const;
@@ -45,6 +45,6 @@ namespace AzToolsFramework
 
         AZStd::function<AZ::Vector3()> m_getBoxDimensions;
         AZStd::function<AZ::Transform()> m_getLocalTransform;
-        AZStd::function<void(const AZ::Vector3)> m_setBoxDimensions;
+        AZStd::function<void(const AZ::Vector3&)> m_setBoxDimensions;
     };
 } // namespace AzToolsFramework

@@ -30,19 +30,19 @@ namespace AzToolsFramework
     {
     }
 
-    void BoxViewportEdit::InstallGetBoxDimensions(const AZStd::function<AZ::Vector3()>& getBoxDimensions)
+    void BoxViewportEdit::InstallGetBoxDimensions(AZStd::function<AZ::Vector3()> getBoxDimensions)
     {
-        m_getBoxDimensions = getBoxDimensions;
+        m_getBoxDimensions = AZStd::move(getBoxDimensions);
     }
 
-    void BoxViewportEdit::InstallGetLocalTransform(const AZStd::function<AZ::Transform()>& getLocalTransform)
+    void BoxViewportEdit::InstallGetLocalTransform(AZStd::function<AZ::Transform()> getLocalTransform)
     {
-        m_getLocalTransform = getLocalTransform;
+        m_getLocalTransform = AZStd::move(getLocalTransform);
     }
 
-    void BoxViewportEdit::InstallSetBoxDimensions(const AZStd::function<void(const AZ::Vector3)>& setBoxDimensions)
+    void BoxViewportEdit::InstallSetBoxDimensions(AZStd::function<void(const AZ::Vector3&)> setBoxDimensions)
     {
-        m_setBoxDimensions = setBoxDimensions;
+        m_setBoxDimensions = AZStd::move(setBoxDimensions);
     }
 
     AZ::Vector3 BoxViewportEdit::GetBoxDimensions() const
@@ -51,7 +51,7 @@ namespace AzToolsFramework
         {
             return m_getBoxDimensions();
         }
-        AZ_WarningOnce("BoxViewportEdit", false, "No implementation provided for GetBoxDimensions");
+        AZ_ErrorOnce("BoxViewportEdit", false, "No implementation provided for GetBoxDimensions");
         return AZ::Vector3::CreateOne();
     }
 
@@ -61,7 +61,7 @@ namespace AzToolsFramework
         {
             return m_getLocalTransform();
         }
-        AZ_WarningOnce("BoxViewportEdit", false, "No implementation provided for GetLocalTransform");
+        AZ_ErrorOnce("BoxViewportEdit", false, "No implementation provided for GetLocalTransform");
         return AZ::Transform::CreateIdentity();
     }
 
@@ -73,7 +73,7 @@ namespace AzToolsFramework
         }
         else
         {
-            AZ_WarningOnce("BoxViewportEdit", false, "No implementation provided for SetBoxDimensions");
+            AZ_ErrorOnce("BoxViewportEdit", false, "No implementation provided for SetBoxDimensions");
         }
     }
 

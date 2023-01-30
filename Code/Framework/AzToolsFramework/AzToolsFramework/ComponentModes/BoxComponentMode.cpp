@@ -399,10 +399,10 @@ namespace AzToolsFramework
             ShapeManipulatorRequestBus::Event(
                 entityComponentIdPair, &ShapeManipulatorRequestBus::Events::SetTranslationOffset, translationOffset);
         };
-        baseShapeViewportEdit->InstallGetManipulatorSpace(getManipulatorSpace);
-        baseShapeViewportEdit->InstallGetNonUniformScale(getNonUniformScale);
-        baseShapeViewportEdit->InstallGetTranslationOffset(getTranslationOffset);
-        baseShapeViewportEdit->InstallSetTranslationOffset(setTranslationOffset);
+        baseShapeViewportEdit->InstallGetManipulatorSpace(AZStd::move(getManipulatorSpace));
+        baseShapeViewportEdit->InstallGetNonUniformScale(AZStd::move(getNonUniformScale));
+        baseShapeViewportEdit->InstallGetTranslationOffset(AZStd::move(getTranslationOffset));
+        baseShapeViewportEdit->InstallSetTranslationOffset(AZStd::move(setTranslationOffset));
     }
 
     void InstallBoxViewportEditFunctions(BoxViewportEdit* boxViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair)
@@ -424,8 +424,8 @@ namespace AzToolsFramework
         {
             BoxManipulatorRequestBus::Event(entityComponentIdPair, &BoxManipulatorRequestBus::Events::SetDimensions, boxDimensions);
         };
-        boxViewportEdit->InstallGetLocalTransform(getLocalTransform);
-        boxViewportEdit->InstallGetBoxDimensions(getBoxDimensions);
-        boxViewportEdit->InstallSetBoxDimensions(setBoxDimensions);
+        boxViewportEdit->InstallGetLocalTransform(AZStd::move(getLocalTransform));
+        boxViewportEdit->InstallGetBoxDimensions(AZStd::move(getBoxDimensions));
+        boxViewportEdit->InstallSetBoxDimensions(AZStd::move(setBoxDimensions));
     }
 } // namespace AzToolsFramework

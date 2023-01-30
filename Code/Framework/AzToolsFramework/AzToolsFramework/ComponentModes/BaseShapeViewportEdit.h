@@ -19,7 +19,7 @@ namespace AZ
 
 namespace AzToolsFramework
 {
-    //! Base class for objects used in shape component mode sub modes which use viewport editing.
+    //! Base class for viewport editing of shapes.
     //! This class and its descendants are intended to be viewport independent, so avoid using buses addressed by EntityId or
     //! EntityComponentIdPair.
     //! To facilitate uses in the main viewport, an EntityComponentIdPair can optionally be specified using AddEntityComponentIdPair, in
@@ -29,16 +29,23 @@ namespace AzToolsFramework
     public:
         virtual ~BaseShapeViewportEdit() = default;
 
+        //! Create manipulators for the shape properties to be edited.
         virtual void Setup() = 0;
+        //! Destroy the manipulators for the shape properties being edited.
         virtual void Teardown() = 0;
+        //! Call after modifying the shape to ensure that the space the manipulators operate in is updated, along with other properties.
         virtual void UpdateManipulators() = 0;
+        //! Reset the shape properties being edited to their default values.
         virtual void ResetValues() = 0;
+        //! Optionally used to associate an EntityComponentIdPair with the shape manipulators.
+        //! This is useful in the main editor viewport for hooking up undo/redo behavior and UI refreshing.
+        //! This should be called after Setup. Otherwise, the manipulators will not have been created yet.
         virtual void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) = 0;
 
-        void InstallGetManipulatorSpace(const AZStd::function<AZ::Transform()>& getManipulatorSpace);
-        void InstallGetNonUniformScale(const AZStd::function<AZ::Vector3()>& getNonUniformScale);
-        void InstallGetTranslationOffset(const AZStd::function<AZ::Vector3()>& getTranslationOffset);
-        void InstallSetTranslationOffset(const AZStd::function<void(const AZ::Vector3)>& setTranslationOffset);
+        void InstallGetManipulatorSpace(AZStd::function<AZ::Transform()> getManipulatorSpace);
+        void InstallGetNonUniformScale(AZStd::function<AZ::Vector3()> getNonUniformScale);
+        void InstallGetTranslationOffset(AZStd::function<AZ::Vector3()> getTranslationOffset);
+        void InstallSetTranslationOffset(AZStd::function<void(const AZ::Vector3&)> setTranslationOffset);
 
     protected:
         AZ::Transform GetManipulatorSpace() const;
@@ -49,6 +56,6 @@ namespace AzToolsFramework
         AZStd::function<AZ::Transform()> m_getManipulatorSpace;
         AZStd::function<AZ::Vector3()> m_getNonUniformScale;
         AZStd::function<AZ::Vector3()> m_getTranslationOffset;
-        AZStd::function<void(const AZ::Vector3)> m_setTranslationOffset;
+        AZStd::function<void(const AZ::Vector3&)> m_setTranslationOffset;
     };
 } // namespace AzToolsFramework
