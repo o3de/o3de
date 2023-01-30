@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RPI.Public/Pass/Specific/DownsampleSinglePassLuminancePass.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 
@@ -14,12 +15,15 @@ namespace AZ::RPI
 {
     Ptr<DownsampleSinglePassLuminancePass> DownsampleSinglePassLuminancePass::Create(const PassDescriptor& descriptor)
     {
-        Ptr<DownsampleSinglePassLuminancePass> pass = aznew DownsampleSinglePassLuminancePass(descriptor);
+        // Check capability of wave operation
+        bool isWaveSupported = RHI::GetRHIDevice()->GetFeatures().m_waveOperation;
+        const char* supervariantName = isWaveSupported ? "" : AZ::RPI::NoWaveSupervariantName;
+        Ptr<DownsampleSinglePassLuminancePass> pass = aznew DownsampleSinglePassLuminancePass(descriptor, AZ::Name(supervariantName));
         return pass;
     }
 
-    DownsampleSinglePassLuminancePass::DownsampleSinglePassLuminancePass(const PassDescriptor& descriptor)
-        : ComputePass(descriptor)
+    DownsampleSinglePassLuminancePass::DownsampleSinglePassLuminancePass(const PassDescriptor& descriptor, AZ::Name supervariant)
+        : ComputePass(descriptor, supervariant)
     {
         BuildGlobalAtomicBuffer();
     }

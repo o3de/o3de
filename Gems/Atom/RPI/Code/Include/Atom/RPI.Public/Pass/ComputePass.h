@@ -47,7 +47,7 @@ namespace AZ
             Data::Instance<Shader> GetShader() const;
 
         protected:
-            ComputePass(const PassDescriptor& descriptor);
+            ComputePass(const PassDescriptor& descriptor, AZ::Name supervariant = AZ::Name(""));
 
             // Pass behavior overrides...
             void FrameBeginInternal(FramePrepareParams params) override;
@@ -79,7 +79,7 @@ namespace AZ
             void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
             void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
 
-            void LoadShader();
+            void LoadShader(AZ::Name supervariant = AZ::Name(""));
             PassDescriptor m_passDescriptor;
 
         };

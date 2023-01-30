@@ -40,7 +40,7 @@ namespace AZ
             return pass;
         }
 
-        ComputePass::ComputePass(const PassDescriptor& descriptor)
+        ComputePass::ComputePass(const PassDescriptor& descriptor, AZ::Name supervariant)
             : RenderPass(descriptor)
             , m_passDescriptor(descriptor)
         {
@@ -58,10 +58,10 @@ namespace AZ
             dispatchArgs.m_totalNumberOfThreadsZ = passData->m_totalNumberOfThreadsZ;
             m_dispatchItem.m_arguments = dispatchArgs;
 
-            LoadShader();
+            LoadShader(supervariant);
         }
 
-        void ComputePass::LoadShader()
+        void ComputePass::LoadShader(AZ::Name supervariant)
         {
             // Load ComputePassData...
             const ComputePassData* passData = PassUtils::GetPassData<ComputePassData>(m_passDescriptor);
@@ -93,7 +93,7 @@ namespace AZ
                 return;
             }
 
-            m_shader = Shader::FindOrCreate(shaderAsset);
+            m_shader = Shader::FindOrCreate(shaderAsset, supervariant);
             if (m_shader == nullptr)
             {
                 AZ_Error("PassSystem", false, "[ComputePass '%s']: Failed to load shader '%s'!",

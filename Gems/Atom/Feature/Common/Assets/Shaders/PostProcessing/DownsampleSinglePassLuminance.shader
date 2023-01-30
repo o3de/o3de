@@ -10,5 +10,15 @@
           "type": "Compute"
         }
       ]
-    }
+    },
+
+    "Supervariants":
+    [
+        {
+            "Name": "NoWave",
+            "AddBuildArguments": {
+                "preprocessor": ["-DSPD_NO_WAVE_OPERATIONS"]
+            }
+        }
+    ]
 }

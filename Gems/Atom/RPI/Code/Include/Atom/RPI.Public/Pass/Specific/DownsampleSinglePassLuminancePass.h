@@ -34,7 +34,7 @@ namespace AZ::RPI
             uint32_t m_counter;
         };
 
-        explicit DownsampleSinglePassLuminancePass(const PassDescriptor& descriptor);
+        explicit DownsampleSinglePassLuminancePass(const PassDescriptor& descriptor, AZ::Name supervariant);
 
         // Pass Behaviour Overrides...
         void BuildInternal() override;
