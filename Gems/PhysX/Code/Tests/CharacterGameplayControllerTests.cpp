@@ -38,10 +38,18 @@ namespace PhysX
     // transform for a floor centred at x = 0, y = 0, with top at level z = 0
     static const AZ::Transform DefaultFloorTransform = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(-0.5f));
 
+    // Default Values for the Gamplay Controller
+    static const float DefaultGravityMultiplier = 1.0f;
+    static const float DefaultGroundDetectionBoxHeight = 0.05f;
+
     class ControllerTestBasis
     {
     public:
-        ControllerTestBasis(AzPhysics::SceneHandle sceneHandle, const AZ::Transform& floorTransform = DefaultFloorTransform)
+        ControllerTestBasis(
+            AzPhysics::SceneHandle sceneHandle,
+            float gravityMultiplier = DefaultGravityMultiplier,
+            float groundDetectionBoxHeight = DefaultGroundDetectionBoxHeight,
+            const AZ::Transform& floorTransform = DefaultFloorTransform)
             : m_sceneHandle(sceneHandle)
         {
             if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
@@ -49,16 +57,21 @@ namespace PhysX
                 m_testScene = physicsSystem->GetScene(m_sceneHandle);
             }
             AZ_Assert(m_testScene != nullptr, "ControllerTestBasis: the Test scene is null.");
-            SetUp(floorTransform);
+            SetUp(gravityMultiplier, groundDetectionBoxHeight, floorTransform);
         }
 
-        void SetUp(const AZ::Transform& floorTransform = DefaultFloorTransform)
+        void SetUp(float gravityMultiplier = DefaultGravityMultiplier,
+            float groundDetectionBoxHeight = DefaultGroundDetectionBoxHeight,
+            const AZ::Transform& floorTransform = DefaultFloorTransform)
         {
             m_floor = PhysX::TestUtils::AddStaticFloorToScene(m_sceneHandle, floorTransform);
 
             m_controllerEntity = AZStd::make_unique<AZ::Entity>("CharacterEntity");
+
+            // Transform Setup
             m_controllerEntity->CreateComponent<AzFramework::TransformComponent>()->SetWorldTM(AZ::Transform::Identity());
 
+            // Character Controller Setup
             auto capsuleShapeConfiguration = AZStd::make_unique<Physics::CapsuleShapeConfiguration>();
             auto characterConfiguration = AZStd::make_unique<Physics::CharacterConfiguration>();
             characterConfiguration->m_maximumSlopeAngle = 25.0f;
@@ -66,6 +79,15 @@ namespace PhysX
 
             m_controllerEntity->CreateComponent<CharacterControllerComponent>(
                 AZStd::move(characterConfiguration), AZStd::move(capsuleShapeConfiguration));
+
+            // Gameplay Controller Setup
+            PhysX::CharacterGameplayConfiguration characterGameplayConfiguration;
+
+            characterGameplayConfiguration.m_gravityMultiplier = gravityMultiplier;
+            characterGameplayConfiguration.m_groundDetectionBoxHeight = groundDetectionBoxHeight;
+            m_gameplayController = m_controllerEntity->CreateComponent<CharacterGameplayComponent>(characterGameplayConfiguration);
+            
+            // Wrap UP
             m_controllerEntity->Init();
             m_controllerEntity->Activate();
 
@@ -89,10 +111,11 @@ namespace PhysX
         AzPhysics::StaticRigidBody* m_floor;
         AZStd::unique_ptr<AZ::Entity> m_controllerEntity;
         Physics::Character* m_controller = nullptr;
+        PhysX::CharacterGameplayComponent* m_gameplayController = nullptr;
         float m_timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
     };
 
-    TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GravitySetsWhileMoving)
+    TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GravitySetsWhileMoving_Old)
     {
         PhysX::CharacterGameplayComponent* gameplayComponent = nullptr;
         AzFramework::TransformComponent* transformComponent = nullptr;
@@ -139,4 +162,12 @@ namespace PhysX
         }
     }
 
+    TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GravitySetsWhileMoving_New)
+    {
+        float expectedGravityMultiplier = 2.5f;
+
+        ControllerTestBasis basis(m_testSceneHandle, expectedGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+
+
+    }
 } // namespace PhysX
