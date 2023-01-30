@@ -10,7 +10,7 @@
 
 #include <AzCore/std/string/string_view.h>
 
-namespace EditorToolBar
+namespace EditorIdentifiers
 {
     // Editor main window top ToolBarArea
     inline constexpr AZStd::string_view MainWindowTopToolBarAreaIdentifier = "o3de.toolbararea.editor.mainwindow.top";

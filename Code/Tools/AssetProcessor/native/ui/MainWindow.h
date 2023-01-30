@@ -112,7 +112,7 @@ public:
 
     explicit MainWindow(GUIApplicationManager* guiApplicationManager, QWidget* parent = 0);
     void Activate();
-    ~MainWindow();
+    ~MainWindow() override;
 
 public Q_SLOTS:
     void ShowWindow();

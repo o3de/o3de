@@ -103,7 +103,8 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
 
         if (destroyOld && m_entityId != newEntityId)
         {
-            EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, DestroyEditorEntity, m_entityId);
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequestBus::Events::DestroyEditorEntity, m_entityId);
         }
 
         m_entityId.SetInvalid();
@@ -135,7 +136,8 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
             }
         }
 
-        EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, AddRequiredComponents, *entity);
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
 
         AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
         LmbrCentral::RenderBoundsNotificationBus::Handler::BusConnect(m_entityId);
@@ -194,7 +196,7 @@ void CComponentEntityObject::SetName(const QString& name)
         EditorActionScope nameChange(m_nameReentryGuard);
 
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityId);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_entityId);
 
         if (entity)
         {
@@ -258,7 +260,8 @@ void CComponentEntityObject::SetHighlight(bool bHighlight)
 
     if (m_entityId.IsValid())
     {
-        EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, SetEntityHighlighted, m_entityId, bHighlight);
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetEntityHighlighted, m_entityId, bHighlight);
     }
 }
 
@@ -285,11 +288,12 @@ void CComponentEntityObject::AttachChild(CBaseObject* child, bool /*bKeepPos*/)
 
             {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Editor Parent");
-                EBUS_EVENT_ID(childEntityId, AZ::TransformBus, SetParent, m_entityId);
+                AZ::TransformBus::Event(childEntityId, &AZ::TransformBus::Events::SetParent, m_entityId);
                 undoBatch.MarkEntityDirty(childEntityId);
             }
 
-            EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
         }
     }
 }
@@ -307,11 +311,12 @@ void CComponentEntityObject::DetachThis(bool /*bKeepPos*/)
         if (m_entityId.IsValid())
         {
             AzToolsFramework::ScopedUndoBatch undoBatch("Editor Unparent");
-            EBUS_EVENT_ID(m_entityId, AZ::TransformBus, SetParent, AZ::EntityId());
+            AZ::TransformBus::Event(m_entityId, &AZ::TransformBus::Events::SetParent, AZ::EntityId());
             undoBatch.MarkEntityDirty(m_entityId);
         }
 
-        EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
     }
 }
 
@@ -563,7 +568,7 @@ void CComponentEntityObject::InvalidateTM(int nWhyFlags)
         if (m_entityId.IsValid())
         {
             Matrix34 worldTransform = GetWorldTM();
-            EBUS_EVENT_ID(m_entityId, AZ::TransformBus, SetWorldTM, LYTransformToAZTransform(worldTransform));
+            AZ::TransformBus::Event(m_entityId, &AZ::TransformBus::Events::SetWorldTM, LYTransformToAZTransform(worldTransform));
         }
     }
 }
@@ -712,7 +717,8 @@ XmlNodeRef CComponentEntityObject::Export([[maybe_unused]] const QString& levelP
 CComponentEntityObject* CComponentEntityObject::FindObjectForEntity(AZ::EntityId id)
 {
     CEntityObject* object = nullptr;
-    EBUS_EVENT_ID_RESULT(object, id, AzToolsFramework::ComponentEntityEditorRequestBus, GetSandboxObject);
+    AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
+        object, id, &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
 
     if (object && (object->GetType() == OBJTYPE_AZENTITY))
     {

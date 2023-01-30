@@ -6,11 +6,13 @@
  *
  */
 
+#include <QDesktopServices>
 #include <QMenu>
 #include <QTimer>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QMessageBox>
+#include <QUrl>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/string/conversions.h>
@@ -53,6 +55,8 @@ namespace AZ
                 ui->m_mainLayout->insertWidget(0, m_propertyEditor);
 
                 BuildAndConnectAddButton();
+
+                BuildHelpButton();
 
                 BusConnect();
             }
@@ -347,6 +351,45 @@ namespace AZ
                     AzFramework::StringFunc::Join(buttonText, classNames.begin(), classNames.end(), " or ");
                     ui->m_addButton->setText(buttonText.c_str());
                 }
+            }
+
+            void ManifestWidgetPage::BuildHelpButton()
+            {
+                // Default to the root scene settings page, this is used when:
+                //  * There are no groups available to add.
+                //  * There are multiple groups available to add.
+                //  * The group to add does not have a help URL set.
+                //  * There is an issue retrieving the help URL from the group.
+                m_helpUrl = "https://www.o3de.org/docs/user-guide/assets/scene-settings/";
+
+                if (m_classTypeIds.size() == 1)
+                {
+                    const SerializeContext::ClassData* classData = m_context->FindClassData(m_classTypeIds[0]);
+                    if (classData && classData->m_editData)
+                    {
+                        const AZ::Edit::ElementData* editorElementData =
+                            classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
+                        if (auto categoryAttribute = editorElementData->FindAttribute(AZ::Edit::Attributes::HelpPageURL))
+                        {
+                            if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(categoryAttribute))
+                            {
+                                const DataTypes::IGroup* sceneNodeGroup = nullptr;
+                                AZStd::string urlValue = categoryAttributeData->Get(&sceneNodeGroup);
+                                if (!urlValue.empty())
+                                {
+                                    m_helpUrl = urlValue.c_str();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                connect(ui->m_supportButton, &QPushButton::clicked, this, &ManifestWidgetPage::OnHelpButtonClicked);
+            }
+
+            void ManifestWidgetPage::OnHelpButtonClicked()
+            {
+                QDesktopServices::openUrl(QUrl(m_helpUrl));
             }
 
             AZStd::string ManifestWidgetPage::ClassIdToName(const Uuid& id) const

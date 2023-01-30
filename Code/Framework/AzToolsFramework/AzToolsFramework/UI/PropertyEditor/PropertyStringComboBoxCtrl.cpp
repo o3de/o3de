@@ -198,7 +198,7 @@ namespace AzToolsFramework
         PropertyStringComboBoxCtrl* newCtrl = aznew PropertyStringComboBoxCtrl(pParent);
         connect(newCtrl, &PropertyStringComboBoxCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
             });
         return newCtrl;
@@ -221,7 +221,8 @@ namespace AzToolsFramework
 
     void RegisterStringComboBoxHandler()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew StringEnumPropertyComboBoxHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew StringEnumPropertyComboBoxHandler());
     }
 
 }

@@ -40,6 +40,7 @@ namespace AtomToolsFramework
         GraphModel::NodePtr CreateNodeById(GraphModel::GraphPtr graph, const AZ::Uuid& configId) override;
         GraphModel::NodePtr CreateNodeByName(GraphModel::GraphPtr graph, const AZStd::string& name) override;
         void RegisterEditDataForSetting(const AZStd::string& settingName, const AZ::Edit::ElementData& editData) override;
+        AZStd::vector<AZStd::string> GetRegisteredEditDataSettingNames() const override;
         const AZ::Edit::ElementData* GetEditDataForSetting(const AZStd::string& settingName) const override;
 
     private:

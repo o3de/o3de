@@ -623,7 +623,7 @@ namespace AzToolsFramework
         SetCurrentAssetHint(AZStd::string());
         SetSelectedAssetID(AZ::Data::AssetId());
         // To clear the asset we only need to refresh the values.
-        EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_Values);
+        ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_Values);
     }
 
     void PropertyAssetCtrl::SourceFileChanged(AZStd::string /*relativePath*/, AZStd::string /*scanFolder*/, AZ::Uuid sourceUUID)
@@ -782,7 +782,7 @@ namespace AzToolsFramework
         {
             // Show default asset editor (property grid dialog) if this asset type has edit reflection.
             AZ::SerializeContext* serializeContext = nullptr;
-            EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             if (serializeContext)
             {
                 const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(GetCurrentAssetType());
@@ -1401,7 +1401,7 @@ namespace AzToolsFramework
         connect(newCtrl, &PropertyAssetCtrl::OnAssetIDChanged, this, [newCtrl](AZ::Data::AssetId newAssetID)
         {
             (void)newAssetID;
-            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
         return newCtrl;
@@ -1685,7 +1685,7 @@ namespace AzToolsFramework
         connect(newCtrl, &PropertyAssetCtrl::OnAssetIDChanged, this, [newCtrl](AZ::Data::AssetId newAssetID)
         {
             (void)newAssetID;
-            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
         return newCtrl;
@@ -1721,7 +1721,7 @@ namespace AzToolsFramework
         connect(newCtrl, &PropertyAssetCtrl::OnAssetIDChanged, this, [newCtrl](AZ::Data::AssetId newAssetID)
         {
             (void)newAssetID;
-            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
         return newCtrl;
@@ -1738,7 +1738,8 @@ namespace AzToolsFramework
         (void)node;
 
         AZStd::string assetPath;
-        EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, GUI->GetSelectedAssetID());
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, GUI->GetSelectedAssetID());
 
         instance.SetAssetPath(assetPath.c_str());
     }
@@ -1753,7 +1754,8 @@ namespace AzToolsFramework
         AZ::Data::AssetId assetId;
         if (!instance.GetAssetPath().empty())
         {
-            EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, instance.GetAssetPath().c_str(), instance.GetAssetType(), true);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                instance.GetAssetPath().c_str(), instance.GetAssetType(), true);
         }
 
         // Set the hint in case the asset is not able to be found by assetId

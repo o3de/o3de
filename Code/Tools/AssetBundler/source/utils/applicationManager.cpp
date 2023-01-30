@@ -60,7 +60,7 @@ namespace AssetBundler
         Start(AzFramework::Application::Descriptor(), startupParameters);
 
         AZ::SerializeContext* context;
-        EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(context, "No serialize context");
         AzToolsFramework::AssetSeedManager::Reflect(context);
         AzToolsFramework::AssetFileInfoListComparison::Reflect(context);

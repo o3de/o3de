@@ -142,7 +142,7 @@ void AssetImporterWindow::closeEvent(QCloseEvent* ev)
 void AssetImporterWindow::Init()
 {
     // Serialization and reflection framework setup
-    EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(m_serializeContext, "Serialization context not available");
 
     // Load the style sheets
@@ -180,7 +180,8 @@ void AssetImporterWindow::Init()
 
     // Filling the initial browse prompt text to be programmatically set from available extensions
     AZStd::unordered_set<AZStd::string> extensions;
-    EBUS_EVENT(AZ::SceneAPI::Events::AssetImportRequestBus, GetSupportedFileExtensions, extensions);
+    AZ::SceneAPI::Events::AssetImportRequestBus::Broadcast(
+        &AZ::SceneAPI::Events::AssetImportRequestBus::Events::GetSupportedFileExtensions, extensions);
     AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, !extensions.empty(), "No file extensions defined for assets.");
     if (!extensions.empty())
     {
@@ -433,8 +434,12 @@ void AssetImporterWindow::OnSceneResetRequested()
             m_assetImporterDocument->GetScene()->GetManifest().Clear();
 
             AZ::SceneAPI::Events::ProcessingResultCombiner result;
-            EBUS_EVENT_RESULT(result, AssetImportRequestBus, UpdateManifest, *m_assetImporterDocument->GetScene(),
-                AssetImportRequest::ManifestAction::ConstructDefault, AssetImportRequest::RequestingApplication::Editor);
+            AssetImportRequestBus::BroadcastResult(
+                result,
+                &AssetImportRequestBus::Events::UpdateManifest,
+                *m_assetImporterDocument->GetScene(),
+                AssetImportRequest::ManifestAction::ConstructDefault,
+                AssetImportRequest::RequestingApplication::Editor);
 
             // Specifically using success, because ignore would be an invalid case.
             // Whenever we do construct default, it should always be done
