@@ -1,0 +1,131 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "PinkFlower",
+        "Components": {
+            "Component_[10444337162843472597]": {
+                "$type": "EditorLockComponent",
+                "Id": 10444337162843472597
+            },
+            "Component_[14431042590323756177]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 14431042590323756177,
+                "ChildEntityOrderEntryArray": [
+                    {
+                        "EntityId": "Entity_[491002114939]"
+                    }
+                ]
+            },
+            "Component_[14577735453176806353]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 14577735453176806353
+            },
+            "Component_[15674021346798629563]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 15674021346798629563
+            },
+            "Component_[16784074985702513600]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 16784074985702513600,
+                "Parent Entity": ""
+            },
+            "Component_[3351614541100572773]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 3351614541100572773
+            },
+            "Component_[3600658560328167663]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 3600658560328167663
+            },
+            "Component_[6155673728651558934]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 6155673728651558934
+            },
+            "Component_[8458684662170321289]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 8458684662170321289
+            },
+            "Component_[8705192117416252351]": {
+                "$type": "SelectionComponent",
+                "Id": 8705192117416252351
+            },
+            "Component_[8801280051488695852]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 8801280051488695852
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[491002114939]": {
+            "Id": "Entity_[491002114939]",
+            "Name": "PinkFlower",
+            "Components": {
+                "Component_[11083205340162142682]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 11083205340162142682
+                },
+                "Component_[11327363779873517]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11327363779873517
+                },
+                "Component_[12717389211269537921]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 12717389211269537921
+                },
+                "Component_[12826285685970138542]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 12826285685970138542,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{549F4C4D-A7D9-5F2A-A6BD-F24C8BC43BBF}",
+                                    "subId": 280086017
+                                },
+                                "assetHint": "assets/objects/foliage/grass_flower_pink.azmodel"
+                            }
+                        }
+                    }
+                },
+                "Component_[14101419970865342875]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 14101419970865342875
+                },
+                "Component_[14770464075286403207]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 14770464075286403207
+                },
+                "Component_[15205142653091190082]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 15205142653091190082,
+                    "Parent Entity": "ContainerEntity"
+                },
+                "Component_[15510898811147803772]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 15510898811147803772,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 15205142653091190082
+                        },
+                        {
+                            "ComponentId": 12826285685970138542,
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[15988401742428977134]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 15988401742428977134
+                },
+                "Component_[4300550837037679336]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 4300550837037679336
+                },
+                "Component_[996914988793716659]": {
+                    "$type": "SelectionComponent",
+                    "Id": 996914988793716659
+                }
+            }
+        }
+    }
+}

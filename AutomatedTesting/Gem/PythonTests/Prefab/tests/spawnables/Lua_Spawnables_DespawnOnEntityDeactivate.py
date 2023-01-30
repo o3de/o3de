@@ -22,10 +22,10 @@ def Lua_Spawnables_DespawnOnEntityDeactivate():
         search_filter = entity.SearchFilter()
         search_filter.names = ["Lua_Spawner"]
         spawner_entity = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)[0]
-        search_filter.names = ["PinkFlower"]
+        search_filter.names = ["PinkFlower_Lua_DespawnOnEntityDeactivate"]
         flower_entity = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
         assert spawner_entity is not None, f"Failed to find Spawner entity {condition}"
-        assert len(flower_entity) == 0, f"Unexpectedly found PinkFlower entity {condition}"
+        assert len(flower_entity) == 0, f"Unexpectedly found PinkFlower_Lua_DespawnOnEntityDeactivate entity {condition}"
 
     helper.init_idle()
     helper.open_level("Prefab", "Lua_Spawnables_DespawnOnEntityDeactivate")
@@ -37,10 +37,11 @@ def Lua_Spawnables_DespawnOnEntityDeactivate():
     general.enter_game_mode()
     helper.wait_for_condition(lambda: EditorEntity(general.find_game_entity("Lua_Spawner")) is not None, 3.0)
     spawner_entity = EditorEntity(general.find_game_entity("Lua_Spawner"))
-    helper.wait_for_condition(lambda: EditorEntity(general.find_game_entity("PinkFlower")) is not None, 3.0)
-    flower_entity = EditorEntity(general.find_game_entity("PinkFlower"))
+    helper.wait_for_condition(lambda: EditorEntity(general.find_game_entity(
+        "PinkFlower_Lua_DespawnOnEntityDeactivate")) is not None, 3.0)
+    flower_entity = EditorEntity(general.find_game_entity("PinkFlower_Lua_DespawnOnEntityDeactivate"))
     assert spawner_entity, "Failed to find Spawner entity at runtime"
-    assert flower_entity, "Failed to find PinkFlower entity at runtime"
+    assert flower_entity, "Failed to find PinkFlower_Lua_DespawnOnEntityDeactivate entity at runtime"
 
     # Exit Game Mode and verify despawn of all SpawnablesTestEntity instance
     general.exit_game_mode()

@@ -385,11 +385,11 @@
                                         "value": {
                                             "asset": {
                                                 "assetId": {
-                                                    "guid": "{80C0CF4E-9A5E-544B-B89E-BC980175A259}",
-                                                    "subId": 3875079122
+                                                    "guid": "{24B6164A-7A30-5401-94FE-97F25AD4E002}",
+                                                    "subId": 4147704238
                                                 },
                                                 "loadBehavior": "QueueLoad",
-                                                "assetHint": "assets/prefabs/pinkflower.spawnable"
+                                                "assetHint": "Levels/Prefab/Lua_Spawnables_SimpleSpawnDespawn/PinkFlower_Lua_SimpleSpawnDespawn.prefab"
                                             }
                                         }
                                     }

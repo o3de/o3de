@@ -324,12 +324,9 @@ def validate_spawned_entity_transform(entity, expected_position, expected_rotati
     :param expected_scale: The expected local scale of the spawned entity
     """
 
-    position_success = helper.wait_for_condition(lambda: validate_spawned_entity_translation(entity, expected_position),
-                                                 5.0)
-    rotation_success = helper.wait_for_condition(lambda: validate_spawned_entity_rotation(entity, expected_rotation),
-                                                 5.0)
-    scale_success = helper.wait_for_condition(lambda: validate_spawned_entity_scale(entity, expected_scale),
-                                              5.0)
+    position_success = validate_spawned_entity_translation(entity, expected_position)
+    rotation_success = validate_spawned_entity_rotation(entity, expected_rotation)
+    scale_success = validate_spawned_entity_scale(entity, expected_scale)
 
     assert position_success, \
         f"Entity was not spawned in the position expected: Found {entity.get_world_translation()}, " \

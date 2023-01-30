@@ -346,11 +346,11 @@
                                         "value": {
                                             "asset": {
                                                 "assetId": {
-                                                    "guid": "{80C0CF4E-9A5E-544B-B89E-BC980175A259}",
-                                                    "subId": 3875079122
+                                                    "guid": "{F27830AF-6F24-59FC-9409-5EFE7676B119}",
+                                                    "subId": 1953096450
                                                 },
                                                 "loadBehavior": "QueueLoad",
-                                                "assetHint": "Assets/Prefabs/PinkFlower.prefab"
+                                                "assetHint": "Levels/Prefab/Lua_Spawnables_DespawnOnEntityDeactivate/PinkFlower_Lua_DespawnOnEntityDeactivate.prefab"
                                             }
                                         }
                                     }

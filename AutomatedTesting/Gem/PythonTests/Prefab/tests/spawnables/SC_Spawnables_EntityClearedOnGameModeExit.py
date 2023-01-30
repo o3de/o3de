@@ -23,10 +23,10 @@ def SC_Spawnables_EntityClearedOnGameModeExit():
         search_filter = entity.SearchFilter()
         search_filter.names = ["SC_Spawner"]
         spawner_entity = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)[0]
-        search_filter.names = ["PinkFlower"]
+        search_filter.names = ["PinkFlower_SC_EntityClearedOnGameModeExit"]
         flower_entity = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
         assert spawner_entity is not None, f"Failed to find Spawner entity {condition}"
-        assert len(flower_entity) == 0, f"Unexpectedly found PinkFlower entity {condition}"
+        assert len(flower_entity) == 0, f"Unexpectedly found PinkFlower_SC_EntityClearedOnGameModeExit entity {condition}"
 
     helper.init_idle()
     helper.open_level("Prefab", "SC_Spawnables_EntityClearedOnGameModeExit")
@@ -38,10 +38,11 @@ def SC_Spawnables_EntityClearedOnGameModeExit():
     general.enter_game_mode()
     helper.wait_for_condition(lambda: EditorEntity(general.find_game_entity("SC_Spawner")) is not None, 3.0)
     spawner_entity = EditorEntity(general.find_game_entity("SC_Spawner"))
-    helper.wait_for_condition(lambda: EditorEntity(general.find_game_entity("PinkFlower")) is not None, 3.0)
-    flower_entity = EditorEntity(general.find_game_entity("PinkFlower"))
+    helper.wait_for_condition(lambda: EditorEntity(general.find_game_entity(
+        "PinkFlower_SC_EntityClearedOnGameModeExit")) is not None, 3.0)
+    flower_entity = EditorEntity(general.find_game_entity("PinkFlower_SC_EntityClearedOnGameModeExit"))
     assert spawner_entity, "Failed to find Spawner entity at runtime"
-    assert flower_entity, "Failed to find PinkFlower entity at runtime"
+    assert flower_entity, "Failed to find PinkFlower_SC_EntityClearedOnGameModeExit entity at runtime"
 
     # Verify spawned entity is spawned with the correct position, rotation, and scale values
     expected_spawned_entity_position = azmath.Vector3(0.0, 0.0, 0.0)
@@ -50,7 +51,7 @@ def SC_Spawnables_EntityClearedOnGameModeExit():
     validate_spawned_entity_transform(flower_entity, expected_spawned_entity_position, expected_spawned_entity_rotation,
                                       expected_spawned_entity_scale)
 
-    # Exit Game Mode and verify despawn of PinkFlower.spawnable
+    # Exit Game Mode and verify despawn of PinkFlower_SC_EntityClearedOnGameModeExit.spawnable
     general.exit_game_mode()
     game_mode_exited = helper.wait_for_condition(lambda: not general.is_in_game_mode(), 5.0)
     assert game_mode_exited, "Failed to exit Game Mode"
