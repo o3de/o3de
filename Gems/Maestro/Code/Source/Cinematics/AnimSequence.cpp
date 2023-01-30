@@ -20,7 +20,6 @@
 #include "ScriptVarNode.h"
 #include "SceneNode.h"
 #include "StlUtils.h"
-#include "MaterialNode.h"
 #include "EventNode.h"
 #include "LayerNode.h"
 #include "CommentNode.h"
@@ -102,19 +101,6 @@ void CAnimSequence::SetName(const char* name)
 
     m_name = name;
     m_pMovieSystem->OnSequenceRenamed(originalName.c_str(), m_name.c_str());
-
-    // the sequence named LIGHT_ANIMATION_SET_NAME is a singleton sequence to hold all light animations.
-    if (m_name == LIGHT_ANIMATION_SET_NAME)
-    {
-        // ensure it stays a singleton. If one already exists, deregister it.
-        if (CLightAnimWrapper::GetLightAnimSet())
-        {
-            CLightAnimWrapper::InvalidateAllNodes();
-            CLightAnimWrapper::SetLightAnimSet(0);
-        }
-
-        CLightAnimWrapper::SetLightAnimSet(this);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -294,9 +280,6 @@ IAnimNode* CAnimSequence::CreateNodeInternal(AnimNodeType nodeType, uint32 nNode
             break;
         case AnimNodeType::Director:
             animNode = aznew CAnimSceneNode(nNodeId);
-            break;
-        case AnimNodeType::Material:
-            animNode = aznew CAnimMaterialNode(nNodeId);
             break;
         case AnimNodeType::Event:
             animNode = aznew CAnimEventNode(nNodeId);

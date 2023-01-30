@@ -93,7 +93,6 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
     if (m_entityId.IsValid())
     {
         AZ::TransformNotificationBus::Handler::BusDisconnect();
-        LmbrCentral::RenderBoundsNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ComponentEntityEditorRequestBus::Handler::BusDisconnect();
         AZ::EntityBus::Handler::BusDisconnect();
         AzToolsFramework::ComponentEntityObjectRequestBus::Handler::BusDisconnect();
@@ -140,7 +139,6 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
             &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
 
         AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
-        LmbrCentral::RenderBoundsNotificationBus::Handler::BusConnect(m_entityId);
         AzToolsFramework::ComponentEntityEditorRequestBus::Handler::BusConnect(m_entityId);
         AZ::EntityBus::Handler::BusConnect(m_entityId);
         AzToolsFramework::ComponentEntityObjectRequestBus::Handler::BusConnect(this);
@@ -352,11 +350,6 @@ void CComponentEntityObject::OnEntityIconChanged(const AZ::Data::AssetId& entity
 
 void CComponentEntityObject::OnParentChanged([[maybe_unused]] AZ::EntityId oldParent, [[maybe_unused]] AZ::EntityId newParent)
 {
-}
-
-void CComponentEntityObject::OnRenderBoundsReset()
-{
-    CEntityObject::InvalidateTM(0);
 }
 
 void CComponentEntityObject::SetSandboxObjectAccent(AzToolsFramework::EntityAccentType accent)
