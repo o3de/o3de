@@ -54,10 +54,10 @@ namespace NvCloth
             bool ReadValuesIntoGUI(size_t index, widget_t* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
 
         private:
-            AZ::EntityId m_entityId;
-
             void OnEditButtonClicked();
             AZ::Data::Asset<AZ::Data::AssetData> GetMeshAsset(const AZ::EntityId entityId) const;
+
+            AZ::EntityId m_entityId;
         };
     } // namespace Editor
 } // namespace NvCloth

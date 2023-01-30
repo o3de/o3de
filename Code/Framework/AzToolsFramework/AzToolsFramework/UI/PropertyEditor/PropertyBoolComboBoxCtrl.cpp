@@ -95,7 +95,7 @@ namespace AzToolsFramework
         return m_editButton;
     }
 
-    void PropertyBoolComboBoxCtrl::SetEditButtonCallBack(AZ::Edit::AttributeFunction<bool(bool)>* function)
+    void PropertyBoolComboBoxCtrl::SetEditButtonCallBack(ComboBoxSelectFunc function)
     {
         m_editButtonCallback = function;
     }
@@ -127,7 +127,7 @@ namespace AzToolsFramework
 
         if (attrib == AZ_CRC_CE("EditButtonVisible"))
         {
-            bool visible;
+            bool visible = false;
             if (attrValue->Read<bool>(visible))
             {
                 GUI->GetEditButton()->setVisible(visible);
@@ -135,20 +135,23 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ_CRC_CE("SetTrueLabel"))
         {
-            const char* label;
-            attrValue->Read<const char*>(label);
-            GUI->GetComboBox()->setItemText(1, label);
+            AZStd::string label;
+            if (attrValue->Read<AZStd::string>(label))
+            {
+                GUI->GetComboBox()->setItemText(1, label.c_str());
+            }
         }
         else if (attrib == AZ_CRC_CE("SetFalseLabel"))
         {
-            const char* label;
-            attrValue->Read<const char*>(label);
-            GUI->GetComboBox()->setItemText(0, label);
+            AZStd::string label;
+            if (attrValue->Read<AZStd::string>(label))
+            {
+                GUI->GetComboBox()->setItemText(0, label.c_str());
+            }
         }
         else if (attrib == AZ_CRC_CE("EditButtonCallback"))
         {
-            AZ::Edit::AttributeFunction<bool(bool)>* function =
-                azdynamic_cast<AZ::Edit::AttributeFunction<bool(bool)>*>(attrValue->GetAttribute());
+            ComboBoxSelectFunc function = azdynamic_cast<ComboBoxSelectFunc>(attrValue->GetAttribute());
 
             if (function)
             {
@@ -157,10 +160,10 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ_CRC_CE("EditButtonToolTip"))
         {
-            const char* toolTip;
-            if (attrValue->Read<const char*>(toolTip))
+            AZStd::string toolTip;
+            if (attrValue->Read<AZStd::string>(toolTip))
             {
-                GUI->GetEditButton()->setToolTip(toolTip);
+                GUI->GetEditButton()->setToolTip(toolTip.c_str());
             }
         }
     }
