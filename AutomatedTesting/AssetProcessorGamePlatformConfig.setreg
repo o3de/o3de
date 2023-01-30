@@ -4,11 +4,6 @@
             "Settings": {
                 "RC fbx": {
                     "ignore": true
-                },
-                "ScanFolder AtomTestData": {
-                    "watch": "@GEMROOT:Atom@/TestData",
-                    "recursive": 1,
-                    "order": 1000
                 }
             }
         }
