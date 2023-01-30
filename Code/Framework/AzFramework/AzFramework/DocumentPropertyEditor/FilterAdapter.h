@@ -79,6 +79,7 @@ namespace AZ::DocumentPropertyEditor
         void HandleDomChange(const Dom::Patch& patch) override;
 
         MatchInfoNode* GetMatchNodeAtPath(const Dom::Path& sourcePath);
+        Dom::Path GetSourcePathForNode(const MatchInfoNode* matchNode);
 
         /*! populates the MatchInfoNode nodes for the given path and any descendant row children created.
          *  All new nodes have their m_matchesSelf, m_matchingDescendants, and  m_matchableDomTerms set */
@@ -93,7 +94,7 @@ namespace AZ::DocumentPropertyEditor
             RemovalsFromSource, // patch all removals to get from the source adapter's state to the current filter state
             PatchToSource // patch all additions required to get from the current filter state to the source adapter's state
         };
-        void GeneratePatch(PatchType patchType);
+        void GeneratePatch(PatchType patchType, AZ::Dom::Patch& patchToFill);
 
         /*! updates the match states (m_matchesSelf, m_matchingDescendants) for the given row node,
             and updates the m_matchingDescendants state for all its ancestors
