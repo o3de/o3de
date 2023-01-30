@@ -22,10 +22,10 @@ namespace PhysX
 
     void ColliderBoxMode::Setup(const AZ::EntityComponentIdPair& idPair)
     {
-        m_boxEdit->Setup();
-        m_boxEdit->AddEntityComponentIdPair(idPair);
         AzToolsFramework::InstallBaseShapeViewportEditFunctions(m_boxEdit.get(), idPair);
         AzToolsFramework::InstallBoxViewportEditFunctions(m_boxEdit.get(), idPair);
+        m_boxEdit->Setup();
+        m_boxEdit->AddEntityComponentIdPair(idPair);
     }
 
     void ColliderBoxMode::Refresh([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)

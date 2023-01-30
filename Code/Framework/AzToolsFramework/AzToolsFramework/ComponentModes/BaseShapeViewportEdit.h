@@ -29,7 +29,16 @@ namespace AzToolsFramework
     public:
         virtual ~BaseShapeViewportEdit() = default;
 
+        //! Install the functions required for the manipulators to interact with the shape and the viewport.
+        //! @{
+        void InstallGetManipulatorSpace(AZStd::function<AZ::Transform()> getManipulatorSpace);
+        void InstallGetNonUniformScale(AZStd::function<AZ::Vector3()> getNonUniformScale);
+        void InstallGetTranslationOffset(AZStd::function<AZ::Vector3()> getTranslationOffset);
+        void InstallSetTranslationOffset(AZStd::function<void(const AZ::Vector3&)> setTranslationOffset);
+        //! @}
+
         //! Create manipulators for the shape properties to be edited.
+        //! Make sure to install all the required functions before calling Setup.
         virtual void Setup() = 0;
         //! Destroy the manipulators for the shape properties being edited.
         virtual void Teardown() = 0;
@@ -41,11 +50,6 @@ namespace AzToolsFramework
         //! This is useful in the main editor viewport for hooking up undo/redo behavior and UI refreshing.
         //! This should be called after Setup. Otherwise, the manipulators will not have been created yet.
         virtual void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) = 0;
-
-        void InstallGetManipulatorSpace(AZStd::function<AZ::Transform()> getManipulatorSpace);
-        void InstallGetNonUniformScale(AZStd::function<AZ::Vector3()> getNonUniformScale);
-        void InstallGetTranslationOffset(AZStd::function<AZ::Vector3()> getTranslationOffset);
-        void InstallSetTranslationOffset(AZStd::function<void(const AZ::Vector3&)> setTranslationOffset);
 
     protected:
         AZ::Transform GetManipulatorSpace() const;
