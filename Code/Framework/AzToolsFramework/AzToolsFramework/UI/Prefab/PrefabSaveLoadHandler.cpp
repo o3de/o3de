@@ -1065,8 +1065,11 @@ namespace AzToolsFramework
                         auto button = QMessageBox::question(
                             AzToolsFramework::GetActiveWindow(),
                             QString(),
-                            QString("Prefab '%1' has been deleted from the file system. But we detected %2 instance(s) of it "
-                                    "in the level. Would you like to delete them ?")
+                            QString(
+                                "Prefab '%1' has been deleted from the file system. But we detected %2 instance(s) of it "
+                                "in the level. Would you like to delete them ? \n\nNote: If you click 'no', please make sure these prefab "
+                                "instances are either deleted or that the prefab file is restored to prevent data loss in this level. "
+                                "One way to restore the prefab file is to save the prefab before closing this level.")
                                 .arg(relativePath.c_str())
                                 .arg(instancesMappedToTemplate->get().size()),
                             QMessageBox::Yes | QMessageBox::No);
@@ -1075,6 +1078,9 @@ namespace AzToolsFramework
                         case QMessageBox::Yes:
                             s_prefabSystemComponentInterface->RemoveTemplate(loadedTemplateId);
                             break;
+                        case QMessageBox::No:
+                            // Mark template as dirty so that it gives users a chance to save it back to the file if needed.
+                            s_prefabSystemComponentInterface->SetTemplateDirtyFlag(loadedTemplateId, true);
                         }
                     }
                     
