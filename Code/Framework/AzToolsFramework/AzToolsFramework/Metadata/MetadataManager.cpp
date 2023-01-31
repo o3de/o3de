@@ -14,7 +14,6 @@
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/JSON/pointer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzToolsFramework/Metadata/UuidEntry.h>
 
 namespace AzToolsFramework
 {
@@ -25,8 +24,6 @@ namespace AzToolsFramework
             // Note the version here is not the same as the MetadataFile version, since this is a separate serialization
             serializeContext->Class<MetadataManager, AZ::Component>()->Version(1);
         }
-
-        UuidEntry::Reflect(context);
     }
 
     bool MetadataManager::GetValue(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId)

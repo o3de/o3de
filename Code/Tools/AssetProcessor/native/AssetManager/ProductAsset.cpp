@@ -65,7 +65,15 @@ namespace AssetProcessor
         }
 
         // Try to delete the metadata file too if one exists
-        AZ::IO::SystemFile::Delete(AzToolsFramework::MetadataManager::ToMetadataPath(m_absolutePath).AsPosix().c_str());
+        auto metadataPath = AzToolsFramework::MetadataManager::ToMetadataPath(m_absolutePath).AsPosix();
+        if(!AZ::IO::SystemFile::Delete(metadataPath.c_str()))
+        {
+            if (AZ::IO::SystemFile::Exists(metadataPath.c_str()))
+            {
+                AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to remove metadata file " AZ_STRING_FORMAT, AZ_STRING_ARG(metadataPath));
+                wasRemoved = false;
+            }
+        }
 
         if(sendNotification)
         {
