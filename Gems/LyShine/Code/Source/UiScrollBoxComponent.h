@@ -20,7 +20,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Vector3.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 #include "UiNavigationHelpers.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

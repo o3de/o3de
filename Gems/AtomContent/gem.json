@@ -24,6 +24,7 @@
     ],
     "external_subdirectories": [
         "Sponza",
-        "ReferenceMaterials"
+        "ReferenceMaterials",
+        "TestData"
     ]
 }
