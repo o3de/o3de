@@ -22,7 +22,6 @@ namespace EMotionFX
         : public PhysicsSetupManipulatorsBase
         , private AZ::TickBus::Handler
         , private PhysicsSetupManipulatorRequestBus::Handler
-        , private AzToolsFramework::CapsuleViewportEdit
     {
     public:
         // PhysicsSetupManipulatorsBase overrides ...
@@ -38,14 +37,7 @@ namespace EMotionFX
         // PhysicsSetupManipulatorRequestBus::Handler overrides ...
         void OnUnderlyingPropertiesChanged() override;
 
-        // CapsuleViewportEdit functions
-        AZ::Vector3 GetTranslationOffset() const;
-        AZ::Quaternion GetRotationOffset() const;
-        float GetCapsuleRadius() const;
-        float GetCapsuleHeight() const;
-        void SetCapsuleRadius(float radius);
-        void SetCapsuleHeight(float height);
-        void SetTranslationOffset(const AZ::Vector3& translationOffset);
+        void InstallCapsuleViewportEditFunctions();
         void BeginEditing();
         void FinishEditing();
 
