@@ -42,6 +42,7 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
@@ -1212,11 +1213,14 @@ void EditorViewportWidget::focusOutEvent([[maybe_unused]] QFocusEvent* event)
 
 void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
 {
-    // Special case Escape key and bubble way up to the top level parent so that it can cancel us out of any active tool
-    // or clear the current selection
-    if (event->key() == Qt::Key_Escape)
+    if (!AzToolsFramework::IsNewActionManagerEnabled())
     {
-        QCoreApplication::sendEvent(GetIEditor()->GetEditorMainWindow(), event);
+        // Special case Escape key and bubble way up to the top level parent so that it can cancel us out of any active tool
+        // or clear the current selection
+        if (event->key() == Qt::Key_Escape)
+        {
+            QCoreApplication::sendEvent(GetIEditor()->GetEditorMainWindow(), event);
+        }
     }
 
     // NOTE: we keep track of key presses and releases explicitly because the OS/Qt will insert a slight delay between sending
