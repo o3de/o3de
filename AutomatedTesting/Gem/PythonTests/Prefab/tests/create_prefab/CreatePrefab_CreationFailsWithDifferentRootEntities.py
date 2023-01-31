@@ -34,7 +34,7 @@ def CreatePrefab_CreationFailsWithDifferentRootEntities():
 
     # Creates a new Entity at the root level
     test_entity = EditorEntity.create_editor_entity(SINGLE_ENTITY_NAME)
-    assert test_entity.id.IsValid(), f"Failed to create entity with name {SINGLE_ENTITY_NAME}"
+    assert test_entity.exists(), f"Failed to create entity with name {SINGLE_ENTITY_NAME}"
 
     # Creates a new Entity hierarchy at the root level
     nested_entity_root = prefab_test_utils.create_linear_nested_entities(NESTED_ENTITY_PREFIX, 3, NESTED_ENTITY_POS)
