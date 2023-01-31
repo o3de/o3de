@@ -91,8 +91,6 @@ namespace UnitTest
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
         EXPECT_EQ(handled, MouseInteractionResult::Viewport);
         EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
-        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
-            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Events::EndComponentMode);
     }
 
     TEST_F(PhysXColliderComponentModeTest, MouseWheelDownShouldSetPreviousMode)

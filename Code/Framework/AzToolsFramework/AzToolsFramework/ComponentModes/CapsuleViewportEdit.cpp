@@ -121,9 +121,9 @@ namespace AzToolsFramework
 
     void CapsuleViewportEdit::Setup(const ManipulatorManagerId manipulatorManagerId)
     {
-        const AZ::Transform& worldTransform = GetManipulatorSpace();
-        const AZ::Vector3& nonUniformScale = GetNonUniformScale();
-        const AZ::Transform& localTransform = GetLocalTransform();
+        const AZ::Transform worldTransform = GetManipulatorSpace();
+        const AZ::Vector3 nonUniformScale = GetNonUniformScale();
+        const AZ::Transform localTransform = GetLocalTransform();
 
         SetupRadiusManipulator(manipulatorManagerId, worldTransform, localTransform, nonUniformScale);
         SetupHeightManipulator(manipulatorManagerId, worldTransform, localTransform, nonUniformScale);
