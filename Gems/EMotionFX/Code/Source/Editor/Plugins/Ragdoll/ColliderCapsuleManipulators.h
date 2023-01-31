@@ -38,19 +38,20 @@ namespace EMotionFX
         // PhysicsSetupManipulatorRequestBus::Handler overrides ...
         void OnUnderlyingPropertiesChanged() override;
 
-        // CapsuleViewportEdit overrides ...
-        AZ::Transform GetCapsuleWorldTransform() const override;
-        AZ::Transform GetCapsuleLocalTransform() const override;
-        AZ::Vector3 GetCapsuleNonUniformScale() const override;
-        float GetCapsuleRadius() const override;
-        float GetCapsuleHeight() const override;
-        void SetCapsuleRadius(float radius) override;
-        void SetCapsuleHeight(float height) override;
-        void BeginEditing() override;
-        void FinishEditing() override;
+        // CapsuleViewportEdit functions
+        AZ::Vector3 GetTranslationOffset() const;
+        AZ::Quaternion GetRotationOffset() const;
+        float GetCapsuleRadius() const;
+        float GetCapsuleHeight() const;
+        void SetCapsuleRadius(float radius);
+        void SetCapsuleHeight(float height);
+        void SetTranslationOffset(const AZ::Vector3& translationOffset);
+        void BeginEditing();
+        void FinishEditing();
 
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
         MCore::CommandGroup m_commandGroup;
         AZStd::unique_ptr<PhysicsSetupManipulatorCommandCallback> m_adjustColliderCallback;
+        AZStd::unique_ptr<AzToolsFramework::CapsuleViewportEdit> m_capsuleViewportEdit;
     };
 } // namespace EMotionFX

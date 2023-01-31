@@ -13,6 +13,7 @@
 namespace AZ
 {
     class Vector3;
+    class Quaternion;
 }
 
 namespace AzToolsFramework
@@ -25,6 +26,7 @@ namespace AzToolsFramework
         virtual AZ::Vector3 GetTranslationOffset() const = 0;
         //! Set the translation offset of the shape relative to the entity position.
         virtual void SetTranslationOffset(const AZ::Vector3& translationOffset) = 0;
+        virtual AZ::Quaternion GetRotationOffset() const { return AZ::Quaternion::CreateIdentity(); }
         //! Get the space in which the manipulators are defined.
         virtual AZ::Transform GetManipulatorSpace() const = 0;
 
