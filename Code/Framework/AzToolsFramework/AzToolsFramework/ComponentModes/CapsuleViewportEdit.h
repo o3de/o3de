@@ -31,11 +31,11 @@ namespace AzToolsFramework
         void InstallSetCapsuleHeight(AZStd::function<void(float)> setCapsuleHeight);
 
         // BaseShapeViewportEdit overrides ...
-        void Setup(const ManipulatorManagerId manipulatorManagerId = g_mainManipulatorManagerId);
-        void Teardown();
-        void UpdateManipulators();
-        void ResetValues();
-        void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair);
+        void Setup(const ManipulatorManagerId manipulatorManagerId = g_mainManipulatorManagerId) override;
+        void Teardown() override;
+        void UpdateManipulators() override;
+        void ResetValues() override;
+        void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
 
         void OnCameraStateChanged(const AzFramework::CameraState& cameraState);
     private:

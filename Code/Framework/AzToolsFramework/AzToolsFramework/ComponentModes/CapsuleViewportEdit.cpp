@@ -159,9 +159,9 @@ namespace AzToolsFramework
 
     void CapsuleViewportEdit::UpdateManipulators()
     {
-        AZ::Transform worldTransform = GetManipulatorSpace();
-        AZ::Vector3 nonUniformScale = GetNonUniformScale();
-        AZ::Transform localTransform = GetLocalTransform();
+        const AZ::Transform worldTransform = GetManipulatorSpace();
+        const AZ::Vector3 nonUniformScale = GetNonUniformScale();
+        const AZ::Transform localTransform = GetLocalTransform();
 
         const float capsuleHeight = GetCapsuleHeight();
         const float capsuleRadius = GetCapsuleRadius();
