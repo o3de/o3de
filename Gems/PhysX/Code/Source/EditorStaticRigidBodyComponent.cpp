@@ -15,14 +15,12 @@ namespace PhysX
 {
     void EditorStaticRigidBodyComponent::Reflect(AZ::ReflectContext* context)
     {
-        auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorStaticRigidBodyComponent, AzToolsFramework::Components::EditorComponentBase>()
                 ->Version(1);
 
-            AZ::EditContext* editContext = serializeContext->GetEditContext();
-            if (editContext)
+            if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext
                     ->Class<EditorStaticRigidBodyComponent>(

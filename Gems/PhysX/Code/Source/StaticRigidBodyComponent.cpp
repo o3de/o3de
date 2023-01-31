@@ -102,7 +102,7 @@ namespace PhysX
         {
             // Early out if there's no relevant physics world present.
             // It may be a valid case when we have game-time components assigned to editor entities via a script
-            // So no need to print a warning here.
+            // so no need to print a warning here.
             return;
         }
 

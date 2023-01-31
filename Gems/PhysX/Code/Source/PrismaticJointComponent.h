@@ -33,7 +33,7 @@ namespace PhysX
             const JointMotorProperties& motorProperties);
         ~PrismaticJointComponent() = default;
 
-        // JointRequestBus::Handler overrides
+        // JointRequestBus::Handler overrides ...
         float GetPosition() const override;
         float GetVelocity() const override;
         AZ::Transform GetTransform() const override;
@@ -41,13 +41,10 @@ namespace PhysX
         void SetMaximumForce(float force) override;
         AZStd::pair<float, float> GetLimits() const override;
 
-        // AZ::Component overrides
-        void Activate() override;
-        void Deactivate() override;
-
     protected:
-        // JointComponent
+        // JointComponent overrides ...
         void InitNativeJoint() override;
+        void DeinitNativeJoint() override;
 
     private:
         physx::PxD6Joint* GetPhysXD6Joint();
