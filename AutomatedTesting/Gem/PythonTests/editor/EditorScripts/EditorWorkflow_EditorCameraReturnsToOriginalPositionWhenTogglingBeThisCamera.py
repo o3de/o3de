@@ -27,12 +27,9 @@ def EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenTogglingBeThisCamera
     import azlmbr.components as components
     import azlmbr.legacy.general as general
     import azlmbr.math as math
-    import azlmbr.entity as entity
-    import editor_python_test_tools.hydra_editor_utils as hydra
-
-    from azlmbr.entity import EntityId
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.editor_test_helper import EditorTestHelper
+    from editor_python_test_tools.utils import Report, TestHelper
 
     def get_current_view_position_as_vector3() -> math.Vector3:
         view_position = general.get_current_view_position()
@@ -41,7 +38,9 @@ def EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenTogglingBeThisCamera
         z = view_position.get_property('z')
         return math.Vector3(float(x), float(y), float(z))
 
-    hydra.open_base_level()
+    helper = EditorTestHelper(log_prefix="Editor Camera")
+
+    helper.open_level("Base")
 
     # where we expect the camera to end up
     expected_camera_position = math.Vector3(50.0, 50.0, 50.0)

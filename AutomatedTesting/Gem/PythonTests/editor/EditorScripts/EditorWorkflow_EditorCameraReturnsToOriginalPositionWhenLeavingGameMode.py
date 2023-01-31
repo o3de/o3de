@@ -32,9 +32,7 @@ def EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenLeavingGameMode():
     import azlmbr.components as components
     import azlmbr.legacy.general as general
     import azlmbr.math as math
-    import editor_python_test_tools.hydra_editor_utils as hydra
 
-    from azlmbr.entity import EntityId
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.editor_test_helper import EditorTestHelper
     from editor_python_test_tools.utils import Report, TestHelper
@@ -48,7 +46,7 @@ def EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenLeavingGameMode():
 
     helper = EditorTestHelper(log_prefix="Editor Camera")
 
-    hydra.open_base_level()
+    helper.open_level("Base")
 
     # where we expect the camera to end up
     entity_camera_position = math.Vector3(20.0, 40.0, 60.0)
@@ -57,8 +55,7 @@ def EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenLeavingGameMode():
     editor.ToolsApplicationRequestBus(bus.Broadcast, 'BeginUndoBatch', "Create camera entity")
 
     # create a new entity with a camera component
-    camera_entity = EditorEntity.create_editor_entity_at(
-        (0.0, 0.0, 0.0), name="CameraEntity")
+    camera_entity = EditorEntity.create_editor_entity(name="CameraEntity")
     camera_entity.add_component("Camera")
 
     # explicitly track the entity in the newly created undo batch
