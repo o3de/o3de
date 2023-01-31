@@ -25,20 +25,11 @@ namespace AzToolsFramework
         m_node = node;
 
         setIcon(s_overrideIcon);
-        setFixedSize(16, 16);
-        setIconSize(QSize(16, 16));
+        setIconSize(QSize(8, 8));
     }
 
     void OverrideIconHandler::showContextMenu(const QPoint& position)
     {
-        /*
-        QMenu contextMenu(tr("Override Menu"), this);
-
-        QAction action1("Revert Override", this);
-        //connect(&action1, SIGNAL(triggered()), this, SLOT(removeDataPoint()));
-        
-        contextMenu.addAction(&action1);
-        */
         QMenu contextMenu;
         QAction* revertAction = contextMenu.addAction(tr("Revert Override"));
 
