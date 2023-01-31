@@ -6,7 +6,7 @@
  *
  */
 
-#include "CompressionFactoryImpl.h"
+#include "CompressionRegistrarImpl.h"
 #include <CompressionModuleInterface.h>
 #include "CompressionEditorSystemComponent.h"
 
@@ -29,18 +29,18 @@ namespace Compression
                 CompressionEditorSystemComponent::CreateDescriptor(),
             });
 
-            m_compressionFactoryInterface = AZStd::make_unique<CompressionFactoryImpl>();
-            if (CompressionFactory::Get() == nullptr)
+            m_compressionRegistrarInterface = AZStd::make_unique<CompressionRegistrarImpl>();
+            if (CompressionRegistrar::Get() == nullptr)
             {
-                CompressionFactory::Register(m_compressionFactoryInterface.get());
+                CompressionRegistrar::Register(m_compressionRegistrarInterface.get());
             }
         }
 
         ~CompressionEditorModule()
         {
-            if (CompressionFactory::Get() == m_compressionFactoryInterface.get())
+            if (CompressionRegistrar::Get() == m_compressionRegistrarInterface.get())
             {
-                CompressionFactory::Unregister(m_compressionFactoryInterface.get());
+                CompressionRegistrar::Unregister(m_compressionRegistrarInterface.get());
             }
         }
 
@@ -56,9 +56,9 @@ namespace Compression
         }
 
     private:
-        // CompressionFactory interface used to register Compression interfaces
+        // CompressionRegistrar interface used to register Compression interfaces
         // Available in tooling applications to allow compression algorithms to run
-        AZStd::unique_ptr<CompressionFactoryInterface> m_compressionFactoryInterface;
+        AZStd::unique_ptr<CompressionRegistrarInterface> m_compressionRegistrarInterface;
     };
 }// namespace Compression
 

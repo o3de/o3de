@@ -24,6 +24,41 @@ namespace AzToolsFramework
 {
     namespace AssetSystem
     {
+        //!  Request that the asset processor clears the fingerprint for the given asset,
+        //!  so that it will re-process the asset if the timestamp updates but has no changes.
+        //!  This is useful for Editor tools: Content creators sometimes purposely save files
+        //!  with no changes to force an asset to reprocess.
+        class AssetFingerprintClearRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(AssetFingerprintClearRequest, AZ::OSAllocator, 0);
+            AZ_RTTI(AssetFingerprintClearRequest, "{2B7B5477-D3F8-43FF-8595-89D023690FCB}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
+            static void Reflect(AZ::ReflectContext* context);
+            static constexpr unsigned int MessageType = AZ_CRC_CE("AssetProcessor::AssetFingerprintClearRequest"); // CRC = 54071616 0x3391140
+
+            explicit AssetFingerprintClearRequest(bool requireFencing = true);
+            AssetFingerprintClearRequest(const AZ::OSString& searchTerm, bool requireFencing = true);
+            unsigned int GetMessageType() const override;
+
+            AZ::OSString m_searchTerm;
+        };
+
+        //! This will be send in response to the AssetFingerprintClearRequest request,
+        //! and will contain if a fingerprint was actually cleared.
+        class AssetFingerprintClearResponse : public AzFramework::AssetSystem::BaseAssetProcessorMessage
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(AssetFingerprintClearResponse, AZ::OSAllocator, 0);
+            AZ_RTTI(AssetFingerprintClearResponse, "{FA7960F5-3F02-46C8-B85B-CB23A1D529B1}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
+            static void Reflect(AZ::ReflectContext* context);
+
+            AssetFingerprintClearResponse() = default;
+            AssetFingerprintClearResponse(bool isSuccess);
+            unsigned int GetMessageType() const override;
+            bool m_isSuccess = false;
+            AssetSystem::JobInfoContainer m_jobList;
+        };
+
         //!  Request the jobs information for a given asset from the AssetProcessor
         class AssetJobsInfoRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage

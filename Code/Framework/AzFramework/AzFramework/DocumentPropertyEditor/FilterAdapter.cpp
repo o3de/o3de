@@ -24,6 +24,108 @@ namespace AZ::DocumentPropertyEditor
         UpdateMatchDescendants(m_root);
     }
 
+    Dom::Path RowFilterAdapter::MapFromSourcePath(const Dom::Path& sourcePath) const
+    {
+        if (!m_filterActive)
+        {
+            return sourcePath;
+        }
+        Dom::Path filterPath;
+        MatchInfoNode* currNode = m_root;
+
+        for (const auto& pathEntry : sourcePath)
+        {
+            if (!pathEntry.IsIndex())
+            {
+                // RowFilterAdapter only affects index entries, pass other types through
+                filterPath.Push(pathEntry);
+            }
+            else
+            {
+                const auto targetIndex = pathEntry.GetIndex();
+                const auto childCount = currNode->m_childMatchState.size();
+
+                if (targetIndex >= childCount)
+                {
+                    AZ_Warning("FilterAdapter", false, "Invalid sourcePath path sent to MapFromSourcePath!");
+                    return Dom::Path();
+                }
+                else if (currNode->m_childMatchState[targetIndex] && !currNode->m_childMatchState[targetIndex]->IncludeInFilter())
+                {
+                    // the entry at this index is a filtered out row, there is no mapped path
+                    return Dom::Path();
+                }
+                else
+                {
+                    // iterate through each sourceIndex keeping track of what the next mapped filterIndex would be
+                    size_t filterIndex = 0;
+                    for (size_t sourceIndex = 0; sourceIndex < targetIndex; ++sourceIndex)
+                    {
+                        const auto currChildState = currNode->m_childMatchState[sourceIndex];
+                        // skip rows that don't match; count null nodes and matching nodes
+                        if (!currChildState || currChildState->IncludeInFilter())
+                        {
+                            ++filterIndex;
+                        }
+                    }
+
+                    // record the filterIndex at this pathEntry and continue deeper
+                    filterPath.Push(filterIndex);
+                    currNode = currNode->m_childMatchState[targetIndex];
+                }
+            }
+        }
+        return filterPath;
+    }
+
+    Dom::Path RowFilterAdapter::MapToSourcePath(const Dom::Path& filterPath) const
+    {
+        if (!m_filterActive)
+        {
+            return filterPath;
+        }
+
+        Dom::Path sourcePath;
+        MatchInfoNode* currNode = m_root;
+
+        for (const auto& pathEntry : filterPath)
+        {
+            if (!pathEntry.IsIndex())
+            {
+                // RowFilterAdapter only affects index entries, pass other types through
+                sourcePath.Push(pathEntry);
+            }
+            else
+            {
+                const auto targetIndex = pathEntry.GetIndex();
+                const auto childCount = currNode->m_childMatchState.size();
+                size_t filterIndex = 0;
+
+                for (size_t sourceIndex = 0; sourceIndex < childCount; ++sourceIndex)
+                {
+                    // skip rows that don't match; count null nodes and matching nodes
+                    if (!currNode->m_childMatchState[sourceIndex] || currNode->m_childMatchState[sourceIndex]->IncludeInFilter())
+                    {
+                        ++filterIndex;
+                        if (filterIndex == targetIndex)
+                        {
+                            sourcePath.Push(sourceIndex);
+                            currNode = currNode->m_childMatchState[sourceIndex];
+                            break;
+                        }
+                    }
+                }
+                if (filterIndex != targetIndex)
+                {
+                    // if we ran out of children before we hit the desired filterIndex, the passed filterPath was invalid
+                    AZ_Warning("FilterAdapter", false, "Invalid filter path sent to MapToSourcePath!");
+                    return Dom::Path();
+                }
+            }
+        }
+        return sourcePath;
+    }
+
     RowFilterAdapter::MatchInfoNode* RowFilterAdapter::MakeNewNode(RowFilterAdapter::MatchInfoNode* parentNode, unsigned int creationFrame)
     {
         MatchInfoNode* newNode = NewMatchInfoNode();
@@ -36,6 +138,7 @@ namespace AZ::DocumentPropertyEditor
     {
         if (m_filterActive != activateFilter)
         {
+            AZ::Dom::Patch patchToFill;
             m_filterActive = activateFilter;
             if (activateFilter)
             {
@@ -49,12 +152,16 @@ namespace AZ::DocumentPropertyEditor
                     GenerateFullTree();
                 }
                 // generate a patch that consists of all the removals from the source adapter to get to the current filter state
-                GeneratePatch(RemovalsFromSource);
+                GeneratePatch(RemovalsFromSource, patchToFill);
             }
             else
             {
                 // generate a patch that adds in any filtered out nodes, but leave tree alone in case the filter gets reactivated
-                GeneratePatch(PatchToSource);
+                GeneratePatch(PatchToSource, patchToFill);
+            }
+            if (patchToFill.Size())
+            {
+                NotifyContentsChanged(patchToFill);
             }
         }
     }
@@ -66,7 +173,14 @@ namespace AZ::DocumentPropertyEditor
         {
             ++m_updateFrame;
             UpdateMatchDescendants(m_root);
-            GeneratePatch(Incremental);
+
+            AZ::Dom::Patch patchToFill;
+            GeneratePatch(Incremental, patchToFill);
+
+            if (patchToFill.Size())
+            {
+                NotifyContentsChanged(patchToFill);
+            }
         }
     }
 
@@ -102,35 +216,41 @@ namespace AZ::DocumentPropertyEditor
     void RowFilterAdapter::HandleDomChange(const Dom::Patch& patch)
     {
         ++m_updateFrame;
-
+        Dom::Patch outgoingPatch;
         if (m_filterActive)
         {
             const auto& sourceContents = m_sourceAdapter->GetContents();
+            AZStd::unordered_set<MatchInfoNode*> nodesToUpdate;
             for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
             {
                 const auto& patchPath = operationIterator->GetDestinationPath();
                 if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
                 {
-                    auto matchingRow = GetMatchNodeAtPath(patchPath);
-                    if (matchingRow)
+                    // generate patch operation for this removal in our address space
+                    auto mappedPath = MapFromSourcePath(patchPath);
+                    if (!mappedPath.IsEmpty())
                     {
-                        // node being removed is a row. We need to remove it from our graph
-                        auto& parentContainer = matchingRow->m_parentNode->m_childMatchState;
+                        outgoingPatch.PushBack(Dom::PatchOperation::RemoveOperation(mappedPath));
+                    }
+
+                    auto owningRowPath = GetRowPath(patchPath);
+                    auto owningRow = GetMatchNodeAtPath(owningRowPath);
+                    
+                    // if the row path and patch path are the same, the removed item was a row
+                    if (patchPath == owningRowPath)
+                    {
+                        // Patch says row is being removed, we need to remove it from our graph
                         auto& lastPathEntry = *(patchPath.end() - 1);
                         AZ_Assert(lastPathEntry.IsIndex(), "this removal entry must be an index!");
-                        parentContainer.erase(parentContainer.begin() + lastPathEntry.GetIndex());
+                        owningRow->m_parentNode->RemoveChildAtIndex(lastPathEntry.GetIndex());
 
                         // update former parent's match state, as its m_matchingDescendants may have changed
-                        UpdateMatchState(matchingRow->m_parentNode);
+                        nodesToUpdate.insert(owningRow->m_parentNode);
                     }
                     else
                     {
-                        // removed node wasn't a row, so we need to re-cache the owning row's cached info
-                        auto parentPath = patchPath;
-                        parentPath.Pop();
-                        auto parentRow = GetMatchNodeAtPath(parentPath);
-                        CacheDomInfoForNode(sourceContents[parentPath], parentRow);
-                        UpdateMatchState(parentRow);
+                        // removed item wasn't a row, so we need to re-cache the owning row's cached info
+                        nodesToUpdate.insert(owningRow);
                     }
                 }
                 else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
@@ -138,39 +258,68 @@ namespace AZ::DocumentPropertyEditor
                     auto rowPath = GetRowPath(patchPath);
 
                     // replace operations can change child values from or into rows. Handle all cases
-                    auto existingMatchInfo = GetMatchNodeAtPath(patchPath);
-                    if (patchPath == rowPath)
+                    auto existingRowNode = GetMatchNodeAtPath(patchPath);
+                    const bool replacementIsRow = (patchPath == rowPath);
+                    if (!replacementIsRow && !existingRowNode)
                     {
-                        // replacement value is a row, populate it
-                        PopulateNodesAtPath(patchPath, true);
-                        if (!existingMatchInfo)
+                        // neither the value being replaced nor its replacement is a row. Map the path and pass it on
+                        auto mappedPath = MapFromSourcePath(patchPath);
+                        if (!mappedPath.IsEmpty())
                         {
-                            // this value wasn't a row before, so its parent needs to re-cache its info
-                            auto parentNode = GetMatchNodeAtPath(patchPath)->m_parentNode;
-                            auto parentPath = patchPath;
-                            parentPath.Pop();
-                            CacheDomInfoForNode(sourceContents[parentPath], parentNode);
-                            UpdateMatchState(parentNode);
+                            outgoingPatch.PushBack(Dom::PatchOperation::ReplaceOperation(mappedPath, sourceContents[patchPath]));
                         }
                     }
                     else
                     {
-                        // not a row now. Check if it was before
-                        if (existingMatchInfo)
+                        // either the replacing value or the value being replaced is a row
+                        // treat this as a remove operation with the possibility of a corresponding
+                        // add operation, if the new value matches the filter
+                        auto mappedPath = MapFromSourcePath(patchPath);
+                        if (!mappedPath.IsEmpty())
                         {
-                            // node being replaced was a row. We need to remove it from our graph
-                            auto& parentContainer = existingMatchInfo->m_parentNode->m_childMatchState;
-                            parentContainer.erase(parentContainer.begin() + (patchPath.end() - 1)->GetIndex());
+                            outgoingPatch.PushBack(Dom::PatchOperation::RemoveOperation(mappedPath));
+                        }
+
+                        if (existingRowNode)
+                        {
+                            // value being replaced was a row; remove its node
+                            auto& lastPathEntry = *(patchPath.end() - 1);
+                            AZ_Assert(lastPathEntry.IsIndex(), "this removal entry must be an index!");
+                            existingRowNode->m_parentNode->RemoveChildAtIndex(lastPathEntry.GetIndex());
 
                             // update former parent's match state, as its m_matchingDescendants may have changed
-                            UpdateMatchState(existingMatchInfo->m_parentNode);
+                            nodesToUpdate.insert(existingRowNode->m_parentNode);
                         }
                         else
                         {
                             // replaced node wasn't a row, so we need to re-cache the owning row's cached info
                             auto matchingRow = GetMatchNodeAtPath(rowPath);
-                            CacheDomInfoForNode(sourceContents[rowPath], matchingRow);
-                            UpdateMatchState(matchingRow);
+                            nodesToUpdate.insert(matchingRow);
+                        }
+
+                        // if new value is a row, populate it but don't update the hierarchy yet
+                        if (replacementIsRow)
+                        {
+                            PopulateNodesAtPath(patchPath, false);
+
+                            auto* addedNode = GetMatchNodeAtPath(patchPath);
+                            nodesToUpdate.insert(addedNode);
+                            if (!existingRowNode)
+                            {
+                                // this value wasn't a row before, so its owning row needs to re-cache its info
+                                nodesToUpdate.insert(addedNode->m_parentNode);
+                            }
+                        }
+                        else
+                        {
+                            // replacement node isn't a row. Map the path and generate a patch operation
+                            if (!mappedPath.IsEmpty())
+                            {
+                                outgoingPatch.PushBack(Dom::PatchOperation::AddOperation(mappedPath, sourceContents[patchPath]));
+                            }
+
+                            // non-row added so we need to re-cache the owning row's cached info
+                            nodesToUpdate.insert(GetMatchNodeAtPath(rowPath));
                         }
                     }
                 }
@@ -180,14 +329,24 @@ namespace AZ::DocumentPropertyEditor
                     if (rowPath == patchPath)
                     {
                         // given path is a new row, populate our tree with match information for this node and any row descendants
+                        // no need to generate a patch operation, that will be handled by GeneratePatch at the end
                         PopulateNodesAtPath(rowPath, false);
+
+                        // defer updating to the end
+                        auto* addedNode = GetMatchNodeAtPath(patchPath);
+                        nodesToUpdate.insert(addedNode);
                     }
                     else
                     {
-                        // added node wasn't a row, so we need to re-cache the owning row's cached info
-                        auto matchingRow = GetMatchNodeAtPath(rowPath);
-                        CacheDomInfoForNode(sourceContents[rowPath], matchingRow);
-                        UpdateMatchState(matchingRow);
+                        // added node wasn't a row. Map the path and generate a patch operation
+                        auto mappedPath = MapFromSourcePath(patchPath);
+                        if (!mappedPath.IsEmpty())
+                        {
+                            outgoingPatch.PushBack(Dom::PatchOperation::AddOperation(mappedPath, sourceContents[patchPath]));
+                        }
+
+                        // non-row added so we need to re-cache the owning row's cached info
+                        nodesToUpdate.insert(GetMatchNodeAtPath(rowPath));
                     }
                 }
                 else
@@ -195,7 +354,19 @@ namespace AZ::DocumentPropertyEditor
                     AZ_Error("FilterAdapter", false, "patch operation not supported yet");
                 }
             }
-            GeneratePatch(Incremental);
+            for (auto node : nodesToUpdate)
+            {
+                CacheDomInfoForNode(sourceContents[GetSourcePathForNode(node)], node);
+                UpdateMatchState(node);
+            }
+
+            // generate incremental patch that accounts for any rows that have been added, or whose filter state has changed
+            GeneratePatch(Incremental, outgoingPatch);
+
+            if (outgoingPatch.Size())
+            {
+                NotifyContentsChanged(outgoingPatch);
+            }
         }
         else
         {
@@ -238,7 +409,32 @@ namespace AZ::DocumentPropertyEditor
         return currMatchState;
     }
 
-    void RowFilterAdapter::PopulateNodesAtPath(const Dom::Path& sourcePath, bool replaceExisting)
+    Dom::Path RowFilterAdapter::GetSourcePathForNode(const MatchInfoNode* matchNode)
+    {
+        Dom::Path sourcePath;
+        auto addIndexToPath = [](const MatchInfoNode* currNode, Dom::Path& path, auto&& addIndexToPath) -> void
+        {
+            auto* parentNode = currNode->m_parentNode;
+            if (parentNode)
+            {
+                addIndexToPath(parentNode, path, addIndexToPath);
+
+                auto foundIter = AZStd::find_if(
+                    parentNode->m_childMatchState.begin(),
+                    parentNode->m_childMatchState.end(),
+                    [currNode](auto testNode)
+                    {
+                        return (currNode == testNode);
+                    });
+                size_t index = AZStd::distance(parentNode->m_childMatchState.begin(), foundIter);
+                path.Push(index);
+            }
+        };
+        addIndexToPath(matchNode, sourcePath, addIndexToPath);
+        return sourcePath;
+    }
+
+    void RowFilterAdapter::PopulateNodesAtPath(const Dom::Path& sourcePath, bool updateMatchState)
     {
         Dom::Path startingPath = GetRowPath(sourcePath);
 
@@ -269,7 +465,10 @@ namespace AZ::DocumentPropertyEditor
                     }
                 }
                 // update ours and our ancestors' matching states
-                UpdateMatchState(matchState);
+                if (updateMatchState)
+                {
+                    UpdateMatchState(matchState);
+                }
             };
 
             // we should start with the parentPath, so peel off the new index from the end of the address
@@ -278,34 +477,11 @@ namespace AZ::DocumentPropertyEditor
             parentPath.Pop();
             auto parentMatchState = GetMatchNodeAtPath(parentPath);
 
-            MatchInfoNode* addedChild = nullptr;
-            if (replaceExisting)
-            {
-                // destroy existing entry, if present
-                AZ_Assert(lastPathEntry.IsIndex(), "if we're replacing, the last entry in the the path must by a valid index");
-                auto newRowIndex = lastPathEntry.GetIndex();
-                const bool hasEntryToReplace = (parentMatchState->m_childMatchState.size() > newRowIndex);
-                AZ_Assert(hasEntryToReplace, "PopulateNodesAtPath was called with replaceExisting, but no existing entry exists!");
-                if (hasEntryToReplace)
-                {
-                    delete parentMatchState->m_childMatchState[newRowIndex];
-                    addedChild = MakeNewNode(parentMatchState, m_updateFrame);
-                    parentMatchState->m_childMatchState[newRowIndex] = addedChild;
-                }
-                else
-                {
-                    // this shouldn't happen!
-                    return;
-                }
-            }
-            else
-            {
-                auto newRowIndex = lastPathEntry.GetIndex();
+            auto newRowIndex = lastPathEntry.GetIndex();
 
-                // inserting or appending child entry, add it to the correct position
-                addedChild = MakeNewNode(parentMatchState, m_updateFrame);
-                parentMatchState->m_childMatchState.insert(parentMatchState->m_childMatchState.begin() + newRowIndex, addedChild);
-            }
+            // inserting or appending child entry, add it to the correct position
+            MatchInfoNode* addedChild = MakeNewNode(parentMatchState, m_updateFrame);
+            parentMatchState->m_childMatchState.insert(parentMatchState->m_childMatchState.begin() + newRowIndex, addedChild);
 
             // recursively add descendants and cache their match status
             const auto& sourceContents = m_sourceAdapter->GetContents();
@@ -322,7 +498,7 @@ namespace AZ::DocumentPropertyEditor
         // we can assume all direct children of an adapter must be rows; populate each of them
         for (size_t topIndex = 0; topIndex < sourceContents.ArraySize(); ++topIndex)
         {
-            PopulateNodesAtPath(Dom::Path({ Dom::PathEntry(topIndex) }), false);
+            PopulateNodesAtPath(Dom::Path({ Dom::PathEntry(topIndex) }), true);
         }
     }
 
@@ -356,12 +532,10 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
-    void RowFilterAdapter::GeneratePatch(PatchType patchType)
+    void RowFilterAdapter::GeneratePatch(PatchType patchType, Dom::Patch& patchToFill)
     {
-        Dom::Patch patch;
-
         auto generatePatchOperations =
-            [this, &patch, patchType](
+            [this, &patchToFill, patchType](
                 MatchInfoNode* matchNode, Dom::Path mappedPath, const Dom::Value& sourceValue, auto&& generatePatchOperations) -> void
         {
             AZ_Assert(
@@ -383,7 +557,7 @@ namespace AZ::DocumentPropertyEditor
                             // child was added this frame and should be included, generate an add operation
                             Dom::Value culledValue = sourceValue[sourceChildIndex];
                             CullUnmatchedChildRows(culledValue, currChild);
-                            patch.PushBack(Dom::PatchOperation::AddOperation(mappedPath / mappedChildIndex, culledValue));
+                            patchToFill.PushBack(Dom::PatchOperation::AddOperation(mappedPath / mappedChildIndex, culledValue));
                             ++mappedChildIndex;
                         }
                         else
@@ -402,14 +576,15 @@ namespace AZ::DocumentPropertyEditor
                         {
                             // if we're trying to generate a patch to get us back to the source model, add this missing value back to the
                             // DOM
-                            patch.PushBack(Dom::PatchOperation::AddOperation(mappedPath / mappedChildIndex, sourceValue[sourceChildIndex]));
+                            patchToFill.PushBack(
+                                Dom::PatchOperation::AddOperation(mappedPath / mappedChildIndex, sourceValue[sourceChildIndex]));
                             ++mappedChildIndex;
                         }
                         else
                         {
                             // otherwise, this is an non-matching node that should be removed. Generate removal and don't increment
                             // mappedChildIndex
-                            patch.PushBack(Dom::PatchOperation::RemoveOperation(mappedPath / mappedChildIndex));
+                            patchToFill.PushBack(Dom::PatchOperation::RemoveOperation(mappedPath / mappedChildIndex));
                         }
                     }
                 }
@@ -436,10 +611,6 @@ namespace AZ::DocumentPropertyEditor
 
         // generate Dom::PatchOperations from the root down and add them to patch
         generatePatchOperations(m_root, Dom::Path(), m_sourceAdapter->GetContents(), generatePatchOperations);
-        if (patch.Size())
-        {
-            NotifyContentsChanged(patch);
-        }
     }
 
     void RowFilterAdapter::UpdateMatchState(MatchInfoNode* rowState)

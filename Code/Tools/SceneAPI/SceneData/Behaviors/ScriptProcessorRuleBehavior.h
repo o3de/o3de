@@ -72,7 +72,7 @@ namespace AZ::SceneAPI::Behaviors
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
     private:
-        AzToolsFramework::EditorPythonEventsInterface* m_editorPythonEventsInterface = nullptr;
+        bool m_pythonLoaded = false;
 
         struct EventHandler;
         AZStd::shared_ptr<EventHandler> m_eventHandler;

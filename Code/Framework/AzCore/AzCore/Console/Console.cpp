@@ -191,12 +191,12 @@ namespace AZ
         m_deferredCommands = {};
     }
 
-    bool Console::HasCommand(AZStd::string_view command)
+    bool Console::HasCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags)
     {
-        return FindCommand(command) != nullptr;
+        return FindCommand(command, ignoreAnyFlags) != nullptr;
     }
 
-    ConsoleFunctorBase* Console::FindCommand(AZStd::string_view command)
+    ConsoleFunctorBase* Console::FindCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags)
     {
         CVarFixedString lowerName(command);
         AZStd::to_lower(lowerName.begin(), lowerName.end());
@@ -206,7 +206,7 @@ namespace AZ
         {
             for (ConsoleFunctorBase* curr : iter->second)
             {
-                if ((curr->GetFlags() & ConsoleFunctorFlags::IsInvisible) == ConsoleFunctorFlags::IsInvisible)
+                if ((curr->GetFlags() & ignoreAnyFlags) != ConsoleFunctorFlags::Null)
                 {
                     // Filter functors marked as invisible
                     continue;

@@ -576,9 +576,9 @@ namespace LUAEditor
         auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
 
         const HighlightedWords::LUAKeywordsType* keywords = nullptr;
-        EBUS_EVENT_RESULT(keywords, HighlightedWords::Bus, GetLUAKeywords);
+        HighlightedWords::Bus::BroadcastResult(keywords, &HighlightedWords::Bus::Events::GetLUAKeywords);
         const HighlightedWords::LUAKeywordsType* libraryFuncs = nullptr;
-        EBUS_EVENT_RESULT(libraryFuncs, HighlightedWords::Bus, GetLUALibraryFunctions);
+        HighlightedWords::Bus::BroadcastResult(libraryFuncs, &HighlightedWords::Bus::Events::GetLUALibraryFunctions);
 
         auto cBlock = currentBlock();
 
@@ -747,9 +747,9 @@ namespace LUAEditor
         m_machine->SetOnDecFoldLevel([](int) {});
 
         const HighlightedWords::LUAKeywordsType* keywords = nullptr;
-        EBUS_EVENT_RESULT(keywords, HighlightedWords::Bus, GetLUAKeywords);
+        HighlightedWords::Bus::BroadcastResult(keywords, &HighlightedWords::Bus::Events::GetLUAKeywords);
         const HighlightedWords::LUAKeywordsType* libraryFuncs = nullptr;
-        EBUS_EVENT_RESULT(libraryFuncs, HighlightedWords::Bus, GetLUALibraryFunctions);
+        HighlightedWords::Bus::BroadcastResult(libraryFuncs, &HighlightedWords::Bus::Events::GetLUALibraryFunctions);
 
         auto syntaxSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
         auto font = syntaxSettings->GetFont();

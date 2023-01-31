@@ -22,7 +22,7 @@ namespace AzToolsFramework
         AzQtComponents::VectorInput* newCtrl = new AzQtComponents::VectorInput(parent, m_elementCount, m_elementsPerRow, m_customLabels.c_str());
         QObject::connect(newCtrl, &AzQtComponents::VectorInput::valueChanged, newCtrl, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         newCtrl->connect(newCtrl, &AzQtComponents::VectorInput::editingFinished, [newCtrl]()
         {
@@ -208,10 +208,14 @@ namespace AzToolsFramework
 
     void RegisterVectorHandlers()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, new Vector2PropertyHandler());
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, new Vector3PropertyHandler());
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, new Vector4PropertyHandler());
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, new QuaternionPropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, new Vector2PropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, new Vector3PropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, new Vector4PropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, new QuaternionPropertyHandler());
     }
 
 }

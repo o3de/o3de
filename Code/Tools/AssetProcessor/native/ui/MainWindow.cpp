@@ -30,6 +30,7 @@
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
@@ -239,7 +240,7 @@ void MainWindow::Activate()
     ui->buttonList->addTab(QStringLiteral("Logs"));
     ui->buttonList->addTab(QStringLiteral("Connections"));
     ui->buttonList->addTab(QStringLiteral("Builders"));
-    ui->buttonList->addTab(QStringLiteral("Tools"));
+    ui->buttonList->addTab(QStringLiteral("Settings"));
     ui->buttonList->addTab(QStringLiteral("Shared Cache"));
 
     connect(ui->buttonList, &AzQtComponents::SegmentBar::currentChanged, ui->dialogStack, &QStackedWidget::setCurrentIndex);
@@ -388,7 +389,6 @@ void MainWindow::Activate()
     // Asset view
     m_sourceAssetTreeFilterModel = new AssetProcessor::SourceAssetTreeFilterModel(this);
     m_sourceModel = new AssetProcessor::SourceAssetTreeModel(m_sharedDbConnection, this);
-    m_sourceModel->Reset();
     m_sourceAssetTreeFilterModel->setSourceModel(m_sourceModel);
     ui->SourceAssetsTreeView->setModel(m_sourceAssetTreeFilterModel);
     ui->SourceAssetsTreeView->setColumnWidth(aznumeric_cast<int>(AssetTreeColumns::Extension), 80);
@@ -399,7 +399,6 @@ void MainWindow::Activate()
     m_intermediateAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
     m_intermediateModel = new AssetProcessor::SourceAssetTreeModel(m_sharedDbConnection, this);
     m_intermediateModel->SetOnlyShowIntermediateAssets();
-    m_intermediateModel->Reset();
     m_intermediateAssetTreeFilterModel->setSourceModel(m_intermediateModel);
     ui->IntermediateAssetsTreeView->setModel(m_intermediateAssetTreeFilterModel);
     connect(
@@ -411,7 +410,6 @@ void MainWindow::Activate()
 
     m_productAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
     m_productModel = new AssetProcessor::ProductAssetTreeModel(m_sharedDbConnection, this);
-    m_productModel->Reset();
     m_productAssetTreeFilterModel->setSourceModel(m_productModel);
     ui->ProductAssetsTreeView->setModel(m_productAssetTreeFilterModel);
     ui->ProductAssetsTreeView->setColumnWidth(aznumeric_cast<int>(AssetTreeColumns::Extension), 80);
@@ -493,6 +491,23 @@ void MainWindow::Activate()
         &MainWindow::ShowIncomingProductDependenciesContextMenu);
 
     SetupAssetSelectionCaching();
+    // the first time we open that panel we can refresh it.
+    m_connectionForResettingAssetsView = connect(
+        ui->dialogStack,
+        &QStackedWidget::currentChanged,
+        this,
+        [&](int index)
+        {
+            if (index == static_cast<int>(DialogStackIndex::Assets))
+            {
+                // the first time we show the asset window, reset the model since its so expensive to do on every startup
+                // and many times, the user does not even go to that panel.
+                m_sourceModel->Reset();
+                m_intermediateModel->Reset();
+                m_productModel->Reset();
+                QObject::disconnect(m_connectionForResettingAssetsView);
+            }
+        });
 
     //Log View
     m_loggingPanel = ui->LoggingPanel;
@@ -576,8 +591,12 @@ void MainWindow::Activate()
         &BuilderData::OnCreateJobsDurationChanged);
     connect(m_builderData, &BuilderData::DurationChanged, m_builderInfoMetrics, &BuilderInfoMetricsModel::OnDurationChanged);
 
-    // Tools tab:
+    // Settings tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);
+
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->modtimeSkippingCheckBox);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->disableStartupScanCheckBox);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->debugOutputCheckBox);
 
     // Note: the settings can't be used in ::MainWindow(), because the application name
     // hasn't been set up and therefore the settings will load from somewhere different than later
@@ -622,7 +641,7 @@ void MainWindow::Activate()
     bool initialScanSkippingEnabled = settings.value("SkipInitialScan", QVariant(false)).toBool();
     settings.endGroup();
 
-    QObject::connect(ui->skipinitialdatabaseCheck, &QCheckBox::stateChanged, this,
+    QObject::connect(ui->disableStartupScanCheckBox, &QCheckBox::stateChanged, this,
         [](int newCheckState)
     {
         bool newOption = newCheckState == Qt::Checked ? true : false;
@@ -635,7 +654,7 @@ void MainWindow::Activate()
     });
 
     m_guiApplicationManager->GetAssetProcessorManager()->SetInitialScanSkippingFeature(initialScanSkippingEnabled);
-    ui->skipinitialdatabaseCheck->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
+    ui->disableStartupScanCheckBox->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
 
     // Shared Cache tab:
     SetupAssetServerTab();

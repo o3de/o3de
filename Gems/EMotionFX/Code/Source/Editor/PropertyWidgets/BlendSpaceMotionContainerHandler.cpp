@@ -557,7 +557,7 @@ namespace EMotionFX
     {
         if (attrValue)
         {
-            m_blendSpaceNode = static_cast<BlendSpaceNode*>(attrValue->GetInstancePointer());
+            m_blendSpaceNode = static_cast<BlendSpaceNode*>(attrValue->GetInstance());
             GUI->SetBlendSpaceNode(m_blendSpaceNode);
         }
 

@@ -23,6 +23,7 @@ namespace AZ
             : public ImageBasedLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(ImageBasedLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::ImageBasedLightFeatureProcessor, "{1206C38B-2143-4EE1-9C83-F876BD465BBB}", AZ::Render::ImageBasedLightFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);

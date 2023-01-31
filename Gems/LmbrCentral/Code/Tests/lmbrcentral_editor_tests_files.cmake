@@ -10,19 +10,20 @@ set(FILES
     LmbrCentralEditorTest.cpp
     LmbrCentralReflectionTest.h
     EditorComponentIntersectionTests.cpp
+    EditorAxisAlignedBoxShapeComponentTests.cpp
     EditorBoxShapeComponentTests.cpp
     EditorSphereShapeComponentTests.cpp
     EditorCapsuleShapeComponentTests.cpp
     EditorCompoundShapeComponentTests.cpp
     EditorCylinderShapeComponentTests.cpp
     EditorPolygonPrismShapeComponentTests.cpp
+    EditorShapeTestUtils.cpp
+    EditorShapeTestUtils.h
     EditorTubeShapeComponentTests.cpp
     SpawnerComponentTest.cpp
     Builders/CopyDependencyBuilderTest.cpp
     Builders/SliceBuilderTests.cpp
-    Builders/LevelBuilderTest.cpp
     Builders/LuaBuilderTests.cpp
-    Builders/SeedBuilderTests.cpp
     ../Source/LmbrCentral.cpp
     ../Source/LmbrCentralEditor.cpp
 )

@@ -26,6 +26,7 @@ namespace O3DE::ProjectManager
         : public AzFramework::Application
     {
     public:
+        AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator)
         using AzFramework::Application::Application;
         virtual ~Application();
 

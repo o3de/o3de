@@ -75,3 +75,9 @@ class TestAutomationOverrides(EditorTestSuite):
 
     class test_DeletePrefab_UnderNestedInstance(EditorBatchedTest):
         from .tests.overrides import DeletePrefab_UnderNestedInstance as test_module
+
+    class test_EditEntity_UnderImmediateInstance(EditorBatchedTest):
+        from .tests.overrides import EditEntity_UnderImmediateInstance as test_module
+
+    class test_EditEntity_UnderNestedInstance(EditorBatchedTest):
+        from .tests.overrides import EditEntity_UnderNestedInstance as test_module

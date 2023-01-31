@@ -557,9 +557,9 @@ namespace AZ::Reflection
 
                 AZ::Name handlerName;
 
-                // This array node is for caching related EnumValue attributes if any are seen
-                Dom::Value enumValueCache = Dom::Value(Dom::Type::Array);
-                const AZ::Name enumValueName = AZ::Name("EnumValue");
+                // This array node is for caching related GenericValue attributes if any are seen
+                Dom::Value genericValueCache = Dom::Value(Dom::Type::Array);
+                const AZ::Name genericValueName = AZ::Name("GenericValue");
 
                 auto checkAttribute = [&](const AZ::AttributePair* it, void* instance, bool shouldDescribeChildren)
                 {
@@ -571,9 +571,10 @@ namespace AZ::Reflection
                     AZ::Name name = propertyEditorSystem->LookupNameFromId(it->first);
                     if (!name.IsEmpty())
                     {
-                        // If a more specific attribute is already loaded, ignore the new value unless it is an
-                        // EnumValue attribute since those may come in multiples
-                        if (visitedAttributes.find(name) != visitedAttributes.end() && name != enumValueName)
+                        // If an attribute of the same name is already loaded then ignore the new value
+                        // unless it is a GenericValue attribute since each represents an individual
+                        // pair destined for a combobox and thus multiple are expected
+                        if (visitedAttributes.find(name) != visitedAttributes.end() && name != genericValueName)
                         {
                             return;
                         }
@@ -587,7 +588,7 @@ namespace AZ::Reflection
                                              .value_or(visibility);
                         }
 
-                        // See if any registered attributes can read this attribute.
+                        // See if any registered attribute definitions can read this attribute
                         Dom::Value attributeValue;
                         propertyEditorSystem->EnumerateRegisteredAttributes(
                             name,
@@ -599,10 +600,10 @@ namespace AZ::Reflection
                                 }
                             });
 
-                        // Collect related EnumValue attributes for later
-                        if (name == enumValueName && !attributeValue.IsNull())
+                        // Collect related GenericValue attributes so they can be stored together
+                        if (name == genericValueName && !attributeValue.IsNull())
                         {
-                            enumValueCache.ArrayPushBack(attributeValue);
+                            genericValueCache.ArrayPushBack(attributeValue);
                         }
 
                         // Fall back on a generic read that handles primitives.
@@ -621,7 +622,7 @@ namespace AZ::Reflection
                                 handlerName = AZ::Name();
                             }
 
-                            if (name == enumValueName)
+                            if (name == genericValueName)
                             {
                                 return;
                             }
@@ -751,10 +752,10 @@ namespace AZ::Reflection
                     }
                 }
 
-                if (enumValueCache.ArraySize() > 0)
+                if (genericValueCache.ArraySize() > 0)
                 {
                     nodeData.m_cachedAttributes.push_back({
-                        group, DocumentPropertyEditor::Nodes::PropertyEditor::EnumValues.GetName(), enumValueCache });
+                        group, DocumentPropertyEditor::Nodes::PropertyEditor::GenericValueList<AZ::u64>.GetName(), genericValueCache });
                 }
 
                 if (!nodeData.m_labelOverride.empty())

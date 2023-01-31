@@ -50,6 +50,7 @@ ly_add_target(
 # The above "Metastream" target is used by all types of applications, including dev tools.
 ly_create_alias(NAME Metastream.Clients  NAMESPACE Gem TARGETS Gem::Metastream)
 ly_create_alias(NAME Metastream.Servers  NAMESPACE Gem TARGETS Gem::Metastream)
+ly_create_alias(NAME Metastream.Unified  NAMESPACE Gem TARGETS Gem::Metastream)
 ly_create_alias(NAME Metastream.Builders NAMESPACE Gem TARGETS Gem::Metastream)
 ly_create_alias(NAME Metastream.Tools    NAMESPACE Gem TARGETS Gem::Metastream)
 

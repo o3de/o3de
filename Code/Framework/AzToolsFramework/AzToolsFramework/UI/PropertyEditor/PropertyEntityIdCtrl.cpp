@@ -117,15 +117,21 @@ namespace AzToolsFramework
             EditorPickModeRequestBus::Handler::BusConnect(pickModeEntityContextId);
             EditorEventsBus::Handler::BusConnect();
 
-            // replace the default input handler with one specific for dealing with
-            // entity selection in the viewport
-
-            EditorInteractionSystemViewportSelectionRequestBus::Event(
-                GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetHandler,
-                [](const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+            // Replace the default input handler with one specific for dealing with entity selection in the viewport,
+            // but only if we're not in component mode.
+            // If we're in component mode, we should continue to use the default handler and let the component mode handling
+            // manage the entity picking.
+            if (!AzToolsFramework::ComponentModeFramework::InComponentMode())
             {
-                    return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
-            });
+                EditorInteractionSystemViewportSelectionRequestBus::Event(
+                    GetEntityContextId(),
+                    &EditorInteractionSystemViewportSelection::SetHandler,
+                    [](const EditorVisibleEntityDataCacheInterface* entityDataCache,
+                       ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+                    {
+                        return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
+                    });
+            }
 
             if (!pickModeEntityContextId.IsNull())
             {
@@ -156,9 +162,13 @@ namespace AzToolsFramework
             EditorEventsBus::Handler::BusDisconnect();
             emit OnPickComplete();
 
-            // return to the default viewport editor selection
-            EditorInteractionSystemViewportSelectionRequestBus::Event(
-                GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetDefaultHandler);
+            // If we changed the handler to the pick handler (i.e. we're not in component mode),
+            // then return to the default viewport editor selection now that we're done picking.
+            if (!AzToolsFramework::ComponentModeFramework::InComponentMode())
+            {
+                EditorInteractionSystemViewportSelectionRequestBus::Event(
+                    GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetDefaultHandler);
+            }
 
             EditorPickModeNotificationBus::Broadcast(&EditorPickModeNotifications::OnEntityPickModeStopped);
         }
@@ -340,7 +350,7 @@ namespace AzToolsFramework
             bool servicesMismatch = false;
 
             AZ::Entity* entity = nullptr;
-            EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, newEntityId);
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, newEntityId);
 
             if (entity)
             {
@@ -350,7 +360,8 @@ namespace AzToolsFramework
                 for (const AZ::Component* component : components)
                 {
                     AZ::ComponentDescriptor* componentDescriptor = nullptr;
-                    EBUS_EVENT_ID_RESULT(componentDescriptor, component->RTTI_GetType(), AZ::ComponentDescriptorBus, GetDescriptor);
+                    AZ::ComponentDescriptorBus::EventResult(
+                        componentDescriptor, component->RTTI_GetType(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
                     AZ::ComponentDescriptor::DependencyArrayType providedServices;
                     componentDescriptor->GetProvidedServices(providedServices, component);
                     for (int serviceIdx = azlossy_cast<int>(unmatchedServices.size() - 1); serviceIdx >= 0; --serviceIdx)
@@ -404,7 +415,8 @@ namespace AzToolsFramework
     QString PropertyEntityIdCtrl::BuildTooltip()
     {
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityIdLineEdit->GetEntityId());
+        AZ::ComponentApplicationBus::BroadcastResult(
+            entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_entityIdLineEdit->GetEntityId());
 
         if (!entity)
         {
@@ -467,7 +479,10 @@ namespace AzToolsFramework
         bool supportsViewportEntityIdPicking = true;
         if (!m_acceptedEntityContextId.IsNull())
         {
-            EBUS_EVENT_ID_RESULT(supportsViewportEntityIdPicking, m_acceptedEntityContextId, AzToolsFramework::EditorEntityContextPickingRequestBus, SupportsViewportEntityIdPicking);
+            AzToolsFramework::EditorEntityContextPickingRequestBus::EventResult(
+                supportsViewportEntityIdPicking,
+                m_acceptedEntityContextId,
+                &AzToolsFramework::EditorEntityContextPickingRequestBus::Events::SupportsViewportEntityIdPicking);
         }
         m_pickButton->setVisible(supportsViewportEntityIdPicking);
     }
@@ -477,7 +492,7 @@ namespace AzToolsFramework
         PropertyEntityIdCtrl* newCtrl = aznew PropertyEntityIdCtrl(pParent);
         connect(newCtrl, &PropertyEntityIdCtrl::OnEntityIdChanged, this, [newCtrl](AZ::EntityId)
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
             });
         return newCtrl;
@@ -563,7 +578,8 @@ namespace AzToolsFramework
         AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
         if (entityId.IsValid())
         {
-            EBUS_EVENT_ID_RESULT(contextId, entityId, AzFramework::EntityIdContextQueryBus, GetOwningContextId);
+            AzFramework::EntityIdContextQueryBus::EventResult(
+                contextId, entityId, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
         }
         GUI->SetAcceptedEntityContext(contextId);
 
@@ -573,7 +589,8 @@ namespace AzToolsFramework
 
     void RegisterEntityIdPropertyHandler()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew EntityIdPropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew EntityIdPropertyHandler());
     }
 
 }
