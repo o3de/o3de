@@ -21,7 +21,7 @@
 namespace AtomToolsFramework
 {
     // Contains tables of strings representing application or context specific settings for each node
-    using DynamicNodeSettingsMap = AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>>;
+    using DynamicNodeSettingsMap = AZStd::map<AZStd::string, AZStd::vector<AZStd::string>>;
 
     //! Contains all of the settings for an individual input or output slot on a DynamicNode
     struct DynamicNodeSlotConfig final
@@ -70,6 +70,12 @@ namespace AtomToolsFramework
 
         //! @returns the name of this object that will be displayed in the reflected property editor.
         AZStd::string GetDisplayNameForEditor() const;
+
+        //! Automatically fill in the display name and description based off of the slot name if they are empty.
+        void AutoFillMissingData();
+
+        //! Prompt the user to select and add a settings group to the node configuration
+        AZ::Crc32 AddRegisteredSettingGroups();
 
         //! Unique name or ID of a slot
         AZStd::string m_name = "untitled";

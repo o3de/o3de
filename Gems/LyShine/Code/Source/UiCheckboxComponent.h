@@ -15,7 +15,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiCheckboxComponent

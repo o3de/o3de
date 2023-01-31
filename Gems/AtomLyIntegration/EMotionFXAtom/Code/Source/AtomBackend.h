@@ -29,7 +29,6 @@ namespace AZ
             EMotionFX::Integration::RenderActorInstance* CreateActorInstance(AZ::EntityId entityId,
                 const EMotionFX::Integration::EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
                 const AZ::Data::Asset<EMotionFX::Integration::ActorAsset>& asset,
-                const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD,
                 EMotionFX::Integration::SkinningMethod skinningMethod,
                 const AZ::Transform& worldTransform) override;
         };
