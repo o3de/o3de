@@ -1,2 +1,0 @@
-<Material MtlFlags="524288" DccMaterialHash="0" Shader="Illum" GenMask="800000000003" StringGenMask="%ALLOW_SILHOUETTE_POM%ALLOW_SPECULAR_ANTIALIASING%SUBSURFACE_SCATTERING" SurfaceType="mat_default" Diffuse="1,1,1,1" Specular="0.045000002,0.045000002,0.045000002,1" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
-</Material>

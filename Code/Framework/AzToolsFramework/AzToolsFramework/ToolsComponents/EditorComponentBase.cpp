@@ -51,7 +51,8 @@ namespace AzToolsFramework
         {
             if (GetEntity())
             {
-                EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, AddDirtyEntity, GetEntity()->GetId());
+                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntity()->GetId());
             }
             else
             {

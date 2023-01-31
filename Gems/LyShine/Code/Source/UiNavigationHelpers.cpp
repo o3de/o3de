@@ -91,7 +91,7 @@ namespace UiNavigationHelpers
         {
             nextEntityId.SetInvalid();
             UiNavigationInterface::NavigationMode navigationMode = UiNavigationInterface::NavigationMode::None;
-            EBUS_EVENT_ID_RESULT(navigationMode, curEntityId, UiNavigationBus, GetNavigationMode);
+            UiNavigationBus::EventResult(navigationMode, curEntityId, &UiNavigationBus::Events::GetNavigationMode);
             if (navigationMode == UiNavigationInterface::NavigationMode::Custom)
             {
                 // Ask the current interactable what the next interactable should be
@@ -142,7 +142,7 @@ namespace UiNavigationHelpers
         bool isCurElementDescendantOfParentElement = false;
         if (parentElement.IsValid())
         {
-            EBUS_EVENT_ID_RESULT(isCurElementDescendantOfParentElement, curElement, UiElementBus, IsAncestor, parentElement);
+            UiElementBus::EventResult(isCurElementDescendantOfParentElement, curElement, &UiElementBus::Events::IsAncestor, parentElement);
         }
 
         UiTransformInterface::Rect parentRect;
@@ -151,12 +151,12 @@ namespace UiNavigationHelpers
         AZ::Matrix4x4 parentTransformFromViewport;
         if (parentElement.IsValid() && !isCurElementDescendantOfParentElement)
         {
-            EBUS_EVENT_ID(parentElement, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, parentRect);
-            EBUS_EVENT_ID(parentElement, UiTransformBus, GetTransformFromViewport, parentTransformFromViewport);
+            UiTransformBus::Event(parentElement, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, parentRect);
+            UiTransformBus::Event(parentElement, &UiTransformBus::Events::GetTransformFromViewport, parentTransformFromViewport);
         }
 
         UiTransformInterface::RectPoints srcPoints;
-        EBUS_EVENT_ID(curElement, UiTransformBus, GetViewportSpacePoints, srcPoints);
+        UiTransformBus::Event(curElement, &UiTransformBus::Events::GetViewportSpacePoints, srcPoints);
         AZ::Vector2 srcCenter = srcPoints.GetCenter();
 
         // Go through the navigable elements and find the closest element to the current hover interactable
@@ -169,7 +169,7 @@ namespace UiNavigationHelpers
         for (auto navigableElement : navigableElements)
         {
             UiTransformInterface::RectPoints destPoints;
-            EBUS_EVENT_ID(navigableElement->GetId(), UiTransformBus, GetViewportSpacePoints, destPoints);
+            UiTransformBus::Event(navigableElement->GetId(), &UiTransformBus::Events::GetViewportSpacePoints, destPoints);
             AZ::Vector2 destCenter = destPoints.GetCenter();
 
             bool correctDirection = false;
@@ -394,19 +394,19 @@ namespace UiNavigationHelpers
         // Ask the current interactable what the next interactable should be
         if (command == Command::Up)
         {
-            EBUS_EVENT_ID_RESULT(nextEntityId, curEntityId, UiNavigationBus, GetOnUpEntity);
+            UiNavigationBus::EventResult(nextEntityId, curEntityId, &UiNavigationBus::Events::GetOnUpEntity);
         }
         else if (command == Command::Down)
         {
-            EBUS_EVENT_ID_RESULT(nextEntityId, curEntityId, UiNavigationBus, GetOnDownEntity);
+            UiNavigationBus::EventResult(nextEntityId, curEntityId, &UiNavigationBus::Events::GetOnDownEntity);
         }
         else if (command == Command::Left)
         {
-            EBUS_EVENT_ID_RESULT(nextEntityId, curEntityId, UiNavigationBus, GetOnLeftEntity);
+            UiNavigationBus::EventResult(nextEntityId, curEntityId, &UiNavigationBus::Events::GetOnLeftEntity);
         }
         else if (command == Command::Right)
         {
-            EBUS_EVENT_ID_RESULT(nextEntityId, curEntityId, UiNavigationBus, GetOnRightEntity);
+            UiNavigationBus::EventResult(nextEntityId, curEntityId, &UiNavigationBus::Events::GetOnRightEntity);
         }
 
         return nextEntityId;
@@ -418,18 +418,18 @@ namespace UiNavigationHelpers
         bool navigable = false;
 
         UiNavigationInterface::NavigationMode navigationMode = UiNavigationInterface::NavigationMode::None;
-        EBUS_EVENT_ID_RESULT(navigationMode, interactableEntityId, UiNavigationBus, GetNavigationMode);
+        UiNavigationBus::EventResult(navigationMode, interactableEntityId, &UiNavigationBus::Events::GetNavigationMode);
 
         if (navigationMode != UiNavigationInterface::NavigationMode::None)
         {
             // Check if the interactable is enabled
             bool isEnabled = false;
-            EBUS_EVENT_ID_RESULT(isEnabled, interactableEntityId, UiElementBus, IsEnabled);
+            UiElementBus::EventResult(isEnabled, interactableEntityId, &UiElementBus::Events::IsEnabled);
 
             if (isEnabled)
             {
                 // Check if the interactable is handling events
-                EBUS_EVENT_ID_RESULT(navigable, interactableEntityId, UiInteractableBus, IsHandlingEvents);
+                UiInteractableBus::EventResult(navigable, interactableEntityId, &UiInteractableBus::Events::IsHandlingEvents);
             }
         }
 
@@ -454,7 +454,7 @@ namespace UiNavigationHelpers
     void FindNavigableInteractables(AZ::EntityId parentElement, AZ::EntityId ignoreElement, LyShine::EntityArray& result)
     {
         LyShine::EntityArray elements;
-        EBUS_EVENT_ID_RESULT(elements, parentElement, UiElementBus, GetChildElements);
+        UiElementBus::EventResult(elements, parentElement, &UiElementBus::Events::GetChildElements);
 
         AZStd::list<AZ::Entity*> elementList(elements.begin(), elements.end());
         while (!elementList.empty())
@@ -466,20 +466,20 @@ namespace UiNavigationHelpers
             if (UiInteractableBus::FindFirstHandler(entity->GetId()))
             {
                 UiNavigationInterface::NavigationMode navigationMode = UiNavigationInterface::NavigationMode::None;
-                EBUS_EVENT_ID_RESULT(navigationMode, entity->GetId(), UiNavigationBus, GetNavigationMode);
+                UiNavigationBus::EventResult(navigationMode, entity->GetId(), &UiNavigationBus::Events::GetNavigationMode);
                 handlesNavigationEvents = (navigationMode != UiNavigationInterface::NavigationMode::None);
             }
 
             // Check if the element is enabled
             bool isEnabled = false;
-            EBUS_EVENT_ID_RESULT(isEnabled, entity->GetId(), UiElementBus, IsEnabled);
+            UiElementBus::EventResult(isEnabled, entity->GetId(), &UiElementBus::Events::IsEnabled);
 
             bool navigable = false;
             if (handlesNavigationEvents && isEnabled && (!ignoreElement.IsValid() || entity->GetId() != ignoreElement))
             {
                 // Check if the element is handling events
                 bool isHandlingEvents = false;
-                EBUS_EVENT_ID_RESULT(isHandlingEvents, entity->GetId(), UiInteractableBus, IsHandlingEvents);
+                UiInteractableBus::EventResult(isHandlingEvents, entity->GetId(), &UiInteractableBus::Events::IsHandlingEvents);
                 navigable = isHandlingEvents;
             }
 
@@ -491,7 +491,7 @@ namespace UiNavigationHelpers
             if (!handlesNavigationEvents && isEnabled)
             {
                 LyShine::EntityArray childElements;
-                EBUS_EVENT_ID_RESULT(childElements, entity->GetId(), UiElementBus, GetChildElements);
+                UiElementBus::EventResult(childElements, entity->GetId(), &UiElementBus::Events::GetChildElements);
                 elementList.insert(elementList.end(), childElements.begin(), childElements.end());
             }
 
@@ -503,7 +503,7 @@ namespace UiNavigationHelpers
     AZ::EntityId FindAncestorNavigableInteractable(AZ::EntityId childInteractable, bool ignoreAutoActivatedAncestors)
     {
         AZ::EntityId parent;
-        EBUS_EVENT_ID_RESULT(parent, childInteractable, UiElementBus, GetParentEntityId);
+        UiElementBus::EventResult(parent, childInteractable, &UiElementBus::Events::GetParentEntityId);
         while (parent.IsValid())
         {
             if (UiNavigationHelpers::IsElementInteractableAndNavigable(parent))
@@ -512,7 +512,7 @@ namespace UiNavigationHelpers
                 {
                     // Check if this hover interactable should automatically go to an active state
                     bool autoActivated = false;
-                    EBUS_EVENT_ID_RESULT(autoActivated, parent, UiInteractableBus, GetIsAutoActivationEnabled);
+                    UiInteractableBus::EventResult(autoActivated, parent, &UiInteractableBus::Events::GetIsAutoActivationEnabled);
                     if (!autoActivated)
                     {
                         break;
@@ -526,7 +526,7 @@ namespace UiNavigationHelpers
 
             AZ::EntityId newParent = parent;
             parent.SetInvalid();
-            EBUS_EVENT_ID_RESULT(parent, newParent, UiElementBus, GetParentEntityId);
+            UiElementBus::EventResult(parent, newParent, &UiElementBus::Events::GetParentEntityId);
         }
 
         return parent;

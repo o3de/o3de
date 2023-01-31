@@ -9,11 +9,14 @@
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassAttachment.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
+#include <Atom/RPI.Reflect/Pass/PassName.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 #include <CoreLights/ProjectedShadowmapsPass.h>
 #include <AzCore/std/iterator.h>
@@ -212,22 +215,48 @@ namespace AZ
             m_updateChildren = true;
             UpdateChildren();
 
-            // [GFX TODO][ATOM-2470] stop caring about attachment
             RPI::Ptr<RPI::PassAttachment> attachment = m_ownedAttachments.front();
             if (!attachment)
             {
                 AZ_Assert(false, "[ProjectedShadowmapsPass %s] Cannot find shadowmap image attachment.", GetPathName().GetCStr());
                 return;
             }
-            AZ_Assert(attachment->m_descriptor.m_type == RHI::AttachmentType::Image, "[ProjectedShadowmapsPass %s] requires an image attachment", GetPathName().GetCStr());
-
-            RPI::PassAttachmentBinding& binding = GetOutputBinding(0);
-            binding.SetAttachment(attachment);
+            if (attachment->m_descriptor.m_type != RHI::AttachmentType::Image)
+            {
+                AZ_Assert(false, "[ProjectedShadowmapsPass %s] requires an image attachment", GetPathName().GetCStr());
+                return;
+            }
 
             RHI::ImageDescriptor& imageDescriptor = attachment->m_descriptor.m_image;
             const uint32_t shadowmapWidth = static_cast<uint32_t>(m_atlas.GetBaseShadowmapSize());
             imageDescriptor.m_size = RHI::Size(shadowmapWidth, shadowmapWidth, 1);
+            imageDescriptor.m_format = RHI::Format::D32_FLOAT;
             imageDescriptor.m_arraySize = m_atlas.GetArraySliceCount();
+            imageDescriptor.m_bindFlags |= RHI::ImageBindFlags::Depth;
+            imageDescriptor.m_sharedQueueMask = RHI::HardwareQueueClassMask::Graphics;
+
+            // The ImageViewDescriptor must be specified to make sure the frame graph compiler doesn't treat this as a transient image.
+            RHI::ImageViewDescriptor viewDesc = RHI::ImageViewDescriptor::Create(imageDescriptor.m_format, 0, 0);
+            viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Depth;
+
+            // The full path name is needed for the attachment image so it's not de-duplicated from accumulation images in different pipelines.
+            AZStd::string imageName = RPI::ConcatPassString(GetPathName(), attachment->m_path);
+            Data::Instance<RPI::AttachmentImagePool> pool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
+            auto attachmentImage = RPI::AttachmentImage::Create(*pool.get(), imageDescriptor, Name(imageName), nullptr, &viewDesc);
+
+            if (attachmentImage)
+            {
+                attachment->m_path = attachmentImage->GetAttachmentId();
+                attachment->m_importedResource = attachmentImage;
+            }
+            else
+            {
+                AZ_Error("ProjectedShadowmapsPass", false, "Unable to create an attachment image.");
+                this->SetEnabled(false);
+            }
+
+            RPI::PassAttachmentBinding& binding = GetOutputBinding(0);
+            binding.SetAttachment(attachment);
 
             Base::BuildInternal();
         }

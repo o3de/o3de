@@ -108,11 +108,7 @@ bool ShouldHandleParallaxInDepthShaders()
 
 bool NeedsTangentFrame()
 {
-#if ENABLE_PARALLAX
-    return ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture);
-#else
     return true;
-#endif
 }
 
 // Use same vertex logic as BasePBR

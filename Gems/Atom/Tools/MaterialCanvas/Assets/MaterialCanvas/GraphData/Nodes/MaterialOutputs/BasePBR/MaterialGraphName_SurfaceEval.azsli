@@ -16,6 +16,7 @@
 #endif
 
 #include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/RPI/TangentSpace.azsli>
 
 Surface EvaluateSurface_MaterialGraphName(
     float3 positionWS,
@@ -28,8 +29,8 @@ Surface EvaluateSurface_MaterialGraphName(
     #define O3DE_MC_POSITION positionWS
     #define O3DE_MC_UV(index) uvs[clamp(index, 0, UvSetCount-1)];
     #define O3DE_MC_NORMAL vertexNormal
-    #define O3DE_MC_TANGENT tangent[0]
-    #define O3DE_MC_BITANGENT bitangent[0]
+    #define O3DE_MC_TANGENT tangents[0]
+    #define O3DE_MC_BITANGENT bitangents[0]
     #define O3DE_MC_WORLD_POSITION positionWS
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor
@@ -50,7 +51,7 @@ Surface EvaluateSurface_MaterialGraphName(
     Surface surface;
     surface.position = positionWS;
     surface.vertexNormal = vertexNormal;
-    surface.normal = normalize(o_normal_override_enabled ? (float3)inNormal : vertexNormal);
+    surface.normal = normalize(o_normal_override_enabled ? GetWorldSpaceNormal((float2)inNormal, vertexNormal, tangents[0], bitangents[0]) : vertexNormal);
     surface.roughnessLinear = inRoughness;
     surface.SetAlbedoAndSpecularF0(inBaseColor, inSpecularF0Factor, inMetallic);
     surface.CalculateRoughnessA();

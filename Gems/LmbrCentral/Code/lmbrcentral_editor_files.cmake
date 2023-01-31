@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    include/LmbrCentral/Rendering/EditorCameraCorrectionBus.h
     include/LmbrCentral/Shape/EditorPolygonPrismShapeComponentBus.h
     include/LmbrCentral/Shape/EditorSplineComponentBus.h
     include/LmbrCentral/Shape/EditorTubeShapeComponentBus.h
