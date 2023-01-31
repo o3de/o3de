@@ -259,14 +259,6 @@ namespace AZ::DocumentPropertyEditor
 
                     // replace operations can change child values from or into rows. Handle all cases
                     auto existingRowNode = GetMatchNodeAtPath(patchPath);
-
-                    /* <apm> replace is hard. The possibilities are:
-                    * row->row - generate the remove (if mapping exists), Incremental patch generates Add if necessary
-                    * row->column - if the row was filtered out, this is an Add. If not, this is a Replace
-                    * column->row - treat this as a remove (if mapping exists), Incremental patch generates Add if necessary
-                    * column->column - always a Replace, if the mapping exists
-                    * */
-
                     const bool replacementIsRow = (patchPath == rowPath);
                     if (!replacementIsRow && !existingRowNode)
                     {
@@ -435,7 +427,6 @@ namespace AZ::DocumentPropertyEditor
                         return (currNode == testNode);
                     });
                 size_t index = AZStd::distance(parentNode->m_childMatchState.begin(), foundIter);
-
                 path.Push(index);
             }
         };
