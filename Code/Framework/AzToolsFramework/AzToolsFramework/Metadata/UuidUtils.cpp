@@ -18,6 +18,8 @@ namespace AzToolsFramework
         {
             serializeContext->Class<UuidUtilComponent, AZ::Component>();
         }
+
+        UuidEntry::Reflect(context);
     }
 
     bool UuidUtilComponent::CreateSourceUuid(AZ::IO::PathView absoluteFilePath, AZ::Uuid uuid)

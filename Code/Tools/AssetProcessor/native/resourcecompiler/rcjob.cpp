@@ -909,7 +909,10 @@ namespace AssetProcessor
         // Go through all the intermediate products and output the assigned UUID
         for (auto [intermediateProduct, uuid] : intermediateOutputPaths)
         {
-            uuidInterface->CreateSourceUuid(intermediateProduct.toUtf8().constData(), uuid);
+            if(!uuidInterface->CreateSourceUuid(intermediateProduct.toUtf8().constData(), uuid))
+            {
+                AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Failed to create metadata file for intermediate product " AZ_STRING_FORMAT, AZ_STRING_ARG(intermediateProduct));
+            }
         }
 
         bool anyFileFailed = false;

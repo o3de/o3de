@@ -4136,7 +4136,11 @@ namespace AssetProcessor
 
                         auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
 
-                        AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+                        if (!uuidInterface)
+                        {
+                            AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+                            return;
+                        }
 
                         auto topLevelSource = AssetUtilities::GetTopLevelSourceForIntermediateAsset(sourceAsset, m_stateData);
 
