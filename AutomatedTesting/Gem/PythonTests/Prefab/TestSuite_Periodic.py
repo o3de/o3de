@@ -20,7 +20,7 @@ class TestAutomationNoOverrides(EditorTestSuite):
 
     # Create Prefab Tests
     class test_CreatePrefab_CreationFailsWithDifferentRootEntities(EditorBatchedTest):
-        from .tests.spawnables import SC_Spawnables_DespawnOnEntityDeactivate as test_module
+        from .tests.create_prefab import CreatePrefab_CreationFailsWithDifferentRootEntities as test_module
         
     # Spawnables Tests
 
