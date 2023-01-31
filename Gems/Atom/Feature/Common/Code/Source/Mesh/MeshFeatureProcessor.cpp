@@ -1432,23 +1432,8 @@ namespace AZ
                         // characterisation of the full material.
                         Color avgColor = baseColorStreamingImg->GetAverageColor();
 
-                        // We do a simple 'multiply' blend with the base color for now. Warn
-                        // the user if something else was intended.
-                        propertyIndex = material->FindPropertyIndex(s_baseColor_textureBlendMode_Name);
-                        if (propertyIndex.IsValid())
-                        {
-                            AZ::Name textureBlendMode = material->GetMaterialPropertiesLayout()
-                                     ->GetPropertyDescriptor(propertyIndex)
-                                     ->GetEnumName(material->GetPropertyValue<uint32_t>(propertyIndex));
-                            if (textureBlendMode != s_Multiply_Name)
-                            {
-                                AZ_Warning("MeshFeatureProcessor", false, "textureBlendMode '%s' is not "
-                                        "yet supported when requesting BaseColor irradiance source, "
-                                        "using 'Multiply' for deriving the irradiance color.",
-                                        textureBlendMode.GetCStr());
-                            }
-                        }
-                        // 'Multiply' blend mode:
+                        // We do a simple 'multiply' blend with the base color
+                        // Note: other blend modes are currently not supported
                         subMesh.m_irradianceColor = avgColor * subMesh.m_baseColor;
                     }
                     else

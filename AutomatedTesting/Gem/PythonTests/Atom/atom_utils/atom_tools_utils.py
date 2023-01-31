@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import os
+import pathlib
 import sys
 import time
 
@@ -18,16 +18,11 @@ from Atom.atom_utils.atom_constants import (
     AtomToolsDocumentRequestBusEvents, AtomToolsDocumentSystemRequestBusEvents, AtomToolsMainWindowRequestBusEvents,
     EntityPreviewViewportSettingsRequestBusEvents)
 
-MATERIAL_TYPES_PATH = os.path.join(
-    azlmbr.paths.engroot, "Gems", "Atom", "Feature", "Common", "Assets", "Materials", "Types")
-MATERIALCANVAS_GRAPH_PATH = os.path.join(
-    azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialCanvas", "Assets", "MaterialCanvas", "TestData")
-SCREENSHOTS_FOLDER = os.path.join(azlmbr.paths.products, "Screenshots")
-TEST_DATA_MATERIALS_PATH = os.path.join(azlmbr.paths.engroot, "Gems", "Atom", "TestData", "TestData", "Materials")
-VIEWPORT_LIGHTING_PRESETS_PATH = os.path.join(
-    azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor", "LightingPresets")
-VIEWPORT_MODELS_PRESETS_PATH = os.path.join(
-    azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor", "ViewportModels")
+MATERIAL_TYPES_PATH = pathlib.PurePath(azlmbr.paths.resolve_path("@gemroot:Atom_Feature_Common@/Assets/Materials/Types"))
+MATERIALCANVAS_GRAPH_PATH = pathlib.PurePath(azlmbr.paths.resolve_path("@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData"))
+TEST_DATA_MATERIALS_PATH = pathlib.PurePath(azlmbr.paths.resolve_path("@gemroot:Atom_TestData@/Assets/TestData/Materials"))
+VIEWPORT_LIGHTING_PRESETS_PATH = pathlib.PurePath(azlmbr.paths.resolve_path("@gemroot:MaterialEditor@/Assets/MaterialEditor/LightingPresets"))
+VIEWPORT_MODELS_PRESETS_PATH = pathlib.PurePath(azlmbr.paths.resolve_path("@gemroot:MaterialEditor@/Assets/MaterialEditor/ViewportModels"))
 
 
 def is_close(
@@ -172,7 +167,7 @@ def get_last_lighting_preset_path() -> str:
     Example return values observed when selecting different lighting backgrounds from the viewport dropdown:
     "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/LightingPresets/neutral_urban.lightingpreset.azasset"
     "C:/git/o3de/Gems/Atom/Feature/Common/Assets/LightingPresets/LowContrast/artist_workshop.lightingpreset.azasset"
-    "C:/git/o3de/Gems/Atom/TestData/TestData/LightingPresets/beach_parking.lightingpreset.azasset"
+    "@gemroot:Atom_TestData@/Assets/TestData/LightingPresets/beach_parking.lightingpreset.azasset"
     """
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
         azlmbr.bus.Broadcast,
@@ -380,5 +375,5 @@ class ScreenshotHelper(object):
 
 def capture_screenshot(file_path: str) -> bool:
     return ScreenshotHelper(azlmbr.atomtools.general.idle_wait_frames).capture_screenshot_blocking(
-        os.path.join(file_path)
+        file_path
     )

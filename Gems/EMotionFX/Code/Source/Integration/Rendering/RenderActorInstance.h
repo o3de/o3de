@@ -47,10 +47,6 @@ namespace EMotionFX
             virtual void SetIsVisible(bool isVisible);
             virtual bool IsInCameraFrustum() const;
 
-            virtual void SetMaterials(const ActorAsset::MaterialList& materialsPerLOD) = 0;
-            typedef AZStd::function<void(const AZStd::string& materialName)> MaterialChangedFunction;
-            void SetOnMaterialChangedCallback(MaterialChangedFunction callback);
-
             Actor* GetActor() const;
 
         protected:
@@ -63,7 +59,6 @@ namespace EMotionFX
 
             bool m_isVisible = true;
             SkinningMethod m_skinningMethod = SkinningMethod::DualQuat;
-            MaterialChangedFunction m_onMaterialChangedCallback;
         };
     } // namespace Integration
 } // namespace EMotionFX

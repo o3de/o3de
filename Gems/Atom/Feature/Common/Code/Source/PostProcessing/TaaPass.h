@@ -51,17 +51,25 @@ namespace AZ::Render
         
     private:
 
+        // Due to a limitation in the pass system, a copy of the output must be made immediately after
+        // running TAA to ensure the data doesn't get altered by a downstream pass. This is important because
+        // this frame's output becomes next frame's history buffer. When there is away to mark pass outputs
+        // as read only, we can remove this bool and related code to avoid needing to do the copy.
+        static constexpr bool ShouldCopyHistoryBuffer = true;
+
         TaaPass(const RPI::PassDescriptor& descriptor);
         
         // Scope producer functions...
         void CompileResources(const RHI::FrameGraphCompileContext& context) override;
-        
+        void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
+
         // Pass behavior overrides...
+        void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
         void FrameBeginInternal(FramePrepareParams params) override;
         void ResetInternal() override;
         void BuildInternal() override;
 
-        void UpdateAttachmentImage(RPI::Ptr<RPI::PassAttachment>& attachment);
+        void UpdateAttachmentImage(uint32_t attachmentIndex);
 
         void SetupSubPixelOffsets(uint32_t haltonX, uint32_t haltonY, uint32_t length);
         void GenerateFilterWeights(AZ::Vector2 jitterOffset);
@@ -70,11 +78,14 @@ namespace AZ::Render
         RHI::ShaderInputNameIndex m_lastFrameAccumulationIndex = "m_lastFrameAccumulation";
         RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
 
-        Data::Instance<RPI::PassAttachment> m_accumulationAttachments[2];
+        AZStd::array<Data::Instance<RPI::PassAttachment>, 2> m_accumulationAttachments;
+        AZStd::array<Data::Instance<RPI::AttachmentImage>, 2> m_attachmentImages;
 
         RPI::PassAttachmentBinding* m_inputColorBinding = nullptr;
         RPI::PassAttachmentBinding* m_lastFrameAccumulationBinding = nullptr;
         RPI::PassAttachmentBinding* m_outputColorBinding = nullptr;
+
+        RHI::CopyItem m_copyItem; // Can be removed when ShouldCopyHistoryBuffer is no longer needed.
 
         struct Offset
         {
