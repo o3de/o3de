@@ -52,7 +52,6 @@ namespace GraphModel
 
         m_graph = graph;
         m_id = id;
-
         PostLoadSetup();
     }
 
@@ -105,6 +104,8 @@ namespace GraphModel
 
         AZ_Assert(m_allSlots.size() == m_propertySlots.size() + m_inputDataSlots.size() + m_outputDataSlots.size() + m_inputEventSlots.size() + m_outputEventSlots.size() + numExtendableSlots, "Slot counts don't match");
         AZ_Assert(m_allSlotDefinitions.size() == m_propertySlotDefinitions.size() + m_inputDataSlotDefinitions.size() + m_outputDataSlotDefinitions.size() + m_inputEventSlotDefinitions.size() + m_outputEventSlotDefinitions.size() + m_extendableSlotDefinitions.size(), "SlotDefinition counts don't match");
+
+        ClearCachedData();
     }
 
     //! Returns the name that will be displayed as the sub-title of the Node in the UI
@@ -125,6 +126,24 @@ namespace GraphModel
         CreateSlotData(m_outputEventSlots, m_outputEventSlotDefinitions);
 
         CreateExtendableSlotData();
+    }
+
+    void Node::ClearCachedData()
+    {
+        {
+            AZStd::scoped_lock lock(m_maxInputDepthMutex);
+            m_maxInputDepth = AZStd::numeric_limits<uint32_t>::max();
+        }
+
+        {
+            AZStd::scoped_lock lock(m_maxOutputDepthMutex);
+            m_maxOutputDepth = AZStd::numeric_limits<uint32_t>::max();
+        }
+
+        for (auto& slotPair : m_allSlots)
+        {
+            slotPair.second->ClearCachedData();
+        }
     }
 
     void Node::CreateSlotData(SlotMap& slotMap, const SlotDefinitionList& slotDefinitionList)
@@ -274,38 +293,44 @@ namespace GraphModel
 
     uint32_t Node::GetMaxInputDepth() const
     {
-        uint32_t maxInputDepth = 0;
-        AZStd::for_each(m_allSlots.begin(), m_allSlots.end(), [&](const auto& slotPair) {
-            const auto& slot = slotPair.second;
-            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input)
+        AZStd::scoped_lock lock(m_maxInputDepthMutex);
+        if (m_maxInputDepth == AZStd::numeric_limits<uint32_t>::max())
+        {
+            m_maxInputDepth = 0;
+            for (const auto& slotPair : m_inputDataSlots)
             {
-                const auto& connections = slot->GetConnections();
-                AZStd::for_each(connections.begin(), connections.end(), [&](const auto& connection) {
+                const auto& slot = slotPair.second;
+                AZ_Assert(slot->GetSlotDirection() == GraphModel::SlotDirection::Input, "Slots in this container must be input slots.");
+                for (const auto& connection : slot->GetConnections())
+                {
                     AZ_Assert(connection->GetSourceNode().get() != this, "This should never be the source node on an input connection.");
                     AZ_Assert(connection->GetTargetNode().get() == this, "This should always be the target node on an input connection.");
-                    maxInputDepth = AZStd::max(maxInputDepth, connection->GetSourceNode()->GetMaxInputDepth() + 1);
-                });
+                    m_maxInputDepth = AZStd::max(m_maxInputDepth, connection->GetSourceNode()->GetMaxInputDepth() + 1);
+                }
             }
-        });
-        return maxInputDepth;
+        }
+        return m_maxInputDepth;
     }
 
     uint32_t Node::GetMaxOutputDepth() const
     {
-        uint32_t maxOutputDepth = 0;
-        AZStd::for_each(m_allSlots.begin(), m_allSlots.end(), [&](const auto& slotPair) {
-            const auto& slot = slotPair.second;
-            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Output)
+        AZStd::scoped_lock lock(m_maxOutputDepthMutex);
+        if (m_maxOutputDepth == AZStd::numeric_limits<uint32_t>::max())
+        {
+            m_maxOutputDepth = 0;
+            for (const auto& slotPair : m_outputDataSlots)
             {
-                const auto& connections = slot->GetConnections();
-                AZStd::for_each(connections.begin(), connections.end(), [&](const auto& connection) {
+                const auto& slot = slotPair.second;
+                AZ_Assert(slot->GetSlotDirection() == GraphModel::SlotDirection::Output, "Slots in this container must be output slots.");
+                for (const auto& connection : slot->GetConnections())
+                {
                     AZ_Assert(connection->GetSourceNode().get() == this, "This should always be the source node on an output connection.");
                     AZ_Assert(connection->GetTargetNode().get() != this, "This should never be the target node on an output connection.");
-                    maxOutputDepth = AZStd::max(maxOutputDepth, connection->GetTargetNode()->GetMaxOutputDepth() + 1);
-                });
+                    m_maxOutputDepth = AZStd::max(m_maxOutputDepth, connection->GetTargetNode()->GetMaxOutputDepth() + 1);
+                }
             }
-        });
-        return maxOutputDepth;
+        }
+        return m_maxOutputDepth;
     }
 
     bool Node::HasSlots() const
@@ -315,18 +340,12 @@ namespace GraphModel
 
     bool Node::HasInputSlots() const
     {
-        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
-            const auto& slot = slotPair.second;
-            return slot->GetSlotDirection() == GraphModel::SlotDirection::Input;
-        });
+        return !m_inputDataSlots.empty() || !m_inputEventSlots.empty();
     }
 
     bool Node::HasOutputSlots() const
     {
-        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
-            const auto& slot = slotPair.second;
-            return slot->GetSlotDirection() == GraphModel::SlotDirection::Output;
-        });
+        return !m_outputDataSlots.empty() || !m_outputEventSlots.empty();
     }
 
     bool Node::HasConnections() const
@@ -339,45 +358,47 @@ namespace GraphModel
 
     bool Node::HasInputConnections() const
     {
-        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
+        return AZStd::any_of(m_inputDataSlots.begin(), m_inputDataSlots.end(), [](const auto& slotPair) {
             const auto& slot = slotPair.second;
-            return slot->GetSlotDirection() == GraphModel::SlotDirection::Input && !slot->GetConnections().empty();
+            AZ_Assert(slot->GetSlotDirection() == GraphModel::SlotDirection::Input, "Slots in this container must be input slots.");
+            return !slot->GetConnections().empty();
         });
     }
 
     bool Node::HasOutputConnections() const
     {
-        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
+        return AZStd::any_of(m_outputDataSlots.begin(), m_outputDataSlots.end(), [](const auto& slotPair) {
             const auto& slot = slotPair.second;
-            return slot->GetSlotDirection() == GraphModel::SlotDirection::Output && !slot->GetConnections().empty();
+            AZ_Assert(slot->GetSlotDirection() == GraphModel::SlotDirection::Output, "Slots in this container must be output slots.");
+            return !slot->GetConnections().empty();
         });
     }
 
     bool Node::HasInputConnectionFromNode(ConstNodePtr node) const
     {
-        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [&](const auto& slotPair) {
+        return AZStd::any_of(m_inputDataSlots.begin(), m_inputDataSlots.end(), [&](const auto& slotPair) {
             const auto& slot = slotPair.second;
+            AZ_Assert(slot->GetSlotDirection() == GraphModel::SlotDirection::Input, "Slots in this container must be input slots.");
             const auto& connections = slot->GetConnections();
-            return slot->GetSlotDirection() == GraphModel::SlotDirection::Input &&
-                AZStd::any_of(connections.begin(), connections.end(), [&](const auto& connection) {
-                    AZ_Assert(connection->GetSourceNode().get() != this, "This should never be the source node on an input connection.");
-                    AZ_Assert(connection->GetTargetNode().get() == this, "This should always be the target node on an input connection.");
-                    return connection->GetSourceNode() == node || connection->GetSourceNode()->HasInputConnectionFromNode(node);
-                });
+            return AZStd::any_of(connections.begin(), connections.end(), [&](const auto& connection) {
+                AZ_Assert(connection->GetSourceNode().get() != this, "This should never be the source node on an input connection.");
+                AZ_Assert(connection->GetTargetNode().get() == this, "This should always be the target node on an input connection.");
+                return connection->GetSourceNode() == node || connection->GetSourceNode()->HasInputConnectionFromNode(node);
+            });
         });
     }
 
     bool Node::HasOutputConnectionToNode(ConstNodePtr node) const
     {
-        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [&](const auto& slotPair) {
+        return AZStd::any_of(m_outputDataSlots.begin(), m_outputDataSlots.end(), [&](const auto& slotPair) {
             const auto& slot = slotPair.second;
+            AZ_Assert(slot->GetSlotDirection() == GraphModel::SlotDirection::Output, "Slots in this container must be output slots.");
             const auto& connections = slot->GetConnections();
-            return slot->GetSlotDirection() == GraphModel::SlotDirection::Output &&
-                AZStd::any_of(connections.begin(), connections.end(), [&](const auto& connection) {
-                    AZ_Assert(connection->GetSourceNode().get() == this, "This should always be the source node on an output connection.");
-                    AZ_Assert(connection->GetTargetNode().get() != this, "This should never be the target node on an output connection.");
-                    return connection->GetTargetNode() == node || connection->GetTargetNode()->HasOutputConnectionToNode(node);
-                });
+            return AZStd::any_of(connections.begin(), connections.end(), [&](const auto& connection) {
+                AZ_Assert(connection->GetSourceNode().get() == this, "This should always be the source node on an output connection.");
+                AZ_Assert(connection->GetTargetNode().get() != this, "This should never be the target node on an output connection.");
+                return connection->GetTargetNode() == node || connection->GetTargetNode()->HasOutputConnectionToNode(node);
+            });
         });
     }
 
@@ -450,6 +471,7 @@ namespace GraphModel
             {
                 extendableSlotsIt->second.erase(slot);
             }
+            ClearCachedData();
         }
     }
 
@@ -518,6 +540,7 @@ namespace GraphModel
         m_allSlots.insert(AZStd::make_pair(slot->GetSlotId(), slot));
         currentSlots.insert(slot);
 
+        ClearCachedData();
         return slot;
     }
 

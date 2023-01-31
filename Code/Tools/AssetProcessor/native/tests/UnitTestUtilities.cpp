@@ -166,7 +166,6 @@ namespace UnitTests
     void TraceBusErrorChecker::End(int expectedCount)
     {
         m_expectingFailure = false;
-        EXPECT_EQ(expectedCount, m_suppressedMessages.size());
 
         if (expectedCount != m_suppressedMessages.size())
         {
@@ -174,6 +173,8 @@ namespace UnitTests
             {
                 AZ::Debug::Trace::Instance().Output("", message.c_str());
             }
+
+            EXPECT_EQ(expectedCount, m_suppressedMessages.size());
         }
     }
 

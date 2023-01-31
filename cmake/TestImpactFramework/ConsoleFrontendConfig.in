@@ -5,9 +5,6 @@
       "timestamp": "${timestamp}",
       "build_config": "${build_config}"
     },
-    "jenkins": {
-      "use_test_impact_analysis": ${use_tiaf}
-    },
     "repo": {
       "root": "${repo_dir}",
       "build": "${bin_dir}"
@@ -49,6 +46,10 @@
     }
   },
   "native": {
+    "jenkins": {
+      "enabled": ${native_test_targets_enabled},
+      "use_test_impact_analysis": ${use_tiaf}
+    },
     "workspace": {
       "temp": {
         "root": "${native_temp_dir}",
@@ -100,6 +101,10 @@
     }
   },
   "python": {
+    "jenkins": {
+      "enabled": ${python_test_targets_enabled},
+      "use_test_impact_analysis": true
+    },
     "workspace": {
       "temp": {
         "root": "${python_temp_dir}",

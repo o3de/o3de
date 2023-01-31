@@ -65,7 +65,7 @@ namespace AZ
             ShadowmapAtlas::Origin GetOriginInAtlas(uint16_t index) const;
 
             //! This exposes the shadowmap atlas.
-            ShadowmapAtlas& GetShadowmapAtlas();
+            const ShadowmapAtlas& GetShadowmapAtlas() const;
 
         private:
             ProjectedShadowmapsPass() = delete;
@@ -75,7 +75,6 @@ namespace AZ
             void BuildInternal() override;
             void GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const override;
             void GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, RPI::PassesByDrawList& outPassesByDrawList, const RPI::PipelineViewTag& viewTag) const override;
-            void FrameBeginInternal(FramePrepareParams params) override;
 
             RHI::Ptr<ShadowmapPass> CreateChild(size_t childIndex);
 
@@ -92,7 +91,6 @@ namespace AZ
             AZStd::unordered_map<uint16_t, ShadowmapPass*> m_shadowIndicesToPass;
             Data::Instance<AZ::RPI::Shader> m_clearShadowShader;
             RHI::ConstPtr<AZ::RHI::DrawPacket> m_clearShadowDrawPacket;
-            RHI::Handle<uint32_t> m_casterMovedBit = RHI::Handle<uint32_t>(0);
 
             ShadowmapAtlas m_atlas;
             bool m_updateChildren = true;

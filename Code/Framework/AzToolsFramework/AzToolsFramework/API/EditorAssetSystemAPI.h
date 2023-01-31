@@ -127,6 +127,14 @@ namespace AzToolsFramework
             * returns false if it cannot find the source, true otherwise.
             */
             virtual bool GetAssetsProducedBySourceUUID(const AZ::Uuid& sourceUuid, AZStd::vector<AZ::Data::AssetInfo>& productsAssetInfo) = 0;
+
+            /** This will cause the file to reprocess the next time it changes, even if it's identical to what it was before.
+            * This is useful for in-editor tools that save source files. A content creator expects that, every time they save a file,
+            * the file will be processed, even if nothing has actually changed, so they will sometimes save a file specifically to
+            * force the asset to reprocess.
+            * @return true if the fingerprint was cleared, false if not.
+            */
+            virtual bool ClearFingerprintForAsset(const AZStd::string& sourcePath) = 0;
         };
 
 
@@ -176,7 +184,7 @@ namespace AzToolsFramework
                 case JobStatus::Completed: return "Completed";
                 case JobStatus::Missing: return "Missing";
             }
-            return nullptr;
+            return "";
         }
 
 
@@ -274,9 +282,12 @@ namespace AzToolsFramework
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // single listener
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; //single bus
 
+            using MutexType = AZStd::recursive_mutex;
+            static const bool LocklessDispatch = true;
+
             virtual ~AssetSystemJobRequest() = default;
 
-            /// Retrieve Jobs information for the given source file, setting escalteJobs to true will escalate all queued jobs
+            /// Retrieve Jobs information for the given source file, setting escalateJobs to true will escalate all queued jobs
             virtual AZ::Outcome<JobInfoContainer> GetAssetJobsInfo(const AZStd::string& sourcePath, const bool escalateJobs) = 0;
 
             /// Retrieve Jobs information for the given assetId, setting escalteJobs to true will escalate all queued jobs

@@ -12,7 +12,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 #include <Vegetation/Ebuses/AreaRequestBus.h>

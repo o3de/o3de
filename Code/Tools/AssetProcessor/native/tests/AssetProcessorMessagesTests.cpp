@@ -317,6 +317,7 @@ namespace AssetProcessorMessagesTests
         addPairFunc(new AssetDependencyInfoRequest(), new AssetDependencyInfoResponse());
         addRequestFunc(new RequestEscalateAsset());
         addPairFunc(new RequestAssetStatus(), new ResponseAssetStatus());
+        addPairFunc(new AssetFingerprintClearRequest(), new AssetFingerprintClearResponse());
 
         RunNetworkRequest([&testMessages, &nameMap, this]()
             {
