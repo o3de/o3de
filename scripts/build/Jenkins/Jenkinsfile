@@ -836,11 +836,14 @@ def UploadBuildArtifacts(String workspace, String platform, String jobName, Stri
         }
         dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
             try {
-                def cmd = "s3siscli upload --label ${env.JENKINS_JOB_NAME}/${platform}/${jobName}"
+                def cmd = "s3siscli upload"
                 if (s3sisUploadParams?.trim()) {
                     cmd += " ${s3sisUploadParams}"
                 }
-                PlatformSh(cmd, "Uploading build artifacts", winSlashReplacement=false)
+                current_cmd = cmd + " --label ${env.JENKINS_JOB_NAME}/${platform}/${jobName}/${env.BUILD_NUMBER}"
+                PlatformSh(current_cmd, "Uploading build artifacts", winSlashReplacement=false)
+                latest_cmd = cmd + " --label ${env.JENKINS_JOB_NAME}/${platform}/${jobName}/latest"
+                PlatformSh(latest_cmd, "Uploading build artifacts", winSlashReplacement=false)
             } catch (Exception e) {
                 echo "WARN: Failed to upload build artifacts. \n${e}"
             }
