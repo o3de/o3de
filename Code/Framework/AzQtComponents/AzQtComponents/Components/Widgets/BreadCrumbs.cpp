@@ -109,6 +109,8 @@ namespace AzQtComponents
         m_label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
         m_lineEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
         connect(m_label, &QLabel::linkActivated, this, &BreadCrumbs::onLinkActivated);
+        // A minimum width is required to prevent the editor from crashing when being resized
+        setMinimumWidth(25);
     }
 
     BreadCrumbs::~BreadCrumbs()
