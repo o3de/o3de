@@ -404,14 +404,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
 
-        if (actionIterator->second.HasEnabledStateCallback())
-        {
-            return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not install enabled state callback on action \"%s\" - action already has an enabled state callback installed.",
-                actionIdentifier.c_str()));
-        }
-
-        actionIterator->second.SetEnabledStateCallback(AZStd::move(enabledStateCallback));
+        actionIterator->second.AddEnabledStateCallback(AZStd::move(enabledStateCallback));
         return AZ::Success();
     }
     

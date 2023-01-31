@@ -166,12 +166,12 @@ namespace AzToolsFramework
         return m_action;
     }
     
-    void EditorAction::SetEnabledStateCallback(AZStd::function<bool()> enabledStateCallback)
+    void EditorAction::AddEnabledStateCallback(AZStd::function<bool()> enabledStateCallback)
     {
         if (enabledStateCallback)
         {
-            m_enabledStateCallback = AZStd::move(enabledStateCallback);
-            m_action->setEnabled(m_enabledStateCallback());
+            m_enabledStateCallbacks.emplace_back(AZStd::move(enabledStateCallback));
+            Update();
         }
     }
 
@@ -181,9 +181,9 @@ namespace AzToolsFramework
         Update();
     }
 
-    bool EditorAction::HasEnabledStateCallback() const
+    bool EditorAction::HasEnabledStateCallbacks() const
     {
-        return m_enabledStateCallback != nullptr;
+        return !m_enabledStateCallbacks.empty();
     }
 
     bool EditorAction::IsEnabled() const
@@ -203,14 +203,23 @@ namespace AzToolsFramework
         }
 
         // Refresh enabled state.
-        if (m_enabledStateCallback)
+        bool enabled = IsEnabledInCurrentMode();
+
+        if (enabled  && !m_enabledStateCallbacks.empty())
         {
-            m_action->setEnabled(m_enabledStateCallback() && IsEnabledInCurrentMode());
+            for (const auto& enabledStateCallback : m_enabledStateCallbacks)
+            {
+                enabled = enabled && enabledStateCallback();
+
+                // Early out if the bool is already false, since we only AND other results.
+                if (!enabled)
+                {
+                    break;
+                }
+            }
         }
-        else
-        {
-            m_action->setEnabled(IsEnabledInCurrentMode());
-        }
+
+        m_action->setEnabled(enabled);
 
         if (previousCheckedState != m_action->isChecked() || previousEnabledState != m_action->isEnabled())
         {
