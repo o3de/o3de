@@ -17,9 +17,9 @@ logger = logging.getLogger('o3de.project_properties')
 logging.basicConfig(format=utils.LOG_FORMAT)
 
 
-def get_project_props(name: str = None, path: pathlib.Path = None) -> dict:
-    proj_json = manifest.get_project_json_data(project_name=name, project_path=path)
-    if not proj_json:
+def get_project_props(name: str = None, path: pathlib.Path = None, user: bool = False) -> dict:
+    proj_json = manifest.get_project_json_data(project_name=name, project_path=path, user=user)
+    if not isinstance(proj_json, dict):
         param = name if name else path
         logger.error(f'Could not retrieve project.json file for {param}')
         return None
@@ -86,7 +86,9 @@ def edit_project_props(proj_path: pathlib.Path = None,
                        is_optional_gem: bool = False,
                        new_engine_api_dependencies: list or str = None,
                        delete_engine_api_dependencies: list or str = None,
-                       replace_engine_api_dependencies: list or str = None
+                       replace_engine_api_dependencies: list or str = None,
+                       user: bool = False,
+                       engine_path: pathlib.Path = None 
                        ) -> int:
     """
     Edits and modifies the project properties for the project located at 'proj_path' or with the name 'proj_name'.
@@ -114,12 +116,12 @@ def edit_project_props(proj_path: pathlib.Path = None,
     :param remove_engine_api_dependencies: Version specifiers to remove from 'engine_api_dependencies'
     :param replace_engine_api_dependencies: Version specifiers to replace 'engine_api_dependencies' with
     """
-    proj_json = get_project_props(proj_name, proj_path)
+    proj_json = get_project_props(proj_name, proj_path, user)
 
-    if not proj_json:
+    if not proj_json and not user:
         return 1
     if isinstance(new_name, str):
-        if not utils.validate_identifier(new_name):
+        if (not user or (user and new_name)) and not utils.validate_identifier(new_name):
             logger.error(f'Project name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {new_name}')
             return 1
         proj_json['project_name'] = new_name
@@ -137,6 +139,21 @@ def edit_project_props(proj_path: pathlib.Path = None,
         proj_json['icon_path'] = new_icon
     if isinstance(new_version, str):
         proj_json['version'] = new_version
+    if isinstance(engine_path, pathlib.Path):
+        if not user:
+            logger.error('Setting the engine_path in the shared project.json is not allowed to prevent adding local paths.  Run the command again with the --user argument to set the engine_path locally only.')
+            return 1
+        
+        if engine_path and engine_path.name:
+            # engine_path is absolute or relative to the project folder to simulate overriding the shared project.json 
+            engine_path_absolute = proj_path / engine_path
+            engine_manifest_data = manifest.get_engine_json_data(engine_path=engine_path_absolute.resolve())
+            if not engine_manifest_data:
+                logger.error(f'Cannot load engine.json data at path {engine_path} ({engine_path_absolute.resolve()}), please verify an engine exists at the supplied location with a valid engine.json file.')
+                return 1
+
+        # if the path is empty use an empty string because as_posix() will return "."
+        proj_json['engine_path'] = engine_path.as_posix() if engine_path.name else ""
 
     if new_tags or delete_tags or replace_tags != None:
         proj_json['user_tags'] = utils.update_values_in_key_list(proj_json.get('user_tags', []), new_tags,
@@ -163,7 +180,15 @@ def edit_project_props(proj_path: pathlib.Path = None,
         proj_json['engine_api_dependencies'] = utils.update_values_in_key_list(proj_json.get('engine_api_dependencies', []), 
                                                 new_engine_api_dependencies, delete_engine_api_dependencies, replace_engine_api_dependencies)
 
-    return 0 if manifest.save_o3de_manifest(proj_json, pathlib.Path(proj_path) / 'project.json') else 1
+    if user:
+        # remove all empty overrides
+        keys = proj_json.copy().keys()
+        for key in keys:
+            if proj_json.get(key,'') == '':
+                del proj_json[key]
+         
+    proj_json_path = pathlib.Path(proj_path) if not user else pathlib.Path(proj_path) / 'user'
+    return 0 if manifest.save_o3de_manifest(proj_json, proj_json_path / 'project.json') else 1
 
 
 def _edit_project_props(args: argparse) -> int:
@@ -189,7 +214,9 @@ def _edit_project_props(args: argparse) -> int:
                               False, # is_optional_gem
                               args.add_engine_api_dependencies,
                               args.delete_engine_api_dependencies,
-                              args.replace_engine_api_dependencies
+                              args.replace_engine_api_dependencies,
+                              user=args.user,
+                              engine_path=args.engine_path
                               )
 
 
@@ -208,6 +235,8 @@ def add_parser_args(parser):
                        help='Sets the ID for the project.')
     group.add_argument('-en', '--engine-name', type=str, required=False,
                        help='Sets the engine name for the project.')
+    group.add_argument('-ep', '--engine-path', type=pathlib.Path, required=False,
+                       help='Sets the engine path for the project. This setting is only allowed with the --user argument to avoid adding local paths to the shared project.json')
     group.add_argument('-po', '--project-origin', type=str, required=False,
                        help='Sets description or url for project origin (such as project host, repository, owner...etc).')
     group.add_argument('-pd', '--project-display', type=str, required=False,
@@ -216,6 +245,8 @@ def add_parser_args(parser):
                        help='Sets the summary description of the project.')
     group.add_argument('-pi', '--project-icon', type=str, required=False,
                        help='Sets the path to the projects icon resource.')
+    group.add_argument('--user', action='store_true', required=False, default=False,
+                       help='Make changes to the <project>/user/project.json only. This is useful to locally override settings in <project>/project.json which are shared.')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-at', '--add-tags', type=str, nargs='*', required=False,
                        help='Adds tag(s) to user_tags property. Space delimited list (ex. -at A B C)')

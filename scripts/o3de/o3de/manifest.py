@@ -617,15 +617,30 @@ def get_engine_json_data(engine_name: str = None,
 
 
 def get_project_json_data(project_name: str = None,
-                          project_path: str or pathlib.Path = None) -> dict or None:
+                          project_path: str or pathlib.Path = None,
+                          user: bool = False) -> dict or None:
     if not project_name and not project_path:
         logger.error('Must specify either a Project name or Project Path.')
         return None
 
     if project_name and not project_path:
         project_path = get_registered(project_name=project_name)
+
     if pathlib.Path(project_path).is_file():
         return get_json_data_file(project_path, 'project', validation.valid_o3de_project_json)
+    elif user:
+        # create the project user folder if it doesn't exist
+        user_project_folder = pathlib.Path(project_path) / 'user'
+        user_project_folder.mkdir(parents=True, exist_ok=True)
+
+        user_project_json_path = user_project_folder / 'project.json'
+
+        # return an empty json object if no file exists
+        if not user_project_json_path.exists():
+            return {}
+        else:
+            # skip validation because a user project.json is only for overrides and can be empty
+            return get_json_data('project', user_project_folder, validation.always_valid) or {}
     else:
         return get_json_data('project', project_path, validation.valid_o3de_project_json)
 
