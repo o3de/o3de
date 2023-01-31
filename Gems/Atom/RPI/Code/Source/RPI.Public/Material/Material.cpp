@@ -66,6 +66,7 @@ namespace AZ
             m_generalShaderCollection = {};
             m_materialPipelineData = {};
             m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+            ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
 
             // Cache off pointers to some key data structures from the material type...
             auto srgLayout = m_materialAsset->GetMaterialSrgLayout();
@@ -292,7 +293,7 @@ namespace AZ
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
             // updated to correctly handle the reload, so it's safer to just reinitialize the whole material.
-            //Init(*m_materialAsset);
+            Init(*m_materialAsset);
         }
 
         void Material::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset)
@@ -301,7 +302,7 @@ namespace AZ
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
             // updated to correctly handle the reload, so it's safer to just reinitialize the whole material.
-            //Init(*m_materialAsset);
+            Init(*m_materialAsset);
         }
 
         void Material::OnShaderVariantReinitialized(const ShaderVariant& shaderVariant)
@@ -317,7 +318,7 @@ namespace AZ
             // and mask out the parts of the ShaderVariantId that aren't owned by the material, but that would be premature optimization at this point, adding
             // potentially unnecessary complexity. There may also be more edge cases I haven't thought of. In short, it's much safer to just reinitialize every time
             // this callback happens.
-            //Init(*m_materialAsset);
+            Init(*m_materialAsset);
         }
         ///////////////////////////////////////////////////////////////////
 
