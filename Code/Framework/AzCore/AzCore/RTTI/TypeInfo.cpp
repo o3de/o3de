@@ -11,7 +11,7 @@
 
 namespace AZ
 {
-    template struct AzTypeInfo<AZStd::basic_string<char>, false>;
+    template struct AzTypeInfo<AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::allocator>, false>;
     namespace Internal
     {
         template struct AggregateTypes<Crc32>;
