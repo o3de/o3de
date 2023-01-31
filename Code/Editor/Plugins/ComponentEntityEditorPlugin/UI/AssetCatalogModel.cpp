@@ -16,8 +16,6 @@
 #include <qevent.h>
 #include <qmimedata.h>
 
-#include <LmbrCentral/Rendering/MeshAsset.h>
-
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Component/ComponentApplicationBus.h>

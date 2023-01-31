@@ -2,9 +2,6 @@
     "Amazon": {
         "AssetProcessor": {
             "Settings": {
-                "RC cgf": {
-                    "ignore": true
-                },
                 "RC fbx": {
                     "ignore": true
                 }

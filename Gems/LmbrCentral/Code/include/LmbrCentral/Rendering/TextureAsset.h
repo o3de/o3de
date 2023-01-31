@@ -9,41 +9,15 @@
 
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzFramework/Asset/SimpleAsset.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <smartptr.h>
-#include <IMaterial.h>
 
 namespace LmbrCentral
 {
     /*!
-     * Material asset type configuration.
-     * Reflect as: AzFramework::SimpleAssetReference<MaterialAsset>
-     */
-    class MaterialAsset
-    {
-    public:
-        AZ_TYPE_INFO(MaterialAsset, "{F46985B5-F7FF-4FCB-8E8C-DC240D701841}")
-        static const char* GetFileFilter() {
-            return "*.mtl";
-        }
-    };
-
-    /*!
-    * Source scene file Material asset type configuration.
-    * Reflect as: AzFramework::SimpleAssetReference<DccMaterialAsset>
-    */
-    class DccMaterialAsset
-    {
-    public:
-        AZ_TYPE_INFO(DccMaterialAsset, "{C88469CF-21E7-41EB-96FD-BF14FBB05EDC}")
-            static const char* GetFileFilter() {
-            return "*.dccmtl";
-        }
-    };
-
-    /*!
      * Texture asset type configuration.
      * Reflect as: AzFramework::SimpleAssetReference<TextureAsset>
+     * Currently only used by LyShine for Sprites and will require a bit of
+     * work to move it and TextureAssetInfo into LyShine without breaking
+     * existing .uicanvas files 
      */
     class TextureAsset
     {

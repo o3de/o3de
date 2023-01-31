@@ -85,9 +85,6 @@
 // ComponentEntityEditorPlugin
 #include <Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h>
 
-// LmbrCentral
-#include <LmbrCentral/Rendering/EditorCameraCorrectionBus.h>
-
 // Atom
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
@@ -1307,13 +1304,6 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
 
     if (shouldUpdateObject == ShouldUpdateObject::Yes)
     {
-        AZ::Matrix3x3 lookThroughEntityCorrection = AZ::Matrix3x3::CreateIdentity();
-        if (m_viewEntityId.IsValid())
-        {
-            LmbrCentral::EditorCameraCorrectionRequestBus::EventResult(
-                lookThroughEntityCorrection, m_viewEntityId, &LmbrCentral::EditorCameraCorrectionRequests::GetInverseTransformCorrection);
-        }
-
         int flags = 0;
         {
             // It isn't clear what this logic is supposed to do (it's legacy code)...
@@ -1336,7 +1326,7 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
             }
             else
             {
-                cameraObject->SetWorldTM(camMatrix * AZMatrix3x3ToLYMatrix3x3(lookThroughEntityCorrection), flags);
+                cameraObject->SetWorldTM(camMatrix, flags);
             }
         }
     }
