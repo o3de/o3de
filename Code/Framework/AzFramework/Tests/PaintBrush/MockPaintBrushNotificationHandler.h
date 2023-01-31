@@ -34,7 +34,7 @@ namespace UnitTest
         MOCK_METHOD1(OnBrushStrokeBegin, void(const AZ::Color& color));
         MOCK_METHOD0(OnBrushStrokeEnd, void());
         MOCK_METHOD4(OnPaint, void(const AZ::Color& color, const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn));
-        MOCK_METHOD1(OnGetColor, AZ::Color(const AZ::Vector3& brushCenterPoint));
+        MOCK_CONST_METHOD1(OnGetColor, AZ::Color(const AZ::Vector3& brushCenterPoint));
         MOCK_METHOD5(OnSmooth, void(
             const AZ::Color& color,
             const AZ::Aabb& dirtyArea,

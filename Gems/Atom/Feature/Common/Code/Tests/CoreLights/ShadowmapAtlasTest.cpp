@@ -27,16 +27,6 @@ namespace UnitTest
     class ShadowmapAtlasTests
         : public ::testing::Test
     {
-        void SetUp() override
-        {
-            AllocatorInstance<AZ::SystemAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<AZ::SystemAllocator>::Destroy();
-        }
-
     public:
         // This randomize the given array with the given random seed.
         template<typename T>

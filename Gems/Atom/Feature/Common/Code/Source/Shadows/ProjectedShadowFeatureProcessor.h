@@ -24,6 +24,7 @@ namespace AZ::Render
         : public ProjectedShadowFeatureProcessorInterface
     {
     public:
+        AZ_CLASS_ALLOCATOR(ProjectedShadowFeatureProcessor, AZ::SystemAllocator)
 
         AZ_RTTI(AZ::Render::ProjectedShadowFeatureProcessor, "{02AFA06D-8B37-4D47-91BD-849CAC7FB330}", AZ::Render::ProjectedShadowFeatureProcessorInterface);
 

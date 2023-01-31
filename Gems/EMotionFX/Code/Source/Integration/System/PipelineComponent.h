@@ -10,7 +10,6 @@
 
 #include <SceneAPI/SceneCore/Components/SceneSystemComponent.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
-#include <EMotionFX/Source/EMotionFXAllocatorInitializer.h>
 
 #include <AzCore/Module/Environment.h>
 
@@ -35,10 +34,6 @@ namespace EMotionFX
         private:
             bool                                                m_eMotionFxInited;
             AZStd::unique_ptr<CommandSystem::CommandManager>    m_commandManager;
-
-            // Creates a static shared pointer using the AZ EnvironmentVariable system.
-            // This will prevent the EMotionFXAllocator from destroying too early by the other component
-            static AZ::EnvironmentVariable<EMotionFXAllocatorInitializer> s_eMotionFXAllocatorInitializer;
         };
     } // Pipeline
 } // EMotionFX

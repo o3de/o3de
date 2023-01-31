@@ -189,6 +189,8 @@ namespace UnitTest
 
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
+
+            UnitTest::TestRunner::Instance().ResetSuppressionSettingsToDefault();
         }
 
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -310,7 +312,7 @@ namespace UnitTest
         EXPECT_TRUE(m_metadata->GetValueVersion("mockfile", "/Test", version));
         EXPECT_EQ(version, 1);
 
-        rapidjson_ly::Document inValue;
+        rapidjson::Document inValue;
         EXPECT_TRUE(m_metadata->GetJson("mockfile", "/Test", inValue));
 
         auto intItr = inValue.FindMember("int");

@@ -118,6 +118,7 @@ namespace AssetProcessor
         bool GetJobsLikeProductName(QString likeProductName, LikeType likeType, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
 
         bool SetJob(AzToolsFramework::AssetDatabase::JobDatabaseEntry& entry); //on success sets jobID, if it already exists updates it
+        bool SetJobFingerprintsBySourceID(AZ::s64 sourceID, AZ::u64 hash);
         bool RemoveJob(AZ::s64 jobID);
         bool RemoveJobs(AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container);
         bool RemoveJobByProductID(AZ::s64 productID);
@@ -229,6 +230,7 @@ namespace AssetProcessor
 
         // updates the modtime and hash for a file if it exists.  Only returns true if the row existed and was successfully updated
         bool UpdateFileModTimeAndHashByFileNameAndScanFolderId(QString fileName, AZ::s64 scanFolderId, AZ::u64 modTime, AZ::u64 hash);
+        bool UpdateFileHashByFileNameAndScanFolderId(QString fileName, AZ::s64 scanFolderId, AZ::u64 hash);
         bool RemoveFile(AZ::s64 sourceID);
 
         //Stats

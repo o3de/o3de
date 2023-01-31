@@ -152,22 +152,6 @@ protected:
         m_componentDescriptors.push_back(AZStd::unique_ptr<AZ::ComponentDescriptor>(UiRadioButtonGroupComponent::CreateDescriptor()));
         m_componentDescriptors.push_back(AZStd::unique_ptr<AZ::ComponentDescriptor>(UiParticleEmitterComponent::CreateDescriptor()));
 
-        context->ClassDeprecate("SimpleAssetReference_MaterialAsset", AZ::Uuid("{B7B8ECC7-FF89-4A76-A50E-4C6CA2B6E6B4}"),
-            [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
-        {
-            AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
-            for (int index = 0; index < rootElement.GetNumSubElements(); ++index)
-            {
-                childNodeElements.push_back(rootElement.GetSubElement(index));
-            }
-            // Convert the rootElement now, the existing child DataElmentNodes are now removed
-            rootElement.Convert<AzFramework::SimpleAssetReference<LmbrCentral::MaterialAsset>>(context);
-            for (AZ::SerializeContext::DataElementNode& childNodeElement : childNodeElements)
-            {
-                rootElement.AddElement(AZStd::move(childNodeElement));
-            }
-            return true;
-        });
         context->ClassDeprecate("SimpleAssetReference_TextureAsset", AZ::Uuid("{68E92460-5C0C-4031-9620-6F1A08763243}"),
             [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
         {
@@ -184,7 +168,6 @@ protected:
             }
             return true;
         });
-        AzFramework::SimpleAssetReference<LmbrCentral::MaterialAsset>::Register(*context);
         AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>::Register(*context);
 
         for(const auto& descriptor : m_componentDescriptors)

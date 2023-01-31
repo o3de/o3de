@@ -51,7 +51,7 @@ namespace AzFramework
 
     AZ::Uuid PaintBrushSystemComponent::StartPaintSession(const AZ::EntityId& entityId)
     {
-        AZ::EntityComponentIdPair entityComponentPair;
+        AZ::EntityComponentIdPair entityComponentPair(AZ::EntityId(AZ::EntityId::InvalidEntityId), AZ::InvalidComponentId);
 
         // To find the paintable component associated with this entity id, visit every paintbrush notification bus handler
         // and look for the first one that matches the entity id. 

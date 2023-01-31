@@ -26,6 +26,7 @@ namespace AZ
             : public PostProcessFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(PostProcessFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::PostProcessFeatureProcessor, "{A6A8357C-5A34-4297-B4DD-A1FB6556CE3E}", AZ::Render::PostProcessFeatureProcessorInterface);
             static void Reflect(AZ::ReflectContext* context);
 

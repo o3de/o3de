@@ -16,7 +16,8 @@ namespace AzToolsFramework
         GrowTextEdit* textEdit = aznew GrowTextEdit(parent);
         connect(textEdit, &GrowTextEdit::textChanged, this, [textEdit]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, textEdit);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, textEdit);
         });
         connect(textEdit, &GrowTextEdit::EditCompleted, this, [textEdit]()
         {
@@ -83,7 +84,8 @@ namespace AzToolsFramework
 
     void RegisterMultiLineEditHandler()
     {
-        EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew MultiLineTextEditHandler());
+        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew MultiLineTextEditHandler());
     }
 }
 

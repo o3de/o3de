@@ -59,6 +59,7 @@ namespace EMStudio
     class BlendGraphNodePaletteTreeItem : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
+        AZ_CLASS_ALLOCATOR(BlendGraphNodePaletteTreeItem, AZ::SystemAllocator)
         BlendGraphNodePaletteTreeItem(
             const AZStd::string_view name, const QString& typeString, GraphCanvas::EditorId editorId, const AZ::Color& color);
         BlendGraphMimeEvent* CreateMimeEvent() const override;

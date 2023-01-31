@@ -60,6 +60,17 @@ namespace AzToolsFramework
                 AZ::EntityId entityId,
                 UndoSystem::URSequencePoint* undoBatch);
 
+            //! Helper function for updating entities as overrides to focused template with undo-redo support.
+            //! @param entityList Entity list for entities to be updated in focused template.
+            //! @param owningInstance The common owning prefab instance of all inputs.
+            //! @param focusedInstance The current focused prefab instance.
+            //! @param undoBatch The undo batch node to register the update-entity undo node to.
+            void UpdateEntitiesAsOverrides(
+                const AZStd::vector<const AZ::Entity*>& entityList,
+                Instance& owningInstance,
+                const Instance& focusedInstance,
+                UndoSystem::URSequencePoint* undoBatch);
+
             //! Helper function for deleting entities and update parents to prefab template with undo-redo support.
             //! Note: It includes updating relevant parent entities.
             //! @param entityAliasPathList The alias path list for entities that will be removed.
@@ -84,7 +95,7 @@ namespace AzToolsFramework
                 const AZStd::vector<AZStd::string>& instanceAliasPathList,
                 const AZStd::vector<const AZ::Entity*> parentEntityList,
                 Instance& owningInstance,
-                Instance& focusedInstance,
+                const Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch);
         }
     } // namespace Prefab

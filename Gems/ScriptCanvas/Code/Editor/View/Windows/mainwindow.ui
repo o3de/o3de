@@ -162,17 +162,6 @@
     <addaction name="separator"/>
     <addaction name="action_ViewRestoreDefaultLayout"/>
    </widget>
-   <widget class="QMenu" name="menuScript_Events_PREVIEW">
-    <property name="title">
-     <string>Script Events [PREVIEW]</string>
-    </property>
-    <addaction name="actionOpen_Script_Event"/>
-    <addaction name="actionSave_ScriptEvent"/>
-    <addaction name="actionSave_As_ScriptEvent"/>
-    <addaction name="separator"/>
-    <addaction name="actionAdd_Script_Event_Helpers"/>
-    <addaction name="actionClear_Script_Event_Status"/>
-   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView_2"/>
@@ -793,38 +782,6 @@
   <action name="actionOpen_Script_Event">
    <property name="text">
     <string>&amp;Open ...</string>
-   </property>
-  </action>
-  <action name="actionSave_ScriptEvent">
-    <property name="enabled">
-      <bool>false</bool>
-    </property>
-    <property name="text">
-      <string>&amp;Save</string>
-    </property>
-  </action>
-  <action name="actionSave_As_ScriptEvent">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Save As ...</string>
-   </property>
-  </action>
-  <action name="actionAdd_Script_Event_Helpers">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Add ScriptEvent Helpers</string>
-   </property>
-  </action>
-  <action name="actionClear_Script_Event_Status">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Clear ScriptEvent Status</string>
    </property>
   </action>
   <addaction name="action_ViewNodePalette"/>

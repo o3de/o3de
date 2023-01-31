@@ -89,6 +89,14 @@ namespace AzQtComponents
         };
         Q_ENUM(ThumbnailSize)
 
+        enum class Role
+        {
+            IsExpandable = Qt::UserRole + 1000,
+            IsTopLevel,
+            IsExactMatch,
+            IsVisible,
+        };
+
         void setThumbnailSize(ThumbnailSize size);
         ThumbnailSize thumbnailSize() const;
 
@@ -97,8 +105,13 @@ namespace AzQtComponents
         void scrollTo(const QModelIndex& index, QAbstractItemView::ScrollHint hint) override;
         QRect visualRect(const QModelIndex& index) const override;
 
-        Q_SIGNAL void IndexClicked(const QModelIndex& idx);
-        Q_SIGNAL void IndexDoubleClicked(const QModelIndex& idx);
+        void setRootIndex(const QModelIndex &index) override;
+
+        void SetShowSearchResultsMode(bool searchMode);
+
+    signals:
+        void rootIndexChanged(const QModelIndex& idx);
+        void showInFolderTriggered(const QModelIndex& idx);
 
     protected:
         friend class Style;
@@ -116,6 +129,7 @@ namespace AzQtComponents
         void paintEvent(QPaintEvent* event) override;
         void mousePressEvent(QMouseEvent* event) override;
         void mouseDoubleClickEvent(QMouseEvent* event) override;
+        void contextMenuEvent(QContextMenuEvent* event) override;
 
     private:
         void paintChildFrames(QPainter* painter) const;
@@ -126,6 +140,10 @@ namespace AzQtComponents
         int rootThumbnailSizeInPixels() const;
         int childThumbnailSizeInPixels() const;
 
+        void updateGeometriesInternal(const QModelIndex& index, int& x, int& y);
+
+        QModelIndex indexAtPos(const QPoint& pos) const;
+
         AssetFolderThumbnailViewDelegate* m_delegate;   
         AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'AzQtComponents::AssetFolderThumbnailView::m_itemGeometry': class 'QHash<QPersistentModelIndex,QRect>' needs to have dll-interface to be used by clients of class 'AzQtComponents::AssetFolderThumbnailView'
         QHash<QPersistentModelIndex, QRect> m_itemGeometry;
@@ -135,9 +153,11 @@ namespace AzQtComponents
             QVector<QRect> rects;
         };
         QVector<ChildFrame> m_childFrames;
-        QSet<int> m_expandedRows;
+        QSet<QPersistentModelIndex> m_expandedIndexes;
         AZ_POP_DISABLE_WARNING
         ThumbnailSize m_thumbnailSize;
         Config m_config;
+        bool m_showSearchResultsMode = false;
+        QMenu* m_contextMenu = nullptr;
     };
 }

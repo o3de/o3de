@@ -169,10 +169,12 @@ namespace AzToolsFramework
                 SetTypeFilters(buildTypesFilterList());
             }
 
-            auto sourceFilter = new EntryTypeFilter();
-            sourceFilter->SetName("Source");
-            sourceFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Source);
-            m_projectSourceFilter->AddFilter(FilterConstType(sourceFilter));
+            auto productFilter = new EntryTypeFilter();
+            productFilter->SetName("Product");
+            productFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Product);
+            auto inverseProductFilter = new InverseFilter();
+            inverseProductFilter->SetFilter(FilterConstType(productFilter));
+            m_projectSourceFilter->AddFilter(FilterConstType(inverseProductFilter));
 
             auto pathFilter = new AssetPathFilter();
             pathFilter->SetAssetPath(AZStd::string_view{ AZ::Utils::GetProjectPath() });
@@ -184,9 +186,9 @@ namespace AzToolsFramework
             m_folderFilter->AddFilter(FilterConstType(directoryFilter));
         }
 
-        void SearchWidget::ToggleProjectSourceAssetFilter()
+        void SearchWidget::ToggleProjectSourceAssetFilter(bool checked)
         {
-            if (m_filter->GetSubFilters().contains(m_projectSourceFilter))
+            if (!checked)
             {
                 m_filter->RemoveFilter(FilterConstType(m_projectSourceFilter));
             }

@@ -27,9 +27,7 @@ set(FILES
     include/LmbrCentral/Dependency/DependencyMonitor.h
     include/LmbrCentral/Dependency/DependencyMonitor.inl
     include/LmbrCentral/Dependency/DependencyNotificationBus.h
-    include/LmbrCentral/Rendering/MaterialAsset.h
-    include/LmbrCentral/Rendering/MeshAsset.h
-    include/LmbrCentral/Rendering/RenderBoundsBus.h
+    include/LmbrCentral/Rendering/TextureAsset.h
     include/LmbrCentral/Scripting/EditorTagComponentBus.h
     include/LmbrCentral/Scripting/GameplayNotificationBus.h
     include/LmbrCentral/Scripting/SimpleStateComponentBus.h

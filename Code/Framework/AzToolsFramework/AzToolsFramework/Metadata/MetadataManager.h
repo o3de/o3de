@@ -42,7 +42,7 @@ namespace AzToolsFramework
         //! @param file Absolute path to the file (or metadata file).
         //! @param key JSONPath formatted key for the metadata value to read.  Ex: /Settings/Platform/pc.
         //! @return True if metadata file and key exists and was successfully read, false otherwise.
-        virtual bool GetJson(AZ::IO::PathView file, AZStd::string_view key, rapidjson_ly::Document& outValue) = 0;
+        virtual bool GetJson(AZ::IO::PathView file, AZStd::string_view key, rapidjson::Document& outValue) = 0;
 
         //! Gets the version for a stored key/value from the metadata file associated with the file.
         //! @param file Absolute path to the file (or metadata file).
@@ -91,7 +91,7 @@ namespace AzToolsFramework
 
     public:
         bool GetValue(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId) override;
-        bool GetJson(AZ::IO::PathView file, AZStd::string_view key, rapidjson_ly::Document& outValue) override;
+        bool GetJson(AZ::IO::PathView file, AZStd::string_view key, rapidjson::Document& outValue) override;
         bool GetValueVersion(AZ::IO::PathView file, AZStd::string_view key, int& version) override;
         bool SetValue(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId) override;
 

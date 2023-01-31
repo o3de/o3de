@@ -21,6 +21,7 @@
 #include <SceneAPI/SceneData/Rules/CommentRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
 #include <SceneAPI/SceneData/Rules/MaterialRule.h>
+#include <SceneAPI/SceneData/Rules/UnmodifiableRule.h>
 #include <SceneAPI/SceneData/Rules/StaticMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkeletonProxyRule.h>
 #include <SceneAPI/SceneData/Rules/TangentsRule.h>
@@ -51,6 +52,7 @@ namespace AZ
             {
                 AZ_TraceContext("Object Type", target.RTTI_GetTypeName());
                 modifiers.push_back(SceneData::CommentRule::TYPEINFO_Uuid());
+                modifiers.push_back(SceneData::UnmodifiableRule::TYPEINFO_Uuid());
 
                 if (target.RTTI_IsTypeOf(DataTypes::IMeshGroup::TYPEINFO_Uuid()))
                 {

@@ -47,6 +47,7 @@ namespace CommandAdjustSimulatedObjectTests
         using ::EMotionFX::BlendTreeConnection;
         using ::EMotionFX::ValueParameter;
         using ::EMotionFX::CommandAllocator;
+        using ::EMotionFX::AnimGraphAllocator;
         using ::EMotionFX::PhysicsSetup;
         using ::EMotionFX::SimulatedObjectNotificationBus;
 

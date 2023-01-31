@@ -252,6 +252,8 @@ set(FILES
     JSON/pointer.h
     JSON/prettywriter.h
     JSON/rapidjson.h
+    JSON/rapidjson.cpp
+    JSON/RapidJsonAllocator.h
     JSON/RapidjsonAllocatorAdapter.h
     JSON/reader.h
     JSON/schema.h
@@ -410,8 +412,6 @@ set(FILES
     Memory/IAllocator.h
     Memory/Memory.cpp
     Memory/Memory.h
-    Memory/MemoryComponent.cpp
-    Memory/MemoryComponent.h
     Memory/nedmalloc.inl
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp

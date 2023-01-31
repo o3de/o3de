@@ -20,6 +20,7 @@ namespace AtomToolsFramework
     class EntityPreviewViewportInputController final : public ViewportInputBehaviorController
     {
     public:
+        AZ_CLASS_ALLOCATOR(EntityPreviewViewportInputController, AZ::SystemAllocator)
         EntityPreviewViewportInputController(
             const AZ::Crc32& toolId, QWidget* widget, AZStd::shared_ptr<EntityPreviewViewportContent> viewportContent);
         ~EntityPreviewViewportInputController() = default;

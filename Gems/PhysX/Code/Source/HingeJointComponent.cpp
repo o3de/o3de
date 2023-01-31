@@ -16,6 +16,7 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 
 #include <PxPhysicsAPI.h>
+#include <PhysX/NativeTypeIdentifiers.h>
 
 namespace PhysX
 {
@@ -31,10 +32,11 @@ namespace PhysX
     }
 
     HingeJointComponent::HingeJointComponent(
-        const JointComponentConfiguration& configuration, 
+        const JointComponentConfiguration& configuration,
         const JointGenericProperties& genericProperties,
-        const JointLimitProperties& limitProperties)
-        : JointComponent(configuration, genericProperties, limitProperties)
+        const JointLimitProperties& limitProperties,
+        const JointMotorProperties& motorProperties)
+        : JointComponent(configuration, genericProperties, limitProperties, motorProperties)
     {
     }
 
@@ -44,7 +46,7 @@ namespace PhysX
         {
             return;
         }
-        
+
         JointComponent::LeadFollowerInfo leadFollowerInfo;
         ObtainLeadFollowerInfo(leadFollowerInfo);
         if (leadFollowerInfo.m_followerActor == nullptr ||
@@ -74,6 +76,7 @@ namespace PhysX
 
         configuration.m_genericProperties = m_genericProperties;
         configuration.m_limitProperties = m_limits;
+        configuration.m_motorProperties = m_motor;
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
@@ -84,5 +87,68 @@ namespace PhysX
                 leadFollowerInfo.m_followerBody->m_bodyHandle);
             m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
         }
+        m_nativeJoint = GetPhysXNativeRevoluteJoint();
+    }
+
+    void HingeJointComponent::Activate()
+    {
+        JointComponent::Activate();
+        const AZ::EntityComponentIdPair id(GetEntityId(), GetId());
+        PhysX::JointRequestBus::Handler::BusConnect(id);
+    }
+
+    void HingeJointComponent::Deactivate()
+    {
+        PhysX::JointRequestBus::Handler::BusDisconnect();
+        JointComponent::Deactivate();
+    }
+
+    physx::PxRevoluteJoint* HingeJointComponent::GetPhysXNativeRevoluteJoint()
+    {
+        if (m_nativeJoint)
+        {
+            return m_nativeJoint;
+        }
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        AZ_Assert(sceneInterface, "No sceneInterface");
+        const auto joint = sceneInterface->GetJointFromHandle(m_jointSceneOwner, m_jointHandle);
+        AZ_Assert(joint->GetNativeType() == PhysX::NativeTypeIdentifiers::HingeJoint, "It is not PhysXHingeJoint");
+        physx::PxJoint* nativeJoint = static_cast<physx::PxJoint*>(joint->GetNativePointer());
+        physx::PxRevoluteJoint* native = nativeJoint->is<physx::PxRevoluteJoint>();
+        AZ_Assert(native, "It is not PxRevoluteJoint");
+        m_nativeJoint = native;
+        return native;
+    }
+
+    float HingeJointComponent::GetPosition() const
+    {
+        return m_nativeJoint->getAngle();
+    }
+
+    float HingeJointComponent::GetVelocity() const
+    {
+        return m_nativeJoint->getVelocity();
+    }
+
+    AZStd::pair<float, float> HingeJointComponent::GetLimits() const
+    {
+        auto limit = m_nativeJoint->getLimit();
+        return AZStd::pair<float, float>(limit.lower, limit.upper);
+    }
+
+    AZ::Transform HingeJointComponent::GetTransform() const
+    {
+        const auto worldFromLocal = m_nativeJoint->getRelativeTransform();
+        return PxMathConvert(worldFromLocal);
+    }
+
+    void HingeJointComponent::SetVelocity(float velocity)
+    {
+        m_nativeJoint->setDriveVelocity(velocity, true);
+    }
+
+    void HingeJointComponent::SetMaximumForce(float force)
+    {
+        m_nativeJoint->setDriveForceLimit(force);
     }
 } // namespace PhysX

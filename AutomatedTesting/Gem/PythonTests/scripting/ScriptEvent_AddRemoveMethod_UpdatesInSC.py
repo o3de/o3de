@@ -37,7 +37,7 @@ def ScriptEvent_AddRemoveMethod_UpdatesInSC():
     import azlmbr.paths as paths
     from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
-    from editor_python_test_tools.QtPyO3DEEditor import QtPyO3DEEditor
+    from editor_python_test_tools.QtPy.QtPyO3DEEditor import QtPyO3DEEditor
     from consts.asset_editor import (SCRIPT_EVENT_UI, NODE_TEST_METHOD)
 
     general.idle_enable(True)

@@ -583,7 +583,7 @@ namespace AzToolsFramework
         //when an editor entity is created and registered, add it to a pending list.
         //once all entities in the pending list are activated, add them to model.
         bool isEditorEntity = false;
-        EBUS_EVENT_RESULT(isEditorEntity, EditorEntityContextRequestBus, IsEditorEntity, entityId);
+        EditorEntityContextRequestBus::BroadcastResult(isEditorEntity, &EditorEntityContextRequestBus::Events::IsEditorEntity, entityId);
         if (isEditorEntity)
         {
             // As an optimization, new entities are queued.

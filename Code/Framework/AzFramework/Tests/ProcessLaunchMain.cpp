@@ -30,17 +30,11 @@ void OutputArgs(const AzFramework::CommandLine& commandLine)
 int main(int argc, char** argv)
 {
     const AZ::Debug::Trace tracer;
-    AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
     {
         AzFramework::CommandLine commandLine;
 
         commandLine.Parse(argc, argv);
         OutputArgs(commandLine);
     }
-
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     return 0;
 }
