@@ -19,7 +19,6 @@ namespace PhysX
     class ColliderCapsuleMode
         : public PhysXSubComponentModeBase
         , private AzFramework::EntityDebugDisplayEventBus::Handler
-        , private AzToolsFramework::CapsuleViewportEdit
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
