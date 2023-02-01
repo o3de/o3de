@@ -291,7 +291,7 @@ namespace AssetProcessor
         builderParams.m_intermediateOutputDir = GetIntermediateOutputPath();
         builderParams.m_relativePath = GetRelativePath();
         builderParams.m_assetBuilderDesc = m_jobDetails.m_assetBuilderDesc;
-        builderParams.m_topLevelSourceUuid = m_jobDetails.m_topLevelSourceUuid;
+        builderParams.m_sourceUuid = m_jobDetails.m_sourceUuid;
 
         // when the job finishes, record the results and emit Finished()
         connect(this, &RCJob::JobFinished, this, [this](AssetBuilderSDK::ProcessJobResponse result)
@@ -834,17 +834,17 @@ namespace AssetProcessor
                 if (VerifyOutputProduct(
                         QDir(intermediateDirectory.c_str()), outputFilename, absolutePathOfSource, fileSizeRequired, outputsToCopy))
                 {
-                    // A null uuid indicates the top level source is not using metadata files.
+                    // A null uuid indicates the source is not using metadata files.
                     // The assumption for the UUID generated below is that the source UUID will not change.  A type which has no metadata
                     // file currently may be updated later to have a metadata file, which would break that assumption.  In that case, stick
                     // with the default path-based UUID.
-                    if (!params.m_topLevelSourceUuid.IsNull())
+                    if (!params.m_sourceUuid.IsNull())
                     {
                         // Generate a UUID for the intermediate as:
                         // SourceUuid:BuilderUuid:SubId
                         auto uuid = AZ::Uuid::CreateName(AZStd::string::format(
                             "%s:%s:%d",
-                            params.m_topLevelSourceUuid.ToFixedString().c_str(),
+                            params.m_sourceUuid.ToFixedString().c_str(),
                             params.m_assetBuilderDesc.m_busId.ToFixedString().c_str(),
                             product.m_productSubID));
 

@@ -204,9 +204,9 @@ namespace AssetProcessor
         AZ::IO::Path m_relativePath; // Relative path portion of the output file.  This can be overridden by the builder
 
         // UUID of the original source asset.
-        // If this job is for an intermediate asset, the UUID is for the source at the top of the processing chain.
+        // If this job is for an intermediate asset, the UUID is for the direct source which produced the intermediate.
         // If the original source asset is not using metadata files, this value will be empty.
-        AZ::Uuid m_topLevelSourceUuid;
+        AZ::Uuid m_sourceUuid;
 
         AZStd::vector<JobDependencyInternal> m_jobDependencyList;
 
