@@ -12,6 +12,7 @@
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
@@ -43,6 +44,7 @@ namespace AzToolsFramework
             EntryCache::GetInstance()->Clear();
 
             m_enginePath = AZ::IO::Path(enginePath).LexicallyNormal();
+            m_projectPath = AZ::IO::Path(AZ::Utils::GetProjectPath()).LexicallyNormal();
             m_fullPath = m_enginePath;
         }
 
@@ -262,6 +264,7 @@ namespace AzToolsFramework
                 cleanedRelative = storageForLexicallyRelative;
             }
             product->m_relativePath = cleanedRelative;
+            product->m_visiblePath = cleanedRelative;
             product->m_fullPath = (AZ::IO::Path("@products@") / cleanedRelative).LexicallyNormal();
 
             // compute the display data from the above data.
@@ -390,6 +393,21 @@ namespace AzToolsFramework
                 return parent;
             }
 
+            // If the project is not inside the root engine folder
+            if (!m_projectPath.IsRelativeTo(m_enginePath))
+            {
+                // Update the parent to be the project directory if it isn't already
+                if (absolutePathView.IsRelativeTo(m_projectPath) && !parent->m_fullPath.IsRelativeTo(m_projectPath))
+                {
+                    parent->m_fullPath = m_projectPath.ParentPath();
+                }
+                // Update the parent to be the o3de directory if it isn't already
+                else if (absolutePathView.IsRelativeTo(m_enginePath) && !parent->m_fullPath.IsRelativeTo(m_enginePath))
+                {
+                    parent->m_fullPath = m_enginePath.ParentPath();
+                }
+            }
+
             // create all missing folders
             auto proximateToPath = absolutePathView.IsRelativeTo(parent->m_fullPath)
                 ? absolutePathView.LexicallyProximate(parent->m_fullPath)
@@ -414,6 +432,7 @@ namespace AzToolsFramework
             // shown root.
             child->m_fullPath = m_fullPath / child->m_name;
             child->m_relativePath = child->m_name;
+            child->m_visiblePath = child->m_name;
 
             // the display path is the relative path without the child's name.  So it is blank here.
             child->m_displayPath = QString();

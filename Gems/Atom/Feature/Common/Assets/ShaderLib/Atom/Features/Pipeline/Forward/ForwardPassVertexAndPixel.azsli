@@ -55,7 +55,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     OUT.m_diffuseColor.rgb = lightingData.diffuseLighting;
     OUT.m_diffuseColor.a = -1;  // Disable Subsurface Scattering
 
-#ifndef FORCE_OPAQUE
+#if !FORCE_OPAQUE
     
     if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
     {
@@ -88,7 +88,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 #if OUTPUT_SUBSURFACE
     bool applySubsurfaceScattering = o_enableSubsurfaceScattering;
 
-#ifndef FORCE_OPAQUE
+#if !FORCE_OPAQUE
     applySubsurfaceScattering = applySubsurfaceScattering && o_opacity_mode != OpacityMode::Blended && o_opacity_mode != OpacityMode::TintedTransparent;
 #endif
 

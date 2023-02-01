@@ -181,7 +181,6 @@ namespace UnitTests
 
             m_data->m_reporter = AZStd::make_unique<SourceFileRelocator>(m_data->m_connection, &m_data->m_platformConfig);
 
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
             AZ::JobManagerDesc jobDesc;
             AZ::JobManagerThreadDesc threadDesc;
             jobDesc.m_workerThreads.push_back(threadDesc);
@@ -207,7 +206,6 @@ namespace UnitTests
             AZ::JobContext::SetGlobalContext(nullptr);
             delete m_data->m_jobContext;
             delete m_data->m_jobManager;
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
 
             m_data->m_perforceComponent->Deactivate();
             m_data->m_databaseLocationListener.BusDisconnect();
@@ -862,7 +860,7 @@ namespace UnitTests
     {
         QDir tempPath(m_tempDir.path());
 
-        auto result = m_data->m_reporter->Move("subfolder1/otherfile.tif", "someOtherPlace/otherfile.tif", false, false, true, true);
+        auto result = m_data->m_reporter->Move("subfolder1/otherfile.tif", "someOtherPlace/otherfile.tif", RelocationParameters_RemoveEmptyFoldersFlag | RelocationParameters_UpdateReferencesFlag);
 
         ASSERT_TRUE(result.IsSuccess());
 

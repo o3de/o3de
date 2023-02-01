@@ -11,14 +11,17 @@
             "methods": [
                 {
                     "base": "GetPosition",
+                    "context": "Getter",
                     "details": {
-                        "name": "Get Position"
+                        "name": "Get Position",
+                        "tooltip": "Get the position of the contact (in world space)"
                     },
                     "params": [
                         {
                             "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
                             "details": {
-                                "name": "Contact"
+                                "name": "Contact",
+                                "tooltip": "Point of contact between two bodies"
                             }
                         }
                     ],
@@ -26,41 +29,25 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "SetPosition",
-                    "details": {
-                        "name": "Set Position"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
-                            "details": {
-                                "name": "Contact"
-                            }
-                        },
-                        {
-                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
-                            "details": {
-                                "name": "Vector 3"
+                                "name": "Position",
+                                "tooltip": "Position of the contact (in world space)"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetNormal",
+                    "context": "Getter",
                     "details": {
-                        "name": "Get Normal"
+                        "name": "Get Normal",
+                        "tooltip": "Get the vector orthogonal to both surfaces at the contact point, pointing from the second body to the first body"
                     },
                     "params": [
                         {
                             "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
                             "details": {
-                                "name": "Contact"
+                                "name": "Contact",
+                                "tooltip": "Point of contact between two bodies"
                             }
                         }
                     ],
@@ -68,41 +55,25 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "SetNormal",
-                    "details": {
-                        "name": "Set Normal"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
-                            "details": {
-                                "name": "Contact"
-                            }
-                        },
-                        {
-                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
-                            "details": {
-                                "name": "Vector 3"
+                                "name": "Normal",
+                                "tooltip": "Vector orthogonal to both surfaces at the contact point, pointing from the second body to the first body"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetImpulse",
+                    "context": "Getter",
                     "details": {
-                        "name": "Get Impulse"
+                        "name": "Get Impulse",
+                        "tooltip": "Get the impulse at the contact point"
                     },
                     "params": [
                         {
                             "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
                             "details": {
-                                "name": "Contact"
+                                "name": "Contact",
+                                "tooltip": "Point of contact between two bodies"
                             }
                         }
                     ],
@@ -110,41 +81,25 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "SetImpulse",
-                    "details": {
-                        "name": "Set Impulse"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
-                            "details": {
-                                "name": "Contact"
-                            }
-                        },
-                        {
-                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
-                            "details": {
-                                "name": "Vector 3"
+                                "name": "Impulse",
+                                "tooltip": "The impulse applied at the contact point (in world space)"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetSeparation",
+                    "context": "Getter",
                     "details": {
-                        "name": "Get Separation"
+                        "name": "Get Separation",
+                        "tooltip": "Get the seperation between the two bodies at the contact point (may be negative, indicating penetration)" 
                     },
                     "params": [
                         {
                             "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
                             "details": {
-                                "name": "Contact"
+                                "name": "Contact",
+                                "tooltip": "Point of contact between two bodies"
                             }
                         }
                     ],
@@ -152,27 +107,8 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "SetSeparation",
-                    "details": {
-                        "name": "Set Separation"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
-                            "details": {
-                                "name": "Contact"
-                            }
-                        },
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
+                                "name": "Separation",
+                                "tooltip": "Separation between the two bodies at the contact point (a negative value indicates penetration)"
                             }
                         }
                     ]

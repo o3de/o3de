@@ -22,10 +22,27 @@ function(ly_get_filtered_runtime_dependencies dependencies target)
     # libraries) here which Xcode will embed in the app bundle
     foreach(dependency IN LISTS all_dependencies)
         if (TARGET ${dependency})
-            list(APPEND filtered_dependencies ${dependency})
+            # Imported libraries are used as alias to other targets, so
+            # only non imported dependencies will be appended.
+            get_property(dependency_is_imported TARGET ${dependency} PROPERTY IMPORTED)
+            if (NOT dependency_is_imported)
+                list(APPEND filtered_dependencies ${dependency})
+            endif()
+
+            # Recursively resolve alias' dependencies.
+            # Retrieve the de-aliased targets using the target dependency as key into the O3DE_ALIASED_TARGETS_* "dict"
+            get_property(dealiased_targets GLOBAL PROPERTY O3DE_ALIASED_TARGETS_${dependency})
+            if (dealiased_targets)
+                foreach(dealiased_target ${dealiased_targets})
+                    unset(dealiased_dependencies)
+                    ly_get_filtered_runtime_dependencies(dealiased_dependencies ${dealiased_target})
+                    list(APPEND filtered_dependencies ${dealiased_dependencies})
+                endforeach()
+            endif()
         endif()
     endforeach()
 
+    list(REMOVE_DUPLICATES filtered_dependencies)
     set(${dependencies} ${filtered_dependencies} PARENT_SCOPE)
 endfunction()
 
@@ -33,14 +50,15 @@ function(ly_delayed_generate_runtime_dependencies)
 
     # For each (non-monolithic) game project, find runtime dependencies and tell XCode to embed/sign them
     if(NOT LY_MONOLITHIC_GAME)
-
-        foreach(game_project ${LY_PROJECTS})
+        get_property(project_names GLOBAL PROPERTY O3DE_PROJECTS_NAME)
+        foreach(project_name IN LISTS project_names)
 
             # Recursively get all dependent frameworks for the game project.
             unset(dependencies)
-            ly_get_filtered_runtime_dependencies(dependencies ${game_project}.GameLauncher)
+            ly_get_filtered_runtime_dependencies(dependencies ${project_name}.GameLauncher)
+
             if(dependencies)
-                set_target_properties(${game_project}.GameLauncher
+                set_target_properties(${project_name}.GameLauncher
                     PROPERTIES
                     XCODE_EMBED_FRAMEWORKS "${dependencies}"
                     XCODE_EMBED_FRAMEWORKS_CODE_SIGN_ON_COPY TRUE
@@ -82,12 +100,14 @@ function(ly_delayed_generate_runtime_dependencies)
         unset(dependencies)
         ly_get_filtered_runtime_dependencies(dependencies AzTestRunner)
 
-        set_target_properties("AzTestRunner"
-            PROPERTIES
-            XCODE_EMBED_FRAMEWORKS "${dependencies}"
-            XCODE_EMBED_FRAMEWORKS_CODE_SIGN_ON_COPY TRUE
-            XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path/Frameworks"
-        )
+        if(dependencies)
+            set_target_properties("AzTestRunner"
+                PROPERTIES
+                XCODE_EMBED_FRAMEWORKS "${dependencies}"
+                XCODE_EMBED_FRAMEWORKS_CODE_SIGN_ON_COPY TRUE
+                XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path/Frameworks"
+            )
+        endif()
     endif()
 
 endfunction()

@@ -10,7 +10,6 @@
 #include <Source/Material/UseTextureFunctor.h>
 #include <Source/Material/SubsurfaceTransmissionParameterFunctor.h>
 #include <Source/Material/Transform2DFunctor.h>
-#include <Source/Material/DrawListFunctor.h>
 #include <Source/Material/ConvertEmissiveUnitFunctor.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -116,7 +115,6 @@ namespace AZ
             SkyBoxFeatureProcessor::Reflect(context);
             SkyBoxFogSettings::Reflect(context);
             UseTextureFunctor::Reflect(context);
-            DrawListFunctor::Reflect(context);
             SubsurfaceTransmissionParameterFunctor::Reflect(context);
             Transform2DFunctor::Reflect(context);
             MaterialAssignment::Reflect(context);

@@ -53,6 +53,7 @@
 // AzQtComponents
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
+#include <AzQtComponents/Components/InputDialog.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -358,7 +359,7 @@ MainWindow::MainWindow(QWidget* parent)
 void MainWindow::SystemTick()
 {
     AZ::ComponentApplication* componentApplication = nullptr;
-    EBUS_EVENT_RESULT(componentApplication, AZ::ComponentApplicationBus, GetApplication);
+    AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationBus::Events::GetApplication);
     if (componentApplication)
     {
         componentApplication->TickSystem();
@@ -451,7 +452,7 @@ void MainWindow::InitCentralWidget()
     // make sure the layout wnd knows to reset it's layout and settings
     connect(m_viewPaneManager, &QtViewPaneManager::layoutReset, m_pLayoutWnd, &CLayoutWnd::ResetLayout);
 
-    EBUS_EVENT(AzToolsFramework::EditorEvents::Bus, NotifyCentralWidgetInitialized);
+    AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::Bus::Events::NotifyCentralWidgetInitialized);
 }
 
 void MainWindow::Initialize()
@@ -887,7 +888,7 @@ void MainWindow::InitActions()
             return false;
         }
 
-        SandboxEditor::InterpolateDefaultViewportCameraToTransform(
+        SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(
             bookmark->m_position, AZ::DegToRad(bookmark->m_rotation.GetX()), AZ::DegToRad(bookmark->m_rotation.GetZ()));
 
         QString tagConsoleText = tr("View Bookmark %1 loaded position: x=%2, y=%3, z=%4")
@@ -1655,7 +1656,7 @@ void MainWindow::SaveLayout()
         return;
     }
 
-    QString layoutName = QInputDialog::getText(this, tr("Layout Name"), QString()).toLower();
+    QString layoutName = InputDialog::getText(this, tr("Layout Name"), QString(), QLineEdit::Normal, QString(), "[a-z]+[a-z0-9\\-\\_]*");
     if (layoutName.isEmpty())
     {
         return;
@@ -1709,11 +1710,7 @@ void MainWindow::ViewRenamePaneLayout(const QString& layoutName)
     bool validName = false;
     while (!validName)
     {
-        newLayoutName = QInputDialog::getText(this, tr("Rename layout '%1'").arg(layoutName), QString());
-        if (newLayoutName.isEmpty())
-        {
-            return;
-        }
+        newLayoutName = InputDialog::getText(this, tr("Layout Name"), QString(), QLineEdit::Normal, QString(), "[a-z]+[a-z0-9\\-\\_]*");
 
         if (m_viewPaneManager->HasLayout(newLayoutName))
         {

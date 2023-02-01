@@ -50,6 +50,7 @@ set(FILES
     native/FileProcessor/FileProcessor.h
     native/FileWatcher/FileWatcher.cpp
     native/FileWatcher/FileWatcher.h
+    native/FileWatcher/FileWatcherBase.h
     native/InternalBuilders/SettingsRegistryBuilder.cpp
     native/InternalBuilders/SettingsRegistryBuilder.h
     native/resourcecompiler/JobsModel.cpp
@@ -111,6 +112,8 @@ set(FILES
     native/utilities/ThreadHelper.cpp
     native/utilities/ThreadHelper.h
     native/utilities/IPathConversion.h
+    native/utilities/UuidManager.h
+    native/utilities/UuidManager.cpp
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES

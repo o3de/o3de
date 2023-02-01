@@ -45,6 +45,8 @@ namespace AZ
                 break;
             case ScopeAttachmentUsage::Resolve:
                 return ImageBindFlags::CopyWrite;
+            case ScopeAttachmentUsage::ShadingRate:
+                return ImageBindFlags::ShadingRate;
             case ScopeAttachmentUsage::Predication:
             case ScopeAttachmentUsage::Indirect:
             case ScopeAttachmentUsage::SubpassInput:

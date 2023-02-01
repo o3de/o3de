@@ -28,6 +28,7 @@
 
 namespace AZStd
 {
+    class allocator;
     template <class T>
     struct less;
     template <class T>
@@ -390,6 +391,7 @@ namespace AZ
             }
         };
 
+        extern template struct AggregateTypes<Crc32>;
 
         // Represents the "*" typeid that can be combined with non-pointer types T to form a unique T* typeid
         inline constexpr AZ::TypeId PointerTypeId_v{ "{35C8A027-FE00-4769-AE36-6997CFFAF8AE}" };
@@ -588,14 +590,18 @@ namespace AZ
         };
     }
     // AzTypeInfo specialization helper for non intrusive TypeInfo
-#define AZ_TYPE_INFO_INTERNAL_SPECIALIZE(_ClassName, _ClassUuid)      \
+#define AZ_TYPE_INFO_INTERNAL_SPECIALIZE(_ClassName, _ClassUuid, _DisplayName) \
     template<>                                                        \
     struct AzTypeInfo<_ClassName, AZStd::is_enum<_ClassName>::value>  \
     {                                                                 \
     private:                                                          \
         static inline constexpr AZ::TypeId s_classUuid{_ClassUuid};   \
     public:                                                           \
-        static constexpr const char* Name() { return #_ClassName; }   \
+        static constexpr const char* Name()                           \
+        {                                                             \
+            constexpr AZStd::string_view name_{_DisplayName };        \
+            return !name_.empty() ? name_.data() : #_ClassName;       \
+        }                                                             \
         template<typename TypeIdResolverTag = CanonicalTypeIdTag>     \
         static constexpr AZ::TypeId Uuid()                            \
         {                                                             \
@@ -615,6 +621,29 @@ namespace AZ
         }                                                             \
         static constexpr bool Specialized() { return true; }          \
     };
+
+    /**
+    * Use this macro outside a class to allow it to be identified across modules and serialized (in different contexts).
+    * The expected input is the class and the assigned uuid as a string or an instance of a uuid.
+    * Note that the AZ_TYPE_INFO_SPECIALIZE always has to be declared in "namespace AZ".
+    * Example:
+    *   class MyClass
+    *   {
+    *   public:
+    *       ...
+    *   };
+    *
+    *   namespace AZ
+    *   {
+    *       AZ_TYPE_INFO_SPECIALIZE(MyClass, "{BD5B1568-D232-4EBF-93BD-69DB66E3773F}");
+    *   }
+    */
+#define AZ_TYPE_INFO_SPECIALIZE(_ClassType, _ClassUuid) AZ_TYPE_INFO_INTERNAL_SPECIALIZE(_ClassType, _ClassUuid, #_ClassType)
+
+    // Adds support for specifying a different display name for the Class type being specialized for TypeInfo
+    // This is useful when wanting to remove a namespace from the TypeInfo name such as when reflecting to scripting
+    // i.e AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(AZ::Metrics::MyClass, "{BD5B1568-D232-4EBF-93BD-69DB66E3773F}", MyClass)
+#define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(_ClassType, _ClassUuid, _DisplayName) AZ_TYPE_INFO_INTERNAL_SPECIALIZE(_ClassType, _ClassUuid, _DisplayName)
 
     // specialize for function pointers
     template<class R, class... Args>
@@ -1264,26 +1293,26 @@ namespace AZ
         static constexpr bool Specialized() { return true; }                                                         \
     }
 
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(char, "{3AB0037F-AF8D-48ce-BCA0-A170D18B2C03}");
-    //    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(signed char, "{CFD606FE-41B8-4744-B79F-8A6BD97713D8}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(AZ::s8, "{58422C0E-1E47-4854-98E6-34098F6FE12D}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(short, "{B8A56D56-A10D-4dce-9F63-405EE243DD3C}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(int, "{72039442-EB38-4d42-A1AD-CB68F7E0EEF6}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(long, "{8F24B9AD-7C51-46cf-B2F8-277356957325}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(AZ::s64, "{70D8A282-A1EA-462d-9D04-51EDE81FAC2F}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(unsigned char, "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(unsigned short, "{ECA0B403-C4F8-4b86-95FC-81688D046E40}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(unsigned int, "{43DA906B-7DEF-4ca8-9790-854106D3F983}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(unsigned long, "{5EC2D6F7-6859-400f-9215-C106F5B10E53}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(AZ::u64, "{D6597933-47CD-4fc8-B911-63F3E2B0993A}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(float, "{EA2C3E90-AFBE-44d4-A90D-FAAF79BAF93D}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(double, "{110C4B14-11A8-4e9d-8638-5051013A56AC}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(bool, "{A0CA880C-AFE4-43cb-926C-59AC48496112}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(AZ::Uuid, "{E152C105-A133-4d03-BBF8-3D4B2FBA3E2A}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(void, "{C0F1AFAD-5CB3-450E-B0F5-ADB5D46B0E22}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(Crc32, "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(PlatformID, "{0635D08E-DDD2-48DE-A7AE-73CC563C57C3}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE(AZStd::monostate, "{B1E9136B-D77A-4643-BE8E-2ABDA246AE0E}");
+    AZ_TYPE_INFO_SPECIALIZE(char, "{3AB0037F-AF8D-48ce-BCA0-A170D18B2C03}");
+    AZ_TYPE_INFO_SPECIALIZE(AZ::s8, "{58422C0E-1E47-4854-98E6-34098F6FE12D}");
+    AZ_TYPE_INFO_SPECIALIZE(short, "{B8A56D56-A10D-4dce-9F63-405EE243DD3C}");
+    AZ_TYPE_INFO_SPECIALIZE(int, "{72039442-EB38-4d42-A1AD-CB68F7E0EEF6}");
+    AZ_TYPE_INFO_SPECIALIZE(long, "{8F24B9AD-7C51-46cf-B2F8-277356957325}");
+    AZ_TYPE_INFO_SPECIALIZE(AZ::s64, "{70D8A282-A1EA-462d-9D04-51EDE81FAC2F}");
+    AZ_TYPE_INFO_SPECIALIZE(unsigned char, "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}");
+    AZ_TYPE_INFO_SPECIALIZE(unsigned short, "{ECA0B403-C4F8-4b86-95FC-81688D046E40}");
+    AZ_TYPE_INFO_SPECIALIZE(unsigned int, "{43DA906B-7DEF-4ca8-9790-854106D3F983}");
+    AZ_TYPE_INFO_SPECIALIZE(unsigned long, "{5EC2D6F7-6859-400f-9215-C106F5B10E53}");
+    AZ_TYPE_INFO_SPECIALIZE(AZ::u64, "{D6597933-47CD-4fc8-B911-63F3E2B0993A}");
+    AZ_TYPE_INFO_SPECIALIZE(float, "{EA2C3E90-AFBE-44d4-A90D-FAAF79BAF93D}");
+    AZ_TYPE_INFO_SPECIALIZE(double, "{110C4B14-11A8-4e9d-8638-5051013A56AC}");
+    AZ_TYPE_INFO_SPECIALIZE(bool, "{A0CA880C-AFE4-43cb-926C-59AC48496112}");
+    AZ_TYPE_INFO_SPECIALIZE(AZ::Uuid, "{E152C105-A133-4d03-BBF8-3D4B2FBA3E2A}");
+    AZ_TYPE_INFO_SPECIALIZE(void, "{C0F1AFAD-5CB3-450E-B0F5-ADB5D46B0E22}");
+    AZ_TYPE_INFO_SPECIALIZE(Crc32, "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}");
+    AZ_TYPE_INFO_SPECIALIZE(PlatformID, "{0635D08E-DDD2-48DE-A7AE-73CC563C57C3}");
+    AZ_TYPE_INFO_SPECIALIZE(AZStd::monostate, "{B1E9136B-D77A-4643-BE8E-2ABDA246AE0E}");
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(AZStd::allocator, "{E9F5A3BE-2B3D-4C62-9E6B-4E00A13AB452}", "allocator");
 
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_CV(T, T*, "", "*");
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_CV(T, T &, "", "&");
@@ -1392,23 +1421,6 @@ namespace AZ
 
 #include <AzCore/RTTI/TypeInfoSimple.h>
 
-/**
-* Use this macro outside a class to allow it to be identified across modules and serialized (in different contexts).
-* The expected input is the class and the assigned uuid as a string or an instance of a uuid.
-* Note that the AZ_TYPE_INFO_SPECIALIZE always has be declared in "namespace AZ".
-* Example:
-*   class MyClass
-*   {
-*   public:
-*       ...
-*   };
-*
-*   namespace AZ
-*   {
-*       AZ_TYPE_INFO_SPECIALIZE(MyClass, "{BD5B1568-D232-4EBF-93BD-69DB66E3773F}");
-*   }
-*/
-#define AZ_TYPE_INFO_SPECIALIZE(_ClassName, _ClassUuid) AZ_TYPE_INFO_INTERNAL_SPECIALIZE(_ClassName, _ClassUuid)
 
 // Used to declare that a template argument is a "typename" with AZ_TYPE_INFO_TEMPLATE.
 #define AZ_TYPE_INFO_TYPENAME AZ_TYPE_INFO_INTERNAL_TYPENAME
@@ -1477,4 +1489,6 @@ namespace AZ
     }
 
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::tuple, "AZStd::tuple", "{F99F9308-DC3E-4384-9341-89CBF1ABD51E}", AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
+
+    extern template struct AzTypeInfo<AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::allocator >, false>;
 }

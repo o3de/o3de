@@ -23,6 +23,7 @@ namespace SceneLoggingExample
         : public CryHooksModule
     {
     public:
+        AZ_CLASS_ALLOCATOR(SceneLoggingExampleModule, AZ::SystemAllocator)
         AZ_RTTI(SceneLoggingExampleModule, "{36AA9C0F-7976-40C7-AF54-C492AC5B16F6}", CryHooksModule);
 
         SceneLoggingExampleModule()

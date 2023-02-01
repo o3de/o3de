@@ -11,7 +11,6 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>

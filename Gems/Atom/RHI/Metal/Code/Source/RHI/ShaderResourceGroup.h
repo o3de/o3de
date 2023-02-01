@@ -43,11 +43,16 @@ namespace AZ
             const ImageView* GetImageView(const int index) const;
             void UpdateCompiledDataIndex();            
             const ArgumentBuffer& GetCompiledArgumentBuffer() const;            
+
             void CollectUntrackedResources(const ShaderResourceGroupVisibility& srgResourcesVisInfo,
-                                            ArgumentBuffer::ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
-                                            ArgumentBuffer::GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const;
+                                           ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeRead,
+                                           ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeReadWrite) const;
+
+            void CollectUntrackedResources(const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+                                           ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesRead,
+                                           ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesReadWrite) const;
+
             bool IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
-            
         private:
             ShaderResourceGroup() = default;
             

@@ -85,7 +85,7 @@ namespace AzToolsFramework
         PropertyBoolComboBoxCtrl* newCtrl = aznew PropertyBoolComboBoxCtrl(pParent);
         connect(newCtrl, &PropertyBoolComboBoxCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
             });
         return newCtrl;
@@ -118,7 +118,8 @@ namespace AzToolsFramework
 
     void RegisterBoolComboBoxHandler()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew BoolPropertyComboBoxHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew BoolPropertyComboBoxHandler());
     }
 }
 

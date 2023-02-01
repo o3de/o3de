@@ -92,7 +92,6 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("MemoryService", 0x5c4d473c)); // AZ::JobManager needs the thread pool allocator
         required.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
         required.push_back(GraphCanvas::GraphCanvasRequestsServiceId);
         required.push_back(AZ_CRC("ScriptCanvasReflectService", 0xb3bfe139));

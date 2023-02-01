@@ -245,6 +245,15 @@ namespace AzToolsFramework
                 }
                 return nullptr;
             }
-        } 
-    }
-}
+
+            const AssetBrowserEntry* FolderForEntry(const AssetBrowserEntry* entry)
+            {
+                while (entry && entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
+                {
+                    entry = entry->GetParent();
+                }
+                return entry;
+            }
+        } // namespace Utils
+    } // namespace AssetBrowser
+} // namespace AzToolsFramework

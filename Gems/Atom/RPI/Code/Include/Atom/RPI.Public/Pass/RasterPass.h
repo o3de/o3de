@@ -60,6 +60,9 @@ namespace AZ
             // Retrieve draw lists from view and dynamic draw system and generate final draw list
             void UpdateDrawList();
 
+            // Submit draw items to the context
+            virtual void SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t indexOffset) const;
+
             // The draw list tag used to fetch the draw list from the views
             RHI::DrawListTag m_drawListTag;
 

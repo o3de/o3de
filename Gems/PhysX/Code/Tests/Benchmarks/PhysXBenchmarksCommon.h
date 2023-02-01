@@ -28,9 +28,6 @@ namespace PhysX::Benchmarks
         , public PhysX::Environment
 
     {
-    public:
-        ~PhysXBenchmarkEnvironment();
-
     protected:
         void SetUpBenchmark() override;
         void TearDownBenchmark() override;

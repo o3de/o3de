@@ -43,7 +43,6 @@ set(ENABLED_GEMS
     GraphModel
     LandscapeCanvas
     NvCloth
-    Blast
     Maestro
     TextureAtlas
     LmbrCentral
@@ -68,4 +67,5 @@ set(ENABLED_GEMS
     DiffuseProbeGrid
     PythonCoverage
     RemoteTools
+    Atom_TestData
 )

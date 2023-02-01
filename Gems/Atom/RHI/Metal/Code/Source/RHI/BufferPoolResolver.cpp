@@ -50,7 +50,7 @@ namespace AZ
             {
                 Buffer* stagingBuffer = packet.m_stagingBuffer.get();
                 //Inform the GPU that the CPU has modified the staging buffer.
-                Platform::SynchronizeBufferOnCPU(stagingBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), stagingBuffer->GetMemoryView().GetOffset(), stagingBuffer->GetMemoryView().GetSize());
+                Platform::PublishBufferCpuChangeOnGpu(stagingBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), stagingBuffer->GetMemoryView().GetOffset(), stagingBuffer->GetMemoryView().GetSize());
             }
         }
 

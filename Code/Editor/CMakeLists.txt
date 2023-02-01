@@ -103,7 +103,6 @@ ly_add_target(
             3rdParty::Qt::Widgets
             3rdParty::Qt::Concurrent
             3rdParty::TIFF
-            3rdParty::squish-ccr
             Legacy::CryCommon
             Legacy::EditorCommon
             AZ::AzCore
@@ -129,8 +128,8 @@ ly_add_source_properties(
     SOURCES CryEdit.cpp
     PROPERTY COMPILE_DEFINITIONS 
     VALUES 
-        O3DE_COPYRIGHT_YEAR=${LY_VERSION_COPYRIGHT_YEAR}
-        LY_VERSION_BUILD_NUMBER=${LY_VERSION_BUILD_NUMBER}
+        O3DE_COPYRIGHT_YEAR=${O3DE_COPYRIGHT_YEAR}
+        O3DE_BUILD_VERSION=${O3DE_INSTALL_BUILD_VERSION}
         ${LY_PAL_TOOLS_DEFINES}
 )
 ly_add_source_properties(

@@ -33,9 +33,11 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
@@ -499,9 +501,6 @@ namespace AzToolsFramework
     {
 
         initEntityPropertyEditorResources();
-
-        m_componentModeCollection = AZ::Interface<ComponentModeCollectionInterface>::Get();
-        AZ_Assert(m_componentModeCollection, "Could not retrieve component mode collection.");
 
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         AZ_Assert(m_prefabPublicInterface != nullptr, "EntityPropertyEditor requires a PrefabPublicInterface instance on Initialize.");
@@ -3287,6 +3286,19 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::CreateActions()
     {
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            static constexpr AZStd::string_view EditorEntityPropertyEditorActionContextIdentifier = "o3de.context.editor.entitypropertyeditor";
+
+            m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+
+            AzToolsFramework::ActionContextProperties contextProperties;
+            contextProperties.m_name = "O3DE Entity Editor";
+
+            // Register a custom action context to allow duplicated shortcut hotkeys to work
+            m_actionManagerInterface->RegisterActionContext("", EditorEntityPropertyEditorActionContextIdentifier, contextProperties, this);
+        }
+
         m_actionToAddComponents = new QAction(tr("Add component"), this);
         m_actionToAddComponents->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         connect(m_actionToAddComponents, &QAction::triggered, this, &EntityPropertyEditor::OnAddComponent);
@@ -5711,7 +5723,7 @@ namespace AzToolsFramework
         {
             DisconnectFromEntityBuses(entityId);
         }
-        EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, ClosePinnedInspector, this);
+        AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::Bus::Events::ClosePinnedInspector, this);
     }
 
     void EntityPropertyEditor::SetSystemEntityEditor(bool isSystemEntityEditor)
@@ -5889,8 +5901,10 @@ namespace AzToolsFramework
         {
             DisableComponentActions(this, m_entityComponentActions);
             SetPropertyEditorState(m_gui, false);
-            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
             m_disabled = true;
+
+            // note: ComponentModeCollectionInterface cannot be cached as it may change during the lifetime of the application
+            const auto componentModeTypes = AZ::Interface<ComponentModeCollectionInterface>::Get()->GetComponentTypes();
 
             
             if (!componentModeTypes.empty())
@@ -5922,7 +5936,7 @@ namespace AzToolsFramework
         {
             EnableComponentActions(this, m_entityComponentActions);
             SetPropertyEditorState(m_gui, true);
-            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
+            const auto componentModeTypes = AZ::Interface<ComponentModeCollectionInterface>::Get()->GetComponentTypes();
             m_disabled = false;
 
             for (auto componentEditor : m_componentEditors)

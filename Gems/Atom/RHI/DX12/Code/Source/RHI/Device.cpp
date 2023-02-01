@@ -167,6 +167,50 @@ namespace AZ
 
             m_features.m_unboundedArrays = true;
 
+#ifdef O3DE_DX12_VRS_SUPPORT
+            D3D12_FEATURE_DATA_D3D12_OPTIONS6 options6;
+            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &options6, sizeof(options6));
+            switch (options6.VariableShadingRateTier)
+            {
+            case D3D12_VARIABLE_SHADING_RATE_TIER::D3D12_VARIABLE_SHADING_RATE_TIER_1:
+                {
+                    m_features.m_shadingRateTypeMask = RHI::ShadingRateTypeFlags::PerDraw;
+                    m_features.m_shadingRateMask =
+                        RHI::ShadingRateFlags::Rate1x1 |
+                        RHI::ShadingRateFlags::Rate1x2 |
+                        RHI::ShadingRateFlags::Rate2x1 |
+                        RHI::ShadingRateFlags::Rate2x2;                   
+                }
+                break;
+            case D3D12_VARIABLE_SHADING_RATE_TIER::D3D12_VARIABLE_SHADING_RATE_TIER_2:
+                {
+                    m_features.m_shadingRateTypeMask =
+                        RHI::ShadingRateTypeFlags::PerDraw |
+                        RHI::ShadingRateTypeFlags::PerRegion |
+                        RHI::ShadingRateTypeFlags::PerPrimitive;
+                    m_features.m_shadingRateMask =
+                        RHI::ShadingRateFlags::Rate1x1 |
+                        RHI::ShadingRateFlags::Rate1x2 |
+                        RHI::ShadingRateFlags::Rate2x1 |
+                        RHI::ShadingRateFlags::Rate2x2;
+                    m_features.m_dynamicShadingRateImage = true;
+                }
+                break;
+            default:
+                break;
+            }
+
+            if (options6.AdditionalShadingRatesSupported)
+            {
+                m_features.m_shadingRateMask |=
+                    RHI::ShadingRateFlags::Rate2x4 |
+                    RHI::ShadingRateFlags::Rate4x2 |
+                    RHI::ShadingRateFlags::Rate4x4;
+            }
+
+            m_limits.m_shadingRateTileSize = RHI::Size(options6.ShadingRateImageTileSize, options6.ShadingRateImageTileSize, 1);
+#endif
+
             m_limits.m_maxImageDimension1D = D3D12_REQ_TEXTURE1D_U_DIMENSION;
             m_limits.m_maxImageDimension2D = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
             m_limits.m_maxImageDimension3D = D3D12_REQ_TEXTURE3D_U_V_OR_W_DIMENSION;
@@ -272,6 +316,8 @@ namespace AZ
                     flags |= RHI::FormatCapabilities::AtomicBuffer;
                 }
             }
+
+            formatsCapabilities[static_cast<uint32_t>(RHI::Format::R8_UINT)] |= RHI::FormatCapabilities::ShadingRate;
         }
 
         RHI::ResourceMemoryRequirements Device::GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor)
@@ -636,6 +682,11 @@ namespace AZ
                 return m_descriptorContext->CompactDescriptorHeap();
             }
             return RHI::ResultCode::Success;
+        }
+
+        RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate)
+        {            
+            return RHI::ShadingRateImageValue{ static_cast<uint8_t>(ConvertShadingRateEnum(rate)), 0 };
         }
 
         void Device::DescriptorHeapCompactionNeeded()

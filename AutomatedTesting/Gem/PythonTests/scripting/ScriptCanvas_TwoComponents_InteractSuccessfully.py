@@ -63,11 +63,11 @@ def ScriptCanvas_TwoComponents_InteractSuccessfully():
     position = math.Vector3(512.0, 512.0, 32.0)
     editor_entity = EditorEntity.create_editor_entity_at(position, TEST_ENTITY_NAME)
 
-    script_canvas_component_1 = ScriptCanvasComponent(editor_entity)
-    script_canvas_component_1.set_component_graph_file_from_path(SOURCE_FILE_0)
+    scriptcanvas_component_1 = ScriptCanvasComponent(editor_entity)
+    scriptcanvas_component_1.set_component_graph_file_from_path(SOURCE_FILE_0)
 
-    script_canvas_component_2 = ScriptCanvasComponent(editor_entity)
-    script_canvas_component_2.set_component_graph_file_from_path(SOURCE_FILE_1)
+    scriptcanvas_component_2 = ScriptCanvasComponent(editor_entity)
+    scriptcanvas_component_2.set_component_graph_file_from_path(SOURCE_FILE_1)
 
     with Tracer() as section_tracer:
 

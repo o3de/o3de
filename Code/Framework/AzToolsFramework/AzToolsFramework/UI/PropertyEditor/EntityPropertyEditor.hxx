@@ -61,6 +61,7 @@ namespace AZ
 
 namespace AzToolsFramework
 {
+    class ActionManagerInterface;
     class ComponentEditor;
     class ComponentPaletteWidget;
     class ComponentModeCollectionInterface;
@@ -402,6 +403,8 @@ namespace AzToolsFramework
         QAction* m_actionToMoveComponentsBottom = nullptr;
         QAction* m_resetToSliceAction = nullptr;
 
+        AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+
         void CreateActions();
         void UpdateActions();
 
@@ -659,8 +662,6 @@ namespace AzToolsFramework
         QPixmap m_reorderRowImage;
         float m_moveFadeSecondsRemaining;
         AZStd::vector<int> m_indexMapOfMovedRow;
-
-        AzToolsFramework::ComponentModeCollectionInterface* m_componentModeCollection = nullptr;
 
         // When m_initiatingPropertyChangeNotification is set to true, it means this EntityPropertyEditor is
         // broadcasting a change to all listeners about a property change for a given entity.  This is needed

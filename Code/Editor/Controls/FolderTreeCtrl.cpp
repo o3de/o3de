@@ -374,15 +374,22 @@ void CFolderTreeCtrl::Edit(const QString& path)
 
 void CFolderTreeCtrl::ShowInExplorer(const QString& path)
 {
-    QString absolutePath = QDir::currentPath();
-
-    CTreeItem* item = GetItem(path);
-    if (item != m_rootTreeItem)
+    if (QFileInfo(path).isAbsolute())
     {
-        absolutePath += QStringLiteral("/%1").arg(path);
+        AzQtComponents::ShowFileOnDesktop(path);
     }
+    else
+    {
+        QString absolutePath = QDir::currentPath();
 
-    AzQtComponents::ShowFileOnDesktop(absolutePath);
+        CTreeItem* item = GetItem(path);
+        if (item != m_rootTreeItem)
+        {
+            absolutePath += QStringLiteral("/%1").arg(path);
+        }
+
+        AzQtComponents::ShowFileOnDesktop(absolutePath);
+    }
 }
 
 QIcon CFolderTreeCtrl::GetItemIcon(IconType image) const

@@ -40,5 +40,8 @@ namespace LmbrCentral
 
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
+
+        // BoxShapeComponentRequestBus::Handler overrides ...
+        bool IsTypeAxisAligned() override;
     };
 } // namespace LmbrCentral

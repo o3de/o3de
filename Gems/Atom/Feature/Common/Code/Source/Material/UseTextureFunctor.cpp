@@ -24,13 +24,12 @@ namespace AZ
                     ->Field("texturePropertyIndex", &UseTextureFunctor::m_texturePropertyIndex)
                     ->Field("useTexturePropertyIndex", &UseTextureFunctor::m_useTexturePropertyIndex)
                     ->Field("dependentPropertyIndexes", &UseTextureFunctor::m_dependentPropertyIndexes)
-                    ->Field("shaderTags", &UseTextureFunctor::m_shaderTags)
-                    ->Field("useTextureOptionIndices", &UseTextureFunctor::m_useTextureOptionIndices)
+                    ->Field("useTextureOptionName", &UseTextureFunctor::m_useTextureOptionName)
                     ;
             }
         }
 
-        void UseTextureFunctor::Process(RuntimeContext& context)
+        void UseTextureFunctor::Process(RPI::MaterialFunctorAPI::RuntimeContext& context)
         {
             using namespace RPI;
 
@@ -39,13 +38,10 @@ namespace AZ
 
             ShaderOptionValue useTexture{useTextureFlag && nullptr != texture};
 
-            for (const auto& shaderTag : m_shaderTags)
-            {
-                context.SetShaderOptionValue(shaderTag, m_useTextureOptionIndices[shaderTag], useTexture);
-            }
+            context.SetShaderOptionValue(m_useTextureOptionName, useTexture);
         }
 
-        void UseTextureFunctor::Process(EditorContext& context)
+        void UseTextureFunctor::Process(RPI::MaterialFunctorAPI::EditorContext& context)
         {
             const bool useTextureFlag = context.GetMaterialPropertyValue<bool>(m_useTexturePropertyIndex);
             Data::Instance<RPI::Image> image = context.GetMaterialPropertyValue<Data::Instance<RPI::Image>>(m_texturePropertyIndex);

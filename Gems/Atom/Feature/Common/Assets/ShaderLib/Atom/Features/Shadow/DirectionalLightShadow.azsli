@@ -45,7 +45,7 @@ class DirectionalLightShadow
 
 bool DirectionalLightShadow::UseFullscreenShadows()
 {
-#ifdef FORCE_OPAQUE
+#if FORCE_OPAQUE
     return true;
 #else
     bool useFullscreenShadows = o_opacity_mode == OpacityMode::Opaque || o_opacity_mode == OpacityMode::Cutout;

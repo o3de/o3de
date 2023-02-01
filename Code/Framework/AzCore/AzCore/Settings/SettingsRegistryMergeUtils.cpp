@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/FileReader.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/TextStreamWriters.h>
@@ -16,10 +15,11 @@
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/JSON/writer.h>
 #include <AzCore/PlatformId/PlatformDefaults.h>
+#include <AzCore/Settings/CommandLine.h>
+#include <AzCore/Settings/ConfigParser.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
-#include <AzCore/Settings/CommandLine.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -580,7 +580,7 @@ namespace AZ::SettingsRegistryMergeUtils
         {
             if (size_t commentOffset = line.find(commentPrefix); commentOffset != AZStd::string_view::npos)
             {
-                return line.substr(0, commentOffset);
+                line = line.substr(0, commentOffset);
             }
         }
 
@@ -650,148 +650,75 @@ namespace AZ::SettingsRegistryMergeUtils
         const ConfigParserSettings& configParserSettings)
     {
         auto configPath = FindProjectRoot(registry) / filePath;
-        IO::FileReader configFile;
-        bool configFileOpened{};
+        AZ::IO::FileIOStream fileIoStream;
+        AZ::IO::SystemFileStream systemFileStream;
+
+        const auto fileIo = AZ::IO::FileIOBase::GetInstance();
+
+        IO::GenericStream* configFile{};
         switch (configParserSettings.m_fileReaderClass)
         {
         case ConfigParserSettings::FileReaderClass::UseFileIOIfAvailableFallbackToSystemFile:
         {
-            auto fileIo = AZ::IO::FileIOBase::GetInstance();
-            configFileOpened = configFile.Open(fileIo, configPath.c_str());
-            break;
+            if (fileIo != nullptr && fileIoStream.Open(configPath.c_str(), AZ::IO::OpenMode::ModeRead))
+            {
+                configFile = &fileIoStream;
+                break;
+            }
+            [[fallthrough]];
         }
         case ConfigParserSettings::FileReaderClass::UseSystemFileOnly:
         {
-            configFileOpened = configFile.Open(nullptr, configPath.c_str());
+            if (systemFileStream.Open(configPath.c_str(), AZ::IO::OpenMode::ModeRead))
+            {
+                configFile = &systemFileStream;
+            }
             break;
         }
         case ConfigParserSettings::FileReaderClass::UseFileIOOnly:
         {
-            auto fileIo = AZ::IO::FileIOBase::GetInstance();
-            if (fileIo == nullptr)
+            if (fileIo != nullptr && fileIoStream.Open(configPath.c_str(), AZ::IO::OpenMode::ModeRead))
             {
-                return false;
+                configFile = &fileIoStream;
             }
-            configFileOpened = configFile.Open(fileIo, configPath.c_str());
             break;
         }
         default:
             AZ_Error("SettingsRegistryMergeUtils", false, "An Invalid FileReaderClass enum value has been supplied");
             return false;
         }
-        if (!configFileOpened)
+        if (configFile == nullptr)
         {
             // While all parsing and formatting errors are actual errors, config files that are not present
-            // are not an error as they are always optional.  In this case, show a brief trace message
+            // is not an error as they are always optional.  In this case, show a brief trace message
             // that indicates the location the file could be placed at in order to run it.
             AZ_TracePrintf("SettingsRegistryMergeUtils", "Optional config file \"%s\" not found.\n", configPath.c_str());
             return false;
         }
 
-        bool configFileParsed = true;
-        // The ConfigFile is parsed using into a fixed_vector of ConfigBufferMaxSize below
-        // which avoids performing any dynamic memory allocations during parsing
-        // The Settings Registry might still allocate memory though in the MergeCommandLineArgument() function
-        size_t remainingFileLength = configFile.Length();
-        if (remainingFileLength == 0)
+        AZ::Settings::ConfigParserSettings parserSettings;
+
+        parserSettings.m_parseConfigEntryFunc = [&registry, &configParserSettings]
+        (const AZ::Settings::ConfigParserSettings::ConfigEntry& configEntry)
         {
-            AZ_TracePrintf("SettingsRegistryMergeUtils", R"(Configuration file "%s" is empty, nothing to merge)" "\n", configPath.c_str());
-            return true;
-        }
-        constexpr size_t ConfigBufferMaxSize = 4096;
-        AZStd::fixed_vector<char, ConfigBufferMaxSize> configBuffer;
-        size_t readSize = (AZStd::min)(configBuffer.max_size(), remainingFileLength);
-        configBuffer.resize_no_construct(readSize);
-
-        size_t bytesRead = configFile.Read(configBuffer.size(), configBuffer.data());
-        remainingFileLength -= bytesRead;
-
-        AZ::SettingsRegistryInterface::FixedValueString currentJsonPointerPath(configParserSettings.m_registryRootPointerPath);
-        size_t rootPointerPathSize = configParserSettings.m_registryRootPointerPath.size();
-        do
-        {
-            decltype(configBuffer)::iterator frontIter{};
-            for (frontIter = configBuffer.begin(); frontIter != configBuffer.end();)
+            AZ::SettingsRegistryInterface::FixedValueString argumentLine(configEntry.m_sectionHeader);
+            if (!argumentLine.empty())
             {
-                if (std::isspace(*frontIter, {}))
-                {
-                    ++frontIter;
-                    continue;
-                }
-
-                // Find end of line
-                auto lineStartIter = frontIter;
-                auto lineEndIter = AZStd::find(frontIter, configBuffer.end(), '\n');
-                bool foundNewLine = lineEndIter != configBuffer.end();
-                if (!foundNewLine && remainingFileLength > 0)
-                {
-                    // No newline has been found in the remaining characters in the buffer,
-                    // Read the next chunk(up to ConfigBufferMaxSize) of the config file and look for a new line
-                    // if the file has remaining content
-                    // Otherwise if the file has no more remaining content, then it is improperly terminated
-                    // text file according to the posix standard
-                    // https://stackoverflow.com/questions/729692/why-should-text-files-end-with-a-newline
-                    // Therefore the final text after the final newline will be parsed
-                    break;
-                }
-
-                AZStd::string_view line(lineStartIter, lineEndIter);
-
-                // Remove any trailing carriage returns from the line
-                if (size_t lastValidLineCharIndex = line.find_last_not_of('\r'); lastValidLineCharIndex != AZStd::string_view::npos)
-                {
-                    line = line.substr(0, lastValidLineCharIndex + 1);
-                }
-                // Retrieve non-commented portion of line
-                if (configParserSettings.m_commentPrefixFunc)
-                {
-                    line = configParserSettings.m_commentPrefixFunc(line);
-                }
-                // Lookup any new section names from the line
-                if (configParserSettings.m_sectionHeaderFunc)
-                {
-                    AZStd::string_view sectionName = configParserSettings.m_sectionHeaderFunc(line);
-                    if (!sectionName.empty())
-                    {
-                        currentJsonPointerPath.erase(rootPointerPathSize);
-                        currentJsonPointerPath += '/';
-                        currentJsonPointerPath += sectionName;
-                    }
-                }
-
-                registry.MergeCommandLineArgument(line, currentJsonPointerPath, configParserSettings.m_commandLineSettings);
-
-                // Skip past the newline character if found
-                frontIter = lineEndIter + (foundNewLine ? 1 : 0);
+                argumentLine += '/';
             }
 
-            // Read in more data from the config file if available.
-            // If the parsing was in the middle of a parsing line, then move the remaining data of that line to the beginning
-            // of the fixed_vector buffer
-            if (frontIter == configBuffer.begin())
-            {
-                AZ_Error("SettingsRegistryMergeUtils", false,
-                    R"(The config file "%s" contains a line which is longer than the max line length of %zu.)" "\n"
-                    R"(Parsing will halt. The line content so far is:)" "\n"
-                    R"("%.*s")" "\n", configPath.c_str(), configBuffer.max_size(),
-                    aznumeric_cast<int>(configBuffer.size()), configBuffer.data());
-                configFileParsed = false;
-                break;
-            }
-            const size_t readOffset = AZStd::distance(frontIter, configBuffer.end());
-            if (readOffset > 0)
-            {
-                memmove(configBuffer.begin(), frontIter, readOffset);
-            }
-            readSize = (AZStd::min)(configBuffer.max_size() - readOffset, remainingFileLength);
-            bytesRead = configFile.Read(readSize, configBuffer.data() + readOffset);
-            configBuffer.resize_no_construct(readOffset + readSize);
-            remainingFileLength -= bytesRead;
-        } while (bytesRead > 0);
+            argumentLine += configEntry.m_keyValuePair.m_key;
+            argumentLine += '=';
+            argumentLine += configEntry.m_keyValuePair.m_value;
 
-        configFile.Close();
+            return registry.MergeCommandLineArgument(argumentLine, configParserSettings.m_registryRootPointerPath, configParserSettings.m_commandLineSettings);
+        };
 
-        return configFileParsed;
+        parserSettings.m_commentPrefixFunc = configParserSettings.m_commentPrefixFunc;
+        parserSettings.m_sectionHeaderFunc = configParserSettings.m_sectionHeaderFunc;
+        const auto parseOutcome = AZ::Settings::ParseConfigFile(*configFile, parserSettings);
+
+        return parseOutcome.has_value();
     }
 
     void MergeSettingsToRegistry_ManifestGemsPaths(SettingsRegistryInterface& registry)
@@ -1006,7 +933,7 @@ namespace AZ::SettingsRegistryMergeUtils
         {
             gemPaths.push_back(gemPath);
         };
-        
+
         VisitActiveGems(registry, CollectRegistryFolders);
 
         for (const auto& gemPath : gemPaths)

@@ -53,6 +53,7 @@ Q_SIGNALS:
         QSet<AssetFileInfo> m_fileList; // note:  neither QSet nor QString are qobject-derived
         QSet<AssetFileInfo> m_folderList;
         QSet<AssetFileInfo> m_excludedList;
+
         PlatformConfiguration* m_platformConfiguration;
     };
 } // end namespace AssetProcessor

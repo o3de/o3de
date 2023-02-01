@@ -1,0 +1,43 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{77F59CFF-3EFC-492D-BDF2-FD587FC56704}",
+        "category": "Constants",
+        "title": "Int Constant",
+        "titlePaletteName": "ConstantNodeTitlePalette",
+        "description": "Create a shader constant with the type and value defined by this node.",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
+        "propertySlots": [
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "int",
+                "defaultDataType": "int",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "int",
+                "defaultDataType": "int",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = inValue;"
+                    ]
+                }
+            }
+        ]
+    }
+}

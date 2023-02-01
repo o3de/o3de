@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/JSON/writer.h>
 #include <aws/core/utils/memory/stl/AWSStreamFwd.h>
 

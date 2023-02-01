@@ -9,7 +9,6 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <Source/LandscapeCanvasSystemComponent.h>
 
 class LandscapeCanvasTest

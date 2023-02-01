@@ -57,6 +57,9 @@ namespace AZ
             DescriptorIndexing,
             Spirv14,
             ShaderFloatControls,
+            FragmentShadingRate,
+            FragmentDensityMap,
+            Renderpass2,
             Count
         };
 
@@ -94,6 +97,11 @@ namespace AZ
             const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& GetPhysicalDeviceRayTracingPipelineProperties() const;
             const VkPhysicalDeviceRayTracingPipelineFeaturesKHR& GetPhysicalDeviceRayTracingPipelineFeatures() const;
             const VkPhysicalDeviceRayQueryFeaturesKHR& GetRayQueryFeatures() const;
+            const VkPhysicalDeviceFragmentShadingRateFeaturesKHR& GetPhysicalDeviceFragmentShadingRateFeatures() const;
+            const VkPhysicalDeviceFragmentDensityMapFeaturesEXT& GetPhysicalDeviceFragmentDensityMapFeatures() const;
+            const VkPhysicalDeviceFragmentDensityMapPropertiesEXT& GetPhysicalDeviceFragmentDensityMapProperties() const;
+            const VkPhysicalDeviceFragmentShadingRatePropertiesKHR& GetPhysicalDeviceFragmentShadingRateProperties() const;
+            
             VkFormatProperties GetFormatProperties(RHI::Format format, bool raiseAsserts = true) const;
             StringList GetDeviceLayerNames() const;
             StringList GetDeviceExtensionNames(const char* layerName = nullptr) const;
@@ -133,6 +141,10 @@ namespace AZ
             VkPhysicalDeviceRayTracingPipelineFeaturesKHR m_rayTracingPipelineFeatures{};
             VkPhysicalDeviceRayQueryFeaturesKHR m_rayQueryFeatures{};
             VkPhysicalDeviceVulkan12Features m_vulkan12Features{};
+            VkPhysicalDeviceFragmentShadingRateFeaturesKHR m_shadingRateFeatures{};
+            VkPhysicalDeviceFragmentDensityMapFeaturesEXT m_fragmentDensityMapFeatures{};
+            VkPhysicalDeviceFragmentDensityMapPropertiesEXT m_fragmentDensityMapProperties{};
+            VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_fragmentShadingRateProperties{};
         };
     }
 }

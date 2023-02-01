@@ -11,7 +11,6 @@
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/Material/PhysicsMaterial.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
-#include <AzFramework/Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
@@ -63,7 +62,6 @@ namespace Physics
         AZ::Vector3 m_position = AZ::Vector3::CreateZero(); /// Shape offset relative to the connected rigid body.
         AZ::Quaternion m_rotation = AZ::Quaternion::CreateIdentity(); ///< Shape rotation relative to the connected rigid body.
         MaterialSlots m_materialSlots; ///< Material slots for the collider.
-        PhysicsLegacy::MaterialSelection m_legacyMaterialSelection; ///< Kept to convert old physics material assets.
         AZ::u8 m_propertyVisibilityFlags = (std::numeric_limits<AZ::u8>::max)(); ///< Visibility flags for collider.
                                                                                  ///< Note: added parenthesis for std::numeric_limits is
                                                                                  ///< to avoid collision with `max` macro in uber builds.

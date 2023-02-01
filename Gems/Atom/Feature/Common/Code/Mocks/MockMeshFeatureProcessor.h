@@ -27,6 +27,8 @@ namespace UnitTest
         MOCK_METHOD2(ConnectModelChangeEventHandler, void(const MeshHandle&, ModelChangedEvent::Handler&));
         MOCK_METHOD3(SetTransform, void(const MeshHandle&, const AZ::Transform&, const AZ::Vector3&));
         MOCK_METHOD2(SetExcludeFromReflectionCubeMaps, void(const MeshHandle&, bool));
+        MOCK_METHOD2(SetIsAlwaysDynamic, void(const MeshHandle&, bool));
+        MOCK_CONST_METHOD1(GetIsAlwaysDynamic, bool(const MeshHandle&));
         MOCK_METHOD2(SetMaterialAssignmentMap, void(const MeshHandle&, const AZ::Data::Instance<AZ::RPI::Material>&));
         MOCK_METHOD2(SetMaterialAssignmentMap, void(const MeshHandle&, const AZ::Render::MaterialAssignmentMap&));
         MOCK_METHOD1(GetTransform, AZ::Transform(const MeshHandle&));
@@ -41,6 +43,8 @@ namespace UnitTest
         MOCK_METHOD2(AcquireMesh, MeshHandle (const AZ::Render::MeshHandleDescriptor&, const AZ::Data::Instance<AZ::RPI::Material>&));
         MOCK_METHOD2(SetRayTracingEnabled, void (const MeshHandle&, bool));
         MOCK_CONST_METHOD1(GetRayTracingEnabled, bool(const MeshHandle&));
+        MOCK_METHOD2(SetExcludeFromReflectionCubeMaps, void(const MeshHandle&, bool));
+        MOCK_CONST_METHOD1(GetExcludeFromReflectionCubeMaps, bool(const MeshHandle&));
         MOCK_METHOD2(SetVisible, void (const MeshHandle&, bool));
         MOCK_CONST_METHOD1(GetVisible, bool(const MeshHandle&));
         MOCK_METHOD2(SetUseForwardPassIblSpecular, void (const MeshHandle&, bool));

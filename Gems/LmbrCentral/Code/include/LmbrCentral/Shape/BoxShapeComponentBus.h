@@ -68,11 +68,14 @@ namespace LmbrCentral
 
         /// @brief Gets dimensions for the Box Shape
         /// @return Vector3 indicating dimensions along the x,y & z axis
-        virtual AZ::Vector3 GetBoxDimensions() = 0;
+        virtual AZ::Vector3 GetBoxDimensions() const = 0;
 
         /// @brief Sets new dimensions for the Box Shape
         /// @param newDimensions Vector3 indicating new dimensions along the x,y & z axis
         virtual void SetBoxDimensions(const AZ::Vector3& newDimensions) = 0;
+
+        /// Returns true if the object type is axis-aligned box shape, otherwise false (regardless of orientation).
+        virtual bool IsTypeAxisAligned() = 0;
     };
 
     // Bus to service the Box Shape component event group

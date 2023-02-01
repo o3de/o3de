@@ -42,12 +42,6 @@ namespace ShaderManagementConsole
         m_documentInspector->SetDocumentId(documentId);
     }
 
-    void ShaderManagementConsoleWindow::UpdateMenus(QMenuBar* menuBar)
-    {
-        Base::UpdateMenus(menuBar);
-        m_actionSaveAsChild->setVisible(false);
-    }
-
     AZStd::string ShaderManagementConsoleWindow::GetSaveDocumentParams(const AZStd::string& initialPath, const AZ::Uuid& documentId) const
     {
         // Get shader file path

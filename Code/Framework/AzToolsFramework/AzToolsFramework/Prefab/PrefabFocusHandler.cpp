@@ -352,7 +352,11 @@ namespace AzToolsFramework::Prefab
         // Queuing the previous focus before the new one saves some time in the propagation loop on average.
         if (previousFocusedInstance.has_value())
         {
-            m_instanceUpdateExecutorInterface->AddInstanceToQueue(previousFocusedInstance);
+            // No need to update the previous focused instance if it's a descendant of the newly focused instance
+            if (!PrefabInstanceUtils::IsDescendantInstance(*previousFocusedInstance, *focusedInstance))
+            {
+                m_instanceUpdateExecutorInterface->AddInstanceToQueue(previousFocusedInstance);
+            }
         }
         m_instanceUpdateExecutorInterface->AddInstanceToQueue(focusedInstance);
 

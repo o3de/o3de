@@ -31,6 +31,7 @@ namespace AtomToolsFramework
                 ->Field("supportedDataTypeRegex", &DynamicNodeSlotConfig::m_supportedDataTypeRegex)
                 ->Field("defaultDataType", &DynamicNodeSlotConfig::m_defaultDataType)
                 ->Field("defaultValue", &DynamicNodeSlotConfig::m_defaultValue)
+                ->Field("enumValues", &DynamicNodeSlotConfig::m_enumValues)
                 ->Field("visibleOnNode", &DynamicNodeSlotConfig::m_visibleOnNode)
                 ->Field("editableOnNode", &DynamicNodeSlotConfig::m_editableOnNode)
                 ->Field("allowNameSubstitution", &DynamicNodeSlotConfig::m_allowNameSubstitution)
@@ -44,20 +45,23 @@ namespace AtomToolsFramework
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &DynamicNodeSlotConfig::GetDisplayNameForEditor)
                     ->SetDynamicEditDataProvider(&DynamicNodeSlotConfig::GetDynamicEditData)
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Add new settings groups from settings registered with this tool.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeSlotConfig::AddRegisteredSettingGroups)
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Setting Groups")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_name, "Name", "Unique name used to identify individual slots on a node.")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_displayName, "Display Name", "User friendly title of the slot that will appear on the node UI.")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_description, "Description", "Detailed description of the node, its purpose, and behavior that will appear in tooltips and other UI.")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_supportedDataTypeRegex, "Supported Data Type Regex", "Regular expression to search for data types compatible with this slot.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeSlotConfig::ValidateDataTypes)
                         ->Attribute(AZ::Edit::Attributes::ClearNotify, &DynamicNodeSlotConfig::ValidateDataTypes)
-                    ->DataElement(AZ_CRC_CE("MultiStringSelectDelimited"), &DynamicNodeSlotConfig::m_defaultDataType, "Default Data Type", "Name of the default data type for this slot. If this is not specified the default data type will fall back to the first supported data type.")
-                        ->Attribute(AZ_CRC_CE("Options"), &DynamicNodeSlotConfig::GetSupportedDataTypeNames)
-                        ->Attribute(AZ_CRC_CE("SingleSelect"), true)
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DynamicNodeSlotConfig::m_defaultDataType, "Default Data Type", "Name of the default data type for this slot. If this is not specified the default data type will fall back to the first supported data type.")
+                        ->Attribute(AZ::Edit::Attributes::StringList, &DynamicNodeSlotConfig::GetSupportedDataTypeNames)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeSlotConfig::ValidateDataTypes)
                         ->Attribute(AZ::Edit::Attributes::ClearNotify, &DynamicNodeSlotConfig::ValidateDataTypes)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_defaultValue, "Default Value", "The initial value of an input or property slot that has no incoming connection.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, "Default Value")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_enumValues, "Enum Values", "List of potential values if the data type is a string.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_visibleOnNode, "Visible On Node", "Enable this for the slot to appear on the node UI in the graph view.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_editableOnNode, "Editable On Node", "Enable this for the slot value to be editable on the node UI in the graph view.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_allowNameSubstitution, "Allow Name Substitution", "Hint on whether or not the slot name can be substituted or mangled in applicable systems.")
@@ -86,6 +90,7 @@ namespace AtomToolsFramework
                 ->Property("displayName", BehaviorValueProperty(&DynamicNodeSlotConfig::m_displayName))
                 ->Property("defaultValue", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultValue))
                 ->Property("defaultValue", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultValue))
+                ->Property("enumValues", BehaviorValueProperty(&DynamicNodeSlotConfig::m_enumValues))
                 ->Property("supportedDataTypeRegex", BehaviorValueProperty(&DynamicNodeSlotConfig::m_supportedDataTypeRegex))
                 ->Property("defaultDataType", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultDataType))
                 ->Property("visibleOnNode", BehaviorValueProperty(&DynamicNodeSlotConfig::m_visibleOnNode))
@@ -214,6 +219,29 @@ namespace AtomToolsFramework
     AZStd::string DynamicNodeSlotConfig::GetDisplayNameForEditor() const
     {
         return AZStd::string::format("Slot (%s)", !m_name.empty() ? m_name.c_str() : "unnamed");
+    }
+
+    void DynamicNodeSlotConfig::AutoFillMissingData()
+    {
+        if (m_displayName.empty())
+        {
+            m_displayName = GetDisplayNameFromText(m_name);
+        }
+
+        if (m_description.empty())
+        {
+            m_description = m_displayName;
+        }
+    }
+
+    AZ::Crc32 DynamicNodeSlotConfig::AddRegisteredSettingGroups()
+    {
+        if (AddRegisteredSettingGroupsToMap(m_settings))
+        {
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+
+        return AZ::Edit::PropertyRefreshLevels::None;
     }
 
     const AZ::Edit::ElementData* DynamicNodeSlotConfig::GetDynamicEditData(

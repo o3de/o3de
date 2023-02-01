@@ -10,7 +10,7 @@
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <RHI/BufferView.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 #include <RHI/RenderPassBuilder.h>
 #include <RHI/Device.h>
 #include <RHI/Framebuffer.h>
@@ -82,6 +82,8 @@ namespace AZ
                     return 2;
                 case RHI::ScopeAttachmentUsage::SubpassInput:
                     return 4;
+                case RHI::ScopeAttachmentUsage::ShadingRate:
+                    return 5;
                 default:
                     return ~0;
                 }
@@ -228,9 +230,41 @@ namespace AZ
                         auto findIter = m_attachmentsMap.find(scopeAttachmentId2);
                         AZ_Assert(findIter != m_attachmentsMap.end(), "Could not find input attachment %s", scopeAttachmentId2.GetCStr());
                     const uint32_t attachmentIndex = findIter->second;
-                    subpassDescriptor.m_subpassInputAttachments[subpassDescriptor.m_subpassInputCount++] = RenderPass::SubpassAttachment{ attachmentIndex , layout };
+                    subpassDescriptor.m_subpassInputAttachments[subpassDescriptor.m_subpassInputCount++] =
+                        RenderPass::SubpassAttachment{ attachmentIndex , layout, ConvertImageAspectFlags(attachmentImageView->GetDescriptor().m_aspectFlags) };
                     m_lastSubpassResourceUse[attachmentImageView] = subpassIndex;
                     m_renderpassDesc.m_attachments[attachmentIndex].m_finalLayout = finalLayout;
+                    usedAttachments.set(attachmentIndex);
+                    break;
+                }
+                case RHI::ScopeAttachmentUsage::ShadingRate:
+                {
+                    auto layout = GetImageAttachmentLayout(*scopeAttachment);
+                    auto finalLayout = GetFinalLayout(scope, *scopeAttachment);
+                    auto findIter = m_attachmentsMap.find(scopeAttachmentId);
+                    uint32_t attachmentIndex = 0;
+                    if (findIter == m_attachmentsMap.end())
+                    {
+                        attachmentIndex = m_renderpassDesc.m_attachmentCount++;
+                        RenderPass::AttachmentBinding& attachmentBinding = m_renderpassDesc.m_attachments[attachmentIndex];
+                        attachmentBinding.m_format = imageViewFormat;
+                        attachmentBinding.m_loadStoreAction = bindingDescriptor.m_loadStoreAction;
+                        attachmentBinding.m_initialLayout = GetInitialLayout(scope, *scopeAttachment);
+                        attachmentBinding.m_finalLayout = finalLayout;
+                        attachmentBinding.m_multisampleState = imageDescriptor.m_multisampleState;
+                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()));
+                    }
+                    else
+                    {
+                        attachmentIndex = findIter->second;
+                    }
+
+                    subpassDescriptor.m_fragmentShadingRateAttachment =
+                        RenderPass::SubpassAttachment{ attachmentIndex, layout };
+                    m_renderpassDesc.m_attachments[attachmentIndex].m_finalLayout = finalLayout;
+                    setAttachmentStoreActionFunc(attachmentIndex, bindingDescriptor.m_loadStoreAction);
+                    m_lastSubpassResourceUse[attachmentImageView] = subpassIndex;
+                    m_attachmentsMap[scopeAttachmentId] = attachmentIndex;
                     usedAttachments.set(attachmentIndex);
                     break;
                 }

@@ -13,7 +13,6 @@
 namespace EMotionFX::MotionMatching
 {
     using Fixture = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,

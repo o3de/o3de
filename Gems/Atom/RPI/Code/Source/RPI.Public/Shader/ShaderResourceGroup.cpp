@@ -31,8 +31,13 @@ namespace AZ
             AZ_Assert(srgLayout != nullptr, "Failed to find SRG with name %s, using supervariantIndex %u from shaderAsset %s", srgName.GetCStr(),
                 supervariantIndex.GetIndex(), shaderAsset.GetHint().c_str());
 
-            AZStd::string idString = AZStd::string::format("%s_%u_%s", srgLayout->GetUniqueId().c_str(), supervariantIndex.GetIndex(), srgName.GetCStr());
-            return Data::InstanceId::CreateData(idString.data(), idString.size());
+            // Create a uuid that combines string data for both the srgLayout and the srgName
+            AZ::Uuid instanceUuid =
+                AZ::Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(srgLayout->GetUniqueId().data()), srgLayout->GetUniqueId().size())
+                + AZ::Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(srgName.GetStringView().data()), srgName.GetStringView().size());
+
+            // Use the supervariantIndex as the subId for the InstanceId, since it is already an integer
+            return Data::InstanceId(instanceUuid, supervariantIndex.GetIndex());
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(

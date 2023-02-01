@@ -496,7 +496,8 @@ namespace AzToolsFramework
                             entity->SetName(newName);
                             undo.MarkEntityDirty(entity->GetId());
 
-                            EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_EntireTree);
+                            ToolsApplicationEvents::Bus::Broadcast(
+                                &ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_EntireTree);
                         }
                     }
                     else
@@ -904,7 +905,8 @@ namespace AzToolsFramework
             }
 
             bool isEntityEditable = true;
-            EBUS_EVENT_RESULT(isEntityEditable, ToolsApplicationRequests::Bus, IsEntityEditable, entityId);
+            ToolsApplicationRequests::Bus::BroadcastResult(
+                isEntityEditable, &ToolsApplicationRequests::Bus::Events::IsEntityEditable, entityId);
             if (!isEntityEditable)
             {
                 return false;
@@ -999,10 +1001,10 @@ namespace AzToolsFramework
             for (AZ::EntityId entityId : selectedEntityIds)
             {
                 AZ::EntityId oldParentId;
-                EBUS_EVENT_ID_RESULT(oldParentId, entityId, AZ::TransformBus, GetParentId);
+                AZ::TransformBus::EventResult(oldParentId, entityId, &AZ::TransformBus::Events::GetParentId);
 
                 //  Guarding this to prevent the entity from being marked dirty when the parent doesn't change.
-                EBUS_EVENT_ID(entityId, AZ::TransformBus, SetParent, newParentId);
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetParent, newParentId);
 
                 // The old parent is dirty due to sort change
                 undo2.MarkEntityDirty(GetEntityIdForSortInfo(oldParentId));
@@ -1057,7 +1059,7 @@ namespace AzToolsFramework
         // reselect the entities to ensure they're visible if appropriate
         ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, processedEntityIds);
 
-        EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_Values);
+        ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_Values);
         return true;
     }
 
@@ -1349,12 +1351,20 @@ namespace AzToolsFramework
             ExpandAncestors(entityId);
         }
 
-        //notify observers
-        emit SelectEntity(entityId, selected);
+        if (!m_suppressNextSelectEntity)
+        {
+            // notify observers
+            emit SelectEntity(entityId, selected);
+        }
+
+        m_suppressNextSelectEntity = false;
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedLocked(AZ::EntityId entityId, bool /*locked*/)
     {
+        // Prevent a SelectEntity call occurring during the update to stop the item clicked from scrolling away.
+        m_suppressNextSelectEntity = true;
+
         //update all ancestors because they will show partial state for descendants
         QueueEntityUpdate(entityId);
         QueueAncestorUpdate(entityId);
@@ -1362,6 +1372,9 @@ namespace AzToolsFramework
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedVisibility(AZ::EntityId entityId, bool /*visible*/)
     {
+        // Prevent a SelectEntity call occurring during the update to stop the item clicked from scrolling away.
+        m_suppressNextSelectEntity = true;
+
         //update all ancestors because they will show partial state for descendants
         QueueEntityUpdate(entityId);
         QueueAncestorUpdate(entityId);
@@ -2264,7 +2277,7 @@ namespace AzToolsFramework
         painter->restore();
     }
 
-    QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+    QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         // Get the height of a tall character...
         // we do this only once per 'tick'
@@ -2279,8 +2292,15 @@ namespace AzToolsFramework
 
             QTimer::singleShot(0, resetFunction);
         }
-  
-        return QSize(0, m_cachedBoundingRectOfTallCharacter.height() + EntityOutlinerListModel::s_OutlinerSpacing);
+        
+        if (!index.parent().isValid())
+        {
+            return QSize(0, m_cachedBoundingRectOfTallCharacter.height() + EntityOutlinerListModel::s_OutlinerSpacingForLevel);
+        }
+        else
+        {
+            return QSize(0, m_cachedBoundingRectOfTallCharacter.height() + EntityOutlinerListModel::s_OutlinerSpacing);
+        }
     }
 
     bool EntityOutlinerItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)

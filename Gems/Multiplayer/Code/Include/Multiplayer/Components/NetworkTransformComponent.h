@@ -50,8 +50,10 @@ namespace Multiplayer
 
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
-        
+
+#if AZ_TRAIT_SERVER
         void HandleMultiplayerTeleport(AzNetworking::IConnection* invokingConnection, const AZ::Vector3& teleportToPosition) override;
+#endif
 
     private:
         void OnTransformChangedEvent(const AZ::Transform& localTm, const AZ::Transform& worldTm);

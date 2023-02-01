@@ -29,7 +29,7 @@ namespace AZ
             AZ_Assert(m_nullDescriptorHeap, "Null descriptorheap should not be null");
             [heapDescriptor release] ;
             
-            RHI::ResultCode result = CreateImages();
+            [[maybe_unused]] RHI::ResultCode result = CreateImages();
             AZ_Assert(result == RHI::ResultCode::Success, "Image creation was unsuccessfull");
             
             result = CreateBuffer();

@@ -69,8 +69,6 @@ namespace AZStd
     class allocator
     {
     public:
-        AZ_TYPE_INFO(allocator, "{E9F5A3BE-2B3D-4C62-9E6B-4E00A13AB452}");
-
         using value_type = void;
         using pointer = void*;
         using size_type = AZStd::size_t;

@@ -40,6 +40,9 @@ namespace AzToolsFramework
             explicit AssetBrowserFilterModel(QObject* parent = nullptr);
             ~AssetBrowserFilterModel() override;
 
+            // QSortFilterProxyModel
+            QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+
             //asset type filtering
             void SetFilter(FilterConstType filter);
             void FilterUpdatedSlotImmediate();

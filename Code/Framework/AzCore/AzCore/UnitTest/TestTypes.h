@@ -166,37 +166,8 @@ namespace UnitTest
     class ScopedAllocatorBenchmarkEnvironment
         : public AZ::Test::BenchmarkEnvironmentBase
     {
-    public:
-        ScopedAllocatorBenchmarkEnvironment()
-        {
-            // Only create the allocator if it doesn't exist
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-                m_ownsAllocator = true;
-            }
-        }
-        ~ScopedAllocatorBenchmarkEnvironment() override
-        {
-            if (m_ownsAllocator)
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            }
-        }
-    private:
-        bool m_ownsAllocator{};
     };
 #endif
-
-    class DLLTestVirtualClass
-    {
-    public:
-        DLLTestVirtualClass()
-            : m_data(1) {}
-        virtual ~DLLTestVirtualClass() {}
-
-        int m_data;
-    };
 
     template <AZ::u32 size, AZ::u8 instance, size_t alignment = 16>
     struct CreationCounter

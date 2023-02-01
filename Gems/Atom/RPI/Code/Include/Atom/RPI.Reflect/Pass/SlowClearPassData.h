@@ -24,16 +24,7 @@ namespace AZ
             SlowClearPassData() = default;
             virtual ~SlowClearPassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<SlowClearPassData, RenderPassData>()
-                        ->Version(0)
-                        ->Field("ClearValue", &SlowClearPassData::m_clearValue)
-                        ;
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             RHI::ClearValue m_clearValue;
         };

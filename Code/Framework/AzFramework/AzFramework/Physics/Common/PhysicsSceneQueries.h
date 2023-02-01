@@ -71,12 +71,12 @@ namespace AzPhysics
             //! Performance hint flag for ShapeCasts when it is known upfront there's no initial overlap.
             //! NOTE: using this flag may cause undefined results if shapes are initially overlapping.
             AssumeNoInitialOverlap = (1 << 4),
-            MeshMultiple = (1 << 5), //!< Report all hits for meshes rather than just the first. Not applicable to ShapeCast queries.
+            AnyHit = (1 << 5), //!< Report any first hit. Used for geometries that contain more than one primitive. For meshes,
+                               //!< if neither MeshMultiple nor AnyHit is specified, a single closest hit will be reported.
+            MeshMultiple = (1 << 6), //!< Report all hits for meshes rather than just the first. Not applicable to ShapeCast queries.
             //! Report any first hit for meshes. If neither MeshMultiple nor MeshAny is specified,
             //! a single closest hit will be reported for meshes.
-            MeshAny = (1 << 6),
-            //! Report hits with back faces of mesh triangles. Also report hits for raycast
-            //! originating on mesh surface and facing away from the surface normal. Not applicable to ShapeCast queries.
+            MeshAny = AnyHit, //!< @deprecated Deprecated, please use AnyHit instead.
             MeshBothSides = (1 << 7),
             PreciseSweep = (1 << 8), //!< Use more accurate but slower narrow phase sweep tests.
             MTD = (1 << 9), //!< Report the minimum translation depth, normal and contact point.

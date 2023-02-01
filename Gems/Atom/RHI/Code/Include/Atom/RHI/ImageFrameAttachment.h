@@ -27,7 +27,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(ImageFrameAttachment, "{F620A6ED-C33A-4487-9BF7-12F652B8B1E3}", FrameAttachment);
-            AZ_CLASS_ALLOCATOR(ImageFrameAttachment, AZ::PoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageFrameAttachment, SystemAllocator, 0);
             virtual ~ImageFrameAttachment() override = default;
 
             /// Initialization for imported images.

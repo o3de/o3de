@@ -208,7 +208,7 @@ namespace EMotionFX
 
         // perform motion extraction on the input node
         AnimGraphNode* inputNode = GetInputNode(INPUTPORT_POSE);
-        inputNode->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        PostUpdateIncomingNode(animGraphInstance, inputNode, timePassedInSeconds);
 
         RequestRefDatas(animGraphInstance);
         AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);

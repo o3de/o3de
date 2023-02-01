@@ -9,6 +9,8 @@
 #include <CoreLights/ShadowmapPass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/View.h>
 
 namespace AZ
 {
@@ -124,6 +126,21 @@ namespace AZ
             m_clearEnabled = enabled;
         }
 
+        void ShadowmapPass::SetIsStatic(bool isStatic)
+        {
+            m_isStatic = isStatic;
+        }
+
+        void ShadowmapPass::SetCasterMovedBit(RHI::Handle<uint32_t> bit)
+        {
+            m_casterMovedBit = bit;
+        }
+
+        void ShadowmapPass::ForceRenderNextFrame()
+        {
+            m_forceRenderNextFrame = true;
+        }
+
         void ShadowmapPass::SetViewportScissorFromImageSize(const RHI::Size& imageSize)
         {
             const RHI::Viewport viewport(
@@ -140,9 +157,60 @@ namespace AZ
             m_scissorState = scissor;
         }
 
+        void ShadowmapPass::SetClearShadowDrawPacket(AZ::RHI::ConstPtr<RHI::DrawPacket> clearShadowDrawPacket)
+        {
+            m_clearShadowDrawPacket = clearShadowDrawPacket;
+            m_clearShadowDrawItemProperties = clearShadowDrawPacket->GetDrawItem(0);
+        }
+
         void ShadowmapPass::UpdatePipelineViewTag(const RPI::PipelineViewTag& viewTag)
         {
             SetPipelineViewTag(viewTag);
+        }
+        
+        void ShadowmapPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
+        {
+            Base::SetupFrameGraphDependencies(frameGraph);
+
+            // Override the estimated item count to be what the raster pass would report + 1.
+            frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_drawListView.size()) + 1);
+        }
+
+        void ShadowmapPass::SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t offset) const
+        {
+            if (m_isStatic && !m_forceRenderNextFrame)
+            {
+                const auto& views = m_pipeline->GetViews(GetPipelineViewTag());
+                if (!views.empty())
+                {
+                    const RPI::ViewPtr& view = views.front();
+                    if (view && (view->GetOrFlags() & m_casterMovedBit.GetIndex()) == 0)
+                    {
+                        // Shadow is static and no casters moved since last frame.
+                        return;
+                    }
+                }
+            }
+            m_forceRenderNextFrame = false;
+
+            if (m_clearShadowDrawPacket)
+            {
+                if (startIndex == 0)
+                {
+                    RHI::CommandList* commandList = context.GetCommandList();
+                    commandList->Submit(*m_clearShadowDrawPacket->GetDrawItem(0).m_item, 0);
+                }
+                else
+                {
+                    // Only decrement startIndex if startIndex is greater than 0. This means that RasterPass will submit one less
+                    // draw item for the first batch since the clear draw was submitted in this batch.
+                    --startIndex; 
+                }
+                // RasterPass's draw item indices need to be adjusted to make sure it stays inside its expected bounds.
+                --endIndex;
+                ++offset;
+            }
+            Base::SubmitDrawItems(context, startIndex, endIndex, offset);
         }
 
     } // namespace Render

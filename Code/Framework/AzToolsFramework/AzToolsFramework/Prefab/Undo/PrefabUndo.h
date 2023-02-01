@@ -30,12 +30,12 @@ namespace AzToolsFramework
                 TemplateId templateId);
         };
         
-        //! Undo class for handling deletion of entities to a prefab template.
-        class PrefabUndoRemoveEntities
+        //! Undo class for handling removal of entity DOMs to a prefab template.
+        class PrefabUndoRemoveEntityDoms
             : public PrefabUndoBase
         {
         public:
-            explicit PrefabUndoRemoveEntities(const AZStd::string& undoOperationName);
+            explicit PrefabUndoRemoveEntityDoms(const AZStd::string& undoOperationName);
 
             void Capture(const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
                 TemplateId templateId);
@@ -67,6 +67,7 @@ namespace AzToolsFramework
             : public PrefabUndoBase
         {
         public:
+            AZ_CLASS_ALLOCATOR(PrefabUndoInstanceLink, AZ::SystemAllocator)
             enum class LinkStatus
             {
                 ADD,

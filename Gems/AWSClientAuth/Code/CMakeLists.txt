@@ -98,6 +98,15 @@ ly_create_alias(
         Gem::HttpRequestor.Clients
 )
 
+ly_create_alias(
+    NAME AWSClientAuth.Unified
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSClientAuth
+        Gem::AWSCore.Unified
+        Gem::HttpRequestor.Unified
+)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(
         NAME AWSClientAuth.Tools

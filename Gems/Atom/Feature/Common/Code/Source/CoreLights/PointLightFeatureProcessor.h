@@ -26,6 +26,7 @@ namespace AZ
             : public PointLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(PointLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::PointLightFeatureProcessor, "{C16A39D6-0DDA-4511-9E35-42968702D3B4}", AZ::Render::PointLightFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -53,6 +54,7 @@ namespace AZ
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetEsmExponent(LightHandle handle, float esmExponent) override;
+            void SetUseCachedShadows(LightHandle handle, bool useCachedShadows) override;
             void SetNormalShadowBias(LightHandle handle, float bias) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;

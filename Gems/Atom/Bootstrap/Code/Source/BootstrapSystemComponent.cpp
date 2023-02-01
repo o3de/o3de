@@ -196,7 +196,6 @@ namespace AZ
 
                     m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, r_width, r_height));
                     AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
-                    m_nativeWindow->SetFullScreenState(r_fullscreen);
 
                     m_nativeWindow->Activate();
 
@@ -220,19 +219,17 @@ namespace AZ
                 Render::Bootstrap::DefaultWindowBus::Handler::BusConnect();
                 Render::Bootstrap::RequestBus::Handler::BusConnect();
 
-                // If the settings registry isn't available, something earlier in startup will report that failure.
-                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-                {
-                    // Automatically register the event if it's not registered, because
-                    // this system is initialized before the settings registry has loaded the event list.
-                    AZ::ComponentApplicationLifecycle::RegisterHandler(
-                        *settingsRegistry, m_componentApplicationLifecycleHandler,
-                        [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
+                // delay one frame for Initialize which asset system is ready by then
+                AZ::TickBus::QueueFunction(
+                    [this]()
+                    {
+                        Initialize();
+                        if (m_nativeWindow)
                         {
-                            Initialize();
-                        },
-                        "CriticalAssetsCompiled");
-                }
+                            // wait until swapchain has been created before setting fullscreen state
+                            m_nativeWindow->SetFullScreenState(r_fullscreen);
+                        }
+                    });
             }
 
             void BootstrapSystemComponent::Deactivate()
@@ -261,11 +258,6 @@ namespace AZ
                 }
 
                 m_isInitialized = true;
-
-                if (!RPI::RPISystemInterface::Get()->IsInitialized())
-                {
-                    RPI::RPISystemInterface::Get()->InitializeSystemAssets();
-                }
 
                 if (!RPI::RPISystemInterface::Get()->IsInitialized())
                 {

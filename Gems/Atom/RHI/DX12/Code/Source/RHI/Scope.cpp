@@ -42,6 +42,7 @@ namespace AZ
             m_resolveTransitionBarrierRequests.clear();
             m_aliasingBarriers.clear();
             m_depthStencilAttachment = nullptr;
+            m_shadingRateAttachment = nullptr;
             m_depthStencilAccess = RHI::ScopeAttachmentAccess::ReadWrite;
             m_colorAttachments.clear();
             m_clearRenderTargetRequests.clear();
@@ -253,6 +254,11 @@ namespace AZ
                         m_depthStencilAccess = usageAndAccess.m_access;
                         break;
 
+                    case RHI::ScopeAttachmentUsage::ShadingRate:
+                        {
+                            m_shadingRateAttachment = imageView;
+                        }
+                        break;
                     case RHI::ScopeAttachmentUsage::Uninitialized:
                         AZ_Assert(false, "ScopeAttachmentUsage is Uninitialized");
                         break;
@@ -370,13 +376,14 @@ namespace AZ
             }
 
             // Bind output merger attachments to *all* command lists in the batch.
-            if (m_colorAttachments.size() || m_depthStencilAttachment)
+            if (m_colorAttachments.size() || m_depthStencilAttachment || m_shadingRateAttachment)
             {
                 commandList.SetRenderTargets(
                     static_cast<uint32_t>(m_colorAttachments.size()),
                     m_colorAttachments.data(),
                     m_depthStencilAttachment,
-                    m_depthStencilAccess);
+                    m_depthStencilAccess,
+                    m_shadingRateAttachment);
             }
         }
 
