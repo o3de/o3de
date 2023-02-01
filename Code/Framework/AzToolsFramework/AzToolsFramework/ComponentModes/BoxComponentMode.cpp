@@ -58,7 +58,8 @@ namespace AzToolsFramework
         }
         else
         {
-            m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->Setup();
+            m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->Setup(
+                AzToolsFramework::g_mainManipulatorManagerId);
             m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->AddEntityComponentIdPair(
                 m_entityComponentIdPair);
         }
@@ -322,7 +323,7 @@ namespace AzToolsFramework
         const auto modeIndex = static_cast<AZ::u32>(mode);
         AZ_Assert(modeIndex < m_buttonIds.size(), "Invalid mode index %i.", modeIndex);
         m_subMode = mode;
-        m_subModes[modeIndex]->Setup();
+        m_subModes[modeIndex]->Setup(AzToolsFramework::g_mainManipulatorManagerId);
         m_subModes[modeIndex]->AddEntityComponentIdPair(m_entityComponentIdPair);
 
         ViewportUi::ViewportUiRequestBus::Event(

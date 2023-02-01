@@ -31,7 +31,7 @@ namespace AzToolsFramework
         void InstallSetCapsuleHeight(AZStd::function<void(float)> setCapsuleHeight);
 
         // BaseShapeViewportEdit overrides ...
-        void Setup(const ManipulatorManagerId manipulatorManagerId = g_mainManipulatorManagerId) override;
+        void Setup(const ManipulatorManagerId manipulatorManagerId) override;
         void Teardown() override;
         void UpdateManipulators() override;
         void ResetValues() override;

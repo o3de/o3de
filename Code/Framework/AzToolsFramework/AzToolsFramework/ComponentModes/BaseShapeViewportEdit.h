@@ -48,7 +48,7 @@ namespace AzToolsFramework
 
         //! Create manipulators for the shape properties to be edited.
         //! Make sure to install all the required functions before calling Setup.
-        virtual void Setup(const ManipulatorManagerId manipulatorManagerId = g_mainManipulatorManagerId) = 0;
+        virtual void Setup(const ManipulatorManagerId manipulatorManagerId) = 0;
         //! Destroy the manipulators for the shape properties being edited.
         virtual void Teardown() = 0;
         //! Call after modifying the shape to ensure that the space the manipulators operate in is updated, along with other properties.

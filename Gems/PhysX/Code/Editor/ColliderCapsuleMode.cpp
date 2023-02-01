@@ -84,7 +84,7 @@ namespace PhysX
                 PhysX::EditorColliderComponentRequestBus::Event(
                     m_entityComponentIdPair, &PhysX::EditorColliderComponentRequests::SetCapsuleHeight, height);
             });
-        m_capsuleViewportEdit->Setup();
+        m_capsuleViewportEdit->Setup(AzToolsFramework::g_mainManipulatorManagerId);
         m_capsuleViewportEdit->AddEntityComponentIdPair(idPair);
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(idPair.GetEntityId());
     }
