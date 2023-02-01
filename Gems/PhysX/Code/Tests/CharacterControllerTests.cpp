@@ -71,9 +71,6 @@ namespace PhysX
         }
     }
 
-    // transform for a floor centred at x = 0, y = 0, with top at level z = 0
-    static const AZ::Transform DefaultFloorTransform = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(-0.5f));
-
     class ControllerTestBasis
     {
     public:

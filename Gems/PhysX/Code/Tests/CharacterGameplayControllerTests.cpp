@@ -31,9 +31,6 @@
 
 namespace PhysX
 {
-    // transform for a floor centred at x = 0, y = 0, with top at level z = 0
-    static const AZ::Transform DefaultFloorTransform = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(-0.5f));
-
     // Default Values for the Gamplay Controller
     static const float DefaultGravityMultiplier = 1.0f;
     static const float DefaultGroundDetectionBoxHeight = 0.05f;
