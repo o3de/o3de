@@ -127,8 +127,8 @@ namespace AzToolsFramework
 
             UndoSystem::UndoStack* undoStack = nullptr;
             PreemptiveUndoCache* preemptiveUndoCache = nullptr;
-            EBUS_EVENT_RESULT(undoStack, ToolsApplicationRequests::Bus, GetUndoStack);
-            EBUS_EVENT_RESULT(preemptiveUndoCache, ToolsApplicationRequests::Bus, GetUndoCache);
+            ToolsApplicationRequests::Bus::BroadcastResult(undoStack, &ToolsApplicationRequests::Bus::Events::GetUndoStack);
+            ToolsApplicationRequests::Bus::BroadcastResult(preemptiveUndoCache, &ToolsApplicationRequests::Bus::Events::GetUndoCache);
             AZ_Assert(undoStack, "Failed to retrieve undo stack.");
             AZ_Assert(preemptiveUndoCache, "Failed to retrieve preemptive undo cache.");
             if (undoStack && preemptiveUndoCache)
@@ -138,7 +138,7 @@ namespace AzToolsFramework
                 // Commands always execute themselves first and then their children (when going forwards)
                 // and do the opposite when going backwards.
                 AzToolsFramework::EntityIdList selection;
-                EBUS_EVENT_RESULT(selection, ToolsApplicationRequests::Bus, GetSelectedEntities);
+                ToolsApplicationRequests::Bus::BroadcastResult(selection, &ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
                 AzToolsFramework::SelectionCommand* selCommand = aznew AzToolsFramework::SelectionCommand(selection, "Delete Entities");
 
                 // We insert a "deselect all" command before we delete the entities. This ensures the delete operations aren't changing
@@ -155,7 +155,7 @@ namespace AzToolsFramework
                     for (const auto& entityId : entityIds)
                     {
                         AZ::Entity* entity = nullptr;
-                        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+                        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
                         if (entity)
                         {
@@ -177,7 +177,7 @@ namespace AzToolsFramework
 
             if (createdUndo)
             {
-                EBUS_EVENT(ToolsApplicationRequests::Bus, EndUndoBatch);
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
             }
         }
 
@@ -488,7 +488,7 @@ namespace AzToolsFramework
 
         if (result)
         {
-            EBUS_EVENT(ToolsApplicationEvents::Bus, EntityRegistered, entity->GetId());
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::EntityRegistered, entity->GetId());
         }
 
         return result;
@@ -507,7 +507,7 @@ namespace AzToolsFramework
         MarkEntityDeselected(entity->GetId());
         SetEntityHighlighted(entity->GetId(), false);
 
-        EBUS_EVENT(ToolsApplicationEvents::Bus, EntityDeregistered, entity->GetId());
+        ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::EntityDeregistered, entity->GetId());
 
         {
             AZ_PROFILE_SCOPE(AzToolsFramework, "ToolsApplication::RemoveEntity:CallApplicationRemoveEntity");
@@ -523,7 +523,7 @@ namespace AzToolsFramework
     void ToolsApplication::PreExportEntity(AZ::Entity& source, AZ::Entity& target)
     {
         AZ::SerializeContext* serializeContext = nullptr;
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "No serialization context found");
 
         const AZ::Entity::ComponentArrayType& editorComponents = source.GetComponents();
@@ -810,7 +810,7 @@ namespace AzToolsFramework
             output.insert(id);
 
             tempList.clear();
-            EBUS_EVENT_ID_RESULT(tempList, id, AZ::TransformBus, GetAllDescendants);
+            AZ::TransformBus::EventResult(tempList, id, &AZ::TransformBus::Events::GetAllDescendants);
             output.insert(tempList.begin(), tempList.end());
         }
 
@@ -1451,9 +1451,9 @@ namespace AzToolsFramework
             if (m_undoStack->CanUndo())
             {
                 m_isDuringUndoRedo = true;
-                EBUS_EVENT(ToolsApplicationEvents::Bus, BeforeUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::BeforeUndoRedo);
                 m_undoStack->Undo();
-                EBUS_EVENT(ToolsApplicationEvents::Bus, AfterUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::AfterUndoRedo);
                 m_isDuringUndoRedo = false;
 
 #if defined(ENABLE_UNDOCACHE_CONSISTENCY_CHECKS)
@@ -1470,9 +1470,9 @@ namespace AzToolsFramework
             if (m_undoStack->CanRedo())
             {
                 m_isDuringUndoRedo = true;
-                EBUS_EVENT(ToolsApplicationEvents::Bus, BeforeUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::BeforeUndoRedo);
                 m_undoStack->Redo();
-                EBUS_EVENT(ToolsApplicationEvents::Bus, AfterUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::AfterUndoRedo);
                 m_isDuringUndoRedo = false;
 
 #if defined(ENABLE_UNDOCACHE_CONSISTENCY_CHECKS)
@@ -1518,7 +1518,7 @@ namespace AzToolsFramework
             // notify Cry undo has started (SandboxIntegrationManager)
             // Only do this at the root level. OnEndUndo will be called at the root
             // level when EndUndoBatch is called.
-            EBUS_EVENT(ToolsApplicationEvents::Bus, OnBeginUndo, label);
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::OnBeginUndo, label);
         }
         else
         {
@@ -1651,7 +1651,7 @@ namespace AzToolsFramework
             for (AZ::EntityId entityId : m_dirtyEntities)
             {
                 AZ::Entity* entity = nullptr;
-                EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
                 if (entity)
                 {

@@ -263,7 +263,7 @@ namespace AzToolsFramework
             {
                 // does a base class have a handler?
                 AZ::SerializeContext* sc = nullptr;
-                EBUS_EVENT_RESULT(sc, AZ::ComponentApplicationBus, GetSerializeContext);
+                AZ::ComponentApplicationBus::BroadcastResult(sc, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
                 AZStd::vector<const AZ::SerializeContext::ClassData*> classes;
 
                 sc->EnumerateBase(

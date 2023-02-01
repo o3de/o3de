@@ -81,6 +81,9 @@ namespace AtomToolsFramework
             DynamicNodeConfig config;
             if (config.Load(configPath))
             {
+                // Automatically fill missing display names and descriptions if they were not specified in the config file
+                config.AutoFillMissingData();
+
                 AZ_TracePrintf_IfTrue(
                     "DynamicNodeManager", IsNodeConfigLoggingEnabled(), "DynamicNodeConfig \"%s\" loaded.\n", configPath.c_str());
                 RegisterConfig(config);
@@ -189,6 +192,18 @@ namespace AtomToolsFramework
     void DynamicNodeManager::RegisterEditDataForSetting(const AZStd::string& settingName, const AZ::Edit::ElementData& editData)
     {
         m_editDataForSettingName[settingName] = editData;
+    }
+
+    AZStd::vector<AZStd::string> DynamicNodeManager::GetRegisteredEditDataSettingNames() const
+    {
+        AZStd::vector<AZStd::string> names;
+        names.reserve(m_editDataForSettingName.size());
+
+        for (const auto& editDataPair : m_editDataForSettingName)
+        {
+            names.push_back(editDataPair.first);
+        }
+        return names;
     }
 
     const AZ::Edit::ElementData* DynamicNodeManager::GetEditDataForSetting(const AZStd::string& settingName) const

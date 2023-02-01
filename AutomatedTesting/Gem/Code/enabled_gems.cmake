@@ -67,4 +67,5 @@ set(ENABLED_GEMS
     DiffuseProbeGrid
     PythonCoverage
     RemoteTools
+    Atom_TestData
 )

@@ -69,10 +69,28 @@ namespace AZ::Render
 
         m_shaderResourceGroup->SetConstant(m_constantDataIndex, cb);
 
-
         Base::CompileResources(context);
     }
-    
+
+    void TaaPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
+    {
+        Base::BuildCommandListInternal(context);
+        if (ShouldCopyHistoryBuffer)
+        {
+            context.GetCommandList()->Submit(m_copyItem);
+        }
+    }
+
+    void TaaPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
+    {
+        Base::SetupFrameGraphDependencies(frameGraph);
+        if (ShouldCopyHistoryBuffer)
+        {
+            // Override the estimated item count to include the copy item.
+            frameGraph.SetEstimatedItemCount(2);
+        }
+    }
+
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
     {
         RHI::Size inputSize = m_inputColorBinding->GetAttachment()->m_descriptor.m_image.m_size;
@@ -83,11 +101,13 @@ namespace AZ::Render
         Offset offset = m_subPixelOffsets.at(m_offsetIndex);
         view->SetClipSpaceOffset(offset.m_xOffset * rcpInputSize.GetX(), offset.m_yOffset * rcpInputSize.GetY());
 
-        m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
-        m_accumulationOuptutIndex ^= 1; // swap which attachment is the output and last frame
-
-        UpdateAttachmentImage(m_accumulationAttachments[m_accumulationOuptutIndex]);
-        m_outputColorBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
+        if (!ShouldCopyHistoryBuffer)
+        {
+            m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
+            m_accumulationOuptutIndex ^= 1; // swap which attachment is the output and last frame
+            UpdateAttachmentImage(m_accumulationOuptutIndex);
+            m_outputColorBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
+        }
         
         Base::FrameBeginInternal(params);
     }
@@ -119,7 +139,7 @@ namespace AZ::Render
             {
                 if (!m_accumulationAttachments[i]->m_importedResource)
                 {
-                    UpdateAttachmentImage(m_accumulationAttachments[i]);
+                    UpdateAttachmentImage(i);
                 }
             }
         }
@@ -130,6 +150,13 @@ namespace AZ::Render
         AZ_Error("TaaPass", m_lastFrameAccumulationBinding, "TaaPass requires a slot for LastFrameAccumulation.");
         m_outputColorBinding = FindAttachmentBinding(Name("OutputColor"));
         AZ_Error("TaaPass", m_outputColorBinding, "TaaPass requires a slot for OutputColor.");
+
+        RHI::CopyImageDescriptor desc;
+        desc.m_sourceImage = m_attachmentImages[1]->GetRHIImage();
+        desc.m_destinationImage = m_attachmentImages[0]->GetRHIImage();
+        desc.m_sourceSize = desc.m_sourceImage->GetDescriptor().m_size;
+
+        m_copyItem = RHI::CopyItem(desc);
 
         // Set up the attachment for last frame accumulation and output color if it's never been done to
         // ensure SRG indices are set up correctly by the pass system.
@@ -142,8 +169,9 @@ namespace AZ::Render
         Base::BuildInternal();
     }
 
-    void TaaPass::UpdateAttachmentImage(RPI::Ptr<RPI::PassAttachment>& attachment)
+    void TaaPass::UpdateAttachmentImage(uint32_t attachmentIndex)
     {
+        RPI::Ptr<RPI::PassAttachment>& attachment = m_accumulationAttachments[attachmentIndex];
         if (!attachment)
         {
             return;
@@ -177,6 +205,7 @@ namespace AZ::Render
         {
             attachment->m_path = attachmentImage->GetAttachmentId();
             attachment->m_importedResource = attachmentImage;
+            m_attachmentImages[attachmentIndex] = attachmentImage;
         }
         else
         {

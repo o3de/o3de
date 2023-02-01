@@ -62,6 +62,7 @@ set(FILES
     AzToolsFrameworkModule.cpp
     API/ToolsApplicationAPI.h
     API/EditorAssetSystemAPI.h
+    API/EditorAssetSystemAPI.cpp
     API/AssetDatabaseBus.h
     API/ComponentEntityObjectBus.h
     API/ComponentEntitySelectionBus.h
@@ -636,7 +637,8 @@ set(FILES
     ComponentMode/ComponentModeViewportUiRequestBus.h
     ComponentMode/EditorBaseComponentMode.h
     ComponentMode/EditorBaseComponentMode.cpp
-    ComponentModes/BaseViewportEdit.h
+    ComponentModes/BaseShapeViewportEdit.h
+    ComponentModes/BaseShapeViewportEdit.cpp
     ComponentModes/BoxComponentMode.h
     ComponentModes/BoxComponentMode.cpp
     ComponentModes/BoxViewportEdit.h

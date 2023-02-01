@@ -47,10 +47,8 @@ namespace EMotionFX
             if (serializeContext)
             {
                 serializeContext->Class<EditorActorComponent, AzToolsFramework::Components::EditorComponentBase>()
-                    ->Version(4)
+                    ->Version(5)
                     ->Field("ActorAsset", &EditorActorComponent::m_actorAsset)
-                    ->Field("MaterialPerLOD", &EditorActorComponent::m_materialPerLOD)
-                    ->Field("MaterialPerActor", &EditorActorComponent::m_materialPerActor)
                     ->Field("AttachmentType", &EditorActorComponent::m_attachmentType)
                     ->Field("AttachmentTarget", &EditorActorComponent::m_attachmentTarget)
                     ->Field("RenderSkeleton", &EditorActorComponent::m_renderSkeleton)
@@ -119,11 +117,6 @@ namespace EMotionFX
                         ->Attribute("EditButton", "")
                         ->Attribute("EditDescription", "Open in Animation Editor")
                         ->Attribute("EditCallback", &EditorActorComponent::LaunchAnimationEditor)
-                        ->DataElement(0, &EditorActorComponent::m_materialPerActor,
-                            "Material", "Material assignment for this actor")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorActorComponent::IsAtomDisabled)
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnMaterialPerActorChanged)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Render options")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(0, &EditorActorComponent::m_renderCharacter,
@@ -206,7 +199,7 @@ namespace EMotionFX
         {
             AzToolsFramework::Components::EditorComponentBase::Activate();
 
-            UpdateRenderFlags();
+            OnRenderFlagChanged();
             LoadActorAsset();
 
             const AZ::EntityId entityId = GetEntityId();
@@ -345,35 +338,11 @@ namespace EMotionFX
 
             if (!m_actorAsset.GetId().IsValid())
             {
-                m_materialPerLOD.clear();
-
                 // Only need to refresh the values here.
                 return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
             }
 
             return AZ::Edit::PropertyRefreshLevels::None;
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        void EditorActorComponent::OnMaterialChanged()
-        {
-            if (m_renderActorInstance)
-            {
-                m_renderActorInstance->SetMaterials(m_materialPerLOD);
-            }
-        }
-
-        void EditorActorComponent::OnMaterialPerActorChanged()
-        {
-            if (m_actorInstance)
-            {
-                m_materialPerLOD.resize(m_actorInstance->GetActor()->GetNumLODLevels());
-                for (auto& materialPath : m_materialPerLOD)
-                {
-                    materialPath.SetAssetPath(m_materialPerActor.GetAssetPath().c_str());
-                }
-            }
-            OnMaterialChanged();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -607,7 +576,6 @@ namespace EMotionFX
             m_actorAsset = actorAsset;
             CheckActorCreation();
         }
-
         void EditorActorComponent::EnableInstanceUpdate(bool enable)
         {
             if (m_actorInstance)
@@ -618,38 +586,6 @@ namespace EMotionFX
             {
                 AZ_ErrorOnce("EMotionFX", false, "Cannot enable the actor instance update because actor instance haven't been created.");
             }
-        }
-
-        void EditorActorComponent::InitializeMaterial(ActorAsset& actorAsset)
-        {
-            if (!m_materialPerLOD.empty())
-            {
-                // If the materialPerLOD exist, it means that we previously stored the path to the material. Use it.
-                m_materialPerActor.SetAssetPath(m_materialPerLOD[0].GetAssetPath().c_str());
-            }
-            else
-            {
-                // If a material exists next to the actor, pre - initialize LOD material slot with that material.
-                // This is merely an accelerator for the user, and is isolated to tools-only code (the editor actor component).
-                AZStd::string materialAssetPath;
-                EBUS_EVENT_RESULT(materialAssetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, actorAsset.GetId());
-                if (!materialAssetPath.empty())
-                {
-                    // Query the catalog for a material of the same name as the actor.
-                    AzFramework::StringFunc::Path::ReplaceExtension(materialAssetPath, "mtl");
-                    AZ::Data::AssetId materialAssetId;
-                    EBUS_EVENT_RESULT(materialAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, materialAssetPath.c_str(), AZ::Data::s_invalidAssetType, false);
-
-                    // If found, initialize all empty material slots with the material.
-                    if (materialAssetId.IsValid())
-                    {
-                        m_materialPerActor.SetAssetPath(materialAssetPath.c_str());
-                    }
-                }
-            }
-
-            using namespace AzToolsFramework;
-            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::InvalidatePropertyDisplay, Refresh_EntireTree);
         }
 
         void EditorActorComponent::UpdateRenderFlags()
@@ -737,7 +673,6 @@ namespace EMotionFX
             UpdateRenderFlags();
             ActorComponent::Configuration cfg;
             cfg.m_actorAsset = m_actorAsset;
-            cfg.m_materialPerLOD = m_materialPerLOD;
             cfg.m_attachmentType = m_attachmentType;
             cfg.m_attachmentTarget = m_attachmentTarget;
             cfg.m_attachmentJointIndex = m_attachmentJointIndex;
@@ -993,15 +928,6 @@ namespace EMotionFX
                 return;
             }
 
-            // If we are loading the actor for the first time, automatically add the material
-            // per lod information. If the amount of lods between different actors that are assigned
-            // to this component differ, then reinit the materials.
-            if (m_materialPerActor.GetAssetPath().empty())
-            {
-                InitializeMaterial(*actorAsset);
-            }
-            OnMaterialPerActorChanged();
-
             // Assign entity Id to user data field, so we can extract owning entity from an EMFX actor pointer.
             m_actorInstance->SetCustomData(reinterpret_cast<void*>(static_cast<AZ::u64>(GetEntityId())));
 
@@ -1033,34 +959,12 @@ namespace EMotionFX
                 m_renderActorInstance.reset(renderBackend->CreateActorInstance(GetEntityId(),
                     m_actorInstance,
                     m_actorAsset,
-                    m_materialPerLOD,
                     m_skinningMethod,
                     transform));
 
                 if (m_renderActorInstance)
                 {
                     m_renderActorInstance->SetIsVisible(m_entityVisible && m_renderCharacter);
-
-                    m_renderActorInstance->SetOnMaterialChangedCallback([this](const AZStd::string& materialName)
-                        {
-                            m_materialPerLOD.clear();
-
-                            if (!materialName.empty())
-                            {
-                                m_materialPerActor.SetAssetPath(materialName.c_str());
-                            }
-                            else
-                            {
-                                m_materialPerActor.SetAssetPath("");
-                                InitializeMaterial(*m_actorAsset.GetAs<ActorAsset>());
-                            }
-
-                            // Update the rendernode and the property grid
-                            OnMaterialPerActorChanged();
-                            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
-                                AzToolsFramework::Refresh_AttributesAndValues);
-                        });
                 }
             }
 

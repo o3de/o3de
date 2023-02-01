@@ -619,7 +619,8 @@ namespace AzToolsFramework
                 (void)knownType;
 
                 AZ::ComponentDescriptor* componentDescriptor = nullptr;
-                EBUS_EVENT_ID_RESULT(componentDescriptor, componentClass->m_typeId, AZ::ComponentDescriptorBus, GetDescriptor);
+                AZ::ComponentDescriptorBus::EventResult(
+                    componentDescriptor, componentClass->m_typeId, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
                 if (componentDescriptor)
                 {
                     AZ::ComponentDescriptor::DependencyArrayType providedServices;
