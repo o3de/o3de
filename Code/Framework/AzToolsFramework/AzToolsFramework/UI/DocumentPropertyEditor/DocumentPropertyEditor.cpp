@@ -803,28 +803,31 @@ namespace AzToolsFramework
                 auto dpe = GetDPE();
                 const auto childIterator = m_domOrderedChildren.begin() + childIndex;
                 auto childWidget = *childIterator;
-                DPERowWidget* rowToRemove = qobject_cast<DPERowWidget*>(childWidget);
-                if (rowToRemove)
+                if (childWidget)
                 {
-                    // we're removing a row, remove any associated saved expander state
-                    dpe->RemoveExpanderStateForRow(rowToRemove->GetPath());
-                    DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowToRemove);
-                }
-                else if (auto foundEntry = m_widgetToPropertyHandlerInfo.find(childWidget);
-                         foundEntry != m_widgetToPropertyHandlerInfo.end())
-                {
-                    ReleaseHandler(foundEntry->second);
-                    m_widgetToPropertyHandlerInfo.erase(foundEntry);
-                    RemoveAttributes(childIndex);
-                    DetachAndHide(childWidget);
-                }
-                else // not a row, not a PropertyHandler, must be a label
-                {
-                    auto label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
-                    AZ_Assert(label, "not a label, unknown widget discovered!");
-                    if (label)
+                    DPERowWidget* rowToRemove = qobject_cast<DPERowWidget*>(childWidget);
+                    if (rowToRemove)
                     {
-                        DocumentPropertyEditor::GetLabelPool()->RecycleInstance(label);
+                        // we're removing a row, remove any associated saved expander state
+                        dpe->RemoveExpanderStateForRow(rowToRemove->GetPath());
+                        DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowToRemove);
+                    }
+                    else if (auto foundEntry = m_widgetToPropertyHandlerInfo.find(childWidget);
+                             foundEntry != m_widgetToPropertyHandlerInfo.end())
+                    {
+                        ReleaseHandler(foundEntry->second);
+                        m_widgetToPropertyHandlerInfo.erase(foundEntry);
+                        RemoveAttributes(childIndex);
+                        DetachAndHide(childWidget);
+                    }
+                    else // not a row, not a PropertyHandler, must be a label
+                    {
+                        auto label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
+                        AZ_Assert(label, "not a label, unknown widget discovered!");
+                        if (label)
+                        {
+                            DocumentPropertyEditor::GetLabelPool()->RecycleInstance(label);
+                        }
                     }
                 }
                 m_domOrderedChildren.erase(childIterator);

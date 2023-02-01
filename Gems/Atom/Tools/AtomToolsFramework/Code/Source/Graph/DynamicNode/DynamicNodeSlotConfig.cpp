@@ -45,6 +45,9 @@ namespace AtomToolsFramework
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &DynamicNodeSlotConfig::GetDisplayNameForEditor)
                     ->SetDynamicEditDataProvider(&DynamicNodeSlotConfig::GetDynamicEditData)
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Add new settings groups from settings registered with this tool.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeSlotConfig::AddRegisteredSettingGroups)
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Setting Groups")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_name, "Name", "Unique name used to identify individual slots on a node.")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_displayName, "Display Name", "User friendly title of the slot that will appear on the node UI.")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_description, "Description", "Detailed description of the node, its purpose, and behavior that will appear in tooltips and other UI.")
@@ -216,6 +219,29 @@ namespace AtomToolsFramework
     AZStd::string DynamicNodeSlotConfig::GetDisplayNameForEditor() const
     {
         return AZStd::string::format("Slot (%s)", !m_name.empty() ? m_name.c_str() : "unnamed");
+    }
+
+    void DynamicNodeSlotConfig::AutoFillMissingData()
+    {
+        if (m_displayName.empty())
+        {
+            m_displayName = GetDisplayNameFromText(m_name);
+        }
+
+        if (m_description.empty())
+        {
+            m_description = m_displayName;
+        }
+    }
+
+    AZ::Crc32 DynamicNodeSlotConfig::AddRegisteredSettingGroups()
+    {
+        if (AddRegisteredSettingGroupsToMap(m_settings))
+        {
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+
+        return AZ::Edit::PropertyRefreshLevels::None;
     }
 
     const AZ::Edit::ElementData* DynamicNodeSlotConfig::GetDynamicEditData(

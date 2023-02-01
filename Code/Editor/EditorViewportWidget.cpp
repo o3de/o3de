@@ -42,6 +42,7 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
@@ -83,9 +84,6 @@
 
 // ComponentEntityEditorPlugin
 #include <Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h>
-
-// LmbrCentral
-#include <LmbrCentral/Rendering/EditorCameraCorrectionBus.h>
 
 // Atom
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -1212,11 +1210,14 @@ void EditorViewportWidget::focusOutEvent([[maybe_unused]] QFocusEvent* event)
 
 void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
 {
-    // Special case Escape key and bubble way up to the top level parent so that it can cancel us out of any active tool
-    // or clear the current selection
-    if (event->key() == Qt::Key_Escape)
+    if (!AzToolsFramework::IsNewActionManagerEnabled())
     {
-        QCoreApplication::sendEvent(GetIEditor()->GetEditorMainWindow(), event);
+        // Special case Escape key and bubble way up to the top level parent so that it can cancel us out of any active tool
+        // or clear the current selection
+        if (event->key() == Qt::Key_Escape)
+        {
+            QCoreApplication::sendEvent(GetIEditor()->GetEditorMainWindow(), event);
+        }
     }
 
     // NOTE: we keep track of key presses and releases explicitly because the OS/Qt will insert a slight delay between sending
@@ -1303,13 +1304,6 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
 
     if (shouldUpdateObject == ShouldUpdateObject::Yes)
     {
-        AZ::Matrix3x3 lookThroughEntityCorrection = AZ::Matrix3x3::CreateIdentity();
-        if (m_viewEntityId.IsValid())
-        {
-            LmbrCentral::EditorCameraCorrectionRequestBus::EventResult(
-                lookThroughEntityCorrection, m_viewEntityId, &LmbrCentral::EditorCameraCorrectionRequests::GetInverseTransformCorrection);
-        }
-
         int flags = 0;
         {
             // It isn't clear what this logic is supposed to do (it's legacy code)...
@@ -1332,7 +1326,7 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
             }
             else
             {
-                cameraObject->SetWorldTM(camMatrix * AZMatrix3x3ToLYMatrix3x3(lookThroughEntityCorrection), flags);
+                cameraObject->SetWorldTM(camMatrix, flags);
             }
         }
     }

@@ -65,6 +65,9 @@ namespace AtomToolsFramework
         //! particular settings group.
         virtual void RegisterEditDataForSetting(const AZStd::string& settingName, const AZ::Edit::ElementData& editData) = 0;
 
+        //! Returns a container of names for all settings with registered edit data overrides. 
+        virtual AZStd::vector<AZStd::string> GetRegisteredEditDataSettingNames() const = 0;
+
         //! Get the pointer value of the dynamic edit data registered for a dynamic node configuration setting. Edit data pointer must
         //! remain valid for as long as configurations can be edited.
         virtual const AZ::Edit::ElementData* GetEditDataForSetting(const AZStd::string& settingName) const = 0;

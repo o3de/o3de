@@ -17,6 +17,11 @@ namespace AzToolsFramework
 {
     class LinearManipulator;
 
+    void InstallBaseShapeViewportEditFunctions(
+        BaseShapeViewportEdit* baseShapeViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
+
+    void InstallBoxViewportEditFunctions(BoxViewportEdit* boxViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
+
     //! The specific ComponentMode responsible for handling box editing.
     class BoxComponentMode
         : public ComponentModeFramework::EditorBaseComponentMode
@@ -60,7 +65,7 @@ namespace AzToolsFramework
 
         ViewportUi::ClusterId m_clusterId; //! Id for viewport cluster used to switch between modes.
         AZStd::array<ViewportUi::ButtonId, 2> m_buttonIds;
-        AZStd::array<AZStd::unique_ptr<BaseViewportEdit>, 2> m_subModes;
+        AZStd::array<AZStd::unique_ptr<BaseShapeViewportEdit>, 2> m_subModes;
         ShapeComponentModeRequests::SubMode m_subMode = ShapeComponentModeRequests::SubMode::Dimensions;
         bool m_allowAsymmetricalEditing = false;
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_modeSelectionHandler;

@@ -646,7 +646,8 @@ namespace AzToolsFramework
         GetHeader()->SetTitle(ComponentEditorConstants::kUnknownComponentTitle);
 
         AZStd::string iconPath;
-        EBUS_EVENT_RESULT(iconPath, AzToolsFramework::EditorRequests::Bus, GetDefaultComponentEditorIcon);
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(
+            iconPath, &AzToolsFramework::EditorRequests::Bus::Events::GetDefaultComponentEditorIcon);
         GetHeader()->SetIcon(QIcon(iconPath.c_str()));
     }
 
@@ -669,7 +670,8 @@ namespace AzToolsFramework
         }
 
         AZ::ComponentDescriptor* componentDescriptor = nullptr;
-        EBUS_EVENT_ID_RESULT(componentDescriptor, thisComponent->RTTI_GetType(), AZ::ComponentDescriptorBus, GetDescriptor);
+        AZ::ComponentDescriptorBus::EventResult(
+            componentDescriptor, thisComponent->RTTI_GetType(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
 
         if (!componentDescriptor)
         {
@@ -704,7 +706,8 @@ namespace AzToolsFramework
                 }
 
                 AZ::ComponentDescriptor* otherDescriptor = nullptr;
-                EBUS_EVENT_ID_RESULT(otherDescriptor, otherComponent->RTTI_GetType(), AZ::ComponentDescriptorBus, GetDescriptor);
+                AZ::ComponentDescriptorBus::EventResult(
+                    otherDescriptor, otherComponent->RTTI_GetType(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
 
                 if (otherDescriptor)
                 {
