@@ -46,7 +46,6 @@ class CEAXPresetManager;
 class CErrorReport;
 class ICommandManager;
 class CEditorCommandManager;
-class CHyperGraphManager;
 class CConsoleSynchronization;
 struct ISourceControl;
 struct IEditorClassFactory;

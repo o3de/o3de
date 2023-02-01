@@ -149,11 +149,6 @@ namespace AZ
 
         // Scope producer functions
 
-        void ComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
-        {
-            RenderPass::SetupFrameGraphDependencies(frameGraph);
-        }
-
         void ComputePass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             if (m_shaderResourceGroup != nullptr)
