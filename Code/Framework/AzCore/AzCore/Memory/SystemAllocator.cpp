@@ -29,9 +29,6 @@ namespace AZ
     SystemAllocator::SystemAllocator()
     {
         AllocatorInstance<OSAllocator>::Get();
-#if defined(AZ_ENABLE_TRACING)
-        SetProfilingActive(true);
-#endif
         Create();
         PostCreate();
     }
