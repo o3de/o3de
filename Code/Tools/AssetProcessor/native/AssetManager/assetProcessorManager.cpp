@@ -837,7 +837,7 @@ namespace AssetProcessor
             // send a network message when not in batch mode.
             const ScanFolderInfo* scanFolder = m_platformConfig->GetScanFolderByPath(jobEntry.m_sourceAssetReference.ScanFolderPath().c_str());
             AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(AZ::OSString(source.m_sourceName.c_str()), AZ::OSString(scanFolder->ScanPath().toUtf8().constData()), AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileFailed, source.m_sourceGuid);
-            EBUS_EVENT(AssetProcessor::ConnectionBus, Send, 0, message);
+            AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::Send, 0, message);
             MessageInfoBus::Broadcast(&MessageInfoBusTraits::OnAssetFailed, source.m_sourceName);
         }
 
@@ -2281,7 +2281,8 @@ namespace AssetProcessor
         ++m_numTotalSourcesFound;
 
         AssetProcessor::BuilderInfoList builderInfoList;
-        EBUS_EVENT(AssetProcessor::AssetBuilderInfoBus, GetMatchingBuildersInfo, sourceAsset.AbsolutePath().c_str(), builderInfoList);
+        AssetProcessor::AssetBuilderInfoBus::Broadcast(
+            &AssetProcessor::AssetBuilderInfoBus::Events::GetMatchingBuildersInfo, sourceAsset.AbsolutePath().c_str(), builderInfoList);
 
         if (builderInfoList.size())
         {

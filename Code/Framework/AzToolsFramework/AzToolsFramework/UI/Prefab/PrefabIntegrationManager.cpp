@@ -18,6 +18,7 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
@@ -269,10 +270,12 @@ namespace AzToolsFramework
                     "o3de.action.prefabs.upOneLevel",
                     [prefabFocusPublicInterface = s_prefabFocusPublicInterface, editorEntityContextId = s_editorEntityContextId]() -> bool
                     {
-                        return prefabFocusPublicInterface->GetPrefabFocusPathLength(editorEntityContextId) > 1;
+                        return !ComponentModeFramework::InComponentMode() &&
+                            prefabFocusPublicInterface->GetPrefabFocusPathLength(editorEntityContextId) > 1;
                     }
                 );
 
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::ComponentModeChangedUpdaterIdentifier, "o3de.action.prefabs.upOneLevel");
                 m_actionManagerInterface->AddActionToUpdater(PrefabFocusChangedUpdaterIdentifier, "o3de.action.prefabs.upOneLevel");
             }
         }

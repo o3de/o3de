@@ -233,7 +233,7 @@ namespace AzToolsFramework
 
                     // Create an EntityId instance
                     const AZ::SerializeContext* context = nullptr;
-                    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+                    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
                     const AZ::SerializeContext::ClassData* entityIdClassData = context->FindClassData(azrtti_typeid<AZ::EntityId>());
                     AZ_Assert(entityIdClassData && entityIdClassData->m_factory, "AZ::EntityId is missing ClassData or factory in the SerializeContext");
                     AZ::EntityId* entityId = static_cast<AZ::EntityId*>(entityIdClassData->m_factory->Create(name));
@@ -782,7 +782,7 @@ namespace AzToolsFramework
                 m_scriptComponent.m_context->GetDebugContext()->ConnectHook();
             }
 
-            EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_EntireTree);
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_EntireTree);
             ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
         }
 
@@ -842,7 +842,7 @@ namespace AzToolsFramework
 
             SortProperties(m_scriptComponent.m_properties);
 
-            EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_EntireTree);
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_EntireTree);
         }
 
         void ScriptEditorComponent::ClearDataElements()
@@ -904,7 +904,8 @@ namespace AzToolsFramework
             {
                 SetScript(asset);
                 ScriptHasChanged();
-                EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, AddDirtyEntity, GetEntityId());
+                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
             }
         }
 
@@ -940,9 +941,11 @@ namespace AzToolsFramework
             AZStd::string scriptFilename;
             if (assetId.IsValid())
             {
-                EBUS_EVENT_RESULT(scriptFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(scriptFilename,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
             }
-            EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, LaunchLuaEditor, scriptFilename.c_str());
+            AzToolsFramework::EditorRequests::Bus::Broadcast(
+                &AzToolsFramework::EditorRequests::Bus::Events::LaunchLuaEditor, scriptFilename.c_str());
         }
 
         void ScriptEditorComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)

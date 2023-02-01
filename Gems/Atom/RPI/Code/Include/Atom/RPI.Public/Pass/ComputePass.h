@@ -53,7 +53,6 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // Scope producer functions...
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
