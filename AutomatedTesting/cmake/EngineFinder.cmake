@@ -12,7 +12,11 @@
 
 include_guard()
 
-# Read the engine name from the project_json file
+include(cmake/VersionUtils.cmake)
+
+set(ENGINE_FINDER_VERBOSE FALSE CACHE BOOL "Increase EngineFinder.cmake verbosity.  Useful for debugging engine selection based on compatibility.")
+
+# Read the engine name from the shared or user project.json
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/project.json project_json)
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/project.json)
 
@@ -20,16 +24,27 @@ string(JSON LY_ENGINE_NAME_TO_USE ERROR_VARIABLE json_error GET ${project_json} 
 if(json_error)
     message(FATAL_ERROR "Unable to read key 'engine' from 'project.json'\nError: ${json_error}")
 endif()
+ 
+# Let the user override the engine to use
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/user/project.json)
+    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/user/project.json user_project_json)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/user/project.json)
+    string(JSON user_project_engine_name ERROR_VARIABLE json_error GET ${user_project_json} engine)
+    if(NOT json_error)
+        set(LY_ENGINE_NAME_TO_USE ${user_project_engine_name})
+    endif()
+    string(JSON user_engine_path ERROR_VARIABLE json_error GET ${user_project_json} "engine_path")
+endif()
+
+# Extract any version specifiers from the engine_name
+o3de_get_version_specifier_parts("${LY_ENGINE_NAME_TO_USE}" LY_ENGINE_NAME_TO_USE project_version_comparitor project_version_specifier)
 
 if(CMAKE_MODULE_PATH)
     foreach(module_path ${CMAKE_MODULE_PATH})
         if(EXISTS ${module_path}/Findo3de.cmake)
-            file(READ ${module_path}/../engine.json engine_json)
-            string(JSON engine_name ERROR_VARIABLE json_error GET ${engine_json} engine_name)
-            if(json_error)
-                message(FATAL_ERROR "Unable to read key 'engine_name' from 'engine.json'\nError: ${json_error}")
-            endif()
-            if(LY_ENGINE_NAME_TO_USE STREQUAL engine_name)
+            set(engine_path ${module_path}/../)
+            o3de_engine_compatible(${engine_path} ${LY_ENGINE_NAME_TO_USE} ${project_version_comparitor} ${project_version_specifier} is_compatible engine_version ${ENGINE_FINDER_VERBOSE})
+            if(is_compatible)
                 return() # Engine being forced through CMAKE_MODULE_PATH
             endif()
         endif()
@@ -37,26 +52,20 @@ if(CMAKE_MODULE_PATH)
 endif()
 
 # Read the user/project_settings.json file and look for the engine_path
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/user/project_settings.json)
-    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/user/project_settings.json project_settings_json)
-    string(JSON engine_path ERROR_VARIABLE json_error GET ${project_settings_json} "engine_path")
-    if(json_error)
-        string(CONCAT project_registration_error "Unable to read key 'engine_path' from "
-            "'${CMAKE_CURRENT_SOURCE_DIR}/user/project_settings.json'\n"
-            "Error: ${json_error}\n"
-            "Project registration is required before configuring. "
-            "Register this project by adding it to an engine in Project Manager or run "
-            "the following command from the engine root:\n"
-            "scripts/o3de register --pp \"${CMAKE_CURRENT_SOURCE_DIR}\"\n")
-        message(FATAL_ERROR "${project_registration_error}")
-    elseif(EXISTS ${engine_path}/cmake)
-        message(INFO " Using engine from user/project_settings.json ${engine_path}")
-        list(APPEND CMAKE_MODULE_PATH "${engine_path}/cmake")
-        return()
+if(user_engine_path)
+    if(EXISTS ${user_engine_path}/cmake)
+        o3de_engine_compatible(${user_engine_path} ${LY_ENGINE_NAME_TO_USE} ${project_version_comparitor} ${project_version_specifier} is_compatible engine_version TRUE)
+        if(is_compatible)
+            if(ENGINE_FINDER_VERBOSE)
+                message("-- Selecting engine from user/project_settings.json at ${user_engine_path}")
+            endif()
+            list(APPEND CMAKE_MODULE_PATH "${user_engine_path}/cmake")
+            return()
+        endif()
     else()
         string(CONCAT engine_path_info "Unable to use the engine_path from "
             "'${CMAKE_CURRENT_SOURCE_DIR}/user/project_settings.json' because "
-            "'${engine_path}/cmake' does not exist.\n"
+            "'${user_engine_path}/cmake' does not exist.\n"
             "Falling back to look for an engine named '${LY_ENGINE_NAME_TO_USE}' in o3de_manifest.json")
         message(INFO " ${engine_path_info}")
     endif()
@@ -74,7 +83,7 @@ Run 'scripts/o3de register --this-engine' from the engine root.
 ]=])
 
 # Read the ~/.o3de/o3de_manifest.json file and look through the 'engines' array.
-# Search all known engines for one with the matching name.
+# Search all known engines for one with the matching name and compatible version
 if(EXISTS ${manifest_path})
     file(READ ${manifest_path} manifest_json)
     set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${manifest_path})
@@ -90,6 +99,10 @@ if(EXISTS ${manifest_path})
     endif()
 
     math(EXPR engines_count "${engines_count}-1")
+
+    set(most_compatible_engine_path "")
+    set(most_compatible_engine_version "")
+
     foreach(array_index RANGE ${engines_count})
         string(JSON engine_path ERROR_VARIABLE json_error GET ${manifest_json} engines "${array_index}")
         if(json_error)
@@ -97,27 +110,37 @@ if(EXISTS ${manifest_path})
         endif()
 
         if(EXISTS ${engine_path}/engine.json)
-            file(READ ${engine_path}/engine.json engine_json)
-            string(JSON engine_name ERROR_VARIABLE json_error GET ${engine_json} engine_name)
-            if(json_error)
-                message(WARNING "Unable to read key 'engine_name' from '${engine_path}/engine.json'\nError: ${json_error}")
-            elseif(LY_ENGINE_NAME_TO_USE STREQUAL engine_name)
-                list(APPEND CMAKE_MODULE_PATH "${engine_path}/cmake")
-
-                message(INFO " Found an engine named ${LY_ENGINE_NAME_TO_USE} at ${engine_path}")
-                # save this location in user/project_settings.json for faster retrieval
-                file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/user/project_settings.json "{
-    \"engine_path\":\"${engine_path}\"
-}")
-                return()
+            o3de_engine_compatible(${engine_path} ${LY_ENGINE_NAME_TO_USE} ${project_version_comparitor} ${project_version_specifier} is_compatible engine_version FALSE)
+            if(is_compatible)
+                if(NOT most_compatible_engine_path)
+                    set(most_compatible_engine_path ${engine_path})
+                    set(most_compatible_engine_version ${engine_version})
+                elseif(${engine_version} VERSION_GREATER ${most_compatible_engine_version})
+                    if(ENGINE_FINDER_VERBOSE)
+                        message(INFO " Selecting engine '${LY_ENGINE_NAME_TO_USE}' with version '${engine_version}' from '${engine_path}' because it has a greater version number.\n")
+                    endif()
+                    set(most_compatible_engine_path ${engine_path})
+                    set(most_compatible_engine_version ${engine_version})
+                elseif(ENGINE_FINDER_VERBOSE)
+                    message(INFO " Not using engine '${LY_ENGINE_NAME_TO_USE}' with version '${engine_version}' from '${engine_path}' because it does not have a greater version number than the engine at '${most_compatible_engine_path}' (${most_compatible_engine_version})\n")
+                endif()
             endif()
         else()
             message(WARNING "${engine_path}/engine.json not found")
         endif()
     endforeach()
 
+    if(most_compatible_engine_path)
+        message("-- Selecting most compatible engine '${LY_ENGINE_NAME_TO_USE}' with version '${most_compatible_engine_version}' found at '${most_compatible_engine_path}'")
+        list(APPEND CMAKE_MODULE_PATH "${most_compatible_engine_path}/cmake")
+        return()
+    endif()
 
-    message(FATAL_ERROR "The project.json uses engine name '${LY_ENGINE_NAME_TO_USE}' but no engine with that name has been registered.\n${registration_error}")
+    if(project_version_comparitor AND project_version_specifier)
+        message(FATAL_ERROR "The project.json uses engine '${LY_ENGINE_NAME_TO_USE}${project_version_comparitor}${project_version_specifier}' but no engine with that name and compatible version has been registered.\n${registration_error}")
+    else()
+        message(FATAL_ERROR "The project.json uses engine name '${LY_ENGINE_NAME_TO_USE}' but no engine with that name has been registered.\n${registration_error}")
+    endif()
 else()
     # If the user is passing CMAKE_MODULE_PATH we assume thats where we will find the engine
     if(NOT CMAKE_MODULE_PATH)
