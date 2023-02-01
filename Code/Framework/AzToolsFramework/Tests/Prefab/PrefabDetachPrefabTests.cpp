@@ -13,8 +13,12 @@ namespace UnitTest
 {
     using PrefabDetachPrefabTests = PrefabTestFixture;
 
-    TEST_F(PrefabDetachPrefabTests, DetachPrefabWithEntitySucceeds)
+    TEST_F(PrefabDetachPrefabTests, DetachPrefabUnderLevelSucceeds)
     {
+        // Level
+        // | Car       (prefab)  <-- detach prefab
+        //   | Tire
+
         const AZStd::string carPrefabName = "CarPrefab";
         const AZStd::string tireEntityName = "Tire";
 
@@ -42,17 +46,87 @@ namespace UnitTest
         // Validate there are two entities in the level prefab instance.
         EXPECT_EQ(levelInstance->get().GetEntityAliasCount(), 2);
 
-        // Validate the hierarchy is unchanged after detaching.
+        // Validate that the car's parent entity is the level container entity.
         AZStd::string carEntityAliasAfterDetach = FindEntityAliasInInstance(GetRootContainerEntityId(), carPrefabName);
         AZ::EntityId carEntityIdAfterDetach = levelInstance->get().GetEntityId(carEntityAliasAfterDetach);
+        EXPECT_TRUE(carEntityIdAfterDetach.IsValid());
+
+        AZ::EntityId parentEntityIdForCar;
+        AZ::TransformBus::EventResult(parentEntityIdForCar, carEntityIdAfterDetach, &AZ::TransformInterface::GetParentId);
+        EXPECT_EQ(levelInstance->get().GetContainerEntityId(), parentEntityIdForCar);
+
+        // Validate that the tire's parent entity is the car.
         AZStd::string tireEntityAliasAfterDetach = FindEntityAliasInInstance(GetRootContainerEntityId(), tireEntityName);
         AZ::EntityId tireEntityIdAfterDetach = levelInstance->get().GetEntityId(tireEntityAliasAfterDetach);
-        EXPECT_TRUE(carEntityIdAfterDetach.IsValid());
         EXPECT_TRUE(tireEntityIdAfterDetach.IsValid());
 
-        AZ::EntityId parentEntityIdToCheck;
-        AZ::TransformBus::EventResult(parentEntityIdToCheck, tireEntityIdAfterDetach, &AZ::TransformInterface::GetParentId);
-        EXPECT_EQ(carEntityIdAfterDetach, parentEntityIdToCheck);
+        AZ::EntityId parentEntityIdForTire;
+        AZ::TransformBus::EventResult(parentEntityIdForTire, tireEntityIdAfterDetach, &AZ::TransformInterface::GetParentId);
+        EXPECT_EQ(carEntityIdAfterDetach, parentEntityIdForTire);
+    }
+
+    TEST_F(PrefabDetachPrefabTests, DetachPrefabUnderParentSucceeds)
+    {
+        // Level
+        // | Garage
+        //   | Car       (prefab)  <-- detach prefab
+        //     | Tire
+
+        const AZStd::string carPrefabName = "CarPrefab";
+        const AZStd::string garageEntityName = "Garage";
+        const AZStd::string tireEntityName = "Tire";
+
+        AZ::IO::Path engineRootPath;
+        m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        AZ::IO::Path carPrefabFilepath = engineRootPath / carPrefabName;
+
+        AZ::EntityId garageEntityId = CreateEditorEntityUnderRoot(garageEntityName);
+        AZ::EntityId tireEntityId = CreateEditorEntity(tireEntityName, garageEntityId);
+        AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { tireEntityId });
+
+        InstanceAlias carInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), carPrefabName);
+
+        // Detach the car prefab.
+        PrefabOperationResult result = m_prefabPublicInterface->DetachPrefab(carContainerId);
+        ASSERT_TRUE(result.IsSuccess());
+
+        PropagateAllTemplateChanges();
+
+        // Validate there is no nested instance in the level prefab instance.
+        ValidateNestedInstanceNotUnderInstance(GetRootContainerEntityId(), carInstanceAlias);
+
+        InstanceOptionalReference levelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
+        EXPECT_TRUE(levelInstance.has_value());
+
+        // Validate there are three entities in the level prefab instance.
+        EXPECT_EQ(levelInstance->get().GetEntityAliasCount(), 3);        
+
+        // Validate that the garage's parent entity is the level container entity.
+        AZStd::string garageEntityAliasAfterDetach = FindEntityAliasInInstance(GetRootContainerEntityId(), garageEntityName);
+        AZ::EntityId garageEntityIdAfterDetach = levelInstance->get().GetEntityId(garageEntityAliasAfterDetach);
+        EXPECT_TRUE(garageEntityIdAfterDetach.IsValid());
+
+        AZ::EntityId parentEntityIdForGarage;
+        AZ::TransformBus::EventResult(parentEntityIdForGarage, garageEntityIdAfterDetach, &AZ::TransformInterface::GetParentId);
+        EXPECT_EQ(levelInstance->get().GetContainerEntityId(), parentEntityIdForGarage);
+
+        // Validate that the car's parent entity is the garage.
+        AZStd::string carEntityAliasAfterDetach = FindEntityAliasInInstance(GetRootContainerEntityId(), carPrefabName);
+        AZ::EntityId carEntityIdAfterDetach = levelInstance->get().GetEntityId(carEntityAliasAfterDetach);
+        EXPECT_TRUE(carEntityIdAfterDetach.IsValid());
+
+        AZ::EntityId parentEntityIdForCar;
+        AZ::TransformBus::EventResult(parentEntityIdForCar, carEntityIdAfterDetach, &AZ::TransformInterface::GetParentId);
+        EXPECT_EQ(garageEntityIdAfterDetach, parentEntityIdForCar);
+
+        // Validate that the tire's parent entity is the car.
+        AZStd::string tireEntityAliasAfterDetach = FindEntityAliasInInstance(GetRootContainerEntityId(), tireEntityName);
+        AZ::EntityId tireEntityIdAfterDetach = levelInstance->get().GetEntityId(tireEntityAliasAfterDetach);
+        EXPECT_TRUE(tireEntityIdAfterDetach.IsValid());
+
+        AZ::EntityId parentEntityIdForTire;
+        AZ::TransformBus::EventResult(parentEntityIdForTire, tireEntityIdAfterDetach, &AZ::TransformInterface::GetParentId);
+        EXPECT_EQ(carEntityIdAfterDetach, parentEntityIdForTire);
     }
 
     TEST_F(PrefabDetachPrefabTests, DetachPrefabWithNestedPrefabSucceeds)
@@ -93,11 +167,6 @@ namespace UnitTest
 
         InstanceOptionalReference levelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
         EXPECT_TRUE(levelInstance.has_value());
-
-        // Validate the hierarchy is unchanged after detaching.
-        AZStd::string carEntityAliasAfterDetach = FindEntityAliasInInstance(GetRootContainerEntityId(), carPrefabName);
-        AZ::EntityId carEntityIdAfterDetach = levelInstance->get().GetEntityId(carEntityAliasAfterDetach);
-        EXPECT_TRUE(carEntityIdAfterDetach.IsValid());
         
         AZStd::vector<InstanceOptionalReference> nestedInstances;
         levelInstance->get().GetNestedInstances(
@@ -105,15 +174,34 @@ namespace UnitTest
             {
                 nestedInstances.push_back(*(nestedInstance.get()));
             });
+
         EXPECT_EQ(nestedInstances.size(), 1) << "There should be only one nested instance in level after detaching.";
         EXPECT_TRUE(nestedInstances[0].has_value());
 
-        AZ::EntityId wheelContainerIdAfterDetach = nestedInstances[0]->get().GetContainerEntityId();
+        // Validate that the car's parent entity is the level container entity.
+        AZStd::string carEntityAliasAfterDetach = FindEntityAliasInInstance(GetRootContainerEntityId(), carPrefabName);
+        AZ::EntityId carEntityIdAfterDetach = levelInstance->get().GetEntityId(carEntityAliasAfterDetach);
+        EXPECT_TRUE(carEntityIdAfterDetach.IsValid());
+
+        AZ::EntityId parentEntityIdForCar;
+        AZ::TransformBus::EventResult(parentEntityIdForCar, carEntityIdAfterDetach, &AZ::TransformInterface::GetParentId);
+        EXPECT_EQ(levelInstance->get().GetContainerEntityId(), parentEntityIdForCar);
+
+        // Validate that the wheel's parent entity is the car.
+        Instance& wheelInstanceAfterDetach = nestedInstances[0]->get();
+        AZ::EntityId wheelContainerIdAfterDetach = wheelInstanceAfterDetach.GetContainerEntityId();
         EXPECT_TRUE(wheelContainerIdAfterDetach.IsValid());
 
-        AZ::EntityId parentEntityIdToCheck;
-        AZ::TransformBus::EventResult(parentEntityIdToCheck, wheelContainerIdAfterDetach, &AZ::TransformInterface::GetParentId);
-        EXPECT_EQ(carEntityIdAfterDetach, parentEntityIdToCheck);
+        AZ::EntityId parentEntityIdForWheel;
+        AZ::TransformBus::EventResult(parentEntityIdForWheel, wheelContainerIdAfterDetach, &AZ::TransformInterface::GetParentId);
+        EXPECT_EQ(carEntityIdAfterDetach, parentEntityIdForWheel);
+
+        // Validate that the tire's parent entity is the wheel.
+        tireEntityId = wheelInstanceAfterDetach.GetEntityId(tireEntityAlias);
+        EXPECT_TRUE(tireEntityId.IsValid());
+        AZ::EntityId parentEntityIdForTire;
+        AZ::TransformBus::EventResult(parentEntityIdForTire, tireEntityId, &AZ::TransformInterface::GetParentId);
+        EXPECT_EQ(wheelContainerIdAfterDetach, parentEntityIdForTire);
     }
 
     TEST_F(PrefabDetachPrefabTests, DetachPrefabValidatesDetachedContainerEntityOrder)
@@ -253,4 +341,4 @@ namespace UnitTest
             childEntityName, &AZ::ComponentApplicationRequests::GetEntityName, entityOrderArrayAfterDetach[2]);
         EXPECT_EQ(childEntityName, batteryEntityName);
     }
-}
+} // namespace UnitTest
