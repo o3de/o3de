@@ -67,7 +67,7 @@ def storage_config(runtime_type, config_data):
 @pytest.fixture
 def skip_if_test_targets_disabled(runtime_type, config_data):
     tiaf_bin = Path(config_data[runtime_type][RUNTIME_BIN_KEY])
-    # We need the runtime to be enabled and the runtime binary to exist to run teests
+    # We need the runtime to be enabled and the runtime binary to exist to run tests
     if not config_data[runtime_type][JENKINS_KEY][ENABLED_KEY] or not tiaf_bin.is_file():
         pytest.skip("Test targets are disabled for this runtime, test will be skipped.")
 
