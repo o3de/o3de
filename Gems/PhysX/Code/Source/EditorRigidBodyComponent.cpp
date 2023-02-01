@@ -406,7 +406,7 @@ namespace PhysX
             if (editContext)
             {
                 editContext->Class<EditorRigidBodyComponent>(
-                    "PhysX Dynamic Rigid Body", "The entity behaves as a movable rigid object in PhysX.")
+                    "PhysX Dynamic Rigid Body", "The entity behaves as a movable rigid body in PhysX.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
