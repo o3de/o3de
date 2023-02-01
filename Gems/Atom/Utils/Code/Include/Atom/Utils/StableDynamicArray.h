@@ -40,6 +40,10 @@ namespace AZ
     class StableDynamicArray
     {
         static_assert(!(ElementsPerPage % 64) && ElementsPerPage > 0, "PageSize must be a multiple of 64.");
+
+        // StableDynamicArrayWeakHandle uses 16-bits to determine the index of the element within the page,
+        // so a page size must not have more elements than that
+        static_assert(ElementsPerPage < AZStd::numeric_limits<uint16_t>::max(), "PageSize must be < uint16_t max.");
         static constexpr size_t PageSize = ElementsPerPage * sizeof(T);
 
         using value_type = T;
