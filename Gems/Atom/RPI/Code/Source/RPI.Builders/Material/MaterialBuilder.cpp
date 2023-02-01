@@ -113,8 +113,7 @@ namespace AZ
 
             if (!parentMaterialPath.empty())
             {
-                // Register dependency on the parent material source file so we can load it and use it's data to build this variant
-                // material. Note, we don't need a direct dependency on the material type because the parent material will depend on it.
+                // Register dependency on the parent material source file so we can load it and use it's data to build this variant material.
                 MaterialBuilderUtils::AddPossibleDependencies(
                     request.m_sourceFile,
                     parentMaterialPath,

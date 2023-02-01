@@ -115,15 +115,6 @@ namespace AZ
             //! Calling GetPropertyValues() will automatically finalize the material asset if it isn't finalized already. The
             //! MaterialTypeAsset must be loaded and ready.
             const AZStd::vector<MaterialPropertyValue>& GetPropertyValues() const;
-            
-            //! Returns the list of raw values for all properties in this material, as listed in the source .material file(s), before the
-            //! material asset was Finalized.
-            //!
-            //! The MaterialAsset can be created in a "half-baked" state where minimal processing has been done because it did not yet have
-            //! access to the MaterialTypeAsset. In that case, the list will be populated with values copied from the source .material file
-            //! with little or no validation or other processing. It includes all parent .material files, with properties listed in
-            //! low-to-high priority order. This list will be empty however if the asset was finalized at build-time.
-            const AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>>& GetRawPropertyValues() const;
 
         private:
             bool PostLoadInit() override;

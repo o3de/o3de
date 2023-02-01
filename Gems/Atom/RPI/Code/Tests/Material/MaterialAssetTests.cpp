@@ -112,8 +112,6 @@ namespace UnitTest
         EXPECT_EQ(assetId, materialAsset->GetId());
         EXPECT_EQ(Data::AssetData::AssetStatus::Ready, materialAsset->GetStatus());
 
-        EXPECT_EQ(0, materialAsset->GetRawPropertyValues().size());
-
         validate(materialAsset);
 
         // Also test serialization...

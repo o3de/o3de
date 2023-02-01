@@ -207,8 +207,6 @@ namespace UnitTest
 
         Data::Asset<MaterialAsset> materialAsset = materialAssetOutcome.GetValue();
 
-        EXPECT_EQ(0, materialAsset->GetRawPropertyValues().size()); // A pre-baked material has no need for the original raw property names and values
-
         // The order here is based on the order in the MaterialTypeSourceData, as added to the MaterialTypeAssetCreator.
         EXPECT_EQ(materialAsset->GetPropertyValues()[0].GetValue<bool>(), true);
         EXPECT_EQ(materialAsset->GetPropertyValues()[1].GetValue<int32_t>(), -10);

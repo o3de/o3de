@@ -191,11 +191,6 @@ namespace AZ
             return m_propertyValues;
         }
 
-        const AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>>& MaterialAsset::GetRawPropertyValues() const
-        {
-            return m_rawPropertyValues;
-        }
-
         void MaterialAsset::SetReady()
         {
             m_status = AssetStatus::Ready;
