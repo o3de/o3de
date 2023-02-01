@@ -88,7 +88,8 @@ def edit_project_props(proj_path: pathlib.Path = None,
                        delete_engine_api_dependencies: list or str = None,
                        replace_engine_api_dependencies: list or str = None,
                        user: bool = False,
-                       engine_path: pathlib.Path = None 
+                       new_engine_path: pathlib.Path = None,
+                       new_engine_finder_cmake_path: pathlib.Path = None,
                        ) -> int:
     """
     Edits and modifies the project properties for the project located at 'proj_path' or with the name 'proj_name'.
@@ -139,21 +140,23 @@ def edit_project_props(proj_path: pathlib.Path = None,
         proj_json['icon_path'] = new_icon
     if isinstance(new_version, str):
         proj_json['version'] = new_version
-    if isinstance(engine_path, pathlib.Path):
+    if isinstance(new_engine_path, pathlib.Path):
         if not user:
             logger.error('Setting the engine_path in the shared project.json is not allowed to prevent adding local paths.  Run the command again with the --user argument to set the engine_path locally only.')
             return 1
         
-        if engine_path and engine_path.name:
+        if new_engine_path and new_engine_path.name:
             # engine_path is absolute or relative to the project folder to simulate overriding the shared project.json 
-            engine_path_absolute = proj_path / engine_path
-            engine_manifest_data = manifest.get_engine_json_data(engine_path=engine_path_absolute.resolve())
+            engine_path_absolute = proj_path / new_engine_path
+            engine_manifest_data = manifest.get_engine_json_data(engine_path=new_engine_path.resolve())
             if not engine_manifest_data:
-                logger.error(f'Cannot load engine.json data at path {engine_path} ({engine_path_absolute.resolve()}), please verify an engine exists at the supplied location with a valid engine.json file.')
+                logger.error(f'Cannot load engine.json data at path {new_engine_path} ({engine_path_absolute.resolve()}), please verify an engine exists at the supplied location with a valid engine.json file.')
                 return 1
 
         # if the path is empty use an empty string because as_posix() will return "."
-        proj_json['engine_path'] = engine_path.as_posix() if engine_path.name else ""
+        proj_json['engine_path'] = new_engine_path.as_posix() if new_engine_path.name else ""
+    if isinstance(new_engine_finder_cmake_path, pathlib.Path):
+        proj_json['engine_finder_cmake_path'] = new_engine_finder_cmake_path.as_posix() if new_engine_finder_cmake_path.name else ""
 
     if new_tags or delete_tags or replace_tags != None:
         proj_json['user_tags'] = utils.update_values_in_key_list(proj_json.get('user_tags', []), new_tags,
@@ -192,31 +195,32 @@ def edit_project_props(proj_path: pathlib.Path = None,
 
 
 def _edit_project_props(args: argparse) -> int:
-    return edit_project_props(args.project_path,
-                              args.project_name,
-                              args.project_new_name,
-                              args.project_id,
-                              args.project_origin,
-                              args.project_display,
-                              args.project_summary,
-                              args.project_icon,
-                              args.add_tags,
-                              args.delete_tags,
-                              args.replace_tags,
-                              args.add_gem_names,
-                              args.delete_gem_names,
-                              args.replace_gem_names,
-                              args.engine_name,
-                              args.add_compatible_engines,
-                              args.delete_compatible_engines,
-                              args.replace_compatible_engines,
-                              args.project_version,
-                              False, # is_optional_gem
-                              args.add_engine_api_dependencies,
-                              args.delete_engine_api_dependencies,
-                              args.replace_engine_api_dependencies,
+    return edit_project_props(proj_path=args.project_path,
+                              proj_name=args.project_name,
+                              new_name=args.project_new_name,
+                              new_id=args.project_id,
+                              new_origin=args.project_origin,
+                              new_display=args.project_display,
+                              new_summary=args.project_summary,
+                              new_icon=args.project_icon,
+                              new_tags=args.add_tags,
+                              delete_tags=args.delete_tags,
+                              replace_tags=args.replace_tags,
+                              new_gem_names=args.add_gem_names,
+                              delete_gem_names=args.delete_gem_names,
+                              replace_gem_names=args.replace_gem_names,
+                              new_engine_name=args.engine_name,
+                              new_compatible_engines=args.add_compatible_engines,
+                              delete_compatible_engines=args.delete_compatible_engines,
+                              replace_compatible_engines=args.replace_compatible_engines,
+                              new_version=args.project_version,
+                              is_optional_gem=False,
+                              new_engine_api_dependencies=args.add_engine_api_dependencies,
+                              delete_engine_api_dependencies=args.delete_engine_api_dependencies,
+                              replace_engine_api_dependencies=args.replace_engine_api_dependencies,
                               user=args.user,
-                              engine_path=args.engine_path
+                              new_engine_path=args.engine_path,
+                              new_engine_finder_cmake_path=args.engine_finder_cmake_path
                               )
 
 
@@ -235,6 +239,8 @@ def add_parser_args(parser):
                        help='Sets the ID for the project.')
     group.add_argument('-en', '--engine-name', type=str, required=False,
                        help='Sets the engine name for the project.')
+    group.add_argument('-efcp', '--engine-finder-cmake-path', type=pathlib.Path, required=False,
+                       help='Sets the path to the engine finder cmake file for this project.')
     group.add_argument('-ep', '--engine-path', type=pathlib.Path, required=False,
                        help='Sets the engine path for the project. This setting is only allowed with the --user argument to avoid adding local paths to the shared project.json')
     group.add_argument('-po', '--project-origin', type=str, required=False,

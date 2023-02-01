@@ -148,7 +148,9 @@ class TestDisableGemCommand:
                 return json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
             return None
 
-        def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             return self.disable_gem.project_data
 
         def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,

@@ -404,7 +404,8 @@ class TestManifestGetRegistered:
                 return gem_payload
 
             def get_project_json_data(project_name: str = None,
-                                    project_path: str or pathlib.Path = None) -> dict or None:
+                                    project_path: str or pathlib.Path = None,
+                                    user: bool = False) -> dict or None:
                 project_payload = json.loads(TEST_PROJECT_JSON_PAYLOAD)
                 return project_payload
 
@@ -457,7 +458,8 @@ class TestManifestProjects:
     def test_get_project_engines(self, project_path, project_engine_name,
                                     engines, expected_engine_path):
         def get_project_json_data(project_name: str = None,
-            project_path: str or pathlib.Path = None) -> dict or None:
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             project_json = json.loads(TEST_PROJECT_JSON_PAYLOAD)
             project_json['engine'] = project_engine_name
             return project_json

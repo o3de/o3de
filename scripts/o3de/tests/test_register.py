@@ -221,7 +221,9 @@ class TestRegisterGem:
         def get_engine_json_data(engine_name:str = None, engine_path: pathlib.Path = None):
             return json.loads(TEST_ENGINE_JSON_PAYLOAD)
 
-        def get_project_json_data(project_path: pathlib.Path = None):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             return json.loads(TEST_PROJECT_JSON_PAYLOAD)
 
         def find_ancestor_dir(target_file_name: pathlib.PurePath, start_path: pathlib.Path):
@@ -375,7 +377,9 @@ class TestRegisterProject:
 
             return engine_json_data
 
-        def get_project_json_data(project_path: pathlib.Path = None):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             project_json_data = json.loads(TEST_PROJECT_JSON_PAYLOAD)
 
             # we want to allow for testing the case where these fields 

@@ -153,7 +153,9 @@ class TestEnableGemCommand:
                                        include_engine_gems: bool = False) -> dict:
             return {}
 
-        def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             return self.enable_gem.project_data
 
         def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
@@ -315,7 +317,9 @@ class TestEnableGemCommand:
                 engine_data['api_versions'] = test_engine_api_versions
             return engine_data
 
-        def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             project_data = self.enable_gem.project_data
             project_data['engine'] = test_engine_name
             if test_engine_version != None:

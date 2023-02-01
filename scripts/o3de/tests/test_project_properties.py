@@ -80,7 +80,7 @@ class TestEditProjectProperties:
                               expected_compatible_engines, \
                               add_engine_api_dependencies, remove_engine_api_dependencies, replace_engine_api_dependencies,\
                               expected_engine_api_dependencies,\
-                              is_optional_gem, user, engine_path,\
+                              is_optional_gem, user, engine_path, engine_finder_cmake_path,\
                               expected_result",  [
         pytest.param(pathlib.Path('E:/TestProject'),
                     'ProjNameA1', 'ProjNameB', 'ProjID', 'Origin', 
@@ -90,7 +90,7 @@ class TestEditProjectProperties:
                     'NewEngineName',
                     'o3de>=1.0', 'o3de-sdk==2205.01', None, ['o3de>=1.0'],
                     ['editor==2.3.4'], None, None, ['framework==1.2.3','editor==2.3.4'],
-                    False, True, pathlib.Path('D:/TestEngine'),
+                    False, True, pathlib.Path('D:/TestEngine'), pathlib.Path('cmake/CustomEngineFinder.cmake'),
                     0),
         pytest.param(pathlib.Path('D:/TestProject'),
                     'ProjNameA2', 'ProjNameB', 'ProjID', 'Origin', 
@@ -100,7 +100,7 @@ class TestEditProjectProperties:
                     'o3de-sdk',
                     'c==4.3.2.1', None, 'a>=0.1 b==1.0,==2.0', ['a>=0.1', 'b==1.0,==2.0'],
                     ['launcher==3.4.5'], ['framework==1.2.3'], None, ['launcher==3.4.5'],
-                    False, False, None,
+                    False, False, None, None,
                     0),
         pytest.param(pathlib.Path('D:/TestProject'),
                     'ProjNameA3', 'ProjNameB', 'ProjID', 'Origin', 
@@ -110,7 +110,7 @@ class TestEditProjectProperties:
                     'o3de-install',
                     None, 'o3de-sdk==2205.01', None, [],
                     None, None, ['framework==9.8.7'], ['framework==9.8.7'],
-                    False, False, None,
+                    False, False, None, None,
                     0),
         pytest.param(pathlib.Path('D:/TestProject'),
                     'ProjNameA4', 'ProjNameB', 'ProjID', 'Origin', 
@@ -120,7 +120,7 @@ class TestEditProjectProperties:
                     'o3de-install',
                     None, None, [], [],
                     None, None, [], [],
-                    False, False, None,
+                    False, False, None, None,
                     0),
         pytest.param(pathlib.Path('F:/TestProject'),
                     'ProjNameA5', 'ProjNameB', 'ProjID', 'Origin', 
@@ -130,7 +130,7 @@ class TestEditProjectProperties:
                     None,
                     None, None, 'invalid', ['b==1.0,==2.0'], # invalid version
                     None, None, None, ['framework==1.2.3'],
-                    False, False, None,
+                    False, False, None, None,
                     1),
         pytest.param('', # invalid path
                     'ProjNameA6', 'ProjNameB', 'IDB', 'OriginB', 
@@ -140,7 +140,7 @@ class TestEditProjectProperties:
                     None,
                     None, None, 'o3de-sdk==2205.1', ['o3de-sdk==2205.1'],
                     None, None, None, ['framework==1.2.3'],
-                    False, False, None,
+                    False, False, None, None,
                     1),
         # test with an optional gem
         pytest.param(pathlib.Path('D:/TestProject'),
@@ -151,7 +151,7 @@ class TestEditProjectProperties:
                     'o3de-install',
                     None, None, [], [],
                     None, None, [], [],
-                    True, True, pathlib.Path(''),
+                    True, True, pathlib.Path(''), None,
                     0),
         # fails when trying to set engine_path in shared project.json
         pytest.param(pathlib.Path('D:/TestProject'),
@@ -162,7 +162,7 @@ class TestEditProjectProperties:
                     'o3de-install',
                     None, None, [], [],
                     None, None, [], [],
-                    False, False, pathlib.Path('D:/TestEngine'),
+                    False, False, pathlib.Path('D:/TestEngine'), None,
                     1),
         ]
     )
@@ -175,7 +175,7 @@ class TestEditProjectProperties:
                                      expected_compatible_engines,
                                      add_engine_api_dependencies, remove_engine_api_dependencies, 
                                      replace_engine_api_dependencies, expected_engine_api_dependencies,
-                                     is_optional_gem, user, engine_path,
+                                     is_optional_gem, user, engine_path, engine_finder_cmake_path,
                                      expected_result):
 
         def get_project_json_data(project_name: str = None,
@@ -207,7 +207,7 @@ class TestEditProjectProperties:
                                                            add_compatible_engines, delete_compatible_engines, replace_compatible_engines,
                                                            project_version, is_optional_gem,
                                                            add_engine_api_dependencies, remove_engine_api_dependencies, replace_engine_api_dependencies,
-                                                           user, engine_path)
+                                                           user, engine_path, engine_finder_cmake_path)
             assert result == expected_result
             if result == 0:
                 assert self.project_json.data
@@ -226,6 +226,7 @@ class TestEditProjectProperties:
                 if engine_path:
                     engine_path = engine_path.as_posix() if engine_path.name else None
                 assert self.project_json.data.get('engine_path') == (engine_path if user else None)
+                assert self.project_json.data.get('engine_finder_cmake_path') == (engine_finder_cmake_path.as_posix() if engine_finder_cmake_path else None)
                 
                 if engine_name:
                     assert self.project_json.data.get('engine', '') == engine_name

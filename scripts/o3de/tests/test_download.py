@@ -298,7 +298,9 @@ class TestObjectDownload:
         def download_callback(downloaded, total_size):
             download_callback_called = True
 
-        def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             return json.loads(TEST_O3DE_REPO_PROJECT_JSON_PAYLOAD)
 
         def get_gem_json_data(gem_path: pathlib.Path, project_path: pathlib.Path):
