@@ -582,7 +582,7 @@ namespace AZ
             const AZStd::string& outputFilePath,
             RPI::PassAttachmentReadbackOption option)
         {
-            CaptureHandle captureHandle = InternalCapturePassAttachment(passHierarchy, slot, outputFilePath, option, AZStd::bind(&FrameCaptureSystemComponent::CaptureAttachmentCallback, this, AZStd::placeholders::_1));
+            CaptureHandle captureHandle = InternalCapturePassAttachment(passHierarchy, slot, outputFilePath, option, nullptr);
             if (captureHandle.IsNull())
             {
                 return InvalidFrameCaptureId;
