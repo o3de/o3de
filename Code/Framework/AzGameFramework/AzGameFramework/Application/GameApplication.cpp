@@ -111,9 +111,11 @@ namespace AzGameFramework
 
     void GameApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
     {
-        AzFramework::Application::CreateStaticModules(outModules);
+        // Add this to the front of the list. In monolithic builds, dynamic modules become static modules,
+        // so we want this to load before the dynamic modules load regardless of the build type.
+        outModules.insert(outModules.begin(), aznew AzGameFrameworkModule());
 
-        outModules.emplace_back(aznew AzGameFrameworkModule());
+        AzFramework::Application::CreateStaticModules(outModules);
     }
 
     void GameApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const

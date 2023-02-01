@@ -404,10 +404,14 @@ namespace AzFramework
 
     void Application::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
     {
+        // Add this to the front of the list. In monolithic builds, dynamic modules become static modules,
+        // so we want this to load before the dynamic modules load regardless of the build type.
+        // Note that because of the order we add these in, AzNetworkingModule will appear before AzFrameworkModule in the list.
+        outModules.insert(outModules.begin(), aznew AzFrameworkModule());
+        outModules.insert(outModules.begin(), aznew AzNetworking::AzNetworkingModule());
+
         AZ::ComponentApplication::CreateStaticModules(outModules);
 
-        outModules.emplace_back(aznew AzNetworking::AzNetworkingModule());
-        outModules.emplace_back(aznew AzFrameworkModule());
     }
 
     const char* Application::GetCurrentConfigurationName() const

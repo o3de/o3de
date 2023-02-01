@@ -1214,12 +1214,15 @@ namespace AZ
     //=========================================================================
     void ComponentApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
     {
+        // Add this to the front of the list. In monolithic builds, dynamic modules become static modules,
+        // so we want this to load before the dynamic modules load regardless of the build type.
+        outModules.insert(outModules.begin(), aznew AzCoreModule());
+
         if (m_startupParameters.m_createStaticModulesCallback)
         {
             m_startupParameters.m_createStaticModulesCallback(outModules);
         }
 
-        outModules.emplace_back(aznew AzCoreModule());
     }
 
     void ComponentApplication::LoadModules()
