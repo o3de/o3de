@@ -17,6 +17,7 @@ set(FILES
     ActionManager/Action/ActionManagerNotificationBus.h
     ActionManager/Action/EditorAction.cpp
     ActionManager/Action/EditorAction.h
+    ActionManager/Action/EditorActionUtils.h
     ActionManager/Action/EditorActionContext.cpp
     ActionManager/Action/EditorActionContext.h
     ActionManager/Action/EditorWidgetAction.cpp

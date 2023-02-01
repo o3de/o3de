@@ -121,6 +121,7 @@ namespace AzToolsFramework
             actionProperties.m_name = s_duplicateVerticesTitle;
             actionProperties.m_description = s_duplicateVerticesDesc;
             actionProperties.m_category = "Vertex Selection";
+            actionProperties.m_menuVisibility = ActionVisibility::ONLY_IN_ACTIVE_MODE;
 
             actionManagerInterface->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -161,6 +162,7 @@ namespace AzToolsFramework
             actionProperties.m_name = s_deleteVerticesTitle;
             actionProperties.m_description = s_deleteVerticesDesc;
             actionProperties.m_category = "Vertex Selection";
+            actionProperties.m_menuVisibility = ActionVisibility::ONLY_IN_ACTIVE_MODE;
 
             actionManagerInterface->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -201,6 +203,7 @@ namespace AzToolsFramework
             actionProperties.m_name = s_deselectVerticesTitle;
             actionProperties.m_description = s_deselectVerticesDesc;
             actionProperties.m_category = "Vertex Selection";
+            actionProperties.m_menuVisibility = ActionVisibility::ONLY_IN_ACTIVE_MODE;
 
             actionManagerInterface->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,

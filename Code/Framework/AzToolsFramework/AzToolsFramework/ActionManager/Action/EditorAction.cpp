@@ -8,7 +8,6 @@
 
 #include <AzToolsFramework/ActionManager/Action/EditorAction.h>
 
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 
 #include <QAction>
@@ -24,8 +23,8 @@ namespace AzToolsFramework
         AZStd::string description,
         AZStd::string category,
         AZStd::string iconPath,
-        bool hideFromMenusWhenDisabled,
-        bool hideFromToolBarsWhenDisabled,
+        ActionVisibility menuVisibility,
+        ActionVisibility toolBarVisibility,
         AZStd::function<void()> handler,
         AZStd::function<bool()> checkStateCallback)
         : m_contextIdentifier(AZStd::move(contextIdentifier))
@@ -34,8 +33,8 @@ namespace AzToolsFramework
         , m_description(AZStd::move(description))
         , m_category(AZStd::move(category))
         , m_iconPath(AZStd::move(iconPath))
-        , m_hideFromMenusWhenDisabled(hideFromMenusWhenDisabled)
-        , m_hideFromToolBarsWhenDisabled(hideFromToolBarsWhenDisabled)
+        , m_menuVisibility(menuVisibility)
+        , m_toolBarVisibility(toolBarVisibility)
     {
         UpdateIconFromPath();
         m_action = new QAction(m_icon, m_name.c_str(), parentWidget);
@@ -146,14 +145,14 @@ namespace AzToolsFramework
         UpdateTooltipText();
     }
 
-    bool EditorAction::GetHideFromMenusWhenDisabled() const
+    ActionVisibility EditorAction::GetMenuVisibility() const
     {
-        return m_hideFromMenusWhenDisabled;
+        return m_menuVisibility;
     }
 
-    bool EditorAction::GetHideFromToolBarsWhenDisabled() const
+    ActionVisibility EditorAction::GetToolBarVisibility() const
     {
-        return m_hideFromToolBarsWhenDisabled;
+        return m_toolBarVisibility;
     }
 
     QAction* EditorAction::GetAction()
@@ -203,7 +202,7 @@ namespace AzToolsFramework
         }
 
         // Refresh enabled state.
-        bool enabled = IsEnabledInCurrentMode();
+        bool enabled = IsActiveInCurrentMode();
 
         if (enabled  && !m_enabledStateCallbacks.empty())
         {
@@ -255,7 +254,7 @@ namespace AzToolsFramework
         m_action->setToolTip(toolTipText.c_str());
     }
 
-    bool EditorAction::IsEnabledInCurrentMode() const
+    bool EditorAction::IsActiveInCurrentMode() const
     {
         auto outcome = s_actionManagerInterface->GetActiveActionContextMode(m_contextIdentifier);
 

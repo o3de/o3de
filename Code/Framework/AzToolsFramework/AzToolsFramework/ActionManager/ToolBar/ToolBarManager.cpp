@@ -493,7 +493,7 @@ namespace AzToolsFramework
     void ToolBarManager::OnActionStateChanged(AZStd::string actionIdentifier)
     {
         // Only refresh the toolbar if the action state changing could result in the action being shown/hidden.
-        if (m_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(actionIdentifier))
+        if (m_actionManagerInternalInterface->GetActionToolBarVisibility(actionIdentifier) != ActionVisibility::ALWAYS_SHOW)
         {
             QueueRefreshForToolBarsContainingAction(actionIdentifier);
         }

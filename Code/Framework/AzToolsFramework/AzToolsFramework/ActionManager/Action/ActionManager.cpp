@@ -194,8 +194,8 @@ namespace AzToolsFramework
                     properties.m_description,
                     properties.m_category,
                     properties.m_iconPath,
-                    properties.m_hideFromMenusWhenDisabled,
-                    properties.m_hideFromToolBarsWhenDisabled,
+                    properties.m_menuVisibility,
+                    properties.m_toolBarVisibility,
                     handler
                 )
             }
@@ -241,8 +241,8 @@ namespace AzToolsFramework
                     properties.m_description,
                     properties.m_category,
                     properties.m_iconPath,
-                    properties.m_hideFromMenusWhenDisabled,
-                    properties.m_hideFromToolBarsWhenDisabled,
+                    properties.m_menuVisibility,
+                    properties.m_toolBarVisibility,
                     handler,
                     checkStateCallback
                 )
@@ -645,6 +645,22 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
+    ActionManagerBooleanResult ActionManager::IsActionActiveInCurrentMode(const AZStd::string& actionIdentifier)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not retrieve whether action \"%s\" is active in current mode as no action with that identifier was registered.",
+                    actionIdentifier.c_str()
+                )
+            );
+        }
+
+        return AZ::Success(actionIterator->second.IsActiveInCurrentMode());
+    }
+
     ActionManagerOperationResult ActionManager::SetActiveActionContextMode(
         const AZStd::string& actionContextIdentifier, const AZStd::string& modeIdentifier)
     {
@@ -736,28 +752,28 @@ namespace AzToolsFramework
         return &actionIterator->second;
     }
 
-    bool ActionManager::GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) const
+    ActionVisibility ActionManager::GetActionMenuVisibility(const AZStd::string& actionIdentifier) const
     {
         auto actionIterator = m_actions.find(actionIdentifier);
         if (actionIterator == m_actions.end())
         {
             // Return the default value.
-            return true;
+            return ActionVisibility::HIDE_WHEN_DISABLED;
         }
 
-        return actionIterator->second.GetHideFromMenusWhenDisabled();
+        return actionIterator->second.GetMenuVisibility();
     }
 
-    bool ActionManager::GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) const
+    ActionVisibility ActionManager::GetActionToolBarVisibility(const AZStd::string& actionIdentifier) const
     {
         auto actionIterator = m_actions.find(actionIdentifier);
         if (actionIterator == m_actions.end())
         {
             // Return the default value.
-            return false;
+            return ActionVisibility::ONLY_IN_ACTIVE_MODE;
         }
 
-        return actionIterator->second.GetHideFromToolBarsWhenDisabled();
+        return actionIterator->second.GetToolBarVisibility();
     }
 
     QWidget* ActionManager::GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier)
