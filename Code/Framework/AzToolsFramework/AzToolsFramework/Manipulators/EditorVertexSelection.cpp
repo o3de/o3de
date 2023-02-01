@@ -17,6 +17,7 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
@@ -27,6 +28,7 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
+
 #include <QApplication>
 #include <QDoubleValidator>
 #include <QMessageBox>
@@ -70,6 +72,34 @@ namespace AzToolsFramework
     static const char* const s_deselectVerticesTitle = "Deselect Vertices";
     static const char* const s_deselectVerticesDesc = "Deselect current vertex selection";
 
+    bool IsVertexSelectionEmpty()
+    {
+        auto componentModeCollectionInterface = AZ::Interface<ComponentModeCollectionInterface>::Get();
+        AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+        bool emptySelection = true;
+
+        componentModeCollectionInterface->EnumerateActiveComponents(
+            [&emptySelection](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+            {
+                int count;
+                EditorVertexSelectionVariableRequestBus::EventResult(
+                    count, entityComponentIdPair, &EditorVertexSelectionVariableRequests::GetSelectedVerticesCount);
+
+                emptySelection = emptySelection && (count == 0);
+            }
+        );
+
+        return emptySelection;
+    }
+
+    void OnVertexSelectionCountChanged()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface.");
+        actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier);
+    }
+
     void EditorVertexSelectionActionManagement::RegisterEditorVertexSelectionActions()
     {
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
@@ -81,6 +111,8 @@ namespace AzToolsFramework
         AZ_Assert(
             hotKeyManagerInterface,
             "EditorVertexSelection - could not get HotKeyManagerInterface on RegisterActions.");
+
+        actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier);
 
         // Duplicate Vertices
         {
@@ -108,6 +140,16 @@ namespace AzToolsFramework
                     );
                 }
             );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []
+                {
+                    return !IsVertexSelectionEmpty();
+                }
+            );
+
+            actionManagerInterface->AddActionToUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier, actionIdentifier);
 
             hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+D");
         }
@@ -139,6 +181,16 @@ namespace AzToolsFramework
                 }
             );
 
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []
+                {
+                    return !IsVertexSelectionEmpty();
+                }
+            );
+
+            actionManagerInterface->AddActionToUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier, actionIdentifier);
+
             hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Delete");
         }
 
@@ -168,6 +220,16 @@ namespace AzToolsFramework
                     );
                 }
             );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []
+                {
+                    return !IsVertexSelectionEmpty();
+                }
+            );
+
+            actionManagerInterface->AddActionToUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier, actionIdentifier);
 
             hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Esc");
         }
@@ -762,6 +824,12 @@ namespace AzToolsFramework
                 // centered on current selection)
                 RefreshTranslationManipulator();
 
+                if (!vertexBoxSelectData->m_deltaSelection.empty())
+                {
+                    // update actions that depend on vertex selection count
+                    OnVertexSelectionCountChanged();
+                }
+
                 // restore state once box select has completed
                 vertexBoxSelectData->m_startSelection.clear();
                 vertexBoxSelectData->m_deltaSelection.clear();
@@ -982,6 +1050,20 @@ namespace AzToolsFramework
     void EditorVertexSelectionVariable<Vertex>::ClearVertexSelection()
     {
         EditorVertexSelectionBase<Vertex>::ClearSelected();
+
+        // update actions that depend on vertex selection count
+        OnVertexSelectionCountChanged();
+    }
+
+    template<typename Vertex>
+    int EditorVertexSelectionVariable<Vertex>::GetSelectedVerticesCount()
+    {
+        if (EditorVertexSelectionBase<Vertex>::m_translationManipulator)
+        {
+            return EditorVertexSelectionBase<Vertex>::m_translationManipulator->m_vertices.size();
+        }
+
+        return 0;
     }
 
     template<typename Vertex>
@@ -1198,6 +1280,9 @@ namespace AzToolsFramework
             // manipulator at this vertex
             CreateTranslationManipulator(entityComponentIdPair, managerId, vertex, vertexIndex);
         }
+
+        // update actions that depend on vertex selection count
+        OnVertexSelectionCountChanged();
     }
 
     // configure the selection manipulator for fixed editor selection - this configures the view and action

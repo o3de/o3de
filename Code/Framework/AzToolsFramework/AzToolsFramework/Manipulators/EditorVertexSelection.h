@@ -338,10 +338,11 @@ namespace AzToolsFramework
         void DuplicateSelected();
         void DestroySelected();
 
-        // EditorVertexSelectionVariableRequests overrides ...
+        // EditorVertexSelectionVariableRequestBus overrides ...
         void DuplicateSelectedVertices() override;
         void DeleteSelectedVertices() override;
         void ClearVertexSelection() override;
+        int GetSelectedVerticesCount() override;
 
     protected:
         // EditorVertexSelectionBase
