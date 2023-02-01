@@ -98,4 +98,27 @@ namespace AzToolsFramework
             m_finishEditing();
         }
     }
+
+    void BaseShapeViewportEdit::BeginUndoBatch(const char* label)
+    {
+        if (!m_entityIds.empty())
+        {
+            ToolsApplicationRequests::Bus::BroadcastResult(
+                m_undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, label);
+
+            for (const AZ::EntityId& entityId : m_entityIds)
+            {
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
+            }
+        }
+    }
+
+    void BaseShapeViewportEdit::EndUndoBatch()
+    {
+        if (m_undoBatch)
+        {
+            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
+            m_undoBatch = nullptr;
+        }
+    }
 } // namespace AzToolsFramework

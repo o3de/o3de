@@ -38,10 +38,8 @@ namespace PhysX
         m_boxEdit->Teardown();
     }
 
-    void ColliderBoxMode::ResetValues(const AZ::EntityComponentIdPair& idPair)
+    void ColliderBoxMode::ResetValues([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
-        AzToolsFramework::BoxManipulatorRequestBus::Event(
-            idPair, &AzToolsFramework::BoxManipulatorRequests::SetDimensions,
-            AZ::Vector3::CreateOne());
+        m_boxEdit->ResetValues();
     }
 }

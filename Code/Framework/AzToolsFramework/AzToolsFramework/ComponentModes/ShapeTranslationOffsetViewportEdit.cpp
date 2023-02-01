@@ -17,6 +17,7 @@ namespace AzToolsFramework
 {
     void ShapeTranslationOffsetViewportEdit::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
+        m_entityIds.insert(entityComponentIdPair.GetEntityId());
         if (m_translationManipulators)
         {
             m_translationManipulators->AddEntityComponentIdPair(entityComponentIdPair);
@@ -74,6 +75,9 @@ namespace AzToolsFramework
 
     void ShapeTranslationOffsetViewportEdit::ResetValues()
     {
+        BeginUndoBatch("ShapeTranslationOffsetViewportEdit Reset");
         SetTranslationOffset(AZ::Vector3::CreateZero());
+        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+        EndUndoBatch();
     }
 } // namespace AzToolsFramework
