@@ -20,6 +20,9 @@ namespace AZ
     struct StableDynamicArrayMetrics;
 
     template<typename ValueType>
+    class StableDynamicArrayWeakHandle;
+
+    template<typename ValueType>
     class StableDynamicArrayHandle;
 
     /**
@@ -56,6 +59,7 @@ namespace AZ
     public:
 
         using Handle = StableDynamicArrayHandle<T>;
+        using WeakHandle = StableDynamicArrayWeakHandle<T>;
 
         StableDynamicArray() = default;
         explicit StableDynamicArray(allocator_type allocator);
@@ -109,21 +113,21 @@ namespace AZ
         iterator end();
         const_iterator cend() const;
 
+        T& GetData(WeakHandle handle) const;
     private:
 
         /// Adds a page and returns its pointer
         Page* AddPage();
 
         allocator_type m_allocator;
-        Page* m_firstPage = nullptr; ///< First page in the list of pages
 
         /// Used as an optimization to skip pages that are known to already be full. Generally this will point a page that has space available
         /// in it, but it could point to a full page as long as there are no other available pages before that full page. When there are no
         /// pages at all, this will point to nullptr. When all pages are full, this may point to any page, including the last page.
-        Page* m_firstAvailablePage = nullptr;
+        size_t m_firstAvailablePage = 0;
 
-        size_t m_pageCounter = 0; ///< The total number of pages that have been created (not how many currently exist).
         size_t m_itemCount = 0; ///< The total number of items in this container.
+        AZStd::vector<Page*> m_pages;
     };
 
     /// Private class used by StableDynamicArray to manage the arrays of data.
@@ -161,7 +165,6 @@ namespace AZ
         size_t m_bitStartIndex = 0; ///< Index of the first uint64_t that might have space.
         Page* m_nextPage = nullptr; ///< pointer to the next page.
         StableDynamicArray<T, ElementsPerPage, Allocator>* m_container; ///< pointer to the container this page was allocated from.
-        size_t m_pageIndex = 0; ///< used for comparing pages when items are freed so the earlier page in the list can be cached.
         size_t m_itemCount = 0; ///< the number of items in the page.
         AZStd::array<uint64_t, NumUint64_t> m_bits; ///< Bits representing free slots in the array. Free slots are 1, occupied slots are 0.
         AZStd::aligned_storage_t<PageSize, alignof(T)> m_data; ///< aligned storage for all the actual data.
@@ -264,6 +267,68 @@ namespace AZ
     };
 
     /**
+    * A weak reference to the data allocated in the array. The ValueType can be forward declared, and is only used for type safety.
+    * Data cannot be accessed directly from a weak handle. To access the data you must go through the array itself.
+    * There is no guarantee that a weak handle is not dangling. In the initial implementation, there is not a way to
+    * check if it is dangling, so it should only be used in situations where it is known that the owning handle
+    * has not gone out of scope or been defragmented. Eventually, this implementation could be augmented with
+    * salt/generationId to verify whether or not the weak handle is dangling.
+    */
+    template<typename ValueType>
+    class StableDynamicArrayWeakHandle
+    {
+    public:
+        StableDynamicArrayWeakHandle() = default;
+        StableDynamicArrayWeakHandle(uint32_t integer)
+        {
+            m_pageIndex = integer >> 16;
+            m_elementIndex = integer & 0xFFFF;
+        }
+
+        uint32_t GetUint() const
+        {
+            uint32_t result = m_pageIndex << 16;
+            result |= static_cast<uint32_t>(m_elementIndex);
+            return result;
+        }
+
+        bool IsValid() const
+        {
+            return m_pageIndex != AZStd::numeric_limits<uint16_t>::max() &&
+                m_elementIndex != AZStd::numeric_limits<uint16_t>::max();
+        }
+
+        bool operator<(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
+        {
+            return GetUint() < rhs.GetUint();
+        }
+        bool operator==(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
+        {
+            return m_pageIndex == rhs.m_pageIndex && m_elementIndex == rhs.m_elementIndex;
+        }
+        bool operator!=(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
+        {
+            return m_pageIndex != rhs.m_pageIndex || m_elementIndex != rhs.m_elementIndex;
+        }
+
+    private:
+        StableDynamicArrayWeakHandle(uint16_t pageIndex, uint16_t elementIndex)
+            : m_pageIndex(pageIndex)
+            , m_elementIndex(elementIndex)
+        {
+        }
+
+        uint16_t m_pageIndex = AZStd::numeric_limits<uint16_t>::max();
+        uint16_t m_elementIndex = AZStd::numeric_limits<uint16_t>::max();
+
+        template<typename T>
+        friend class StableDynamicArrayHandle;
+
+        template<typename T, size_t ElementsPerPage, class Allocator>
+        friend class StableDynamicArray;
+    };
+
+    /**
     * Handle to the data allocated in the array. This stores extra data internally so that an item can be
     * quickly marked as free later. Since there is no ref counting, copy is not allowed, only move. When
     * a handle is used to free it's associated data it is marked as invalid.
@@ -310,10 +375,13 @@ namespace AZ
         ValueType& operator*() const;
         ValueType* operator->() const;
 
+        /// Returns a non-owning weak handle to the data
+        StableDynamicArrayWeakHandle<ValueType> GetWeakHandle() const;
+
     private:
 
         template<typename PageType>
-        StableDynamicArrayHandle(ValueType* data, PageType* page);
+        StableDynamicArrayHandle(ValueType* data, PageType* page, uint16_t pageIndex, uint16_t elementIndex);
 
         StableDynamicArrayHandle(const StableDynamicArrayHandle&) = delete;
 
@@ -324,6 +392,7 @@ namespace AZ
 
         ValueType* m_data = nullptr; ///< The actual data this handle points to in the StableDynamicArrayHandle.
         void* m_page = nullptr; ///< The page the data this Handle points to was allocated on.
+        StableDynamicArrayWeakHandle<ValueType> m_weakHandle; ///< A copyable weak handle
     };
     
     /// Used for returning information about the internal state of the StableDynamicArray.

@@ -177,7 +177,67 @@ namespace UnitTest
         EXPECT_LT(beginReducedPageCount, fullPageCount);
 
         handles.clear(); // cleanup remaining handles.
+    }
 
+    TEST_F(StableDynamicArrayTests, CheckForHolesBetweenPages)
+    {
+        constexpr size_t pageSize = 64;
+        using namespace AZ;
+        AZ::StableDynamicArray<TestItem, pageSize> testArray;
+
+        // fill with 10 pages of items
+        TestItem item; // test lvalue insert
+        for (uint32_t i = 0; i < pageSize * 10; ++i)
+        {
+            item.index = i;
+            StableDynamicArray<TestItem>::Handle handle = testArray.insert(item);
+            handles.push_back(AZStd::move(handle));
+        }
+
+        // Create a hole between the pages by releaseing items in a page
+        for (uint32_t i = pageSize * 5; i < pageSize * 6; ++i)
+        {
+            handles.at(i).Free();
+        }
+        testArray.ReleaseEmptyPages();
+
+        // Use this lambda to force the test array to think the first page may be empty
+        auto markFirstPageAsEmpty = [&]()
+        {
+            // Free an element in the first page, so that the first empty page is at the beginning
+            testArray.erase(handles.at(0));
+            // Fill the first page back up, so that any further operations will be forced to
+            // iterate past the hole in search of the next available page
+            {
+                TestItem replacementItem;
+                replacementItem.index = 0;
+                StableDynamicArray<TestItem>::Handle handle = testArray.insert(replacementItem);
+                handles.at(0) = AZStd::move(handle);
+            }
+        };
+
+        markFirstPageAsEmpty();
+
+        // Each of these operations will attempt to iterate over all the pages
+        // This test is validating that they do not crash because they are properly checking for holes
+        testArray.ReleaseEmptyPages();
+        markFirstPageAsEmpty();
+
+        testArray.GetParallelRanges();
+        testArray.GetMetrics();
+
+        // Test insert
+        handles.push_back(testArray.emplace(item));
+        markFirstPageAsEmpty();
+
+        // Test defragment
+        testArray.DefragmentHandle(handles.back());
+        markFirstPageAsEmpty();
+
+        // Test erase
+        testArray.erase(handles.back());
+
+        handles.clear();
     }
 
     TEST_F(StableDynamicArrayTests, DefragmentHandle)
@@ -203,7 +263,7 @@ namespace UnitTest
             handles.at(i).Free();
         }
 
-        // release shouldn't be able to do anything since ever other element was removed
+        // release shouldn't be able to do anything since every other element was removed
         testArray.ReleaseEmptyPages();
 
         metrics = testArray.GetMetrics();
@@ -222,6 +282,19 @@ namespace UnitTest
         metrics = testArray.GetMetrics();
         size_t pageCount3 = metrics.m_elementsPerPage.size();
         EXPECT_LT(pageCount3, pageCount2);
+
+        // The the defragmented handles should still have valid weak handles
+        for (StableDynamicArray<TestItem>::Handle& handle : handles)
+        {
+            if (handle.IsValid())
+            {
+                uint32_t value = handle->index;
+                StableDynamicArrayWeakHandle<TestItem> weakHandle = handle.GetWeakHandle();
+
+                // The weak handle should be referring to the same data as the owning handle
+                EXPECT_EQ(value, testArray.GetData(weakHandle).index);
+            }
+        }
 
         handles.clear(); // cleanup remaining handles.
     }
@@ -566,12 +639,18 @@ namespace UnitTest
             m_testArray.erase(handle);
         }
 
+        TestItemImplementation& GetData(AZ::StableDynamicArrayWeakHandle<StableDynamicArrayOwner::TestItemImplementation> handle)
+        {
+            return m_testArray.GetData(handle);
+        }
+
     private:
         AZ::StableDynamicArray<TestItemImplementation> m_testArray;
     };
 
     using TestItemInterfaceHandle = AZ::StableDynamicArrayHandle<StableDynamicArrayOwner::TestItemInterface>;
     using TestItemHandle = AZ::StableDynamicArrayHandle<StableDynamicArrayOwner::TestItemImplementation>;
+    using TestItemWeakHandle = AZ::StableDynamicArrayWeakHandle<StableDynamicArrayOwner::TestItemImplementation>;
     using TestItemHandleSibling = AZ::StableDynamicArrayHandle<StableDynamicArrayOwner::TestItemImplementation2>;
     using TestItemHandleUnrelated = AZ::StableDynamicArrayHandle<StableDynamicArrayOwner::TestItemImplementationUnrelated>;
 
@@ -903,6 +982,31 @@ namespace UnitTest
         EXPECT_TRUE(handle.IsValid());
         EXPECT_FALSE(handle.IsNull());
         EXPECT_EQ(handle->GetValue(), testValue);
+    }
+
+    TEST_F(StableDynamicArrayHandleTests, WeakHandle_GetDataFromOwner_CanAccessData)
+    {
+        StableDynamicArrayOwner owner;
+        TestItemHandle handle = owner.AcquireItem(1);
+        TestItemWeakHandle weakHandle = handle.GetWeakHandle();
+
+        // The weak handle should be a valid reference to the data in the original handle
+        EXPECT_TRUE(weakHandle.IsValid());
+        EXPECT_EQ(owner.GetData(weakHandle).GetValue(), handle->GetValue());
+
+        // The weak handle should be able to be used to modify the data
+        int testValue = 12;
+        owner.GetData(weakHandle).SetValue(testValue);
+
+        // Both the handle and weak handle should reference the modified value
+        EXPECT_EQ(handle->GetValue(), testValue);
+        EXPECT_EQ(owner.GetData(weakHandle).GetValue(), testValue);
+
+        // Moving the handle should still result in a valid weak handle
+        TestItemHandle movedHandle = AZStd::move(handle);
+        EXPECT_EQ(owner.GetData(weakHandle).GetValue(), testValue);
+        weakHandle = movedHandle.GetWeakHandle();
+        EXPECT_EQ(owner.GetData(weakHandle).GetValue(), testValue);
     }
 
     //
