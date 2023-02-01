@@ -81,7 +81,7 @@ namespace UnitTests
 
     using BatchApplicationManagerTest = UnitTest::LeakDetectionFixture;
 
-    TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread)
+    TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread_SUITE_sandbox)
     {
         AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 
