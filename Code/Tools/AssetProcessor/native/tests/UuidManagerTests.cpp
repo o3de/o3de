@@ -38,6 +38,7 @@ namespace UnitTests
 
             AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
 
+            AzToolsFramework::UuidUtilComponent::Reflect(m_serializeContext.get());
             AzToolsFramework::MetadataManager::Reflect(m_serializeContext.get());
             AssetProcessor::UuidManager::Reflect(m_serializeContext.get());
 

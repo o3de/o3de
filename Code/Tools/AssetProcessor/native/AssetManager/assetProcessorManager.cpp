@@ -4098,22 +4098,9 @@ namespace AssetProcessor
                             return;
                         }
 
-                        auto topLevelSource = AssetUtilities::GetTopLevelSourceForIntermediateAsset(sourceAsset, m_stateData);
+                        const bool isEnabledType = uuidInterface->IsGenerationEnabledForFile(sourceAsset.AbsolutePath());
 
-                        if (!topLevelSource)
-                        {
-                            const bool isEnabledType = uuidInterface->IsGenerationEnabledForFile(sourceAsset.AbsolutePath());
-
-                            newJob.m_topLevelSourceUuid = isEnabledType ? sourceUUID : AZ::Uuid{};
-                        }
-                        else
-                        {
-                            SourceAssetReference topLevelSourceReference(
-                                topLevelSource.value().m_scanFolderPK, topLevelSource.value().m_sourceName.c_str());
-                            const bool isEnabledType = uuidInterface->IsGenerationEnabledForFile(topLevelSourceReference.AbsolutePath());
-
-                            newJob.m_topLevelSourceUuid = isEnabledType ? topLevelSource.value().m_sourceGuid : AZ::Uuid{};
-                        }
+                        newJob.m_sourceUuid = isEnabledType ? sourceUUID : AZ::Uuid{};
 
                         if (m_builderDebugFlag)
                         {
