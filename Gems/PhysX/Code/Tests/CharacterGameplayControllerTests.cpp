@@ -38,10 +38,10 @@ namespace PhysX
     static const float DefaultGravityMultiplier = 1.0f;
     static const float DefaultGroundDetectionBoxHeight = 0.05f;
 
-    class ControllerTestBasis
+    class GameplayTestBasis
     {
     public:
-        ControllerTestBasis(
+        GameplayTestBasis(
             AzPhysics::SceneHandle sceneHandle,
             float gravityMultiplier = DefaultGravityMultiplier,
             float groundDetectionBoxHeight = DefaultGroundDetectionBoxHeight,
@@ -52,7 +52,7 @@ namespace PhysX
             {
                 m_testScene = physicsSystem->GetScene(m_sceneHandle);
             }
-            AZ_Assert(m_testScene != nullptr, "ControllerTestBasis: the Test scene is null.");
+            AZ_Assert(m_testScene != nullptr, "GameplayTestBasis: the Test scene is null.");
             SetUp(gravityMultiplier, groundDetectionBoxHeight, floorTransform);
         }
 
@@ -114,7 +114,7 @@ namespace PhysX
     {
         float expectedGravityMultiplier = 2.5f;
 
-        ControllerTestBasis basis(m_testSceneHandle, expectedGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+        GameplayTestBasis basis(m_testSceneHandle, expectedGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
 
         // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
         int duration = 10;
