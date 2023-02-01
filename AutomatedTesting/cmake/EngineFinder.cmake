@@ -7,8 +7,9 @@
 #
 #
 # {END_LICENSE}
-# This file is copied during engine registration. Edits to this file will be lost next
-# time a registration happens.
+# Edits to this file may be lost in upgrades. Instead of changing this file, use 
+# the 'engine_finder_cmake' key in your project.json or user/project.json to specify 
+# an alternate .cmake file to use instead of this one.
 
 include_guard()
 
@@ -36,14 +37,13 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/user/project.json)
     string(JSON user_engine_path ERROR_VARIABLE json_error GET ${user_project_json} "engine_path")
 endif()
 
-# Extract any version specifiers from the engine_name
-o3de_get_version_specifier_parts("${LY_ENGINE_NAME_TO_USE}" LY_ENGINE_NAME_TO_USE project_version_comparitor project_version_specifier)
+# Extract optional version specifier in the engine name 
+o3de_get_version_specifier_parts("${LY_ENGINE_NAME_TO_USE}" LY_ENGINE_NAME_TO_USE spec_op spec_version)
 
 if(CMAKE_MODULE_PATH)
     foreach(module_path ${CMAKE_MODULE_PATH})
         if(EXISTS ${module_path}/Findo3de.cmake)
-            set(engine_path ${module_path}/../)
-            o3de_engine_compatible(${engine_path} ${LY_ENGINE_NAME_TO_USE} ${project_version_comparitor} ${project_version_specifier} is_compatible engine_version ${ENGINE_FINDER_VERBOSE})
+            o3de_engine_compatible(${module_path}/../ ${LY_ENGINE_NAME_TO_USE} ${spec_op} ${spec_version} is_compatible engine_version ${ENGINE_FINDER_VERBOSE})
             if(is_compatible)
                 return() # Engine being forced through CMAKE_MODULE_PATH
             endif()
@@ -51,20 +51,19 @@ if(CMAKE_MODULE_PATH)
     endforeach()
 endif()
 
-# Read the user/project_settings.json file and look for the engine_path
+# Read the user/project.json file and look for the engine_path
 if(user_engine_path)
     if(EXISTS ${user_engine_path}/cmake)
-        o3de_engine_compatible(${user_engine_path} ${LY_ENGINE_NAME_TO_USE} ${project_version_comparitor} ${project_version_specifier} is_compatible engine_version TRUE)
+        # always be verbose on this compatibility check
+        o3de_engine_compatible(${user_engine_path} ${LY_ENGINE_NAME_TO_USE} ${spec_op} ${spec_version} is_compatible engine_version TRUE)
         if(is_compatible)
-            if(ENGINE_FINDER_VERBOSE)
-                message("-- Selecting engine from user/project_settings.json at ${user_engine_path}")
-            endif()
+            message("-- Selecting engine from 'user/project.json' at '${user_engine_path}'")
             list(APPEND CMAKE_MODULE_PATH "${user_engine_path}/cmake")
             return()
         endif()
     else()
         string(CONCAT engine_path_info "Unable to use the engine_path from "
-            "'${CMAKE_CURRENT_SOURCE_DIR}/user/project_settings.json' because "
+            "'${CMAKE_CURRENT_SOURCE_DIR}/user/project.json' because "
             "'${user_engine_path}/cmake' does not exist.\n"
             "Falling back to look for an engine named '${LY_ENGINE_NAME_TO_USE}' in o3de_manifest.json")
         message(INFO " ${engine_path_info}")
@@ -110,19 +109,23 @@ if(EXISTS ${manifest_path})
         endif()
 
         if(EXISTS ${engine_path}/engine.json)
-            o3de_engine_compatible(${engine_path} ${LY_ENGINE_NAME_TO_USE} ${project_version_comparitor} ${project_version_specifier} is_compatible engine_version FALSE)
+            message("${engine_path} ${LY_ENGINE_NAME_TO_USE} ${spec_op} ${spec_version}")
+            o3de_engine_compatible(${engine_path} ${LY_ENGINE_NAME_TO_USE} ${spec_op} ${spec_version} is_compatible engine_version FALSE)
             if(is_compatible)
                 if(NOT most_compatible_engine_path)
                     set(most_compatible_engine_path ${engine_path})
                     set(most_compatible_engine_version ${engine_version})
+                    if(ENGINE_FINDER_VERBOSE)
+                        message("-- Considering engine '${LY_ENGINE_NAME_TO_USE}' with version '${engine_version}' from '${engine_path}'")
+                    endif()
                 elseif(${engine_version} VERSION_GREATER ${most_compatible_engine_version})
                     if(ENGINE_FINDER_VERBOSE)
-                        message(INFO " Selecting engine '${LY_ENGINE_NAME_TO_USE}' with version '${engine_version}' from '${engine_path}' because it has a greater version number.\n")
+                        message("-- Considering engine '${LY_ENGINE_NAME_TO_USE}' with version '${engine_version}' from '${engine_path}' because it has a greater version number")
                     endif()
                     set(most_compatible_engine_path ${engine_path})
                     set(most_compatible_engine_version ${engine_version})
                 elseif(ENGINE_FINDER_VERBOSE)
-                    message(INFO " Not using engine '${LY_ENGINE_NAME_TO_USE}' with version '${engine_version}' from '${engine_path}' because it does not have a greater version number than the engine at '${most_compatible_engine_path}' (${most_compatible_engine_version})\n")
+                    message("-- Not considering engine '${LY_ENGINE_NAME_TO_USE}' with version '${engine_version}' from '${engine_path}' because it does not have a greater version number than the engine at '${most_compatible_engine_path}' (${most_compatible_engine_version})")
                 endif()
             endif()
         else()
@@ -136,14 +139,14 @@ if(EXISTS ${manifest_path})
         return()
     endif()
 
-    if(project_version_comparitor AND project_version_specifier)
-        message(FATAL_ERROR "The project.json uses engine '${LY_ENGINE_NAME_TO_USE}${project_version_comparitor}${project_version_specifier}' but no engine with that name and compatible version has been registered.\n${registration_error}")
+    if(spec_op AND spec_version)
+        message(FATAL_ERROR "The project.json uses engine '${LY_ENGINE_NAME_TO_USE}${spec_op}${spec_version}' but no engine with that name and compatible version has been registered.\n${registration_error}")
     else()
         message(FATAL_ERROR "The project.json uses engine name '${LY_ENGINE_NAME_TO_USE}' but no engine with that name has been registered.\n${registration_error}")
     endif()
 else()
     # If the user is passing CMAKE_MODULE_PATH we assume thats where we will find the engine
     if(NOT CMAKE_MODULE_PATH)
-        message(FATAL_ERROR "O3DE Manifest file not found.\n${registration_error}")
+        message(FATAL_ERROR "O3DE Manifest file not found at '${manifest_path}'.\n${registration_error}")
     endif()
 endif()

@@ -22,7 +22,7 @@ if(NOT PROJECT_NAME)
     
     # Check for optional 'engine_finder_cmake' in order of preference
     # We support per-project customization to make it easier to upgrade 
-    # or revert to a working EngineFinder.cmake 
+    # or revert to a custom EngineFinder.cmake 
     get_engine_finder_cmake_path("${CMAKE_CURRENT_SOURCE_DIR}/user/project.json" engine_finder_cmake_path)
     get_engine_finder_cmake_path("${CMAKE_CURRENT_SOURCE_DIR}/project.json" engine_finder_cmake_path)
     if(NOT engine_finder_cmake_path)
