@@ -196,9 +196,7 @@ namespace UnitTest
 
         utilInterface->CreateSourceUuid("mockfile");
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
         auto uuid = utilInterface->CreateSourceUuid("mockfile");
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         EXPECT_TRUE(uuid.IsNull());
     }
@@ -212,8 +210,6 @@ namespace UnitTest
         auto uuid = AZ::Uuid::CreateRandom();
         utilInterface->CreateSourceUuid("mockfile");
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
         EXPECT_FALSE(utilInterface->CreateSourceUuid("mockfile", uuid));
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 }
