@@ -36,9 +36,9 @@ namespace AzToolsFramework
         m_beginEditing = AZStd::move(beginEditing);
     }
 
-    void BaseShapeViewportEdit::InstallFinishEditing(AZStd::function<void()> finishEditing)
+    void BaseShapeViewportEdit::InstallEndEditing(AZStd::function<void()> endEditing)
     {
-        m_finishEditing = AZStd::move(finishEditing);
+        m_endEditing = AZStd::move(endEditing);
     }
 
     AZ::Transform BaseShapeViewportEdit::GetManipulatorSpace() const
@@ -91,11 +91,11 @@ namespace AzToolsFramework
         }
     }
 
-    void BaseShapeViewportEdit::FinishEditing()
+    void BaseShapeViewportEdit::EndEditing()
     {
-        if (m_finishEditing)
+        if (m_endEditing)
         {
-            m_finishEditing();
+            m_endEditing();
         }
     }
 

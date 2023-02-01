@@ -187,7 +187,7 @@ namespace AzToolsFramework
         BeginEditing();
         SetCapsuleHeight(ResetCapsuleHeight);
         SetCapsuleRadius(ResetCapsuleRadius);
-        FinishEditing();
+        EndEditing();
     }
 
     void CapsuleViewportEdit::Teardown()
@@ -233,7 +233,7 @@ namespace AzToolsFramework
         m_radiusManipulator->InstallLeftMouseUpCallback(
             [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
             {
-                FinishEditing();
+                EndEditing();
             });
     }
 
@@ -269,7 +269,7 @@ namespace AzToolsFramework
         m_heightManipulator->InstallLeftMouseUpCallback(
             [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
             {
-                FinishEditing();
+                EndEditing();
             });
     }
 

@@ -129,10 +129,10 @@ namespace EMotionFX
             {
                 BeginEditing();
             });
-        m_capsuleViewportEdit->InstallFinishEditing(
+        m_capsuleViewportEdit->InstallEndEditing(
             [this]()
             {
-                FinishEditing();
+                EndEditing();
             });
     }
 
@@ -211,7 +211,7 @@ namespace EMotionFX
         }
     }
 
-    void ColliderCapsuleManipulators::FinishEditing()
+    void ColliderCapsuleManipulators::EndEditing()
     {
         if (m_commandGroup.IsEmpty())
         {

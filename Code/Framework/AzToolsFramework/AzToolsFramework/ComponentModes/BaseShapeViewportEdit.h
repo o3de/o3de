@@ -43,7 +43,7 @@ namespace AzToolsFramework
         //! but they may be useful in other viewports.
         //! @{
         void InstallBeginEditing(AZStd::function<void()> beginEditing);
-        void InstallFinishEditing(AZStd::function<void()> finishEditing);
+        void InstallEndEditing(AZStd::function<void()> endEditing);
         //! @}
 
         //! Create manipulators for the shape properties to be edited.
@@ -66,7 +66,7 @@ namespace AzToolsFramework
         AZ::Vector3 GetTranslationOffset() const;
         void SetTranslationOffset(const AZ::Vector3& translationOffset);
         void BeginEditing();
-        void FinishEditing();
+        void EndEditing();
 
         void BeginUndoBatch(const char* label);
         void EndUndoBatch();
@@ -77,7 +77,7 @@ namespace AzToolsFramework
         AZStd::function<void(const AZ::Vector3&)> m_setTranslationOffset;
 
         AZStd::function<void()> m_beginEditing;
-        AZStd::function<void()> m_finishEditing;
+        AZStd::function<void()> m_endEditing;
 
         AZStd::unordered_set<AZ::EntityId> m_entityIds;
         UndoSystem::URSequencePoint* m_undoBatch = nullptr;
