@@ -12,6 +12,10 @@
       ]
     },
 
+    "AddBuildArguments": { 
+      "dxc" : ["-fspv-target-env=vulkan1.1"] 
+    },
+
     "Supervariants":
     [
         {
