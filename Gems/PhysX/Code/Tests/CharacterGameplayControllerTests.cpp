@@ -94,13 +94,12 @@ namespace PhysX
             Physics::CharacterRequestBus::EventResult(m_controller, m_controllerEntity->GetId(), &Physics::CharacterRequests::GetCharacter);
         }
 
-        void Update(const AZ::Vector3& velocity, AZ::u32 numTimeSteps = 1)
+        void Update(AZ::u32 numTimeSteps = 1)
         {
             if (auto* physXSystem = GetPhysXSystem())
             {
                 for (AZ::u32 i = 0; i < numTimeSteps; i++)
                 {
-                    Physics::CharacterRequestBus::Event(m_controllerEntity->GetId(), &Physics::CharacterRequests::AddVelocity, velocity);
                     physXSystem->Simulate(m_timeStep);
                 }
             }
@@ -115,59 +114,21 @@ namespace PhysX
         float m_timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
     };
 
-    TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GravitySetsWhileMoving_Old)
-    {
-        PhysX::CharacterGameplayComponent* gameplayComponent = nullptr;
-        AzFramework::TransformComponent* transformComponent = nullptr;
-
-        float expectedGravityMultiplier = 2.5f;
-
-        // Create character
-        auto gameplayEntity = AZStd::make_unique<AZ::Entity>("GameplayEntity");
-        {
-            auto characterConfiguration = AZStd::make_unique<Physics::CharacterConfiguration>();
-            auto characterShapeConfiguration = AZStd::make_unique<Physics::CapsuleShapeConfiguration>();
-
-            characterShapeConfiguration->m_height = 1.5f;
-            characterShapeConfiguration->m_radius = 0.5f;
-
-            PhysX::CharacterGameplayConfiguration characterGameplayConfiguration;
-
-            characterGameplayConfiguration.m_gravityMultiplier = expectedGravityMultiplier;
-            characterGameplayConfiguration.m_groundDetectionBoxHeight = 0.05f;
-
-            gameplayEntity->CreateComponent<CharacterControllerComponent>(
-                AZStd::move(characterConfiguration), AZStd::move(characterShapeConfiguration));
-            transformComponent = gameplayEntity->CreateComponent<AzFramework::TransformComponent>();
-            gameplayComponent = gameplayEntity->CreateComponent<CharacterGameplayComponent>(characterGameplayConfiguration);
-
-            transformComponent->SetWorldTM(AZ::Transform::Identity());
-        }
-        gameplayEntity->Init();
-        gameplayEntity->Activate();
-
-        // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
-        int duration = 10;
-        float timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
-
-        if (auto* physXSystem = GetPhysXSystem())
-        {
-            for (int i = 0; i < duration; i++)
-            {
-                gameplayComponent->SetGravityMultiplier(expectedGravityMultiplier + i);
-                physXSystem->Simulate(timeStep);
-
-                EXPECT_THAT(expectedGravityMultiplier + i, testing::FloatEq(gameplayComponent->GetGravityMultiplier()));
-            }
-        }
-    }
-
-    TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GravitySetsWhileMoving_New)
+    TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GravitySetsWhileMoving)
     {
         float expectedGravityMultiplier = 2.5f;
 
         ControllerTestBasis basis(m_testSceneHandle, expectedGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
 
+        // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
+        int duration = 10;
 
+        for (int i = 0; i < duration; i++)
+        {
+            basis.m_gameplayController->SetGravityMultiplier(expectedGravityMultiplier + i);
+            basis.Update();
+
+            EXPECT_THAT(expectedGravityMultiplier + i, testing::FloatEq(basis.m_gameplayController->GetGravityMultiplier()));
+        }
     }
 } // namespace PhysX
