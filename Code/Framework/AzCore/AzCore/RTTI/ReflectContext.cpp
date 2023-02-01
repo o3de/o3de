@@ -155,4 +155,7 @@ namespace AZ
             m_currentlyProcessingTypeIds.pop_back();
         }
     }
+
+    template class AttributeData<Crc32>;
+
 }
