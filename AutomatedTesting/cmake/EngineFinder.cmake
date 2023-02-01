@@ -8,7 +8,7 @@
 #
 # {END_LICENSE}
 # Edits to this file may be lost in upgrades. Instead of changing this file, use 
-# the 'engine_finder_cmake' key in your project.json or user/project.json to specify 
+# the 'engine_finder_cmake_path' key in your project.json or user/project.json to specify 
 # an alternate .cmake file to use instead of this one.
 
 include_guard()
