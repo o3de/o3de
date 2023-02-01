@@ -99,6 +99,7 @@ set(FILES
     Prefab/Overrides/PrefabOverridePublicInterfaceTests.cpp
     Prefab/Overrides/PrefabOverrideTestFixture.cpp
     Prefab/Overrides/PrefabOverrideTestFixture.h
+    Prefab/PrefabCreateTests.cpp
     Prefab/PrefabDeleteTests.cpp
     Prefab/PrefabDeleteAsOverrideTests.cpp
     Prefab/PrefabDuplicateTests.cpp

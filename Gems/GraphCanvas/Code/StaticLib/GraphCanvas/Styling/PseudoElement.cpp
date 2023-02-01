@@ -66,9 +66,12 @@ namespace GraphCanvas
             StyledEntityRequestBus::EventResult(selectors, m_real, &StyledEntityRequests::GetStyleSelectors);
             AZStd::replace(selectors.begin(), selectors.end(), m_parentSelector, m_virtualChildSelector);
 
+            // Reserve space for all of these selectors added in this function
+            selectors.reserve(selectors.size() + m_dynamicSelectors.size());
+
             for (const auto& mapPair : m_dynamicSelectors)
             {
-                selectors.push_back(mapPair.second);
+                selectors.emplace_back(mapPair.second);
             }
 
             return selectors;

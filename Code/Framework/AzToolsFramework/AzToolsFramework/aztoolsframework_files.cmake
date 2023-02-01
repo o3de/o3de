@@ -62,6 +62,7 @@ set(FILES
     AzToolsFrameworkModule.cpp
     API/ToolsApplicationAPI.h
     API/EditorAssetSystemAPI.h
+    API/EditorAssetSystemAPI.cpp
     API/AssetDatabaseBus.h
     API/ComponentEntityObjectBus.h
     API/ComponentEntitySelectionBus.h
@@ -251,6 +252,7 @@ set(FILES
     Manipulators/ScaleManipulators.h
     Manipulators/SelectionManipulator.cpp
     Manipulators/SelectionManipulator.h
+    Manipulators/ShapeManipulatorRequestBus.h
     Manipulators/SplineHoverSelection.h
     Manipulators/SplineHoverSelection.cpp
     Manipulators/SplineSelectionManipulator.h
@@ -639,12 +641,18 @@ set(FILES
     ComponentMode/ComponentModeViewportUiRequestBus.h
     ComponentMode/EditorBaseComponentMode.h
     ComponentMode/EditorBaseComponentMode.cpp
+    ComponentModes/BaseShapeViewportEdit.h
+    ComponentModes/BaseShapeViewportEdit.cpp
     ComponentModes/BoxComponentMode.h
     ComponentModes/BoxComponentMode.cpp
     ComponentModes/BoxViewportEdit.h
     ComponentModes/BoxViewportEdit.cpp
     ComponentModes/CapsuleViewportEdit.h
     ComponentModes/CapsuleViewportEdit.cpp
+    ComponentModes/ShapeComponentModeBus.h
+    ComponentModes/ShapeTranslationOffsetViewportEdit.h
+    ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
+    ComponentModes/ViewportEditUtilities.h
     ViewportSelection/EditorBoxSelect.h
     ViewportSelection/EditorBoxSelect.cpp
     ViewportSelection/EditorDefaultSelection.h

@@ -18,16 +18,7 @@ namespace AZ
         {
             AZ_TYPE_INFO(PipelineGlobalConnection, "{8D708E59-E94C-4B25-8B0A-5D890BC8E6FE}");
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<PipelineGlobalConnection>()
-                        ->Version(1)
-                        ->Field("GlobalName", &PipelineGlobalConnection::m_globalName)
-                        ->Field("Slot", &PipelineGlobalConnection::m_localBinding);
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             //! The pipeline global name that other passes can use to reference the connection in a global way
             Name m_globalName;
@@ -50,17 +41,7 @@ namespace AZ
             PassData() = default;
             virtual ~PassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                PipelineGlobalConnection::Reflect(context);
-
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<PassData>()
-                        ->Version(1)
-                        ->Field("PipelineGlobalConnections", &PassData::m_pipelineGlobalConnections);
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             // Specifies global pipeline connections to the pipeline's immediate child passes
             PipelineGlobalConnectionList m_pipelineGlobalConnections;

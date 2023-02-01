@@ -8,6 +8,10 @@
 
 #pragma once
 
+#include <AzCore/Jobs/Algorithms.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/tuple.h>
 #include <GraphModel/Model/Connection.h>
@@ -24,18 +28,20 @@ namespace AtomToolsFramework
     template<typename NodeContainer>
     void SortNodesInExecutionOrder(NodeContainer& nodes)
     {
-        using NodeValueType = typename NodeContainer::value_type;
         using NodeValueTypeRef = typename NodeContainer::const_reference;
 
         // Pre-calculate and cache sorting scores for all nodes to avoid reprocessing during the sort
-        AZStd::map<NodeValueType, AZStd::tuple<bool, bool, uint32_t>> nodeScoreTable;
-        for (NodeValueTypeRef node : nodes)
-        {
-            nodeScoreTable.emplace(node, AZStd::make_tuple(node->HasInputSlots(), !node->HasOutputSlots(), node->GetMaxInputDepth()));
-        }
+        AZStd::mutex nodeScoreMapMutex;
+        AZStd::unordered_map<GraphModel::NodeId, AZStd::tuple<bool, bool, uint32_t>> nodeScoreMap;
+        nodeScoreMap.reserve(nodes.size());
+
+        AZ::parallel_for_each(nodes.begin(), nodes.end(), [&](NodeValueTypeRef node) {
+            AZStd::scoped_lock lock(nodeScoreMapMutex);
+            nodeScoreMap.emplace(node->GetId(), AZStd::make_tuple(node->HasInputSlots(), !node->HasOutputSlots(), node->GetMaxInputDepth()));
+        });
 
         AZStd::stable_sort(nodes.begin(), nodes.end(), [&](NodeValueTypeRef nodeA, NodeValueTypeRef nodeB) {
-            return nodeScoreTable[nodeA] < nodeScoreTable[nodeB];
+            return nodeScoreMap[nodeA->GetId()] < nodeScoreMap[nodeB->GetId()];
         });
     }
 } // namespace AtomToolsFramework

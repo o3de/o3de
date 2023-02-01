@@ -81,7 +81,7 @@ public:
 
     void OnViewportInfoDisplayStateChanged([[maybe_unused]] AZ::AtomBridge::ViewportInfoDisplayState state) override
     {
-        m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::ViewportDisplayInfoStateChangedUpdaterIdentifier);
+        m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::ViewportDisplayInfoStateChangedUpdaterIdentifier);
     }
 
 private:
@@ -173,21 +173,21 @@ void EditorActionsHandler::OnActionContextRegistrationHook()
     AzToolsFramework::ActionContextProperties contextProperties;
     contextProperties.m_name = "O3DE Editor";
 
-    m_actionManagerInterface->RegisterActionContext("", EditorActionContext::MainWindowContextIdentifier, contextProperties, m_mainWindow);
+    m_actionManagerInterface->RegisterActionContext("", EditorIdentifiers::MainWindowActionContextIdentifier, contextProperties, m_mainWindow);
 }
 
 void EditorActionsHandler::OnActionUpdaterRegistrationHook()
 {
-    m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::AngleSnappingStateChangedUpdaterIdentifier);
-    m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::DrawHelpersStateChangedUpdaterIdentifier);
-    m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::OnlyShowHelpersForSelectedEntitiesIdentifier);
-    m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::EntitySelectionChangedUpdaterIdentifier);
-    m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::GameModeStateChangedUpdaterIdentifier);
-    m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::GridSnappingStateChangedUpdaterIdentifier);
-    m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::IconsStateChangedUpdaterIdentifier);
-    m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::RecentFilesChangedUpdaterIdentifier);
-    m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::UndoRedoUpdaterIdentifier);
-    m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::ViewportDisplayInfoStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::AngleSnappingStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::DrawHelpersStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::OnlyShowHelpersForSelectedEntitiesUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::GameModeStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::GridSnappingStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::IconsStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::RecentFilesChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::UndoRedoUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::ViewportDisplayInfoStateChangedUpdaterIdentifier);
 
     // If the Prefab system is not enabled, have a backup to update actions based on level loading.
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
@@ -195,7 +195,7 @@ void EditorActionsHandler::OnActionUpdaterRegistrationHook()
 
     if (!m_isPrefabSystemEnabled)
     {
-        m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier);
+        m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
     }
 }
 
@@ -213,7 +213,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -238,7 +238,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -275,7 +275,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [&, index]
@@ -292,7 +292,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 }
             );
 
-            m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::RecentFilesChangedUpdaterIdentifier, actionIdentifier);
+            m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::RecentFilesChangedUpdaterIdentifier, actionIdentifier);
 
             // This action is only accessible outside of Component Modes
             m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
@@ -309,7 +309,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [&]
@@ -343,7 +343,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier, "o3de.action.file.save", actionProperties,
+            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.file.save", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnFileSave();
@@ -351,7 +351,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.file.save", IsLevelLoaded);
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier, "o3de.action.file.save");
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, "o3de.action.file.save");
         
         m_hotKeyManagerInterface->SetActionHotKey("o3de.action.file.save", "Ctrl+S");
     }
@@ -365,7 +365,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier, "o3de.action.file.saveAs", actionProperties,
+            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.file.saveAs", actionProperties,
             []
             {
                 CCryEditDoc* pDoc = GetIEditor()->GetDocument();
@@ -374,7 +374,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.file.saveAs", IsLevelLoaded);
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier, "o3de.action.file.saveAs");
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, "o3de.action.file.saveAs");
     }
 
     // Save Level Statistics
@@ -387,7 +387,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -419,7 +419,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -441,7 +441,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Platform";
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [qtViewPaneManager = m_qtViewPaneManager]
@@ -461,7 +461,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -484,7 +484,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -506,7 +506,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -527,7 +527,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Project";
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             "o3de.action.editor.exit",
             actionProperties,
             [=]
@@ -548,7 +548,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             "o3de.action.edit.undo",
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -566,7 +566,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
 
         // Trigger update after every undo or redo operation
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::UndoRedoUpdaterIdentifier, "o3de.action.edit.undo");
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::UndoRedoUpdaterIdentifier, "o3de.action.edit.undo");
 
         m_hotKeyManagerInterface->SetActionHotKey("o3de.action.edit.undo", "Ctrl+Z");
     }
@@ -580,7 +580,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             "o3de.action.edit.redo",
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -598,7 +598,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
 
         // Trigger update after every undo or redo operation
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::UndoRedoUpdaterIdentifier, "o3de.action.edit.redo");
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::UndoRedoUpdaterIdentifier, "o3de.action.edit.redo");
 
         m_hotKeyManagerInterface->SetActionHotKey("o3de.action.edit.redo", "Ctrl+Shift+Z");
     }
@@ -614,7 +614,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -628,7 +628,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
 
         // Trigger update when the angle snapping setting changes
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::AngleSnappingStateChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::AngleSnappingStateChangedUpdaterIdentifier, actionIdentifier);
 
         // This action is only accessible outside of Component Modes
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
@@ -645,7 +645,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -659,7 +659,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
 
         // Trigger update when the grid snapping setting changes
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::GridSnappingStateChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::GridSnappingStateChangedUpdaterIdentifier, actionIdentifier);
 
         // This action is only accessible outside of Component Modes
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
@@ -675,7 +675,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -689,7 +689,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
 
         // Trigger update when the grid snapping setting changes
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::GridShowingChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::GridShowingChangedUpdaterIdentifier, actionIdentifier);
 
         // This action is only accessible outside of Component Modes
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
@@ -703,7 +703,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Editor";
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -724,7 +724,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Editor";
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -750,7 +750,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -764,8 +764,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, IsLevelLoaded);
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier, actionIdentifier);
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::GameModeStateChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::GameModeStateChangedUpdaterIdentifier, actionIdentifier);
 
         // This action is only accessible outside of Component Modes
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
@@ -783,7 +783,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -797,8 +797,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, IsLevelLoaded);
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier, actionIdentifier);
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::GameModeStateChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::GameModeStateChangedUpdaterIdentifier, actionIdentifier);
 
         // This action is only accessible outside of Component Modes
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
@@ -815,7 +815,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -829,8 +829,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, IsLevelLoaded);
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier, actionIdentifier);
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::GameModeStateChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::GameModeStateChangedUpdaterIdentifier, actionIdentifier);
 
         // This action is only accessible outside of Component Modes
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
@@ -846,7 +846,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -856,7 +856,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, AreEntitiesSelected);
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
 
         // This action is only accessible outside of Component Modes
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
@@ -872,7 +872,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -895,7 +895,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -922,7 +922,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -946,7 +946,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -979,7 +979,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [qtViewPaneManager = m_qtViewPaneManager]
@@ -1002,7 +1002,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [&]
@@ -1030,7 +1030,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [this]
@@ -1053,7 +1053,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [this]
@@ -1076,7 +1076,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [this]
@@ -1100,7 +1100,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -1110,7 +1110,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, IsLevelLoaded);
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, actionIdentifier);
     }
 
     // Center on Selection
@@ -1123,7 +1123,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -1133,7 +1133,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, AreEntitiesSelected);
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
 
         m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Z");
     }
@@ -1151,7 +1151,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_iconPath = ":/Menu/helpers.svg";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -1167,7 +1167,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             }
         );
 
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::DrawHelpersStateChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::DrawHelpersStateChangedUpdaterIdentifier, actionIdentifier);
 
         m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Shift+Space");
     }
@@ -1181,7 +1181,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "View";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -1197,7 +1197,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             }
         );
 
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::IconsStateChangedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::IconsStateChangedUpdaterIdentifier, actionIdentifier);
 
         m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Space");
     }
@@ -1211,7 +1211,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "View";
 
         m_actionManagerInterface->RegisterCheckableAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -1226,7 +1226,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 return AzToolsFramework::OnlyShowHelpersForSelectedEntities();
             });
 
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::OnlyShowHelpersForSelectedEntitiesIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::OnlyShowHelpersForSelectedEntitiesUpdaterIdentifier, actionIdentifier);
     }
 
     // Refresh Style
@@ -1238,7 +1238,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "View";
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             []
@@ -1257,7 +1257,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.tutorials", actionProperties,
+            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.tutorials", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationTutorials();
@@ -1272,7 +1272,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.documentation.o3de", actionProperties,
+            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.documentation.o3de", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationO3DE();
@@ -1287,7 +1287,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.documentation.gamelift", actionProperties,
+            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.documentation.gamelift", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationGamelift();
@@ -1302,7 +1302,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.documentation.releasenotes", actionProperties,
+            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.documentation.releasenotes", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationReleaseNotes();
@@ -1317,7 +1317,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.resources.gamedevblog", actionProperties,
+            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.resources.gamedevblog", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationGameDevBlog();
@@ -1332,7 +1332,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.resources.forums", actionProperties,
+            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.resources.forums", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationForums();
@@ -1347,7 +1347,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.resources.awssupport", actionProperties,
+            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.resources.awssupport", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationAWSSupport();
@@ -1362,7 +1362,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier, "o3de.action.help.abouto3de", actionProperties,
+            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.abouto3de", actionProperties,
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnAppAbout();
@@ -1379,7 +1379,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [cryEdit = m_cryEditApp]
@@ -1527,7 +1527,7 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
 void EditorActionsHandler::OnMenuBarRegistrationHook()
 {
     // Register MenuBar
-    m_menuManagerInterface->RegisterMenuBar(EditorMenu::EditorMainWindowMenuBarIdentifier, m_mainWindow);
+    m_menuManagerInterface->RegisterMenuBar(EditorIdentifiers::EditorMainWindowMenuBarIdentifier, m_mainWindow);
 }
 
 void EditorActionsHandler::OnMenuRegistrationHook()
@@ -1536,15 +1536,15 @@ void EditorActionsHandler::OnMenuRegistrationHook()
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "&File";
-        m_menuManagerInterface->RegisterMenu(EditorMenu::FileMenuIdentifier, menuProperties);
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::FileMenuIdentifier, menuProperties);
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Open Recent";
-            m_menuManagerInterface->RegisterMenu(EditorMenu::RecentFilesMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::RecentFilesMenuIdentifier, menuProperties);
 
             // Legacy - the menu should update when the files list is changed.
-            QMenu* menu = m_menuManagerInternalInterface->GetMenu(EditorMenu::FileMenuIdentifier);
+            QMenu* menu = m_menuManagerInternalInterface->GetMenu(EditorIdentifiers::FileMenuIdentifier);
             QObject::connect(
                 menu,
                 &QMenu::aboutToShow,
@@ -1558,97 +1558,97 @@ void EditorActionsHandler::OnMenuRegistrationHook()
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "&Edit";
-        m_menuManagerInterface->RegisterMenu(EditorMenu::EditMenuIdentifier, menuProperties);
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EditMenuIdentifier, menuProperties);
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Modify";
-            m_menuManagerInterface->RegisterMenu(EditorMenu::EditModifyMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EditModifyMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Snap";
-            m_menuManagerInterface->RegisterMenu(EditorMenu::EditModifySnapMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EditModifySnapMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Transform Mode";
-            m_menuManagerInterface->RegisterMenu(EditorMenu::EditModifyModesMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EditModifyModesMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Editor Settings";
-            m_menuManagerInterface->RegisterMenu(EditorMenu::EditSettingsMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EditSettingsMenuIdentifier, menuProperties);
         }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "&Game";
-        m_menuManagerInterface->RegisterMenu(EditorMenu::GameMenuIdentifier, menuProperties);
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::GameMenuIdentifier, menuProperties);
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Play Game";
-            m_menuManagerInterface->RegisterMenu(EditorMenu::GameMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::PlayGameMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Audio";
-            m_menuManagerInterface->RegisterMenu(EditorMenu::GameAudioMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::GameAudioMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Debugging";
-            m_menuManagerInterface->RegisterMenu(EditorMenu::GameDebuggingMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::GameDebuggingMenuIdentifier, menuProperties);
         }
             {
                 AzToolsFramework::MenuProperties menuProperties;
                 menuProperties.m_name = "ToolBox Macros";
-                m_menuManagerInterface->RegisterMenu(EditorMenu::ToolBoxMacrosMenuIdentifier, menuProperties);
+                m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ToolBoxMacrosMenuIdentifier, menuProperties);
             }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "&Tools";
-        m_menuManagerInterface->RegisterMenu(EditorMenu::ToolsMenuIdentifier, menuProperties);
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ToolsMenuIdentifier, menuProperties);
     }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "&View";
-        m_menuManagerInterface->RegisterMenu(EditorMenu::ViewMenuIdentifier, menuProperties);
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewMenuIdentifier, menuProperties);
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Layouts";
-            m_menuManagerInterface->RegisterMenu(EditorMenu::LayoutsMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::LayoutsMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Viewport";
-            m_menuManagerInterface->RegisterMenu(EditorMenu::ViewportMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportMenuIdentifier, menuProperties);
         }
             {
                 AzToolsFramework::MenuProperties menuProperties;
                 menuProperties.m_name = "Go to Location";
-                m_menuManagerInterface->RegisterMenu(EditorMenu::GoToLocationMenuIdentifier, menuProperties);
+                m_menuManagerInterface->RegisterMenu(EditorIdentifiers::GoToLocationMenuIdentifier, menuProperties);
             }
             {
                 AzToolsFramework::MenuProperties menuProperties;
                 menuProperties.m_name = "Save Location";
-                m_menuManagerInterface->RegisterMenu(EditorMenu::SaveLocationMenuIdentifier, menuProperties);
+                m_menuManagerInterface->RegisterMenu(EditorIdentifiers::SaveLocationMenuIdentifier, menuProperties);
             }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "&Help";
-        m_menuManagerInterface->RegisterMenu(EditorMenu::HelpMenuIdentifier, menuProperties);
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::HelpMenuIdentifier, menuProperties);
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Documentation";
-            m_menuManagerInterface->RegisterMenu(EditorMenu::HelpDocumentationMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::HelpDocumentationMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "GameDev Resources";
-            m_menuManagerInterface->RegisterMenu(EditorMenu::HelpGameDevResourcesMenuIdentifier, menuProperties);
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::HelpGameDevResourcesMenuIdentifier, menuProperties);
         }
 }
 
@@ -1656,168 +1656,168 @@ void EditorActionsHandler::OnMenuBindingHook()
 {
     // Add Menus to MenuBar
     // We space the sortkeys by 100 to allow external systems to add menus in-between.
-    m_menuManagerInterface->AddMenuToMenuBar(EditorMenu::EditorMainWindowMenuBarIdentifier, EditorMenu::FileMenuIdentifier, 100);
-    m_menuManagerInterface->AddMenuToMenuBar(EditorMenu::EditorMainWindowMenuBarIdentifier, EditorMenu::EditMenuIdentifier, 200);
-    m_menuManagerInterface->AddMenuToMenuBar(EditorMenu::EditorMainWindowMenuBarIdentifier, EditorMenu::GameMenuIdentifier, 300);
-    m_menuManagerInterface->AddMenuToMenuBar(EditorMenu::EditorMainWindowMenuBarIdentifier, EditorMenu::ToolsMenuIdentifier, 400);
-    m_menuManagerInterface->AddMenuToMenuBar(EditorMenu::EditorMainWindowMenuBarIdentifier, EditorMenu::ViewMenuIdentifier, 500);
-    m_menuManagerInterface->AddMenuToMenuBar(EditorMenu::EditorMainWindowMenuBarIdentifier, EditorMenu::HelpMenuIdentifier, 600);
+    m_menuManagerInterface->AddMenuToMenuBar(EditorIdentifiers::EditorMainWindowMenuBarIdentifier, EditorIdentifiers::FileMenuIdentifier, 100);
+    m_menuManagerInterface->AddMenuToMenuBar(EditorIdentifiers::EditorMainWindowMenuBarIdentifier, EditorIdentifiers::EditMenuIdentifier, 200);
+    m_menuManagerInterface->AddMenuToMenuBar(EditorIdentifiers::EditorMainWindowMenuBarIdentifier, EditorIdentifiers::GameMenuIdentifier, 300);
+    m_menuManagerInterface->AddMenuToMenuBar(EditorIdentifiers::EditorMainWindowMenuBarIdentifier, EditorIdentifiers::ToolsMenuIdentifier, 400);
+    m_menuManagerInterface->AddMenuToMenuBar(EditorIdentifiers::EditorMainWindowMenuBarIdentifier, EditorIdentifiers::ViewMenuIdentifier, 500);
+    m_menuManagerInterface->AddMenuToMenuBar(EditorIdentifiers::EditorMainWindowMenuBarIdentifier, EditorIdentifiers::HelpMenuIdentifier, 600);
 
     // Add actions to each menu
 
     // File
     {
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::FileMenuIdentifier, "o3de.action.file.new", 100);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::FileMenuIdentifier, "o3de.action.file.open", 200);
-        m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::FileMenuIdentifier, EditorMenu::RecentFilesMenuIdentifier, 300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.new", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.open", 200);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::FileMenuIdentifier, EditorIdentifiers::RecentFilesMenuIdentifier, 300);
         {
             for (int index = 0; index < maxRecentFiles; ++index)
             {
                 AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
-                m_menuManagerInterface->AddActionToMenu(EditorMenu::RecentFilesMenuIdentifier, actionIdentifier, 100);
+                m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::RecentFilesMenuIdentifier, actionIdentifier, 100);
             }
-            m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::RecentFilesMenuIdentifier, 200);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::RecentFilesMenuIdentifier, "o3de.action.file.recent.clearAll", 300);
+            m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::RecentFilesMenuIdentifier, 200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::RecentFilesMenuIdentifier, "o3de.action.file.recent.clearAll", 300);
         }
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::FileMenuIdentifier, 400);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::FileMenuIdentifier, "o3de.action.file.save", 500);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::FileMenuIdentifier, "o3de.action.file.saveAs", 600);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::FileMenuIdentifier, "o3de.action.file.saveLevelStatistics", 700);
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::FileMenuIdentifier, 800);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::FileMenuIdentifier, "o3de.action.project.editSettings", 900);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::FileMenuIdentifier, "o3de.action.platform.editSettings", 1000);
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::FileMenuIdentifier, 1100);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::FileMenuIdentifier, "o3de.action.project.new", 1200);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::FileMenuIdentifier, "o3de.action.project.open", 1300);
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::FileMenuIdentifier, 1400);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::FileMenuIdentifier, "o3de.action.file.showLog", 1500);
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::FileMenuIdentifier, 1600);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::FileMenuIdentifier, "o3de.action.editor.exit", 1700);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::FileMenuIdentifier, 400);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.save", 500);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.saveAs", 600);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.saveLevelStatistics", 700);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::FileMenuIdentifier, 800);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.project.editSettings", 900);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.platform.editSettings", 1000);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::FileMenuIdentifier, 1100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.project.new", 1200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.project.open", 1300);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::FileMenuIdentifier, 1400);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.showLog", 1500);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::FileMenuIdentifier, 1600);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.editor.exit", 1700);
     }
 
     // Edit
     {
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.edit.undo", 100);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.edit.redo", 200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.undo", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.redo", 200);
 
-        m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::EditMenuIdentifier, EditorMenu::EditModifyMenuIdentifier, 1800);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::EditMenuIdentifier, EditorIdentifiers::EditModifyMenuIdentifier, 1800);
         {
-            m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::EditModifyMenuIdentifier, EditorMenu::EditModifySnapMenuIdentifier, 100);
+            m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::EditModifyMenuIdentifier, EditorIdentifiers::EditModifySnapMenuIdentifier, 100);
             {
-                m_menuManagerInterface->AddActionToMenu(EditorMenu::EditModifySnapMenuIdentifier, "o3de.action.edit.snap.toggleGridSnapping", 100);
-                m_menuManagerInterface->AddActionToMenu(EditorMenu::EditModifySnapMenuIdentifier, "o3de.action.edit.snap.toggleAngleSnapping", 200);
+                m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditModifySnapMenuIdentifier, "o3de.action.edit.snap.toggleGridSnapping", 100);
+                m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditModifySnapMenuIdentifier, "o3de.action.edit.snap.toggleAngleSnapping", 200);
             }
-            m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::EditModifyMenuIdentifier, EditorMenu::EditModifyModesMenuIdentifier, 200);
+            m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::EditModifyMenuIdentifier, EditorIdentifiers::EditModifyModesMenuIdentifier, 200);
         }
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::EditMenuIdentifier, 1900);
-        m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::EditMenuIdentifier, EditorMenu::EditSettingsMenuIdentifier, 2000);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EditMenuIdentifier, 1900);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::EditMenuIdentifier, EditorIdentifiers::EditSettingsMenuIdentifier, 2000);
         {
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::EditSettingsMenuIdentifier, "o3de.action.edit.globalPreferences", 100);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::EditSettingsMenuIdentifier, "o3de.action.edit.editorSettingsManager", 200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditSettingsMenuIdentifier, "o3de.action.edit.globalPreferences", 100);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditSettingsMenuIdentifier, "o3de.action.edit.editorSettingsManager", 200);
         }
     }
 
     // Game
     {
-        m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::GameMenuIdentifier, EditorMenu::GameMenuIdentifier, 100);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::GameMenuIdentifier, EditorIdentifiers::PlayGameMenuIdentifier, 100);
         {
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::GameMenuIdentifier, "o3de.action.game.play", 100);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::GameMenuIdentifier, "o3de.action.game.playMaximized", 200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::PlayGameMenuIdentifier, "o3de.action.game.play", 100);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::PlayGameMenuIdentifier, "o3de.action.game.playMaximized", 200);
         }
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::GameMenuIdentifier, "o3de.action.game.simulate", 200);
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::GameMenuIdentifier, 300);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::GameMenuIdentifier, "o3de.action.game.exportSelectedObjects", 400);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::GameMenuIdentifier, "o3de.action.game.exportOcclusionMesh", 500);
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::GameMenuIdentifier, 600);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::GameMenuIdentifier, "o3de.action.game.movePlayerAndCameraSeparately", 700);
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::GameMenuIdentifier, 800);
-        m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::GameMenuIdentifier, EditorMenu::GameAudioMenuIdentifier, 900);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, "o3de.action.game.simulate", 200);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::GameMenuIdentifier, 300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, "o3de.action.game.exportSelectedObjects", 400);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, "o3de.action.game.exportOcclusionMesh", 500);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::GameMenuIdentifier, 600);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, "o3de.action.game.movePlayerAndCameraSeparately", 700);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::GameMenuIdentifier, 800);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::GameMenuIdentifier, EditorIdentifiers::GameAudioMenuIdentifier, 900);
         {
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::GameAudioMenuIdentifier, "o3de.action.game.audio.stopAllSounds", 100);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::GameAudioMenuIdentifier, "o3de.action.game.audio.refresh", 200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameAudioMenuIdentifier, "o3de.action.game.audio.stopAllSounds", 100);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameAudioMenuIdentifier, "o3de.action.game.audio.refresh", 200);
         }
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::GameMenuIdentifier, 1000);
-        m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::GameMenuIdentifier, EditorMenu::GameDebuggingMenuIdentifier, 1100);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::GameMenuIdentifier, 1000);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::GameMenuIdentifier, EditorIdentifiers::GameDebuggingMenuIdentifier, 1100);
         {
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::GameDebuggingMenuIdentifier, "o3de.action.game.debugging.errorDialog", 100);
-            m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::GameDebuggingMenuIdentifier, 200);
-            m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::GameDebuggingMenuIdentifier, EditorMenu::ToolBoxMacrosMenuIdentifier, 300);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameDebuggingMenuIdentifier, "o3de.action.game.debugging.errorDialog", 100);
+            m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::GameDebuggingMenuIdentifier, 200);
+            m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::GameDebuggingMenuIdentifier, EditorIdentifiers::ToolBoxMacrosMenuIdentifier, 300);
             {
                 // Some of the contents of the ToolBox Macros menu are initialized in RefreshToolboxMacrosActions.
 
-                m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::ToolBoxMacrosMenuIdentifier, 200);
-                m_menuManagerInterface->AddActionToMenu(EditorMenu::ToolBoxMacrosMenuIdentifier, "o3de.action.game.debugging.toolboxMacros", 300);
+                m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ToolBoxMacrosMenuIdentifier, 200);
+                m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ToolBoxMacrosMenuIdentifier, "o3de.action.game.debugging.toolboxMacros", 300);
             }
         }
     }
 
     // View
     {
-        m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::ViewMenuIdentifier, EditorMenu::LayoutsMenuIdentifier, 100);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::ViewMenuIdentifier, EditorIdentifiers::LayoutsMenuIdentifier, 100);
         {
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::LayoutsMenuIdentifier, "o3de.action.layout.componentEntityLayout", 100);
-            m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::LayoutsMenuIdentifier, 200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::LayoutsMenuIdentifier, "o3de.action.layout.componentEntityLayout", 100);
+            m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::LayoutsMenuIdentifier, 200);
 
             // Some of the contents of the Layouts menu are initialized in RefreshLayoutActions.
 
-            m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::LayoutsMenuIdentifier, 400);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::LayoutsMenuIdentifier, "o3de.action.layout.save", 500);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::LayoutsMenuIdentifier, "o3de.action.layout.restoreDefault", 600);
+            m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::LayoutsMenuIdentifier, 400);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::LayoutsMenuIdentifier, "o3de.action.layout.save", 500);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::LayoutsMenuIdentifier, "o3de.action.layout.restoreDefault", 600);
         }
-        m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::ViewMenuIdentifier, EditorMenu::ViewportMenuIdentifier, 200);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::ViewMenuIdentifier, EditorIdentifiers::ViewportMenuIdentifier, 200);
         {
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportMenuIdentifier, "o3de.action.view.goToPosition", 100);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportMenuIdentifier, "o3de.action.view.centerOnSelection", 200);
-            m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::ViewportMenuIdentifier, EditorMenu::GoToLocationMenuIdentifier, 300);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.goToPosition", 100);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.centerOnSelection", 200);
+            m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::ViewportMenuIdentifier, EditorIdentifiers::GoToLocationMenuIdentifier, 300);
             {
                 for (int index = 0; index < m_defaultBookmarkCount; ++index)
                 {
                     const AZStd::string actionIdentifier = AZStd::string::format("o3de.action.view.bookmark[%i].goTo", index);
-                    m_menuManagerInterface->AddActionToMenu(EditorMenu::GoToLocationMenuIdentifier, actionIdentifier, 0);
+                    m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GoToLocationMenuIdentifier, actionIdentifier, 0);
                 }
             }
-            m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::ViewportMenuIdentifier, EditorMenu::SaveLocationMenuIdentifier, 400);
+            m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::ViewportMenuIdentifier, EditorIdentifiers::SaveLocationMenuIdentifier, 400);
             {
                 for (int index = 0; index < m_defaultBookmarkCount; ++index)
                 {
                     const AZStd::string actionIdentifier = AZStd::string::format("o3de.action.view.bookmark[%i].save", index);
-                    m_menuManagerInterface->AddActionToMenu(EditorMenu::SaveLocationMenuIdentifier, actionIdentifier, 0);
+                    m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::SaveLocationMenuIdentifier, actionIdentifier, 0);
                 }
             }
-            m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::ViewportMenuIdentifier, 500);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportMenuIdentifier, "o3de.action.view.toggleHelpers", 600);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportMenuIdentifier, "o3de.action.view.toggleIcons", 700);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewportMenuIdentifier, "o3de.action.view.toggleSelectedEntityHelpers", 800);
+            m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportMenuIdentifier, 500);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.toggleHelpers", 600);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.toggleIcons", 700);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.toggleSelectedEntityHelpers", 800);
         }
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::ViewMenuIdentifier, "o3de.action.view.refreshEditorStyle", 300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewMenuIdentifier, "o3de.action.view.refreshEditorStyle", 300);
     }
 
     // Help
     {
-        m_menuManagerInterface->AddWidgetToMenu(EditorMenu::HelpMenuIdentifier, "o3de.widgetAction.help.searchDocumentation", 100);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::HelpMenuIdentifier, "o3de.action.help.tutorials", 200);
-        m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::HelpMenuIdentifier, EditorMenu::HelpDocumentationMenuIdentifier, 300);
+        m_menuManagerInterface->AddWidgetToMenu(EditorIdentifiers::HelpMenuIdentifier, "o3de.widgetAction.help.searchDocumentation", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpMenuIdentifier, "o3de.action.help.tutorials", 200);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::HelpMenuIdentifier, EditorIdentifiers::HelpDocumentationMenuIdentifier, 300);
         {
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.o3de", 100);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.gamelift", 200);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.releasenotes", 300);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.o3de", 100);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.gamelift", 200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.releasenotes", 300);
         }
-        m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::HelpMenuIdentifier, EditorMenu::HelpGameDevResourcesMenuIdentifier, 400);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::HelpMenuIdentifier, EditorIdentifiers::HelpGameDevResourcesMenuIdentifier, 400);
         {
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.gamedevblog", 100);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.forums", 200);
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.awssupport", 300);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.gamedevblog", 100);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.forums", 200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.awssupport", 300);
         }
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::HelpMenuIdentifier, 500);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::HelpMenuIdentifier, "o3de.action.help.abouto3de", 600);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::HelpMenuIdentifier, "o3de.action.help.welcome", 700);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::HelpMenuIdentifier, 500);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpMenuIdentifier, "o3de.action.help.abouto3de", 600);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpMenuIdentifier, "o3de.action.help.welcome", 700);
     }
 }
 
 void EditorActionsHandler::OnToolBarAreaRegistrationHook()
 {
     m_toolBarManagerInterface->RegisterToolBarArea(
-        EditorToolBar::MainWindowTopToolBarAreaIdentifier, m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
+        EditorIdentifiers::MainWindowTopToolBarAreaIdentifier, m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
 }
 
 void EditorActionsHandler::OnToolBarRegistrationHook()
@@ -1826,12 +1826,12 @@ void EditorActionsHandler::OnToolBarRegistrationHook()
     {
         AzToolsFramework::ToolBarProperties toolBarProperties;
         toolBarProperties.m_name = "Tools";
-        m_toolBarManagerInterface->RegisterToolBar(EditorToolBar::ToolsToolBarIdentifier, toolBarProperties);
+        m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::ToolsToolBarIdentifier, toolBarProperties);
     }
     {
         AzToolsFramework::ToolBarProperties toolBarProperties;
         toolBarProperties.m_name = "Play Controls";
-        m_toolBarManagerInterface->RegisterToolBar(EditorToolBar::PlayControlsToolBarIdentifier, toolBarProperties);
+        m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::PlayControlsToolBarIdentifier, toolBarProperties);
     }
 }
 
@@ -1840,21 +1840,21 @@ void EditorActionsHandler::OnToolBarBindingHook()
     // Add ToolBars to ToolBar Areas
     // We space the sortkeys by 100 to allow external systems to add toolbars in-between.
     m_toolBarManagerInterface->AddToolBarToToolBarArea(
-        EditorToolBar::MainWindowTopToolBarAreaIdentifier, EditorToolBar::ToolsToolBarIdentifier, 100);
+        EditorIdentifiers::MainWindowTopToolBarAreaIdentifier, EditorIdentifiers::ToolsToolBarIdentifier, 100);
     m_toolBarManagerInterface->AddToolBarToToolBarArea(
-        EditorToolBar::MainWindowTopToolBarAreaIdentifier, EditorToolBar::PlayControlsToolBarIdentifier, 200);
+        EditorIdentifiers::MainWindowTopToolBarAreaIdentifier, EditorIdentifiers::PlayControlsToolBarIdentifier, 200);
 
     // Add actions to each toolbar
 
     // Play Controls
     {
-        m_toolBarManagerInterface->AddWidgetToToolBar(EditorToolBar::PlayControlsToolBarIdentifier, "o3de.widgetAction.expander", 100);
-        m_toolBarManagerInterface->AddSeparatorToToolBar(EditorToolBar::PlayControlsToolBarIdentifier, 200);
-        m_toolBarManagerInterface->AddWidgetToToolBar(EditorToolBar::PlayControlsToolBarIdentifier, "o3de.widgetAction.game.playControlsLabel", 300);
+        m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::PlayControlsToolBarIdentifier, "o3de.widgetAction.expander", 100);
+        m_toolBarManagerInterface->AddSeparatorToToolBar(EditorIdentifiers::PlayControlsToolBarIdentifier, 200);
+        m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::PlayControlsToolBarIdentifier, "o3de.widgetAction.game.playControlsLabel", 300);
         m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-            EditorToolBar::PlayControlsToolBarIdentifier, "o3de.action.game.play", EditorMenu::GameMenuIdentifier, 400);
-        m_toolBarManagerInterface->AddSeparatorToToolBar(EditorToolBar::PlayControlsToolBarIdentifier, 500);
-        m_toolBarManagerInterface->AddActionToToolBar(EditorToolBar::PlayControlsToolBarIdentifier, "o3de.action.game.simulate", 600);
+            EditorIdentifiers::PlayControlsToolBarIdentifier, "o3de.action.game.play", EditorIdentifiers::PlayGameMenuIdentifier, 400);
+        m_toolBarManagerInterface->AddSeparatorToToolBar(EditorIdentifiers::PlayControlsToolBarIdentifier, 500);
+        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::PlayControlsToolBarIdentifier, "o3de.action.game.simulate", 600);
     }
 }
 
@@ -1931,7 +1931,7 @@ QWidget* EditorActionsHandler::CreateDocsSearchWidget()
     };
     QObject::connect(lineEdit, &QLineEdit::returnPressed, m_mainWindow, searchAction);
 
-    QMenu* helpMenu = m_menuManagerInternalInterface->GetMenu(EditorMenu::HelpMenuIdentifier);
+    QMenu* helpMenu = m_menuManagerInternalInterface->GetMenu(EditorIdentifiers::HelpMenuIdentifier);
 
     QObject::connect(helpMenu, &QMenu::aboutToHide, lineEdit, &QLineEdit::clear);
     QObject::connect(helpMenu, &QMenu::aboutToShow, lineEdit, &QLineEdit::clearFocus);
@@ -1953,7 +1953,7 @@ void EditorActionsHandler::OnViewPaneClosed(const char* viewPaneName)
 
 void EditorActionsHandler::OnStartPlayInEditor()
 {
-    m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::GameModeStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::GameModeStateChangedUpdaterIdentifier);
 }
 
 void EditorActionsHandler::OnStopPlayInEditor()
@@ -1964,7 +1964,7 @@ void EditorActionsHandler::OnStopPlayInEditor()
         nullptr,
         [actionManagerInterface = m_actionManagerInterface]
         {
-            actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::GameModeStateChangedUpdaterIdentifier);
+            actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::GameModeStateChangedUpdaterIdentifier);
         }
     );
 }
@@ -1973,7 +1973,7 @@ void EditorActionsHandler::OnEntityStreamLoadSuccess()
 {
     if (!m_isPrefabSystemEnabled)
     {
-        m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier);
+        m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
     }
 }
 
@@ -1981,7 +1981,7 @@ void EditorActionsHandler::AfterEntitySelectionChanged(
     [[maybe_unused]] const AzToolsFramework::EntityIdList& newlySelectedEntities,
     [[maybe_unused]] const AzToolsFramework::EntityIdList& newlyDeselectedEntities)
 {
-    m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::EntitySelectionChangedUpdaterIdentifier);
+    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier);
 }
 
 void EditorActionsHandler::AfterUndoRedo()
@@ -1992,7 +1992,7 @@ void EditorActionsHandler::AfterUndoRedo()
         nullptr,
         [actionManagerInterface = m_actionManagerInterface]
         {
-            actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::UndoRedoUpdaterIdentifier);
+            actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::UndoRedoUpdaterIdentifier);
         }
     );
 }
@@ -2005,39 +2005,39 @@ void EditorActionsHandler::OnEndUndo([[maybe_unused]] const char* label, [[maybe
         nullptr,
         [actionManagerInterface = m_actionManagerInterface]
         {
-            actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::UndoRedoUpdaterIdentifier);
+            actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::UndoRedoUpdaterIdentifier);
         }
     );
 }
 
 void EditorActionsHandler::OnAngleSnappingChanged([[maybe_unused]] bool enabled)
 {
-    m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::AngleSnappingStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::AngleSnappingStateChangedUpdaterIdentifier);
 }
 
 void EditorActionsHandler::OnDrawHelpersChanged([[maybe_unused]] bool enabled)
 {
-    m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::DrawHelpersStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::DrawHelpersStateChangedUpdaterIdentifier);
 }
 
 void EditorActionsHandler::OnGridShowingChanged([[maybe_unused]] bool showing)
 {
-    m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::GridShowingChangedUpdaterIdentifier);
+    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::GridShowingChangedUpdaterIdentifier);
 }
 
 void EditorActionsHandler::OnGridSnappingChanged([[maybe_unused]] bool enabled)
 {
-    m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::GridSnappingStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::GridSnappingStateChangedUpdaterIdentifier);
 }
 
 void EditorActionsHandler::OnIconsVisibilityChanged([[maybe_unused]] bool enabled)
 {
-    m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::IconsStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::IconsStateChangedUpdaterIdentifier);
 }
 
 void EditorActionsHandler::OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_unused]] bool enabled)
 {
-    m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::OnlyShowHelpersForSelectedEntitiesIdentifier);
+    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::OnlyShowHelpersForSelectedEntitiesUpdaterIdentifier);
 }
 
 bool EditorActionsHandler::IsRecentFileActionActive(int index)
@@ -2156,12 +2156,12 @@ void EditorActionsHandler::UpdateRecentFileActions()
     }
 
     // Trigger the updater
-    m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::RecentFilesChangedUpdaterIdentifier);
+    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::RecentFilesChangedUpdaterIdentifier);
 }
 
 void EditorActionsHandler::RefreshLayoutActions()
 {
-    m_menuManagerInterface->RemoveSubMenusFromMenu(EditorMenu::LayoutsMenuIdentifier, m_layoutMenuIdentifiers);
+    m_menuManagerInterface->RemoveSubMenusFromMenu(EditorIdentifiers::LayoutsMenuIdentifier, m_layoutMenuIdentifiers);
     m_layoutMenuIdentifiers.clear();
 
     // Place all sub-menus in the same sort index in the menu.
@@ -2191,7 +2191,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                 actionProperties.m_hideFromMenusWhenDisabled = false;
 
                 m_actionManagerInterface->RegisterAction(
-                    EditorActionContext::MainWindowContextIdentifier,
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
                     actionIdentifier,
                     actionProperties,
                     [layout = layoutName, this]
@@ -2215,7 +2215,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                 actionProperties.m_hideFromMenusWhenDisabled = false;
 
                 m_actionManagerInterface->RegisterAction(
-                    EditorActionContext::MainWindowContextIdentifier,
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
                     actionIdentifier,
                     actionProperties,
                     [layout = layoutName, this]
@@ -2239,7 +2239,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                 actionProperties.m_hideFromMenusWhenDisabled = false;
 
                 m_actionManagerInterface->RegisterAction(
-                    EditorActionContext::MainWindowContextIdentifier,
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
                     actionIdentifier,
                     actionProperties,
                     [layout = layoutName, this]
@@ -2263,7 +2263,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                 actionProperties.m_hideFromMenusWhenDisabled = false;
 
                 m_actionManagerInterface->RegisterAction(
-                    EditorActionContext::MainWindowContextIdentifier,
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
                     actionIdentifier,
                     actionProperties,
                     [layout = layoutName, this]
@@ -2280,14 +2280,14 @@ void EditorActionsHandler::RefreshLayoutActions()
         }
 
         m_layoutMenuIdentifiers.push_back(layoutMenuIdentifier);
-        m_menuManagerInterface->AddSubMenuToMenu(EditorMenu::LayoutsMenuIdentifier, layoutMenuIdentifier, sortKey);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::LayoutsMenuIdentifier, layoutMenuIdentifier, sortKey);
     }
 }
 
 void EditorActionsHandler::RefreshToolboxMacroActions()
 {
     // If the toolbox macros are being displayed in the menu already, remove them.
-    m_menuManagerInterface->RemoveActionsFromMenu(EditorMenu::ToolBoxMacrosMenuIdentifier, m_toolboxMacroActionIdentifiers);
+    m_menuManagerInterface->RemoveActionsFromMenu(EditorIdentifiers::ToolBoxMacrosMenuIdentifier, m_toolboxMacroActionIdentifiers);
     m_toolboxMacroActionIdentifiers.clear();
 
     // Place all actions in the same sort index in the menu .
@@ -2315,7 +2315,7 @@ void EditorActionsHandler::RefreshToolboxMacroActions()
                 actionProperties.m_hideFromMenusWhenDisabled = false;
 
                 m_actionManagerInterface->RegisterAction(
-                    EditorActionContext::MainWindowContextIdentifier,
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
                     toolboxMacroActionIdentifier,
                     actionProperties,
                     [macro]
@@ -2328,7 +2328,7 @@ void EditorActionsHandler::RefreshToolboxMacroActions()
                 m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, toolboxMacroActionIdentifier);
             }
 
-            m_menuManagerInterface->AddActionToMenu(EditorMenu::ToolBoxMacrosMenuIdentifier, toolboxMacroActionIdentifier, sortKey);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ToolBoxMacrosMenuIdentifier, toolboxMacroActionIdentifier, sortKey);
             m_toolboxMacroActionIdentifiers.push_back(AZStd::move(toolboxMacroActionIdentifier));
         }
     }
@@ -2337,8 +2337,8 @@ void EditorActionsHandler::RefreshToolboxMacroActions()
 void EditorActionsHandler::RefreshToolActions()
 {
     // If the tools are being displayed in the menu or toolbar already, remove them.
-    m_menuManagerInterface->RemoveActionsFromMenu(EditorMenu::ToolsMenuIdentifier, m_toolActionIdentifiers);
-    m_toolBarManagerInterface->RemoveActionsFromToolBar(EditorToolBar::ToolsToolBarIdentifier, m_toolActionIdentifiers);
+    m_menuManagerInterface->RemoveActionsFromMenu(EditorIdentifiers::ToolsMenuIdentifier, m_toolActionIdentifiers);
+    m_toolBarManagerInterface->RemoveActionsFromToolBar(EditorIdentifiers::ToolsToolBarIdentifier, m_toolActionIdentifiers);
     m_toolActionIdentifiers.clear();
 
     AZStd::vector<AZStd::pair<AZStd::string, int>> toolsMenuItems;
@@ -2371,7 +2371,7 @@ void EditorActionsHandler::RefreshToolActions()
             actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 toolActionIdentifier,
                 actionProperties,
                 [viewpaneManager = m_qtViewPaneManager, viewpaneName = viewpane.m_name]
@@ -2401,8 +2401,8 @@ void EditorActionsHandler::RefreshToolActions()
         }
     }
 
-    m_menuManagerInterface->AddActionsToMenu(EditorMenu::ToolsMenuIdentifier, toolsMenuItems);
-    m_toolBarManagerInterface->AddActionsToToolBar(EditorToolBar::ToolsToolBarIdentifier, toolsToolBarItems);
+    m_menuManagerInterface->AddActionsToMenu(EditorIdentifiers::ToolsMenuIdentifier, toolsMenuItems);
+    m_toolBarManagerInterface->AddActionsToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, toolsToolBarItems);
 }
 
 void EditorActionsHandler::InitializeViewBookmarkActions()
@@ -2419,7 +2419,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         auto outcome = m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [index]
@@ -2460,7 +2460,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, IsLevelLoaded);
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, actionIdentifier);
 
         m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, AZStd::string::format("Shift+F%i", index+1));
     }
@@ -2477,7 +2477,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorActionContext::MainWindowContextIdentifier,
+            EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
             [index]
@@ -2496,7 +2496,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, IsLevelLoaded);
-        m_actionManagerInterface->AddActionToUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, actionIdentifier);
 
         m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, AZStd::string::format("Ctrl+F%i", index+1));
     }

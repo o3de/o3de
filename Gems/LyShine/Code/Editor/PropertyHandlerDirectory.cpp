@@ -23,7 +23,8 @@ PropertyDirectoryCtrl::PropertyDirectoryCtrl(QWidget* parent)
         &AzToolsFramework::PropertyAssetCtrl::OnAssetIDChanged,
         [ this ]([[maybe_unused]] AZ::Data::AssetId newAssetID)
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
         });
 
     setAcceptDrops(true);
@@ -175,7 +176,8 @@ bool PropertyHandlerDirectory::ReadValuesIntoGUI(size_t index, PropertyDirectory
 
 void PropertyHandlerDirectory::Register()
 {
-    EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew PropertyHandlerDirectory());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerDirectory());
 }
 
 #include <moc_PropertyHandlerDirectory.cpp>

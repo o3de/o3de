@@ -22,17 +22,7 @@ namespace AZ
             RenderToTexturePassData() = default;
             virtual ~RenderToTexturePassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<RenderToTexturePassData, PassData>()
-                        ->Version(0)
-                        ->Field("OutputWidth", &RenderToTexturePassData::m_width)
-                        ->Field("OutputHeight", &RenderToTexturePassData::m_height)
-                        ->Field("OutputFormat", &RenderToTexturePassData::m_format);
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             uint32_t m_width = 256;
             uint32_t m_height = 256;

@@ -71,6 +71,7 @@ namespace AssetProcessor
                 AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "FileIOUnavailable");
                 AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "LegacySystemInterfaceCreated");
                 AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "CriticalAssetsCompiled");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "LegacyCommandLineProcessed");
             }
         }
 

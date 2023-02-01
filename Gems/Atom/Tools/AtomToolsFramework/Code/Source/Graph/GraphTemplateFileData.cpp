@@ -69,7 +69,7 @@ namespace AtomToolsFramework
 
     bool GraphTemplateFileData::IsLoggingEnabled() const
     {
-        return GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileLoggingEnabled", false);
+        return GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/EnableLogging", false);
     }
 
     const AZStd::string& GraphTemplateFileData::GetPath() const

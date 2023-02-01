@@ -354,6 +354,48 @@ namespace AssetProcessor
         return response;
     }
 
+    AssetFingerprintClearResponse AssetProcessorManager::ProcessFingerprintClearRequest(MessageData<AssetFingerprintClearRequest> messageData)
+    {
+        AssetFingerprintClearResponse response;
+        ProcessFingerprintClearRequest(*messageData.m_message, response);
+        return response;
+    }
+
+    void AssetProcessorManager::ProcessFingerprintClearRequest(
+        AssetFingerprintClearRequest& request, AssetFingerprintClearResponse& response)
+    {
+        SourceAssetReference sourceAsset;
+
+        if (QFileInfo(request.m_searchTerm.c_str()).isAbsolute())
+        {
+            sourceAsset = SourceAssetReference(request.m_searchTerm.c_str());
+        }
+        else
+        {
+            QString absolutePath = m_platformConfig->FindFirstMatchingFile(request.m_searchTerm.c_str());
+
+            if (absolutePath.isEmpty())
+            {
+                response.m_isSuccess = false;
+                return;
+            }
+
+            sourceAsset = SourceAssetReference(absolutePath.toUtf8().constData());
+        }
+
+        response.m_isSuccess = m_stateData->UpdateFileHashByFileNameAndScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), 0);
+
+        // if setting the file hash failed, still try to clear the job fingerprints.
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
+        if (!m_stateData->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source))
+        {
+            response.m_isSuccess = false;
+            return;
+        }
+
+        response.m_isSuccess = response.m_isSuccess && m_stateData->SetJobFingerprintsBySourceID(source.m_sourceID, 0);
+    }
+
     //! A network request came in asking, for a given input asset, what the status is of any jobs related to that request
     AssetJobsInfoResponse AssetProcessorManager::ProcessGetAssetJobsInfoRequest(MessageData<AssetJobsInfoRequest> messageData)
     {
@@ -796,7 +838,7 @@ namespace AssetProcessor
             // send a network message when not in batch mode.
             const ScanFolderInfo* scanFolder = m_platformConfig->GetScanFolderByPath(jobEntry.m_sourceAssetReference.ScanFolderPath().c_str());
             AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(AZ::OSString(source.m_sourceName.c_str()), AZ::OSString(scanFolder->ScanPath().toUtf8().constData()), AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileFailed, source.m_sourceGuid);
-            EBUS_EVENT(AssetProcessor::ConnectionBus, Send, 0, message);
+            AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::Send, 0, message);
             MessageInfoBus::Broadcast(&MessageInfoBusTraits::OnAssetFailed, source.m_sourceName);
         }
 
@@ -2240,7 +2282,8 @@ namespace AssetProcessor
         ++m_numTotalSourcesFound;
 
         AssetProcessor::BuilderInfoList builderInfoList;
-        EBUS_EVENT(AssetProcessor::AssetBuilderInfoBus, GetMatchingBuildersInfo, sourceAsset.AbsolutePath().c_str(), builderInfoList);
+        AssetProcessor::AssetBuilderInfoBus::Broadcast(
+            &AssetProcessor::AssetBuilderInfoBus::Events::GetMatchingBuildersInfo, sourceAsset.AbsolutePath().c_str(), builderInfoList);
 
         if (builderInfoList.size())
         {
@@ -3310,6 +3353,7 @@ namespace AssetProcessor
             m_fileModTimes.clear();
             m_fileHashes.clear();
 
+            QueueIdleCheck();
             m_initialScanSkippingFeature = false;
             return;
         }

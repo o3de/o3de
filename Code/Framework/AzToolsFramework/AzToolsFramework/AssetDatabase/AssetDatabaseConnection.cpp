@@ -1757,7 +1757,7 @@ namespace AzToolsFramework
         AZStd::string AssetDatabaseConnection::GetAssetDatabaseFilePath()
         {
             AZStd::string databaseLocation;
-            EBUS_EVENT(AssetDatabaseRequests::Bus, GetAssetDatabaseLocation, databaseLocation);
+            AssetDatabaseRequests::Bus::Broadcast(&AssetDatabaseRequests::Bus::Events::GetAssetDatabaseLocation, databaseLocation);
             if (databaseLocation.empty())
             {
                 databaseLocation = "assetdb.sqlite";

@@ -8,6 +8,7 @@
 
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 namespace AtomToolsFramework
@@ -143,6 +144,34 @@ namespace AtomToolsFramework
             names.push_back(dataType->GetDisplayName());
         }
         return names;
+    }
+
+    bool AddRegisteredSettingGroupsToMap(DynamicNodeSettingsMap& settings)
+    {
+        AZStd::vector<AZStd::string> availableStrings;
+        DynamicNodeManagerRequestBus::BroadcastResult(
+            availableStrings, &DynamicNodeManagerRequestBus::Events::GetRegisteredEditDataSettingNames);
+
+        AZStd::vector<AZStd::string> selectedStrings;
+        selectedStrings.reserve(settings.size());
+        for (const auto& settingPair : settings)
+        {
+            selectedStrings.push_back(settingPair.first);
+        }
+
+        if (GetStringListFromDialog(selectedStrings, availableStrings, "Select Setting Groups To Add", true))
+        {
+            for (const auto& settingGroup : selectedStrings)
+            {
+                if (!settings.contains(settingGroup))
+                {
+                    settings.emplace(settingGroup, AZStd::vector<AZStd::string>{});
+                }
+            }
+            return true;
+        }
+
+        return false;
     }
 
     const AZ::Edit::ElementData* FindDynamicEditDataForSetting(const DynamicNodeSettingsMap& settings, const void* elementPtr)
