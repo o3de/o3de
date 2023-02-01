@@ -29,14 +29,20 @@ if(json_error)
     message(FATAL_ERROR "Unable to read key 'engine_name' from '${engine_json_path}', error: ${json_error}")
 endif()
 
-# Make sure we are matching LY_ENGINE_NAME_TO_USE with the current engine
+# Make sure we are matching O3DE_ENGINE_NAME_TO_USE with the current engine
 set(found_matching_engine FALSE)
-if(this_engine_name STREQUAL LY_ENGINE_NAME_TO_USE)
+
+# Support older CMake prefixes
+if(LY_ENGINE_NAME_TO_USE AND NOT O3DE_ENGINE_NAME_TO_USE)
+    set(O3DE_ENGINE_NAME_TO_USE ${LY_ENGINE_NAME_TO_USE})
+endif()
+
+if(this_engine_name STREQUAL O3DE_ENGINE_NAME_TO_USE)
     set(found_matching_engine TRUE)
 endif()
 
 find_package_handle_standard_args(o3de
-    "The engine name for this engine '${this_engine_name}' does not match the projects engine name '${LY_ENGINE_NAME_TO_USE}'."
+    "The engine name for this engine '${this_engine_name}' does not match the projects engine name '${O3DE_ENGINE_NAME_TO_USE}'."
     found_matching_engine
 )
 
