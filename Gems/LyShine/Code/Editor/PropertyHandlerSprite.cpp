@@ -23,7 +23,7 @@
 
 #include "SpriteBorderEditorCommon.h"
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 

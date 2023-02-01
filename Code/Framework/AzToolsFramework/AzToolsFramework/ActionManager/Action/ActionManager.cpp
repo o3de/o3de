@@ -6,12 +6,108 @@
  *
  */
 
-#include <AzToolsFramework/ActionManager/Action/ActionManager.h>
+#include <QApplication>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QShortcutEvent>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 
 namespace AzToolsFramework
 {
+    //! This class is used to install an event filter on each widget that the action contexts are registered to in order to properly handle
+    //! ambiguous shorcuts.
+    class ActionContextWidgetWatcher : public QObject
+    {
+    public:
+        explicit ActionContextWidgetWatcher(QObject* parent)
+            : QObject(parent)
+        {
+        }
+
+        bool eventFilter(QObject* watched, QEvent* event) override
+        {
+            switch (event->type())
+            {
+            case QEvent::Shortcut:
+            {
+                auto shortcutEvent = static_cast<QShortcutEvent*>(event);
+                if (shortcutEvent->isAmbiguous())
+                {
+                    QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
+                    bool triggered = false;
+                    for (QAction* action : watchedWidget->actions())
+                    {
+                        if (action->isEnabled() && action->shortcut() == shortcutEvent->key())
+                        {
+                            action->trigger();
+                            triggered = true;
+                        }
+                    }
+
+                    if (triggered)
+                    {
+                        return true;
+                    }
+                }
+                break;
+            }
+            case QEvent::ShortcutOverride:
+            {
+                auto keyEvent = static_cast<QKeyEvent*>(event);
+                int keyCode = keyEvent->key();
+                Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
+                if (modifiers & Qt::ShiftModifier)
+                {
+                    keyCode += Qt::SHIFT;
+                }
+                if (modifiers & Qt::ControlModifier)
+                {
+                    keyCode += Qt::CTRL;
+                }
+                if (modifiers & Qt::AltModifier)
+                {
+                    keyCode += Qt::ALT;
+                }
+                if (modifiers & Qt::MetaModifier)
+                {
+                    keyCode += Qt::META;
+                }
+
+                QKeySequence keySequence(keyCode);
+
+                auto globalShortcutMap = &QGuiApplicationPrivate::instance()->shortcutMap;
+                bool isAmbiguous = globalShortcutMap->hasShortcutForKeySequence(keySequence);
+                if (isAmbiguous)
+                {
+                    QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
+                    bool triggered = false;
+                    for (QAction* action : watchedWidget->actions())
+                    {
+                        if (action->isEnabled() && action->shortcut() == keySequence)
+                        {
+                            action->trigger();
+                            triggered = true;
+                        }
+                    }
+
+                    if (triggered)
+                    {
+                        // We need to accept the event in addition to return true on this event filter
+                        // to ensure the event doesn't get propagated to any parent widgets.
+                        event->accept();
+                        return true;
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+            }
+            return false;
+        }
+    };
+
     ActionManager::ActionManager()
     {
         AZ::Interface<ActionManagerInterface>::Register(this);
@@ -52,6 +148,8 @@ namespace AzToolsFramework
                 new EditorActionContext(contextIdentifier, properties.m_name, parentContextIdentifier, widget)
             }
         );
+
+        widget->installEventFilter(new ActionContextWidgetWatcher(widget));
 
         return AZ::Success();
     }
