@@ -65,11 +65,14 @@ namespace AZ
 
             FullscreenShadowPass(const RPI::PassDescriptor& descriptor);
 
+            // Pass behavior overrides...
+            void InitializeInternal() override;
+
             // Scope producer functions...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             AZ::RHI::Size GetDepthBufferDimensions();
-            int GetDepthBufferMSAACount();
+            uint16_t GetDepthBufferMSAACount();
 
             void SetConstantData();
 
