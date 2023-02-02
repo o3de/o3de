@@ -255,7 +255,7 @@ namespace AzToolsFramework
             // If no mode can be retrieved, consider it to be the default.
             if (!outcome.IsSuccess())
             {
-                return "default";
+                return DefaultActionContextModeIdentifier;
             }
 
             return AZStd::move(outcome.GetValue());

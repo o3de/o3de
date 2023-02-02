@@ -488,6 +488,7 @@ set(FILES
     RTTI/ReflectionManager.cpp
     RTTI/RTTI.h
     RTTI/TypeInfo.h
+    RTTI/TypeInfo.cpp
     RTTI/TypeInfoSimple.h
     RTTI/TypeSafeIntegral.h
     Script/lua/lua.h
