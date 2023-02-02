@@ -142,6 +142,26 @@ namespace AZ
             return m_rayQueryFeatures;
         }
 
+        const VkPhysicalDeviceFragmentShadingRateFeaturesKHR& PhysicalDevice::GetPhysicalDeviceFragmentShadingRateFeatures() const
+        {
+            return m_shadingRateFeatures;
+        }
+
+        const VkPhysicalDeviceFragmentDensityMapFeaturesEXT& PhysicalDevice::GetPhysicalDeviceFragmentDensityMapFeatures() const
+        {
+            return m_fragmentDensityMapFeatures;
+        }
+
+        const VkPhysicalDeviceFragmentDensityMapPropertiesEXT& PhysicalDevice::GetPhysicalDeviceFragmentDensityMapProperties() const
+        {
+            return m_fragmentDensityMapProperties;
+        }
+
+        const VkPhysicalDeviceFragmentShadingRatePropertiesKHR& PhysicalDevice::GetPhysicalDeviceFragmentShadingRateProperties() const
+        {
+            return m_fragmentShadingRateProperties;
+        }
+
         const VkPhysicalDeviceShaderFloat16Int8FeaturesKHR& PhysicalDevice::GetPhysicalDeviceFloat16Int8Features() const
         {
             return m_float16Int8Features;
@@ -290,7 +310,11 @@ namespace AZ
                 VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
                 VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
                 VK_KHR_SPIRV_1_4_EXTENSION_NAME,
-                VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME
+                VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
+
+                VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
+                VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME,
+                VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
             } };
 
             [[maybe_unused]] uint32_t optionalExtensionCount = aznumeric_cast<uint32_t>(optionalExtensions.size());
@@ -336,8 +360,8 @@ namespace AZ
                     heapStats->m_name = AZStd::string::format("Heap %d", static_cast<int>(i));
                     heapStats->m_heapMemoryType = RHI::CheckBitsAll(properties.memoryProperties.memoryHeaps[i].flags, static_cast<VkMemoryHeapFlags>(VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)) ? RHI::HeapMemoryLevel::Device : RHI::HeapMemoryLevel::Host;
                     heapStats->m_memoryUsage.m_budgetInBytes = budget.heapBudget[i];
-                    heapStats->m_memoryUsage.m_reservedInBytes = 0;
-                    heapStats->m_memoryUsage.m_residentInBytes = budget.heapUsage[i];
+                    heapStats->m_memoryUsage.m_totalResidentInBytes = budget.heapUsage[i];
+                    heapStats->m_memoryUsage.m_usedResidentInBytes = 0;
                 }
             }
         }
@@ -409,6 +433,16 @@ namespace AZ
                 rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
                 accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
 
+                VkPhysicalDeviceFragmentShadingRateFeaturesKHR& shadingRateFeatures = m_shadingRateFeatures;
+                shadingRateFeatures = {};
+                shadingRateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
+                rayTracingPipelineFeatures.pNext = &shadingRateFeatures;
+
+                VkPhysicalDeviceFragmentDensityMapFeaturesEXT& densityMapFeatures = m_fragmentDensityMapFeatures;
+                densityMapFeatures = {};
+                densityMapFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
+                shadingRateFeatures.pNext = &densityMapFeatures;
+
                 VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
                 deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
                 deviceFeatures2.pNext = &descriptorIndexingFeatures;
@@ -427,6 +461,12 @@ namespace AZ
 
                 m_accelerationStructureProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR;
                 m_rayTracingPipelineProperties.pNext = &m_accelerationStructureProperties;
+
+                m_fragmentDensityMapProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT;
+                m_accelerationStructureProperties.pNext = &m_fragmentDensityMapProperties;
+
+                m_fragmentShadingRateProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
+                m_fragmentDensityMapProperties.pNext = &m_fragmentShadingRateProperties;
 
                 context.GetPhysicalDeviceProperties2KHR(vkPhysicalDevice, &deviceProps2);
                 m_deviceProperties = deviceProps2.properties;

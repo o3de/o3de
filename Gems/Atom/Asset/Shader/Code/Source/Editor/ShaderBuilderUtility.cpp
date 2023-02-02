@@ -48,7 +48,7 @@ namespace AZ
         {
             [[maybe_unused]] static constexpr char ShaderBuilderUtilityName[] = "ShaderBuilderUtility";
 
-            Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile)
+            Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile, bool warningsAsErrors)
             {
                 RPI::ShaderSourceData shaderSourceData;
 
@@ -68,12 +68,18 @@ namespace AZ
 
                 JsonSerialization::Load(shaderSourceData, document, settings);
 
-                if (reportingHelper.WarningsReported() || reportingHelper.ErrorsReported())
+                if (reportingHelper.ErrorsReported())
                 {
                     return AZ::Failure(reportingHelper.GetErrorMessage());
                 }
-
-                return AZ::Success(shaderSourceData);
+                else if (warningsAsErrors && reportingHelper.WarningsReported())
+                {
+                    return AZ::Failure(AZStd::string("Warnings treated as error, see above."));
+                }
+                else
+                {
+                    return AZ::Success(shaderSourceData);
+                }
             }
 
             void GetAbsolutePathToAzslFile(const AZStd::string& shaderSourceFileFullPath, AZStd::string specifiedShaderPathAndName, AZStd::string& absoluteAzslPath)
@@ -850,8 +856,25 @@ namespace AZ
 
             IncludedFilesParser::IncludedFilesParser()
             {
-                AZStd::regex regex(R"(#\s*include\s+[<|"]([\w|/|\\|\.|\-|\:]+)[>|"])", AZStd::regex::ECMAScript);
-                m_includeRegex.swap(regex);
+                #define FILE_PATH_REGEX R"([<|"]([\w|/|\\|\.|\-|\:]+)[>|"])"
+                #define INCLUDE_REGEX R"(#\s*include\s+)"
+
+                // TODO(MaterialPipeline): This is a very specialized hack to support material pipelines. The intermediate .azsli file looks like this:
+                //     #define MATERIAL_TYPE_AZSLI_FILE_PATH "D:\o3de\Gems\Atom\TestData\TestData\Materials\Types\MaterialPipelineTest_Animated.azsli" 
+                //     #include "D:\o3de\Gems\Atom\Feature\Common\Assets\Materials\Pipelines\LowEndPipeline\ForwardPass_BaseLighting.azsli"
+                // Then the ForwardPass_BaseLighting.azsli file has this line:
+                //     #include MATERIAL_TYPE_AZSLI_FILE_PATH
+                // So we treat "#define MATERIAL_TYPE_AZSLI_FILE_PATH" the same as an include directive.
+                // The "right" way to handle this would be to use an actual preprocessor which shouild not be done in CreateJobs. We could introduce
+                // an intermediate builder that just preprocesses the file and outputs that as an intermediate asset, then do the normal processing
+                // in a subsequent builder.
+                #define SPECIAL_DEFINE_REGEX R"(#\s*define\s+MATERIAL_TYPE_AZSLI_FILE_PATH\s+)"
+
+                m_includeRegex = AZStd::regex("(?:" INCLUDE_REGEX "|" SPECIAL_DEFINE_REGEX ")" FILE_PATH_REGEX, AZStd::regex::ECMAScript);
+
+                #undef FILE_PATH_REGEX
+                #undef INCLUDE_REGEX
+                #undef SPECIAL_DEFINE_REGEX
             }
 
             AZStd::vector<AZStd::string> IncludedFilesParser::ParseStringAndGetIncludedFiles(AZStd::string_view haystack) const

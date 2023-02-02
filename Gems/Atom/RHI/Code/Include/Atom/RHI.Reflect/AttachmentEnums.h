@@ -78,6 +78,9 @@ namespace AZ
             //! for static data.
             InputAssembly,
 
+            //! An attachment used for specifying the framebuffer shading rates.
+            ShadingRate,
+
             Count,
         };
 
@@ -93,7 +96,9 @@ namespace AZ
             Indirect = AZ_BIT(static_cast<uint32_t>(ScopeAttachmentUsage::Indirect)),
             SubpassInput = AZ_BIT(static_cast<uint32_t>(ScopeAttachmentUsage::SubpassInput)),
             InputAssembly = AZ_BIT(static_cast<uint32_t>(ScopeAttachmentUsage::InputAssembly)),
-            All = RenderTarget | DepthStencil | Shader | Copy | Resolve | Predication | Indirect | SubpassInput | InputAssembly
+            ShadingRate = AZ_BIT(static_cast<uint32_t>(ScopeAttachmentUsage::ShadingRate)),
+            All =
+                RenderTarget | DepthStencil | Shader | Copy | Resolve | Predication | Indirect | SubpassInput | InputAssembly | ShadingRate
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ScopeAttachmentUsageMask)

@@ -79,6 +79,12 @@ namespace EMotionFX
 
         EMStudio::SimulatedObjectActionManager* GetActionManager() const { return m_actionManager.get(); }
 
+        Actor* GetActor() const;
+        ActorInstance* GetActorInstance() const;
+        Node* GetNode() const;
+        Physics::CharacterColliderNodeConfiguration* GetNodeConfig() const;
+        QModelIndexList GetSelectedModelIndices() const;
+
     public slots:
         void OnContextMenu(const QPoint& position);
         void OnRemoveSimulatedObject(const QModelIndex& objectIndex);
@@ -86,6 +92,7 @@ namespace EMotionFX
         void OnRemoveSimulatedJoints(const QModelIndexList& jointIndices);
 
         void OnAddCollider();
+        void OnAddColliderByType(const AZ::TypeId& colliderType);
         void OnClearColliders();
 
     private:
@@ -102,6 +109,9 @@ namespace EMotionFX
         SimulatedJointWidget* m_simulatedJointWidget = nullptr;
         QPushButton* m_addSimulatedObjectButton = nullptr;
 
+        QLabel* m_instruction1 = nullptr;
+        QLabel* m_instruction2 = nullptr;
+
         // Rendering
         AZStd::vector<AZ::Vector3> m_vertexBuffer;
         AZStd::vector<AZ::u32> m_indexBuffer;
@@ -114,5 +124,7 @@ namespace EMotionFX
         MCORE_DEFINECOMMANDCALLBACK(AddSimulatedJointsCallback);
         // static bool DataChanged(AZ::u32 actorId);
         AZStd::vector<MCore::Command::Callback*> m_commandCallbacks;
+
+        static int s_jointLabelSpacing;
     };
 } // namespace EMotionFX

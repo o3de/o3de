@@ -118,6 +118,7 @@ namespace AzToolsFramework
 
         // Spacing is appropriate and matches the outliner concept work from the UI team.
         static const int s_OutlinerSpacing = 7;
+        static const int s_OutlinerSpacingForLevel = 10;
 
         static bool s_paintingName;
 
@@ -202,6 +203,7 @@ namespace AzToolsFramework
 
         bool m_autoExpandEnabled = true;
         bool m_layoutResetQueued = false;
+        bool m_suppressNextSelectEntity = false;
 
         AZStd::string m_filterString;
         AZStd::vector<ComponentTypeValue> m_componentFilters;

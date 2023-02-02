@@ -6,7 +6,7 @@
  *
  */
 #include <RHI/CommandList.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Query.h>
 #include <RHI/QueryPool.h>

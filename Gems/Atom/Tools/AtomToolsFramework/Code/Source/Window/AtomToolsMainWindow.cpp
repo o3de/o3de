@@ -188,6 +188,21 @@ namespace AtomToolsFramework
         return names;
     }
 
+    void AtomToolsMainWindow::SetStatusMessage(const AZStd::string& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(message.c_str()));
+    }
+
+    void AtomToolsMainWindow::SetStatusWarning(const AZStd::string& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"Yellow\">%1</font>").arg(message.c_str()));
+    }
+
+    void AtomToolsMainWindow::SetStatusError(const AZStd::string& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(message.c_str()));
+    }
+
     void AtomToolsMainWindow::QueueUpdateMenus(bool rebuildMenus)
     {
         m_rebuildMenus = m_rebuildMenus || rebuildMenus;
@@ -266,21 +281,6 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::UpdateMenus([[maybe_unused]] QMenuBar* menuBar)
     {
-    }
-
-    void AtomToolsMainWindow::SetStatusMessage(const QString& message)
-    {
-        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(message));
-    }
-
-    void AtomToolsMainWindow::SetStatusWarning(const QString& message)
-    {
-        m_statusMessage->setText(QString("<font color=\"Yellow\">%1</font>").arg(message));
-    }
-
-    void AtomToolsMainWindow::SetStatusError(const QString& message)
-    {
-        m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(message));
     }
 
     void AtomToolsMainWindow::PopulateSettingsInspector(InspectorWidget* inspector) const

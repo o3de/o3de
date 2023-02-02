@@ -198,6 +198,9 @@ namespace AzToolsFramework
 
         if (!m_containerClearButton)
         {
+            QIcon icon = QIcon(QStringLiteral(":/Cursors/Grab_release.svg"));
+            this->setCursor(QCursor(icon.pixmap(16), 5, 2));
+
             // add those extra controls on the right hand side
             m_containerClearButton = new QToolButton(this);
             m_containerClearButton->setAutoRaise(true);
@@ -239,6 +242,8 @@ namespace AzToolsFramework
         m_sourceNode = dataNode;
         m_treeDepth = depth;
         m_requestedLabelWidth = labelWidth;
+
+        this->unsetCursor();
 
         // discover stuff about node.
 
@@ -321,7 +326,8 @@ namespace AzToolsFramework
 
             // --------------------- HANDLER discovery:
             // in order to discover this, we need the property type and handler type.
-            EBUS_EVENT_RESULT(m_handler, PropertyTypeRegistrationMessages::Bus, ResolvePropertyHandler, m_handlerName, typeUuid);
+            PropertyTypeRegistrationMessages::Bus::BroadcastResult(
+                m_handler, &PropertyTypeRegistrationMessages::Bus::Events::ResolvePropertyHandler, m_handlerName, typeUuid);
 
             
             if (m_handler)
@@ -368,8 +374,6 @@ namespace AzToolsFramework
             delete m_containerClearButton;
             delete m_containerAddButton;
         }
-
-        this->unsetCursor();
 
         if ((m_parentRow) && (m_parentRow->IsContainerEditable()))
         {

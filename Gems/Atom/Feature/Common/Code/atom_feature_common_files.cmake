@@ -151,8 +151,6 @@ set(FILES
     Source/Material/Transform2DFunctor.h
     Source/Material/UseTextureFunctor.cpp
     Source/Material/UseTextureFunctor.h
-    Source/Material/DrawListFunctor.cpp
-    Source/Material/DrawListFunctor.h
     Source/Math/GaussianMathFilter.h
     Source/Math/GaussianMathFilter.cpp
     Source/Math/MathFilter.h

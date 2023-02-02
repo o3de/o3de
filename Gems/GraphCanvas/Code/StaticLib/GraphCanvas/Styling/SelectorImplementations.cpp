@@ -139,7 +139,7 @@ namespace GraphCanvas
             SelectorVector selectors;
             StyledEntityRequestBus::EventResult(selectors, object, &StyledEntityRequests::GetStyleSelectors);
 
-            return std::all_of(m_parts.cbegin(), m_parts.cend(), [=](const Selector& s) {
+            return std::all_of(m_parts.cbegin(), m_parts.cend(), [&](const Selector& s) {
                 return std::find(selectors.cbegin(), selectors.cend(), s) != selectors.cend();
             });
         }

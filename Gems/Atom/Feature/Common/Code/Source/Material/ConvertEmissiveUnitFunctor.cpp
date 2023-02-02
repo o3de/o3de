@@ -33,7 +33,7 @@ namespace AZ
             }
         }
 
-        void ConvertEmissiveUnitFunctor::Process(RuntimeContext& context)
+        void ConvertEmissiveUnitFunctor::Process(RPI::MaterialFunctorAPI::RuntimeContext& context)
         {
             // Convert unit on runtime
             float sourceValue = context.GetMaterialPropertyValue<float>(m_intensityPropertyIndex);
@@ -58,7 +58,7 @@ namespace AZ
             context.GetShaderResourceGroup()->SetConstant(m_shaderInputIndex, targetValue);
         }
 
-        void ConvertEmissiveUnitFunctor::Process(EditorContext& context)
+        void ConvertEmissiveUnitFunctor::Process(RPI::MaterialFunctorAPI::EditorContext& context)
         {
             // Update Editor based on selected light unit
             uint32_t lightUnit = context.GetMaterialPropertyValue<uint32_t>(m_lightUnitPropertyIndex);

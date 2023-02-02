@@ -64,6 +64,13 @@ ly_create_alias(
         Gem::AWSCore
 )
 
+ly_create_alias(
+    NAME AWSCore.Unified
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSCore
+)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     include(${pal_dir}/PAL_traits_editor_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)

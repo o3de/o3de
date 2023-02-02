@@ -54,15 +54,15 @@ namespace AzToolsFramework
         m_buttonSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
             [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
             {
-                AzFramework::PaintBrushMode brushMode = AzFramework::PaintBrushMode::Paintbrush;
+                PaintBrushMode brushMode = PaintBrushMode::Paintbrush;
 
                 if (buttonId == m_eyedropperModeButtonId)
                 {
-                    brushMode = AzFramework::PaintBrushMode::Eyedropper;
+                    brushMode = PaintBrushMode::Eyedropper;
                 }
                 else if (buttonId == m_smoothModeButtonId)
                 {
-                    brushMode = AzFramework::PaintBrushMode::Smooth;
+                    brushMode = PaintBrushMode::Smooth;
                 }
 
                 AzToolsFramework::OpenViewPane(AzToolsFramework::s_paintBrushSettingsName);
@@ -75,13 +75,53 @@ namespace AzToolsFramework
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_paintBrushControlClusterId,
             m_buttonSelectionHandler);
+
+        AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler::BusConnect();
+
+        // Set the initially-active brush mode button.
+        PaintBrushMode brushMode = PaintBrushMode::Paintbrush;
+        AzToolsFramework::GlobalPaintBrushSettingsRequestBus::BroadcastResult(
+            brushMode, &AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Events::GetBrushMode);
+        OnPaintBrushModeChanged(brushMode);
     }
 
     PaintBrushSubModeCluster::~PaintBrushSubModeCluster()
     {
+        AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler::BusDisconnect();
+
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
             m_paintBrushControlClusterId);
     }
+
+    void PaintBrushSubModeCluster::OnPaintBrushModeChanged(PaintBrushMode newBrushMode)
+    {
+        // Change the active brush mode button based on the newly-active brush mode.
+
+        AzToolsFramework::ViewportUi::ButtonId buttonId;
+
+        switch (newBrushMode)
+        {
+        case PaintBrushMode::Paintbrush:
+            buttonId = m_paintModeButtonId;
+            break;
+        case PaintBrushMode::Eyedropper:
+            buttonId = m_eyedropperModeButtonId;
+            break;
+        case PaintBrushMode::Smooth:
+            buttonId = m_smoothModeButtonId;
+            break;
+        default:
+            AZ_Assert(false, "Unknown brush mode type.");
+            break;
+        }
+
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId,
+            &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton,
+            m_paintBrushControlClusterId,
+            buttonId);
+    }
+
 } // namespace AzToolsFramework

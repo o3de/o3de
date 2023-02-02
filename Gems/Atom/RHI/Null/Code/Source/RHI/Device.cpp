@@ -48,5 +48,10 @@ namespace AZ
         {
             notifyFunction();
         }
+
+        RHI::ShadingRateImageValue Device::ConvertShadingRate([[maybe_unused]] RHI::ShadingRate rate)
+        {
+            return RHI::ShadingRateImageValue{};
+        }
     }
 }

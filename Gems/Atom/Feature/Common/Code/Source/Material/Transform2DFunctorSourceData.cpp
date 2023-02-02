@@ -8,6 +8,7 @@
 
 #include "./Transform2DFunctorSourceData.h"
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
@@ -63,10 +64,10 @@ namespace AZ
             AddMaterialPropertyDependency(functor, functor->m_rotateDegrees);
 
             functor->m_transformMatrix = context.FindShaderInputConstantIndex(Name{m_transformMatrix});
-
+            
             if (functor->m_transformMatrix.IsNull())
             {
-                AZ_Error("MaterialFunctorSourceData", false, "Could not find shader input '%s'", m_transformMatrix.c_str());
+                AZ_Error("MaterialFunctorSourceData", false, "Could not find shader input '%s'", context.GetNameContext()->GetContextualizedProperty(m_transformMatrix).c_str());
                 return Failure();
             }
 
@@ -78,8 +79,9 @@ namespace AZ
 
                 if (functor->m_transformMatrixInverse.IsNull())
                 {
-                    AZ_Error("MaterialFunctorSourceData", false, "Could not find shader input '%s'", m_transformMatrixInverse.c_str());
-                    return Failure();
+                    // There are cases where the same functor definition is used for multiple shaders where some have an inverse matrix and some do not.
+                    // So this is just a warning, not an error, to allow re-use of that functor definition.
+                    AZ_Warning("MaterialFunctorSourceData", false, "Could not find shader input '%s'", context.GetNameContext()->GetContextualizedProperty(m_transformMatrixInverse).c_str());
                 }
             }
 

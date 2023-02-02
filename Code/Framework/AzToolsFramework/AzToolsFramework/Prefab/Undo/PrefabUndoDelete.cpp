@@ -73,7 +73,7 @@ namespace AzToolsFramework
                 const AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentEntity->GetId());
 
                 PrefabDom parentEntityDomAfterRemovingChildren;
-                m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterRemovingChildren, *parentEntity);
+                m_instanceToTemplateInterface->GenerateEntityDomBySerializing(parentEntityDomAfterRemovingChildren, *parentEntity);
 
                 // If the parent is the focused container entity, we need to fetch from root template rather than
                 // retrieving from the focused template. The focused containter entity DOM in focused template does
@@ -82,7 +82,7 @@ namespace AzToolsFramework
                 if (parentEntity->GetId() == focusedInstance.GetContainerEntityId())
                 {
                     PrefabDom parentEntityDomBeforeRemoving;
-                    m_instanceDomGeneratorInterface->GenerateEntityDom(parentEntityDomBeforeRemoving, *parentEntity);
+                    m_instanceDomGeneratorInterface->GetEntityDomFromTemplate(parentEntityDomBeforeRemoving, *parentEntity);
 
                     if (parentEntityDomBeforeRemoving.IsNull())
                     {

@@ -57,14 +57,19 @@ namespace AZ
             return m_materialTypeAsset;
         }
 
-        const ShaderCollection& MaterialAsset::GetShaderCollection() const
+        const ShaderCollection& MaterialAsset::GetGeneralShaderCollection() const
         {
-            return m_materialTypeAsset->GetShaderCollection();
+            return m_materialTypeAsset->GetGeneralShaderCollection();
         }
 
         const MaterialFunctorList& MaterialAsset::GetMaterialFunctors() const
         {
             return m_materialTypeAsset->GetMaterialFunctors();
+        }
+
+        const MaterialTypeAsset::MaterialPipelineMap& MaterialAsset::GetMaterialPipelinePayloads() const
+        {
+            return m_materialTypeAsset->GetMaterialPipelinePayloads();
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetMaterialSrgLayout(const SupervariantIndex& supervariantIndex) const
@@ -181,7 +186,7 @@ namespace AZ
 
                         MaterialPropertyValue finalValue = value.CastToType(propertyDescriptor->GetStorageDataTypeId());
 
-                        if (ValidateMaterialPropertyDataType(finalValue.GetTypeId(), name, propertyDescriptor, reportError))
+                        if (ValidateMaterialPropertyDataType(finalValue.GetTypeId(), propertyDescriptor, reportError))
                         {
                             finalizedPropertyValues[propertyIndex.GetIndex()] = finalValue;
                         }
@@ -212,7 +217,7 @@ namespace AZ
         
             return m_propertyValues;
         }
-        
+
         const AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>>& MaterialAsset::GetRawPropertyValues() const
         {
             return m_rawPropertyValues;

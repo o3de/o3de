@@ -58,6 +58,7 @@ ly_add_target(
 # active in Clients or Servers by default, delete one of both of the following lines:
 ly_create_alias(NAME StreamerProfiler.Clients NAMESPACE Gem TARGETS Gem::StreamerProfiler)
 ly_create_alias(NAME StreamerProfiler.Servers NAMESPACE Gem TARGETS Gem::StreamerProfiler)
+ly_create_alias(NAME StreamerProfiler.Unified NAMESPACE Gem TARGETS Gem::StreamerProfiler)
 
 ################################################################################
 # Tests

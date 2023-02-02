@@ -23,13 +23,14 @@ namespace UnitTest
         : public AZ::ComponentConfig
     {
         AZ_RTTI(TestConfig, "{835CF711-77DB-4DF2-A364-936227A7AF5F}", AZ::ComponentConfig);
+        AZ_CLASS_ALLOCATOR(TestConfig, AZ::SystemAllocator)
+
         uint32_t m_testValue = 0;
     };
 
     class TestController
     {
     public:
-
         AZ_TYPE_INFO(TestController, "{89C1FED9-C306-4B00-9EA4-577862D9277D}");
 
         static void Reflect(AZ::ReflectContext* context)

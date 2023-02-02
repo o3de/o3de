@@ -469,6 +469,15 @@ namespace UnitTest
             return false;
         }
 
+        void SetExcludeFromReflectionCubeMaps([[maybe_unused]] bool excludeFromReflectionCubeMaps) override
+        {
+        }
+
+        bool GetExcludeFromReflectionCubeMaps() const override
+        {
+            return false;
+        }
+
         AZ::Data::AssetId m_assetIdOutput;
         void SetModelAssetId(AZ::Data::AssetId modelAssetId) override
         {
@@ -502,6 +511,16 @@ namespace UnitTest
         AZ::RHI::DrawItemSortKey GetSortKey() const override
         {
             return m_drawItemSortKeyOutput;
+        }
+
+        bool m_isAlwaysDynamic = false;
+        void SetIsAlwaysDynamic(bool isAlwaysDynamic) override
+        {
+            m_isAlwaysDynamic = isAlwaysDynamic;
+        }
+        bool GetIsAlwaysDynamic() const override
+        {
+            return m_isAlwaysDynamic;
         }
 
         AZ::RPI::Cullable::LodType m_lodTypeOutput;

@@ -54,6 +54,7 @@ ly_add_target(
 # the above module is for use in clients and server type applications
 ly_create_alias(NAME Vegetation.Servers NAMESPACE Gem TARGETS Gem::Vegetation)
 ly_create_alias(NAME Vegetation.Clients NAMESPACE Gem TARGETS Gem::Vegetation)
+ly_create_alias(NAME Vegetation.Unified NAMESPACE Gem TARGETS Gem::Vegetation)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(

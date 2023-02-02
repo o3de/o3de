@@ -21,4 +21,7 @@ namespace AZStd
     // return time in millisecond since 1970/01/01 00:00:00 UTC.
     AZ::u64           GetTimeUTCMilliSecond();
     AZ::u64           GetTimeUTCMicroSecond();
+    //! Returns the cpu time spent on the current thread when invoked
+    //! This time is relative to the running process and has no relation to real time
+    AZStd::chrono::microseconds GetCpuThreadTimeNowMicrosecond();
 }

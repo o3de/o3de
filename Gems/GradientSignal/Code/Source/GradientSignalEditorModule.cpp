@@ -29,6 +29,7 @@
 #include <GradientSignal/Editor/GradientPreviewer.h>
 #include <GradientSignal/Editor/EditorGradientBakerComponent.h>
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
+#include <GradientSignal/Editor/PaintableImageAssetHelper.h>
 #include <UI/GradientPreviewDataWidget.h>
 
 namespace GradientSignal
@@ -72,6 +73,7 @@ namespace GradientSignal
     void GradientSignalEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         GradientPreviewer::Reflect(context);
+        ImageCreatorUtils::PaintableImageAssetHelper<EditorImageGradientComponent, EditorImageGradientComponentMode>::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -107,17 +109,23 @@ namespace GradientSignal
 
     void GradientSignalEditorSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
     {
+    }
 
+    void GradientSignalEditorSystemComponent::OnActionContextModeBindingHook()
+    {
+        EditorImageGradientComponentMode::BindActionsToModes();
     }
 
     void GradientSignalEditorSystemComponent::Activate()
     {
         GradientPreviewDataWidgetHandler::Register();
         StreamingImagePropertyHandler::Register();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void GradientSignalEditorSystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         GradientPreviewDataWidgetHandler::Unregister();
         // We don't need to unregister the StreamingImagePropertyHandler
         // because its set to auto-delete (default)

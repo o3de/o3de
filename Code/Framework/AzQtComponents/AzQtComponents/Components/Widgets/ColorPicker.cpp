@@ -398,6 +398,9 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     m_alphaSlider->setMinimum(0);
     m_alphaSlider->setMaximum(255);
 
+    // Set the default value on the slider.
+    m_alphaSlider->setValue(qRound(m_currentColorController->alpha() * 255.0f));
+
     connect(m_alphaSlider, &QSlider::valueChanged, this, [this](int alpha) {
         m_currentColorController->setAlpha(aznumeric_cast<float>(alpha)/255.0f);
     });
@@ -867,6 +870,7 @@ void ColorPicker::setCurrentColor(const AZ::Color& color)
         m_previousColor = color;
     }
     m_currentColorController->setColor(color);
+    m_currentColorController->setAlpha(color.GetA());
 }
 
 AZ::Color ColorPicker::selectedColor() const

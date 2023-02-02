@@ -91,6 +91,11 @@ namespace UnitTest
         //! After prefab template is updated, we need to propagate the changes to all prefab instances.
         void PropagateAllTemplateChanges();
 
+        //! Helper function to compare two instances and asserts will be thrown if two instances are not identical.
+        //! @param instanceA The given first instance.
+        //! @param instanceB The given second instance.
+        //! @param shouldCompareLinkIds Flag of whether it compares two link ids.
+        //! @param shouldCompareContainerEntities Flag of whether it compares two container entities.
         void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
             bool shouldCompareContainerEntities = true);
 
@@ -109,6 +114,12 @@ namespace UnitTest
         //! @param nestedContainerEntityName Container entity name for the instance alias to find.
         //! @return Nested instance alias for the given container entity name. Returns "" if not found.
         InstanceAlias FindNestedInstanceAliasInInstance(AZ::EntityId containerEntityId, const AZStd::string& nestedContainerEntityName);
+
+        //! Rename an entity.
+        //! Note: Renaming a container entity would be an override edit on the focused prefab.
+        //! @param entityId Entity id for entity to be renamed.
+        //! @param newName New entity name.
+        void RenameEntity(AZ::EntityId entityId, const AZStd::string& newName);
 
         //! Helper functions for validation.
         //! @{

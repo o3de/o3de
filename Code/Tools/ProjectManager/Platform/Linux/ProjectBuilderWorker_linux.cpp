@@ -42,10 +42,11 @@ namespace O3DE::ProjectManager
         bool    compileProfileOnBuild = (whichNinjaResult.IsSuccess());
         const QString gameLauncherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
         const QString serverLauncherTargetName = m_projectInfo.m_projectName + ".ServerLauncher";
+        const QString unifiedLauncherTargetName = m_projectInfo.m_projectName + ".UnifiedLauncher";
 
         QStringList buildProjectArgs = QStringList{ProjectCMakeCommand,
                                                    "--build", ProjectBuildPathPostfix,
-                                                   "--target", gameLauncherTargetName, serverLauncherTargetName, ProjectCMakeBuildTargetEditor};
+                                                   "--target", gameLauncherTargetName, serverLauncherTargetName, unifiedLauncherTargetName, ProjectCMakeBuildTargetEditor};
         if (compileProfileOnBuild)
         {
             buildProjectArgs.append(QStringList{"--config","profile"});

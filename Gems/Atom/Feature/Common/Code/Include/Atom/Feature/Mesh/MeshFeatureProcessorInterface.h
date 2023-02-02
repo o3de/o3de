@@ -38,9 +38,11 @@ namespace AZ
             using RequiresCloneCallback = AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>;
 
             Data::Asset<RPI::ModelAsset> m_modelAsset;
+            RequiresCloneCallback m_requiresCloneCallback = {};
             bool m_isRayTracingEnabled = true;
             bool m_useForwardPassIblSpecular = false;
-            RequiresCloneCallback m_requiresCloneCallback = {};
+            bool m_isAlwaysDynamic = false;
+            bool m_excludeFromReflectionCubeMaps = false;
         };
 
         //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying MeshFeatureProcessor
@@ -119,6 +121,12 @@ namespace AZ
             virtual RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const = 0;
             //! Sets the option to exclude this mesh from baked reflection probe cubemaps
             virtual void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) = 0;
+            //! Gets the if this mesh is excluded from baked reflection probe cubemaps
+            virtual bool GetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle) const = 0;
+            //! Sets a mesh to be considered to be always moving even if the transform hasn't changed. This is useful for meshes that are skinned or have vertex animation.
+            virtual void SetIsAlwaysDynamic(const MeshHandle& meshHandle, bool isAlwaysDynamic) = 0;
+            //! Gets if a mesh is considered to always be moving.
+            virtual bool GetIsAlwaysDynamic(const MeshHandle& meshHandle) const = 0;
             //! Sets the option to exclude this mesh from raytracing
             virtual void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) = 0;
             //! Gets whether this mesh is excluded from raytracing

@@ -19,6 +19,10 @@
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Math/Crc.h>
 
+DECLARE_EBUS_INSTANTIATION(Data::AssetManagerNotifications);
+DECLARE_EBUS_INSTANTIATION(Data::AssetCatalogRequests);
+DECLARE_EBUS_INSTANTIATION(Data::AssetManagerEvents);
+
 namespace AZ
 {
     namespace Data
@@ -197,6 +201,7 @@ namespace AZ
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Event("GetAssetPathById", &Data::AssetCatalogRequests::GetAssetPathById)
                 ->Event("GetAssetIdByPath", &Data::AssetCatalogRequests::GetAssetIdByPath)
+                ->Event("GetAssetInfoById", &Data::AssetCatalogRequests::GetAssetInfoById)
                 ->Event("GetAssetTypeByDisplayName", &Data::AssetCatalogRequests::GetAssetTypeByDisplayName)
                 ;
 

@@ -45,7 +45,6 @@ namespace ShaderManagementConsole
         bool IsModified() const override;
         bool BeginEdit() override;
         bool EndEdit() override;
-        bool CanSave() const override;
 
         // ShaderManagementConsoleDocumentRequestBus::Handler overridfes...
         void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& shaderVariantListSourceData) override;

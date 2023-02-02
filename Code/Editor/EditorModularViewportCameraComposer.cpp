@@ -268,6 +268,12 @@ namespace SandboxEditor
         m_orbitCamera->SetActivationEndedFn(
             [this]
             {
+                // when the orbit camera ends, ensure that the internal camera returns to a look state
+                // (internal offset value for camera is zero)
+                AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                    m_viewportId,
+                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::LookFromOrbit);
+
                 // when the orbit behavior ends the pivot point should fade out and no longer display
                 m_pivotDisplayState = PivotDisplayState::Hidden;
             });

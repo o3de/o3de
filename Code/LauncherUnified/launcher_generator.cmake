@@ -64,6 +64,15 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
             )
         endif()
 
+        if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
+            get_property(unified_gem_dependencies GLOBAL PROPERTY LY_DELAYED_DEPENDENCIES_${project_name}.UnifiedLauncher)
+
+            set(unified_build_dependencies 
+                ${unified_gem_dependencies}
+                Legacy::CrySystem
+            )
+        endif()
+
     else()
 
         set(game_runtime_dependencies
@@ -72,6 +81,12 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
 
         if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
             set(server_runtime_dependencies
+                Legacy::CrySystem
+            )
+        endif()
+
+        if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
+            set(unified_runtime_dependencies
                 Legacy::CrySystem
             )
         endif()
@@ -187,6 +202,61 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
         # Associate the Servers Gem Variant with each projects ServerLauncher
         ly_set_gem_variant_to_load(TARGETS ${project_name}.ServerLauncher VARIANTS Servers)
     endif()
+
+    ################################################################################
+    # Unified
+    ################################################################################
+    if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
+        ly_add_target(
+            NAME ${project_name}.UnifiedLauncher APPLICATION
+            NAMESPACE AZ
+            FILES_CMAKE
+                ${CMAKE_CURRENT_LIST_DIR}/launcher_project_files.cmake
+            PLATFORM_INCLUDE_FILES
+                ${pal_dir}/launcher_project_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+            COMPILE_DEFINITIONS
+                PRIVATE
+                    # Adds the name of the project/game
+                    LY_PROJECT_NAME="${project_name}"
+                    # Adds the ${project_name}_UnifiedLauncher target as a define so for the Settings Registry to use
+                    # when loading .setreg file specializations
+                    # This is needed so that only gems for the project unified launcher are loaded
+                    LY_CMAKE_TARGET="${project_name}_UnifiedLauncher"
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    .
+                    ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.UnifiedLauncher/Includes # required for StaticModules.inl
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::Launcher.Static
+                    AZ::Launcher.Unified.Static
+                    ${unified_build_dependencies}
+            RUNTIME_DEPENDENCIES
+                ${unified_runtime_dependencies}
+        )
+        # Needs to be set manually after ly_add_target to prevent the default location overriding it
+        set_target_properties(${project_name}.UnifiedLauncher
+            PROPERTIES
+                FOLDER ${project_name}
+                LY_PROJECT_NAME ${project_name}
+        )
+
+        if(LY_DEFAULT_PROJECT_PATH)
+            if (TARGET ${project_name})
+                get_target_property(project_unified_launcher_additional_args ${project_name} UNIFIEDLAUNCHER_ADDITIONAL_VS_DEBUGGER_COMMAND_ARGUMENTS)
+                if (project_unified_launcher_additional_args)
+                    # Avoid pushing param-NOTFOUND into the argument in case this property wasn't found
+                    set(additional_unified_vs_debugger_args "${project_unified_launcher_additional_args}")
+                endif()
+            endif()
+
+            set_property(TARGET ${project_name}.UnifiedLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS
+                "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\" ${additional_unified_vs_debugger_args}")
+        endif()
+
+        # Associate the Unified Gem Variant with each projects UnfiedLauncher
+        ly_set_gem_variant_to_load(TARGETS ${project_name}.UnifiedLauncher VARIANTS Unified)
+    endif()
 endforeach()
 
 #! Defer generation of the StaticModules.inl file needed in monolithic builds until after all the CMake targets are known
@@ -264,6 +334,42 @@ function(ly_delayed_generate_static_modules_inl)
                 )
 
                 ly_target_link_libraries(${project_name}.ServerLauncher PRIVATE ${all_server_gem_dependencies})
+            endif()
+
+            if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
+                get_property(unified_gem_dependencies GLOBAL PROPERTY LY_STATIC_MODULE_PROJECTS_DEPENDENCIES_${project_name}.UnifiedLauncher)
+
+                unset(extern_module_declarations)
+                unset(module_invocations)
+
+                unset(all_unified_gem_dependencies)
+                ly_get_gem_load_dependencies(all_unified_gem_dependencies ${project_name}.UnifiedLauncher)
+                foreach(unified_gem_dependency ${unified_gem_dependencies})
+                    ly_get_gem_load_dependencies(unified_gem_load_dependencies ${unified_gem_dependency})
+                    list(APPEND all_unified_gem_dependencies ${unified_gem_load_dependencies} ${unified_gem_dependency})
+                endforeach()
+                foreach(unified_gem_dependency ${all_unified_gem_dependencies})
+                    # Skip interface libraries
+                    if(TARGET ${unified_gem_dependency})
+                        get_target_property(target_type ${unified_gem_dependency} TYPE)
+                        if(${target_type} STREQUAL "INTERFACE_LIBRARY")
+                            continue()
+                        endif()
+                    endif()
+
+                    # Replace "." with "_"
+                    string(REPLACE "." "_" unified_gem_dependency ${unified_gem_dependency})
+
+                    string(APPEND extern_module_declarations "extern \"C\" AZ::Module* CreateModuleClass_Gem_${unified_gem_dependency}();\n")
+                    string(APPEND module_invocations "    modulesOut.push_back(CreateModuleClass_Gem_${unified_gem_dependency}());\n")
+
+                endforeach()
+
+                configure_file(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/StaticModules.in
+                    ${launcher_unified_binary_dir}/${project_name}.UnifiedLauncher/Includes/StaticModules.inl
+                )
+
+                ly_target_link_libraries(${project_name}.UnifiedLauncher PRIVATE ${all_unified_gem_dependencies})
             endif()
         endforeach()
     endif()

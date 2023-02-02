@@ -96,7 +96,7 @@ namespace AzToolsFramework
                             {
                                 for (const AZ::AttributePair& attributePair : data->m_attributes)
                                 {
-                                    PropertyAttributeReader reader(attrValue->GetInstancePointer(), attributePair.second);
+                                    PropertyAttributeReader reader(attrValue->GetInstance(), attributePair.second);
                                     ConsumeAttribute(GUI, attributePair.first, &reader, debugName);
                                 }
                             }

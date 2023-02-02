@@ -46,4 +46,5 @@ ly_create_alias(NAME LyShineExamples.Builders NAMESPACE Gem TARGETS Gem::LyShine
 ly_create_alias(NAME LyShineExamples.Tools    NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::LmbrCentral.Editor)
 ly_create_alias(NAME LyShineExamples.Clients  NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::LmbrCentral)
 ly_create_alias(NAME LyShineExamples.Servers  NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::LmbrCentral)
+ly_create_alias(NAME LyShineExamples.Unified  NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::LmbrCentral)
 

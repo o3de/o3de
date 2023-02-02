@@ -28,12 +28,12 @@ namespace AZ
         void SoftNameBehavior::GetVirtualTypes(AZStd::set<Crc32>& types, const SceneAPI::Containers::Scene& scene,
             SceneAPI::Containers::SceneGraph::NodeIndex node)
         {
-            const AZStd::vector<SoftNameSetting*>* softNames = nullptr;
+            const AZStd::vector<AZStd::unique_ptr<SoftNameSetting>>* softNames = nullptr;
             SceneProcessingConfigRequestBus::BroadcastResult(softNames, &SceneProcessingConfigRequestBus::Events::GetSoftNames);
 
             if (softNames)
             {
-                for (const SoftNameSetting* softName : *softNames)
+                for (const AZStd::unique_ptr<SoftNameSetting>& softName : *softNames)
                 {
                     if (types.find(softName->GetVirtualTypeHash()) != types.end())
                     {

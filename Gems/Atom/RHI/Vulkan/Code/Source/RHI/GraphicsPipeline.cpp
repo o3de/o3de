@@ -30,8 +30,8 @@ namespace AZ
 
             const auto* drawDescriptor = static_cast<const RHI::PipelineStateDescriptorForDraw*>(descriptor.m_pipelineDescritor);
             const RHI::RenderAttachmentLayout& renderAttachmentLayout = drawDescriptor->m_renderAttachmentConfiguration.m_renderAttachmentLayout;            
-            auto renderpassDescriptor = RenderPass::ConvertRenderAttachmentLayout(renderAttachmentLayout, drawDescriptor->m_renderStates.m_multisampleState);
-            renderpassDescriptor.m_device = descriptor.m_device;
+            auto renderpassDescriptor = RenderPass::ConvertRenderAttachmentLayout(
+                *descriptor.m_device, renderAttachmentLayout, drawDescriptor->m_renderStates.m_multisampleState);            
             m_renderPass = descriptor.m_device->AcquireRenderPass(renderpassDescriptor);
 
             return BuildNativePipeline(descriptor, pipelineLayout);
@@ -471,13 +471,19 @@ namespace AZ
                 VK_DYNAMIC_STATE_STENCIL_REFERENCE
             };
 
+            auto& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
             if (multisampleState.m_customPositionsCount)
             {
-                auto& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
                 if (physicalDevice.IsFeatureSupported(DeviceFeature::CustomSampleLocation))
                 {
                     m_dynamicStates.push_back(VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_EXT);
                 }
+            }
+            
+            if (RHI::CheckBitsAll(GetDevice().GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw) &&
+                physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
+            {
+                m_dynamicStates.push_back(VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR);
             }
 
             VkPipelineDynamicStateCreateInfo& info = m_pipelineDynamicStateCreateInfo;

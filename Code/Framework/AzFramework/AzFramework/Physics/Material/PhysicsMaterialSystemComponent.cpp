@@ -10,7 +10,6 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 
 #include <AzFramework/Asset/GenericAssetHandler.h>
-#include <AzFramework/Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialPropertyValue.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
@@ -20,8 +19,6 @@ namespace Physics
 {
     void MaterialSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        PhysicsLegacy::MaterialSelection::Reflect(context);
-
         MaterialPropertyValue::Reflect(context);
         MaterialAsset::Reflect(context);
         MaterialSlots::Reflect(context);

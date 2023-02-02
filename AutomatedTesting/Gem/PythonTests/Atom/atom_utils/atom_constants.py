@@ -991,7 +991,7 @@ class AtomComponentProperties:
             'Attenuation radius Radius': 'Controller|Configuration|Attenuation radius|Radius',
             'Enable shadow': 'Controller|Configuration|Shadows|Enable shadow',
             'Shadows Bias': 'Controller|Configuration|Shadows|Bias',
-            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal Shadow Bias',
+            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal shadow bias',
             'Shadowmap size': 'Controller|Configuration|Shadows|Shadowmap size',
             'Shadow filter method': 'Controller|Configuration|Shadows|Shadow filter method',
             'Filtering sample count': 'Controller|Configuration|Shadows|Filtering sample count',
@@ -1323,3 +1323,112 @@ class AtomComponentProperties:
             'EnableDownsample Override': 'Controller|Configuration|Overrides|EnableDownsample Override',
         }
         return properties[property]
+
+
+class AtomToolsDocumentRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.bus.AtomToolsDocumentRequestBus
+    """
+    GET_ABSOLUTE_PATH = "GetAbsolutePath"
+    OPEN = "Open"
+    REOPEN = "Reopen"
+    CLOSE = "Close"
+    SAVE = "Save"
+    SAVE_AS_CHILD = "SaveAsChild"
+    SAVE_AS_COPY = "SaveAsCopy"
+    IS_OPEN = "IsOpen"
+    IS_MODIFIED = "IsModified"
+    CAN_SAVE_AS_CHILD = "CanSaveAsChild"
+    CAN_UNDO = "CanUndo"
+    CAN_REDO = "CanRedo"
+    UNDO = "Undo"
+    REDO = "Redo"
+    BEGIN_EDIT = "BeginEdit"
+    END_EDIT = "EndEdit"
+
+
+class AtomToolsDocumentSystemRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.bus.AtomToolsDocumentSystemRequestBus
+    """
+    CREATE_DOCUMENT_FROM_TYPE_NAME = "CreateDocumentFromTypeName"
+    CREATE_DOCUMENT_FROM_FILE_TYPE = "CreateDocumentFromFileType"
+    CREATE_DOCUMENT_FROM_FILE_PATH = "CreateDocumentFromFilePath"
+    DESTROY_DOCUMENT = "DestroyDocument"
+    OPEN_DOCUMENT = "OpenDocument"
+    CLOSE_DOCUMENT = "CloseDocument"
+    CLOSE_ALL_DOCUMENTS = "CloseAllDocuments"
+    CLOSE_ALL_DOCUMENTS_EXCEPT = "CloseAllDocumentsExcept"
+    SAVE_DOCUMENT = "SaveDocument"
+    SAVE_DOCUMENT_AS_COPY = "SaveDocumentAsCopy"
+    SAVE_DOCUMENT_AS_CHILD = "SaveDocumentAsChild"
+    SAVE_ALL_DOCUMENTS = "SaveAllDocuments"
+    SAVE_ALL_MODIFIED_DOCUMENTS = "SaveAllModifiedDocuments"
+    QUEUE_REOPEN_MODIFIED_DOCUMENTS = "QueueReopenModifiedDocuments"
+    REOPEN_MODIFIED_DOCUMENTS = "ReopenModifiedDocuments"
+    GET_DOCUMENT_COUNT = "GetDocumentCount"
+    IS_DOCUMENT_OPEN = "IsDocumentOpen"
+    ADD_RECENT_FILE_PATH = "AddRecentFilePath"
+    CLEAR_RECENT_FILE_PATHS = "ClearRecentFilePaths"
+    SET_RECENT_FILE_PATHS = "SetRecentFilePaths"
+    GET_RECENT_FILE_PATHS = "GetRecentFilePaths"
+
+
+class AtomToolsMainWindowRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.bus.AtomToolsMainWindowRequestBus
+    """
+    ACTIVATE_WINDOW = "ActivateWindow"
+    SET_DOCK_WIDGET_VISIBLE = "SetDockWidgetVisible"
+    IS_DOCK_WIDGET_VISIBLE = "IsDockWidgetVisible"
+    GET_DOCK_WIDGET_NAMES = "GetDockWidgetNames"
+    QUEUE_UPDATE_MENUS = "QueueUpdateMenus"
+    SET_STATUS_MESSAGE = "SetStatusMessage"
+    SET_STATUS_WARNING = "SetStatusWarning"
+    SET_STATUS_ERROR = "SetStatusError"
+    RESIZE_VIEWPORT_RENDER_TARGET = "ResizeViewportRenderTarget"
+    LOCK_VIEWPORT_RENDER_TARGET_SIZE = "LockViewportRenderTargetSize"
+    UNLOCK_VIEWPORT_RENDER_TARGET_SIZE = "UnlockViewportRenderTargetSize"
+
+
+class EntityPreviewViewportSettingsRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.bus.EntityPreviewViewportSettingsRequestBus
+    """
+    SET_LIGHTING_PRESET = "SetLightingPreset"
+    GET_LIGHTING_PRESET = "GetLightingPreset"
+    GET_LAST_LIGHTING_PRESET_ASSET_ID = "GetLastLightingPresetAssetId"
+    SAVE_LIGHTING_PRESET = "SaveLightingPreset"
+    LOAD_LIGHTING_PRESET = "LoadLightingPreset"
+    LOAD_LIGHTING_PRESET_BY_ASSET_ID = "LoadLightingPresetByAssetId"
+    GET_LAST_LIGHTING_PRESET_PATH = "GetLastLightingPresetPath"
+    GET_LAST_LIGHTING_PRESET_PATH_WITHOUT_ALIAS = "GetLastLightingPresetPathWithoutAlias"
+    REGISTER_LIGHTING_PRESET_PATH = "RegisterLightingPresetPath"
+    UNREGISTER_LIGHTING_PRESET_PATH = "UnregisterLightingPresetPath"
+    GET_REGISTERED_LIGHTING_PRESET_PATHS = "GetRegisteredLightingPresetPaths"
+    SET_MODEL_PRESET = "SetModelPreset"
+    GET_MODEL_PRESET = "GetModelPreset"
+    GET_LAST_MODEL_PRESET_ASSET_ID = "GetLastModelPresetAssetId"
+    SAVE_MODEL_PRESET = "SaveModelPreset"
+    LOAD_MODEL_PRESET = "LoadModelPreset"
+    LOAD_MODEL_PRESET_BY_ASSET_ID = "LoadModelPresetByAssetId"
+    GET_LAST_MODEL_PRESET_PATH = "GetLastModelPresetPath"
+    GET_LAST_MODEL_PRESET_PATH_WITHOUT_ALIAS = "GetLastModelPresetPathWithoutAlias"
+    REGISTER_MODEL_PRESET_PATH = "RegisterModelPresetPath"
+    UNREGISTER_MODEL_PRESET_PATH = "UnregisterModelPresetPath"
+    GET_REGISTERED_MODEL_PRESET_PATHS = "GetRegisteredModelPresetPaths"
+    LOAD_RENDER_PIPELINE = "LoadRenderPipeline"
+    LOAD_RENDER_PIPELINE_BY_ASSET_ID = "LoadRenderPipelineByAssetId"
+    GET_LAST_RENDER_PIPELINE_PATh = "GetLastRenderPipelinePath"
+    GET_LAST_RENDER_PIPELINE_PATH_WITHOUT_ALIAS = "GetLastRenderPipelinePathWithoutAlias"
+    REGISTER_RENDER_PIPELINE_PATH = "RegisterRenderPipelinePath"
+    UNREGISTER_RENDER_PIPELINE_PATH = "UnregisterRenderPipelinePath"
+    GET_REGISTERED_RENDER_PIPELINE_PATHS = "GetRegisteredRenderPipelinePaths"
+    SET_SHADOW_CATCHER_ENABLED = "SetShadowCatcherEnabled"
+    GET_SHADOW_CATCHER_ENABLED = "GetShadowCatcherEnabled"
+    SET_GRID_ENABLED = "SetGridEnabled"
+    GET_GRID_ENABLED = "GetGridEnabled"
+    SET_ALTERNATE_SKYBOX_ENABLED = "SetAlternateSkyboxEnabled"
+    GET_ALTERNATE_SKYBOX_ENABLED = "GetAlternateSkyboxEnabled"
+    SET_FIELD_OF_VIEW = "SetFieldOfView"
+    GET_FIELD_OF_VIEW = "GetFieldOfView"

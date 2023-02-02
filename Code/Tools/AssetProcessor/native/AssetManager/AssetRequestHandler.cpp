@@ -104,7 +104,7 @@ namespace
             {
                 case AssetChangeReportRequest::ChangeType::CheckMove:
                 {
-                    auto resultCheck = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath);
+                    auto resultCheck = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath, RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_UpdateReferencesFlag);
 
                     BuildReport(relocationInterface, resultCheck, lines);
                     break;
@@ -112,21 +112,21 @@ namespace
                 case AssetChangeReportRequest::ChangeType::Move:
                 {
                     auto resultMove = relocationInterface->Move(
-                        messageData.m_message->m_fromPath, messageData.m_message->m_toPath, false, true, true, true);
+                        messageData.m_message->m_fromPath, messageData.m_message->m_toPath, RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_UpdateReferencesFlag);
 
                     BuildReport(relocationInterface, resultMove, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::CheckDelete:
                 {
-                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath);
+                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath, RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag);
 
                     BuildReport(relocationInterface, resultCheck, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::Delete:
                 {
-                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, false, true, true);
+                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, RelocationParameters_AllowDependencyBreakingFlag);
 
                     BuildReport(relocationInterface, resultDelete, lines);
                     break;
@@ -480,7 +480,7 @@ void AssetRequestHandler::SendAssetStatus(NetworkRequestID groupID, unsigned int
 {
     ResponseAssetStatus resp;
     resp.m_assetStatus = status;
-    EBUS_EVENT_ID(groupID.first, AssetProcessor::ConnectionBus, SendResponse, groupID.second, resp);
+    AssetProcessor::ConnectionBus::Event(groupID.first, &AssetProcessor::ConnectionBus::Events::SendResponse, groupID.second, resp);
 }
 
 AssetRequestHandler::AssetRequestHandler()
@@ -581,7 +581,7 @@ void AssetRequestHandler::DeleteFenceFile_Retry(unsigned int fenceId, QString fe
 void AssetRequestHandler::OnNewIncomingRequest(unsigned int connId, unsigned int serial, QByteArray payload, QString platform)
 {
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(serializeContext, "Unable to retrieve serialize context.");
     AZStd::shared_ptr<BaseAssetProcessorMessage> message{ AZ::Utils::LoadObjectFromBuffer<BaseAssetProcessorMessage>(payload.constData(), payload.size(), serializeContext) };
 

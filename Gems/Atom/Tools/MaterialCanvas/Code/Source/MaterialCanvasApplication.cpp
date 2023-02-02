@@ -23,6 +23,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <Document/MaterialGraphCompiler.h>
 #include <GraphModel/Model/DataType.h>
 #include <MaterialCanvasApplication.h>
 #include <Window/MaterialCanvasMainWindow.h>
@@ -59,10 +60,12 @@ namespace MaterialCanvas
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
         AZ::RHI::FactoryManagerNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
     }
 
     MaterialCanvasApplication::~MaterialCanvasApplication()
     {
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
         AZ::RHI::FactoryManagerNotificationBus::Handler::BusDisconnect();
         m_window.reset();
@@ -104,19 +107,12 @@ namespace MaterialCanvas
         InitMaterialGraphDocumentType();
         InitMaterialGraphNodeDocumentType();
         InitShaderSourceDataDocumentType();
-
-        m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
-
-        m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, m_graphViewSettingsPtr));
-        m_window->show();
-
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
+        InitMainWindow();
+        InitDefaultDocument();
     }
 
     void MaterialCanvasApplication::Destroy()
     {
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
-
         // Save all of the graph view configuration settings to the settings registry.
         AtomToolsFramework::SetSettingsObject("/O3DE/Atom/MaterialCanvas/GraphViewSettings", m_graphViewSettingsPtr);
 
@@ -124,6 +120,7 @@ namespace MaterialCanvas
         m_window.reset();
         m_viewportSettingsSystem.reset();
         m_graphContext.reset();
+        m_graphTemplateFileDataCache.reset();
         m_dynamicNodeManager.reset();
 
         ApplyShaderBuildSettings();
@@ -143,31 +140,6 @@ namespace MaterialCanvas
     void MaterialCanvasApplication::FactoryRegistered()
     {
         ApplyShaderBuildSettings();
-    }
-
-    void MaterialCanvasApplication::OnDocumentOpened(const AZ::Uuid& documentId)
-    {
-        MaterialGraphCompilerRequestBus::Event(documentId, &MaterialGraphCompilerRequestBus::Events::QueueCompileGraph);
-    }
-
-    void MaterialCanvasApplication::OnDocumentSaved(const AZ::Uuid& documentId)
-    {
-        MaterialGraphCompilerRequestBus::Event(documentId, &MaterialGraphCompilerRequestBus::Events::QueueCompileGraph);
-    }
-
-    void MaterialCanvasApplication::OnDocumentUndoStateChanged(const AZ::Uuid& documentId)
-    {
-        MaterialGraphCompilerRequestBus::Event(documentId, &MaterialGraphCompilerRequestBus::Events::QueueCompileGraph);
-    }
-
-    void MaterialCanvasApplication::OnDocumentClosed(const AZ::Uuid& documentId)
-    {
-        m_graphCompilerMap.erase(documentId);
-    }
-
-    void MaterialCanvasApplication::OnDocumentDestroyed(const AZ::Uuid& documentId)
-    {
-        m_graphCompilerMap.erase(documentId);
     }
 
     void MaterialCanvasApplication::InitDynamicNodeManager()
@@ -202,13 +174,30 @@ namespace MaterialCanvas
     {
         // Registering custom property handlers for dynamic node configuration settings. The settings are just a map of string data.
         // Recognized settings will need special controls for selecting files or editing large blocks of text without taking up much real
-        // estate in the property editor.
+        // estate in the property editor. In the future, this will likely be replaced with a more specialized node configuration editor. 
         AZ::Edit::ElementData editData;
         editData.m_elementId = AZ_CRC_CE("MultilineStringDialog");
         m_dynamicNodeManager->RegisterEditDataForSetting("instructions", editData);
-        m_dynamicNodeManager->RegisterEditDataForSetting("materialInputs", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("classDefinitions", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("functionDefinitions", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertySrgMember", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyDescription", editData);
+
+        editData = {};
+        editData.m_elementId = AZ::Edit::UIHandlers::LineEdit;
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyDisplayName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyConnectionName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyGroupName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyGroup", editData);
+
+        editData = {};
+        editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
+        AtomToolsFramework::AddEditDataAttribute(
+            editData,
+            AZ::Edit::Attributes::StringList,
+            AZStd::vector<AZStd::string>{ "None", "ShaderInput", "ShaderOption", "ShaderEnabled", "InternalProperty", "" });
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyConnectionType", editData);
 
         editData = {};
         editData.m_elementId = AZ_CRC_CE("StringFilePath");
@@ -265,6 +254,8 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::InitMaterialGraphDocumentType()
     {
+        m_graphTemplateFileDataCache.reset(aznew AtomToolsFramework::GraphTemplateFileDataCache(m_toolId));
+
         // Acquiring default Material Canvas document type info so that it can be customized before registration
         auto documentTypeInfo = AtomToolsFramework::GraphDocument::BuildDocumentTypeInfo(
             "Material Graph",
@@ -272,15 +263,15 @@ namespace MaterialCanvas
             { "materialgraphtemplate" },
             AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
                 "/O3DE/Atom/MaterialCanvas/DefaultMaterialGraphTemplate",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/blank_graph.materialgraphtemplate")),
-            m_graphContext);
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/blank_graph.materialgraphtemplate")),
+            m_graphContext,
+            [toolId = m_toolId](){ return AZStd::make_shared<MaterialGraphCompiler>(toolId); });
 
         // Overriding documentview factory function to create graph view
         documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
         {
             m_window->AddDocumentTab(
                 documentId, aznew AtomToolsFramework::GraphDocumentView(toolId, documentId, m_graphViewSettingsPtr, m_window.get()));
-            m_graphCompilerMap.emplace(documentId, AZStd::make_unique<MaterialGraphCompiler>(toolId, documentId));
             return true;
         };
 
@@ -319,6 +310,7 @@ namespace MaterialCanvas
             { "shader" },
             {},
             AZStd::any(AZ::RPI::ShaderSourceData()),
+
             AZ::RPI::ShaderSourceData::TYPEINFO_Uuid()); // Supplying ID because it is not included in the JSON file
 
         documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId)
@@ -332,9 +324,34 @@ namespace MaterialCanvas
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
     }
 
+    void MaterialCanvasApplication::InitMainWindow()
+    {
+        m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
+
+        m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, m_graphViewSettingsPtr));
+        m_window->show();
+    }
+
+    void MaterialCanvasApplication::InitDefaultDocument()
+    {
+        // Create an untitled, empty graph document as soon as the application starts so the user can begin creating immediately.
+        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/CreateDefaultDocumentOnStart", true))
+        {
+            AZ::Uuid documentId = AZ::Uuid::CreateNull();
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
+                documentId,
+                m_toolId,
+                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromTypeName,
+                "Material Graph");
+
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::OnDocumentOpened, documentId);
+        }
+    }
+
     void MaterialCanvasApplication::ApplyShaderBuildSettings()
     {
-        // If minimal shader build settings are enabled, copy a settings registry file stub into the user settings folder. This will
+        // If faster shader build settings are enabled, copy a settings registry file stub into the user settings folder. This will
         // override AP and shader build settings, disabling shaders and shader variant building for inactive platforms and RHI. Copying any
         // of these settings files requires restarting the application and the asset processor for the changes to be picked up.
         if (auto fileIO = AZ::IO::FileIOBase::GetInstance())
@@ -351,10 +368,10 @@ namespace MaterialCanvas
             const auto settingsPathDx12(
                 projectPath / AZ::SettingsRegistryInterface::DevUserRegistryFolder / "user_minimal_shader_build_dx12.setreg");
 
-            const bool enableMinimalShaderBuilds =
-                AtomToolsFramework::GetSettingsValue<bool>("/O3DE/Atom/MaterialCanvas/EnableMinimalShaderBuilds", false);
+            const bool enableFasterShaderBuilds =
+                AtomToolsFramework::GetSettingsValue<bool>("/O3DE/Atom/MaterialCanvas/EnableFasterShaderBuilds", false);
 
-            if (enableMinimalShaderBuilds)
+            if (enableFasterShaderBuilds)
             {
                 // Windows is the only platform with multiple, non-null RHI, supporting Vulkan and DX12. If DX12 is the active RHI then it
                 // will require copying its own settings file. Settings files for inactive RHI will be deleted from the user folder. 

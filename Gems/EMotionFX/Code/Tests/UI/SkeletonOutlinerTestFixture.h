@@ -24,9 +24,6 @@ namespace EMotionFX
             AZStd::string result;
             EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("Select -actorID 0", result)) << result.c_str();
 
-            // Change the Editor mode to Physics
-            EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");
-
             // Get the SkeletonOutlinerPlugin and find its treeview
             EXPECT_TRUE(m_skeletonOutlinerPlugin);
             m_treeView = m_skeletonOutlinerPlugin->GetDockWidget()->findChild<ReselectingTreeView*>(
@@ -62,11 +59,12 @@ namespace EMotionFX
             return treeView;
         }
 
-        // This is usefull for hands on testing
+        // This is useful for hands on testing
         void ShowJointPropertyWidget();
         void AddColliderViaAddComponentButton(QString label, QString subLevelLabel = {""});
 
         void SetUpPhysics();
+        void SetUpSimulatedObject();
 
     protected:
         QModelIndexList m_indexList;

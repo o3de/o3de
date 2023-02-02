@@ -245,6 +245,7 @@ namespace ScriptCanvas
             : public OutputAssignment
         {
             AZ_TYPE_INFO(ReturnValue, "{2B7F0129-91F7-4662-8D31-E8DE72975ECC}");
+            AZ_CLASS_ALLOCATOR(ReturnValue, AZ::SystemAllocator)
 
             VariableConstPtr m_initializationValue;
             bool m_isNewValue = true;

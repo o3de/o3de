@@ -6,6 +6,7 @@
  *
  */
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
@@ -24,6 +25,8 @@ namespace AZ
 {
     namespace AssImpSDKWrapper
     {
+        static constexpr const char s_UseSkeletonBoneContainerKey[] = "/O3DE/Preferences/SceneAPI/UseSkeletonBoneContainer";
+
         AssImpSceneWrapper::AssImpSceneWrapper()
             : m_assImpScene(nullptr)
             , m_importer(AZStd::make_unique<Assimp::Importer>())
@@ -40,7 +43,7 @@ namespace AZ
         {
             AZ_TracePrintf(
                 SceneAPI::Utilities::ErrorWindow,
-                "Failed to import scene with Asset Importer library. An %s has occured in the library, this scene file cannot be parsed by the library.",
+                "Failed to import scene with Asset Importer library. An %s has occurred in the library, this scene file cannot be parsed by the library.",
                 signal == SIGABRT ? "assert" : "unknown error");
         }
 #endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
@@ -60,6 +63,12 @@ namespace AZ
             auto previous_handler = std::signal(SIGABRT, signal_handler);
 #endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
 
+            bool useSkeletonBoneContainer = false;
+            if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
+            {
+                settingsRegistry->Get(useSkeletonBoneContainer, s_UseSkeletonBoneContainerKey);
+            }
+
             // aiProcess_JoinIdenticalVertices is not enabled because O3DE has a mesh optimizer that also does this,
             // this flag is disabled to keep AssImp output similar to FBX SDK to reduce downstream bugs for the initial AssImp release.
             // There's currently a minimum of properties and flags set to maximize compatibility with the existing node graph.
@@ -68,6 +77,7 @@ namespace AZ
             // This results in the loss of the offset matrix data for nodes without a mesh which is required for the Transform Importer.
             m_importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
             m_importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_OPTIMIZE_EMPTY_ANIMATION_CURVES, false);
+            m_importer->SetPropertyBool(AI_CONFIG_FBX_USE_SKELETON_BONE_CONTAINER, useSkeletonBoneContainer);
             // The remove empty bones flag is on by default, but doesn't do anything internal to AssImp right now.
             // This is here as a bread crumb to save others times investigating issues with empty bones.
             // m_importer.SetPropertyBool(AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES, false);

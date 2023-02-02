@@ -24,11 +24,12 @@ namespace Physics
 
 namespace AzPhysics
 {
-    //! Default Scene Names and Crc32
-    static constexpr const char* DefaultPhysicsSceneName = "DefaultScene";
-    static constexpr const AZ::Crc32 DefaultPhysicsSceneId = AZ_CRC_CE(DefaultPhysicsSceneName);
-    static constexpr const char* EditorPhysicsSceneName = "EditorScene";
-    static constexpr const AZ::Crc32 EditorPhysicsSceneId = AZ_CRC_CE(EditorPhysicsSceneName);
+    //! Maximum number of scenes, Default Scene Names and Crc32
+    constexpr AZ::u32 MaxNumberOfScenes = 64;
+    constexpr const char* DefaultPhysicsSceneName = "DefaultScene";
+    constexpr AZ::Crc32 DefaultPhysicsSceneId = AZ_CRC_CE(DefaultPhysicsSceneName);
+    constexpr const char* EditorPhysicsSceneName = "EditorScene";
+    constexpr AZ::Crc32 EditorPhysicsSceneId = AZ_CRC_CE(EditorPhysicsSceneName);
 
     //! Default gravity.
     static const AZ::Vector3 DefaultGravity = AZ::Vector3(0.0f, 0.0f, -9.81f);

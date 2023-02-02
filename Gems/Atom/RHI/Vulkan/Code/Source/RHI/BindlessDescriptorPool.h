@@ -65,5 +65,8 @@ namespace AZ::Vulkan
         VkDescriptorSet m_set;
 
         RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count)];
+
+        // Mutex to protect bindless heap related updates
+        AZStd::mutex m_mutex;
     };
 }
