@@ -7,7 +7,7 @@
  */
 
 #include "BoxComponentMode.h"
-#include <AzCore/Component/TransformBus.h>
+#include <AzToolsFramework/ComponentModes/ShapeTranslationOffsetViewportEdit.h>
 #include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
 
 namespace AzToolsFramework
@@ -63,24 +63,11 @@ namespace AzToolsFramework
         }
         else
         {
-            m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->Setup(
-                AzToolsFramework::g_mainManipulatorManagerId);
+            m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->Setup(g_mainManipulatorManagerId);
             m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->AddEntityComponentIdPair(
                 m_entityComponentIdPair);
         }
         ShapeComponentModeRequestBus::Handler::BusConnect(m_entityComponentIdPair);
-    }
-
-    BoxComponentMode::~BoxComponentMode()
-    {
-        ShapeComponentModeRequestBus::Handler::BusDisconnect();
-        m_subModes[static_cast<AZ::u32>(m_subMode)]->Teardown();
-        if (m_allowAsymmetricalEditing)
-        {
-            ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, m_clusterId);
-            m_clusterId = ViewportUi::InvalidClusterId;
-        }
     }
 
     AZStd::string BoxComponentMode::GetComponentModeName() const

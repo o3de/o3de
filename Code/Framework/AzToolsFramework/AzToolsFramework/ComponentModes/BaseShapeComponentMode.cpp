@@ -91,6 +91,14 @@ namespace AzToolsFramework
 
     BaseShapeComponentMode::~BaseShapeComponentMode()
     {
+        ShapeComponentModeRequestBus::Handler::BusDisconnect();
+        m_subModes[static_cast<AZ::u32>(m_subMode)]->Teardown();
+        if (m_allowAsymmetricalEditing)
+        {
+            ViewportUi::ViewportUiRequestBus::Event(
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, m_clusterId);
+            m_clusterId = ViewportUi::InvalidClusterId;
+        }
     }
 
     void BaseShapeComponentMode::Refresh()
