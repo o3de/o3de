@@ -80,25 +80,27 @@ option enum class MsaaMode { MsaaNone, Msaa2x, Msaa4x, Msaa8x, Msaa16x } o_msaaM
 #endif
 {
     const float2 pixelSize = rcp(PassSrg::m_constantData.m_screenSize.xy);  // How big a pixel is in screen UV space
-    const float2 pixelCenter = pixelSize * 0.5f;
+    const float2 centerRatio = float2(0.5, 0.5);
+    const float2 pixelCenter = pixelSize * centerRatio;
 
     float2 pixelSamplePosition = pixelCenter;
 
-    // Msaa sample positions for dx12 and metal are documented as the same. It seems like vulkan
-    // leaves it up to the driver, but in tests on nVidia hardware it also seems to match.
+    // Msaa sample positions for dx12 and metal are documented to follow the dx11 standard here
+    // https://learn.microsoft.com/en-us/windows/win32/api/d3d11/ne-d3d11-d3d11_standard_multisample_quality_levels
+    // Vulkan leaves it up to the driver, but in tests on nVidia hardware it also seems to match.
     switch (o_msaaMode)
     {
         case MsaaMode::Msaa2x:
-            pixelSamplePosition = pixelSize * float2(12.0 / 16.0, 12.0 / 16.0);
+            pixelSamplePosition = pixelSize * (centerRatio + float2(4.0, 4.0) / 16.0);
             break;
         case MsaaMode::Msaa4x:
-            pixelSamplePosition = pixelSize * float2(6.0 / 16.0, 2.0 / 16.0);
+            pixelSamplePosition = pixelSize * (centerRatio + float2(-2.0, 6.0) / 16.0);
             break;
         case MsaaMode::Msaa8x:
-            pixelSamplePosition = pixelSize * float2(9.0 / 16.0, 5.0 / 16.0);
+            pixelSamplePosition = pixelSize * (centerRatio + float2(1.0, -3.0) / 16.0);
             break;
         case MsaaMode::Msaa16x:
-            pixelSamplePosition = pixelSize * float2(9.0 / 16.0, 9.0 / 16.0);
+            pixelSamplePosition = pixelSize * (centerRatio + float2(1.0, 1.0) / 16.0);
             break;
         default:
             // defaults to pixel center.
