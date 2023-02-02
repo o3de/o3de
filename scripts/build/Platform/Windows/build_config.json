@@ -4,15 +4,13 @@
       "periodic-incremental-daily-internal"
     ],
     "steps": [
-      "profile",
+      "test_cpu_profile",
       "generate_metrics",
       "upload_metrics"
     ]
   },
   "generate_metrics": {
-    "TAGS": [
-      "periodic-incremental-daily-internal"
-    ],
+    "TAGS": [],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts\\metrics\\ctest_metrics_xml_to_csv.py",
@@ -20,9 +18,7 @@
     }
   },
   "upload_metrics": {
-    "TAGS": [
-      "periodic-incremental-daily-internal"
-    ],
+    "TAGS": [],
     "COMMAND": "upload_metrics_windows.cmd",
     "PARAMETERS": {
       "CSV_DIRECTORY": "build\\windows\\Testing\\csv",
