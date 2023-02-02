@@ -779,16 +779,16 @@ namespace UnitTest
         EXPECT_EQ(menu->actions().size(), 0);
     }
 
-    TEST_F(ActionManagerFixture, VerifyHideFromMenusWhenDisabledFalse)
+    TEST_F(ActionManagerFixture, VerifyMenuVisibilityAlwaysShow)
     {
         // Register menu, get it and verify it's empty.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
         QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
-        // Register a new action and add it to the menu. Have HideFromMenusWhenDisabled set to true.
+        // Register a new action and add it to the menu. Have MenuVisibility set to ALWAYS_SHOW.
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::ALWAYS_SHOW;
 
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
@@ -813,6 +813,73 @@ namespace UnitTest
         // Set the action as disabled.
         enabledState = false;
         m_actionManagerInterface->UpdateAction("o3de.action.test");
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is still in the menu.
+        EXPECT_EQ(menu->actions().size(), 1);
+    }
+
+    TEST_F(ActionManagerFixture, VerifyActionIsHiddenWhenChangingMode)
+    {
+        // Register menu, get it and verify it's empty.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
+        EXPECT_EQ(menu->actions().size(), 0);
+
+        // Register a new action and add it to the default mode.
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, "o3de.action.test");
+
+        // Add the action to the menu.
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is now in the menu.
+        EXPECT_EQ(menu->actions().size(), 1);
+
+        // Register a new mode and switch to it.
+        m_actionManagerInterface->RegisterActionContextMode("o3de.context.test", "testMode");
+        m_actionManagerInterface->SetActiveActionContextMode("o3de.context.test", "testMode");
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is no longer in the menu.
+        EXPECT_EQ(menu->actions().size(), 0);
+    }
+
+    TEST_F(ActionManagerFixture, VerifyMenuVisibilityAlwaysShowWhenChangingMode)
+    {
+        // Register menu, get it and verify it's empty.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
+        EXPECT_EQ(menu->actions().size(), 0);
+
+        // Register a new action and add it to the default mode. Have MenuVisibility set to ALWAYS_SHOW.
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::ALWAYS_SHOW;
+
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
+        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, "o3de.action.test");
+
+        // Add the action to the menu.
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is now in the menu.
+        EXPECT_EQ(menu->actions().size(), 1);
+
+        // Register a new mode and switch to it.
+        m_actionManagerInterface->RegisterActionContextMode("o3de.context.test", "testMode");
+        m_actionManagerInterface->SetActiveActionContextMode("o3de.context.test", "testMode");
 
         // Manually trigger Menu refresh - Editor will call this once per tick.
         m_menuManagerInternalInterface->RefreshMenus();
