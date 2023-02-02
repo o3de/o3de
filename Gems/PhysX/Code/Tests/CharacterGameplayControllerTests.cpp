@@ -98,9 +98,9 @@ namespace PhysX
             }
         }
 
-        AzPhysics::Scene* m_testScene;
+        AzPhysics::Scene* m_testScene = nullptr;
         AzPhysics::SceneHandle m_sceneHandle;
-        AzPhysics::StaticRigidBody* m_floor;
+        AzPhysics::StaticRigidBody* m_floor = nullptr;
         AZStd::unique_ptr<AZ::Entity> m_controllerEntity;
         Physics::Character* m_controller = nullptr;
         PhysX::CharacterGameplayComponent* m_gameplayController = nullptr;
