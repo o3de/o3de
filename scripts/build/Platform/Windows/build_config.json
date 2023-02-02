@@ -4,6 +4,7 @@
       "periodic-incremental-daily-internal"
     ],
     "steps": [
+      "profile",
       "generate_metrics",
       "upload_metrics"
     ]
@@ -24,7 +25,8 @@
     ],
     "COMMAND": "upload_metrics_windows.cmd",
     "PARAMETERS": {
-      "CSV_DIRECTORY": "build\\windows\\Testing\\csv"
+      "CSV_DIRECTORY": "build\\windows\\Testing\\csv",
+      "BUCKET": "s3://o3de-metrics/csv/"
     }
   },
   "clean": {

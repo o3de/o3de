@@ -9,6 +9,6 @@ REM
 
 ECHO [ci_build] aws s3 cp --recursive %CSV_DIRECTORY% s3://o3de-metrics/csv/ --acl bucket-owner-full-control
 
-aws s3 cp --recursive %CSV_DIRECTORY% s3://o3de-metrics/csv/ --acl bucket-owner-full-control
+aws s3 cp --recursive %CSV_DIRECTORY% %BUCKET% --acl bucket-owner-full-control
 
 EXIT /b %ERRORLEVEL%
