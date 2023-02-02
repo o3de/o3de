@@ -6,10 +6,6 @@
 #
 #
 
-if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    set(additional_tool_deps AZ::AzToolsFramework)
-endif()
-
 ly_add_target(
     NAME AWSGameLift.Client.Static STATIC
     NAMESPACE Gem
@@ -28,7 +24,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            ${additional_tool_deps}
             Gem::AWSCore
             Gem::Multiplayer.Unified.Static
             3rdParty::AWSNativeSDK::GameLiftClient
@@ -45,7 +40,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            ${additional_tool_deps}
             3rdParty::AWSNativeSDK::GameLiftClient
         PUBLIC
             Gem::AWSGameLift.Client.Static
@@ -55,12 +49,41 @@ ly_add_target(
 
 # Load the "Gem::AWSGameLift" module in all types of applications.
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_target(
+        NAME AWSGameLift.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
+            awsgamelift_client_editor_files.cmake
+            awsgamelift_client_shared_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                ../AWSGameLiftCommon/Include
+                ../AWSGameLiftCommon/Source
+                Source
+            PUBLIC
+                Include
+        COMPILE_DEFINITIONS
+            PRIVATE
+                AWS_GAMELIFT_CLIENT_EDITOR
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzCore
+                AZ::AzFramework
+                AZ::AzToolsFramework
+                Gem::AWSCore
+                Gem::AWSGameLift.Client.Static
+                Gem::Multiplayer.Unified.Static
+                3rdParty::AWSNativeSDK::GameLiftClient
+        RUNTIME_DEPENDENCIES
+                Gem::AWSGameLift.Clients
+    )
+
     ly_create_alias(
         NAME AWSGameLift.Tools
         NAMESPACE Gem
         TARGETS
+            Gem::AWSGameLift.Editor
             Gem::AWSCore.Tools
-            Gem::AWSGameLift.Clients
     )
 
     ly_create_alias(
@@ -91,7 +114,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
-                ${additional_tool_deps}
                 AZ::AzTest
                 Gem::AWSCore
                 Gem::AWSGameLift.Client.Static
