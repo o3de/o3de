@@ -77,6 +77,8 @@ namespace AWSCore
         AZStd::unique_ptr<AWSCoreConfiguration> m_awsCoreConfiguration;
         AZStd::unique_ptr<AWSCredentialManager> m_awsCredentialManager;
         AZStd::unique_ptr<AWSResourceMappingManager> m_awsResourceMappingManager;
+
+        bool m_ownsAwsNativeInitialization; // Track whether or not this module initialized the native layer
     };
 
 } // namespace AWSCore
