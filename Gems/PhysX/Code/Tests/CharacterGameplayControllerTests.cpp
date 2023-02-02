@@ -111,7 +111,7 @@ namespace PhysX
     {
         float expectedGravityMultiplier = 2.5f;
 
-        GameplayTestBasis basis(m_testSceneHandle, expectedGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
 
         // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
         int duration = 10;

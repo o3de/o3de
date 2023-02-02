@@ -9,9 +9,13 @@
 #pragma once
 
 #include "AzCore/Component/Component.h"
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector3.h>
+
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+
 
 namespace PhysX
 {
