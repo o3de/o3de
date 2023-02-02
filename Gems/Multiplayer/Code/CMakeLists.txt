@@ -105,6 +105,12 @@ ly_add_target(
         *.AutoComponent.xml,AutoComponentTypes_Source.jinja,$path/AutoComponentTypes.cpp
 )
 
+# By default, enable the Editor connection listener in everything but release builds.
+# Override this with -DO3DE_EDITOR_CONNECTION_LISTENER_ENABLE=0 or 1 if you want to use a non-default value.
+# Clear with -UO3DE_EDITOR_CONNECTION_LISTENER_ENABLE to go back to the defaults.
+set(O3DE_EDITOR_CONNECTION_LISTENER_ENABLE $<IF:$<CONFIG:Release>,0,1> CACHE BOOL 
+	"Sets whether or not to enable the Editor connection listener.")
+
 ly_add_target(
     NAME Multiplayer.Unified.Static STATIC
     NAMESPACE Gem
@@ -121,6 +127,7 @@ ly_add_target(
         PUBLIC
             AZ_TRAIT_CLIENT=1
             AZ_TRAIT_SERVER=1
+            O3DE_EDITOR_CONNECTION_LISTENER_ENABLE=${O3DE_EDITOR_CONNECTION_LISTENER_ENABLE}
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::Multiplayer.Common.Static
