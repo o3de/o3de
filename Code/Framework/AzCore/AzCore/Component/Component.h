@@ -438,7 +438,8 @@ namespace AZ
 
         using MutexType = AZStd::recursive_mutex;
     };
-    typedef AZ::EBus<ComponentDescriptor, ComponentDescriptorBusTraits> ComponentDescriptorBus;
+
+    using ComponentDescriptorBus = AZ::EBus<ComponentDescriptor, ComponentDescriptorBusTraits>;
 
     /**
      * Helps you create a custom implementation of a descriptor.
@@ -616,3 +617,5 @@ namespace AZ
         }
     };
 }
+
+DECLARE_EBUS_EXTERN_WITH_TRAITS(ComponentDescriptor, ComponentDescriptorBusTraits);

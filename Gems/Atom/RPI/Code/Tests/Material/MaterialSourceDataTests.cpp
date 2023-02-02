@@ -939,7 +939,7 @@ namespace UnitTest
         // We use local functions to easily start a new MaterialAssetCreator for each test case because
         // the AssetCreator would just skip subsequent operations after the first failure is detected.
 
-        auto expectWarning = [](const char* expectedErrorMessage, AZStd::function<void(MaterialSourceData& materialSourceData)> setOneBadInput, bool warningOccursBeforeFinalize = false)
+        auto expectWarning = [](const char* expectedErrorMessage, const char* secondExpectedErrorMessage, AZStd::function<void(MaterialSourceData& materialSourceData)> setOneBadInput, bool warningOccursBeforeFinalize = false)
         {
             MaterialSourceData sourceData;
 
@@ -953,6 +953,10 @@ namespace UnitTest
             {
                 ErrorMessageFinder errorFinder;
                 errorFinder.AddExpectedErrorMessage(expectedErrorMessage);
+                if (secondExpectedErrorMessage)
+                {
+                    errorFinder.AddExpectedErrorMessage(secondExpectedErrorMessage);
+                }
                 errorFinder.AddIgnoredErrorMessage("Failed to build", true);
                 auto materialAssetOutcome = sourceData.CreateMaterialAsset(Uuid::CreateRandom(), "", MaterialAssetProcessingMode::PreBake, true);
                 errorFinder.CheckExpectedErrorsFound();
@@ -970,37 +974,37 @@ namespace UnitTest
 
         // Test property does not exist...
 
-        expectWarning("\"general.DoesNotExist\" is not found in the material properties layout",
+        expectWarning("\"general.DoesNotExist\" is not found in the material properties layout", nullptr,
             [](MaterialSourceData& materialSourceData)
             {
                 AddProperty(materialSourceData, "general", "DoesNotExist", true);
             });
 
-        expectWarning("\"general.DoesNotExist\" is not found in the material properties layout",
+        expectWarning("\"general.DoesNotExist\" is not found in the material properties layout", nullptr,
             [](MaterialSourceData& materialSourceData)
             {
                 AddProperty(materialSourceData, "general", "DoesNotExist", -10);
             });
 
-        expectWarning("\"general.DoesNotExist\" is not found in the material properties layout",
+        expectWarning("\"general.DoesNotExist\" is not found in the material properties layout", nullptr,
             [](MaterialSourceData& materialSourceData)
             {
                 AddProperty(materialSourceData, "general", "DoesNotExist", 25u);
             });
 
-        expectWarning("\"general.DoesNotExist\" is not found in the material properties layout",
+        expectWarning("\"general.DoesNotExist\" is not found in the material properties layout", nullptr,
             [](MaterialSourceData& materialSourceData)
             {
                 AddProperty(materialSourceData, "general", "DoesNotExist", 1.5f);
             });
 
-        expectWarning("\"general.DoesNotExist\" is not found in the material properties layout",
+        expectWarning("\"general.DoesNotExist\" is not found in the material properties layout", nullptr,
             [](MaterialSourceData& materialSourceData)
             {
                 AddProperty(materialSourceData, "general", "DoesNotExist", AZ::Color{ 0.1f, 0.2f, 0.3f, 0.4f });
             });
 
-        expectWarning("\"general.DoesNotExist\" is not found in the material properties layout",
+        expectWarning("\"general.DoesNotExist\" is not found in the material properties layout", nullptr,
             [](MaterialSourceData& materialSourceData)
             {
                 AddProperty(materialSourceData, "general", "DoesNotExist", AZStd::string("@exefolder@/Temp/test.streamingimage"));
@@ -1008,6 +1012,7 @@ namespace UnitTest
 
         // Missing image reference
         expectWarning("Could not find the image 'doesNotExist.streamingimage'",
+            "Material at path  could not resolve image doesNotExist.streamingimage, using invalid UUID {00000BAD-0BAD-0BAD-0BAD-000000000BAD}. To resolve this, verify the image exists at the relative path to a scan folder matching this reference. Verify a portion of the scan folder is not in the relative path, which is a common cause of this issue.",
             [](MaterialSourceData& materialSourceData)
             {
                 AddProperty(materialSourceData, "general", "MyImage", AZStd::string("doesNotExist.streamingimage"));

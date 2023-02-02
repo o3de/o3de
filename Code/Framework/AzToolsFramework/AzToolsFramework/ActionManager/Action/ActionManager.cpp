@@ -25,35 +25,46 @@ namespace AzToolsFramework
         {
         }
 
+        static bool TriggerActiveActionsWithShortcut(const QList<QAction*>& actions, const QKeySequence& shortcutKeySequence)
+        {
+            // Note: Triggering an action may change the enabled state of other actions.
+            // As such, we first collect the actions that should be triggered, then trigger them in sequence.
+
+            // Collect all actions that are enabled and match with the shortcut.
+            QList<QAction*> matchingActions;
+            for (QAction* action : actions)
+            {
+                if (action->isEnabled() && action->shortcut() == shortcutKeySequence)
+                {
+                    matchingActions.append(action);
+                }
+            }
+
+            // Trigger all matching actions.
+            for (QAction* action : matchingActions)
+            {
+                action->trigger();
+            }
+
+            // Return whether any action was triggered.
+            return !matchingActions.isEmpty();
+        }
+
         bool eventFilter(QObject* watched, QEvent* event) override
         {
             switch (event->type())
             {
-            case QEvent::Shortcut:
-            {
-                auto shortcutEvent = static_cast<QShortcutEvent*>(event);
-                if (shortcutEvent->isAmbiguous())
-                {
-                    QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
-                    bool triggered = false;
-                    for (QAction* action : watchedWidget->actions())
-                    {
-                        if (action->isEnabled() && action->shortcut() == shortcutEvent->key())
-                        {
-                            action->trigger();
-                            triggered = true;
-                        }
-                    }
-
-                    if (triggered)
-                    {
-                        return true;
-                    }
-                }
-                break;
-            }
             case QEvent::ShortcutOverride:
             {
+                // QActions default "autoRepeat" to true, which is not an ideal user experience.
+                // We globally disable that behavior here - in the unlikely event a shortcut needs to
+                // replicate it, its owner can instead implement a keyEvent handler
+                if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
+                {
+                    event->accept();
+                    return true;
+                }
+
                 auto keyEvent = static_cast<QKeyEvent*>(event);
                 int keyCode = keyEvent->key();
                 Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
@@ -81,21 +92,26 @@ namespace AzToolsFramework
                 if (isAmbiguous)
                 {
                     QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
-                    bool triggered = false;
-                    for (QAction* action : watchedWidget->actions())
-                    {
-                        if (action->isEnabled() && action->shortcut() == keySequence)
-                        {
-                            action->trigger();
-                            triggered = true;
-                        }
-                    }
 
-                    if (triggered)
+                    if (TriggerActiveActionsWithShortcut(watchedWidget->actions(), keySequence))
                     {
                         // We need to accept the event in addition to return true on this event filter
                         // to ensure the event doesn't get propagated to any parent widgets.
                         event->accept();
+                        return true;
+                    }
+                }
+                break;
+            }
+            case QEvent::Shortcut:
+            {
+                auto shortcutEvent = static_cast<QShortcutEvent*>(event);
+                if (shortcutEvent->isAmbiguous())
+                {
+                    QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
+
+                    if (TriggerActiveActionsWithShortcut(watchedWidget->actions(), shortcutEvent->key()))
+                    {
                         return true;
                     }
                 }
