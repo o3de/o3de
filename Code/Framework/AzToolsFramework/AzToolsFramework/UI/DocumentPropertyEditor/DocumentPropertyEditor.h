@@ -14,6 +14,7 @@
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 
 #include <QHBoxLayout>
@@ -241,6 +242,8 @@ namespace AzToolsFramework
                 ->GetPool<AzQtComponents::ElidingLabel>();
         }
 
+        void RegisterHandlerPool(AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool);
+
     public slots:
         //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter);
@@ -270,6 +273,8 @@ namespace AzToolsFramework
         // incurring the cost of creating and destroying them
         AZStd::shared_ptr<AZ::InstancePool<DPERowWidget>> m_rowPool;
         AZStd::shared_ptr<AZ::InstancePool<AzQtComponents::ElidingLabel>> m_labelPool;
+
+        AZStd::vector<AZStd::shared_ptr<AZ::InstancePoolBase>> m_handlerPools;
     };
 } // namespace AzToolsFramework
 
@@ -278,4 +283,6 @@ namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::DPERowWidget, "{C457A594-6E19-4674-A617-3CC09CF7E532}");
     AZ_TYPE_INFO_SPECIALIZE(AzQtComponents::ElidingLabel, "{02674C46-1401-4237-97F1-2774A067BF80}");
+    //AZ_TYPE_INFO_SPECIALIZE(
+      //  AzToolsFramework::PropertyEditorToolsSystemInterface::PropertyHandlerInstance, "{91F7F406-92C2-40CB-85AD-67027C6739C3}");
 } // namespace AZ

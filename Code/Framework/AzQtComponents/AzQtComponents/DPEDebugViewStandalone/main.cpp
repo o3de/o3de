@@ -381,10 +381,10 @@ int main(int argc, char** argv)
 
     sortFilter->SetSourceAdapter(cvarAdapter);
 
+    debugViewer->AddAdapterToList("CVar Adapter", sortFilter);
     debugViewer->AddAdapterToList(
         "Reflection Adapter",
         AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
-    debugViewer->AddAdapterToList("CVar Adapter", sortFilter);
     debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 
