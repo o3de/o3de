@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma optimize("", off)
+
 #ifndef PROPERTYEDITORAPI_INTERNALS_H
 #define PROPERTYEDITORAPI_INTERNALS_H
 
@@ -577,4 +577,3 @@ namespace AzToolsFramework
 }
 
 #endif
-#pragma optimize("", on)

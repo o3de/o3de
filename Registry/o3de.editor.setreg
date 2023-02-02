@@ -4,7 +4,9 @@
             "ConsoleCommands": {
                 "sys_PakWarnOnPakAccessFailures": 0,
                 "cl_assetLoadWarningEnable": true,
-                "cl_assetLoadWarningMsThreshold": 100
+                "cl_assetLoadWarningMsThreshold": 100,
+				"ed_enableDPE": true,
+                "ed_DebugDPE": false
             }
         }
     }

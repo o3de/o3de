@@ -236,7 +236,7 @@ namespace AZ::DocumentPropertyEditor
                 {
                     AzToolsFramework::Prefab::PrefabDom prefabPatchValue = convertToRapidJsonOutcome.TakeValue();
                     prefabPatch.AddMember(rapidjson::StringRef("value"), AZStd::move(prefabPatchValue), prefabPatch.GetAllocator());
-                    AZ_Warning("Prefab", !prefabPatchValue.IsNull(), "Prefab patch generated from DPE is null");
+                    AZ_Warning("Prefab", !prefabPatch.IsNull(), "Prefab patch generated from DPE is null");
                 }
             }
 

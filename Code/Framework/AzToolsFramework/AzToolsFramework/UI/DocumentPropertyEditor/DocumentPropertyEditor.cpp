@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma optimize("", off)
 #include "DocumentPropertyEditor.h"
 
 #include <QCheckBox>
@@ -1499,3 +1500,4 @@ namespace AzToolsFramework
         message.Match(AZ::DocumentPropertyEditor::Nodes::Adapter::QueryKey, showKeyQueryDialog);
     }
 } // namespace AzToolsFramework
+#pragma optimize("", on)
