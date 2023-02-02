@@ -628,7 +628,7 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
                 external_project = params.CMAKE_LY_PROJECTS
             }
             else {
-                echo "No PROJECT_OVERIDE or CMAKE_LY_PROJECTS  defined"
+                echo "No PROJECT_OVERRIDE or CMAKE_LY_PROJECTS defined"
             }
             
             echo "external_project = ${external_project }"
