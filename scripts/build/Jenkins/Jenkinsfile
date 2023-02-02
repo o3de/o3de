@@ -631,7 +631,7 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
                 echo "No PROJECT_OVERRIDE or CMAKE_LY_PROJECTS defined"
             }
             
-            echo "external_project = ${external_project }"
+            echo "external_project = ${external_project}"
             
             if(automatedTestingControlFileFound) {
                 processed_repos = ExecuteControlFile(automatedTestingControlFile, COMMIT_REPOSITORY_NAME, processed_repos, external_project, defer_enable_gems)
