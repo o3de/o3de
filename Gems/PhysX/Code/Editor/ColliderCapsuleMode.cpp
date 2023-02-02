@@ -24,7 +24,8 @@ namespace PhysX
     void ColliderCapsuleMode::Setup(const AZ::EntityComponentIdPair& idPair)
     {
         m_entityComponentIdPair = idPair;
-        m_capsuleViewportEdit = AZStd::make_unique<AzToolsFramework::CapsuleViewportEdit>();
+        const bool allowAsymmetricalEditing = true;
+        m_capsuleViewportEdit = AZStd::make_unique<AzToolsFramework::CapsuleViewportEdit>(allowAsymmetricalEditing);
         m_capsuleViewportEdit->InstallGetManipulatorSpace(
             [this]()
             {
