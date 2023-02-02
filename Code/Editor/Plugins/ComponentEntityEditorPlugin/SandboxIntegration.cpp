@@ -1123,14 +1123,14 @@ bool SandboxIntegrationManager::CanGoToEntityOrChildren(const AZ::EntityId& enti
         return false;
     }
 
-    // Skip if this is a ui component; ui components use UiCanvas and are not visible in the Editor viewport
+    // Skip if this is a UI component; UI components use LyShine's "UI Canvas" and are not visible in the Editor viewport
     const AZ::Component* uiElementComponent = entity->FindComponent(AZ::Uuid("{4A97D63E-CE7A-45B6-AAE4-102DB4334688}"));
     if (uiElementComponent != nullptr)
     {
         return false;
     }
 
-    // If this is a layer entity, if it has any children that are visible in viewport
+    // If this is a layer entity, check if the layer has any children that are visible in the viewport
     bool isLayerEntity = false;
     AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
         isLayerEntity,
