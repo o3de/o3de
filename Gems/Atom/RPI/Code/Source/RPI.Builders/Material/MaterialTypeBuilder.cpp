@@ -133,7 +133,7 @@ namespace AZ
 
             auto addPossibleDependencies = [&response](const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
-                AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(originatingSourceFilePath, referencedSourceFilePath);
+                AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDependencyPaths(originatingSourceFilePath, referencedSourceFilePath);
                 for (const AZStd::string& path : possibleDependencies)
                 {
                     response.m_sourceFileDependencyList.push_back({});
