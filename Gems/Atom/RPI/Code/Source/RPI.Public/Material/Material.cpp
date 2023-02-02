@@ -59,7 +59,14 @@ namespace AZ
 
             ScopedValue isInitializing(&m_isInitializing, true, false);
 
+            // All of these members must be reset if the material can be reinitialized because of the shader reload notification bus
+            m_shaderResourceGroup = {};
+            m_rhiShaderResourceGroup = {};
+            m_materialProperties = {};
+            m_generalShaderCollection = {};
+            m_materialPipelineData = {};
             m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+            ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
 
             // Cache off pointers to some key data structures from the material type...
             auto srgLayout = m_materialAsset->GetMaterialSrgLayout();
@@ -79,16 +86,16 @@ namespace AZ
                 }
             }
 
-            m_generalShaderCollection = materialAsset.GetGeneralShaderCollection();
+            m_generalShaderCollection = m_materialAsset->GetGeneralShaderCollection();
 
-            if (!m_materialProperties.Init(m_materialAsset->GetMaterialPropertiesLayout(), materialAsset.GetPropertyValues()))
+            if (!m_materialProperties.Init(m_materialAsset->GetMaterialPropertiesLayout(), m_materialAsset->GetPropertyValues()))
             {
                 return RHI::ResultCode::Fail;
             }
 
             m_materialProperties.SetAllPropertyDirtyFlags();
 
-            for (auto& [materialPipelineName, materialPipeline] : materialAsset.GetMaterialPipelinePayloads())
+            for (auto& [materialPipelineName, materialPipeline] : m_materialAsset->GetMaterialPipelinePayloads())
             {
                 MaterialPipelineState& pipelineData = m_materialPipelineData[materialPipelineName];
 

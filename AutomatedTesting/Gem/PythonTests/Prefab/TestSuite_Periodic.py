@@ -18,6 +18,10 @@ class TestAutomationNoOverrides(EditorTestSuite):
     # These tests will execute with prefab overrides enabled
     EditorTestSuite.global_extra_cmdline_args.append("--regset=O3DE/Preferences/Prefabs/EnableOverridesUx=false")
 
+    # Create Prefab Tests
+    class test_CreatePrefab_CreationFailsWithDifferentRootEntities(EditorBatchedTest):
+        from .tests.create_prefab import CreatePrefab_CreationFailsWithDifferentRootEntities as test_module
+        
     # Spawnables Tests
 
     class test_SC_Spawnables_DespawnOnEntityDeactivate(EditorBatchedTest):

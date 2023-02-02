@@ -1099,7 +1099,9 @@ namespace AZ
         }
         return this;
     }
-
 }   // namespace AZ
 
 #include <AzCore/Serialization/EditContext.inl>
+
+extern template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(const char *, AZ::Crc32);
+extern template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(AZ::Crc32, AZ::Crc32);
