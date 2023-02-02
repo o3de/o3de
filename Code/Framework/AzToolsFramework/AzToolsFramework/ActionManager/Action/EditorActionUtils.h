@@ -17,16 +17,16 @@ namespace AzToolsFramework
     //! The action will be greyed out if shown while disabled by an enabled state callback.
     enum class ActionVisibility
     {
-        ALWAYS_SHOW = 0, //!< Action is always shown even in Action Context Modes where it is not available.
-        ONLY_IN_ACTIVE_MODE, //!< Action is only shown in Action Context Modes it was added to.
-        HIDE_WHEN_DISABLED //!< Action is only shown when enabled, and hidden in all other cases.
+        AlwaysShow = 0,     //!< Action is always shown even in Action Context Modes where it is not available.
+        OnlyInActiveMode,   //!< Action is only shown in Action Context Modes it was added to.
+        HideWhenDisabled    //!< Action is only shown when enabled, and hidden in all other cases.
     };
 
     inline static bool IsActionVisible(ActionVisibility actionVisibility, bool actionIsActiveInCurrentMode, bool actionIsEnabled)
     {
-        return  (actionVisibility == ActionVisibility::ALWAYS_SHOW) ||
-                (actionVisibility == ActionVisibility::ONLY_IN_ACTIVE_MODE && actionIsActiveInCurrentMode) ||
-                (actionVisibility == ActionVisibility::HIDE_WHEN_DISABLED && actionIsEnabled);
+        return  (actionVisibility == ActionVisibility::AlwaysShow) ||
+                (actionVisibility == ActionVisibility::OnlyInActiveMode && actionIsActiveInCurrentMode) ||
+                (actionVisibility == ActionVisibility::HideWhenDisabled && actionIsEnabled);
     }
 
 } // namespace AzToolsFramework

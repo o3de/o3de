@@ -731,7 +731,7 @@ namespace AzToolsFramework
     void MenuManager::OnActionStateChanged(AZStd::string actionIdentifier)
     {
         // Only refresh the menu if the action state changing could result in the action being shown/hidden.
-        if (m_actionManagerInternalInterface->GetActionMenuVisibility(actionIdentifier) != ActionVisibility::ALWAYS_SHOW)
+        if (m_actionManagerInternalInterface->GetActionMenuVisibility(actionIdentifier) != ActionVisibility::AlwaysShow)
         {
             QueueRefreshForMenusContainingAction(actionIdentifier);
         }

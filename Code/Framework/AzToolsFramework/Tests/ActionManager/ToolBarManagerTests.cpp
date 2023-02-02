@@ -459,9 +459,9 @@ namespace UnitTest
         QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
-        // Register a new action and add it to the ToolBar. Have ToolBarVisibility set to HIDE_WHEN_DISABLED.
+        // Register a new action and add it to the ToolBar. Have ToolBarVisibility set to HideWhenDisabled.
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_toolBarVisibility = AzToolsFramework::ActionVisibility::HIDE_WHEN_DISABLED;
+        actionProperties.m_toolBarVisibility = AzToolsFramework::ActionVisibility::HideWhenDisabled;
 
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
@@ -501,7 +501,7 @@ namespace UnitTest
         QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
-        // Register a new action and add it to the menu. ToolBarVisibility is set to ONLY_IN_ACTIVE_MODE by default.
+        // Register a new action and add it to the menu. ToolBarVisibility is set to OnlyInActiveMode by default.
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
@@ -540,9 +540,9 @@ namespace UnitTest
         QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
-        // Register a new action and add it to the default mode. Set ToolBarVisibility to ALWAYS_SHOW.
+        // Register a new action and add it to the default mode. Set ToolBarVisibility to AlwaysShow.
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_toolBarVisibility = AzToolsFramework::ActionVisibility::ALWAYS_SHOW;
+        actionProperties.m_toolBarVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});

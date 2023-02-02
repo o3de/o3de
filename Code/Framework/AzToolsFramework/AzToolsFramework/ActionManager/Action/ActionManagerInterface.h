@@ -52,9 +52,9 @@ namespace AzToolsFramework
         AZStd::vector<AZStd::string> m_modes = {};
 
         //! Determines visibility for this action in Menus.
-        ActionVisibility m_menuVisibility = ActionVisibility::HIDE_WHEN_DISABLED;
+        ActionVisibility m_menuVisibility = ActionVisibility::HideWhenDisabled;
         //! Determines visibility for this action in ToolBars.
-        ActionVisibility m_toolBarVisibility = ActionVisibility::ONLY_IN_ACTIVE_MODE;
+        ActionVisibility m_toolBarVisibility = ActionVisibility::OnlyInActiveMode;
     };
 
     //! Widget Action Properties object.

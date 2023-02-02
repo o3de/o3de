@@ -774,7 +774,7 @@ namespace AzToolsFramework
         if (actionIterator == m_actions.end())
         {
             // Return the default value.
-            return ActionVisibility::HIDE_WHEN_DISABLED;
+            return ActionVisibility::HideWhenDisabled;
         }
 
         return actionIterator->second.GetMenuVisibility();
@@ -786,7 +786,7 @@ namespace AzToolsFramework
         if (actionIterator == m_actions.end())
         {
             // Return the default value.
-            return ActionVisibility::ONLY_IN_ACTIVE_MODE;
+            return ActionVisibility::OnlyInActiveMode;
         }
 
         return actionIterator->second.GetToolBarVisibility();

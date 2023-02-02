@@ -747,7 +747,7 @@ namespace UnitTest
         QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
-        // Register a new action and add it to the menu. HideFromMenusWhenDisabled is set to true by default.
+        // Register a new action and add it to the menu. MenuVisibility is set to HideWhenDisabled by default.
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
@@ -786,9 +786,9 @@ namespace UnitTest
         QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
-        // Register a new action and add it to the menu. Have MenuVisibility set to ALWAYS_SHOW.
+        // Register a new action and add it to the menu. Have MenuVisibility set to AlwaysShow.
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::ALWAYS_SHOW;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
@@ -860,9 +860,9 @@ namespace UnitTest
         QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
-        // Register a new action and add it to the default mode. Have MenuVisibility set to ALWAYS_SHOW.
+        // Register a new action and add it to the default mode. Have MenuVisibility set to AlwaysShow.
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::ALWAYS_SHOW;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
