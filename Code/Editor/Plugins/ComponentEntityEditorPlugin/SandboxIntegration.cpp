@@ -1123,14 +1123,6 @@ bool SandboxIntegrationManager::CanGoToEntityOrChildren(const AZ::EntityId& enti
         return false;
     }
 
-    // Skip if this is a UI component; UI components use LyShine's "UI Canvas" and are not visible in the Editor viewport
-    constexpr AZ::Uuid uiElementComponentUuid{ "{4A97D63E-CE7A-45B6-AAE4-102DB4334688}" };
-    const AZ::Component* uiElementComponent = entity->FindComponent(uiElementComponentUuid);
-    if (uiElementComponent != nullptr)
-    {
-        return false;
-    }
-
     // If this is a layer entity, check if the layer has any children that are visible in the viewport
     bool isLayerEntity = false;
     AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
@@ -1139,7 +1131,9 @@ bool SandboxIntegrationManager::CanGoToEntityOrChildren(const AZ::EntityId& enti
         &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
     if (!isLayerEntity)
     {
-        return true;
+        // Skip if this entity doesn't have a transform;
+        // UI entities and system components don't have transforms and thus aren't visible in the Editor viewport
+        return entity->GetTransform() != nullptr;
     }
 
     AZStd::vector<AZ::EntityId> layerChildren;
