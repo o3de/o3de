@@ -1116,18 +1116,29 @@ bool SandboxIntegrationManager::CanGoToSelectedEntitiesInViewports()
 
 bool SandboxIntegrationManager::CanGoToEntityOrChildren(const AZ::EntityId& entityId) const
 {
+    AZ::Entity* entity = nullptr;
+    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+    if (entity == nullptr)
+    {
+        return false;
+    }
+
+    // Skip if this is a ui component; ui components use UiCanvas and are not visible in the Editor viewport
+    const AZ::Component* uiElementComponent = entity->FindComponent(AZ::Uuid("{4A97D63E-CE7A-45B6-AAE4-102DB4334688}"));
+    if (uiElementComponent != nullptr)
+    {
+        return false;
+    }
+
+    // If this is a layer entity, if it has any children that are visible in viewport
     bool isLayerEntity = false;
     AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
         isLayerEntity,
         entityId,
         &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-    // If this entity is not a layer
     if (!isLayerEntity)
     {
-        // check if the entity exists to determine if we can go to it (e.g. system & internal entities are not visible in the viewport)
-        AZ::Entity* entity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-        return entity != nullptr;
+        return true;
     }
 
     AZStd::vector<AZ::EntityId> layerChildren;
