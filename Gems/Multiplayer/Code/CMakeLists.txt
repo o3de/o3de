@@ -109,7 +109,7 @@ ly_add_target(
 # Override this with -DO3DE_EDITOR_CONNECTION_LISTENER_ENABLE=0 or 1 if you want to use a non-default value.
 # Clear with -UO3DE_EDITOR_CONNECTION_LISTENER_ENABLE to go back to the defaults.
 set(O3DE_EDITOR_CONNECTION_LISTENER_ENABLE $<IF:$<CONFIG:Release>,0,1> CACHE BOOL 
-	"Sets whether or not to enable the Editor connection listener.")
+    "Sets whether or not to enable the Editor connection listener.")
 
 ly_add_target(
     NAME Multiplayer.Unified.Static STATIC
