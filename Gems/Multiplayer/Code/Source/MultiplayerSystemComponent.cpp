@@ -263,6 +263,10 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Activate()
     {
+#if !defined(AZ_RELEASE_BUILD)
+        m_editorConnectionListener = AZStd::make_unique<MultiplayerEditorConnection>();
+#endif
+
         RegisterMetrics();
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
@@ -346,6 +350,10 @@ namespace Multiplayer
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
 
         m_networkEntityManager.Reset();
+
+#if !defined(AZ_RELEASE_BUILD)
+        m_editorConnectionListener.reset();
+#endif
     }
 
     bool MultiplayerSystemComponent::StartHosting(uint16_t port, bool isDedicated)
