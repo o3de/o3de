@@ -202,15 +202,17 @@ namespace AzToolsFramework
                 {
                     WarningDialog("Prefab Instantiation Error", instantiatePrefabOutcome.GetError());
                 }
-
-                // is it in the "to detach also" list?
-                if (AZStd::find(prefabsToDetach.begin(), prefabsToDetach.end(), entry) != prefabsToDetach.end())
+                else
                 {
-                    AZ::EntityId instantiatedContainerEntity = instantiatePrefabOutcome.GetValue();
-                    auto detachOutcome = s_prefabPublicInterface->DetachPrefab(instantiatedContainerEntity);
-                    if (!detachOutcome.IsSuccess())
+                    // is it in the "to detach also" list?
+                    if (AZStd::find(prefabsToDetach.begin(), prefabsToDetach.end(), entry) != prefabsToDetach.end())
                     {
-                        WarningDialog("Prefab was instantiated but could not detach:", detachOutcome.GetError());
+                        AZ::EntityId instantiatedContainerEntity = instantiatePrefabOutcome.GetValue();
+                        auto detachOutcome = s_prefabPublicInterface->DetachPrefab(instantiatedContainerEntity);
+                        if (!detachOutcome.IsSuccess())
+                        {
+                            WarningDialog("Prefab was instantiated but could not detach:", detachOutcome.GetError());
+                        }
                     }
                 }
             }

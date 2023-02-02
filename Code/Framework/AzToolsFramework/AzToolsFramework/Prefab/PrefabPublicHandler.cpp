@@ -1525,7 +1525,7 @@ namespace AzToolsFramework
             }
 
             InstanceOptionalReference owningInstance = GetOwnerInstanceByEntityId(containerEntityId);
-            if (owningInstance->get().GetContainerEntityId() != containerEntityId)
+            if (!owningInstance.has_value() || owningInstance->get().GetContainerEntityId() != containerEntityId)
             {
                 return AZ::Failure(AZStd::string("Input entity should be its owning Instance's container entity."));
             }
