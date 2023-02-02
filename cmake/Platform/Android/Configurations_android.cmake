@@ -56,7 +56,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
             -u ANativeActivity_onCreate
 
-            -L${LY_NDK_ABI_ROOT}/usr/lib
             -L${LY_NDK_SRC_ROOT}/cxx-stl/llvm-libc++/libs/${ANDROID_ABI}
 
         LINK_NON_STATIC_DEBUG
