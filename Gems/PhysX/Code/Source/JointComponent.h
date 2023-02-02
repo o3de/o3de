@@ -12,6 +12,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 
@@ -46,6 +47,7 @@ namespace PhysX
     class JointComponent
         : public AZ::Component
         , protected Physics::RigidBodyNotificationBus::MultiHandler
+        , protected AZ::TickBus::Handler
     {
     public:
         AZ_COMPONENT(JointComponent, "{B01FD1D2-1D91-438D-874A-BF5EB7E919A8}");
@@ -78,11 +80,11 @@ namespace PhysX
             AzPhysics::SimulatedBody* m_followerBody = nullptr;
         };
 
-        // AZ::Component
+        // AZ::Component overrides ...
         void Activate() override;
         void Deactivate() override;
 
-        // Physics::RigidBodyNotifications overrides...
+        // Physics::RigidBodyNotifications overrides ...
         void OnPhysicsEnabled(const AZ::EntityId& entityId) override;
         void OnPhysicsDisabled(const AZ::EntityId& entityId) override;
 
@@ -95,6 +97,9 @@ namespace PhysX
         // Specific joint types will instantiate native joint pointer.
         virtual void InitNativeJoint(){};
         virtual void DeinitNativeJoint(){};
+
+        // AZ::TickEvents overrides ...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         AZ::Transform GetJointLocalPose(const physx::PxRigidActor* actor, const AZ::Transform& jointPose);
 

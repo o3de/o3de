@@ -87,13 +87,10 @@ namespace PhysX
                 leadFollowerInfo.m_followerBody->m_bodyHandle);
             m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
         }
-        m_nativeJoint = GetPhysXNativeRevoluteJoint();
 
-        if (m_nativeJoint)
-        {
-            const AZ::EntityComponentIdPair id(GetEntityId(), GetId());
-            PhysX::JointRequestBus::Handler::BusConnect(id);
-        }
+        CachePhysXNativeRevoluteJoint();
+
+        JointRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
     }
 
     void HingeJointComponent::DeinitNativeJoint()
@@ -102,21 +99,20 @@ namespace PhysX
         m_nativeJoint = nullptr;
     }
 
-    physx::PxRevoluteJoint* HingeJointComponent::GetPhysXNativeRevoluteJoint()
+    void HingeJointComponent::CachePhysXNativeRevoluteJoint()
     {
         if (m_nativeJoint)
         {
-            return m_nativeJoint;
+            return;
         }
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AZ_Assert(sceneInterface, "No sceneInterface");
         const auto joint = sceneInterface->GetJointFromHandle(m_jointSceneOwner, m_jointHandle);
-        AZ_Assert(joint->GetNativeType() == PhysX::NativeTypeIdentifiers::HingeJoint, "It is not PhysXHingeJoint");
+        AZ_Assert(joint->GetNativeType() == NativeTypeIdentifiers::HingeJoint, "It is not PhysXHingeJoint");
         physx::PxJoint* nativeJoint = static_cast<physx::PxJoint*>(joint->GetNativePointer());
         physx::PxRevoluteJoint* native = nativeJoint->is<physx::PxRevoluteJoint>();
         AZ_Assert(native, "It is not PxRevoluteJoint");
         m_nativeJoint = native;
-        return native;
     }
 
     float HingeJointComponent::GetPosition() const

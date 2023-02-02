@@ -120,6 +120,9 @@ namespace PhysX
         if (hasLeadEntity)
         {
             Physics::RigidBodyNotificationBus::MultiHandler::BusConnect(m_configuration.m_leadEntity);
+
+            // Connect to the tick bus to verify in the next tick if the leader entity has a rigid body.
+            AZ::TickBus::Handler::BusConnect();
         }
     }
 
@@ -132,6 +135,7 @@ namespace PhysX
 
         DestroyNativeJoint();
 
+        AZ::TickBus::Handler::BusDisconnect();
         Physics::RigidBodyNotificationBus::MultiHandler::BusDisconnect();
         m_rigidBodyEntityMap.clear();
     }
@@ -199,6 +203,23 @@ namespace PhysX
                 m_jointSceneOwner = AzPhysics::InvalidSceneHandle;
             }
         }
+    }
+
+    void JointComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        // Check if the lead entity has a rigid body in the next tick because
+        // the lead entity might not be created yet during activation of the follower's entity.
+        // If the lead exists but it doesn't have a rigid body then this joint will never get
+        // created and therefore we need to warn about the invalid joint setup.
+
+        if (!Physics::RigidBodyRequestBus::FindFirstHandler(m_configuration.m_leadEntity))
+        {
+            const AZStd::string entityWithoutBodyWarningMsg("Rigid body not found in lead entity associated with joint. "
+                                                            "Joint will not be created.");
+            WarnInvalidJointSetup(m_configuration.m_leadEntity, entityWithoutBodyWarningMsg);
+        }
+
+        AZ::TickBus::Handler::BusDisconnect();
     }
 
     AZ::Transform JointComponent::GetJointLocalPose(const physx::PxRigidActor* actor, const AZ::Transform& jointPose)

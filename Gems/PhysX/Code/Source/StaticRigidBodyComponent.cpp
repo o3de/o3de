@@ -89,6 +89,9 @@ namespace PhysX
             configuration.m_startSimulationEnabled = false; // enable physics will enable this when called.
             m_staticRigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &configuration);
         }
+
+        Physics::RigidBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     void StaticRigidBodyComponent::Activate()
@@ -120,8 +123,6 @@ namespace PhysX
         InitStaticRigidBody();
 
         EnablePhysics();
-
-        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(entityId);
     }
 
     void StaticRigidBodyComponent::Deactivate()
@@ -138,6 +139,7 @@ namespace PhysX
         }
 
         AZ::EntityBus::Handler::BusDisconnect();
+        Physics::RigidBodyRequestBus::Handler::BusDisconnect();
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
     }

@@ -44,7 +44,8 @@ namespace PhysX
         void DeinitNativeJoint() override;
 
     private:
-       physx::PxRevoluteJoint* GetPhysXNativeRevoluteJoint();
-       physx::PxRevoluteJoint* m_nativeJoint{ nullptr };
+        void CachePhysXNativeRevoluteJoint();
+
+        physx::PxRevoluteJoint* m_nativeJoint{ nullptr };
     };
 } // namespace PhysX
