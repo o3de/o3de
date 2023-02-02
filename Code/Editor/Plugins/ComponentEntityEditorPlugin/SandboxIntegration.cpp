@@ -1124,7 +1124,8 @@ bool SandboxIntegrationManager::CanGoToEntityOrChildren(const AZ::EntityId& enti
     }
 
     // Skip if this is a UI component; UI components use LyShine's "UI Canvas" and are not visible in the Editor viewport
-    const AZ::Component* uiElementComponent = entity->FindComponent(AZ::Uuid("{4A97D63E-CE7A-45B6-AAE4-102DB4334688}"));
+    constexpr AZ::Uuid uiElementComponentUuid{ "{4A97D63E-CE7A-45B6-AAE4-102DB4334688}" };
+    const AZ::Component* uiElementComponent = entity->FindComponent(uiElementComponentUuid);
     if (uiElementComponent != nullptr)
     {
         return false;
