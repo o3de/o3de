@@ -1,4 +1,32 @@
 {
+  "public_metrics_pipe": {
+    "TAGS": [
+      "periodic-incremental-daily-internal"
+    ],
+    "steps": [
+      "generate_metrics",
+      "upload_metrics"
+    ]
+  },
+  "generate_metrics": {
+    "TAGS": [
+      "periodic-incremental-daily-internal"
+    ],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts\\metrics\\ctest_metrics_xml_to_csv.py",
+      "SCRIPT_PARAMETERS": "build\\windows --output-directory build\\windows\\Testing\\csv --branch %BRANCH_NAME% -w"
+    }
+  },
+  "upload_metrics": {
+    "TAGS": [
+      "periodic-incremental-daily-internal"
+    ],
+    "COMMAND": "upload_metrics_windows.cmd",
+    "PARAMETERS": {
+      "CSV_DIRECTORY": "build\\windows\\Testing\\csv"
+    }
+  },
   "clean": {
     "TAGS": [],
     "COMMAND": "clean_windows.cmd",
