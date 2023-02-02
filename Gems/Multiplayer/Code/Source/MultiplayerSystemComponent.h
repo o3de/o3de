@@ -245,7 +245,7 @@ namespace Multiplayer
         } };
 
         // By default, this is enabled in everything but release builds.
-#if (O3DE_EDITOR_CONNECTION_LISTENER_ENABLE)
+#if !defined(AZ_RELEASE_BUILD)
         // This is a unique_ptr instead of a raw instance so that we can defer the construction
         // until the Activate(). If it gets constructed during the MultiplayerSystemComponent constructor,
         // the AzNetworking systems might not be constructed and activated yet, which would crash.

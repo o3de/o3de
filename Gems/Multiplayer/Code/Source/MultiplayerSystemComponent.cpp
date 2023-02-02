@@ -263,7 +263,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Activate()
     {
-#if (O3DE_EDITOR_CONNECTION_LISTENER_ENABLE)
+#if !defined(AZ_RELEASE_BUILD)
         m_editorConnectionListener = AZStd::make_unique<MultiplayerEditorConnection>();
 #endif
 
@@ -351,7 +351,7 @@ namespace Multiplayer
 
         m_networkEntityManager.Reset();
 
-#if (O3DE_EDITOR_CONNECTION_LISTENER_ENABLE)
+#if !defined(AZ_RELEASE_BUILD)
         m_editorConnectionListener.reset();
 #endif
     }
