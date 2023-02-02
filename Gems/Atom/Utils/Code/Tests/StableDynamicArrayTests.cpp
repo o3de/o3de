@@ -131,6 +131,9 @@ namespace UnitTest
         // release the pages at the end that are now empty
         testArray.ReleaseEmptyPages();
 
+        // Defragmenting a handle should still work after releasing empty pages
+        testArray.DefragmentHandle(handles.back());
+
         StableDynamicArrayMetrics metrics2 = testArray.GetMetrics();
         size_t endReducedPageCount = metrics2.m_elementsPerPage.size();
 
@@ -204,7 +207,7 @@ namespace UnitTest
         // Use this lambda to force the test array to think the first page may be empty
         auto markFirstPageAsEmpty = [&]()
         {
-            // Free an element in the first page, so that the first empty page is at the beginning
+            // Also free an element in the first page, so that the first empty page is at the beginning
             testArray.erase(handles.at(0));
             // Fill the first page back up, so that any further operations will be forced to
             // iterate past the hole in search of the next available page
@@ -288,11 +291,9 @@ namespace UnitTest
         {
             if (handle.IsValid())
             {
-                uint32_t value = handle->index;
                 StableDynamicArrayWeakHandle<TestItem> weakHandle = handle.GetWeakHandle();
-
                 // The weak handle should be referring to the same data as the owning handle
-                EXPECT_EQ(value, testArray.GetData(weakHandle).index);
+                EXPECT_EQ(handle->index, weakHandle->index);
             }
         }
 
@@ -637,11 +638,6 @@ namespace UnitTest
         void ReleaseItem(AZ::StableDynamicArrayHandle<TestItemImplementation>& handle)
         {
             m_testArray.erase(handle);
-        }
-
-        TestItemImplementation& GetData(AZ::StableDynamicArrayWeakHandle<StableDynamicArrayOwner::TestItemImplementation> handle)
-        {
-            return m_testArray.GetData(handle);
         }
 
     private:
@@ -990,23 +986,11 @@ namespace UnitTest
         TestItemHandle handle = owner.AcquireItem(1);
         TestItemWeakHandle weakHandle = handle.GetWeakHandle();
 
-        // The weak handle should be a valid reference to the data in the original handle
-        EXPECT_TRUE(weakHandle.IsValid());
-        EXPECT_EQ(owner.GetData(weakHandle).GetValue(), handle->GetValue());
-
-        // The weak handle should be able to be used to modify the data
         int testValue = 12;
-        owner.GetData(weakHandle).SetValue(testValue);
-
-        // Both the handle and weak handle should reference the modified value
+        weakHandle->SetValue(testValue);
         EXPECT_EQ(handle->GetValue(), testValue);
-        EXPECT_EQ(owner.GetData(weakHandle).GetValue(), testValue);
-
-        // Moving the handle should still result in a valid weak handle
-        TestItemHandle movedHandle = AZStd::move(handle);
-        EXPECT_EQ(owner.GetData(weakHandle).GetValue(), testValue);
-        weakHandle = movedHandle.GetWeakHandle();
-        EXPECT_EQ(owner.GetData(weakHandle).GetValue(), testValue);
+        EXPECT_EQ(weakHandle->GetValue(), testValue);
+        EXPECT_EQ((*weakHandle).GetValue(), testValue);
     }
 
     //
