@@ -68,6 +68,11 @@ namespace LmbrCentral
         AzToolsFramework::EditorVertexSelectionActionManagement::BindEditorVertexSelectionActionsToMenus();
     }
 
+    void EditorSplineComponentMode::PostActionManagerRegistration()
+    {
+        AzToolsFramework::EditorVertexSelectionActionManagement::DisableComponentModeEndOnVertexSelection();
+    }
+
     void EditorSplineComponentMode::Refresh()
     {
         ContainerChanged();

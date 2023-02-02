@@ -250,6 +250,23 @@ namespace AzToolsFramework
         menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.vertexSelection.clearSelection", 6002);
     }
 
+    void EditorVertexSelectionActionManagement::DisableComponentModeEndOnVertexSelection()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface on DisableComponentModeEndOnVertexSelection.");
+
+        // Install an Enabled State Callback to the End Component Mode action to disable it when Vertex Selection is non-empty.
+        actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.componentMode.end",
+            []() -> bool
+            {
+                return IsVertexSelectionEmpty();
+            }
+        );
+        actionManagerInterface->AddActionToUpdater(
+            EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier, "o3de.action.componentMode.end");
+    }
+
     static void RefreshUiAfterAddRemove(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         // ensure editor entity model (entity inspector) is refreshed

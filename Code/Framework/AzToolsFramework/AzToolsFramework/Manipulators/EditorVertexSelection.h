@@ -27,6 +27,7 @@ namespace AzToolsFramework
     {
         static void RegisterEditorVertexSelectionActions();
         static void BindEditorVertexSelectionActionsToMenus();
+        static void DisableComponentModeEndOnVertexSelection();
     };
 
     //! Concrete implementation of AZ::VariableVertices backed by an AZ::VertexContainer.

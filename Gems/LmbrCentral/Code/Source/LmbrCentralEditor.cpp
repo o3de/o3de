@@ -147,6 +147,12 @@ namespace LmbrCentral
             AzToolsFramework::BoxComponentMode::BindActionsToMenus();
         }
     }
+
+    void LmbrCentralEditorModule::OnPostActionManagerRegistrationHook()
+    {
+        EditorSplineComponentMode::PostActionManagerRegistration();
+    }
+
 } // namespace LmbrCentral
 
 AZ_DECLARE_MODULE_CLASS(Gem_LmbrCentralEditor, LmbrCentral::LmbrCentralEditorModule)
