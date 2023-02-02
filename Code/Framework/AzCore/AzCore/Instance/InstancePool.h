@@ -107,7 +107,8 @@ namespace AZ
         // creates a pool with the explicit name given, and the reset function specified
         template<class T>
         AZ::Outcome<AZStd::shared_ptr<InstancePool<T>>, AZStd::string> CreatePool(
-            AZ::Name name, typename InstancePool<T>::ResetInstance resetFunc = [](T&){}, typename InstancePool<T>::CreateInstance createFunc = []() { return new T; })
+            AZ::Name name, typename InstancePool<T>::ResetInstance resetFunc = [](T&){}, 
+            typename InstancePool<T>::CreateInstance createFunc = []() { return new T{}; })
         {
             AZStd::shared_ptr<InstancePool<T>> instancePool = AZStd::make_shared<InstancePool<T>>(resetFunc, createFunc);
             auto insertResult = m_nameToInstancePool.insert({ name, instancePool });
@@ -145,7 +146,8 @@ namespace AZ
         // important note: to use this, the T type must either include the AZ_RTTI macro, or be externally exposed via AZ_TYPE_INFO_SPECIALIZE
         template<class T>
         AZ::Outcome<AZStd::shared_ptr<InstancePool<T>>, AZStd::string> CreatePool(
-            typename InstancePool<T>::ResetInstance resetFunc = [](T&){}, typename InstancePool<T>::CreateInstance createFunc = []() { return new T; })
+            typename InstancePool<T>::ResetInstance resetFunc = [](T&){}, 
+            typename InstancePool<T>::CreateInstance createFunc = []() { return new T{}; })
         {
             const char* name = AZ::AzTypeInfo<T>::Name();
             return CreatePool<T>(AZ::Name(name), resetFunc);

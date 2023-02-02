@@ -227,10 +227,7 @@ namespace AzToolsFramework
                 m_expanderWidget->move(itemGeometry.topLeft());
                 if (auto* widgetParent = parentWidget(); widgetParent && widgetParent->isVisible())
                 {
-                    if (parentWidget()->isVisible())
-                    {
-                        m_expanderWidget->show();
-                    }
+                    m_expanderWidget->show();
                 }
             }
 
