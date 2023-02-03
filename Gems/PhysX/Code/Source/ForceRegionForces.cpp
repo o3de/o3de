@@ -443,7 +443,8 @@ namespace PhysX
 
         // Wikipedia: https://en.wikipedia.org/wiki/Drag_coefficient
         // Fd = 1/2 * p * u^2 * cd * A
-        float dragForceMagnitude = AZ::GetMin(maxForceMagnitude, 0.5f * m_volumeDensity * speed * speed * m_dragCoefficient * crossSectionalArea);
+        float dragForceMagnitude =
+            AZ::GetMin(maxForceMagnitude, 0.5f * m_volumeDensity * speed * speed * m_dragCoefficient * crossSectionalArea);
 
         // The drag force is defined as being in the same direction as the flow velocity. Since the entity is moving and the
         // volume flow is stationary, this just becomes opposite to the entity's velocity. Causing the object to slow down.
