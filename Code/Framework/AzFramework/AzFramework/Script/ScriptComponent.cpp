@@ -567,10 +567,7 @@ namespace AzFramework
 
     void ScriptComponent::Deactivate()
     {
-        if(AZ::Data::AssetBus::Handler::BusIsConnectedId(m_script.GetId()))
-        {
-            AZ::Data::AssetBus::Handler::BusDisconnect(m_script.GetId());
-        }
+        AZ::Data::AssetBus::Handler::BusDisconnect();
 
         DestroyEntityTable();
     }
