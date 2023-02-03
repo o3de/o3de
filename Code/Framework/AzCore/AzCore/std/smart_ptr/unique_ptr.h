@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_SMART_PTR_UNIQUE_PTR_H
-#define AZSTD_SMART_PTR_UNIQUE_PTR_H
+#pragma once
 
 #include <AzCore/std/smart_ptr/sp_convertible.h>
 #include <AzCore/std/typetraits/is_array.h>
@@ -60,12 +59,26 @@ namespace AZStd
     template<typename T, typename... Args>
     AZStd::enable_if_t<AZStd::is_array<T>::value && AZStd::extent<T>::value != 0, unique_ptr<T>> make_unique(Args&&... args) = delete;
 
+    // GetAzTypeInfo overload for AZStd::unique_ptr
+    // The Deleter is not part of the TypeInfo
+    template<class T, class Deleter>
+    constexpr AZ::TypeInfoObject GetAzTypeInfo(AZStd::type_identity<unique_ptr<T, Deleter>>)
+    {
+        using Type = AZStd::unique_ptr<T, Deleter>;
+        AZStd::fixed_string<512> typeName{ "AZStd::unique_ptr<" };
+        typeName += AZ::AzTypeInfo<T>::Name();
+        typeName += '>';
+
+        AZ::TypeTraits typeTraits{};
+        typeTraits |= AZStd::is_signed_v<Type> ? AZ::TypeTraits::is_signed : AZ::TypeTraits{};
+        typeTraits |= AZStd::is_unsigned_v<Type> ? AZ::TypeTraits::is_unsigned : AZ::TypeTraits{};
+
+        AZ::TypeInfoObject typeInfoObject;
+        typeInfoObject.m_name = typeName;
+        typeInfoObject.m_templateId = AZ::TypeId("{B55F90DA-C21E-4EB4-9857-87BE6529BA6D}");
+        typeInfoObject.m_canonicalTypeId = typeInfoObject.m_templateId + AZ::AzTypeInfo<T>::GetCanonicalTypeId();
+        typeInfoObject.m_pointerTypeId = typeInfoObject.m_canonicalTypeId + AZ::Internal::PointerId_v;
+        typeInfoObject.m_typeTraits = typeTraits;
+        typeInfoObject.m_typeSize = sizeof(Type);
+    }
 } // namespace AZStd
-
-namespace AZ
-{
-    AZ_TYPE_INFO_INTERNAL_VARIATION_SPECIALIZATION_2_CONCAT_1(AZStd::unique_ptr, "{B55F90DA-C21E-4EB4-9857-87BE6529BA6D}", T, Deleter);
-}
-
-#endif // AZSTD_SMART_PTR_UNIQUE_PTR_H
-#pragma once

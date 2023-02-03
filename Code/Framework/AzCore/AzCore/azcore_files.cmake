@@ -493,6 +493,7 @@ set(FILES
     RTTI/ReflectionManager.h
     RTTI/ReflectionManager.cpp
     RTTI/RTTI.h
+    RTTI/TemplateInfo.h
     RTTI/TypeInfo.h
     RTTI/TypeInfo.cpp
     RTTI/TypeInfoSimple.h

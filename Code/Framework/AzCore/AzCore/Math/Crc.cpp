@@ -11,6 +11,11 @@
 
 #include <string.h>
 
+namespace AZ::Internal
+{
+    template struct AggregateTypes<Crc32>;
+}
+
 namespace AZ
 {
     //=========================================================================

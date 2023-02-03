@@ -24,7 +24,7 @@ namespace AZ
         : public AllocatorBase
     {
     public:
-        AZ_RTTI((SimpleSchemaAllocator, "{32019C72-6E33-4EF9-8ABA-748055D94EB2}", Schema), AllocatorBase)
+        AZ_RTTI((SimpleSchemaAllocator, "{32019C72-6E33-4EF9-8ABA-748055D94EB2}", Schema), AllocatorBase);
 
         using pointer = typename Schema::pointer;
         using size_type = typename Schema::size_type;
