@@ -48,7 +48,7 @@
   "native": {
     "jenkins": {
       "enabled": ${native_test_targets_enabled},
-      "use_test_impact_analysis": ${use_tiaf}
+      "use_test_impact_analysis": ${native_use_test_impact_analysis}
     },
     "workspace": {
       "temp": {
