@@ -64,6 +64,26 @@ namespace UnitTest
         }
     };
 
+    void DragMouse(
+        const AzFramework::CameraState& cameraState,
+        AzManipulatorTestFramework::ImmediateModeActionDispatcher* actionDispatcher,
+        const AZ::Vector3& worldStart,
+        const AZ::Vector3& worldEnd,
+        const AzToolsFramework::ViewportInteraction::KeyboardModifier keyboardModifier =
+            AzToolsFramework::ViewportInteraction::KeyboardModifier::None)
+    {
+        const auto screenStart = AzFramework::WorldToScreen(worldStart, cameraState);
+        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, cameraState);
+
+        actionDispatcher
+            ->CameraState(cameraState)
+            ->MousePosition(screenStart)
+            ->KeyboardModifierDown(keyboardModifier)
+            ->MouseLButtonDown()
+            ->MousePosition(screenEnd)
+            ->MouseLButtonUp();
+    }
+
     TEST_F(PhysXColliderComponentModeTest, MouseWheelUpShouldSetNextMode)
     {
         // Given there is a collider component in component mode.
@@ -420,17 +440,7 @@ namespace UnitTest
         // position in world space to drag to
         const AZ::Vector3 worldEnd(-(x + xDelta), 0.0f, 0.0f);
 
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
-
-        m_actionDispatcher
-            ->CameraState(m_cameraState)
-            // move the mouse to interact with the x scale manipulator
-            ->MousePosition(screenStart)
-            // drag to move the manipulator
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
 
         const auto worldToScreenMultiplier = 1.0f / AzToolsFramework::CalculateScreenToWorldMultiplier(worldStart, m_cameraState);
         const auto assetScale = colliderEntity->FindComponent<TestColliderComponentMode>()->GetAssetScale();
@@ -546,17 +556,7 @@ namespace UnitTest
         // position in world space to move to
         const AZ::Vector3 worldEnd = worldStart + 2.0f * expectedXAxis;
 
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
-
-        m_actionDispatcher
-            ->CameraState(m_cameraState)
-            // move the mouse to the position of the x offset manipulator
-            ->MousePosition(screenStart)
-            // drag to move the manipulator
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
 
         AZ::Vector3 newColliderOffset = AZ::Vector3::CreateZero();
         PhysX::EditorColliderComponentRequestBus::EventResult(
@@ -599,17 +599,7 @@ namespace UnitTest
         // position in world space to move to
         const AZ::Vector3 worldEnd = worldStart - 2.25f * expectedZAxis;
 
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
-
-        m_actionDispatcher
-            ->CameraState(m_cameraState)
-            // move the mouse to the position of the z offset manipulator
-            ->MousePosition(screenStart)
-            // drag to move the manipulator
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
 
         AZ::Vector3 newColliderOffset = AZ::Vector3::CreateZero();
         PhysX::EditorColliderComponentRequestBus::EventResult(
@@ -648,18 +638,7 @@ namespace UnitTest
         const AZ::Vector3 worldStart = expectedColliderPosition + scaleManipulatorYDelta;
         const AZ::Vector3 worldEnd = worldStart + 0.1f * scaleManipulatorYDelta;
 
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
-
-        m_actionDispatcher
-            ->CameraState(m_cameraState)
-            // move the mouse to the position of the y scale manipulator
-            ->MousePosition(screenStart)
-            ->KeyboardModifierDown(AzToolsFramework::DefaultSymmetricalEditingModifier)
-            // drag to move the manipulator
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd, AzToolsFramework::DefaultSymmetricalEditingModifier);
 
         AZ::Vector3 newBoxDimensions = AZ::Vector3::CreateZero();
         AzToolsFramework::BoxManipulatorRequestBus::EventResult(
@@ -705,17 +684,7 @@ namespace UnitTest
             AZ::Transform::CreateFromQuaternionAndTranslation(
                 AZ::Quaternion::CreateRotationZ(3.0f * AZ::Constants::QuarterPi), worldStart + AZ::Vector3(5.0f, 5.0f, 0.0f)));
 
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
-
-        m_actionDispatcher
-            ->CameraState(m_cameraState)
-            // move the mouse to the position of the -z scale manipulator
-            ->MousePosition(screenStart)
-            // drag to move the manipulator
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
 
         AZ::Vector3 newBoxDimensions = AZ::Vector3::CreateZero();
         AzToolsFramework::BoxManipulatorRequestBus::EventResult(
@@ -762,17 +731,7 @@ namespace UnitTest
         const AZ::Vector3 worldStart = expectedColliderPosition + scaleManipulatorDelta;
         const AZ::Vector3 worldEnd = worldStart - 0.1f * scaleManipulatorDelta;
 
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
-
-        m_actionDispatcher
-            ->CameraState(m_cameraState)
-            // move the mouse to the position of the y scale manipulator
-            ->MousePosition(screenStart)
-            // drag to move the manipulator
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
 
         float newSphereRadius = 0.0f;
         PhysX::EditorColliderComponentRequestBus::EventResult(
@@ -781,7 +740,9 @@ namespace UnitTest
         EXPECT_NEAR(newSphereRadius, 0.9f, ManipulatorTolerance);
     }
 
-    TEST_F(PhysXEditorColliderComponentManipulatorFixture, CapsuleColliderScaleManipulatorsCorrectlyLocatedRelativeToColliderWithNonUniformScale)
+    TEST_F(
+        PhysXEditorColliderComponentManipulatorFixture,
+        CapsuleColliderSymmetricalScaleManipulatorsCorrectlyLocatedRelativeToColliderWithNonUniformScale)
     {
         const float capsuleRadius = 0.2f;
         const float capsuleHeight = 1.0f;
@@ -812,24 +773,55 @@ namespace UnitTest
         const AZ::Vector3 worldStart = expectedColliderPosition + heightManipulatorDelta;
         const AZ::Vector3 worldEnd = worldStart + 0.2f * heightManipulatorDelta;
 
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
-
-        m_actionDispatcher
-            ->CameraState(m_cameraState)
-            // move the mouse to the position of the height manipulator
-            ->MousePosition(screenStart)
-            ->KeyboardModifierDown(AzToolsFramework::DefaultSymmetricalEditingModifier)
-            // drag to move the manipulator
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd, AzToolsFramework::DefaultSymmetricalEditingModifier);
 
         float newCapsuleHeight = 0.0f;
         PhysX::EditorColliderComponentRequestBus::EventResult(
             newCapsuleHeight, m_idPair, &PhysX::EditorColliderComponentRequests::GetCapsuleHeight);
 
         EXPECT_NEAR(newCapsuleHeight, 1.2f, ManipulatorTolerance);
+    }
+
+    TEST_F(
+        PhysXEditorColliderComponentManipulatorFixture,
+        CapsuleColliderAsymmetricalScaleManipulatorsCorrectlyLocatedRelativeToColliderWithNonUniformScale)
+    {
+        const float capsuleRadius = 0.2f;
+        const float capsuleHeight = 1.0f;
+        const AZ::Quaternion capsuleRotation(-0.2f, -0.8f, -0.4f, 0.4f);
+        const AZ::Vector3 capsuleOffset(1.0f, -2.0f, 1.0f);
+        SetupCollider(Physics::CapsuleShapeConfiguration(capsuleHeight, capsuleRadius), capsuleRotation, capsuleOffset);
+        const AZ::Quaternion entityRotation(0.7f, -0.1f, -0.1f, 0.7f);
+        const AZ::Vector3 entityTranslation(-2.0f, 1.0f, -3.0f);
+        const float uniformScale = 2.0f;
+        SetupTransform(entityRotation, entityTranslation, uniformScale);
+        const AZ::Vector3 nonUniformScale(1.0f, 0.5f, 1.5f);
+        SetupNonUniformScale(nonUniformScale);
+        EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode::Dimensions);
+
+        // the expected position of the collider centre based on the combination of entity transform, collider offset and non-uniform scale
+        const AZ::Vector3 expectedColliderPosition(-0.92f, -2.44f, -5.0f);
+
+        // the expected position of the height manipulator relative to the centre of the collider, based on collider
+        // rotation, entity scale and non-uniform scale
+        const AZ::Vector3 heightManipulatorDelta(-0.3096f, 0.6528f, 0.4f);
+
+        // position the camera to look at the collider along the y-z diagonal
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi), expectedColliderPosition + AZ::Vector3(0.0f, -1.0f, 1.0f)));
+
+        const AZ::Vector3 worldStart = expectedColliderPosition + heightManipulatorDelta;
+        const AZ::Vector3 worldEnd = worldStart + 0.2f * heightManipulatorDelta;
+
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
+
+        float newCapsuleHeight = 0.0f;
+        PhysX::EditorColliderComponentRequestBus::EventResult(
+            newCapsuleHeight, m_idPair, &PhysX::EditorColliderComponentRequests::GetCapsuleHeight);
+
+        EXPECT_NEAR(newCapsuleHeight, 1.1f, ManipulatorTolerance);
     }
 
     TEST_F(PhysXEditorColliderComponentManipulatorFixture, ColliderRotationManipulatorsCorrectlyLocatedRelativeToColliderWithNonUniformScale)
@@ -864,17 +856,7 @@ namespace UnitTest
         const AZ::Vector3 worldStart = expectedColliderPosition + screenToWorldMultiplier * manipulatorViewRadius * yDirection;
         const AZ::Vector3 worldEnd = expectedColliderPosition + screenToWorldMultiplier * manipulatorViewRadius * zDirection;
 
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
-
-        m_actionDispatcher
-            ->CameraState(m_cameraState)
-            // move the mouse to a position on the angular manipulator
-            ->MousePosition(screenStart)
-            // drag to move the manipulator
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
 
         AZ::Quaternion newColliderRotation = AZ::Quaternion::CreateIdentity();
         PhysX::EditorColliderComponentRequestBus::EventResult(
