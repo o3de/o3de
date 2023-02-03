@@ -116,8 +116,8 @@ namespace AZ
     //////////////////////////////////////////////////////////////////////////
     template <size_t N>
     Dependency<N>::Dependency()
-        : m_dependencyRegex("(?:(~>|~=|[>=<]{1,2}) *([0-9]+(?:\\.[0-9]+)*))") // ?: denotes a non-capture group
-        , m_namedDependencyRegex("(?:(.*)(~>|~=|[>=<]{1,2}) *([0-9]+(?:\\.[0-9]+)*))")
+        : m_dependencyRegex("(?:(~>|~=|==|===|[>=<]{1,2}) *([0-9]+(?:\\.[0-9]+)*))") // ?: denotes a non-capture group
+        , m_namedDependencyRegex("(?:([^~>=<]*)(~>|~=|==|===|[>=<]{1,2}) *([0-9]+(?:\\.[0-9]+)*))")
         , m_versionRegex("([0-9]+)(?:\\.(.*)){0,1}")
     {
     }
@@ -307,6 +307,7 @@ namespace AZ
                     }
 
                     // since "=" is a valid comparsion string, we want to standardize it to ==
+                    // Note: this also converts === to ==
                     if (current.m_comparison == Comp::EqualTo)
                     {
                         op = "==";

@@ -208,7 +208,8 @@ namespace AZ::Internal
 
             AZ::IO::FixedMaxPath engineJsonPath{ engineRoot / Internal::EngineJsonFilename };
             AZ::IO::FixedMaxPath projectJsonPath{ engineRoot / projectPath / Internal::ProjectJsonFilename };
-            if (auto isCompatible = Internal::EngineIsCompatible(settingsRegistry, engineJsonPath, projectJsonPath);
+            if (auto isCompatible = Internal::EngineIsCompatible(settingsRegistry, engineJsonPath,
+                projectJsonPath, projectUserJsonPath);
                 !isCompatible)
             {
                 settingsRegistry.Set(FilePathKey_ErrorText, isCompatible.GetError().c_str());
@@ -388,8 +389,8 @@ namespace AZ::Internal
                             engineInfo.m_name.c_str(), engineInfo.m_version.ToString().c_str()));
                     }
                     errorStr = AZStd::string::format(
-                        "No engine was found in o3de_manifest.json with a name that matches the one set in the project.json '%s'\n"
-                        "If that's not the name you expected, please check if the engine field is being overridden in 'user/project.json'.\n\n"
+                        "No engine was found in o3de_manifest.json that is compatible with the one set in the project.json '%s'\n"
+                        "If that's not the engine qualifier you expected, please check if the engine field is being overridden in 'user/project.json'.\n\n"
                         "Engines that were checked:\n%s\n"
                         "Please check that your engine and project have both been registered with scripts/o3de.py.",
                         projectEngineMoniker.c_str(), enginePathsChecked.c_str()
