@@ -9,12 +9,17 @@
 #define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 1
 
 // TODO(MaterialPipeline): In the end, after all refactoring and rearranging of our shader code is done, some of these flags might become unnecessary and should be re-evaluated.
-#define OUTPUT_DEPTH 1
+#define OUTPUT_DEPTH 0
 #define FORCE_OPAQUE 1
-#define OUTPUT_SUBSURFACE 0
-#define ENABLE_TRANSMISSION 0
+#define OUTPUT_SUBSURFACE 1
+#define ENABLE_TRANSMISSION 1
+#define ENABLE_ANISOTROPY 0
 #define ENABLE_SHADER_DEBUGGING 1
-#define ENABLE_CLEAR_COAT 1
+#define ENABLE_CLEAR_COAT 0
+
+// Use human skin profile for thin object transmission (if enabled)
+// Remove this line to use a custom profile based on the scatter color
+#define USE_HUMAN_SKIN_PROFILE 1
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -29,8 +34,9 @@
 // called StandardPBR_LightingData.azsli which just #includes the BasePBR file. Otherwise this looks suspicious like
 // a mistake of some kind.
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
-#include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli"
-#include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli"
+#include "../../../Shaders/Materials/Skin/Skin_LightingBrdf.azsli"
+#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli"
+
 
 #include "ForwardPassVertexAndPixel.azsli"
 
