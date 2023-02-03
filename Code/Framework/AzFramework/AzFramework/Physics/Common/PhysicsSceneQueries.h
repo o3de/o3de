@@ -132,7 +132,7 @@ namespace AzPhysics
     //! Not valid to be used with Scene::QueryScene functions
     struct SceneQueryRequest
     {
-        enum RequestType : AZ::u8
+        enum class RequestType : AZ::u8
         {
             Undefined = 0,
             Raycast,
