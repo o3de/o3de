@@ -48,7 +48,7 @@ namespace AZ
     // We require AZ_TYPE_INFO to be declared
     #define AZ_RTTI_COMMON()                                                                                                       \
     AZ_PUSH_DISABLE_WARNING(26433, "-Winconsistent-missing-override")                                                              \
-    void RTTI_Enable();                                                                                                            \
+    void RTTI_Enable() {}                                                                                                          \
     virtual inline        AZ::TypeId RTTI_GetType() const { return RTTI_Type(); }                                                  \
     virtual inline const char*      RTTI_GetTypeName() const { return RTTI_TypeName(); }                                           \
     virtual inline bool             RTTI_IsTypeOf(const AZ::TypeId & typeId) const { return RTTI_IsContainType(typeId); }          \

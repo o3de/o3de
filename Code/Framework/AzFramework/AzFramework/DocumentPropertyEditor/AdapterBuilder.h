@@ -73,6 +73,8 @@ namespace AZ::DocumentPropertyEditor
         //! Gets the path to the DOM node currently being built within this builder's DOM.
         Dom::Path GetCurrentPath() const;
 
+        void SetCurrentPath(const Dom::Path&);
+
         //! Returns true if an error has been encountered during the build process,
         bool IsError() const;
         //! Returns the error information, if any, encountered during the build process.

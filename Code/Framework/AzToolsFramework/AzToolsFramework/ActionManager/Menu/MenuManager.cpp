@@ -272,6 +272,14 @@ namespace AzToolsFramework
                 subMenuIdentifier.c_str(), menuIdentifier.c_str()));
         }
 
+        if (menuIdentifier == subMenuIdentifier)
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" - the two menus are the same.",
+                subMenuIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
         if (menuIterator->second.ContainsSubMenu(subMenuIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
@@ -723,7 +731,7 @@ namespace AzToolsFramework
     void MenuManager::OnActionStateChanged(AZStd::string actionIdentifier)
     {
         // Only refresh the menu if the action state changing could result in the action being shown/hidden.
-        if (m_actionManagerInternalInterface->GetHideFromMenusWhenDisabled(actionIdentifier))
+        if (m_actionManagerInternalInterface->GetActionMenuVisibility(actionIdentifier) != ActionVisibility::AlwaysShow)
         {
             QueueRefreshForMenusContainingAction(actionIdentifier);
         }

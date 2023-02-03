@@ -53,9 +53,9 @@ namespace UnitTest
             systemEntity->Init();
             systemEntity->Activate();
 
-            EBUS_EVENT_RESULT(m_scriptContext, ScriptSystemRequestBus, GetContext, DefaultScriptContextId);
-            EBUS_EVENT_RESULT(m_behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
-            EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+            ScriptSystemRequestBus::BroadcastResult(m_scriptContext, &ScriptSystemRequestBus::Events::GetContext, DefaultScriptContextId);
+            AZ::ComponentApplicationBus::BroadcastResult(m_behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
+            AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
             AzToolsFramework::Components::ScriptEditorComponent::CreateDescriptor(); // descriptor is deleted by app
             AzToolsFramework::Components::ScriptEditorComponent::Reflect(m_serializeContext);
@@ -81,7 +81,7 @@ namespace UnitTest
                 Data::Asset<ScriptAsset> scriptAsset = Data::AssetManager::Instance().CreateAsset<ScriptAsset>(Data::AssetId(id));
                 scriptAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
                 scriptAsset.Get()->m_data = compileRequest.m_luaScriptDataOut;
-                EBUS_EVENT(Data::AssetManagerBus, OnAssetReady, scriptAsset);
+                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReady, scriptAsset);
                 m_app.Tick();
                 m_app.TickSystem(); // flush assets etc.
 

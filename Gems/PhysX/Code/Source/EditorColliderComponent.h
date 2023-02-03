@@ -24,6 +24,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
+#include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
@@ -119,6 +120,7 @@ namespace PhysX
         , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , private AzToolsFramework::BoxManipulatorRequestBus::Handler
         , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
+        , private AzToolsFramework::ShapeManipulatorRequestBus::Handler
         , private AZ::Data::AssetBus::Handler
         , private PhysX::MeshColliderComponentRequestsBus::Handler
         , private AZ::TransformNotificationBus::Handler
@@ -205,9 +207,11 @@ namespace PhysX
         // AzToolsFramework::BoxManipulatorRequestBus
         AZ::Vector3 GetDimensions() const override;
         void SetDimensions(const AZ::Vector3& dimensions) override;
+        AZ::Transform GetCurrentLocalTransform() const override;
+
+        // AzToolsFramework::ShapeManipulatorRequestBus overrides ...
         AZ::Vector3 GetTranslationOffset() const override;
         void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
-        AZ::Transform GetCurrentLocalTransform() const override;
         AZ::Transform GetManipulatorSpace() const override;
 
         // AZ::Render::MeshComponentNotificationBus

@@ -36,26 +36,59 @@ namespace LmbrCentral
             ->MouseLButtonUp();
     }
 
-    void EnterComponentMode(AZ::Entity* entity, const AZ::Uuid& componentType)
+    void EnterComponentMode(AZ::EntityId entityId, const AZ::Uuid& componentType)
     {
-        AzToolsFramework::SelectEntity(entity->GetId());
+        AzToolsFramework::SelectEntity(entityId);
         AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
             &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Events::AddSelectedComponentModesOfType,
             componentType);
     }
 
-    void ExpectBoxDimensions(AZ::Entity* entity, const AZ::Vector3& expectedBoxDimensions)
+    void ExpectBoxDimensions(AZ::EntityId entityId, const AZ::Vector3& expectedBoxDimensions)
     {
-        AZ::Vector3 boxDimensions;
-        BoxShapeComponentRequestsBus::EventResult(boxDimensions, entity->GetId(), &BoxShapeComponentRequests::GetBoxDimensions);
+        AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
+        BoxShapeComponentRequestsBus::EventResult(boxDimensions, entityId, &BoxShapeComponentRequests::GetBoxDimensions);
         EXPECT_THAT(boxDimensions, UnitTest::IsCloseTolerance(expectedBoxDimensions, ManipulatorTolerance));
     }
 
-    void ExpectTranslationOffset(AZ::Entity* entity, const AZ::Vector3& expectedTranslationOffset)
+    void ExpectTranslationOffset(AZ::EntityId entityId, const AZ::Vector3& expectedTranslationOffset)
     {
         AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            translationOffset, entity->GetId(), &LmbrCentral::ShapeComponentRequests::GetTranslationOffset);
+            translationOffset, entityId, &LmbrCentral::ShapeComponentRequests::GetTranslationOffset);
         EXPECT_THAT(translationOffset, UnitTest::IsCloseTolerance(expectedTranslationOffset, ManipulatorTolerance));
+    }
+
+    void SetComponentSubMode(AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode subMode)
+    {
+        AzToolsFramework::ShapeComponentModeRequestBus::Event(
+            entityComponentIdPair, &AzToolsFramework::ShapeComponentModeRequests::SetShapeSubMode, subMode);
+    }
+
+    void ExpectSubMode(
+        AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode expectedSubMode)
+    {
+        AzToolsFramework::ShapeComponentModeRequests::SubMode subMode = AzToolsFramework::ShapeComponentModeRequests::SubMode::NumModes;
+        AzToolsFramework::ShapeComponentModeRequestBus::EventResult(
+            subMode, entityComponentIdPair, &AzToolsFramework::ShapeComponentModeRequests::GetShapeSubMode);
+        EXPECT_EQ(subMode, expectedSubMode);
+    }
+
+    AzToolsFramework::ViewportInteraction::MouseInteractionResult CtrlScroll(float wheelDelta)
+    {
+        AzToolsFramework::ViewportInteraction::MouseInteractionEvent interactionEvent(
+            AzToolsFramework::ViewportInteraction::MouseInteraction(), wheelDelta);
+        interactionEvent.m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::Wheel;
+        interactionEvent.m_mouseInteraction.m_keyboardModifiers.m_keyModifiers =
+            static_cast<AZ::u32>(AzToolsFramework::ViewportInteraction::KeyboardModifier::Ctrl);
+
+        AzToolsFramework::ViewportInteraction::MouseInteractionResult handled =
+            AzToolsFramework::ViewportInteraction::MouseInteractionResult::None;
+        AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::BroadcastResult(
+            handled,
+            &AzToolsFramework::ViewportInteraction::InternalMouseViewportRequests::InternalHandleAllMouseInteractions,
+            interactionEvent);
+
+        return handled;
     }
 } // namespace LmbrCentral
