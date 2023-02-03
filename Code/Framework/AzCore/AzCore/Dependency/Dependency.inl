@@ -8,7 +8,7 @@
 
 #include <AzCore/StringFunc/StringFunc.h>
 
-namespace AzFramework
+namespace AZ
 {
     //////////////////////////////////////////////////////////////////////////
     // Specifier
@@ -39,7 +39,7 @@ namespace AzFramework
             AZ_Assert(m_parseDepth >= 2, "Internal Error: There should be "
                 "or more than 2 parts to a TwiddleWakka dependency.");
 
-            AZStd::string version = AZStd::string::format("~>%llu", m_version.m_parts[0]);
+            AZStd::string version = AZStd::string::format("~=%llu", m_version.m_parts[0]);
             for (AZ::u8 i = 1; i < m_parseDepth; ++i)
             {
                 version += AZStd::string::format(".%llu", m_version.m_parts[i]);
@@ -116,7 +116,8 @@ namespace AzFramework
     //////////////////////////////////////////////////////////////////////////
     template <size_t N>
     Dependency<N>::Dependency()
-        : m_dependencyRegex("(?:(~>|[>=<]{1,2}) *([0-9]+(?:\\.[0-9]+)*))")
+        : m_dependencyRegex("(?:(~>|~=|[>=<]{1,2}) *([0-9]+(?:\\.[0-9]+)*))") // ?: denotes a non-capture group
+        , m_namedDependencyRegex("(?:(.*)(~>|~=|[>=<]{1,2}) *([0-9]+(?:\\.[0-9]+)*))")
         , m_versionRegex("([0-9]+)(?:\\.(.*)){0,1}")
     {
     }
@@ -140,6 +141,18 @@ namespace AzFramework
     void Dependency<N>::SetID(const AZ::Uuid& id)
     {
         m_id = id;
+    }
+
+    template <size_t N>
+    const AZStd::string& Dependency<N>::GetName() const
+    {
+        return m_name;
+    }
+
+    template <size_t N>
+    void Dependency<N>::SetName(const AZStd::string& name)
+    {
+        m_name = name;
     }
 
     template <size_t N>
@@ -176,9 +189,9 @@ namespace AzFramework
                 upper.m_comparison = Comp::LessThan;
                 upper.m_version = lower.m_version;
                 upper.m_parseDepth = bound.m_parseDepth;
-                // ~>1.0    becomes >=1.0   <2.0
-                // ~>1.2.0  becomes >=1.2.0 <1.3.0
-                // ~>1.2.3  becomes >=1.2.3 <1.3.0
+                // ~=1.0    becomes >=1.0   <2.0
+                // ~=1.2.0  becomes >=1.2.0 <1.3.0
+                // ~=1.2.3  becomes >=1.2.3 <1.3.0
                 upper.m_version.m_parts[lower.m_parseDepth - 1] = 0;
                 upper.m_version.m_parts[lower.m_parseDepth - 2]++;
 
@@ -219,7 +232,17 @@ namespace AzFramework
                 m_bounds.clear();
                 return AZ::Success();
             }
-            else if (AZStd::regex_match(depStr, match, m_dependencyRegex) && match.size() >= 3)
+
+            if (AZStd::regex_match(depStr, match, m_namedDependencyRegex) && match.size() >= 4)
+            {
+                m_name = match[1].str();
+
+                // remove the name prefix before parsing op and version
+                AZ::StringFunc::LChop(depStr, m_name.length());
+                AZ::StringFunc::Strip(depStr, " \t");
+            }
+
+            if (AZStd::regex_match(depStr, match, m_dependencyRegex) && match.size() >= 3)
             {
                 AZStd::string op = match[1].str();
                 AZStd::string versionStr = match[2].str();
@@ -238,7 +261,7 @@ namespace AzFramework
                 }
 
                 // Check for twiddle wakka, it's a special case
-                if (op == "~>")
+                if (op == "~=" || op == "~>")
                 {
                     // Lower bound
                     Bound bound;
@@ -247,7 +270,7 @@ namespace AzFramework
                     auto parseOutcome = ParseVersion(versionStr, bound.m_version);
                     if (!parseOutcome.IsSuccess() || parseOutcome.GetValue() < 2)
                     {
-                        // ~>1 not allowed, must specifiy ~>1.0
+                        // ~=1 not allowed, must specifiy ~=1.0
                         goto invalid_version_str;
                     }
                     bound.m_parseDepth = parseOutcome.GetValue();
