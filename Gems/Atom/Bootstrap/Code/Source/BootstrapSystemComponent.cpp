@@ -250,7 +250,7 @@ namespace AZ
                 TickBus::Handler::BusDisconnect();
 
                 m_brdfTexture = nullptr;
-                m_vrsTexture = nullptr;
+                m_xrVrsTexture = nullptr;
                 RemoveRenderPipeline();
                 DestroyDefaultScene();
 
@@ -397,13 +397,13 @@ namespace AZ
                 {
                     RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
                     if (RHI::CheckBitsAll(device->GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerRegion) &&
-                        !m_vrsTexture)
+                        !m_xrVrsTexture)
                     {
                         // Need to fill the contents of the Variable shade rating image.
                         const AZStd::shared_ptr<const RPI::PassTemplate> forwardTemplate =
                             RPI::PassSystemInterface::Get()->GetPassTemplate(Name("MultiViewForwardPassTemplate"));
 
-                        m_vrsTexture = xrSystem->InitPassFoveatedAttachment(*forwardTemplate);
+                        m_xrVrsTexture = xrSystem->InitPassFoveatedAttachment(*forwardTemplate);
                     }
                 }
 
