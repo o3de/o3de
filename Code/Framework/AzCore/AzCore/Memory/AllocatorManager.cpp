@@ -91,6 +91,7 @@ AllocatorManager::RegisterAllocator(class IAllocator* alloc)
     }
 
     m_allocators[m_numAllocators++] = alloc;
+    alloc->SetProfilingActive(m_defaultProfilingState);
 }
 
 //=========================================================================
@@ -229,11 +230,21 @@ AllocatorManager::SetTrackingMode(Debug::AllocationRecords::Mode mode)
 void
 AllocatorManager::EnterProfilingMode()
 {
+    AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
+    for (int i = 0; i < m_numAllocators; ++i)
+    {
+        m_allocators[i]->SetProfilingActive(true);
+    }
 }
 
 void
 AllocatorManager::ExitProfilingMode()
 {
+    AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
+    for (int i = 0; i < m_numAllocators; ++i)
+    {
+        m_allocators[i]->SetProfilingActive(false);
+    }
 }
 
 void

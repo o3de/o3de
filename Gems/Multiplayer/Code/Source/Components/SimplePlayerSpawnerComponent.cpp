@@ -44,7 +44,8 @@ namespace Multiplayer
                                         "If no spawn points are provided the network players will be spawned at the world-space origin.")
                            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                            ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
-                           ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NetBinding.svg")
+                           ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/SimpleNetworkPlayerSpawner.svg")
+                           ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/SimpleNetworkPlayerSpawner.svg")
                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
                            ->DataElement(
                                AZ::Edit::UIHandlers::Default,

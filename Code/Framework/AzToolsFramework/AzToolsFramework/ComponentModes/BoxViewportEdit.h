@@ -24,7 +24,7 @@ namespace AzToolsFramework
         BoxViewportEdit(bool allowAsymmetricalEditing = false);
 
         // BaseShapeViewportEdit overrides ...
-        void Setup() override;
+        void Setup(const ManipulatorManagerId manipulatorManagerId = g_mainManipulatorManagerId) override;
         void Teardown() override;
         void UpdateManipulators() override;
         void ResetValues() override;

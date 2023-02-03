@@ -344,6 +344,40 @@ namespace UnitTest
         }
     }
 
+    TEST_F(ActionManagerFixture, InstallMultipleEnabledStateCallbacks)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        
+        m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.test", []() { return false; });
+        auto outcome = m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.test", []() { return false; });
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, VerifyEnabledStateCallbacks)
+    {
+        // Results of Enabled State Callbacks are chained with AND.
+        // So all callbacks need to return TRUE for an Action to be enabled.
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        
+        m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.test", []() { return true; });
+
+        {
+            auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(enabledOutcome.IsSuccess());
+            EXPECT_TRUE(enabledOutcome.GetValue());
+        }
+
+        m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.test", []() { return false; });
+        
+        {
+            auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(enabledOutcome.IsSuccess());
+            EXPECT_FALSE(enabledOutcome.GetValue());
+        }
+    }
+
     TEST_F(ActionManagerFixture, UpdateUnregisteredAction)
     {
         auto outcome = m_actionManagerInterface->UpdateAction("o3de.action.test");
