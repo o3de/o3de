@@ -74,7 +74,7 @@ namespace LmbrCentral
 
             // Get the target entity's position
             AZ::Transform entityTransform = AZ::Transform::CreateIdentity();
-            EBUS_EVENT_ID_RESULT(entityTransform, m_targetEntityId, AZ::TransformBus, GetWorldTM);
+            AZ::TransformBus::EventResult(entityTransform, m_targetEntityId, &AZ::TransformBus::Events::GetWorldTM);
             m_destination = entityTransform.GetTranslation();
         }
 
