@@ -101,6 +101,7 @@ namespace Multiplayer
         "The base used for blending between network updates, 0.1 will be quite linear, 0.2 or 0.3 will "
         "slow down quicker and may be better suited to connections with highly variable latency");
     AZ_CVAR(bool, bg_multiplayerDebugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw for the multiplayer gem");
+    AZ_CVAR(bool, sv_host_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to host as soon as the Multiplayer system becomes available.");
     AZ_CVAR(bool, cl_connect_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to call connect as soon as the Multiplayer SystemComponent is activated.");
     AZ_CVAR(bool, sv_versionMismatch_autoDisconnect, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Should the server automatically disconnect a client that is attempting connect who is running a build containing different/modified multiplayer components.");
@@ -293,7 +294,7 @@ namespace Multiplayer
 
         // If this client wants to connect on startup, wait for all the system components to activate, and then call connect.
         // Connecting too soon causes a "version mismatch" because all of the system components haven't registered their multiplayer components.
-        if (cl_connect_onstartup)
+        if (sv_host_onstartup || cl_connect_onstartup)
         {
             if (const auto settingsRegistry = AZ::SettingsRegistry::Get())
             {
@@ -302,7 +303,14 @@ namespace Multiplayer
                     m_componentApplicationLifecycleHandler,
                     [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
                     {
-                        this->Connect(LocalHost, cl_serverport);
+                        if (sv_host_onstartup)
+                        {
+                            this->StartHosting(sv_port, sv_isDedicated);
+                        }
+                        else if (cl_connect_onstartup)
+                        {
+                            this->Connect(LocalHost, cl_serverport);
+                        }
                     },
                     "SystemComponentsActivated",
                     /*autoRegisterEvent*/ true);
@@ -1783,9 +1791,18 @@ namespace Multiplayer
 
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        if (!AZ::Interface<IMultiplayer>::Get()->StartHosting(sv_port, sv_isDedicated))
+        if (auto multiplayerSystem = AZ::Interface<IMultiplayer>::Get())
         {
-            AZLOG_ERROR("Failed to start listening on any allocated port");
+            if (!multiplayerSystem->StartHosting(sv_port, sv_isDedicated))
+            {
+                AZLOG_ERROR("Failed to start listening on any allocated port");
+            }
+        }
+        else
+        {
+            // User is attempting to call host before the multiplayer system component has been activated.
+            // Host as soon as it becomes available.
+            sv_host_onstartup = true;
         }
     }
     AZ_CONSOLEFREEFUNC(host, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection as a host for other clients to connect to");
