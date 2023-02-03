@@ -496,7 +496,8 @@ namespace AzToolsFramework
                             entity->SetName(newName);
                             undo.MarkEntityDirty(entity->GetId());
 
-                            EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_EntireTree);
+                            ToolsApplicationEvents::Bus::Broadcast(
+                                &ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_EntireTree);
                         }
                     }
                     else
@@ -904,7 +905,8 @@ namespace AzToolsFramework
             }
 
             bool isEntityEditable = true;
-            EBUS_EVENT_RESULT(isEntityEditable, ToolsApplicationRequests::Bus, IsEntityEditable, entityId);
+            ToolsApplicationRequests::Bus::BroadcastResult(
+                isEntityEditable, &ToolsApplicationRequests::Bus::Events::IsEntityEditable, entityId);
             if (!isEntityEditable)
             {
                 return false;
@@ -999,10 +1001,10 @@ namespace AzToolsFramework
             for (AZ::EntityId entityId : selectedEntityIds)
             {
                 AZ::EntityId oldParentId;
-                EBUS_EVENT_ID_RESULT(oldParentId, entityId, AZ::TransformBus, GetParentId);
+                AZ::TransformBus::EventResult(oldParentId, entityId, &AZ::TransformBus::Events::GetParentId);
 
                 //  Guarding this to prevent the entity from being marked dirty when the parent doesn't change.
-                EBUS_EVENT_ID(entityId, AZ::TransformBus, SetParent, newParentId);
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetParent, newParentId);
 
                 // The old parent is dirty due to sort change
                 undo2.MarkEntityDirty(GetEntityIdForSortInfo(oldParentId));
@@ -1057,7 +1059,7 @@ namespace AzToolsFramework
         // reselect the entities to ensure they're visible if appropriate
         ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, processedEntityIds);
 
-        EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_Values);
+        ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_Values);
         return true;
     }
 

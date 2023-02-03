@@ -8,7 +8,6 @@
 
 #include <AssetImporterDocument.h>
 #include <Util/PathUtil.h>
-#include <GFxFramework/MaterialIO/IMaterial.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/FilterIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>

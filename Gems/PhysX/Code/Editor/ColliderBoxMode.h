@@ -19,6 +19,8 @@ namespace PhysX
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
+        ColliderBoxMode();
+
         // PhysXSubComponentModeBase ...
         void Setup(const AZ::EntityComponentIdPair& idPair) override;
         void Refresh(const AZ::EntityComponentIdPair& idPair) override;
@@ -26,6 +28,6 @@ namespace PhysX
         void ResetValues(const AZ::EntityComponentIdPair& idPair) override;
 
     private:
-        AzToolsFramework::BoxViewportEdit m_boxEdit;
+        AZStd::unique_ptr<AzToolsFramework::BoxViewportEdit> m_boxEdit;
     };
 } //namespace PhysX

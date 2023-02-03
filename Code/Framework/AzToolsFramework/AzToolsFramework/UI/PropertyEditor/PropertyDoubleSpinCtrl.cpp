@@ -306,7 +306,7 @@ namespace AzToolsFramework
         PropertyDoubleSpinCtrl* newCtrl = aznew PropertyDoubleSpinCtrl(pParent);
         connect(newCtrl, &PropertyDoubleSpinCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         connect(newCtrl, &PropertyDoubleSpinCtrl::editingFinished, this, [newCtrl]()
         {
@@ -326,7 +326,7 @@ namespace AzToolsFramework
         PropertyDoubleSpinCtrl* newCtrl = aznew PropertyDoubleSpinCtrl(pParent);
         connect(newCtrl, &PropertyDoubleSpinCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         connect(newCtrl, &PropertyDoubleSpinCtrl::editingFinished, this, [newCtrl]()
         {
@@ -463,8 +463,10 @@ namespace AzToolsFramework
 
     void RegisterDoubleSpinBoxHandlers()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew doublePropertySpinboxHandler());
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew floatPropertySpinboxHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew doublePropertySpinboxHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew floatPropertySpinboxHandler());
     }
 
 }

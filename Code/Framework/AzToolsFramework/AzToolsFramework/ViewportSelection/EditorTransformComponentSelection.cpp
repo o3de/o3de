@@ -1025,8 +1025,13 @@ namespace AzToolsFramework
 
         m_editorHelpers = AZStd::make_unique<EditorHelpers>(entityDataCache);
 
-        ActionManagerRegistrationNotificationBus::Handler::BusConnect();
-        EditorEventsBus::Handler::BusConnect();
+        // New Action Manager registers an action to handle Escape.
+        if (!IsNewActionManagerEnabled())
+        {
+            EditorEventsBus::Handler::BusConnect();
+        }
+
+        ActionManagerRegistrationNotificationBus::Handler::BusConnect();        
         EditorTransformComponentSelectionRequestBus::Handler::BusConnect(entityContextId);
         ToolsApplicationNotificationBus::Handler::BusConnect();
         Camera::EditorCameraNotificationBus::Handler::BusConnect();
@@ -1107,8 +1112,12 @@ namespace AzToolsFramework
         Camera::EditorCameraNotificationBus::Handler::BusDisconnect();
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EditorTransformComponentSelectionRequestBus::Handler::BusDisconnect();
-        EditorEventsBus::Handler::BusDisconnect();
         ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+
+        if (!IsNewActionManagerEnabled())
+        {
+            EditorEventsBus::Handler::BusDisconnect();
+        }
     }
 
     void EditorTransformComponentSelection::SetupBoxSelect()
@@ -2545,7 +2554,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []()
@@ -2579,7 +2588,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()
@@ -2612,7 +2621,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()
@@ -2660,6 +2669,30 @@ namespace AzToolsFramework
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+A");
         }
 
+        // Deselect All
+        {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.deselectAll";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Deselect All";
+            actionProperties.m_description = "Deselect All Entities";
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                [this]()
+                {
+                    DeselectEntities();
+                }
+            );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Esc");
+        }
+
         // Invert Selection
         {
             const AZStd::string_view actionIdentifier = "o3de.action.edit.invertSelection";
@@ -2669,7 +2702,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()
@@ -2732,7 +2765,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [&]()
@@ -2756,7 +2789,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]
@@ -2791,7 +2824,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()
@@ -2837,7 +2870,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [showHide]()
@@ -2859,7 +2892,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [showHide]()
@@ -2883,7 +2916,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []()
@@ -2939,7 +2972,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [lockUnlock]()
@@ -2963,7 +2996,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [lockUnlock]()
@@ -2985,7 +3018,7 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
 
             m_actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []()
@@ -3020,7 +3053,7 @@ namespace AzToolsFramework
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Move.svg";
 
             m_actionManagerInterface->RegisterCheckableAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()
@@ -3052,7 +3085,7 @@ namespace AzToolsFramework
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Rotate.svg";
 
             m_actionManagerInterface->RegisterCheckableAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()
@@ -3084,7 +3117,7 @@ namespace AzToolsFramework
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Scale.svg";
 
             m_actionManagerInterface->RegisterCheckableAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 [this]()
@@ -3110,26 +3143,27 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::OnMenuBindingHook()
     {
         // Edit Menu
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::EditMenuIdentifier, 300);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.edit.duplicate", 400);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.edit.delete", 500);
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::EditMenuIdentifier, 600);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.edit.selectAll", 700);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.edit.invertSelection", 800);
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::EditMenuIdentifier, 900);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.edit.togglePivot", 1000);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.edit.resetEntityTransform", 1100);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.edit.resetManipulator", 1200);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.edit.hideSelection", 1300);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.edit.showAll", 1400);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.edit.lockSelection", 1500);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.edit.unlockAllEntities", 1600);
-        m_menuManagerInterface->AddSeparatorToMenu(EditorMenu::EditMenuIdentifier, 1700);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EditMenuIdentifier, 300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.duplicate", 400);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.delete", 500);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EditMenuIdentifier, 600);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.selectAll", 700);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.deselectAll", 750);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.invertSelection", 800);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EditMenuIdentifier, 900);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.togglePivot", 1000);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.resetEntityTransform", 1100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.resetManipulator", 1200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.hideSelection", 1300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.showAll", 1400);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.lockSelection", 1500);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.unlockAllEntities", 1600);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EditMenuIdentifier, 1700);
 
         // Transform Modes
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditModifyModesMenuIdentifier, "o3de.action.edit.transform.move", 100);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditModifyModesMenuIdentifier, "o3de.action.edit.transform.rotate", 200);
-        m_menuManagerInterface->AddActionToMenu(EditorMenu::EditModifyModesMenuIdentifier, "o3de.action.edit.transform.scale", 300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditModifyModesMenuIdentifier, "o3de.action.edit.transform.move", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditModifyModesMenuIdentifier, "o3de.action.edit.transform.rotate", 200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditModifyModesMenuIdentifier, "o3de.action.edit.transform.scale", 300);
     }
 
     void EditorTransformComponentSelection::UnregisterActions()

@@ -669,8 +669,8 @@ namespace UnitTest
 
         // the offset should not have changed, because the editing was symmetrical
         AZ::Vector3 newBoxOffset = AZ::Vector3::CreateZero();
-        AzToolsFramework::BoxManipulatorRequestBus::EventResult(
-            newBoxOffset, m_idPair, &AzToolsFramework::BoxManipulatorRequests::GetTranslationOffset);
+        AzToolsFramework::ShapeManipulatorRequestBus::EventResult(
+            newBoxOffset, m_idPair, &AzToolsFramework::ShapeManipulatorRequests::GetTranslationOffset);
 
         EXPECT_THAT(newBoxOffset, IsCloseTolerance(boxOffset, ManipulatorTolerance));
     }
@@ -725,8 +725,8 @@ namespace UnitTest
 
         // the offset should have changed, because the editing was asymmetrical
         AZ::Vector3 newBoxOffset = AZ::Vector3::CreateZero();
-        AzToolsFramework::BoxManipulatorRequestBus::EventResult(
-            newBoxOffset, m_idPair, &AzToolsFramework::BoxManipulatorRequests::GetTranslationOffset);
+        AzToolsFramework::ShapeManipulatorRequestBus::EventResult(
+            newBoxOffset, m_idPair, &AzToolsFramework::ShapeManipulatorRequests::GetTranslationOffset);
 
         // the offset should have moved 0.25 units (half the change in the z dimension)
         // along the -z axis, tranformed by the local rotation of the box

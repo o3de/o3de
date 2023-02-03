@@ -76,7 +76,7 @@ namespace EMotionFX
     {
         if (attrValue)
         {
-            m_node = static_cast<AnimGraphNode*>(attrValue->GetInstancePointer());
+            m_node = static_cast<AnimGraphNode*>(attrValue->GetInstance());
             GUI->SetNode(m_node);
         }
 

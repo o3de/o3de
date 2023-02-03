@@ -10,7 +10,7 @@
 
 #include <AzCore/std/string/string_view.h>
 
-namespace EditorActionContext
+namespace EditorIdentifiers
 {
-    inline constexpr AZStd::string_view MainWindowContextIdentifier = "o3de.context.editor.mainwindow";
+    inline constexpr AZStd::string_view MainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 }

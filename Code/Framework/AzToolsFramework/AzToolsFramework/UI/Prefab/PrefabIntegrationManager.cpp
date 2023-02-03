@@ -17,7 +17,9 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
@@ -122,11 +124,15 @@ namespace AzToolsFramework
             {
                 m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
                 AZ_Assert(
-                    m_actionManagerInterface, "Prefab - could not get m_actionManagerInterface on PrefabIntegrationManager construction.");
+                    m_actionManagerInterface, "Prefab - could not get ActionManagerInterface on PrefabIntegrationManager construction.");
+
+                m_hotKeyManagerInterface = AZ::Interface<HotKeyManagerInterface>::Get();
+                AZ_Assert(
+                    m_hotKeyManagerInterface, "Prefab - could not get HotKeyManagerInterface on PrefabIntegrationManager construction.");
 
                 m_toolBarManagerInterface = AZ::Interface<ToolBarManagerInterface>::Get();
                 AZ_Assert(
-                    m_toolBarManagerInterface, "Prefab - could not get m_toolBarManagerInterface on PrefabIntegrationManager construction.");
+                    m_toolBarManagerInterface, "Prefab - could not get ToolBarManagerInterface on PrefabIntegrationManager construction.");
 
                 // Register an updater that will refresh actions when a level is loaded.
                 if (m_actionManagerInterface)
@@ -134,9 +140,14 @@ namespace AzToolsFramework
                     ActionManagerRegistrationNotificationBus::Handler::BusConnect();
                 }
             }
+
+            // New Action Manager handler Escape by registering an action.
+            if (!IsNewActionManagerEnabled())
+            {
+                EditorEventsBus::Handler::BusConnect();
+            }
             
             EditorContextMenuBus::Handler::BusConnect();
-            EditorEventsBus::Handler::BusConnect();
             PrefabFocusNotificationBus::Handler::BusConnect(s_editorEntityContextId);
             PrefabInstanceContainerNotificationBus::Handler::BusConnect();
             AZ::Interface<PrefabIntegrationInterface>::Register(this);
@@ -160,8 +171,12 @@ namespace AzToolsFramework
             AZ::Interface<PrefabIntegrationInterface>::Unregister(this);
             PrefabInstanceContainerNotificationBus::Handler::BusDisconnect();
             PrefabFocusNotificationBus::Handler::BusDisconnect();
-            EditorEventsBus::Handler::BusDisconnect();
             EditorContextMenuBus::Handler::BusDisconnect();
+
+            if (!IsNewActionManagerEnabled())
+            {
+                EditorEventsBus::Handler::BusDisconnect();
+            }
         }
 
         void PrefabIntegrationManager::Reflect(AZ::ReflectContext* context)
@@ -240,7 +255,7 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::OnActionUpdaterRegistrationHook()
         {
             // Update actions whenever a new root prefab is loaded.
-            m_actionManagerInterface->RegisterActionUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier);
+            m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
 
             // Update actions whenever Prefab Focus changes (or is refreshed).
             m_actionManagerInterface->RegisterActionUpdater(PrefabFocusChangedUpdaterIdentifier);
@@ -249,6 +264,40 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::OnActionRegistrationHook()
         {
             {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.focusOnLevel";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Focus on top level";
+                actionProperties.m_description = "Move the Prefab Focus to the top level.";
+                actionProperties.m_category = "Prefabs";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [prefabFocusPublicInterface = s_prefabFocusPublicInterface]()
+                    {
+                        prefabFocusPublicInterface->FocusOnOwningPrefab(AZ::EntityId());
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    actionIdentifier,
+                    [prefabFocusPublicInterface = s_prefabFocusPublicInterface, editorEntityContextId = s_editorEntityContextId]() -> bool
+                    {
+                        return prefabFocusPublicInterface->GetPrefabFocusPathLength(editorEntityContextId) > 1;
+                    }
+                );
+
+                m_actionManagerInterface->AddActionToUpdater(PrefabFocusChangedUpdaterIdentifier, actionIdentifier);
+
+                // This action is only accessible outside of Component Modes
+                m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+                m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Esc");
+            }
+
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.focusUpOneLevel";
                 AzToolsFramework::ActionProperties actionProperties;
                 actionProperties.m_name = "Focus up one level";
                 actionProperties.m_description = "Move the Prefab Focus up one level.";
@@ -256,8 +305,8 @@ namespace AzToolsFramework
                 actionProperties.m_iconPath = ":/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg";
 
                 m_actionManagerInterface->RegisterAction(
-                    EditorActionContext::MainWindowContextIdentifier,
-                    "o3de.action.prefabs.upOneLevel",
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
                     actionProperties,
                     [prefabFocusPublicInterface = s_prefabFocusPublicInterface, editorEntityContextId = s_editorEntityContextId]()
                     {
@@ -266,14 +315,16 @@ namespace AzToolsFramework
                 );
 
                 m_actionManagerInterface->InstallEnabledStateCallback(
-                    "o3de.action.prefabs.upOneLevel",
+                    actionIdentifier,
                     [prefabFocusPublicInterface = s_prefabFocusPublicInterface, editorEntityContextId = s_editorEntityContextId]() -> bool
                     {
-                        return prefabFocusPublicInterface->GetPrefabFocusPathLength(editorEntityContextId) > 1;
+                        return !ComponentModeFramework::InComponentMode() &&
+                            prefabFocusPublicInterface->GetPrefabFocusPathLength(editorEntityContextId) > 1;
                     }
                 );
 
-                m_actionManagerInterface->AddActionToUpdater(PrefabFocusChangedUpdaterIdentifier, "o3de.action.prefabs.upOneLevel");
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::ComponentModeChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(PrefabFocusChangedUpdaterIdentifier, actionIdentifier);
             }
         }
 
@@ -299,8 +350,8 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::OnToolBarBindingHook()
         {
             // Populate Viewport top menu with Prefab actions and widgets
-            m_toolBarManagerInterface->AddActionToToolBar(EditorToolBar::ViewportTopToolBarIdentifier, "o3de.action.prefabs.upOneLevel", 100);
-            m_toolBarManagerInterface->AddWidgetToToolBar(EditorToolBar::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.focusPath", 200);
+            m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.prefabs.focusUpOneLevel", 100);
+            m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.focusPath", 200);
         }
 
         int PrefabIntegrationManager::GetMenuPosition() const
@@ -1220,7 +1271,7 @@ namespace AzToolsFramework
         {
             if (m_actionManagerInterface)
             {
-                m_actionManagerInterface->TriggerActionUpdater(EditorActionUpdater::LevelLoadedUpdaterIdentifier);
+                m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
             }
         }
 

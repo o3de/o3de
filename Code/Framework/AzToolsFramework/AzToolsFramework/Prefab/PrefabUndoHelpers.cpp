@@ -87,10 +87,10 @@ namespace AzToolsFramework
                 TemplateId templateId,
                 UndoSystem::URSequencePoint* undoBatch)
             {
-                PrefabUndoRemoveEntities* removeEntitiesUndoState = aznew PrefabUndoRemoveEntities("Undo Removing Entities");
-                removeEntitiesUndoState->SetParent(undoBatch);
-                removeEntitiesUndoState->Capture(entityDomAndPathList, templateId);
-                removeEntitiesUndoState->Redo();
+                PrefabUndoRemoveEntityDoms* state = aznew PrefabUndoRemoveEntityDoms("Undo Removing Entity DOMs");
+                state->SetParent(undoBatch);
+                state->Capture(entityDomAndPathList, templateId);
+                state->Redo();
             }
 
             void UpdateEntity(

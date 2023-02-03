@@ -291,7 +291,11 @@ void CGameExporter::ExportLevelData(const QString& path, bool /*bExportMission*/
     AZStd::vector<char> entitySaveBuffer;
     AZ::IO::ByteContainerStream<AZStd::vector<char> > entitySaveStream(&entitySaveBuffer);
     bool savedEntities = false;
-    EBUS_EVENT_RESULT(savedEntities, AzToolsFramework::EditorEntityContextRequestBus, SaveToStreamForGame, entitySaveStream, AZ::DataStream::ST_BINARY);
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        savedEntities,
+        &AzToolsFramework::EditorEntityContextRequestBus::Events::SaveToStreamForGame,
+        entitySaveStream,
+        AZ::DataStream::ST_BINARY);
     if (savedEntities)
     {
         QString entitiesFile;
