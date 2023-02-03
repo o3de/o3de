@@ -17,7 +17,7 @@ namespace PhysX
     static const float s_forceRegionMaxDampingRatio = 1.5f;
     static const float s_forceRegionMinFrequency = 0.1f;
     static const float s_forceRegionMaxFrequency = 10.0f;
-
+    static const float s_forceRegionMinSpeed = 1e-3f; // Don't apply a simple drag force if the entity is going slower than this.
 
     ForceWorldSpace::ForceWorldSpace(const AZ::Vector3& direction, const float magnitude)
         : m_direction(direction)
@@ -428,17 +428,28 @@ namespace PhysX
         entity.m_aabb.GetAsSphere(center, radius);
 
         const float crossSectionalArea = AZ::Constants::Pi * radius * radius;
-        const AZ::Vector3 velocitySquared = entity.m_velocity * entity.m_velocity;
+        const float speed = entity.m_velocity.GetLength();
+
+        if (speed < s_forceRegionMinSpeed)
+        {
+            return AZ::Vector3::CreateZero();
+        }
+
+        // Clamp the force to an upper limit which would correspond to stopping the entity in 0.2s. The time is somewhat arbitrary, but
+        // is intended to make sure that the velocity doesn't change so much in one timestep that oscillation could occur.
+        const float minTime = 0.2f;
+        const float momentum = entity.m_mass * speed;
+        const float maxForceMagnitude = momentum / minTime;
 
         // Wikipedia: https://en.wikipedia.org/wiki/Drag_coefficient
         // Fd = 1/2 * p * u^2 * cd * A
-        const AZ::Vector3 dragForce = 0.5f * m_volumeDensity * velocitySquared * m_dragCoefficient * crossSectionalArea;
+        float dragForceMagnitude = AZ::GetMin(maxForceMagnitude, 0.5f * m_volumeDensity * speed * speed * m_dragCoefficient * crossSectionalArea);
 
         // The drag force is defined as being in the same direction as the flow velocity. Since the entity is moving and the
         // volume flow is stationary, this just becomes opposite to the entity's velocity. Causing the object to slow down.
-        const AZ::Vector3 direction(-AZ::GetSign(entity.m_velocity.GetX()), -AZ::GetSign(entity.m_velocity.GetY()), -AZ::GetSign(entity.m_velocity.GetZ()));
+        const AZ::Vector3 direction = -entity.m_velocity.GetNormalized();
 
-        return dragForce * direction.GetNormalized();
+        return dragForceMagnitude * direction;
     }
 
     void ForceSimpleDrag::SetDensity(float density)
