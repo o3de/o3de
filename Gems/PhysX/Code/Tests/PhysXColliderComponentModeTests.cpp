@@ -538,7 +538,7 @@ namespace UnitTest
         SetupTransform(entityRotation, entityTranslation, uniformScale);
         EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode::Offset);
 
-        // the expected position of the collider centre based on the combination of entity transform and collider offset
+        // the expected position of the central point of the collider based on the combination of entity transform and collider offset
         const AZ::Vector3 expectedColliderPosition(8.8f, -2.28f, 3.54f);
 
         // the expected world space direction of the collider offset x-axis based on the entity transform
@@ -580,7 +580,8 @@ namespace UnitTest
         SetupNonUniformScale(nonUniformScale);
         EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode::Offset);
 
-        // the expected position of the collider centre based on the combination of entity transform, collider offset and non-uniform scale
+        // the expected position of the central point of the collider based on the combination of entity transform, collider offset and
+        // non-uniform scale
         const AZ::Vector3 expectedColliderPosition(4.13f, 4.84f, -4.75f);
 
         // the expected world space direction of the collider offset z-axis based on the entity transform
@@ -622,10 +623,11 @@ namespace UnitTest
         SetupNonUniformScale(nonUniformScale);
         EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode::Dimensions);
 
-        // the expected position of the collider centre based on the combination of entity transform, collider offset and non-uniform scale
+        // the expected position of the central point of the collider based on the combination of entity transform, collider offset and
+        // non-uniform scale
         const AZ::Vector3 expectedColliderPosition(4.37f, -4.285f, -1.1f);
 
-        // the expected position of the y scale manipulator relative to the centre of the collider, based on collider
+        // the expected position of the y scale manipulator relative to the central point of the collider, based on collider
         // rotation, entity rotation and scale, and non-uniform scale
         const AZ::Vector3 scaleManipulatorYDelta(0.54f, -0.72f, -1.2f);
 
@@ -668,10 +670,11 @@ namespace UnitTest
         SetupNonUniformScale(nonUniformScale);
         EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode::Dimensions);
 
-        // the expected position of the collider centre based on the combination of entity transform, collider offset and non-uniform scale
+        // the expected position of the central point of the collider based on the combination of entity transform, collider offset and
+        // non-uniform scale
         const AZ::Vector3 expectedColliderPosition(-1.1f, 21.94f, -11.08f);
 
-        // the expected position of the -z scale manipulator relative to the centre of the collider, based on collider
+        // the expected position of the -z scale manipulator relative to the central point of the collider, based on collider
         // rotation, entity rotation and scale, and non-uniform scale
         const AZ::Vector3 scaleManipulatorMinusZDelta(-4.608f, 2.5752f, -0.8064f);
 
@@ -717,14 +720,15 @@ namespace UnitTest
         SetupNonUniformScale(nonUniformScale);
         EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode::Dimensions);
 
-        // the expected position of the collider centre based on the combination of entity transform, collider offset and non-uniform scale
+        // the expected position of the central point of the collider based on the combination of entity transform, collider offset and
+        // non-uniform scale
         const AZ::Vector3 expectedColliderPosition(1.7f, -10.65f, -3.0f);
 
         // position the camera to look at the collider along the y-axis
         AzFramework::SetCameraTransform(
             m_cameraState, AZ::Transform::CreateTranslation(expectedColliderPosition - AZ::Vector3(0.0f, 5.0f, 0.0f)));
 
-        // the expected position of the scale manipulator relative to the centre of the collider, based on collider
+        // the expected position of the scale manipulator relative to the central point of the collider, based on collider
         // rotation, entity scale, non-uniform scale and camera state
         const AZ::Vector3 scaleManipulatorDelta(-1.1952f, -1.8036f, 0.168f);
 
@@ -757,10 +761,11 @@ namespace UnitTest
         SetupNonUniformScale(nonUniformScale);
         EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode::Dimensions);
 
-        // the expected position of the collider centre based on the combination of entity transform, collider offset and non-uniform scale
+        // the expected position of the central point of the collider based on the combination of entity transform, collider offset and
+        // non-uniform scale
         const AZ::Vector3 expectedColliderPosition(-0.92f, -2.44f, -5.0f);
 
-        // the expected position of the height manipulator relative to the centre of the collider, based on collider
+        // the expected position of the height manipulator relative to the central point of the collider, based on collider
         // rotation, entity scale and non-uniform scale
         const AZ::Vector3 heightManipulatorDelta(-0.3096f, 0.6528f, 0.4f);
 
@@ -799,10 +804,11 @@ namespace UnitTest
         SetupNonUniformScale(nonUniformScale);
         EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode::Dimensions);
 
-        // the expected position of the collider centre based on the combination of entity transform, collider offset and non-uniform scale
+        // the expected position of the central point of the collider based on the combination of entity transform, collider offset and
+        // non-uniform scale
         const AZ::Vector3 expectedColliderPosition(-0.92f, -2.44f, -5.0f);
 
-        // the expected position of the height manipulator relative to the centre of the collider, based on collider
+        // the expected position of the height manipulator relative to the central point of the collider, based on collider
         // rotation, entity scale and non-uniform scale
         const AZ::Vector3 heightManipulatorDelta(-0.3096f, 0.6528f, 0.4f);
 
@@ -839,7 +845,8 @@ namespace UnitTest
         SetupNonUniformScale(nonUniformScale);
         EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode::Rotation);
 
-        // the expected position of the collider centre based on the combination of entity transform, collider offset and non-uniform scale
+        // the expected position of the central point of the collider based on the combination of entity transform, collider offset and
+        // non-uniform scale
         const AZ::Vector3 expectedColliderPosition(-0.86f, 4.8f, -0.52f);
 
         // the y and z axes of the collider's frame in world space, used to locate points on the x rotation manipulator arc to interact with
