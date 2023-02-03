@@ -819,6 +819,7 @@ namespace UnitTest
             ->CameraState(m_cameraState)
             // move the mouse to the position of the height manipulator
             ->MousePosition(screenStart)
+            ->KeyboardModifierDown(AzToolsFramework::DefaultSymmetricalEditingModifier)
             // drag to move the manipulator
             ->MouseLButtonDown()
             ->MousePosition(screenEnd)
