@@ -6,7 +6,6 @@
  *
  */
 
-#pragma optimize("", off)
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzCore/DOM/DomPrefixTree.h>
@@ -913,4 +912,3 @@ namespace AZ::DocumentPropertyEditor
             );
     }
 } // namespace AZ::DocumentPropertyEditor
-#pragma optimize("", on)
