@@ -974,19 +974,20 @@ namespace PhysX
         // Query flags.
         const physx::PxQueryFlags queryFlags = SceneQueryHelpers::GetPxQueryFlags(request->m_queryType);
         const physx::PxQueryFilterData queryData(queryFlags);
+
         switch (request->m_requestType)
         {
-        case AzPhysics::SceneQueryRequest::Raycast:
+        case AzPhysics::SceneQueryRequest::RequestType::Raycast:
             {
                 return Internal::RayCast(
                     static_cast<const AzPhysics::RayCastRequest*>(request), s_rayCastBuffer, m_pxScene, queryData, m_raycastBufferSize);
             }
-        case AzPhysics::SceneQueryRequest::Shapecast:
+        case AzPhysics::SceneQueryRequest::RequestType::Shapecast:
             {
                 return Internal::ShapeCast(
                     static_cast<const AzPhysics::ShapeCastRequest*>(request), s_sweepBuffer, m_pxScene, queryData, m_shapecastBufferSize);
             }
-        case AzPhysics::SceneQueryRequest::Overlap:
+        case AzPhysics::SceneQueryRequest::RequestType::Overlap:
             {
                 return Internal::OverlapQuery(
                     static_cast<const AzPhysics::OverlapRequest*>(request), s_overlapBuffer, m_pxScene, queryData, m_overlapBufferSize);
