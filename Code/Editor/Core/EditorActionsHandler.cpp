@@ -20,6 +20,7 @@
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkLoader.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 
@@ -140,11 +141,18 @@ void EditorActionsHandler::Initialize(MainWindow* mainWindow)
     m_defaultBookmarkCount = AzToolsFramework::LocalViewBookmarkLoader::DefaultViewBookmarkCount;
 
     const int DefaultViewportId = 0;
+
+    // Get EditorEntityContextId
+    AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        editorEntityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
+
     AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     AzToolsFramework::EditorEventsBus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
     AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(DefaultViewportId);
+    AzToolsFramework::EditorPickModeNotificationBus::Handler::BusConnect(editorEntityContextId);
 
     m_editorViewportDisplayInfoHandler = new EditorViewportDisplayInfoHandler();
 
@@ -155,6 +163,7 @@ EditorActionsHandler::~EditorActionsHandler()
 {
     if (m_initialized)
     {
+        AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -181,6 +190,7 @@ void EditorActionsHandler::OnActionUpdaterRegistrationHook()
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::AngleSnappingStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::DrawHelpersStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::OnlyShowHelpersForSelectedEntitiesUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::EntityPickingModeChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::GameModeStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::GridSnappingStateChangedUpdaterIdentifier);
@@ -2038,6 +2048,16 @@ void EditorActionsHandler::OnIconsVisibilityChanged([[maybe_unused]] bool enable
 void EditorActionsHandler::OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_unused]] bool enabled)
 {
     m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::OnlyShowHelpersForSelectedEntitiesUpdaterIdentifier);
+}
+
+void EditorActionsHandler::OnEntityPickModeStarted()
+{
+    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::EntityPickingModeChangedUpdaterIdentifier);
+}
+
+void EditorActionsHandler::OnEntityPickModeStopped()
+{
+    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::EntityPickingModeChangedUpdaterIdentifier);
 }
 
 bool EditorActionsHandler::IsRecentFileActionActive(int index)
