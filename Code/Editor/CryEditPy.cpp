@@ -97,6 +97,14 @@ namespace
         return Path::GetEditingGameDataFolder();
     }
 
+    AZStd::string PyGetBuildFolderAsString()
+    {
+        AZ::IO::FixedMaxPath projectBuildPath = AZ::Utils::GetExecutableDirectory();
+        projectBuildPath = projectBuildPath.RemoveFilename(); // profile
+        projectBuildPath = projectBuildPath.RemoveFilename(); // bin
+        return AZStd::string(projectBuildPath.c_str());
+    }
+
     bool PyOpenLevel(const char* pLevelName)
     {
         const char* oldExtension = EditorUtils::LevelFile::GetOldCryFileExtension();
@@ -403,6 +411,7 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("create_level", ::PyCreateLevel, nullptr, "Creates a level with the parameters of 'levelName', 'resolution', 'unitSize' and 'bUseTerrain'."));
             addLegacyGeneral(behaviorContext->Method("create_level_no_prompt", ::PyCreateLevelNoPrompt, nullptr, "Creates a level with the parameters of 'levelName', 'resolution', 'unitSize' and 'bUseTerrain'."));
             addLegacyGeneral(behaviorContext->Method("get_game_folder", PyGetGameFolderAsString, nullptr, "Gets the path to the Game folder of current project."));
+            addLegacyGeneral(behaviorContext->Method("get_build_folder", PyGetBuildFolderAsString, nullptr, "Gets the build folder path of current project."));
             addLegacyGeneral(behaviorContext->Method("get_current_level_name", PyGetCurrentLevelName, nullptr, "Gets the name of the current level."));
             addLegacyGeneral(behaviorContext->Method("get_current_level_path", PyGetCurrentLevelPath, nullptr, "Gets the fully specified path of the current level."));
 
