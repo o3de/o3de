@@ -11,7 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <IGem.h>
 
-#include <AudioSystemGemSystemComponent.h>
+#include "AudioSystemGemSystemComponent.h"
 
 namespace AudioSystemGem
 {
