@@ -104,7 +104,8 @@ namespace AZ::Internal
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
         using namespace AZ::SettingsRegistryMergeUtils;
 
-        if (auto outcome = MergeEngineAndProjectSettings(settingsRegistry, engineJsonPath, projectJsonPath, projectUserJsonPath);
+        if (auto outcome = MergeEngineAndProjectSettings(settingsRegistry, engineJsonPath,
+            projectJsonPath, projectUserJsonPath);
             !outcome)
         {
             return outcome;
@@ -112,32 +113,36 @@ namespace AZ::Internal
 
         // In project.json look for the "engine" key.
         FixedValueString projectEngineMoniker;
-        if (!settingsRegistry.Get(projectEngineMoniker, FixedValueString::format("%s/engine", ProjectSettingsRootKey)) ||
-            projectEngineMoniker.empty())
+        const auto projectEngineKey = FixedValueString::format("%s/engine", ProjectSettingsRootKey);
+        if (!settingsRegistry.Get(projectEngineMoniker, projectEngineKey) || projectEngineMoniker.empty())
         {
-            return AZ::Failure("Could not find 'engine' key in 'project.json'.  Please verify the project is registered and try again.");
+            return AZ::Failure("Could not find 'engine' key in 'project.json'. "
+                "Please verify the project is registered and try again.");
         }
 
-        FixedValueString engineMoniker;
-        if (!settingsRegistry.Get(engineMoniker, FixedValueString::format("%s/engine_name", EngineSettingsRootKey)) ||
-            engineMoniker.empty())
+        FixedValueString engineName;
+        const auto engineNameKey = FixedValueString::format("%s/engine_name", EngineSettingsRootKey);
+        if (!settingsRegistry.Get(engineName, engineNameKey) || engineName.empty())
         {
-            return AZ::Failure("Could not find 'engine_name' key in 'engine.json'.  Please verify the 'engine.json' file is not corrupt and try again.");
+            return AZ::Failure("Could not find 'engine_name' key in 'engine.json'. "
+                "Please verify the 'engine.json' file is not corrupt and try again.");
         }
 
         FixedValueString projectEngineMonikerWithSpecifier = projectEngineMoniker;
 
         // Extract dependency specifier from engine moniker
         AZ::Dependency<SemanticVersion::parts_count> engineDependency;
-        if (engineDependency.ParseVersions({ projectEngineMoniker.c_str() }) && !engineDependency.GetName().empty())
+        if (engineDependency.ParseVersions({ projectEngineMoniker.c_str() }) &&
+            !engineDependency.GetName().empty())
         {
             projectEngineMoniker = engineDependency.GetName();
         }
 
-        if (projectEngineMoniker != engineMoniker)
+        if (projectEngineMoniker != engineName)
         {
-            return AZ::Failure(AZStd::string::format("Project engine name '%s' does not match engine name '%s'",
-                projectEngineMoniker.c_str(), engineMoniker.c_str()));
+            return AZ::Failure(AZStd::string::format(
+                "Project engine name '%s' does not match engine name '%s'",
+                projectEngineMoniker.c_str(), engineName.c_str()));
         }
 
         if (engineDependency.GetBounds().empty())
@@ -147,15 +152,20 @@ namespace AZ::Internal
         }
 
         // If the engine has no version information or is not known incompatible then assume compatible 
-        if(FixedValueString engineVersionValue;
-           settingsRegistry.Get(engineVersionValue, FixedValueString::format("%s/version", EngineSettingsRootKey)))
+        const auto engineVersionKey = FixedValueString::format("%s/version", EngineSettingsRootKey);
+        if(FixedValueString engineVersionValue; settingsRegistry.Get(engineVersionValue, engineVersionKey))
         {
+            using SemanticSpecifier = AZ::Specifier<AZ::SemanticVersion::parts_count>;
             AZ::SemanticVersion engineVersion;
-            engineVersion.ParseFromString(engineVersionValue.c_str());
-            if(!engineDependency.IsFullfilledBy(AZ::Specifier<AZ::SemanticVersion::parts_count>(AZ::Uuid::CreateNull(), engineVersion)))
+            if (auto parseOutcome = AZ::SemanticVersion::ParseFromString(engineVersionValue.c_str()); parseOutcome)
             {
-                return AZ::Failure(AZStd::string::format("Engine version '%s' does not satisfy the project's engine constraints '%s' ",
-                    engineVersionValue.c_str(), projectEngineMonikerWithSpecifier.c_str()));
+                engineVersion = parseOutcome.TakeValue();
+                if(!engineDependency.IsFullfilledBy(SemanticSpecifier(AZ::Uuid::CreateNull(), engineVersion)))
+                {
+                    return AZ::Failure(AZStd::string::format(
+                        "Engine version '%s' does not satisfy the project's engine constraints '%s' ",
+                        engineVersionValue.c_str(), projectEngineMonikerWithSpecifier.c_str()));
+                }
             }
         }
 
@@ -170,12 +180,14 @@ namespace AZ::Internal
         constexpr auto format = AZ::SettingsRegistryInterface::Format::JsonMergePatch;
 
         AZ::IO::FixedMaxPath projectUserPath;
-        if (!settingsRegistry.Get(projectUserPath.Native(), FilePathKey_ProjectUserPath) || projectUserPath.empty())
+        if (!settingsRegistry.Get(projectUserPath.Native(), FilePathKey_ProjectUserPath) ||
+            projectUserPath.empty())
         {
             return {};
         }
 
-        if (auto outcome = MergeSettingsFile(settingsRegistry, (projectUserPath / Internal::ProjectJsonFilename).LexicallyNormal(), ProjectSettingsRootKey);
+        const auto projectUserJsonPath = (projectUserPath / Internal::ProjectJsonFilename).LexicallyNormal();
+        if (auto outcome = MergeSettingsFile(settingsRegistry, projectUserJsonPath, ProjectSettingsRootKey);
             !outcome)
         {
             return {};
@@ -229,34 +241,35 @@ namespace AZ::Internal
 
             if (AZ::IO::SystemFile::Exists(o3deManifestPath.c_str()))
             {
-                manifestLoaded = settingsRegistry.MergeSettingsFile(
-                    o3deManifestPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, O3deManifestSettingsRootKey);
+                manifestLoaded = settingsRegistry.MergeSettingsFile( o3deManifestPath,
+                    AZ::SettingsRegistryInterface::Format::JsonMergePatch, O3deManifestSettingsRootKey);
             }
 
             struct EngineInfo
             {
                 AZ::IO::FixedMaxPath m_path;
-                FixedValueString m_moniker;
+                FixedValueString m_name;
                 AZ::SemanticVersion m_version;
             };
 
-            AZStd::set<AZ::IO::FixedMaxPath> searchedProjectPaths;
+            AZStd::set<AZ::IO::FixedMaxPath> missingProjectJsonPaths;
             AZStd::vector<EngineInfo> searchedEngineInfo;
 
             if (manifestLoaded)
             {
                 const auto engineVersionKey = FixedValueString::format("%s/version", EngineSettingsRootKey);
+                const auto engineNameKey = FixedValueString::format("%s/engine_name", EngineSettingsRootKey);
                 const auto enginesKey = FixedValueString::format("%s/engines", O3deManifestSettingsRootKey);
 
-                AZ::IO::FixedMaxPath projectUserPath;
-                settingsRegistry.Get(projectUserPath.Native(), FilePathKey_ProjectUserPath);
+                // Remove any existing engine settings because we will use this as a scratch location
+                // while searching for the most compatible engine
+                settingsRegistry.Remove(EngineSettingsRootKey);
 
-                EngineInfo mostCompatibleEngineInfo;
-
-                // Look through the manifest engines for the most compatible engine
-                AZ::SettingsRegistryVisitorUtils::VisitArray(settingsRegistry, [&](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
+                // Avoid modifying the SettingsRegistry while visiting which may invalidate iterators and cause crashes
+                AZ::SettingsRegistryVisitorUtils::VisitArray(
+                    settingsRegistry,
+                    [&](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
                     {
-                        // Make sure any engine paths read from the manifest are absolute
                         EngineInfo engineInfo;
                         settingsRegistry.Get(engineInfo.m_path.Native(), visitArgs.m_jsonKeyPath);
                         if (engineInfo.m_path.IsRelative())
@@ -268,41 +281,62 @@ namespace AZ::Internal
                             }
                         }
                         searchedEngineInfo.emplace_back(engineInfo);
-
-                        // The following creation of projectJsonPath handles the two cases we care about, relative and
-                        // absolute project paths, due to the way AZ::IO::Path handles appending of paths.
-                        // if projectPath is absolute, engineInfo.m_path will be discarded e.g. <projectPath>/project.json
-                        // if projectPath is relative, projectJsonPath will include the engine path e.g. <enginePath>/<projectPath>/project.json
-                        AZ::IO::FixedMaxPath projectJsonPath{engineInfo.m_path / projectPath / ProjectJsonFilename};
-                        AZ::IO::FixedMaxPath projectUserJsonPath{engineInfo.m_path / projectUserPath / ProjectJsonFilename};
-                        AZ::IO::FixedMaxPath engineJsonPath{engineInfo.m_path  / EngineJsonFilename};
-
-                        if (EngineIsCompatible(settingsRegistry, engineJsonPath, projectJsonPath, projectUserJsonPath))
-                        {
-                            FixedValueString engineVersion;
-                            if (settingsRegistry.Get(engineVersion, engineVersionKey); !engineVersion.empty())
-                            {
-                                engineInfo.m_version.ParseFromString(engineVersion.c_str());
-                            }
-
-                            if (mostCompatibleEngineInfo.m_path.empty())
-                            {
-                                mostCompatibleEngineInfo = engineInfo;
-                            }
-                            // is it more compatible?
-                            else if (!engineInfo.m_version.IsZero() && engineInfo.m_version > mostCompatibleEngineInfo.m_version)
-                            {
-                                mostCompatibleEngineInfo = engineInfo;
-                            }
-                        }
-
-                        // Remove engine settings, which will be added back once we know the most compatible engine
-                        settingsRegistry.Remove(EngineSettingsRootKey);
-
-                        searchedProjectPaths.insert((engineInfo.m_path / projectPath).LexicallyNormal());
-
                         return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-                    }, enginesKey);
+                    },
+                    enginesKey);
+
+                EngineInfo mostCompatibleEngineInfo;
+                AZ::IO::FixedMaxPath projectUserPath;
+                settingsRegistry.Get(projectUserPath.Native(), FilePathKey_ProjectUserPath);
+
+                // Look through the manifest engines for the most compatible engine
+                for (auto& engineInfo : searchedEngineInfo)
+                {
+                    // The following creation of projectJsonPath handles the two cases we care about, relative and
+                    // absolute project paths, due to the way AZ::IO::Path handles appending of paths.
+                    // if projectPath is absolute, engineInfo.m_path will be discarded e.g. <projectPath>/project.json
+                    // if projectPath is relative, projectJsonPath will include the engine path e.g. <enginePath>/<projectPath>/project.json
+                    AZ::IO::FixedMaxPath projectJsonPath{engineInfo.m_path / projectPath / ProjectJsonFilename};
+                    AZ::IO::FixedMaxPath projectUserJsonPath{engineInfo.m_path / projectUserPath / ProjectJsonFilename};
+                    AZ::IO::FixedMaxPath engineJsonPath{engineInfo.m_path  / EngineJsonFilename};
+
+                    auto isCompatible = Internal::EngineIsCompatible(settingsRegistry, engineJsonPath, projectJsonPath, projectUserJsonPath);
+
+                    // get the engine name and version
+                    settingsRegistry.Get(engineInfo.m_name, engineNameKey);
+
+                    FixedValueString engineVersion;
+                    if (settingsRegistry.Get(engineVersion, engineVersionKey); !engineVersion.empty())
+                    {
+                        if (auto parseOutcome = AZ::SemanticVersion::ParseFromString(engineVersion.c_str());
+                            parseOutcome)
+                        {
+                            engineInfo.m_version = parseOutcome.TakeValue();
+                        }
+                    }
+
+                    if (isCompatible)
+                    {
+                        if (mostCompatibleEngineInfo.m_path.empty())
+                        {
+                            mostCompatibleEngineInfo = engineInfo;
+                        }
+                        // is it more compatible?
+                        else if (!engineInfo.m_version.IsZero() && engineInfo.m_version > mostCompatibleEngineInfo.m_version)
+                        {
+                            mostCompatibleEngineInfo = engineInfo;
+                        }
+                    }
+
+                    // Remove engine settings, which will be added back once we know the most compatible engine
+                    settingsRegistry.Remove(EngineSettingsRootKey);
+
+                    if (!AZ::IO::SystemFile::Exists(projectJsonPath.c_str()))
+                    {
+                        // add the project path where we looked for 'project.json'
+                        missingProjectJsonPaths.insert((engineInfo.m_path / projectPath).LexicallyNormal());
+                    }
+                }
 
                 if (!mostCompatibleEngineInfo.m_path.empty())
                 {
@@ -320,35 +354,45 @@ namespace AZ::Internal
             if (engineRoot.empty())
             {
                 AZStd::string errorStr;
-                if (!searchedProjectPaths.empty())
+                if (!missingProjectJsonPaths.empty())
                 {
                     // This case is usually encountered when a project path is given as a relative path,
                     // which is assumed to be relative to an engine root.
                     // When no project.json files are found this way, dump this error message about
                     // which project paths were checked.
                     AZStd::string projectPathsTested;
-                    for (const auto& path : searchedProjectPaths)
+                    for (const auto& path : missingProjectJsonPaths)
                     {
                         projectPathsTested.append(AZStd::string::format("  %s\n", path.c_str()));
                     }
-                    errorStr = AZStd::string::format("No valid project was found at these locations:\n%s"
+                    errorStr = AZStd::string::format(
+                        "No valid project was found (missing 'project.json') at these locations:\n%s"
                         "Please supply a valid --project-path to the application.",
                         projectPathsTested.c_str());
                 }
                 else
                 {
+                    FixedValueString projectEngineMoniker;
+                    const auto projectEngineKey = FixedValueString::format("%s/engine", ProjectSettingsRootKey);
+                    if (!settingsRegistry.Get(projectEngineMoniker, projectEngineKey) || projectEngineMoniker.empty())
+                    {
+                        projectEngineMoniker = "missing";
+                    }
+
                     // The other case is that a project.json was found, but after checking all the registered engines
                     // none of them matched the engine moniker.
                     AZStd::string enginePathsChecked;
                     for (const auto& engineInfo : searchedEngineInfo)
                     {
                         enginePathsChecked.append(AZStd::string::format("  %s (%s %s)\n", engineInfo.m_path.c_str(),
-                            engineInfo.m_moniker.c_str(), engineInfo.m_version.ToString().c_str()));
+                            engineInfo.m_name.c_str(), engineInfo.m_version.ToString().c_str()));
                     }
                     errorStr = AZStd::string::format(
-                        "No engine was found in o3de_manifest.json with a name that matches the one set in the project.json.\n"
-                        "Engines that were checked:\n%s"
-                        "Please check that your engine and project have both been registered with scripts/o3de.py.", enginePathsChecked.c_str()
+                        "No engine was found in o3de_manifest.json with a name that matches the one set in the project.json '%s'\n"
+                        "If that's not the name you expected, please check if the engine field is being overridden in 'user/project.json'.\n\n"
+                        "Engines that were checked:\n%s\n"
+                        "Please check that your engine and project have both been registered with scripts/o3de.py.",
+                        projectEngineMoniker.c_str(), enginePathsChecked.c_str()
                     );
                 }
 
@@ -521,8 +565,9 @@ namespace AZ::SettingsRegistryMergeUtils
             return engineRoot;
         }
 
-        // Fall back to using the project root as the engine root if the engine path could not be reconciled
-        return projectRoot;
+        // Do not use the project root as the engine root, otherwise we won't detect that the engine root
+        // is missing and notify the user.
+        return {};
     }
 
     AZ::IO::FixedMaxPath FindProjectRoot(SettingsRegistryInterface& settingsRegistry)
