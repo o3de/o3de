@@ -1551,7 +1551,7 @@ namespace AzToolsFramework
                 }
 
                 // Get parent entity and generate a DOM before we modify its children
-                [[maybe_unused]] AZ::Entity* parentEntity = nullptr;
+                AZ::Entity* parentEntity = nullptr;
                 {
                     AZ::EntityId parentEntityId;
                     AZ::TransformBus::EventResult(parentEntityId, containerEntityId, &AZ::TransformBus::Events::GetParentId);
