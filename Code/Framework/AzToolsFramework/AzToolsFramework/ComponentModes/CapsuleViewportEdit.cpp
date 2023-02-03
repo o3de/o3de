@@ -180,6 +180,7 @@ namespace AzToolsFramework
             m_radiusManipulator->SetLocalTransform(
                 localTransform * AZ::Transform::CreateTranslation(m_radiusManipulator->GetAxis() * capsuleRadius));
             m_radiusManipulator->SetNonUniformScale(nonUniformScale);
+            m_radiusManipulator->SetBoundsDirty();
         }
         for (auto heightManipulator : { m_topManipulator, m_bottomManipulator })
         {
@@ -189,6 +190,7 @@ namespace AzToolsFramework
                 heightManipulator->SetLocalTransform(
                     localTransform * AZ::Transform::CreateTranslation(0.5f * capsuleHeight * heightManipulator->GetAxis()));
                 heightManipulator->SetNonUniformScale(nonUniformScale);
+                heightManipulator->SetBoundsDirty();
             }
         }
     }
@@ -315,9 +317,9 @@ namespace AzToolsFramework
         const float symmetryFactor = symmetrical ? 2.0f : 1.0f;
 
         const float oldCapsuleHeight = GetCapsuleHeight();
-        const float newAxisLength = manipulatorPosition.Dot(action.m_fixed.m_axis);
-        const float oldAxisLength = 0.5f * oldCapsuleHeight;
-        const float capsuleHeightDelta = symmetryFactor * (newAxisLength - oldAxisLength);
+        const float newAxisLength = symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis);
+        const float oldAxisLength = 0.5f * symmetryFactor * oldCapsuleHeight;
+        const float capsuleHeightDelta = newAxisLength - oldAxisLength;
 
         const float newCapsuleHeight = AZ::GetMax(oldCapsuleHeight + capsuleHeightDelta, MinCapsuleHeight);
 
@@ -328,8 +330,7 @@ namespace AzToolsFramework
 
         if (!symmetrical)
         {
-            const AZ::Vector3 nonUniformScale = GetNonUniformScale();
-            const AZ::Vector3 transformedAxis = nonUniformScale * localTransform.TransformVector(action.m_fixed.m_axis);
+            const AZ::Vector3 transformedAxis = localTransform.TransformVector(action.m_fixed.m_axis);
             const AZ::Vector3 translationOffsetDelta = 0.5f * (newAxisLength - oldAxisLength) * transformedAxis;
             const AZ::Vector3 translationOffset = GetTranslationOffset();
             SetTranslationOffset(translationOffset + translationOffsetDelta);
