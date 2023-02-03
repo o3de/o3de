@@ -83,7 +83,6 @@ namespace LmbrCentral
 
         GenerateVertices();
 
-        // ComponentMode
         const bool allowAsymmetricalEditing = IsShapeComponentTranslationEnabled();
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorCapsuleShapeComponent, AzToolsFramework::CapsuleComponentMode>(
             entityComponentIdPair, this, allowAsymmetricalEditing);
@@ -152,8 +151,7 @@ namespace LmbrCentral
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 
-    void EditorCapsuleShapeComponent::OnTransformChanged(
-        const AZ::Transform& /*local*/, const AZ::Transform& /*world*/)
+    void EditorCapsuleShapeComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform&)
     {
         AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
             &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::Refresh,

@@ -77,11 +77,11 @@ namespace LmbrCentral
         void ClampHeight();
         void GenerateVertices();
 
-        CapsuleShape m_capsuleShape; ///< Stores underlying capsule representation for this component.
-        ShapeMesh m_capsuleShapeMesh; ///< Buffer to hold index and vertex data for CapsuleShape when drawing.
+        CapsuleShape m_capsuleShape; //!< Stores underlying capsule representation for this component.
+        ShapeMesh m_capsuleShapeMesh; //!< Buffer to hold index and vertex data for CapsuleShape when drawing.
 
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
-        ComponentModeDelegate m_componentModeDelegate; /**< Responsible for detecting ComponentMode activation
-                                                         *  and creating a concrete ComponentMode.*/
+        ComponentModeDelegate
+            m_componentModeDelegate; //!< Responsible for detecting ComponentMode activation and creating a concrete ComponentMode.
     };
 } // namespace LmbrCentral

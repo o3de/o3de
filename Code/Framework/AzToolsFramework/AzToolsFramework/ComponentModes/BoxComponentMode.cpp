@@ -7,6 +7,7 @@
  */
 
 #include "BoxComponentMode.h"
+
 #include <AzToolsFramework/ComponentModes/ShapeTranslationOffsetViewportEdit.h>
 #include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
 

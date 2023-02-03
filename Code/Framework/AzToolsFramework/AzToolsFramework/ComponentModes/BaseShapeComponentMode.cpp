@@ -7,6 +7,7 @@
  */
 
 #include "BaseShapeComponentMode.h"
+
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
