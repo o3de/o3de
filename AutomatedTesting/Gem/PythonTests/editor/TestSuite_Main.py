@@ -110,3 +110,6 @@ class TestAutomation(EditorTestSuite):
 
     class test_EditorWorkflow_EditorCameraTransformCanBeModifiedWhileInBeThisCamera(EditorBatchedTest):
         from .EditorScripts import EditorWorkflow_EditorCameraTransformCanBeModifiedWhileInBeThisCamera as test_module
+
+    class test_EditorWorkflow_EditorCameraGameModeTransitionWithMultipleCamerasReportsNoErrors(EditorBatchedTest):
+        from .EditorScripts import EditorWorkflow_EditorCameraGameModeTransitionWithMultipleCamerasReportsNoErrors as test_module
