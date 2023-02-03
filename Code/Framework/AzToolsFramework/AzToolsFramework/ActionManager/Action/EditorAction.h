@@ -12,14 +12,14 @@
 #include <AzCore/std/function/function_template.h>
 #include <AzCore/std/string/string.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+
 #include <QIcon>
 
 class QAction;
 
 namespace AzToolsFramework
 {
-    class ActionManagerInterface;
-
     //! Editor Action class definitions.
     //! Wraps a QAction and provides additional metadata.
     class EditorAction
@@ -34,8 +34,8 @@ namespace AzToolsFramework
             AZStd::string description,
             AZStd::string category,
             AZStd::string iconPath,
-            bool hideFromMenusWhenDisabled,
-            bool hideFromToolBarsWhenDisabled,
+            ActionVisibility menuVisibility,
+            ActionVisibility toolBarVisibility,
             AZStd::function<void()> handler,
             AZStd::function<bool()> checkStateCallback = nullptr
         );
@@ -54,21 +54,21 @@ namespace AzToolsFramework
         void SetIconPath(AZStd::string iconPath);
         AZStd::string GetHotKey() const;
         void SetHotKey(const AZStd::string& hotKey);
-        bool GetHideFromMenusWhenDisabled() const;
-        bool GetHideFromToolBarsWhenDisabled() const;
+        ActionVisibility GetMenuVisibility() const;
+        ActionVisibility GetToolBarVisibility() const;
 
         //! Returns the pointer to the action.
         QAction* GetAction();
         const QAction* GetAction() const;
 
-        //! Sets the enabled state callback for the action.
-        void SetEnabledStateCallback(AZStd::function<bool()> enabledStateCallback);
+        //! Adds an enabled state callback to the action.
+        void AddEnabledStateCallback(AZStd::function<bool()> enabledStateCallback);
 
         //! Adds a mode to the list of modes this action is enabled in.
         void AssignToMode(AZStd::string modeIdentifier);
 
-        //! Returns true if the EditorAction has an enabled state callback set, false otherwise.
-        bool HasEnabledStateCallback() const;
+        //! Returns true if the EditorAction has one or more enabled state callbacks set, false otherwise.
+        bool HasEnabledStateCallbacks() const;
 
         //! Returns true if the EditorAction is enabled, false otherwise.
         bool IsEnabled() const;
@@ -79,11 +79,13 @@ namespace AzToolsFramework
         //! Updates the action's checked and enabled state via the appropriate callbacks, if any.
         void Update();
 
+        //! Returns whether the Action is active.
+        bool IsActiveInCurrentMode() const;
+
     private:
         void UpdateIconFromPath();
         void UpdateTooltipText();
 
-        bool IsEnabledInCurrentMode() const;
 
         QAction* m_action = nullptr;
         QIcon m_icon;
@@ -96,10 +98,10 @@ namespace AzToolsFramework
         AZStd::string m_iconPath;
 
         AZStd::function<bool()> m_checkStateCallback = nullptr;
-        AZStd::function<bool()> m_enabledStateCallback = nullptr;
+        AZStd::vector<AZStd::function<bool()>> m_enabledStateCallbacks;
 
-        bool m_hideFromMenusWhenDisabled;
-        bool m_hideFromToolBarsWhenDisabled;
+        ActionVisibility m_menuVisibility;
+        ActionVisibility m_toolBarVisibility;
 
         // If the modes vector is empty, the action will be enabled in all modes.
         AZStd::unordered_set<AZStd::string> m_modes;

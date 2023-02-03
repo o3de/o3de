@@ -220,7 +220,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "New Level";
         actionProperties.m_description = "Create a new level";
         actionProperties.m_category = "Level";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -245,7 +245,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Open Level...";
         actionProperties.m_description = "Open an existing level";
         actionProperties.m_category = "Level";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -280,7 +280,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 actionProperties.m_name = AZStd::string::format("Recent File #%i", index + 1);
             }
             actionProperties.m_category = "Level";
-            actionProperties.m_hideFromMenusWhenDisabled = false;
+            actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
             AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
 
@@ -316,7 +316,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Clear All";
         actionProperties.m_description = "Clear the recent files list.";
         actionProperties.m_category = "Level";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -350,8 +350,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Save";
         actionProperties.m_description = "Save the current level";
         actionProperties.m_category = "Level";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
-
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+        
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.file.save", actionProperties,
             [cryEdit = m_cryEditApp]
@@ -372,7 +372,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Save As...";
         actionProperties.m_description = "Save the current level";
         actionProperties.m_category = "Level";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.file.saveAs", actionProperties,
@@ -394,7 +394,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Save Level Statistics";
         actionProperties.m_description = "Logs Editor memory usage.";
         actionProperties.m_category = "Level";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -426,7 +426,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Edit Project Settings...";
         actionProperties.m_description = "Open the Project Settings panel.";
         actionProperties.m_category = "Project";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -468,7 +468,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "New Project...";
         actionProperties.m_description = "Create a new project in the Project Manager.";
         actionProperties.m_category = "Project";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -491,7 +491,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Open Project...";
         actionProperties.m_description = "Open a different project in the Project Manager.";
         actionProperties.m_category = "Project";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -513,7 +513,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Show Log File";
         actionProperties.m_category = "Project";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -555,7 +555,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "&Undo";
         actionProperties.m_description = "Undo last operation";
         actionProperties.m_category = "Edit";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -587,7 +587,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "&Redo";
         actionProperties.m_description = "Redo last undo operation";
         actionProperties.m_category = "Edit";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -621,7 +621,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_description = "Toggle angle snapping";
         actionProperties.m_category = "Edit";
         actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Angle.svg";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -652,7 +652,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_description = "Toggle grid snapping";
         actionProperties.m_category = "Edit";
         actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Grid.svg";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -682,7 +682,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Show Grid";
         actionProperties.m_description = "Show Grid for entity snapping.";
         actionProperties.m_category = "Edit";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -757,7 +757,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_description = "Activate the game input mode.";
         actionProperties.m_category = "Game";
         actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Play.svg";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -790,7 +790,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Play Game (Maximized)";
         actionProperties.m_description = "Activate the game input mode (maximized).";
         actionProperties.m_category = "Game";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -822,7 +822,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_description = "Enable processing of Physics and AI.";
         actionProperties.m_category = "Game";
         actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Simulate_Physics.svg";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -853,7 +853,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Export Selected Objects";
         actionProperties.m_description = "Export Selected Objects.";
         actionProperties.m_category = "Game";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -879,7 +879,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Export Occlusion Mesh";
         actionProperties.m_description = "Export Occlusion Mesh.";
         actionProperties.m_category = "Game";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -902,7 +902,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Move Player and Camera Separately";
         actionProperties.m_description = "Move Player and Camera Separately.";
         actionProperties.m_category = "Game";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -929,7 +929,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Stop All Sounds";
         actionProperties.m_description = "Stop All Sounds.";
         actionProperties.m_category = "Game";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -953,7 +953,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Refresh";
         actionProperties.m_description = "Refresh Audio System.";
         actionProperties.m_category = "Game";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -986,7 +986,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Error Report";
         actionProperties.m_description = "Open the Error Report dialog.";
         actionProperties.m_category = "Debugging";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -1009,7 +1009,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Configure Toolbox Macros...";
         actionProperties.m_description = "Open the Toolbox Macros dialog.";
         actionProperties.m_category = "Debugging";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -1037,7 +1037,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Component Entity Layout (Default)";
         actionProperties.m_category = "Layout";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -1060,7 +1060,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Save Layout...";
         actionProperties.m_description = "Save the current layout.";
         actionProperties.m_category = "Layout";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -1083,7 +1083,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Restore Default Layout";
         actionProperties.m_description = "Restored the default layout for the Editor.";
         actionProperties.m_category = "Layout";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -1107,7 +1107,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_description = "Move the editor camera to the position and rotation provided.";
         actionProperties.m_category = "View";
         actionProperties.m_iconPath = ":/Menu/camera.svg";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -1130,7 +1130,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Center on Selection";
         actionProperties.m_description = "Center the viewport to show selected entities.";
         actionProperties.m_category = "View";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -1386,7 +1386,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "&Welcome";
         actionProperties.m_category = "Help";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -2208,7 +2208,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                 actionProperties.m_name = "Load";
                 actionProperties.m_description = AZStd::string::format("Load the \"%s\" layout.", layoutName.toUtf8().data());
                 actionProperties.m_category = "Layout";
-                actionProperties.m_hideFromMenusWhenDisabled = false;
+                actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -2232,7 +2232,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                 actionProperties.m_name = "Save";
                 actionProperties.m_description = AZStd::string::format("Save the \"%s\" layout.", layoutName.toUtf8().data());
                 actionProperties.m_category = "Layout";
-                actionProperties.m_hideFromMenusWhenDisabled = false;
+                actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -2256,7 +2256,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                 actionProperties.m_name = "Rename...";
                 actionProperties.m_description = AZStd::string::format("Rename the \"%s\" layout.", layoutName.toUtf8().data());
                 actionProperties.m_category = "Layout";
-                actionProperties.m_hideFromMenusWhenDisabled = false;
+                actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -2280,7 +2280,7 @@ void EditorActionsHandler::RefreshLayoutActions()
                 actionProperties.m_name = "Delete";
                 actionProperties.m_description = AZStd::string::format("Delete the \"%s\" layout.", layoutName.toUtf8().data());
                 actionProperties.m_category = "Layout";
-                actionProperties.m_hideFromMenusWhenDisabled = false;
+                actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -2332,7 +2332,7 @@ void EditorActionsHandler::RefreshToolboxMacroActions()
                 actionProperties.m_name = macro->GetTitle().toStdString().c_str();
                 actionProperties.m_category = "Toolbox Macro";
                 actionProperties.m_iconPath = macro->GetIconPath().toStdString().c_str();
-                actionProperties.m_hideFromMenusWhenDisabled = false;
+                actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -2388,7 +2388,8 @@ void EditorActionsHandler::RefreshToolActions()
                                                                                        : viewpane.m_name.toUtf8().data();
             actionProperties.m_category = "Tool";
             actionProperties.m_iconPath = viewpane.m_options.toolbarIcon;
-            actionProperties.m_hideFromMenusWhenDisabled = false;
+            actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+            actionProperties.m_toolBarVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -2436,7 +2437,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
         actionProperties.m_name = AZStd::string::format("Go to Location %i", index+1);
         actionProperties.m_description = AZStd::string::format("Go to Location %i.", index+1);
         actionProperties.m_category = "View Bookmark";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         auto outcome = m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -2494,7 +2495,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
         actionProperties.m_name = AZStd::string::format("Save Location %i", index+1);
         actionProperties.m_description = AZStd::string::format("Save Location %i.", index+1);
         actionProperties.m_category = "View Bookmark";
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,

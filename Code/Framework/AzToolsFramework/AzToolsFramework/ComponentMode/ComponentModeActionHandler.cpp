@@ -88,6 +88,7 @@ namespace AzToolsFramework
             actionProperties.m_name = "Done";
             actionProperties.m_description = "Return to normal viewport editing";
             actionProperties.m_category = "Component Modes";
+            actionProperties.m_menuVisibility = ActionVisibility::OnlyInActiveMode;
 
             m_actionManagerInterface->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,

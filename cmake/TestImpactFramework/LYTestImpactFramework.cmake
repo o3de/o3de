@@ -506,12 +506,12 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
 
     # Instrumentation binary
     if(NOT O3DE_TEST_IMPACT_INSTRUMENTATION_BIN)
-        # No binary specified is not an error, it just means that the test impact analysis part of the framework is disabled
+        # No binary specified is not an error, it just means that the test impact analysis part of the framework is disabled for native tests
         message(DEBUG "No test impact framework instrumentation binary was specified, test impact analysis framework will fall back to regular test sequences instead")
-        set(use_tiaf false)
+        set(native_use_test_impact_analysis false)
         set(instrumentation_bin "")
     else()
-        set(use_tiaf true)
+        set(native_use_test_impact_analysis true)
         file(TO_CMAKE_PATH ${O3DE_TEST_IMPACT_INSTRUMENTATION_BIN} instrumentation_bin)
     endif()
 
@@ -567,6 +567,11 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     
     # Build dependency artifact dir
     set(target_dependency_dir "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}")
+
+    # Test impact analysis framework native runtime binary
+    if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED)
+        set(native_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_NATIVE_CONSOLE_TARGET}>")
+    endif()
 
     # Test impact analysis framework python runtime binary
     if(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
@@ -634,10 +639,6 @@ function(ly_test_impact_post_step)
     # TIAF not supported for monolithic games
     if(LY_MONOLITHIC_GAME)
         return()
-    endif()
-
-    if(NOT O3DE_TEST_IMPACT_ACTIVE)
-        message(DEBUG "TIAF is deactivated but configs and meta-data will still be generated.")
     endif()
 
     # Clean temporary and persistent directories
