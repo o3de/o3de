@@ -151,7 +151,7 @@ namespace AzPhysics
         static void Reflect(AZ::ReflectContext* context);
         virtual ~SceneQueryRequest() = default;
 
-        RequestType m_requestType = Undefined;
+        RequestType m_requestType = RequestType::Undefined;
         AZ::u32 m_maxResults = 32; //!< The Maximum results for this request to return, this is limited by the value set in the SceneConfiguration
         CollisionGroup m_collisionGroup = CollisionGroup::All; //!< Collision filter for the query.
         SceneQuery::QueryType m_queryType = SceneQuery::QueryType::StaticAndDynamic; //!< Object types to include in the query
