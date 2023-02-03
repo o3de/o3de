@@ -81,7 +81,7 @@ namespace AzToolsFramework
             const AZStd::string& actionContextIdentifier, const AZStd::string& modeIdentifier) override;
         ActionManagerOperationResult AssignModeToAction(
             const AZStd::string& modeIdentifier, const AZStd::string& actionIdentifier) override;
-        ActionManagerBooleanResult IsActionActiveInCurrentMode(const AZStd::string& actionIdentifier) override;
+        ActionManagerBooleanResult IsActionActiveInCurrentMode(const AZStd::string& actionIdentifier) const override;
         ActionManagerOperationResult SetActiveActionContextMode(
             const AZStd::string& actionContextIdentifier, const AZStd::string& modeIdentifier) override;
         ActionManagerGetterResult GetActiveActionContextMode(const AZStd::string& actionContextIdentifier) const override;

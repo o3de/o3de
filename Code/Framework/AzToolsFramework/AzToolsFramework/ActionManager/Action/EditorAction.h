@@ -67,7 +67,7 @@ namespace AzToolsFramework
         //! Adds a mode to the list of modes this action is enabled in.
         void AssignToMode(AZStd::string modeIdentifier);
 
-        //! Returns true if the EditorAction has one ore more enabled state callbacks set, false otherwise.
+        //! Returns true if the EditorAction has one or more enabled state callbacks set, false otherwise.
         bool HasEnabledStateCallbacks() const;
 
         //! Returns true if the EditorAction is enabled, false otherwise.
@@ -79,7 +79,7 @@ namespace AzToolsFramework
         //! Updates the action's checked and enabled state via the appropriate callbacks, if any.
         void Update();
 
-        //! Returns whether the Action is active 
+        //! Returns whether the Action is active.
         bool IsActiveInCurrentMode() const;
 
     private:

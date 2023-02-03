@@ -36,7 +36,6 @@ namespace LmbrCentral
         static void RegisterActions();
         static void BindActionsToModes();
         static void BindActionsToMenus();
-        static void PostActionManagerRegistration();
 
     private:
         // EditorBaseComponentMode

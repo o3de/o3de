@@ -20,6 +20,7 @@
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
@@ -86,7 +87,7 @@ namespace AzToolsFramework
                 EditorVertexSelectionVariableRequestBus::EventResult(
                     count, entityComponentIdPair, &EditorVertexSelectionVariableRequests::GetSelectedVerticesCount);
 
-                emptySelection = emptySelection && (count == 0);
+                emptySelection = emptySelection && count == 0;
             }
         );
 
@@ -95,9 +96,12 @@ namespace AzToolsFramework
 
     void OnVertexSelectionCountChanged()
     {
-        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface.");
-        actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier);
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+            AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface.");
+            actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier);
+        }
     }
 
     void EditorVertexSelectionActionManagement::RegisterEditorVertexSelectionActions()

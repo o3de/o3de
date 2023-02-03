@@ -10,7 +10,7 @@
 
 namespace AzToolsFramework
 {
-    constexpr const char* DefaultActionContextModeIdentifier = "default";
+    inline constexpr const char* DefaultActionContextModeIdentifier = "default";
 
     //! Action Visibility enum.
     //! Determines whether an action should be displayed in a Menu or ToolBar.
@@ -22,7 +22,7 @@ namespace AzToolsFramework
         HideWhenDisabled    //!< Action is only shown when enabled, and hidden in all other cases.
     };
 
-    inline static bool IsActionVisible(ActionVisibility actionVisibility, bool actionIsActiveInCurrentMode, bool actionIsEnabled)
+    inline bool IsActionVisible(ActionVisibility actionVisibility, bool actionIsActiveInCurrentMode, bool actionIsEnabled)
     {
         return  (actionVisibility == ActionVisibility::AlwaysShow) ||
                 (actionVisibility == ActionVisibility::OnlyInActiveMode && actionIsActiveInCurrentMode) ||

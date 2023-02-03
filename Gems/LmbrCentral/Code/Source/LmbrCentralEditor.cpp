@@ -150,7 +150,7 @@ namespace LmbrCentral
 
     void LmbrCentralEditorModule::OnPostActionManagerRegistrationHook()
     {
-        EditorSplineComponentMode::PostActionManagerRegistration();
+        AzToolsFramework::EditorVertexSelectionActionManagement::DisableComponentModeEndOnVertexSelection();
     }
 
 } // namespace LmbrCentral

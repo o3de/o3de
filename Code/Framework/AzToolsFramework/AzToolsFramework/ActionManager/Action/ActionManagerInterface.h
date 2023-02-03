@@ -49,7 +49,7 @@ namespace AzToolsFramework
         AZStd::string m_iconPath; //!< The qrc path to the icon to be used in UI.
         //! Determines in which mode this action should be accessible.
         //! Empty means action will always appear regardless of the mode.
-        AZStd::vector<AZStd::string> m_modes = {};
+        AZStd::vector<AZStd::string> m_modes;
 
         //! Determines visibility for this action in Menus.
         ActionVisibility m_menuVisibility = ActionVisibility::HideWhenDisabled;
@@ -271,7 +271,7 @@ namespace AzToolsFramework
         //! Returns whether the Action is active in the Mode its Action Context is currently in.
         //! @param actionIdentifier The action to query.
         //! @return A successful outcome object with the result, or a string with a message detailing the error in case of failure.
-        virtual ActionManagerBooleanResult IsActionActiveInCurrentMode(const AZStd::string& actionIdentifier) = 0;
+        virtual ActionManagerBooleanResult IsActionActiveInCurrentMode(const AZStd::string& actionIdentifier) const = 0;
 
         //! Sets the active mode for an action context via its identifier.
         //! @param actionContextIdentifier The action context to set the active mode to.
