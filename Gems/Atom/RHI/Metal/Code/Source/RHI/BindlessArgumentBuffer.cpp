@@ -214,7 +214,7 @@ namespace AZ::Metal
 
         MemoryView& memoryView = bufferView.GetMemoryView();
         id <MTLBuffer> mtlBuffer = memoryView.GetGpuAddress<id<MTLBuffer>>();
-        uint32_t offset = memoryView.GetOffset();
+        uint32_t offset = static_cast<uint32_t>(memoryView.GetOffset());
 
         if (m_unboundedArraySupported)
         {
@@ -244,7 +244,7 @@ namespace AZ::Metal
 
         MemoryView& memoryView = bufferView.GetMemoryView();
         id <MTLBuffer> mtlBuffer = memoryView.GetGpuAddress<id<MTLBuffer>>();
-        uint32_t offset = memoryView.GetOffset();
+        uint32_t offset = static_cast<uint32_t>(memoryView.GetOffset());
 
         if (m_unboundedArraySupported)
         {

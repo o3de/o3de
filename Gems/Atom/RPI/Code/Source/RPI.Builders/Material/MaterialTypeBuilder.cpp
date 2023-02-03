@@ -133,7 +133,7 @@ namespace AZ
 
             auto addPossibleDependencies = [&response](const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
-                AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(originatingSourceFilePath, referencedSourceFilePath);
+                AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDependencyPaths(originatingSourceFilePath, referencedSourceFilePath);
                 for (const AZStd::string& path : possibleDependencies)
                 {
                     response.m_sourceFileDependencyList.push_back({});
@@ -197,7 +197,8 @@ namespace AZ
 
             for (auto& shader : materialTypeSourceData.m_shaderCollection)
             {
-                MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
+                MaterialBuilderUtils::AddPossibleDependencies(
+                    request.m_sourceFile,
                     shader.m_shaderFilePath,
                     "Shader Asset",
                     outputJobDescriptor.m_jobDependencyList,
@@ -214,7 +215,8 @@ namespace AZ
 
                     for (const MaterialFunctorSourceData::AssetDependency& dependency : dependencies)
                     {
-                        MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
+                        MaterialBuilderUtils::AddPossibleDependencies(
+                            request.m_sourceFile,
                             dependency.m_sourceFilePath,
                             dependency.m_jobKey.c_str(),
                             outputJobDescriptor.m_jobDependencyList,
@@ -249,7 +251,8 @@ namespace AZ
             {
                 for (auto& shader : pipelinePair.second.m_shaderCollection)
                 {
-                    MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
+                    MaterialBuilderUtils::AddPossibleDependencies(
+                        request.m_sourceFile,
                         shader.m_shaderFilePath,
                         "Shader Asset",
                         outputJobDescriptor.m_jobDependencyList,
@@ -283,13 +286,13 @@ namespace AZ
 
             if (!materialType.IsSuccess())
             {
-                return  {};
+                return {};
             }
 
             auto materialTypeAssetOutcome = materialType.GetValue().CreateMaterialTypeAsset(Uuid::CreateRandom(), materialTypeSourceFilePath, true);
             if (!materialTypeAssetOutcome.IsSuccess())
             {
-                return  {};
+                return {};
             }
 
             return materialTypeAssetOutcome.GetValue();
