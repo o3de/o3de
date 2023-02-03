@@ -39,11 +39,11 @@ namespace AZ
         void CommandListBase::SetSamplePositions(const RHI::MultisampleState& multisampleState)
         {
             if (multisampleState.m_customPositionsCount == m_baseState.m_customSamplePositions.m_customPositionsCount &&
+                multisampleState.m_samples == m_baseState.m_customSamplePositions.m_samples &&
                 ::memcmp(
                     multisampleState.m_customPositions.data(),
                     m_baseState.m_customSamplePositions.m_customPositions.data(),
-                    sizeof(decltype(multisampleState.m_customPositions)::value_type) * multisampleState.m_customPositionsCount) == 0 &&
-                multisampleState.m_samples == m_baseState.m_customSamplePositions.m_samples)
+                    sizeof(decltype(multisampleState.m_customPositions)::value_type) * multisampleState.m_customPositionsCount) == 0)
             {
                 return;
             }
@@ -133,7 +133,7 @@ namespace AZ
                 decltype(BarrierOp::m_cmdListState) currentState;
                 do
                 {
-                    // Find the last barrier that contains a different state
+                    // Find the first barrier that contains a different state
                     endIt = AZStd::find_if(
                         beginIt + 1,
                         m_queuedBarriers.end(),
