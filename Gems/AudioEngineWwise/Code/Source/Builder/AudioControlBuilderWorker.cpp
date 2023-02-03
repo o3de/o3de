@@ -6,7 +6,7 @@
  *
  */
 
-#include <Builder/AudioControlBuilderWorker.h>
+#include <AudioControlBuilderWorker.h>
 
 #include <AzCore/AzCore_Traits_Platform.h>
 #include <AzCore/IO/SystemFile.h>

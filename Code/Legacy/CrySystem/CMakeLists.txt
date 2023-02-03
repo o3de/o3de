@@ -33,6 +33,8 @@ ly_add_target(
             Legacy::CrySystem.XMLBinary
             Legacy::RemoteConsoleCore
             AZ::AzFramework
+        PUBLIC
+            Gem::AudioSystem.API
 )
 
 ly_add_source_properties(
