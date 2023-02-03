@@ -142,6 +142,6 @@ namespace AZ::RHI
         //! Fills the contents of an image that will be use as a variable shading rate attachment depending
         //! on the requested level of foveted rendering. The image must have the proper format and size for using
         //! as a shading rate attachment.
-        virtual AZ::RHI::ResultCode InitVariableRateShadingImageContent(AZ::RHI::Image* image, XRFoveatedLevel level) = 0;
+        virtual AZ::RHI::ResultCode InitVariableRateShadingImageContent(AZ::RHI::Image* image, XRFoveatedLevel level) const = 0;
     };
 }

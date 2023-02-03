@@ -402,71 +402,8 @@ namespace AZ
                         // Need to fill the contents of the Variable shade rating image.
                         const AZStd::shared_ptr<const RPI::PassTemplate> forwardTemplate =
                             RPI::PassSystemInterface::Get()->GetPassTemplate(Name("MultiViewForwardPassTemplate"));
-                        // Find the Shading Rate Attachment
-                        Data::Asset<RPI::AttachmentImageAsset> vrsImageAsset;
-                        for (const auto& imageAttachment : forwardTemplate->m_imageAttachments)
-                        {
-                            if (RHI::CheckBitsAll(imageAttachment.m_imageDescriptor.m_bindFlags, RHI::ImageBindFlags::ShadingRate))
-                            {
-                                vrsImageAsset = RPI::AssetUtils::LoadAssetById<RPI::AttachmentImageAsset>(
-                                    imageAttachment.m_assetRef.m_assetId, RPI::AssetUtils::TraceLevel::Error);
-                                break;
-                            }
-                        }
 
-                        if (vrsImageAsset && vrsImageAsset.IsReady())
-                        {
-                            // Resize the image to match the proper tile size
-                            RHI::Viewport xrViweport = m_viewportContext->GetWindowContext()->GetViewport(RPI::ViewType::XrLeft);
-                            uint32_t outputWidth = aznumeric_cast<uint32_t>(xrViweport.m_maxX - xrViweport.m_minX);
-                            uint32_t outputHeight = aznumeric_cast<uint32_t>(xrViweport.m_maxY - xrViweport.m_minY);
-
-                            const auto& tileSize = device->GetLimits().m_shadingRateTileSize;
-                            RHI::ImageDescriptor imageDescriptor = vrsImageAsset->GetImageDescriptor();
-                            imageDescriptor.m_size.m_width =
-                                aznumeric_cast<uint32_t>(ceil(static_cast<float>(outputWidth) / tileSize.m_width));
-                            imageDescriptor.m_size.m_height =
-                                aznumeric_cast<uint32_t>(ceil(static_cast<float>(outputHeight) / tileSize.m_height));
-
-                            // Find the appropiate format for the image
-                            for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::Format::Count); ++i)
-                            {
-                                RHI::Format format = static_cast<RHI::Format>(i);
-                                RHI::FormatCapabilities capabilities = device->GetFormatCapabilities(format);
-                                if (RHI::CheckBitsAll(capabilities, RHI::FormatCapabilities::ShadingRate))
-                                {
-                                    imageDescriptor.m_format = format;
-                                    break;
-                                }
-                            }
-
-                            // Create the new asset with the proper size and format and register it in the RPI::AttachmentImage database
-                            RPI::AttachmentImageAssetCreator imageAssetCreator;
-                            imageAssetCreator.Begin(vrsImageAsset->GetId());
-                            imageAssetCreator.SetImageDescriptor(imageDescriptor);
-                            imageAssetCreator.SetName(vrsImageAsset->GetName(), vrsImageAsset->HasUniqueName());
-
-                            Data::Asset<RPI::AttachmentImageAsset> asset;
-                            if (imageAssetCreator.End(asset))
-                            {
-                                m_vrsTexture = RPI::AttachmentImage::FindOrCreate(asset);
-                                RHI::XRFoveatedLevel foveatedType = RHI::XRFoveatedLevel::None;
-                                // Check settings registry for the foveated level
-                                if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
-                                {
-                                    if (u64 foveatedLevel; settingsRegistry->Get(foveatedLevel, RHI::XRFoveatedLevelKey))
-                                    {
-                                        AZ_Assert(
-                                            foveatedLevel <= static_cast<u64>(RHI::XRFoveatedLevel::High),
-                                            "Invalid foveated level %d",
-                                            foveatedLevel);
-                                        foveatedType = static_cast<RHI::XRFoveatedLevel>(foveatedLevel);
-                                    }
-                                }
-                                // Fill up the contents of the shading rate image
-                                xrSystem->GetRHIXRRenderingInterface()->InitVariableRateShadingImageContent(m_vrsTexture->GetRHIImage(), foveatedType);
-                            }
-                        }
+                        m_vrsTexture = xrSystem->InitPassFoveatedAttachment(*forwardTemplate);
                     }
                 }
 

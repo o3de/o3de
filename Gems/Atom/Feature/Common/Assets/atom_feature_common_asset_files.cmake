@@ -105,8 +105,6 @@ set(FILES
     Passes/LookModificationTransform.pass
     Passes/LowEndForward.pass
     Passes/LowEndPipeline.pass
-    Passes/LowEndPipelineXRLeft.pass
-    Passes/LowEndPipelineXRRight.pass
     Passes/LuminanceHeatmap.pass
     Passes/LuminanceHistogramGenerator.pass
     Passes/LutGeneration.pass
