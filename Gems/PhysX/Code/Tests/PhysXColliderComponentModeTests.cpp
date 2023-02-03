@@ -10,6 +10,7 @@
 
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
@@ -63,26 +64,6 @@ namespace UnitTest
             m_viewportManagerWrapper.Destroy();
         }
     };
-
-    void DragMouse(
-        const AzFramework::CameraState& cameraState,
-        AzManipulatorTestFramework::ImmediateModeActionDispatcher* actionDispatcher,
-        const AZ::Vector3& worldStart,
-        const AZ::Vector3& worldEnd,
-        const AzToolsFramework::ViewportInteraction::KeyboardModifier keyboardModifier =
-            AzToolsFramework::ViewportInteraction::KeyboardModifier::None)
-    {
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, cameraState);
-
-        actionDispatcher
-            ->CameraState(cameraState)
-            ->MousePosition(screenStart)
-            ->KeyboardModifierDown(keyboardModifier)
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
-    }
 
     TEST_F(PhysXColliderComponentModeTest, MouseWheelUpShouldSetNextMode)
     {

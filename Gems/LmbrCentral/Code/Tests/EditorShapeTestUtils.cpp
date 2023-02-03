@@ -18,25 +18,6 @@ namespace LmbrCentral
     // use a large tolerance for manipulator tests, because accuracy is limited by viewport resolution
     static constexpr float ManipulatorTolerance = 0.1f;
 
-    void DragMouse(
-        const AzFramework::CameraState& cameraState,
-        AzManipulatorTestFramework::ImmediateModeActionDispatcher* actionDispatcher,
-        const AZ::Vector3& worldStart,
-        const AZ::Vector3& worldEnd,
-        const AzToolsFramework::ViewportInteraction::KeyboardModifier keyboardModifier)
-    {
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, cameraState);
-
-        actionDispatcher
-            ->CameraState(cameraState)
-            ->MousePosition(screenStart)
-            ->KeyboardModifierDown(keyboardModifier)
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
-    }
-
     void EnterComponentMode(AZ::EntityId entityId, const AZ::Uuid& componentType)
     {
         AzToolsFramework::SelectEntity(entityId);
