@@ -15,15 +15,19 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class AssetBrowserExpandedTableViewProxyModel : public QIdentityProxyModel
+        class AssetBrowserExpandedTableViewProxyModel
+            : public QIdentityProxyModel
         {
             Q_OBJECT
 
         public:
             explicit AssetBrowserExpandedTableViewProxyModel(QObject* parent = nullptr);
             ~AssetBrowserExpandedTableViewProxyModel() override;
-#if 0
+
             QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+            QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+            int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+            bool hasChildren(const QModelIndex& parent = QModelIndex()) const override;
 
             // Used to keep track of the root index on the view consuming this model, so that the model
             // can generate extra data such as whether an entry is on the top level.
@@ -31,11 +35,11 @@ namespace AzToolsFramework
 
             bool GetShowSearchResultsMode() const;
             void SetShowSearchResultsMode(bool searchMode);
+            const AZStd::string ExtensionToType(AZStd::string_view str) const;
 
         private:
             QPersistentModelIndex m_rootIndex;
             bool m_searchResultsMode;
-#endif
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

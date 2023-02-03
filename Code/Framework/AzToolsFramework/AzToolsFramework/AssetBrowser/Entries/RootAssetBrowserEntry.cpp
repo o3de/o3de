@@ -127,6 +127,7 @@ namespace AzToolsFramework
                 source->m_displayName = QString::fromUtf8(source->m_name.c_str());
                 source->m_scanFolderId = fileDatabaseEntry.m_scanFolderPK;
                 source->m_extension = absoluteFilePath.Extension().Native();
+                source->m_diskSize = AZ::IO::SystemFile::Length(absoluteFilePath.c_str());
                 parent->AddChild(source);
                 file = source;
             }

@@ -26,6 +26,7 @@
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
+#include <AzQtComponents/Components/Widgets/AssetFolderExpandedTableView.h>
 
 // Editor
 #include "AzAssetBrowser/AzAssetBrowserRequestHandler.h"
@@ -608,6 +609,11 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
             if (thumbnailWidget)
             {
                 thumbnailWidget->setRootIndex(thumbnailWidget->model()->index(0, 0, {}));
+            }
+            auto expandedTableWidget = m_ui->m_expandedTableView->GetExpandedTableViewWidget();
+            if (expandedTableWidget)
+            {
+                expandedTableWidget->setRootIndex(expandedTableWidget->model()->index(0, 0, {}));
             }
         }
     }

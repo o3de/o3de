@@ -70,6 +70,12 @@ namespace AzToolsFramework
                 AssetType,
                 ClassID,
                 DisplayName,
+                Type,
+                DiskSize,
+                RelatedAsset,
+                Vertices,
+                ApproxSize,
+                SourceControlStatus,
                 Count
             };
 
@@ -108,6 +114,8 @@ namespace AzToolsFramework
             //! Return absolute path to this file. Note that this decodes it to native slashes and resolves
             //! any aliases.
             const AZStd::string GetFullPath() const;
+            //! Return the size on disk of the asset
+            const size_t GetDiskSize() const;
 
             //! Get immediate children of specific type
             template<typename EntryType>
@@ -140,6 +148,7 @@ namespace AzToolsFramework
             AZ::IO::Path m_relativePath;
             AZ::IO::Path m_visiblePath;
             AZ::IO::Path m_fullPath;
+            size_t m_diskSize;
             AZStd::vector<AssetBrowserEntry*> m_children;
             AssetBrowserEntry* m_parentAssetEntry = nullptr;
 

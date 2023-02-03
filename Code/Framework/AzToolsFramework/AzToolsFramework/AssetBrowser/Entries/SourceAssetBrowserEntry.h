@@ -38,6 +38,7 @@ namespace AzToolsFramework
             AssetEntryType GetEntryType() const override;
 
             const AZStd::string GetExtension() const;
+            const AZStd::string GetFileName() const;
             AZ::s64 GetFileID() const;
             AZ::s64 GetSourceID() const;
             AZ::s64 GetScanFolderID() const;

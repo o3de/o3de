@@ -109,6 +109,8 @@ set(FILES
     Components/Widgets/AssetFolderListView.cpp
     Components/Widgets/AssetFolderListView.h
     Components/Widgets/AssetFolderListView.qss
+    Components/Widgets/AssetFolderExpandedTableView.cpp
+    Components/Widgets/AssetFolderExpandedTableView.h
     Components/Widgets/AssetFolderThumbnailView.cpp
     Components/Widgets/AssetFolderThumbnailView.h
     Components/Widgets/AssetFolderThumbnailViewConfig.ini

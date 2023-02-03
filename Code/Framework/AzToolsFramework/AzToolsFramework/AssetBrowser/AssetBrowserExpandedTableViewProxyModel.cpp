@@ -9,6 +9,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserExpandedTableViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 
 namespace AzToolsFramework
 {
@@ -20,74 +21,73 @@ namespace AzToolsFramework
         }
 
         AssetBrowserExpandedTableViewProxyModel::~AssetBrowserExpandedTableViewProxyModel() = default;
-#if 0
+
         QVariant AssetBrowserExpandedTableViewProxyModel::data(const QModelIndex& index, int role) const
         {
-//JJS            auto assetBrowserEntry = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-            auto assetBrowserEntry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            auto assetBrowserEntry = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
             AZ_Assert(assetBrowserEntry, "Couldn't fetch asset entry for the given index.");
             if (!assetBrowserEntry)
             {
-                return {};
+                return " No Data ";
             }
 
             switch (role)
             {
-            case Qt::DecorationRole:
+            case Qt::DisplayRole:
                 {
-                    SharedThumbnail thumbnail;
-                    QPersistentModelIndex persistentIndex;
-
-                    ThumbnailerRequestBus::BroadcastResult(
-                        thumbnail, &ThumbnailerRequests::GetThumbnail, assetBrowserEntry->GetThumbnailKey());
-                    AZ_Assert(thumbnail, "The shared thumbnail was not available from the ThumbnailerRequestBus.");
-                    if (!thumbnail || thumbnail->GetState() == Thumbnail::State::Failed)
+                    switch (index.column())
                     {
-                        return QIcon{};
-                    }
-
-                    return QIcon(thumbnail->GetPixmap());
-                }
-
-            case static_cast<int>(AzQtComponents::AssetFolderExpandedTableView::Role::IsExpandable):
-                {
-                    // We don't want to see children on folders in the thumbnail view
-                    if (assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
-                    {
-                        return false;
-                    }
-
-                    return rowCount(index) > 0;
-                }
-            case static_cast<int>(AzQtComponents::AssetFolderExpandedTableView::Role::IsTopLevel):
-                {
-                    if (m_searchResultsMode)
-                    {
-                        auto isExactMatch =
-                            index.data(static_cast<int>(AzQtComponents::AssetFolderExpandedTableView::Role::IsExactMatch)).value<bool>();
-                        return isExactMatch;
-                    }
-                    else
-                    {
-                        if (m_rootIndex.isValid())
+                    case 0:
+                        return static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetFileName().c_str();
+                    case 1:
                         {
-                            return index.parent() == m_rootIndex;
+                            switch (assetBrowserEntry->GetEntryType())
+                            {
+                            case AssetBrowserEntry::AssetEntryType::Root:
+                                return "Root";
+                            case AssetBrowserEntry::AssetEntryType::Folder:
+                                return "Folder";
+                            case AssetBrowserEntry::AssetEntryType::Source:
+                                return ExtensionToType(static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetExtension()).c_str();
+                            case AssetBrowserEntry::AssetEntryType::Product:
+                                return "Product";
+                            }
                         }
-                        else
-                        {
-                            return index.parent().isValid() && !index.parent().parent().isValid();
-                        }
+                    case 2:
+                        if(assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                            return assetBrowserEntry->GetDiskSize();
+                        return "";
+                    default:
+                        return "No data";
                     }
-                }
-            case static_cast<int>(AzQtComponents::AssetFolderExpandedTableView::Role::IsVisible):
-                {
-                    auto isExactMatch =
-                        index.data(static_cast<int>(AzQtComponents::AssetFolderExpandedTableView::Role::IsExactMatch)).value<bool>();
-                    return !m_searchResultsMode || (m_searchResultsMode && isExactMatch);
                 }
             }
+            return QVariant();
+        }
 
-            return QStandardItemModel::data(index, role);
+        QVariant AssetBrowserExpandedTableViewProxyModel::headerData(int section, Qt::Orientation orientation, int role) const
+        {
+            if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+            {
+                section += section ? static_cast<int>(AssetBrowserEntry::Column::Type) - 1 : 0;
+                return tr(AssetBrowserEntry::m_columnNames[section]);
+            }
+
+            return QVariant();
+        }
+
+        bool AssetBrowserExpandedTableViewProxyModel::hasChildren(const QModelIndex& parent) const
+        {
+            if (parent != m_rootIndex)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        int AssetBrowserExpandedTableViewProxyModel::columnCount([[maybe_unused]]const QModelIndex& parent) const
+        {
+            return 7;
         }
 
         void AssetBrowserExpandedTableViewProxyModel::SetRootIndex(const QModelIndex& index)
@@ -109,6 +109,76 @@ namespace AzToolsFramework
                 endResetModel();
             }
         }
-#endif
+
+        inline constexpr auto Hash(const AZStd::string_view sv)
+        {
+            unsigned long hash{ 5381 };
+            for (unsigned char c : sv)
+            {
+                hash = ((hash << 5) + hash) ^ c;
+            }
+            return hash;
+        }
+
+        inline constexpr auto operator"" _hash(const char* str, size_t len)
+        {
+            return Hash(AZStd::string_view{ str, len });
+        }
+
+        const AZStd::string AssetBrowserExpandedTableViewProxyModel::ExtensionToType(AZStd::string_view str) const
+        {
+            switch (Hash(str))
+            {
+            case ".png"_hash:
+                return "PNG";
+            case ".scriptcanvas"_hash:
+                return "Script Canvas";
+            case ".fbx"_hash:
+                return "FBX";
+            case ".mtl"_hash:
+                return "Material";
+            case ".animgraph"_hash:
+                return "Anim Graph";
+            case ".motionset"_hash:
+                return "Motion Set";
+            case ".assetinfo"_hash:
+                return "Asset Info";
+            case ".py"_hash:
+                return "Python Script";
+            case ".lua"_hash:
+                return "Lua Script";
+            case ".tif"_hash:
+                return "TIF";
+            case ".physxmaterial"_hash:
+                return "PhysX Material";
+            case ".prefab"_hash:
+                return "Prefab";
+            case ".dds"_hash:
+                return "DDS";
+            case ".font"_hash:
+                return "Font";
+            case ".xml"_hash:
+                return "XML";
+            case ".json"_hash:
+                return "JSON";
+            case ".exr"_hash:
+                return "EXR";
+            case ".wav"_hash:
+                return ".WAV";
+            case ".uicanvas"_hash:
+                return "UI Canvas";
+            case ".wwu"_hash:
+                return "Wwise Work Unit";
+            case ".wproj"_hash:
+                return "Wwise Project File";
+            default:
+                if (str.length() > 0)
+                {
+                    str.remove_prefix(1);
+                }
+                return str;
+            }
+        }
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

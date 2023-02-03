@@ -36,7 +36,7 @@ namespace AzToolsFramework
             , m_delegate(new SearchEntryDelegate(this))
         {
             setSortingEnabled(false);
-//JJS            setItemDelegate(m_delegate);
+            setItemDelegate(m_delegate);
             setRootIsDecorated(false);
 
             //Styling the header aligning text to the left and using a bold font.

@@ -25,7 +25,6 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-#pragma optimize("", off)
         AssetBrowserThumbnailView::AssetBrowserThumbnailView(QWidget* parent)
             : QWidget(parent)
             , m_thumbnailViewWidget(new AzQtComponents::AssetFolderThumbnailView(parent))
@@ -223,6 +222,5 @@ namespace AzToolsFramework
             filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Up | AssetBrowserEntryFilter::Down);
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
         }
-#pragma optimize("", on)
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
