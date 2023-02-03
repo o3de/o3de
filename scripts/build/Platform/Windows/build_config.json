@@ -4,13 +4,15 @@
       "periodic-incremental-daily-internal"
     ],
     "steps": [
-      "test_cpu_profile",
+      "test_cpu_profile_internal_metrics",
       "generate_metrics",
       "upload_metrics"
     ]
   },
   "generate_metrics": {
-    "TAGS": [],
+    "TAGS": [
+      "periodic-incremental-daily-internal"
+    ],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts\\metrics\\ctest_metrics_xml_to_csv.py",
@@ -18,12 +20,32 @@
     }
   },
   "upload_metrics": {
-    "TAGS": [],
+    "TAGS": [
+      "periodic-incremental-daily-internal"
+    ],
     "COMMAND": "upload_metrics_windows.cmd",
     "PARAMETERS": {
       "CSV_DIRECTORY": "build\\windows\\Testing\\csv",
       "BUCKET": "s3://o3de-metrics/csv/"
     }
+  },
+  "test_cpu_profile_internal_metrics": {
+    "TAGS": [
+      "periodic-incremental-daily-internal"
+    ],
+    "COMMAND": "build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows",
+      "CMAKE_OPTIONS": "-DCMAKE_SYSTEM_VERSION=10.0 -DO3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED=FALSE -DO3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu|REQUIRES_tiaf)\" -T Test --no-tests=error",
+      "TEST_METRICS": "False",
+      "TEST_RESULTS": "True"
+    }
+
   },
   "clean": {
     "TAGS": [],
