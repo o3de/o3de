@@ -33,6 +33,10 @@ namespace LmbrCentral
 
     void ExpectBoxDimensions(AZ::EntityId entityId, const AZ::Vector3& expectedBoxDimensions);
 
+    void ExpectCapsuleRadius(AZ::EntityId entityId, float expectedRadius);
+
+    void ExpectCapsuleHeight(AZ::EntityId entityId, float expectedHeight);
+
     void ExpectTranslationOffset(AZ::EntityId entityId, const AZ::Vector3& expectedTranslationOffset);
 
     void ExpectSubMode(

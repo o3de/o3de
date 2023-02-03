@@ -9,6 +9,7 @@
 #include <EditorShapeTestUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+#include <LmbrCentral/Shape/CapsuleShapeComponentBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <Shape/EditorSphereShapeComponent.h>
 
@@ -49,6 +50,20 @@ namespace LmbrCentral
         AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
         BoxShapeComponentRequestsBus::EventResult(boxDimensions, entityId, &BoxShapeComponentRequests::GetBoxDimensions);
         EXPECT_THAT(boxDimensions, UnitTest::IsCloseTolerance(expectedBoxDimensions, ManipulatorTolerance));
+    }
+
+    void ExpectCapsuleRadius(AZ::EntityId entityId, float expectedRadius)
+    {
+        float radius = 0.0f;
+        CapsuleShapeComponentRequestsBus::EventResult(radius, entityId, &CapsuleShapeComponentRequests::GetRadius);
+        EXPECT_NEAR(radius, expectedRadius, ManipulatorTolerance);
+    }
+
+    void ExpectCapsuleHeight(AZ::EntityId entityId, float expectedHeight)
+    {
+        float height = 0.0f;
+        CapsuleShapeComponentRequestsBus::EventResult(height, entityId, &CapsuleShapeComponentRequests::GetHeight);
+        EXPECT_NEAR(height, expectedHeight, ManipulatorTolerance);
     }
 
     void ExpectTranslationOffset(AZ::EntityId entityId, const AZ::Vector3& expectedTranslationOffset)
