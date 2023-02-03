@@ -82,7 +82,7 @@ namespace AZ::Internal
             return outcome;
         }
 
-        // 'user/project.json' file overrides are optional
+        // '<project-root>/user/project.json' file overrides are optional
         if (!projectUserJsonPath.empty())
         {
             MergeSettingsFile(settingsRegistry, projectUserJsonPath.LexicallyNormal(), ProjectSettingsRootKey);
@@ -222,7 +222,7 @@ namespace AZ::Internal
 
     AZ::IO::FixedMaxPath ReconcileEngineRootFromProjectPath(SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& projectPath)
     {
-        // Find the engine root via user/project.json, engine manifest and project.json
+        // Find the engine root via '<project-root>/user/project.json', engine manifest and project.json
         // Locate the engine manifest file and merge it to settings registry.
         // Visit over the engine paths list and merge the engine.json files to settings registry.
         // Merge project.json to settings registry.  The "engine" key contains the engine name and optional version specifier.
@@ -551,7 +551,7 @@ namespace AZ::SettingsRegistryMergeUtils
             return {};
         }
 
-        // Check for alternate 'engine_path' setting in 'user/project.json'
+        // Check for alternate 'engine_path' setting in '<project-root>/user/project.json'
         if (engineRoot = Internal::ReconcileEngineRootFromProjectUserPath(settingsRegistry, projectRoot); !engineRoot.empty())
         {
             settingsRegistry.Set(engineRootKey, engineRoot.c_str());
