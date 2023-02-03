@@ -387,9 +387,7 @@ namespace UnitTests
         m_uuidInterface->FileChanged(MetadataFile);
 
         // Try to read the metadata again, expecting an error
-        m_errorChecker.Begin();
         auto uuidRetry = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
-        m_errorChecker.End(2);
 
         EXPECT_FALSE(uuidRetry);
     }
