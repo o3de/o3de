@@ -346,17 +346,12 @@ namespace AZ
         void ViewportContext::UpdatePipelineView(uint32_t viewIndex)
         {
             ViewPtr pipelineView = m_viewGroup->GetView(static_cast<ViewType>(viewIndex));
-            if (!pipelineView)
+            if (!pipelineView || !m_rootScene)
             {
                 return;
             }
 
             auto& pipeline = m_currentPipelines[viewIndex];
-            if (!m_rootScene)
-            {
-                pipelineView.reset();
-                return;
-            }
 
             if (!pipeline)
             {

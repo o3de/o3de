@@ -319,3 +319,4 @@ namespace Camera
         debugDisplay.PopMatrix();
     }
 } //namespace Camera
+
