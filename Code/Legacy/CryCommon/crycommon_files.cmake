@@ -31,7 +31,6 @@ set(FILES
     IWindowMessageHandler.h
     IXml.h
     MicrophoneBus.h
-    INavigationSystem.h
     IMNM.h
     SerializationTypes.h
     CryEndian.h
