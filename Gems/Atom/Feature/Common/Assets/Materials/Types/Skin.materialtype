@@ -536,7 +536,7 @@
                     {
                         "type": "Lua",
                         "args": {
-                            "file": "Materials/Types/MaterialInputs/DetailMapsCommonFunctor.lua"
+                            "file": "MaterialInputs/DetailMapsCommonFunctor.lua"
                         }
                     }
                 ]
@@ -991,8 +991,8 @@
                         "type": "Bool",
                         "defaultValue": true,
                         "connection": {
-                            "type": "InternalProperty",
-                            "name": "castShadows"
+                            "type": "ShaderEnabled",
+                            "name": "Shadowmap"
                         }
                     },
                     {
@@ -1043,8 +1043,24 @@
             }
         ]
     },
-    "lightingModel": "Skin",
-    "materialShaderCode": "Skin.azsli",
+    "shaders": [
+        {
+            "file": "Shaders/Materials/Skin/Skin_ForwardPass.shader",
+            "tag": "ForwardPass"
+        },
+        {
+            "file": "Shaders/Shadow/ShadowmapSkin.shader",
+            "tag": "Shadowmap"
+        },
+        {
+            "file": "Shaders/Depth/DepthPassSkin.shader",
+            "tag": "DepthPass"
+        },
+        {
+            "file": "Shaders/MotionVector/MeshMotionVectorSkin.shader",
+            "tag": "MeshMotionVector"
+        }
+    ],
     "functors": [
         {
             // Preprocess & build parameter set for subsurface scattering and translucency
