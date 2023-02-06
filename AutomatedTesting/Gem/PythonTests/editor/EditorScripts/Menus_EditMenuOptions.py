@@ -26,6 +26,7 @@ def Menus_EditMenuOptions_Work():
     :return: None
     """
 
+    import azlmbr.legacy.general as general
     import editor_python_test_tools.hydra_editor_utils as hydra
     import pyside_utils
     from editor_python_test_tools.utils import Report
@@ -51,7 +52,6 @@ def Menus_EditMenuOptions_Work():
         ("Modify", "Transform Mode", "Scale"),
         ("Editor Settings", "Global Preferences"),
         ("Editor Settings", "Editor Settings Manager"),
-        ("Editor Settings", "Keyboard Customization", "Customize Keyboard"),
         # The following menu options are temporarily disabled due to https://github.com/o3de/o3de/issues/6746
         #("Editor Settings", "Keyboard Customization", "Export Keyboard Settings"),
         #("Editor Settings", "Keyboard Customization", "Import Keyboard Settings"),
@@ -59,6 +59,11 @@ def Menus_EditMenuOptions_Work():
 
     # 1) Open an existing simple level
     hydra.open_base_level()
+
+    # The action manager doesn't register the menus until the next system tick, so need to wait
+    # until the menu bar has been populated
+    general.idle_enable(True)
+    general.idle_wait_frames(1)
 
     # 2) Interact with Edit Menu options
     editor_window = pyside_utils.get_editor_main_window()
