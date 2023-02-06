@@ -36,6 +36,8 @@
 #include <native/AssetManager/SourceAssetReference.h>
 #include <AzToolsFramework/Metadata/MetadataManager.h>
 
+#pragma optimize("", off)
+
 namespace AssetProcessor
 {
     const AZ::u32 FAILED_FINGERPRINT = 1;
@@ -3184,6 +3186,43 @@ namespace AssetProcessor
                 // Do not process this file yet.  When the job is done it will retrigger processing for this file.
                 return;
             }
+
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sourcesForProduct;
+            
+
+            if (m_stateData->GetSourcesByProductName(productName.c_str(), sourcesForProduct))
+            {
+                AZ_Printf("AP", "Source found for this asset...\n");
+
+                
+                for (const auto& source : sourcesForProduct)
+                {
+                    AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolder;
+                    if (!m_stateData->GetScanFolderByScanFolderID(source.m_scanFolderPK, scanfolder))
+                    {
+                        AZ_Printf("AP", "Scan folder not found for this asset...\n");
+                    }
+                    else
+                    {
+                        AZ_Printf("AP", "Scan folder found...\n");
+                        QString path = QString("%1/%2").arg(scanfolder.m_scanFolder.c_str()).arg(source.m_sourceName.c_str());
+
+                        if (QFile::exists(path))
+                        {
+                            AZ_Printf("AP", "Original source still exists...\n");
+                        }
+                        else
+                        {
+                            AZ_Printf("AP", "\n\nOriginal source %s for %s is now gone!\n\n\n", path.toUtf8().data(), productName.c_str());
+                            return;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                AZ_Printf("AP", "No source for this intermediate asset...\n");
+            }
         }
 
         m_AssetProcessorIsBusy = true;
@@ -5696,3 +5735,4 @@ namespace AssetProcessor
         return filesFound;
     }
 } // namespace AssetProcessor
+#pragma optimize("", on)
