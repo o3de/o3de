@@ -152,7 +152,7 @@ namespace AzToolsFramework
 
     void CapsuleViewportEdit::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        for (auto manipulator : { m_radiusManipulator, m_topManipulator, m_bottomManipulator })
+        for (auto manipulator : { m_radiusManipulator.get(), m_topManipulator.get(), m_bottomManipulator.get() })
         {
             if (manipulator)
             {
@@ -182,7 +182,7 @@ namespace AzToolsFramework
             m_radiusManipulator->SetNonUniformScale(nonUniformScale);
             m_radiusManipulator->SetBoundsDirty();
         }
-        for (auto heightManipulator : { m_topManipulator, m_bottomManipulator })
+        for (auto heightManipulator : { m_topManipulator.get(), m_bottomManipulator.get() })
         {
             if (heightManipulator)
             {
@@ -205,7 +205,7 @@ namespace AzToolsFramework
 
     void CapsuleViewportEdit::Teardown()
     {
-        for (auto manipulator : { m_radiusManipulator, m_topManipulator, m_bottomManipulator })
+        for (auto manipulator : { m_radiusManipulator.get(), m_topManipulator.get(), m_bottomManipulator.get() })
         {
             if (manipulator)
             {
@@ -336,7 +336,7 @@ namespace AzToolsFramework
             SetTranslationOffset(translationOffset + translationOffsetDelta);
         }
 
-        for (auto heightManipulator : { m_topManipulator, m_bottomManipulator })
+        for (auto heightManipulator : { m_topManipulator.get(), m_bottomManipulator.get() })
         {
             const AZ::Transform updatedLocalTransform = GetLocalTransform();
             heightManipulator->SetLocalTransform(
@@ -359,7 +359,7 @@ namespace AzToolsFramework
         float capsuleHeight = GetCapsuleHeight();
         capsuleHeight = AZ::GetMax(capsuleHeight, 2.0f * capsuleRadius);
         const AZ::Transform localTransform = GetLocalTransform();
-        for (auto heightManipulator : { m_topManipulator, m_bottomManipulator })
+        for (auto heightManipulator : { m_topManipulator.get(), m_bottomManipulator.get() })
         {
             if (heightManipulator)
             {

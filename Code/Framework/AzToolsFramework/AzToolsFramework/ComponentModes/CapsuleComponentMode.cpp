@@ -6,7 +6,7 @@
  *
  */
 
-#include "CapsuleComponentMode.h"
+#include <AzToolsFramework/ComponentModes/CapsuleComponentMode.h>
 
 #include <AzToolsFramework/ComponentModes/ShapeTranslationOffsetViewportEdit.h>
 #include <AzToolsFramework/Manipulators/CapsuleManipulatorRequestBus.h>

@@ -184,6 +184,7 @@ namespace AzToolsFramework
 
     void BoxViewportEdit::ResetValues()
     {
+        // manipulators handle undo batches themselves, but this function does not work via manipulators so needs its own undo batch
         BeginUndoBatch("BoxViewportEdit Reset");
         SetBoxDimensions(AZ::Vector3::CreateOne());
         SetTranslationOffset(AZ::Vector3::CreateZero());

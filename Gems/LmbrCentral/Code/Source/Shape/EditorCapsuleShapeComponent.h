@@ -7,14 +7,14 @@
  */
 #pragma once
 
-#include "CapsuleShapeComponent.h"
-#include "EditorBaseShapeComponent.h"
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Manipulators/CapsuleManipulatorRequestBus.h>
 #include <AzToolsFramework/Manipulators/RadiusManipulatorRequestBus.h>
 #include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 #include <LmbrCentral/Shape/CapsuleShapeComponentBus.h>
+#include <Shape/CapsuleShapeComponent.h>
+#include <Shape/EditorBaseShapeComponent.h>
 
 namespace LmbrCentral
 {

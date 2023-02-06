@@ -6,7 +6,7 @@
  *
  */
 
-#include "BaseShapeComponentMode.h"
+#include <AzToolsFramework/ComponentModes/BaseShapeComponentMode.h>
 
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
@@ -147,9 +147,9 @@ namespace AzToolsFramework
 
     void BaseShapeComponentMode::SetShapeSubMode(ShapeComponentModeRequests::SubMode mode)
     {
-        AZ_Assert(mode < ShapeComponentModeRequests::SubMode::NumModes, "Submode not found:%d", static_cast<AZ::u32>(mode));
-        m_subModes[static_cast<AZ::u32>(m_subMode)]->Teardown();
         const auto modeIndex = static_cast<AZ::u32>(mode);
+        AZ_Assert(modeIndex < m_subModes.size(), "Submode not found:%d", modeIndex);
+        m_subModes[static_cast<AZ::u32>(m_subMode)]->Teardown();
         AZ_Assert(modeIndex < m_buttonIds.size(), "Invalid mode index %i.", modeIndex);
         m_subMode = mode;
         m_subModes[modeIndex]->Setup(g_mainManipulatorManagerId);
@@ -167,8 +167,9 @@ namespace AzToolsFramework
 
     void BaseShapeComponentMode::ResetShapeSubMode()
     {
-        m_subModes[static_cast<AZ::u32>(m_subMode)]->ResetValues();
-        m_subModes[static_cast<AZ::u32>(m_subMode)]->UpdateManipulators();
+        const auto modeIndex = static_cast<AZ::u32>(m_subMode);
+        m_subModes[modeIndex]->ResetValues();
+        m_subModes[modeIndex]->UpdateManipulators();
     }
 
     bool BaseShapeComponentMode::HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
@@ -182,9 +183,9 @@ namespace AzToolsFramework
             mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl())
         {
             const int direction = MouseWheelDelta(mouseInteraction) > 0.0f ? -1 : 1;
-            AZ::u32 currentModeIndex = static_cast<AZ::u32>(m_subMode);
-            AZ::u32 numSubModes = static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::NumModes);
-            AZ::u32 nextModeIndex = (currentModeIndex + numSubModes + direction) % m_subModes.size();
+            const AZ::u32 currentModeIndex = static_cast<AZ::u32>(m_subMode);
+            const AZ::u32 numSubModes = static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::NumModes);
+            const AZ::u32 nextModeIndex = (currentModeIndex + numSubModes + direction) % m_subModes.size();
             ShapeComponentModeRequests::SubMode nextMode = static_cast<ShapeComponentModeRequests::SubMode>(nextModeIndex);
             SetShapeSubMode(nextMode);
             return true;
@@ -241,8 +242,7 @@ namespace AzToolsFramework
     void BaseShapeComponentMode::RegisterActions(const char* shapeName)
     {
         AZStd::string category = AZStd::string::format("%s Component Mode", shapeName);
-        auto firstCharacter = category.substr(0, 1);
-        AZStd::to_upper(firstCharacter.begin(), firstCharacter.end());
+        AZStd::to_upper(category.begin(), category.begin() + 1);
 
         auto actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(actionManagerInterface, "BaseShapeComponentMode - could not get ActionManagerInterface on RegisterActions.");
@@ -343,14 +343,12 @@ namespace AzToolsFramework
         auto actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(actionManagerInterface, "BaseShapeComponentMode - could not get ActionManagerInterface on RegisterActions.");
 
-        AZStd::string modeIdentifier = AZStd::string::format("o3de.context.mode.%s", className);
+        const AZStd::string modeIdentifier = AZStd::string::format("o3de.context.mode.%s", className);
+        const AZStd::string prefix = AZStd::string::format("o3de.action.%sComponentMode", shapeName);
 
-        actionManagerInterface->AssignModeToAction(
-            modeIdentifier, AZStd::string::format("o3de.action.%sComponentMode.setDimensionsSubMode", shapeName));
-        actionManagerInterface->AssignModeToAction(
-            modeIdentifier, AZStd::string::format("o3de.action.%sComponentMode.setTranslationOffsetSubMode", shapeName));
-        actionManagerInterface->AssignModeToAction(
-            modeIdentifier, AZStd::string::format("o3de.action.%sComponentMode.resetCurrentMode", shapeName));
+        actionManagerInterface->AssignModeToAction(modeIdentifier, prefix + ".setDimensionsSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, prefix + ".setTranslationOffsetSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, prefix + ".resetCurrentMode");
     }
 
     void BaseShapeComponentMode::BindActionsToMenus(const char* shapeName)
@@ -358,12 +356,11 @@ namespace AzToolsFramework
         auto menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "BaseShapeComponentMode - could not get MenuManagerInterface on BindActionsToMenus.");
 
-        menuManagerInterface->AddActionToMenu(
-            EditMenuIdentifier, AZStd::string::format("o3de.action.%sComponentMode.setDimensionsSubMode", shapeName), 6000);
-        menuManagerInterface->AddActionToMenu(
-            EditMenuIdentifier, AZStd::string::format("o3de.action.%sComponentMode.setTranslationOffsetSubMode", shapeName), 6001);
-        menuManagerInterface->AddActionToMenu(
-            EditMenuIdentifier, AZStd::string::format("o3de.action.%sComponentMode.resetCurrentMode", shapeName), 6002);
+        const AZStd::string prefix = AZStd::string::format("o3de.action.%sComponentMode", shapeName);
+
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, prefix + ".setDimensionsSubMode", 6000);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, prefix + ".setTranslationOffsetSubMode", 6001);
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, prefix + ".resetCurrentMode", 6002);
     }
 } // namespace AzToolsFramework
 

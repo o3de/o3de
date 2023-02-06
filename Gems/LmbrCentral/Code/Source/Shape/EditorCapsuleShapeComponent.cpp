@@ -6,14 +6,13 @@
  *
  */
 
-#include "EditorCapsuleShapeComponent.h"
+#include <Shape/EditorCapsuleShapeComponent.h>
 
-#include "CapsuleShapeComponent.h"
-#include "EditorShapeComponentConverters.h"
-#include "ShapeDisplay.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/ComponentModes/CapsuleComponentMode.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
+#include <Shape/EditorShapeComponentConverters.h>
+#include <Shape/ShapeDisplay.h>
 
 namespace LmbrCentral
 {

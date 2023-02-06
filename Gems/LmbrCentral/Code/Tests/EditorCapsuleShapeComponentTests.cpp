@@ -5,11 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LmbrCentralReflectionTest.h"
-#include "Shape/EditorCapsuleShapeComponent.h"
-#include "Shape/EditorSphereShapeComponent.h"
+
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <EditorShapeTestUtils.h>
+#include <LmbrCentralReflectionTest.h>
+#include <Shape/EditorCapsuleShapeComponent.h>
+#include <Shape/EditorSphereShapeComponent.h>
 
 namespace LmbrCentral
 {
