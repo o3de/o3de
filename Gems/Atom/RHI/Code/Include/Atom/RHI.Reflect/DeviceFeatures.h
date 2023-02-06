@@ -92,6 +92,9 @@ namespace AZ
             //! Otherwise, the image is read by the CPU during scope execution (so it must not be modified by either CPU or GPU at that time).
             bool m_dynamicShadingRateImage = false;
             
+            //! Whether the adapter supports wave/subgroup operation
+            bool m_waveOperation = false;
+
             /// Additional features here.
         };
     }
