@@ -15,37 +15,13 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/Metadata/UuidUtils.h>
+#include <AzCore/UnitTest/MockComponentApplication.h>
 
 namespace UnitTest
 {
     struct UuidUtilTests
         : LeakDetectionFixture
-        , AZ::ComponentApplicationBus::Handler
     {
-        //////////////////////////////////////////////////////////////////////////
-        // ComponentApplicationMessages
-        AZ::ComponentApplication* GetApplication() override { return nullptr; }
-        void RegisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
-        void UnregisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
-        void RegisterEntityAddedEventHandler(AZ::EntityAddedEvent::Handler&) override { }
-        void RegisterEntityRemovedEventHandler(AZ::EntityRemovedEvent::Handler&) override { }
-        void RegisterEntityActivatedEventHandler(AZ::EntityActivatedEvent::Handler&) override { }
-        void RegisterEntityDeactivatedEventHandler(AZ::EntityDeactivatedEvent::Handler&) override { }
-        void SignalEntityActivated(AZ::Entity*) override { }
-        void SignalEntityDeactivated(AZ::Entity*) override { }
-        bool AddEntity(AZ::Entity*) override { return false; }
-        bool RemoveEntity(AZ::Entity*) override { return false; }
-        bool DeleteEntity(const AZ::EntityId&) override { return false; }
-        AZ::Entity* FindEntity(const AZ::EntityId&) override { return nullptr; }
-        AZ::SerializeContext* GetSerializeContext() override { return m_serializeContext.get(); }
-        AZ::BehaviorContext*  GetBehaviorContext() override { return nullptr; }
-        AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return m_jsonRegistrationContext.get(); }
-        const char* GetEngineRoot() const override { return nullptr; }
-        const char* GetExecutableFolder() const override { return nullptr; }
-        void EnumerateEntities(const EntityCallback& /*callback*/) override {}
-        void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
-        //////////////////////////////////////////////////////////////////////////
-
         void SetUp() override
         {
             UnitTest::TestRunner::Instance().m_suppressPrintf = false;
@@ -57,7 +33,21 @@ namespace UnitTest
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
 
-            AZ::ComponentApplicationBus::Handler::BusConnect();
+            m_applicationMock = AZStd::make_unique<testing::NiceMock<UnitTest::MockComponentApplication>>();
+
+            ON_CALL(*m_applicationMock, GetSerializeContext())
+                .WillByDefault(
+                    [this]()
+                    {
+                        return m_serializeContext.get();
+                    });
+
+            ON_CALL(*m_applicationMock, GetJsonRegistrationContext())
+                .WillByDefault(
+                    [this]()
+                    {
+                        return m_jsonRegistrationContext.get();
+                    });
 
             AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
 
@@ -139,12 +129,14 @@ namespace UnitTest
                         *bytesWritten = size;
                         return AZ::IO::ResultCode::Success;
                     }));
+
+            m_utilInterface = AZ::Interface<AzToolsFramework::IUuidUtil>::Get();
+
+            ASSERT_TRUE(m_utilInterface);
         }
 
         void TearDown() override
         {
-            AZ::ComponentApplicationBus::Handler::BusDisconnect();
-
             m_jsonRegistrationContext->EnableRemoveReflection();
             AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
             m_jsonRegistrationContext->DisableRemoveReflection();
@@ -158,6 +150,7 @@ namespace UnitTest
             UnitTest::TestRunner::Instance().ResetSuppressionSettingsToDefault();
         }
 
+        AZStd::unique_ptr<testing::NiceMock<UnitTest::MockComponentApplication>> m_applicationMock;
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
         AZStd::unique_ptr<testing::NiceMock<AZ::IO::MockFileIOBase>> m_fileIOMock;
@@ -165,51 +158,37 @@ namespace UnitTest
         AZStd::unordered_map<AZ::IO::HandleType, AZStd::string> m_mockFiles;
         AzToolsFramework::MetadataManager m_manager;
         AzToolsFramework::UuidUtilComponent m_uuidUtil;
+
+        // Cached pointer, no need to clean up
+        AzToolsFramework::IUuidUtil* m_utilInterface{};
     };
 
     TEST_F(UuidUtilTests, CreateSourceUuid_Random_ReturnsRandomUuid)
     {
-        auto* utilInterface = AZ::Interface<AzToolsFramework::IUuidUtil>::Get();
-
-        ASSERT_TRUE(utilInterface);
-
-        auto uuid = utilInterface->CreateSourceUuid("mockfile");
+        auto uuid = m_utilInterface->CreateSourceUuid("mockfile");
 
         EXPECT_FALSE(uuid.IsNull());
     }
 
     TEST_F(UuidUtilTests, CreateSourceUuid_SpecifyUuid_ReturnsTrue)
     {
-        auto* utilInterface = AZ::Interface<AzToolsFramework::IUuidUtil>::Get();
-
-        ASSERT_TRUE(utilInterface);
-
         auto uuid = AZ::Uuid::CreateRandom();
-        EXPECT_TRUE(utilInterface->CreateSourceUuid("mockfile", uuid));
+        EXPECT_TRUE(m_utilInterface->CreateSourceUuid("mockfile", uuid));
     }
 
     TEST_F(UuidUtilTests, CreateSourceUuidRandom_AlreadyAssigned_Fails)
     {
-        auto* utilInterface = AZ::Interface<AzToolsFramework::IUuidUtil>::Get();
-
-        ASSERT_TRUE(utilInterface);
-
-        utilInterface->CreateSourceUuid("mockfile");
-
-        auto uuid = utilInterface->CreateSourceUuid("mockfile");
+        m_utilInterface->CreateSourceUuid("mockfile");
+        auto uuid = m_utilInterface->CreateSourceUuid("mockfile");
 
         EXPECT_TRUE(uuid.IsNull());
     }
 
     TEST_F(UuidUtilTests, CreateSourceUuid_AlreadyAssigned_Fails)
     {
-        auto* utilInterface = AZ::Interface<AzToolsFramework::IUuidUtil>::Get();
-
-        ASSERT_TRUE(utilInterface);
-
         auto uuid = AZ::Uuid::CreateRandom();
-        utilInterface->CreateSourceUuid("mockfile");
+        m_utilInterface->CreateSourceUuid("mockfile");
 
-        EXPECT_FALSE(utilInterface->CreateSourceUuid("mockfile", uuid));
+        EXPECT_FALSE(m_utilInterface->CreateSourceUuid("mockfile", uuid));
     }
 }

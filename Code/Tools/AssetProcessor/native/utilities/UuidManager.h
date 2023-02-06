@@ -14,7 +14,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Metadata/UuidUtils.h>
 #include <native/AssetManager/SourceAssetReference.h>
-#include <AzToolsFramework/Metadata/UuidEntry.h>
+#include <AzToolsFramework/Metadata/MetaUuidEntry.h>
 
 namespace AzToolsFramework
 {
@@ -76,16 +76,16 @@ namespace AssetProcessor
 
     private:
         AZStd::string GetCanonicalPath(AZ::IO::PathView file);
-        AzToolsFramework::UuidEntry GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset);
+        AzToolsFramework::MetaUuidEntry GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset);
         AzToolsFramework::IMetadataRequests* GetMetadataManager();
-        AzToolsFramework::UuidEntry CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType);
+        AzToolsFramework::MetaUuidEntry CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType);
         AZ::Uuid CreateUuid();
         AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file);
         void InvalidateCacheEntry(AZ::IO::FixedMaxPath file);
 
         AZStd::recursive_mutex m_uuidMutex;
         // Cache of uuids.  AbsPath -> UUIDEntry
-        AZStd::unordered_map<AZStd::string, AzToolsFramework::UuidEntry> m_uuids;
+        AZStd::unordered_map<AZStd::string, AzToolsFramework::MetaUuidEntry> m_uuids;
         // Types which should use randomly generated UUIDs
         AZStd::unordered_set<AZStd::string> m_enabledTypes;
         AzToolsFramework::IMetadataRequests* m_metadataManager{};
