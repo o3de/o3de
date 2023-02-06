@@ -341,6 +341,8 @@ namespace AZ
         T   m_data;
     };
 
+    extern template class AttributeData<Crc32>;
+
     /**
     * Generic attribute for class member data, we use the object instance to access member data.
     * In general since the AttributeData::Get function already takes the instance there is no reason to cast (azrtti)

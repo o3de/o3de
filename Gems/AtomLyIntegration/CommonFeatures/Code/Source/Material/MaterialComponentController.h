@@ -88,6 +88,8 @@ namespace AZ
             //! Data::AssetBus overrides...
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetError(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetReloadError(Data::Asset<Data::AssetData> asset) override;
 
             // AZ::SystemTickBus overrides...
             void OnSystemTick() override;
@@ -108,6 +110,8 @@ namespace AZ
             void ConvertAssetsForSerialization();
             void ConvertAssetsForSerialization(MaterialPropertyOverrideMap& propertyMap);
             AZStd::any ConvertAssetsForSerialization(const AZStd::any& value) const;
+
+            void DisplayMissingAssetWarning(Data::Asset<Data::AssetData> asset) const;
 
             EntityId m_entityId;
             MaterialComponentConfig m_configuration;

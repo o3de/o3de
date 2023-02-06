@@ -18,32 +18,29 @@ set(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED FALSE CACHE BOOL "Whether to en
 # Test impact analysis opt-in for Python test targets
 set(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED FALSE CACHE BOOL "Whether to enable Python test targets with the REQUIRES_TIAF_LABEL label for test impact analysis (otherwise, CTest will be used to run these targets).")
 
-# If we are not provided a path to the Instrumentation bin or monolithic game is being built, disable TIAF
 if(LY_MONOLITHIC_GAME)
-    set(O3DE_TEST_IMPACT_ACTIVE false)
+    # TIAF not supported for monolithic game builds
     set(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED false)
     set(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED false)
-elseif(O3DE_TEST_IMPACT_INSTRUMENTATION_BIN)
-    # TIAF is only enabled if at least one supported test target type has opted in for test impact analysis
-    if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED OR O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
-        set(O3DE_TEST_IMPACT_ACTIVE true)
-        if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED)
-            message(DEBUG "TIAF enabled for native tests.")
-        else()
-            message("TIAF disabled for native tests.")
-        endif()
-        if(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
-            message(DEBUG "TIAF enabled for Python tests.")
-        else()
-            message(DEBUG "TIAF disabled for Python tests.")
-        endif()
+    set(O3DE_TEST_IMPACT_ACTIVE false)
+elseif(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED OR O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
+    # TIAF is active if at least one runtime is enabled
+    set(O3DE_TEST_IMPACT_ACTIVE true)
+    if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED)
+        message(DEBUG "TIAF enabled for native tests.")
     else()
-        set(O3DE_TEST_IMPACT_ACTIVE false)
-        message(DEBUG "TIAF disabled. No test target types have opted in.")
+        message("TIAF disabled for native tests.")
+    endif()
+    if(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
+        message(DEBUG "TIAF enabled for Python tests.")
+    else()
+        message(DEBUG "TIAF disabled for Python tests.")
     endif()
 else()
+    set(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED false)
+    set(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED false)
     set(O3DE_TEST_IMPACT_ACTIVE false)
-    message(DEBUG "TIAF disabled. Instrumentation bin not provided.")
+    message(DEBUG "TIAF disabled. No test target types will be opted in.")
 endif()
 
 #! o3de_test_impact_apply_test_labels: applies the the appropriate label to a test target for running in CTest according to whether

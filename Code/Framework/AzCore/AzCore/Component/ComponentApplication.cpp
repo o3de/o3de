@@ -76,6 +76,12 @@
 #include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzCore/Time/TimeSystem.h>
 
+#include <AzCore/Outcome/Outcome.h> // for unexpect_t
+
+DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
+DECLARE_EBUS_INSTANTIATION(TickEvents);
+DECLARE_EBUS_INSTANTIATION(SystemTickEvents);
+DECLARE_EBUS_INSTANTIATION(TickRequests);
 
 namespace AZ::Metrics
 {
@@ -106,6 +112,7 @@ namespace AZ::Internal
 
 namespace AZ
 {
+    // explicit instantiation of the template defined in ComponentApplicationBus.h
     static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
     {
         if (arguments.empty())
@@ -344,6 +351,11 @@ namespace AZ
 
                 ->Event("GetEntityName", &ComponentApplicationBus::Events::GetEntityName)
                 ->Event("SetEntityName", &ComponentApplicationBus::Events::SetEntityName);
+
+            behaviorContext->Class<AZStd::unexpect_t>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "std")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);
         }
     }
 
@@ -1414,7 +1426,7 @@ namespace AZ
         AZ_PROFILE_SCOPE(System, "Component application tick");
 
         SystemTickBus::ExecuteQueuedEvents();
-        EBUS_EVENT(SystemTickBus, OnSystemTick);
+        SystemTickBus::Broadcast(&SystemTickBus::Events::OnSystemTick);
     }
 
     bool ComponentApplication::ShouldAddSystemComponent(AZ::ComponentDescriptor* descriptor)
@@ -1444,7 +1456,7 @@ namespace AZ
         for (const Uuid& componentId : GetRequiredSystemComponents())
         {
             ComponentDescriptor* componentDescriptor = nullptr;
-            EBUS_EVENT_ID_RESULT(componentDescriptor, componentId, ComponentDescriptorBus, GetDescriptor);
+            ComponentDescriptorBus::EventResult(componentDescriptor, componentId, &ComponentDescriptorBus::Events::GetDescriptor);
             if (!componentDescriptor)
             {
                 AZ_Error("Module", false, "Failed to add system component required by application. No component descriptor found for: %s",

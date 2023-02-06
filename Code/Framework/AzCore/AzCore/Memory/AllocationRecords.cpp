@@ -134,6 +134,7 @@ namespace AZ::Debug
             ai.m_stackFrames = m_numStackLevels ? reinterpret_cast<AZ::Debug::StackFrame*>(m_records.get_allocator().allocate(
                                                       sizeof(AZ::Debug::StackFrame) * m_numStackLevels, 1))
                                                 : nullptr;
+            ai.m_stackFramesCount = m_numStackLevels;
             if (ai.m_stackFrames)
             {
                 Debug::StackRecorder::Record(ai.m_stackFrames, m_numStackLevels, stackSuppressCount + 1);

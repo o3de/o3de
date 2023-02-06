@@ -36,5 +36,6 @@ namespace LmbrCentral
         void OnActionRegistrationHook() override;
         void OnActionContextModeBindingHook() override;
         void OnMenuBindingHook() override;
+        void OnPostActionManagerRegistrationHook() override;
     };
 } // namespace LmbrCentral

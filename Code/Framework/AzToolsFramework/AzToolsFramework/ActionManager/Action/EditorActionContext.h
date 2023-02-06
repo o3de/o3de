@@ -21,7 +21,7 @@ namespace AzToolsFramework
     constexpr const char* DefaultModeIdentifier = "default";
 
     //! Editor Action Context class definition.
-    //! Identifies a collection of Actions in the context of 
+    //! Identifies a collection of Actions and their accessibility in the context of the whole O3DE Editor.
     class EditorActionContext
         : public QObject
     {

@@ -14,19 +14,22 @@ if(PAL_TRAIT_TEST_IMPACT_FRAMEWORK_SUPPORTED AND NOT LY_MONOLITHIC_GAME)
     add_subdirectory(Runtime)
     add_subdirectory(Frontend)
 
-    ly_add_pytest(
-        NAME TiafToolsTest
-        PATH ${LY_ROOT_FOLDER}/scripts/build/TestImpactAnalysis/Testing/test_tiaf_tools.py
-        TEST_SERIAL
-        COMPONENT 
-            TestImpactFramework
-    )
-    
-    ly_add_pytest(
-        NAME TiafPythonUnitTest
-        PATH ${LY_ROOT_FOLDER}/scripts/build/TestImpactAnalysis/Testing/test_tiaf_unit_tests.py
-        TEST_SERIAL
-        COMPONENT
-            TestImpactFramework
-    )
+    if(O3DE_TEST_IMPACT_ACTIVE)
+        # Only add the TIAF unit tests if one or more runtimes is enabled
+        ly_add_pytest(
+            NAME TiafToolsTest
+            PATH ${LY_ROOT_FOLDER}/scripts/build/TestImpactAnalysis/Testing/test_tiaf_tools.py
+            TEST_SERIAL
+            COMPONENT 
+                TestImpactFramework
+        )
+        
+        ly_add_pytest(
+            NAME TiafPythonUnitTest
+            PATH ${LY_ROOT_FOLDER}/scripts/build/TestImpactAnalysis/Testing/test_tiaf_unit_tests.py
+            TEST_SERIAL
+            COMPONENT
+                TestImpactFramework
+        )
+    endif()
 endif()
