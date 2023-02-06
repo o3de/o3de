@@ -8,7 +8,7 @@
 
 #include <AzToolsFramework/Metadata/UuidUtils.h>
 #include <AzToolsFramework/Metadata/MetadataManager.h>
-#include <AzToolsFramework/Metadata/UuidEntry.h>
+#include <AzToolsFramework/Metadata/MetaUuidEntry.h>
 
 namespace AzToolsFramework
 {
@@ -19,7 +19,7 @@ namespace AzToolsFramework
             serializeContext->Class<UuidUtilComponent, AZ::Component>();
         }
 
-        UuidEntry::Reflect(context);
+        MetaUuidEntry::Reflect(context);
     }
 
     bool UuidUtilComponent::CreateSourceUuid(AZ::IO::PathView absoluteFilePath, AZ::Uuid uuid)
@@ -32,7 +32,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        AzToolsFramework::UuidEntry entry;
+        AzToolsFramework::MetaUuidEntry entry;
 
         if (metadataInterface->GetValue(absoluteFilePath, UuidKey, entry) && !entry.m_uuid.IsNull())
         {

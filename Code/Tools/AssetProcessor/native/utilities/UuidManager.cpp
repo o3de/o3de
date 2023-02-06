@@ -92,7 +92,7 @@ namespace AssetProcessor
         return file.LexicallyNormal().FixedMaxPathStringAsPosix().c_str();
     }
 
-    AzToolsFramework::UuidEntry UuidManager::GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset)
+    AzToolsFramework::MetaUuidEntry UuidManager::GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset)
     {
         AZStd::scoped_lock scopeLock(m_uuidMutex);
 
@@ -119,7 +119,7 @@ namespace AssetProcessor
         // Metadata manager can't use the file state cache since it is in AzToolsFramework, so it's faster to do an Exists check up-front.
         if (fileExists)
         {
-            AzToolsFramework::UuidEntry uuidInfo;
+            AzToolsFramework::MetaUuidEntry uuidInfo;
 
             // Check if there's a metadata file that already contains a saved UUID
             if (GetMetadataManager()->GetValue(sourceAsset.AbsolutePath(), AzToolsFramework::UuidUtilComponent::UuidKey, uuidInfo))
@@ -134,7 +134,7 @@ namespace AssetProcessor
                 // Missing other entries is ok, just generate them now and update the metadata file
                 if (uuidInfo.m_legacyUuids.empty() || uuidInfo.m_originalPath.empty() || uuidInfo.m_millisecondsSinceUnixEpoch == 0)
                 {
-                    AzToolsFramework::UuidEntry regeneratedEntry = CreateUuidEntry(sourceAsset, isEnabledType);
+                    AzToolsFramework::MetaUuidEntry regeneratedEntry = CreateUuidEntry(sourceAsset, isEnabledType);
 
                     if (uuidInfo.m_legacyUuids.empty())
                     {
@@ -172,7 +172,7 @@ namespace AssetProcessor
         }
 
         // Last resort - generate a new UUID and save it to the metadata file
-        AzToolsFramework::UuidEntry newUuid = CreateUuidEntry(sourceAsset, isEnabledType);
+        AzToolsFramework::MetaUuidEntry newUuid = CreateUuidEntry(sourceAsset, isEnabledType);
 
         if (!isEnabledType ||
             GetMetadataManager()->SetValue(sourceAsset.AbsolutePath(), AzToolsFramework::UuidUtilComponent::UuidKey, newUuid))
@@ -195,9 +195,9 @@ namespace AssetProcessor
         return m_metadataManager;
     }
 
-    AzToolsFramework::UuidEntry UuidManager::CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType)
+    AzToolsFramework::MetaUuidEntry UuidManager::CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType)
     {
-        AzToolsFramework::UuidEntry newUuid;
+        AzToolsFramework::MetaUuidEntry newUuid;
 
         newUuid.m_uuid = enabledType ? CreateUuid() : AssetUtilities::CreateSafeSourceUUIDFromName(sourceAsset.RelativePath().c_str());
         newUuid.m_legacyUuids = CreateLegacyUuids(sourceAsset.RelativePath().c_str());

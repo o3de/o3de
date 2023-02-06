@@ -6,20 +6,20 @@
  *
  */
 
-#include <AzToolsFramework/Metadata/UuidEntry.h>
+#include <AzToolsFramework/Metadata/MetaUuidEntry.h>
 
 namespace AzToolsFramework
 {
-    void AzToolsFramework::UuidEntry::Reflect(AZ::ReflectContext* context)
+    void AzToolsFramework::MetaUuidEntry::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<UuidEntry>()
+            serializeContext->Class<MetaUuidEntry>()
                 ->Version(0)
-                ->Field("uuid", &UuidEntry::m_uuid)
-                ->Field("legacyUuids", &UuidEntry::m_legacyUuids)
-                ->Field("originalPath", &UuidEntry::m_originalPath)
-                ->Field("creationUnixEpochMS", &UuidEntry::m_millisecondsSinceUnixEpoch);
+                ->Field("uuid", &MetaUuidEntry::m_uuid)
+                ->Field("legacyUuids", &MetaUuidEntry::m_legacyUuids)
+                ->Field("originalPath", &MetaUuidEntry::m_originalPath)
+                ->Field("creationUnixEpochMS", &MetaUuidEntry::m_millisecondsSinceUnixEpoch);
         }
     }
 } // namespace AzToolsFramework
