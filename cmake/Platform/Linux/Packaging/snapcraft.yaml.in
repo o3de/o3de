@@ -40,9 +40,9 @@ parts:
      - cmake
 
 layout:
-  /etc/o3de/22.10/downloaded_packages:
+  /etc/o3de/${LY_VERSION_STRING}/downloaded_packages:
     bind: $SNAP/${LY_VERSION_STRING}/python/downloaded_packages
-  /etc/o3de/22.10/runtime:
+  /etc/o3de/${LY_VERSION_STRING}/runtime:
     bind: $SNAP/${LY_VERSION_STRING}/python/runtime
 
 apps:
