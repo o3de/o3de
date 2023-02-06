@@ -28,7 +28,6 @@ set(FILES
     IValidator.h
     IWindowMessageHandler.h
     IXml.h
-    MicrophoneBus.h
     IMNM.h
     SerializationTypes.h
     CryEndian.h
