@@ -1918,6 +1918,15 @@ AZStd::string SandboxIntegrationManager::GetComponentIconPath(const AZ::Uuid& co
                 {
                     iconPath = AZStd::move(iconFullPath);
                 }
+                else
+                {
+                    AZ_Warning(
+                        "SandboxIntegration",
+                        false,
+                        "Unable to find icon path \"%s\" for component type: %s",
+                        iconPath.c_str(),
+                        classData->m_editData->m_name);
+                }
             }
         }
     }

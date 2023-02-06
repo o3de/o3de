@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -55,10 +51,6 @@
             "Id": "Entity_[261705524673]",
             "Name": "sphere",
             "Components": {
-                "Component_[11646493884547176136]": {
-                    "$type": "SelectionComponent",
-                    "Id": 11646493884547176136
-                },
                 "Component_[11906722936407481270]": {
                     "$type": "EditorColliderComponent",
                     "Id": 11906722936407481270,
@@ -94,12 +86,17 @@
                         ],
                         "Gravity Enabled": false,
                         "Compute Mass": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 10.0
-                        }
+                        "Inertia tensor": [
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0
+                        ]
                     }
                 },
                 "Component_[14780167336961960724]": {
@@ -211,10 +208,6 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 3047355939801335922
                 },
-                "Component_[3687396159953003426]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3687396159953003426
-                },
                 "Component_[4712694840150876798]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 4712694840150876798
@@ -237,10 +230,6 @@
             "Id": "Entity_[285015917770]",
             "Name": "terrain",
             "Components": {
-                "Component_[12368241148684771968]": {
-                    "$type": "SelectionComponent",
-                    "Id": 12368241148684771968
-                },
                 "Component_[14478545718944713607]": {
                     "$type": "EditorLockComponent",
                     "Id": 14478545718944713607
@@ -270,11 +259,6 @@
                                 {
                                     "Name": "Entire object"
                                 }
-                            ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
                             ]
                         }
                     },
@@ -314,6 +298,10 @@
                         }
                     ]
                 },
+                "Component_[4881643477244228967]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 4881643477244228967
+                },
                 "Component_[5741926347424366246]": {
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 5741926347424366246
@@ -345,10 +333,6 @@
                         }
                     ]
                 },
-                "Component_[16014778893970138866]": {
-                    "$type": "SelectionComponent",
-                    "Id": 16014778893970138866
-                },
                 "Component_[17048341836974969891]": {
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 17048341836974969891
@@ -372,11 +356,6 @@
                                 {
                                     "Name": "Entire object"
                                 }
-                            ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
                             ]
                         }
                     },
@@ -428,6 +407,10 @@
                 "Component_[6873431808813245234]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 6873431808813245234
+                },
+                "Component_[9082731732445471258]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 9082731732445471258
                 },
                 "Component_[9461177873056538692]": {
                     "$type": "EditorOnlyEntityComponent",

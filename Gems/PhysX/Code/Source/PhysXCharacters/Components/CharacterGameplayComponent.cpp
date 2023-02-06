@@ -247,24 +247,20 @@ namespace PhysX
 
     void CharacterGameplayComponent::Activate()
     {
-        AzPhysics::SimulatedBody* worldBody = nullptr;
-        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(worldBody, GetEntityId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
-        if (worldBody)
+        AzPhysics::SceneHandle attachedSceneHandle = AzPhysics::InvalidSceneHandle;
+        Physics::DefaultWorldBus::BroadcastResult(attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+        if (attachedSceneHandle == AzPhysics::InvalidSceneHandle)
         {
-            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
-            {
-                m_gravity = sceneInterface->GetGravity(worldBody->m_sceneOwner);
-                sceneInterface->RegisterSceneGravityChangedEvent(worldBody->m_sceneOwner, m_onGravityChangedHandler);
-                AzPhysics::SceneHandle attachedSceneHandle = AzPhysics::InvalidSceneHandle;
-                Physics::DefaultWorldBus::BroadcastResult(attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
-                if (attachedSceneHandle == AzPhysics::InvalidSceneHandle)
-                {
-                    AZ_Error("PhysX Character Controller Component", false, "Failed to retrieve default scene.");
-                    return;
-                }
-                sceneInterface->RegisterSceneSimulationStartHandler(attachedSceneHandle, m_sceneSimulationStartHandler);
-                sceneInterface->RegisterSceneSimulationFinishHandler(attachedSceneHandle, m_sceneSimulationFinishHandler);
-            }
+            AZ_Error("PhysX Character Controller Component", false, "Failed to retrieve default scene.");
+            return;
+        }
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            m_gravity = sceneInterface->GetGravity(attachedSceneHandle);
+            sceneInterface->RegisterSceneGravityChangedEvent(attachedSceneHandle, m_onGravityChangedHandler);
+            sceneInterface->RegisterSceneSimulationStartHandler(attachedSceneHandle, m_sceneSimulationStartHandler);
+            sceneInterface->RegisterSceneSimulationFinishHandler(attachedSceneHandle, m_sceneSimulationFinishHandler);
         }
 
         CharacterGameplayRequestBus::Handler::BusConnect(GetEntityId());

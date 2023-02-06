@@ -33,6 +33,7 @@ namespace AZ
             SeparateDepthStencil,
             DescriptorIndexing,
             BufferDeviceAddress,
+            SubgroupOperation,
             Count // Must be last
         };
 
