@@ -20,9 +20,8 @@ ly_add_target(
         PUBLIC
             Source
     BUILD_DEPENDENCIES
-        PRIVATE
-            Gem::AudioSystem.Static
         PUBLIC
+            Gem::AudioSystem.API
             3rdParty::libsamplerate
             Legacy::CryCommon
     COMPILE_DEFINITIONS
