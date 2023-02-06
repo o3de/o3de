@@ -6,13 +6,25 @@
 #
 #
 
-set(CPACK_GENERATOR DEB)
-
-set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}/${O3DE_INSTALL_VERSION_STRING}")
-
 set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-linux-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.tar.gz")
 set(CPACK_CMAKE_PACKAGE_HASH "dc73115520d13bb64202383d3df52bc3d6bbb8422ecc5b2c05f803491cb215b0")
+
+if(${PACKAGE_TYPE} STREQUAL "SNAP")
+
+set(CPACK_GENERATOR External)
+set(CPACK_EXTERNAL_ENABLE_STAGING YES)
+set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging_Snapcraft.cmake")
+set(CPACK_MONOLITHIC_INSTALL 1)
+
+set(CPACK_PACKAGING_INSTALL_PREFIX "/${CPACK_PACKAGE_NAME}/${LY_VERSION_STRING}")
+
+else()
+#default to debian
+
+set(CPACK_GENERATOR DEB)
+
+set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}/${O3DE_INSTALL_VERSION_STRING}")
 
 # get all the package dependencies, extracted from scripts\build\build_node\Platform\Linux\package-list.ubuntu-focal.txt
 set(package_dependencies
@@ -56,3 +68,5 @@ set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
     ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/prerm 
     ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/postrm
 )
+
+endif()
