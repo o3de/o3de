@@ -63,6 +63,7 @@ namespace PhysX
         void SetLinearValue(const AZStd::string& parameterName, float value) override;
         void SetLinearValuePair(const AZStd::string& parameterName, const AngleLimitsFloatPair& valuePair) override;
         void SetVector3Value(const AZStd::string& parameterName, const AZ::Vector3& value) override;
+        void SetStringValue(const AZStd::string& parameterName, const AZStd::string& value) override;
 
         // AzFramework::EntityDebugDisplayEventBus overrides ...
         void DisplayEntityViewport(

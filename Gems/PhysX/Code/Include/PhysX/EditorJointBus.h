@@ -62,6 +62,10 @@ namespace PhysX
 
         //! Set vector3 parameter value identified by name.
         virtual void SetVector3Value(const AZStd::string& parameterName, const AZ::Vector3& value) = 0;
+    
+        //! Set String parameter
+        virtual void SetStringValue(const AZStd::string& parameterName, const AZStd::string& value) = 0;
+    
     };
     using EditorJointRequestBus = AZ::EBus<EditorJointRequests>;
 } // namespace PhysX
