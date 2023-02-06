@@ -75,7 +75,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
-        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_TestSuite_Smoke_GPU
@@ -119,7 +118,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
-        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_Main_Null_Render_MaterialEditor
@@ -161,7 +159,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
-        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_Periodic_Null_Render_MaterialEditor
@@ -175,6 +172,5 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             MaterialEditor
         COMPONENT
             Atom
-        LABELS REQUIRES_tiaf
     )
 endif()
