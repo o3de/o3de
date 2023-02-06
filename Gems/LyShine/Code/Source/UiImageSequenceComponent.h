@@ -22,7 +22,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 //! \brief Image component capable of indexing and displaying from multiple image files in a directory.
 //!

@@ -571,7 +571,7 @@ blackbox_fbx_tests = [
                             job_key='Scene compilation',
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
-                            error_count=9,
+                            error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargetonematerial/morphtargetonematerial.actor',
@@ -627,7 +627,7 @@ blackbox_fbx_tests = [
                             job_key='Scene compilation',
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
-                            error_count=9,
+                            error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargettwomaterials/morphtargettwomaterials.actor',

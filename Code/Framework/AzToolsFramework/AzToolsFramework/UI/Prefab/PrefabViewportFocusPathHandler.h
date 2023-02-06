@@ -10,6 +10,7 @@
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 
 #include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
@@ -24,6 +25,7 @@ namespace AzToolsFramework::Prefab
     // Handler for the Prefab Focus Path widget used with the legacy Action Manager
     class PrefabViewportFocusPathHandler
         : public PrefabFocusNotificationBus::Handler
+        , private ViewportEditorModeNotificationsBus::Handler
         , private QObject
     {
     public:
@@ -38,6 +40,10 @@ namespace AzToolsFramework::Prefab
         void OnPrefabFocusRefreshed() override;
 
     private:
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+
         void Refresh();
 
         AzQtComponents::BreadCrumbs* m_breadcrumbsWidget = nullptr;
@@ -53,6 +59,7 @@ namespace AzToolsFramework::Prefab
     class PrefabFocusPathWidget
         : public AzQtComponents::BreadCrumbs
         , private PrefabFocusNotificationBus::Handler
+        , private ViewportEditorModeNotificationsBus::Handler
     {
     public:
         PrefabFocusPathWidget();
@@ -63,6 +70,10 @@ namespace AzToolsFramework::Prefab
         void OnPrefabFocusRefreshed() override;
 
     private:
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+
         void Refresh();
 
         AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();

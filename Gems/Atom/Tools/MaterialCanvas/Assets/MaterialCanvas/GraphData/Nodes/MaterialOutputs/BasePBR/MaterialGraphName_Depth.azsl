@@ -6,15 +6,6 @@
  *
  */
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
-#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-#include <Atom/Features/SrgSemantics.azsli>
-
 #include "MaterialGraphName_Common.azsli"
 
 VsOutput MainVS(VsInput IN)
@@ -29,18 +20,14 @@ struct PsDepthOutput
 
 PsDepthOutput MainPS(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-    PsDepthOutput OUT;
-    OUT.depth = IN.position.z;
-
-#if DEPTH_WITH_PS
     PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
-
     Surface surface = EvaluateSurface(geoData);
 
-    CheckClipping(surface.alpha, 0.0);
-
-    OUT.depth = surface.position.z;
+#if !FORCE_OPAQUE
+    CheckClipping(surface.alpha, 0.5);
 #endif
 
+    PsDepthOutput OUT;
+    OUT.depth = surface.position.z;
     return OUT;
 }

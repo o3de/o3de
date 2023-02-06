@@ -53,7 +53,7 @@ namespace Maestro
     void SequenceAgent::CacheAllVirtualPropertiesFromBehaviorContext()
     {
         AZ::BehaviorContext* behaviorContext = nullptr;
-        EBUS_EVENT_RESULT(behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
         
         AZ::Entity::ComponentArrayType entityComponents;
         GetEntityComponents(entityComponents);

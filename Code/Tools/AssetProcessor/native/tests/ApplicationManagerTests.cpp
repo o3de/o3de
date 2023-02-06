@@ -72,8 +72,10 @@ namespace UnitTests
     {
         m_applicationManager->DestroyFileMonitor();
 
-        m_apmThread->exit();
-        m_fileProcessorThread->exit();
+        m_apmThread->quit();
+        m_fileProcessorThread->quit();
+        m_apmThread->wait();
+        m_fileProcessorThread->wait();
         m_mockAPM = nullptr;
 
         LeakDetectionFixture::TearDown();
@@ -81,7 +83,7 @@ namespace UnitTests
 
     using BatchApplicationManagerTest = UnitTest::LeakDetectionFixture;
 
-    TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread)
+    TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread_SUITE_sandbox)
     {
         AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 

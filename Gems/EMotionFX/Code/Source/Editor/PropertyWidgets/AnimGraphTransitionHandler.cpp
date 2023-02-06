@@ -372,7 +372,7 @@ namespace EMotionFX
     {
         if (attrValue)
         {
-            AnimGraphStateTransition* transition = static_cast<AnimGraphStateTransition*>(attrValue->GetInstancePointer());
+            AnimGraphStateTransition* transition = static_cast<AnimGraphStateTransition*>(attrValue->GetInstance());
             m_transition = transition;
             GUI->SetTransition(m_transition);
         }

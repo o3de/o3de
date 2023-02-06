@@ -6,9 +6,8 @@
  *
  */
 
-#include <AudioEngineWwiseGemSystemComponent.h>
+#include "AudioEngineWwiseGemSystemComponent.h"
 
-#include <AzCore/PlatformDef.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>

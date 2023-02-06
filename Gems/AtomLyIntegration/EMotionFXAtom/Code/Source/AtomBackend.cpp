@@ -27,7 +27,6 @@ namespace AZ
         EMotionFX::Integration::RenderActorInstance* AtomBackend::CreateActorInstance(AZ::EntityId entityId,
             const EMotionFX::Integration::EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
             const AZ::Data::Asset<EMotionFX::Integration::ActorAsset>& asset,
-            [[maybe_unused]] const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD,
             [[maybe_unused]] EMotionFX::Integration::SkinningMethod skinningMethod,
             const AZ::Transform& worldTransform)
         {

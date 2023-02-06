@@ -29,14 +29,14 @@ namespace AZ
 
         AZStd::string MaterialBuilder::GetBuilderSettingsFingerprint() const
         {
-            return AZStd::string::format("[BuildersShouldFinalizeMaterialAssets=%d]", MaterialBuilderUtils::BuildersShouldFinalizeMaterialAssets());
+            return "";
         }
 
         void MaterialBuilder::RegisterBuilder()
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 137; // material type indirect references
+            materialBuilderDescriptor.m_version = 138; // Updated invalid texture UUID + error message
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -114,8 +114,8 @@ namespace AZ
             if (!parentMaterialPath.empty())
             {
                 // Register dependency on the parent material source file so we can load it and use it's data to build this variant material.
-                // Note, we don't need a direct dependency on the material type because the parent material will depend on it.
-                MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
+                MaterialBuilderUtils::AddPossibleDependencies(
+                    request.m_sourceFile,
                     parentMaterialPath,
                     JobKey,
                     outputJobDescriptor.m_jobDependencyList,
@@ -136,7 +136,8 @@ namespace AZ
                 // At this point the builder does not know which is the case, without loading the .materialtype file and inspecting its data. The builder
                 // avoids that because it could slow things down, and instead just registers both dependencies.
 
-                MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
+                MaterialBuilderUtils::AddPossibleDependencies(
+                    request.m_sourceFile,
                     materialTypePath,
                     MaterialTypeBuilder::FinalStageJobKey,
                     outputJobDescriptor.m_jobDependencyList,
@@ -144,10 +145,12 @@ namespace AZ
                     false,
                     0);
 
-                AZStd::string intermediateMaterialTypePath = MaterialUtils::PredictIntermediateMaterialTypeSourcePath(request.m_sourceFile, materialTypePath);
+                const AZStd::string intermediateMaterialTypePath =
+                    MaterialUtils::PredictIntermediateMaterialTypeSourcePath(request.m_sourceFile, materialTypePath);
                 if (!intermediateMaterialTypePath.empty())
                 {
-                    MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
+                    MaterialBuilderUtils::AddPossibleDependencies(
+                        request.m_sourceFile,
                         intermediateMaterialTypePath,
                         MaterialTypeBuilder::FinalStageJobKey,
                         outputJobDescriptor.m_jobDependencyList,
@@ -211,9 +214,7 @@ namespace AZ
                 return {};
             }
 
-            MaterialAssetProcessingMode processingMode = MaterialBuilderUtils::BuildersShouldFinalizeMaterialAssets() ? MaterialAssetProcessingMode::PreBake : MaterialAssetProcessingMode::DeferredBake;
-
-            auto materialAssetOutcome = material.GetValue().CreateMaterialAsset(Uuid::CreateRandom(), materialSourceFilePath, processingMode, ShouldReportMaterialAssetWarningsAsErrors());
+            auto materialAssetOutcome = material.GetValue().CreateMaterialAsset(Uuid::CreateRandom(), materialSourceFilePath, ShouldReportMaterialAssetWarningsAsErrors());
             if (!materialAssetOutcome.IsSuccess())
             {
                 return {};
