@@ -34,13 +34,11 @@ namespace AzToolsFramework
         class AssetBrowserEntry;
     }
 
-    class PrefabEditorEntityOwnershipInterface;
+    class ToastNotificationsView;
 
     namespace Prefab
     {
         class InstanceEntityMapperInterface;
-        class PrefabFocusInterface;
-        class PrefabFocusPublicInterface;
         class PrefabLoaderInterface;
         class PrefabPublicInterface;
         class PrefabSystemComponentInterface;
@@ -94,6 +92,9 @@ namespace AzToolsFramework
             void CanDropItemView(bool& accepted, AzQtComponents::DragAndDropContextBase& context) override;
             void DoDropItemView(bool& accepted, AzQtComponents::DragAndDropContextBase& context) override;
 
+            //! Initializes PrefabToastNotificationsView member, which uses the editor's main window as the parent widget to show toasts.
+            void InitializePrefabToastNotificationsView();
+
             // Dialogs
             int ExecuteClosePrefabDialog(TemplateId templateId);
             void ExecuteSavePrefabDialog(AZ::EntityId entityId);
@@ -142,10 +143,9 @@ namespace AzToolsFramework
             static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
 
+            AZStd::unique_ptr<AzToolsFramework::ToastNotificationsView> m_prefabToastNotificationsView;
+
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
-            PrefabEditorEntityOwnershipInterface* m_prefabEditorEntityOwnershipInterface = nullptr;
-            PrefabFocusInterface* m_prefabFocusInterface = nullptr;
-            PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
 
             bool CanDragAndDropData(

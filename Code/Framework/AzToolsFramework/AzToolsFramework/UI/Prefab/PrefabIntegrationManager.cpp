@@ -1225,6 +1225,9 @@ namespace AzToolsFramework
             {
                 m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
             }
+
+            // Lazily initialize the PrefabToastNotificationsView so that the main window is ready to show the prefab toasts.
+            m_prefabSaveHandler.InitializePrefabToastNotificationsView();
         }
 
         void PrefabIntegrationManager::OnPrefabFocusChanged(
