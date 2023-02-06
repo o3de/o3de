@@ -24,6 +24,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/VectorConversions.h>
 
 // AzFramework
