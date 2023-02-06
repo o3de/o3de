@@ -322,6 +322,46 @@ namespace PhysX
         EXPECT_NEAR(entityVelocity.GetY(), 0.0f, AZ::Constants::FloatEpsilon); // Dragging should not change original direction.
     }
 
+    class PhysXForceRegionTestParameterized
+        : public ::testing::WithParamInterface<::testing::tuple<float, float>>
+        , public PhysXForceRegionTest
+    {
+    };
+
+    TEST_P(PhysXForceRegionTestParameterized, ForceRegion_SimpleDragForce_NoOscillation)
+    {
+        auto [density, mass] = GetParam();
+
+        auto sceneHandle = GetTestSceneHandle();
+        AZ::Vector3 velocity = AZ::Vector3::CreateZero();
+
+        AZ::Vector3 position(0.0f, 0.0f, 16.0f);
+        auto dynamicRigidBody = AddTestRigidBodyCollider(position, SimpleDragForce, sceneHandle, "TestBox");
+        auto forceRegion = AddForceRegion<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 12.0f), SimpleDragForce);
+
+        ForceSimpleDragRequestBus::Event(forceRegion->GetId(), &ForceSimpleDragRequestBus::Events::SetDensity, density);
+        Physics::RigidBodyRequestBus::Event(dynamicRigidBody->GetId(), &Physics::RigidBodyRequests::SetMass, mass);
+
+        constexpr const float deltaTime = 1.0f / 180.0f;
+        float maxVelocityZ = 0.0f;
+        for (int timeStep = 0; timeStep < 300; timeStep++)
+        {
+            TestUtils::UpdateScene(sceneHandle, deltaTime, 1);
+            Physics::RigidBodyRequestBus::EventResult(
+                velocity, dynamicRigidBody->GetId(), &Physics::RigidBodyRequestBus::Events::GetLinearVelocity);
+
+            maxVelocityZ = AZStd::GetMax(maxVelocityZ, velocity.GetZ());
+        }
+
+        // the velocity should never be upward if there is no oscillation
+        EXPECT_LE(maxVelocityZ, 0.0f);
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        PhysXForceRegion,
+        PhysXForceRegionTestParameterized,
+        ::testing::Combine(::testing::Values(1.0f, 1e2f, 1e4f, 1e6f), ::testing::Values(1e-3f, 1e-2f, 1e-1f, 1.0f)));
+
     TEST_F(PhysXForceRegionTest, ForceRegion_LinearDampingForce_EntityVelocitySpecificValue)
     {
         AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), LinearDampingForce);
