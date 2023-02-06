@@ -158,6 +158,18 @@ namespace AZ
             InitializeMaterialInstance(asset);
         }
 
+        void MaterialComponentController::OnAssetError(Data::Asset<Data::AssetData> asset)
+        {
+            DisplayMissingAssetWarning(asset);
+            InitializeMaterialInstance(asset);
+        }
+
+        void MaterialComponentController::OnAssetReloadError(Data::Asset<Data::AssetData> asset)
+        {
+            DisplayMissingAssetWarning(asset);
+            InitializeMaterialInstance(asset);
+        }
+
         void MaterialComponentController::OnSystemTick()
         {
             if (m_queuedLoadMaterials)
@@ -230,9 +242,15 @@ namespace AZ
             {
                 if (uniqueMaterial.GetId().IsValid())
                 {
-                    anyQueued = true;
-                    uniqueMaterial.QueueLoad();
                     AZ::Data::AssetBus::MultiHandler::BusConnect(uniqueMaterial.GetId());
+                    if (uniqueMaterial.QueueLoad())
+                    {
+                        anyQueued = true;
+                    }
+                    else
+                    {
+                        DisplayMissingAssetWarning(uniqueMaterial);
+                    }
                 }
             }
 
@@ -252,7 +270,7 @@ namespace AZ
                     materialAsset = asset;
                 }
 
-                if (materialAsset.GetId().IsValid() && !materialAsset.IsReady())
+                if (materialAsset.GetId().IsValid() && !materialAsset.IsReady() && !materialAsset.IsError())
                 {
                     allReady = false;
                 }
@@ -827,6 +845,18 @@ namespace AZ
                 return AZStd::any(AZStd::any_cast<AZ::Data::Instance<AZ::RPI::Image>>(value)->GetAssetId());
             }
             return value;
+        }
+
+        void MaterialComponentController::DisplayMissingAssetWarning([[maybe_unused]] Data::Asset<Data::AssetData> asset) const
+        {
+            AZ_Warning(
+                "MaterialComponent",
+                false,
+                "Material component on entity %s failed to load asset %s. The material component might contain additional material and "
+                "property data if the component was copied or the associated model changed. This data can be cleared using the material "
+                "component request bus or from the editor material component context menu.",
+                m_entityId.ToString().c_str(),
+                asset.ToString<AZStd::string>().c_str());
         }
     } // namespace Render
 } // namespace AZ

@@ -112,7 +112,7 @@ namespace AzToolsFramework
         }
     }
 
-    void BoxViewportEdit::Setup()
+    void BoxViewportEdit::Setup(const ManipulatorManagerId manipulatorManagerId)
     {
         const AZ::Transform worldFromLocal = GetManipulatorSpace();
 
@@ -163,7 +163,7 @@ namespace AzToolsFramework
                 });
             }
 
-            linearManipulator->Register(g_mainManipulatorManagerId);
+            linearManipulator->Register(manipulatorManagerId);
         }
 
         UpdateManipulators();

@@ -180,8 +180,10 @@ namespace AZ
 
             PoolAllocatorHelper& operator=(const PoolAllocatorHelper&) = delete;
         };
-    }
 
+        extern template class PoolAllocatorHelper<PoolSchema>;
+
+    }
     /*!
      * Pool allocator
      * Specialized allocation for extremely fast small object memory allocations.

@@ -27,6 +27,7 @@ namespace AzToolsFramework
     {
         static void RegisterEditorVertexSelectionActions();
         static void BindEditorVertexSelectionActionsToMenus();
+        static void DisableComponentModeEndOnVertexSelection();
     };
 
     //! Concrete implementation of AZ::VariableVertices backed by an AZ::VertexContainer.
@@ -338,10 +339,11 @@ namespace AzToolsFramework
         void DuplicateSelected();
         void DestroySelected();
 
-        // EditorVertexSelectionVariableRequests overrides ...
+        // EditorVertexSelectionVariableRequestBus overrides ...
         void DuplicateSelectedVertices() override;
         void DeleteSelectedVertices() override;
         void ClearVertexSelection() override;
+        int GetSelectedVerticesCount() override;
 
     protected:
         // EditorVertexSelectionBase

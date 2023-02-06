@@ -345,11 +345,11 @@ namespace AZ
             if (!assetLocal.IsReady())
             {
                 return nullptr;
-            }         
-            
+            }
+
             // Take a lock to guard the insertion.  Note that this will not guard against recursive insertions on the same thread.
             AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
-            return EmplaceInstance(id, assetLocal, param);            
+            return EmplaceInstance(id, assetLocal, param);
         }
 
         template<typename Type>

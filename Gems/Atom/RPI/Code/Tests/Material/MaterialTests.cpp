@@ -105,7 +105,7 @@ namespace UnitTest
             m_testAttachmentImage = AttachmentImage::FindOrCreate(m_testAttachmentImageAsset);
 
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+            materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
             materialCreator.SetPropertyValue(Name{ "MyFloat2" }, Vector2{ 0.1f, 0.2f });
             materialCreator.SetPropertyValue(Name{ "MyFloat3" }, Vector3{ 1.1f, 1.2f, 1.3f });
             materialCreator.SetPropertyValue(Name{ "MyFloat4" }, Vector4{ 2.1f, 2.2f, 2.3f, 2.4f });
@@ -395,7 +395,7 @@ namespace UnitTest
         materialTypeCreator.End(materialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialAssetCreator.End(materialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(materialAsset);
@@ -447,7 +447,7 @@ namespace UnitTest
         Data::Asset<MaterialAsset> materialAssetWithEmptyImage;
 
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
         materialCreator.SetPropertyValue(Name{"MyFloat2"}, Vector2{0.1f, 0.2f});
         materialCreator.SetPropertyValue(Name{"MyFloat3"}, Vector3{1.1f, 1.2f, 1.3f});
         materialCreator.SetPropertyValue(Name{"MyFloat4"}, Vector4{2.1f, 2.2f, 2.3f, 2.4f});
@@ -485,7 +485,7 @@ namespace UnitTest
 
         Data::Asset<MaterialAsset> emptyMaterialAsset;
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), emptyMaterialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), emptyMaterialTypeAsset);
         EXPECT_TRUE(materialCreator.End(emptyMaterialAsset));
 
         Data::Instance<Material> material = Material::FindOrCreate(emptyMaterialAsset);
@@ -547,7 +547,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
         materialAssetCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -619,7 +619,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
         materialAssetCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -668,7 +668,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
         materialAssetCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -750,7 +750,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
         materialAssetCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -858,7 +858,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
         materialAssetCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -975,7 +975,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
         materialAssetCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -1104,7 +1104,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
         materialAssetCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -1165,7 +1165,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
         materialAssetCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -1229,7 +1229,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
         materialAssetCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -1254,7 +1254,7 @@ namespace UnitTest
     {
         Data::Asset<MaterialAsset> materialAsset;
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
         materialCreator.SetPropertyValue(Name{ "MyFloat2" }, Vector2{ 0.1f, 0.2f });
         materialCreator.SetPropertyValue(Name{ "MyFloat3" }, Vector3{ 1.1f, 1.2f, 1.3f });
         materialCreator.SetPropertyValue(Name{ "MyFloat4" }, Vector4{ 2.1f, 2.2f, 2.3f, 2.4f });
@@ -1363,7 +1363,7 @@ namespace UnitTest
         materialTypeCreator.End(materialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialAssetCreator.End(materialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(materialAsset);
@@ -1408,7 +1408,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
         materialCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);

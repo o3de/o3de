@@ -31,6 +31,16 @@ namespace AzToolsFramework
         m_setTranslationOffset = AZStd::move(setTranslationOffset);
     }
 
+    void BaseShapeViewportEdit::InstallBeginEditing(AZStd::function<void()> beginEditing)
+    {
+        m_beginEditing = AZStd::move(beginEditing);
+    }
+
+    void BaseShapeViewportEdit::InstallFinishEditing(AZStd::function<void()> finishEditing)
+    {
+        m_finishEditing = AZStd::move(finishEditing);
+    }
+
     AZ::Transform BaseShapeViewportEdit::GetManipulatorSpace() const
     {
         if (m_getManipulatorSpace)
@@ -70,6 +80,22 @@ namespace AzToolsFramework
         else
         {
             AZ_ErrorOnce("BaseShapeViewportEdit", false, "No implementation provided for SetTranslationOffset");
+        }
+    }
+
+    void BaseShapeViewportEdit::BeginEditing()
+    {
+        if (m_beginEditing)
+        {
+            m_beginEditing();
+        }
+    }
+
+    void BaseShapeViewportEdit::FinishEditing()
+    {
+        if (m_finishEditing)
+        {
+            m_finishEditing();
         }
     }
 } // namespace AzToolsFramework
