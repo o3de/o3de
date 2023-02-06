@@ -67,10 +67,16 @@ namespace AZ
                         // When the AssetId cannot be found, we don't want to outright fail, because the runtime has mechanisms for displaying fallback textures which gives the
                         // user a better recovery workflow. On the other hand we can't just provide an empty/invalid Asset<ImageAsset> because that would be interpreted as simply
                         // no value was present and result in using no texture, and this would amount to a silent failure.
-                        // So we use a randomly generated (well except for the "BADA55E7" bit ;) UUID which the runtime and tools will interpret as a missing asset and represent
+                        // So we use a UUID that is clearly invalid, which the runtime and tools will interpret as a missing asset and represent
                         // it as such.
-                        static constexpr Uuid InvalidAssetPlaceholderId{ "{BADA55E7-1A1D-4940-B655-9D08679BD62F}" };
+                        static constexpr Uuid InvalidAssetPlaceholderId(Uuid::CreateInvalid());
                         imageAsset = Data::Asset<ImageAsset>{InvalidAssetPlaceholderId, azrtti_typeid<StreamingImageAsset>(), imageFilePath};
+                        AZ_Error("MaterialUtils", false, "Material at path %.*s could not resolve image %.*s, using invalid UUID %.*s. "
+                            "To resolve this, verify the image exists at the relative path to a scan folder matching this reference. "
+                            "Verify a portion of the scan folder is not in the relative path, which is a common cause of this issue.",
+                            AZ_STRING_ARG(materialSourceFilePath),
+                            AZ_STRING_ARG(imageFilePath),
+                            AZ_STRING_ARG(InvalidAssetPlaceholderId.ToFixedString()));
                         return GetImageAssetResult::Missing;
                     }
 
@@ -308,8 +314,7 @@ namespace AZ
 
             AZStd::string GetIntermediateMaterialTypeSourcePath(const AZStd::string& forOriginalMaterialTypeSourcePath)
             {
-                AZStd::string intermediatePathString = PredictIntermediateMaterialTypeSourcePath(forOriginalMaterialTypeSourcePath);
-
+                const AZStd::string intermediatePathString = PredictIntermediateMaterialTypeSourcePath(forOriginalMaterialTypeSourcePath);
                 if (IO::LocalFileIO::GetInstance()->Exists(intermediatePathString.c_str()))
                 {
                     return intermediatePathString;
