@@ -48,15 +48,15 @@ namespace AzToolsFramework
         //! @return A raw const pointer to the EditorAction, or nullptr if the action could not be found.
         virtual const EditorAction* GetEditorActionConst(const AZStd::string& actionIdentifier) const = 0;
 
-        //! Retrieve whether an Action should be hidden from Menus when disabled.
+        //! Retrieve the Action's visibility property for Menus.
         //! @param actionIdentifier The identifier for the action to query.
         //! @return True if the actions should be hidden, false otherwise.
-        virtual bool GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) const = 0;
+        virtual ActionVisibility GetActionMenuVisibility(const AZStd::string& actionIdentifier) const = 0;
 
-        //! Retrieve whether an Action should be hidden from ToolBars when disabled.
+        //! Retrieve the Action's visibility property for ToolBars.
         //! @param actionIdentifier The identifier for the action to query.
         //! @return True if the actions should be hidden, false otherwise.
-        virtual bool GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) const = 0;
+        virtual ActionVisibility GetActionToolBarVisibility(const AZStd::string& actionIdentifier) const = 0;
 
         //! Generate a QWidget from a Widget Action identifier.
         //! The WidgetAction will generate a new instance of the Widget and parent it to the widget provided.

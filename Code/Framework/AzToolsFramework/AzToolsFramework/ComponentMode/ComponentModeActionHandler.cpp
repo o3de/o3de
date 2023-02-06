@@ -11,6 +11,7 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
@@ -87,6 +88,7 @@ namespace AzToolsFramework
             actionProperties.m_name = "Done";
             actionProperties.m_description = "Return to normal viewport editing";
             actionProperties.m_category = "Component Modes";
+            actionProperties.m_menuVisibility = ActionVisibility::OnlyInActiveMode;
 
             m_actionManagerInterface->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -98,6 +100,26 @@ namespace AzToolsFramework
                         &ComponentModeFramework::ComponentModeSystemRequests::EndComponentMode);
                 }
             );
+
+            // Disable this action if the Entity Picker is enabled while in Component Mode.
+            m_actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
+                    {
+                        auto viewportEditorModes = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
+                        if (viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Pick))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            );
+
+            m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntityPickingModeChangedUpdaterIdentifier, actionIdentifier);
 
             // Only add this to the component modes, not default.
             m_actionManagerInterface->AssignModeToAction("SomeMode", actionIdentifier);

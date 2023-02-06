@@ -631,6 +631,21 @@ namespace AZ
             , public EBusBroadcastEnumerator<Bus, Traits>
             , public AZStd::conditional_t<Traits::EnableEventQueue, EBusBroadcastQueue<Bus, Traits>, EBusNullQueue>
         {
+            using EBusBroadcastEnumerator<Bus, Traits>::FindFirstHandler;
+
+            static typename Traits::InterfaceType* FindFirstHandler(const NullBusId&)
+            {
+                // Invoke the EBusBroadcastEnumerator FindFirstHandler function
+                // Since this EBus doesn't use a BusId, the argument isn't needed
+                return FindFirstHandler();
+            }
+
+            static typename Traits::InterfaceType* FindFirstHandler(const typename Traits::BusPtr&)
+            {
+                // Invoke the EBusBroadcastEnumerator FindFirstHandler function
+                // Since this EBus doesn't use a BusId, the argument isn't needed
+                return FindFirstHandler();
+            }
         };
 
         template <class Bus, class Traits>

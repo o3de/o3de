@@ -2212,7 +2212,8 @@ namespace AZ
         if constexpr (DebugAllocatorEnable)
         {
             AZ::Debug::SymbolStorage::StackLine stackLines[MAX_CALLSTACK_DEPTH] = { { 0 } };
-            AZ::Debug::SymbolStorage::DecodeFrames(mCallStack, MAX_CALLSTACK_DEPTH, stackLines);
+            auto recordFrameCount = static_cast<unsigned int>(AZStd::GetMin(AZ_ARRAY_SIZE(mCallStack), AZ_ARRAY_SIZE(stackLines)));
+            AZ::Debug::SymbolStorage::DecodeFrames(mCallStack, recordFrameCount, stackLines);
 
             for (int i = 0; i < MAX_CALLSTACK_DEPTH; ++i)
             {
