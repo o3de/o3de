@@ -121,22 +121,28 @@ namespace AtomToolsFramework
     AZStd::string GetSymbolNameFromText(const AZStd::string& text)
     {
         QString symbolName(text.c_str());
+        // Remove all leading whitespace
+        symbolName.replace(QRegExp("^\\s+"), "");
         // Remove all trailing whitespace
         symbolName.replace(QRegExp("\\s+$"), "");
-        // Replace non alphanumeric characters with space
-        symbolName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
-        // Insert a space between a lowercase or numeric character followed by an uppercase character
-        symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        // Replace non alphanumeric characters with _
+        symbolName.replace(QRegExp("[^a-zA-Z\\d]"), "_");
+        // Insert a _ between a lowercase or numeric character followed by an uppercase character
+        symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1_\\2");
         // Insert an underscore at the beginning of the string if it starts with a digit
-        symbolName.replace(QRegExp("\\A(\\d)"), "_\\1");
+        symbolName.replace(QRegExp("^(\\d)"), "_\\1");
         // Replace every sequence of whitespace characters with underscores
         symbolName.replace(QRegExp("\\s+"), "_");
+        // Replace Sequences of _ with a single _
+        symbolName.replace(QRegExp("_+"), "_");
         return symbolName.toLower().toUtf8().constData();
     }
 
     AZStd::string GetDisplayNameFromText(const AZStd::string& text)
     {
         QString displayName(text.c_str());
+        // Remove all leading whitespace
+        displayName.replace(QRegExp("^\\s+"), "");
         // Remove all trailing whitespace
         displayName.replace(QRegExp("\\s+$"), "");
         // Replace non alphanumeric characters with space
@@ -720,7 +726,7 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetSystemRequestBus::Broadcast(
             &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
 
-        AZStd::recursive_mutex resultsMutex;
+        AZStd::mutex resultsMutex;
         AZStd::vector<AZStd::string> results;
         results.reserve(scanFolders.size());
 

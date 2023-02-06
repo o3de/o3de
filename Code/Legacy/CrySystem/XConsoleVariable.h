@@ -34,7 +34,7 @@ public:
     void Release() override;
     void ForceSet(const char* s) override;
     void SetOnChangeCallback(ConsoleVarFunc pChangeFunc) override;
-    uint64 AddOnChangeFunctor(const AZStd::function<void()>& pChangeFunctor) override;
+    bool AddOnChangeFunctor(AZ::Name functorName, const AZStd::function<void()>& pChangeFunctor) override;
     ConsoleVarFunc GetOnChangeCallback() const override;
 
     bool ShouldReset() const { return (m_nFlags & VF_RESETTABLE) != 0; }
@@ -77,7 +77,7 @@ protected: // ------------------------------------------------------------------
     char*            m_pDataProbeString;            // value client is required to have for data probes
     int                             m_nFlags;                                           // e.g. VF_CHEAT, ...
 
-    using ChangeFunctorContainer = std::vector<std::pair<int, AZStd::function<void ()>> >;
+    using ChangeFunctorContainer = AZStd::unordered_map<AZ::Name, AZStd::function<void ()>>;
     ChangeFunctorContainer m_changeFunctors;
     ConsoleVarFunc    m_pChangeFunc;                // Callback function that is called when this variable changes.
     CXConsole*             m_pConsole;                                      // used for the callback OnBeforeVarChange()

@@ -9,8 +9,6 @@
 
 #include "LmbrCentralEditor.h"
 
-#include "Ai/EditorNavigationAreaComponent.h"
-#include "Ai/EditorNavigationSeedComponent.h"
 #include "Audio/EditorAudioAreaEnvironmentComponent.h"
 #include "Audio/EditorAudioEnvironmentComponent.h"
 #include "Audio/EditorAudioListenerComponent.h"
@@ -80,8 +78,6 @@ namespace LmbrCentral
             EditorSplineComponent::CreateDescriptor(),
             EditorPolygonPrismShapeComponent::CreateDescriptor(),
             EditorCommentComponent::CreateDescriptor(),
-            EditorNavigationAreaComponent::CreateDescriptor(),
-            EditorNavigationSeedComponent::CreateDescriptor(),
             EditorRandomTimedSpawnerComponent::CreateDescriptor(),
             EditorSpawnerComponent::CreateDescriptor(),            
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
@@ -147,6 +143,12 @@ namespace LmbrCentral
             AzToolsFramework::BoxComponentMode::BindActionsToMenus();
         }
     }
+
+    void LmbrCentralEditorModule::OnPostActionManagerRegistrationHook()
+    {
+        AzToolsFramework::EditorVertexSelectionActionManagement::DisableComponentModeEndOnVertexSelection();
+    }
+
 } // namespace LmbrCentral
 
 AZ_DECLARE_MODULE_CLASS(Gem_LmbrCentralEditor, LmbrCentral::LmbrCentralEditorModule)

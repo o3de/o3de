@@ -359,7 +359,7 @@ MainWindow::MainWindow(QWidget* parent)
 void MainWindow::SystemTick()
 {
     AZ::ComponentApplication* componentApplication = nullptr;
-    EBUS_EVENT_RESULT(componentApplication, AZ::ComponentApplicationBus, GetApplication);
+    AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationBus::Events::GetApplication);
     if (componentApplication)
     {
         componentApplication->TickSystem();
@@ -452,7 +452,7 @@ void MainWindow::InitCentralWidget()
     // make sure the layout wnd knows to reset it's layout and settings
     connect(m_viewPaneManager, &QtViewPaneManager::layoutReset, m_pLayoutWnd, &CLayoutWnd::ResetLayout);
 
-    EBUS_EVENT(AzToolsFramework::EditorEvents::Bus, NotifyCentralWidgetInitialized);
+    AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::Bus::Events::NotifyCentralWidgetInitialized);
 }
 
 void MainWindow::Initialize()

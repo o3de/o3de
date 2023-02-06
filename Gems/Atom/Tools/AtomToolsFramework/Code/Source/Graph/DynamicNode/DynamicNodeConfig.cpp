@@ -7,6 +7,7 @@
  */
 
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeConfig.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -41,8 +42,12 @@ namespace AtomToolsFramework
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->SetDynamicEditDataProvider(&DynamicNodeConfig::GetDynamicEditData)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_id, "Id", "UUID for identifying this node configuration regardless of file location.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Generate a new random UUID to uniquely identify this node.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeConfig::ResetUuid)
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, &DynamicNodeConfig::GetUuidText)
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Add new settings groups from settings registered with this tool.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeConfig::AddRegisteredSettingGroups)
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Setting Groups")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_category, "Category", "Name of the category where this node will appear in the node palette.")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_title, "Title", "Title that will appear at the top of the node UI in a graph.")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_subTitle, "Sub Title", "Secondary title that will appear below the main title on the node UI in a graph.")
@@ -167,6 +172,16 @@ namespace AtomToolsFramework
             });
     }
 
+    void DynamicNodeConfig::AutoFillMissingData()
+    {
+        VisitDynamicNodeSlotConfigs(
+            *this,
+            [](DynamicNodeSlotConfig& slotConfig)
+            {
+                slotConfig.AutoFillMissingData();
+            });
+    }
+
     AZStd::vector<AZStd::string> DynamicNodeConfig::GetSlotNames() const
     {
         AZStd::vector<AZStd::string> slotNames;
@@ -177,6 +192,27 @@ namespace AtomToolsFramework
                 slotNames.push_back(slotConfig.m_name);
             });
         return slotNames;
+    }
+
+    AZ::Crc32 DynamicNodeConfig::AddRegisteredSettingGroups()
+    {
+        if (AddRegisteredSettingGroupsToMap(m_settings))
+        {
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    AZ::Crc32 DynamicNodeConfig::ResetUuid()
+    {
+        m_id = AZ::Uuid::CreateRandom();
+        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+    }
+
+    AZStd::string DynamicNodeConfig::GetUuidText() const
+    {
+        return "Reset UUID: " +  m_id.ToString<AZStd::string>();
     }
 
     const AZ::Edit::ElementData* DynamicNodeConfig::GetDynamicEditData(

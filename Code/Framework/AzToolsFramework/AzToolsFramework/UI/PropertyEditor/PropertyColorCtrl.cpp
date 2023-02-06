@@ -246,9 +246,11 @@ namespace AzToolsFramework
     {
         // Update the color but don't need to update the dialog color since
         // this signal came from the dialog
-        SetColor(color, false);
-
-        emit valueChanged(m_color);
+        if (m_color != color)
+        {
+            SetColor(color, false);
+            emit valueChanged(m_color);
+        }
     }
 
     QColor PropertyColorCtrl::convertFromString(const QString& string)
@@ -406,7 +408,7 @@ namespace AzToolsFramework
         PropertyColorCtrl* newCtrl = aznew PropertyColorCtrl(pParent);
         connect(newCtrl, &PropertyColorCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         connect(newCtrl, &PropertyColorCtrl::editingFinished, this, [newCtrl]()
             {
@@ -445,8 +447,10 @@ namespace AzToolsFramework
     ////////////////////////////////////////////////////////////////
     void RegisterColorPropertyHandlers()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew Vector3ColorPropertyHandler());
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew AZColorPropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew Vector3ColorPropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew AZColorPropertyHandler());
     }
 
 }

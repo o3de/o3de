@@ -186,6 +186,16 @@ namespace MaterialCanvas
                   "Clear the viewport model's material whenever compiling shaders and materials fails.",
                   true),
               AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/GraphCompiler/EnableLogging",
+                  "Enable Compiler Logging",
+                  "Toggle verbose logging for material graph generation.",
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/DynamicNode/EnablePropertyEditingOnNodeUI",
+                  "Enable Property Editing On Nodes",
+                  "Toggle settings to display properties and allow them to be added directly on graph nodes.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/Atom/MaterialCanvas/CreateDefaultDocumentOnStart",
                   "Create Untitled Graph Document On Start",
                   "Create a default, untitled graph document when Material Canvas starts",

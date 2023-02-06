@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/DocumentPropertyEditor/SortAdapter.h>
+#include <AzCore/std/ranges/zip_view.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -21,7 +22,7 @@ namespace AZ::DocumentPropertyEditor
             m_sortActive = active;
             if (active)
             {
-                // TODO: This method should genenerate patches to/from source once custom patching is implemented
+                // TODO: This method should generate patches to/from source once custom patching is implemented
                 HandleReset();
 
                 // we can use the currently cached tree, if it still exists. NB it will be cleared by DOM changes
@@ -36,6 +37,60 @@ namespace AZ::DocumentPropertyEditor
                 // TODO: generate PatchToSource patch
             }
         }
+    }
+
+    Dom::Path RowSortAdapter::MapPath(const Dom::Path& path, bool mapToSource) const
+    {
+        if (!m_sortActive)
+        {
+            return path;
+        }
+
+        Dom::Path mappedPath;
+        const auto* currNode = m_rootNode.get();
+
+        // go through each entry in the path, looking for an existing mapping at the give index
+        for (const auto& pathEntry : path)
+        {
+            if (pathEntry.IsIndex())
+            {
+                bool found = false;
+                for (auto [indexSortedNode, adapterSortedNode] : AZStd::views::zip(currNode->m_indexSortedChildren, currNode->m_adapterSortedChildren))
+                {
+                    const SortInfoNode* comparisonNode = (mapToSource ? adapterSortedNode : indexSortedNode.get());
+                    if (comparisonNode->m_domIndex == pathEntry.GetIndex())
+                    {
+                        // set the mapped entry
+                        const auto mappedIndex = (mapToSource ? indexSortedNode->m_domIndex : adapterSortedNode->m_domIndex);
+                        mappedPath.Push(mappedIndex);
+                        currNode = comparisonNode;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    // if there's no mapping, this *should* be a column entry. Pass it through as-is
+                    mappedPath.Push(pathEntry);
+                }
+            }
+            else
+            {
+                // RowSortAdapter only affect index entries, pass other types (like attribute strings) through
+                mappedPath.Push(pathEntry);
+            }
+        }
+        return mappedPath;
+    }
+
+    Dom::Path RowSortAdapter::MapFromSourcePath(const Dom::Path& sourcePath) const
+    {
+        return MapPath(sourcePath, true);
+    }
+
+    Dom::Path RowSortAdapter::MapToSourcePath(const Dom::Path& filterPath) const
+    {
+        return MapPath(filterPath, false);
     }
 
     Dom::Value RowSortAdapter::GenerateContents()
@@ -60,16 +115,57 @@ namespace AZ::DocumentPropertyEditor
         {
             GenerateFullTree();
         }
-        NotifyResetDocument(DocumentResetType::HardReset);
+        NotifyResetDocument();
     }
 
-    void RowSortAdapter::HandleDomChange([[maybe_unused]] const Dom::Patch& patch)
+    void RowSortAdapter::HandleDomChange(const Dom::Patch& patch)
     {
         if (m_sortActive)
         {
-            // TODO: handle changes upstream by making  custom patches. This is not currently
-            // possible, because a sort change is mostly move operations, and the DPE doesn't handle moves yet.
-            HandleReset();
+            bool needsReset = false;
+
+            Dom::Patch outgoingPatch;
+            for (auto operationIterator = patch.begin(), endIterator = patch.end(); !needsReset && operationIterator != endIterator;
+                 ++operationIterator)
+            {
+                const auto& patchPath = operationIterator->GetDestinationPath();
+                if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
+                {
+                    needsReset = true;
+                }
+                else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
+                {
+                    if (!IsRow(patchPath))
+                    {
+                        // pass on the replace column operation with the mapped path
+                        auto sortedPath = MapFromSourcePath(patchPath);
+                        outgoingPatch.PushBack(Dom::PatchOperation::ReplaceOperation(sortedPath, operationIterator->GetValue()));
+
+                        // the replaced column entry might've changed the row's sorting. Updated it
+                        sortedPath.Pop();
+                        ResortRow(sortedPath);
+                    }
+                }
+                else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
+                {
+                    needsReset = true;
+                }
+                else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Move)
+                {
+                    needsReset = true;
+                }
+            }
+
+            if (needsReset)
+            {
+                // TODO: handle other patch types here. Some of this is not currently possible, 
+                // because a sort change is mostly move operations, and the DPE doesn't handle moves yet.
+                HandleReset();
+            }
+            else if (outgoingPatch.Size())
+            {
+                NotifyContentsChanged(outgoingPatch);
+            }
         }
         else
         {
@@ -117,11 +213,12 @@ namespace AZ::DocumentPropertyEditor
 
     Dom::Value RowSortAdapter::GetSortedValue(const Dom::Value& sourceValue, SortInfoNode* sortInfo)
     {
-        // copy the entire Dom::Value, but this is cheap, thanks to its copy-on-write semantics
+        // copy the entire Dom::Value and sort in place. Note that this is cheap, thanks to its copy-on-write semantics
         auto sortedValue = sourceValue;
 
         AZ_Assert(sortInfo->m_indexSortedChildren.size() == sortInfo->m_adapterSortedChildren.size(), "child lists must be the same size!");
 
+        // iterate children in model index order, copying from the adapter sorted value into the current position
         auto nextSortedIter = sortInfo->m_adapterSortedChildren.begin();
         for (auto nextIndexIter = sortInfo->m_indexSortedChildren.begin(), endIter = sortInfo->m_indexSortedChildren.end();
              nextIndexIter != endIter;
@@ -132,10 +229,19 @@ namespace AZ::DocumentPropertyEditor
 
             // sort the source child before copying it
             auto sortedChild = GetSortedValue(sourceValue[nextInSort], *nextSortedIter);
+            
+            // do the actual copy into the current position
             sortedValue[nextIndex] = sortedChild;
         }
 
         return sortedValue;
+    }
+
+    void RowSortAdapter::ResortRow(Dom::Path sortedPath)
+    {
+        // TODO once the DPE supports move operations:
+        // record row's sorted index, remove it, re-cache its data,add it, check its new index. If changed, generate move operation
+        // NB: this isn't necessary for flat adapters that can't be re-ordered, so the CVarAdapter doesn't need this
     }
 
 } // namespace AZ::DocumentPropertyEditor

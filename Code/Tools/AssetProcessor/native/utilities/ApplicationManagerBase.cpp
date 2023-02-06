@@ -602,34 +602,54 @@ void ApplicationManagerBase::InitConnectionManager()
                 QString msg = QCoreApplication::translate("O3DE Asset Processor", "Processing %1 (%2)...\n", "%1 is the name of the file, and %2 is the platform to process it for").arg(inputFile, platform);
                 AZ_Printf(AssetProcessor::ConsoleChannel, "%s", msg.toUtf8().constData());
                 AssetNotificationMessage message(inputFile.toUtf8().constData(), AssetNotificationMessage::JobStarted, AZ::Data::s_invalidAssetType, platform.toUtf8().constData());
-                EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, platform);
+                AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::SendPerPlatform, 0, message, platform);
             }
             );
     AZ_Assert(result, "Failed to connect to RCController signal");
 
-    result = QObject::connect(GetRCController(), &AssetProcessor::RCController::FileCompiled, this,
-            [](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse /*response*/)
-            {
-                AssetNotificationMessage message(entry.m_sourceAssetReference.RelativePath().c_str(), AssetNotificationMessage::JobCompleted, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
-                EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
-            }
-            );
+    result = QObject::connect(
+        GetRCController(),
+        &AssetProcessor::RCController::FileCompiled,
+        this,
+        [](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse /*response*/)
+        {
+            AssetNotificationMessage message(
+                entry.m_sourceAssetReference.RelativePath().c_str(),
+                AssetNotificationMessage::JobCompleted,
+                AZ::Data::s_invalidAssetType,
+                entry.m_platformInfo.m_identifier.c_str());
+            AssetProcessor::ConnectionBus::Broadcast(
+                &AssetProcessor::ConnectionBus::Events::SendPerPlatform,
+                0,
+                message,
+                QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
+        });
     AZ_Assert(result, "Failed to connect to RCController signal");
 
-    result = QObject::connect(GetRCController(), &AssetProcessor::RCController::FileFailed, this,
-            [](AssetProcessor::JobEntry entry)
-            {
-                AssetNotificationMessage message(entry.m_sourceAssetReference.RelativePath().c_str(), AssetNotificationMessage::JobFailed, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
-                EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
-            }
-            );
+    result = QObject::connect(
+        GetRCController(),
+        &AssetProcessor::RCController::FileFailed,
+        this,
+        [](AssetProcessor::JobEntry entry)
+        {
+            AssetNotificationMessage message(
+                entry.m_sourceAssetReference.RelativePath().c_str(),
+                AssetNotificationMessage::JobFailed,
+                AZ::Data::s_invalidAssetType,
+                entry.m_platformInfo.m_identifier.c_str());
+            AssetProcessor::ConnectionBus::Broadcast(
+                &AssetProcessor::ConnectionBus::Events::SendPerPlatform,
+                0,
+                message,
+                QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
+        });
     AZ_Assert(result, "Failed to connect to RCController signal");
 
     result = QObject::connect(GetRCController(), &AssetProcessor::RCController::JobsInQueuePerPlatform, this,
             [](QString platform, int count)
             {
                 AssetNotificationMessage message(QByteArray::number(count).constData(), AssetNotificationMessage::JobCount, AZ::Data::s_invalidAssetType, platform.toUtf8().constData());
-                EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, platform);
+                AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::SendPerPlatform, 0, message, platform);
             }
             );
     AZ_Assert(result, "Failed to connect to RCController signal");
@@ -638,7 +658,7 @@ void ApplicationManagerBase::InitConnectionManager()
         AZStd::bind([](unsigned int connId, unsigned int /*type*/, unsigned int serial, QByteArray /*payload*/)
             {
                 ResponsePing responsePing;
-                EBUS_EVENT_ID(connId, AssetProcessor::ConnectionBus, SendResponse, serial, responsePing);
+                AssetProcessor::ConnectionBus::Event(connId, &AssetProcessor::ConnectionBus::Events::SendResponse, serial, responsePing);
             }, AZStd::placeholders::_1, AZStd::placeholders::_2, AZStd::placeholders::_3, AZStd::placeholders::_4)
         );
 
@@ -713,7 +733,8 @@ void ApplicationManagerBase::InitConnectionManager()
                     Q_EMIT ConnectionStatusMsg(QString(" Critical assets need to be processed for %1 platform. Editor/Game will launch once they are processed.").arg(requestAssetProcessorMessage.m_platform.c_str()));
                     m_highestConnId = connId;
                 }
-                EBUS_EVENT_ID(connId, AssetProcessor::ConnectionBus, SendResponse, serial, responseAssetProcessorMessage);
+                AssetProcessor::ConnectionBus::Event(
+                    connId, &AssetProcessor::ConnectionBus::Events::SendResponse, serial, responseAssetProcessorMessage);
             }
         };
     // connect the network messages to the Request handler:

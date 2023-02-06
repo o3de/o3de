@@ -33,9 +33,9 @@ namespace AzPhysics
         float m_maxTimestep = 0.1f; //!< Maximum fixed timestep in seconds to run the physics update (10FPS).
         float m_fixedTimestep = DefaultFixedTimestep; //!< Timestep in seconds to run the physics update. See DefaultFixedTimestep.
 
-        AZ::u64 m_raycastBufferSize = 32; //!< Maximum number of hits that will be returned from a raycast.
-        AZ::u64 m_shapecastBufferSize = 32; //!< Maximum number of hits that can be returned from a shapecast.
-        AZ::u64 m_overlapBufferSize = 32; //!< Maximum number of overlaps that can be returned from an overlap query.
+        AZ::u32 m_raycastBufferSize = 32; //!< Maximum number of hits that will be returned from a raycast.
+        AZ::u32 m_shapecastBufferSize = 32; //!< Maximum number of hits that can be returned from a shapecast.
+        AZ::u32 m_overlapBufferSize = 32; //!< Maximum number of overlaps that can be returned from an overlap query.
 
         //! Contains the default global collision layers and groups.
         //! Each Physics Scene uses this as a base and will override as needed.

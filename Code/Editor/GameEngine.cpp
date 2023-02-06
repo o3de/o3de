@@ -34,7 +34,6 @@
 #include "Settings.h"
 
 // CryCommon
-#include <CryCommon/INavigationSystem.h>
 #include <CryCommon/MainThreadRenderRequestBus.h>
 
 // Editor
@@ -437,7 +436,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     gEnv->pConsole->RemoveCommand("quit");
     REGISTER_COMMAND("quit", CGameEngine::HandleQuitRequest, VF_RESTRICTEDMODE, "Quit/Shutdown the engine");
 
-    EBUS_EVENT(CrySystemEventBus, OnCryEditorInitialized);
+    CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorInitialized);
 
     return AZ::Success();
 }
@@ -542,7 +541,7 @@ void CGameEngine::SwitchToInGame()
     m_pISystem->GetIMovieSystem()->Reset(true, false);
 
     // Transition to runtime entity context.
-    EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, StartPlayInEditor);
+    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequestBus::Events::StartPlayInEditor);
 
     if (!CCryEditApp::instance()->IsInAutotestMode())
     {
@@ -558,7 +557,7 @@ void CGameEngine::SwitchToInGame()
 void CGameEngine::SwitchToInEditor()
 {
     // Transition to editor entity context.
-    EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, StopPlayInEditor);
+    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequestBus::Events::StopPlayInEditor);
 
     // Reset movie system
     for (int i = m_pISystem->GetIMovieSystem()->GetNumPlayingSequences(); --i >= 0;)
@@ -787,7 +786,7 @@ void CGameEngine::Update()
     }
 
     AZ::ComponentApplication* componentApplication = nullptr;
-    EBUS_EVENT_RESULT(componentApplication, AZ::ComponentApplicationBus, GetApplication);
+    AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationBus::Events::GetApplication);
 
     if (m_bInGameMode)
     {
@@ -830,13 +829,8 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
     }
 }
 
-void CGameEngine::OnAreaModified(const AABB& modifiedArea)
+void CGameEngine::OnAreaModified([[maybe_unused]] const AABB& modifiedArea)
 {
-    INavigationSystem* pNavigationSystem = nullptr; // INavigationSystem will be converted to an AZInterface (LY-111343)
-    if (pNavigationSystem)
-    {
-        pNavigationSystem->WorldChanged(modifiedArea);
-    }
 }
 
 void CGameEngine::ExecuteQueuedEvents()

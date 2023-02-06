@@ -34,11 +34,6 @@ namespace EMotionFX
             m_skinningMethod = skinningMethod;
         }
 
-        void RenderActorInstance::SetOnMaterialChangedCallback(MaterialChangedFunction callback)
-        {
-            m_onMaterialChangedCallback = callback;
-        }
-
         const AZ::Aabb& RenderActorInstance::GetWorldAABB() const
         {
             return m_worldAABB;
