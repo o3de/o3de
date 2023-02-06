@@ -13,9 +13,9 @@
 namespace AzToolsFramework
 {
     //! Structure used to store UUID information for an asset in the metadata file
-    struct UuidEntry
+    struct MetaUuidEntry
     {
-        AZ_TYPE_INFO(UuidEntry, "{FAD60D80-9B1D-421D-A4CA-DD2CA2EA80BB}");
+        AZ_TYPE_INFO(MetaUuidEntry, "{FAD60D80-9B1D-421D-A4CA-DD2CA2EA80BB}");
 
         static void Reflect(AZ::ReflectContext* context);
 
