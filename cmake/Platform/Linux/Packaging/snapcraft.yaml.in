@@ -9,7 +9,7 @@ base: core22
 parts:
   test-o3de:
     plugin: dump
-    source: ./O3DE
+    source: ./${CPACK_PACKAGE_NAME}
     source-type: local
     stage-packages:
      - clang
