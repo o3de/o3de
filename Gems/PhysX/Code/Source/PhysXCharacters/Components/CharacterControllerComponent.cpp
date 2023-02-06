@@ -79,18 +79,41 @@ namespace PhysX
 
     void CharacterControllerComponent::Activate()
     {
+        if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
+        {
+            Physics::DefaultWorldBus::BroadcastResult(m_attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+        }
+
+        if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
+        {
+            // Early out if there's no relevant physics world present.
+            // It may be a valid case when we have game-time components assigned to editor entities via a script
+            // so no need to print a warning here.
+            return;
+        }
+
+        // During activation all the collider components will create their physics shapes.
+        // Delaying the creation of the rigid body to OnEntityActivated so all the shapes are ready.
+        AZ::EntityBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void CharacterControllerComponent::OnEntityActivated(const AZ::EntityId& entityId)
+    {
+        AZ::EntityBus::Handler::BusDisconnect();
+
         CreateController();
 
-        AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
-        Physics::CharacterRequestBus::Handler::BusConnect(GetEntityId());
-        Physics::CollisionFilteringRequestBus::Handler::BusConnect(GetEntityId());
-        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
+        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
+        Physics::CharacterRequestBus::Handler::BusConnect(entityId);
+        Physics::CollisionFilteringRequestBus::Handler::BusConnect(entityId);
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(entityId);
     }
 
     void CharacterControllerComponent::Deactivate()
     {
         DisableController();
 
+        AZ::EntityBus::Handler::BusDisconnect();
         Physics::CollisionFilteringRequestBus::Handler::BusDisconnect();
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();

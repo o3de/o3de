@@ -18,7 +18,7 @@ namespace PhysX
     //! joint frames.
     class PrismaticJointComponent
         : public JointComponent
-        , public JointRequestBus::Handler
+        , protected JointRequestBus::Handler
     {
     public:
         AZ_COMPONENT(PrismaticJointComponent, "{9B34CA1B-C063-4D42-A15B-CE6CD7C828DC}", JointComponent);
@@ -33,7 +33,12 @@ namespace PhysX
             const JointMotorProperties& motorProperties);
         ~PrismaticJointComponent() = default;
 
-        // JointRequestBus::Handler overrides
+    protected:
+        // JointComponent overrides ...
+        void InitNativeJoint() override;
+        void DeinitNativeJoint() override;
+
+        // JointRequestBus::Handler overrides ...
         float GetPosition() const override;
         float GetVelocity() const override;
         AZ::Transform GetTransform() const override;
@@ -41,16 +46,10 @@ namespace PhysX
         void SetMaximumForce(float force) override;
         AZStd::pair<float, float> GetLimits() const override;
 
-        // AZ::Component overrides
-        void Activate() override;
-        void Deactivate() override;
-
-    protected:
-        // JointComponent
-        void InitNativeJoint() override;
-
     private:
-        physx::PxD6Joint* GetPhysXD6Joint();
-        mutable physx::PxD6Joint* m_native{ nullptr };
+        bool TryCachePhysXD6Joint();
+
+        // D6 joint will only be used when the "Use Motor" option is enabled.
+        physx::PxD6Joint* m_nativeD6Joint{ nullptr };
     };
 } // namespace PhysX
