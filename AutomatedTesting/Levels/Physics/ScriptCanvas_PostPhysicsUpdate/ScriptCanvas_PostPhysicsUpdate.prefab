@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -55,13 +51,13 @@
             "Id": "Entity_[281305126238]",
             "Name": "ForceRegion",
             "Components": {
+                "Component_[10005778345231242227]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 10005778345231242227
+                },
                 "Component_[11067593639950420183]": {
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 11067593639950420183
-                },
-                "Component_[11296977532458138796]": {
-                    "$type": "SelectionComponent",
-                    "Id": 11296977532458138796
                 },
                 "Component_[13263255503400547953]": {
                     "$type": "EditorInspectorComponent",
@@ -137,9 +133,11 @@
                     "ColliderConfiguration": {
                         "Trigger": true,
                         "InSceneQueries": false,
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -175,21 +173,17 @@
                 "Component_[11388627947025080736]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 11388627947025080736,
-                    "m_name": "ontick",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{129013F1-8514-5A07-AD83-EC85BD0DA57C}"
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{129013F1-8514-5A07-AD83-EC85BD0DA57C}",
+                            "path": "levels/physics/scriptcanvas_postphysicsupdate/ontick.scriptcanvas"
+                        },
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{129013F1-8514-5A07-AD83-EC85BD0DA57C}"
+                            }
                         }
-                    },
-                    "sourceHandle": {
-                        "id": "{129013F1-8514-5A07-AD83-EC85BD0DA57C}",
-                        "path": "levels/physics/scriptcanvas_postphysicsupdate/ontick.scriptcanvas"
                     }
-                },
-                "Component_[12926460860226400954]": {
-                    "$type": "SelectionComponent",
-                    "Id": 12926460860226400954
                 },
                 "Component_[13099430927808761140]": {
                     "$type": "EditorPendingCompositionComponent",
@@ -210,27 +204,32 @@
                         "entityId": "",
                         "Gravity Enabled": false,
                         "Compute Mass": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 10.0
-                        }
+                        "Inertia tensor": [
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0
+                        ]
                     }
                 },
                 "Component_[16662689546275335159]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 16662689546275335159,
-                    "m_name": "onpostphysicsupdate",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{36AE9162-BCBE-59B3-9A43-ABFCCA150B78}"
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{36AE9162-BCBE-59B3-9A43-ABFCCA150B78}",
+                            "path": "levels/physics/scriptcanvas_postphysicsupdate/onpostphysicsupdate.scriptcanvas"
+                        },
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{36AE9162-BCBE-59B3-9A43-ABFCCA150B78}"
+                            }
                         }
-                    },
-                    "sourceHandle": {
-                        "id": "{36AE9162-BCBE-59B3-9A43-ABFCCA150B78}",
-                        "path": "levels/physics/scriptcanvas_postphysicsupdate/onpostphysicsupdate.scriptcanvas"
                     }
                 },
                 "Component_[2476622826402871625]": {
@@ -274,9 +273,11 @@
                     "$type": "EditorColliderComponent",
                     "Id": 5790409583652412480,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },

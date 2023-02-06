@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -58,6 +54,10 @@
                 "Component_[1058672161870704752]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 1058672161870704752
+                },
+                "Component_[12042550642434868091]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 12042550642434868091
                 },
                 "Component_[12116468728378293251]": {
                     "$type": "EditorInspectorComponent",
@@ -96,10 +96,6 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 16390152007823170626
                 },
-                "Component_[4231458678471163444]": {
-                    "$type": "SelectionComponent",
-                    "Id": 4231458678471163444
-                },
                 "Component_[5226966346162381737]": {
                     "$type": "EditorForceRegionComponent",
                     "Id": 5226966346162381737,
@@ -130,9 +126,11 @@
                     "ColliderConfiguration": {
                         "Trigger": true,
                         "InSceneQueries": false,
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -157,10 +155,6 @@
             "Id": "Entity_[285613356524]",
             "Name": "Sphere",
             "Components": {
-                "Component_[10572912425605638221]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10572912425605638221
-                },
                 "Component_[15461500731098694891]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 15461500731098694891,
@@ -207,9 +201,11 @@
                             0.0,
                             0.5
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },

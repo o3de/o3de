@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -75,9 +71,11 @@
                     "$type": "EditorColliderComponent",
                     "Id": 14852461319282422545,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -163,10 +161,6 @@
                             "SortIndex": 3
                         }
                     ]
-                },
-                "Component_[9781300856110304578]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9781300856110304578
                 }
             }
         },
@@ -196,9 +190,11 @@
                     "ColliderConfiguration": {
                         "Trigger": true,
                         "InSceneQueries": false,
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -253,6 +249,10 @@
                     "$type": "EditorVisibilityComponent",
                     "Id": 8572430005774015373
                 },
+                "Component_[8904415192085086079]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 8904415192085086079
+                },
                 "Component_[9188864009972696870]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 9188864009972696870,
@@ -269,10 +269,6 @@
                             "SortIndex": 2
                         }
                     ]
-                },
-                "Component_[9781300856110304578]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9781300856110304578
                 }
             }
         },
@@ -283,6 +279,10 @@
                 "Component_[10405021042248159955]": {
                     "$type": "EditorLockComponent",
                     "Id": 10405021042248159955
+                },
+                "Component_[12089750689633134015]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 12089750689633134015
                 },
                 "Component_[13459286072711980262]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
@@ -302,9 +302,11 @@
                     "ColliderConfiguration": {
                         "Trigger": true,
                         "InSceneQueries": false,
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -375,10 +377,6 @@
                             "SortIndex": 2
                         }
                     ]
-                },
-                "Component_[9781300856110304578]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9781300856110304578
                 }
             }
         },
@@ -408,9 +406,11 @@
                     "ColliderConfiguration": {
                         "Trigger": true,
                         "InSceneQueries": false,
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -453,6 +453,10 @@
                         }
                     }
                 },
+                "Component_[3067654867744298937]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 3067654867744298937
+                },
                 "Component_[6220057123735521038]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 6220057123735521038
@@ -481,10 +485,6 @@
                             "SortIndex": 2
                         }
                     ]
-                },
-                "Component_[9781300856110304578]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9781300856110304578
                 }
             }
         },
@@ -514,9 +514,11 @@
                     "ColliderConfiguration": {
                         "Trigger": true,
                         "InSceneQueries": false,
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -538,6 +540,10 @@
                 "Component_[17211297289344545407]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 17211297289344545407
+                },
+                "Component_[17884481120891166287]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 17884481120891166287
                 },
                 "Component_[2235796114524801607]": {
                     "$type": "EditorSphereShapeComponent",
@@ -587,10 +593,6 @@
                             "SortIndex": 2
                         }
                     ]
-                },
-                "Component_[9781300856110304578]": {
-                    "$type": "SelectionComponent",
-                    "Id": 9781300856110304578
                 }
             }
         },
@@ -707,9 +709,11 @@
                     "ColliderConfiguration": {
                         "Trigger": true,
                         "InSceneQueries": false,
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -829,13 +833,13 @@
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 165699220815603099
                 },
+                "Component_[17658317937142073417]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 17658317937142073417
+                },
                 "Component_[2460290057035236623]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 2460290057035236623
-                },
-                "Component_[7928301240147624334]": {
-                    "$type": "SelectionComponent",
-                    "Id": 7928301240147624334
                 }
             }
         }
