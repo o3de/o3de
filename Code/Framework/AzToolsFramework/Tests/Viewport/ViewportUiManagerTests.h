@@ -30,7 +30,7 @@ namespace UnitTest
         ViewportUiManagerTestable() = default;
         ~ViewportUiManagerTestable() override = default;
 
-        const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<ButtonGroup>>& GetClusterMap()
+        const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<ButtonGroup>>& GetClusterMap() const
         {
             return m_clusterButtonGroups;
         }
@@ -84,8 +84,6 @@ namespace UnitTest
     public:
         ViewportUiManagerTestFixture() = default;
 
-        ViewportManagerWrapper m_viewportManagerWrapper;
-
         void SetUp() override
         {
             m_viewportManagerWrapper.Create();
@@ -95,5 +93,8 @@ namespace UnitTest
         {
             m_viewportManagerWrapper.Destroy();
         }
+
+    protected:
+        ViewportManagerWrapper m_viewportManagerWrapper;
     };
 } // namespace UnitTest

@@ -29,11 +29,7 @@ namespace UnitTest
     class PhysXColliderComponentModeTest : public ToolsApplicationFixture<false>
     {
     protected:
-        using EntityPtr = AZ::Entity*;
-
-        AZ::ComponentId m_colliderComponentId;
-
-        EntityPtr CreateColliderComponent()
+        AZ::Entity* CreateColliderComponent()
         {
             AZ::Entity* entity = nullptr;
             AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
@@ -52,9 +48,6 @@ namespace UnitTest
             return entity;
         }
 
-        // Needed to support ViewportUi request calls.
-        ViewportManagerWrapper m_viewportManagerWrapper;
-
         void SetUpEditorFixtureImpl() override
         {
             m_viewportManagerWrapper.Create();
@@ -63,6 +56,10 @@ namespace UnitTest
         {
             m_viewportManagerWrapper.Destroy();
         }
+
+        // Needed to support ViewportUi request calls.
+        ViewportManagerWrapper m_viewportManagerWrapper;
+        AZ::ComponentId m_colliderComponentId;
     };
 
     using PhysXColliderComponentModeManipulatorTest =
@@ -81,6 +78,7 @@ namespace UnitTest
         void SetupNonUniformScale(const AZ::Vector3& nonUniformScale);
         void EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode subMode);
 
+    protected:
         AZ::Entity* m_entity = nullptr;
         AZ::EntityComponentIdPair m_idPair;
     };

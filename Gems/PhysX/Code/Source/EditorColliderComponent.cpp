@@ -457,8 +457,8 @@ namespace PhysX
         m_colliderDebugDraw.Disconnect();
         AZ::Data::AssetBus::Handler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
-        AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
+        AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         EditorColliderValidationRequestBus::Handler::BusDisconnect();
         EditorColliderComponentRequestBus::Handler::BusDisconnect();
         AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();

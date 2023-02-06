@@ -11,18 +11,18 @@
 
 namespace UnitTest
 {
+    static const float uniformScale = 1.0f;
+    static const AZ::Quaternion shapeRotation = AZ::Quaternion(0.0f, 0, 0, 1);
+    static const AZ::Quaternion entityRotation = AZ::Quaternion(0, 0, 0, 1);
+    static const AZ::Vector3 shapeOffset = AZ::Vector3(0, 0, 0);
+    static const AZ::Vector3 entityTranslation = AZ::Vector3(5.0f, 15.0f, 10.0f);
+
     class ColliderPickingFixture : public PhysXEditorColliderComponentManipulatorFixture
     {
     public:
         void SetUpEditorFixtureImpl() override;
         //! Clicks at a given position and returns the entities that are selected.
         AzToolsFramework::EntityIdList ClickAndGetSelectedEntities(AzFramework::ScreenPoint screenPoint);
-
-        const float m_uniformScale = 1.0f;
-        const AZ::Quaternion m_shapeRotation = AZ::Quaternion(0.0f, 0, 0, 1);
-        const AZ::Quaternion m_entityRotation = AZ::Quaternion(0, 0, 0, 1);
-        const AZ::Vector3 m_shapeOffset = AZ::Vector3(0, 0, 0);
-        const AZ::Vector3 m_entityTranslation = AZ::Vector3(5.0f, 15.0f, 10.0f);
     };
 
     void ColliderPickingFixture::SetUpEditorFixtureImpl()
@@ -57,8 +57,8 @@ namespace UnitTest
     {
          // Given the setup conditions
          const AZ::Vector3 boxDimensions(5.0f, 5.0f, 5.0f);
-         SetupCollider(Physics::BoxShapeConfiguration(boxDimensions), m_shapeRotation, m_shapeOffset);
-         SetupTransform(m_entityRotation, m_entityTranslation, m_uniformScale);
+         SetupCollider(Physics::BoxShapeConfiguration(boxDimensions), shapeRotation, shapeOffset);
+         SetupTransform(entityRotation, entityTranslation, uniformScale);
 
          // When a user clicks just outside the collider it should not be selected
          auto clickPos1 = AzFramework::WorldToScreen(AZ::Vector3(7.5f, 12.4f, 10.0f), m_cameraState);
@@ -71,14 +71,15 @@ namespace UnitTest
          selectedEntities = ClickAndGetSelectedEntities(clickPos2);
 
          EXPECT_THAT(selectedEntities.size(), testing::Eq(1));
+         EXPECT_THAT(selectedEntities.front(), ::testing::Eq(m_entity->GetId()));
     }
 
     TEST_F(ColliderPickingFixture, ColliderPickingWithBoxShapeAndRigidBodyComponent)
     {
          // Given the setup conditions
          const AZ::Vector3 boxDimensions(5.0f, 5.0f, 5.0f);
-         SetupCollider(Physics::BoxShapeConfiguration(boxDimensions), m_shapeRotation, m_shapeOffset);
-         SetupTransform(m_entityRotation, m_entityTranslation, m_uniformScale);
+         SetupCollider(Physics::BoxShapeConfiguration(boxDimensions), shapeRotation, shapeOffset);
+         SetupTransform(entityRotation, entityTranslation, uniformScale);
 
          // The collider should be selectable with a collider and rigid body component
          m_entity->Deactivate();
@@ -96,13 +97,14 @@ namespace UnitTest
          selectedEntities = ClickAndGetSelectedEntities(clickPos2);
 
          EXPECT_THAT(selectedEntities.size(), testing::Eq(1));
+         EXPECT_THAT(selectedEntities.front(), ::testing::Eq(m_entity->GetId()));
     }
 
     TEST_F(ColliderPickingFixture, ColliderPickingWithSphereShape)
     {
          // Given the setup conditions
-         SetupCollider(Physics::SphereShapeConfiguration(2.5f), m_shapeRotation, m_shapeOffset);
-         SetupTransform(m_entityRotation, m_entityTranslation, m_uniformScale);
+         SetupCollider(Physics::SphereShapeConfiguration(2.5f), shapeRotation, shapeOffset);
+         SetupTransform(entityRotation, entityTranslation, uniformScale);
 
          // When a user clicks just outside the collider it should not be picked
          auto clickPos1 = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 12.4f, 10.0f), m_cameraState);
@@ -115,13 +117,14 @@ namespace UnitTest
          selectedEntities = ClickAndGetSelectedEntities(clickPos2);
 
          EXPECT_THAT(selectedEntities.size(), testing::Eq(1));
+         EXPECT_THAT(selectedEntities.front(), ::testing::Eq(m_entity->GetId()));
     }
 
     TEST_F(ColliderPickingFixture, ColliderPickingWithCapsuleShape)
     {
          // Given the setup conditions
-         SetupCollider(Physics::CapsuleShapeConfiguration(5.0f, 2.5f), m_shapeRotation, m_shapeOffset);
-         SetupTransform(m_entityRotation, m_entityTranslation, m_uniformScale);
+         SetupCollider(Physics::CapsuleShapeConfiguration(5.0f, 2.5f), shapeRotation, shapeOffset);
+         SetupTransform(entityRotation, entityTranslation, uniformScale);
 
          // When a user clicks just outside the collider it should not be picked
          auto clickPos1 = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 12.4f, 10.0f), m_cameraState);
@@ -134,5 +137,6 @@ namespace UnitTest
          selectedEntities = ClickAndGetSelectedEntities(clickPos2);
 
          EXPECT_THAT(selectedEntities.size(), testing::Eq(1));
+         EXPECT_THAT(selectedEntities.front(), ::testing::Eq(m_entity->GetId()));
     }
 } // namespace UnitTest
