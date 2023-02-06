@@ -362,7 +362,8 @@ namespace EMotionFX
                 }
             }
 
-            EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, m_assetSourceFolder);
+            AzFramework::ApplicationRequests::Bus::Broadcast(
+                &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, m_assetSourceFolder);
         }
         else
         {

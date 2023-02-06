@@ -37,7 +37,8 @@ namespace PhysX
 
             connect(picker->GetComboBox(), &QComboBox::currentTextChanged, this, [picker]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+                    AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                        &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
             });
 
             connect(picker->GetEditButton(), &QToolButton::clicked, this, &CollisionGroupWidget::OnEditButtonClicked);
