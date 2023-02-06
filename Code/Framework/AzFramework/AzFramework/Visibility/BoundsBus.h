@@ -78,6 +78,11 @@ namespace AzFramework
         }
 
         AZ::TransformInterface* transformInterface = entity->GetTransform();
+        if (!transformInterface)
+        {
+            return AZ::Aabb::CreateNull();
+        }
+
         const AZ::Vector3 worldTranslation = transformInterface->GetWorldTranslation();
         return AZ::Aabb::CreateCenterHalfExtents(worldTranslation, AZ::Vector3(0.5f));
     }
