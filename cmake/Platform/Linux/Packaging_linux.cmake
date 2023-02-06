@@ -12,61 +12,61 @@ set(CPACK_CMAKE_PACKAGE_HASH "dc73115520d13bb64202383d3df52bc3d6bbb8422ecc5b2c05
 
 if(${PACKAGE_TYPE} STREQUAL "SNAP")
 
-set(CPACK_GENERATOR External)
-set(CPACK_EXTERNAL_ENABLE_STAGING YES)
-set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging_Snapcraft.cmake")
-set(CPACK_MONOLITHIC_INSTALL 1)
+    set(CPACK_GENERATOR External)
+    set(CPACK_EXTERNAL_ENABLE_STAGING YES)
+    set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging_Snapcraft.cmake")
+    set(CPACK_MONOLITHIC_INSTALL 1)
 
-set(CPACK_PACKAGING_INSTALL_PREFIX "/${CPACK_PACKAGE_NAME}/${LY_VERSION_STRING}")
+    set(CPACK_PACKAGING_INSTALL_PREFIX "/${CPACK_PACKAGE_NAME}/${O3DE_INSTALL_VERSION_STRING}")
 
 else()
-#default to debian
+    #default to debian
 
-set(CPACK_GENERATOR DEB)
+    set(CPACK_GENERATOR DEB)
 
-set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}/${O3DE_INSTALL_VERSION_STRING}")
+    set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}/${O3DE_INSTALL_VERSION_STRING}")
 
-# get all the package dependencies, extracted from scripts\build\build_node\Platform\Linux\package-list.ubuntu-focal.txt
-set(package_dependencies
-    libffi7
-    clang-12
-    ninja-build
-    # Build Libraries
-    libglu1-mesa-dev                        # For Qt (GL dependency)
-    libxcb-xinerama0                        # For Qt plugins at runtime
-    libxcb-xinput0                          # For Qt plugins at runtime
-    libfontconfig1-dev                      # For Qt plugins at runtime
-    libcurl4-openssl-dev                    # For HttpRequestor
-    # libsdl2-dev                             # for WWise/Audio
-    libxcb-xkb-dev                          # For xcb keyboard input
-    libxkbcommon-x11-dev                    # For xcb keyboard input
-    libxkbcommon-dev                        # For xcb keyboard input
-    libxcb-xfixes0-dev                      # For mouse input
-    libxcb-xinput-dev                       # For mouse input
-    zlib1g-dev
-    mesa-common-dev
-    libunwind-dev
-    pkg-config
-)
-list(JOIN package_dependencies "," CPACK_DEBIAN_PACKAGE_DEPENDS)
+    # get all the package dependencies, extracted from scripts\build\build_node\Platform\Linux\package-list.ubuntu-focal.txt
+    set(package_dependencies
+        libffi7
+        clang-12
+        ninja-build
+        # Build Libraries
+        libglu1-mesa-dev                        # For Qt (GL dependency)
+        libxcb-xinerama0                        # For Qt plugins at runtime
+        libxcb-xinput0                          # For Qt plugins at runtime
+        libfontconfig1-dev                      # For Qt plugins at runtime
+        libcurl4-openssl-dev                    # For HttpRequestor
+        # libsdl2-dev                             # for WWise/Audio
+        libxcb-xkb-dev                          # For xcb keyboard input
+        libxkbcommon-x11-dev                    # For xcb keyboard input
+        libxkbcommon-dev                        # For xcb keyboard input
+        libxcb-xfixes0-dev                      # For mouse input
+        libxcb-xinput-dev                       # For mouse input
+        zlib1g-dev
+        mesa-common-dev
+        libunwind-dev
+        pkg-config
+    )
+    list(JOIN package_dependencies "," CPACK_DEBIAN_PACKAGE_DEPENDS)
 
-# Post-installation and pre/post removal scripts
-configure_file("${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging/postinst.in"
-    "${CMAKE_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging/postinst"
-    @ONLY
-)
-configure_file("${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging/prerm.in"
-    "${CMAKE_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging/prerm"
-    @ONLY
-)
-configure_file("${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging/postrm.in"
-    "${CMAKE_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging/postrm"
-    @ONLY
-)
-set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
-    ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/postinst 
-    ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/prerm 
-    ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/postrm
-)
+    # Post-installation and pre/post removal scripts
+    configure_file("${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging/postinst.in"
+        "${CMAKE_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging/postinst"
+        @ONLY
+    )
+    configure_file("${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging/prerm.in"
+        "${CMAKE_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging/prerm"
+        @ONLY
+    )
+    configure_file("${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging/postrm.in"
+        "${CMAKE_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging/postrm"
+        @ONLY
+    )
+    set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
+        ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/postinst 
+        ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/prerm 
+        ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/postrm
+    )
 
 endif()

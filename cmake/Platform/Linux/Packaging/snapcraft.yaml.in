@@ -1,5 +1,5 @@
 name: o3de
-version: '${LY_VERSION_STRING}'
+version: '${O3DE_INSTALL_VERSION_STRING}'
 summary: O3DE Engine
 description: |
   O3DE Engine
@@ -40,25 +40,25 @@ parts:
      - cmake
 
 layout:
-  /etc/o3de/${LY_VERSION_STRING}/downloaded_packages:
-    bind: $SNAP/${LY_VERSION_STRING}/python/downloaded_packages
-  /etc/o3de/${LY_VERSION_STRING}/runtime:
-    bind: $SNAP/${LY_VERSION_STRING}/python/runtime
+  /etc/o3de/${O3DE_INSTALL_VERSION_STRING}/downloaded_packages:
+    bind: $SNAP/${O3DE_INSTALL_VERSION_STRING}/python/downloaded_packages
+  /etc/o3de/${O3DE_INSTALL_VERSION_STRING}/runtime:
+    bind: $SNAP/${O3DE_INSTALL_VERSION_STRING}/python/runtime
 
 apps:
   o3de:
-    command: ${LY_VERSION_STRING}/bin/Linux/profile/Default/o3de
+    command: ${O3DE_INSTALL_VERSION_STRING}/bin/Linux/profile/Default/o3de
     environment:
-      LD_LIBRARY_PATH: $SNAP/${LY_VERSION_STRING}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
+      LD_LIBRARY_PATH: $SNAP/${O3DE_INSTALL_VERSION_STRING}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
       DISABLE_WAYLAND: 1
   editor:
-    command: ${LY_VERSION_STRING}/bin/Linux/profile/Default/Editor
+    command: ${O3DE_INSTALL_VERSION_STRING}/bin/Linux/profile/Default/Editor
     environment:
-      LD_LIBRARY_PATH: $SNAP/${LY_VERSION_STRING}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
+      LD_LIBRARY_PATH: $SNAP/${O3DE_INSTALL_VERSION_STRING}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
       DISABLE_WAYLAND: 1
   assetprocessor:
-    command: ${LY_VERSION_STRING}/bin/Linux/profile/Default/AssetProcessor
+    command: ${O3DE_INSTALL_VERSION_STRING}/bin/Linux/profile/Default/AssetProcessor
     environment:
-      LD_LIBRARY_PATH: $SNAP/${LY_VERSION_STRING}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
+      LD_LIBRARY_PATH: $SNAP/${O3DE_INSTALL_VERSION_STRING}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
       DISABLE_WAYLAND: 1
     
