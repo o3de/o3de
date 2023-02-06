@@ -352,6 +352,22 @@
         "CMAKE_TARGET": "all"
     }
   },
+  "snap_package": {
+    "TAGS": [
+      "periodic-clean-weekly-internal",
+      "nightly-installer"
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"ubuntu-22-packaging"
+    },
+    "COMMAND": "build_installer_linux.sh",
+    "PARAMETERS": {
+        "CONFIGURATION": "profile",
+        "OUTPUT_DIRECTORY": "build/linux",
+        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
+        "CMAKE_TARGET": "all"
+    }
+  },
   "install_profile_pipe": {
     "TAGS": [
       "periodic-incremental-daily",
