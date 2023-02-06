@@ -328,13 +328,19 @@
         "CMAKE_TARGET": "install"
     }
   },
-  "deb_package": {
+  "installer_pipe": { 
     "TAGS": [
       "periodic-clean-weekly-internal",
       "nightly-installer"
     ],
+    "steps": [
+      "installer"
+    ]
+  },
+  "installer": {
+    "TAGS": [],
     "PIPELINE_ENV":{
-      "NODE_LABEL":"ubuntu-22-packaging"
+      "NODE_LABEL":"linux-707531fc7-packaging"
     },
     "COMMAND": "build_installer_linux.sh",
     "PARAMETERS": {
@@ -343,7 +349,7 @@
         "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
         "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=${INSTALLER_DOWNLOAD_URL} -DLY_INSTALLER_LICENSE_URL=${INSTALLER_DOWNLOAD_URL}/license",
         "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
-        "CMAKE_TARGET": "install"
+        "CMAKE_TARGET": "all"
     }
   },
   "snap_package": {
@@ -359,7 +365,7 @@
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build/linux",
         "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
-        "CMAKE_TARGET": "install"
+        "CMAKE_TARGET": "all"
     }
   },
   "install_profile_pipe": {
