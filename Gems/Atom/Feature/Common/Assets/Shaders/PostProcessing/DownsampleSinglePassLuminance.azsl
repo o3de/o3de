@@ -1,0 +1,161 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// refer https://github.com/GPUOpen-Effects/FidelityFX-SPD/blob/c52944f547884774a1b33066f740e6bf89f927f5/sample/src/DX12/SPDIntegration.hlsl
+
+#include <Atom/RPI/Math.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+struct SpdGlobalAtomicBuffer
+{
+    uint m_counter;
+};
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputImage;
+    RWTexture2D<float4> m_imageDestination[13];
+    [[verbatim("globallycoherent")]] RWTexture2D<float4> m_mip6;
+    [[verbatim("globallycoherent")]] RWStructuredBuffer<SpdGlobalAtomicBuffer> m_globalAtomic;
+
+    // Mip level count of m_imageDestination.
+    uint m_destinationMipLevelCount;
+    // The steps of this downsample computation.  It may slightly larger than m_destinationMipLevelCount.
+    uint m_spdMipLevelCount;
+    uint m_numWorkGroups;
+
+    uint2 m_imageSize;
+}
+
+#define A_GPU
+#define A_HLSL
+#include <External/FidelityFX/ffx-spd/ffx_a.h>
+
+groupshared AU1 s_spdCounter;
+
+groupshared AF1 s_spdIntermediateR[16][16];
+groupshared AF1 s_spdIntermediateG[16][16];
+groupshared AF1 s_spdIntermediateB[16][16];
+groupshared AF1 s_spdIntermediateA[16][16];
+
+AF4 SpdLoadSourceImage(AF2 tex, AU1 /* slice */)
+{
+    if (tex.x < PassSrg::m_imageSize.x &&
+        tex.y < PassSrg::m_imageSize.y)
+    {
+        const float3 rgb = PassSrg::m_inputImage[tex].rgb;
+        const float luminance = CalculateLuminance(rgb, ColorSpaceId::ACEScg);
+        return AF4(luminance, luminance, luminance, 1.);
+    }
+    else
+    {
+        return AF4(FLOAT_32_MAX, 0., 0., 0.);
+    }
+}
+
+AF4 SpdLoad(ASU2 tex, AU1 /* slice */)
+{
+    const AU1 GloballyCoherentMipIndex = 6;
+    if ((tex.x >> GloballyCoherentMipIndex) < PassSrg::m_imageSize.x &&
+        (tex.y >> GloballyCoherentMipIndex) < PassSrg::m_imageSize.y)
+    {
+        return PassSrg::m_mip6[tex];
+    }
+    else
+    {
+        return AF4(FLOAT_32_MAX, 0., 0., 0.);
+    }
+}
+
+void SpdStore(ASU2 pix, AF4 value, AU1 mip, AU1 /* slice */)
+{
+    // Store to the globally coherent working mip slice.
+    if (mip == 5 && value.w > 0.)
+        PassSrg::m_mip6[pix] = value;
+    
+    const AU1 mipAdjusted = min(mip, PassSrg::m_destinationMipLevelCount - 1);
+    PassSrg::m_imageDestination[mipAdjusted][pix] = value;
+}
+
+void SpdIncreaseAtomicCounter(AU1 /* slice*/)
+{
+    InterlockedAdd(PassSrg::m_globalAtomic[0].m_counter, 1, s_spdCounter);
+}
+
+AU1 SpdGetAtomicCounter()
+{
+    return s_spdCounter;
+}
+
+void SpdResetAtomicCounter(AU1 /* slice */)
+{
+    PassSrg::m_globalAtomic[0].m_counter = 0;
+}
+
+AF4 SpdLoadIntermediate(AU1 x, AU1 y)
+{
+    return AF4(
+        s_spdIntermediateR[x][y],
+        s_spdIntermediateG[x][y],
+        s_spdIntermediateB[x][y],
+        s_spdIntermediateA[x][y]);
+}
+
+void SpdStoreIntermediate(AU1 x, AU1 y, AF4 value)
+{
+    s_spdIntermediateR[x][y] = value.x;
+    s_spdIntermediateG[x][y] = value.y;
+    s_spdIntermediateB[x][y] = value.z;
+    s_spdIntermediateA[x][y] = value.w;
+}
+
+float GetValueWithFlag(float value, float flag, float errorValue)
+{
+    return (flag > 0.) ? value : errorValue;
+}
+
+float MinWithFlag(AF4 v0, AF4 v1)
+{
+    return min(
+        GetValueWithFlag(v0.x, v0.w, FLOAT_32_MAX),
+        GetValueWithFlag(v1.x, v1.w, FLOAT_32_MAX));
+}
+
+float MaxWithFlag(AF4 v0, AF4 v1)
+{
+    return max(
+        GetValueWithFlag(v0.z, v0.w, 0.),
+        GetValueWithFlag(v1.z, v1.w, 0.));
+}
+
+AF4 SpdReduce4(AF4 v0, AF4 v1, AF4 v2, AF4 v3)
+{
+    const float weightSum = v0.w + v1.w + v2.w + v3.w;
+    const float minValue = min(MinWithFlag(v0, v1), MinWithFlag(v2, v3));
+    const float avgValue = weightSum > 0. ? 
+        (v0.y * v0.w + v1.y * v1.w + v2.y * v2.w + v3.y * v3.w) / weightSum :
+        0.;
+    const float maxValue = max(MaxWithFlag(v0, v1), MaxWithFlag(v2, v3));
+    const float weightValue =  weightSum * 0.25;
+    return AF4(minValue, avgValue, maxValue, weightValue);
+}
+
+#include <External/FidelityFX/ffx-spd/ffx_spd.h>
+
+[numthreads(256, 1, 1)]
+void MainCS(uint3 workGroupId : SV_GroupID, uint localThreadIndex : SV_GroupIndex)
+{
+    SpdDownsample(
+        AU2(workGroupId.xy), 
+        AU1(localThreadIndex),  
+        AU1(PassSrg::m_spdMipLevelCount),
+        AU1(PassSrg::m_numWorkGroups),
+        AU1(workGroupId.z),
+        AU2(0, 0));
+}

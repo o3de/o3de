@@ -12,7 +12,7 @@
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 
-#include <Engine/Config_wwise.h>
+#include <Config_wwise.h>
 
 namespace WwiseBuilder
 {

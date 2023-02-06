@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -55,10 +51,6 @@
             "Id": "Entity_[1011301294950]",
             "Name": "trigger",
             "Components": {
-                "Component_[10177271249943941360]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10177271249943941360
-                },
                 "Component_[15134750255872632480]": {
                     "$type": "EditorBoxShapeComponent",
                     "Id": 15134750255872632480,
@@ -102,6 +94,10 @@
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 17044248283146127093
                 },
+                "Component_[17612961656424497006]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 17612961656424497006
+                },
                 "Component_[17656225355810724488]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 17656225355810724488
@@ -135,11 +131,6 @@
                                 {
                                     "Name": "Entire object"
                                 }
-                            ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
                             ]
                         }
                     },
@@ -213,10 +204,6 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 3047355939801335922
                 },
-                "Component_[3687396159953003426]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3687396159953003426
-                },
                 "Component_[8964779992189042072]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 8964779992189042072
@@ -239,10 +226,6 @@
             "Id": "Entity_[281156854630]",
             "Name": "sphere_0",
             "Components": {
-                "Component_[10422448568969909101]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10422448568969909101
-                },
                 "Component_[10608077766366924597]": {
                     "$type": "EditorSphereShapeComponent",
                     "Id": 10608077766366924597,
@@ -369,10 +352,6 @@
                         ]
                     }
                 },
-                "Component_[12287644288883736884]": {
-                    "$type": "SelectionComponent",
-                    "Id": 12287644288883736884
-                },
                 "Component_[13363420471903321484]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 13363420471903321484
@@ -470,10 +449,6 @@
                 "Component_[10880848152918698630]": {
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 10880848152918698630
-                },
-                "Component_[10993747078839261711]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10993747078839261711
                 },
                 "Component_[11962089952362907403]": {
                     "$type": "EditorEntitySortComponent",
@@ -675,10 +650,6 @@
                         }
                     ]
                 },
-                "Component_[6408021591593091139]": {
-                    "$type": "SelectionComponent",
-                    "Id": 6408021591593091139
-                },
                 "Component_[969119709860529359]": {
                     "$type": "EditorRigidBodyComponent",
                     "Id": 969119709860529359,
@@ -726,10 +697,6 @@
                             35.0
                         ]
                     }
-                },
-                "Component_[13558624633219310097]": {
-                    "$type": "SelectionComponent",
-                    "Id": 13558624633219310097
                 },
                 "Component_[17851857614423757842]": {
                     "$type": "EditorPendingCompositionComponent",
@@ -906,10 +873,6 @@
                     "Id": 17998392348447200702,
                     "GameView": true
                 },
-                "Component_[1964072586603507375]": {
-                    "$type": "SelectionComponent",
-                    "Id": 1964072586603507375
-                },
                 "Component_[3796980743963885327]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 3796980743963885327
@@ -928,6 +891,10 @@
             "Id": "Entity_[306926658406]",
             "Name": "block",
             "Components": {
+                "Component_[11967684837246765052]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 11967684837246765052
+                },
                 "Component_[12382634988339210856]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 12382634988339210856,
@@ -994,10 +961,6 @@
                             ]
                         }
                     }
-                },
-                "Component_[5493593570289811910]": {
-                    "$type": "SelectionComponent",
-                    "Id": 5493593570289811910
                 },
                 "Component_[8410997340656467467]": {
                     "$type": "EditorOnlyEntityComponent",
@@ -1091,10 +1054,6 @@
                 "Component_[7027064350878945104]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 7027064350878945104
-                },
-                "Component_[789490538071906007]": {
-                    "$type": "SelectionComponent",
-                    "Id": 789490538071906007
                 }
             }
         }
