@@ -1738,7 +1738,7 @@ float EditorViewportWidget::GetFOV() const
         auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
         if (!viewSystem)
         {
-            AZ::Constants::HalfPi; // 90 degrees (default)
+            return AZ::Constants::HalfPi; // 90 degrees (default)
         }
 
         if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
