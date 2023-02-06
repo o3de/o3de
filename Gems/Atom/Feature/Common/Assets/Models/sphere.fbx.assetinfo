@@ -1,0 +1,94 @@
+{
+    "values": [
+        {
+            "$type": "{5B03C8E6-8CEE-4DA0-A7FA-CD88689DD45B} MeshGroup",
+            "id": "{B3BB5967-C282-506C-9455-D7D0DFA88734}",
+            "name": "sphere",
+            "NodeSelectionList": {
+                "unselectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.Primitives_grp",
+                    "RootNode.Primitives_grp.PolarSphere_UV_stretch_1m"
+                ]
+            },
+            "TriangleMeshAssetParams": {
+                "DisableCleanMesh": true
+            },
+            "PhysicsMaterialSlots": {
+                "Slots": [
+                    {
+                        "Name": "Entire object",
+                        "MaterialAsset": {
+                            "assetId": {
+                                "guid": "{AEFC12E4-B92E-5473-9B09-C6CDEC23EC7E}",
+                                "subId": 1
+                            },
+                            "assetHint": "physx/concrete.physicsmaterial"
+                        }
+                    }
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "CommentRule",
+                        "comment": "ewsr"
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "sphere",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.Primitives_grp",
+                    "RootNode.Primitives_grp.PolarSphere_UV_stretch_1m"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "MaterialRule"
+                    }
+                ]
+            },
+            "id": "{950F4EB8-CE32-5D30-9369-4C8125E06E60}"
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "default_sphere_D2937250_0F83_5CAF_B6CB_162799C78DE8_",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    "RootNode.Primitives_grp.PolarSphere_UV_stretch_1m"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "ProceduralMeshGroupRule"
+                    },
+                    {
+                        "$type": "UnmodifiableRule"
+                    },
+                    {
+                        "$type": "CoordinateSystemRule",
+                        "useAdvancedData": true
+                    },
+                    {
+                        "$type": "{6E796AC8-1484-4909-860A-6D3F22A7346F} LodRule"
+                    }
+                ]
+            },
+            "id": "{D2937250-0F83-5CAF-B6CB-162799C78DE8}"
+        },
+        {
+            "$type": "PrefabGroup",
+            "name": "Models/sphere_fbx.procprefab",
+            "id": "{34DDB30D-B0EF-57C1-BA97-C023159C2F21}"
+        }
+    ]
+}

@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -118,10 +114,6 @@
                         }
                     }
                 },
-                "Component_[14983280478781449966]": {
-                    "$type": "SelectionComponent",
-                    "Id": 14983280478781449966
-                },
                 "Component_[16595775512479337011]": {
                     "$type": "EditorClothComponent",
                     "Id": 16595775512479337011,
@@ -142,12 +134,13 @@
                             0.5,
                             0.5
                         ],
+                        "Use Custom Wind Velocity": false,
                         "Wind Velocity": [
                             10.0,
                             0.0,
                             0.0
                         ],
-                        "Air Drag Coefficient": 0.5,
+                        "Air Drag Coefficient": 0.07999999821186066,
                         "Air Lift Coefficient": 0.5,
                         "Update Normals of Static Particles": true
                     }
