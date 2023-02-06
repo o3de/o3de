@@ -25,8 +25,7 @@ namespace AZ::RPI::MaterialBuilderUtils
     {
         bool dependencyFileFound = false;
 
-        AZStd::vector<AZStd::string> possibleDependencies =
-            RPI::AssetUtils::GetPossibleDepenencyPaths(currentFilePath, referencedParentPath);
+        AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDependencyPaths(currentFilePath, referencedParentPath);
         for (auto& file : possibleDependencies)
         {
             // The first path found is the highest priority, and will have a job dependency, as this is the one

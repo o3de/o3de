@@ -997,6 +997,9 @@ namespace AZ
                 && deviceProperties.sparseProperties.residencyStandard2DBlockShape
                 && deviceProperties.sparseProperties.residencyStandard3DBlockShape;
 
+            // Check if the Vulkan device support subgroup operations
+            m_features.m_waveOperation = physicalDevice.IsFeatureSupported(DeviceFeature::SubgroupOperation);
+
             // check for the VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME in the list of physical device extensions
             // to determine if ray tracing is supported on this device
             StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();

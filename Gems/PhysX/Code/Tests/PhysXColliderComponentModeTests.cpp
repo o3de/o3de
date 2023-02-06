@@ -22,6 +22,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <Tests/Viewport/ViewportUiManagerTests.cpp>
 #include <EditorColliderComponent.h>
+#include <EditorStaticRigidBodyComponent.h>
 
 namespace UnitTest
 {
@@ -478,6 +479,7 @@ namespace UnitTest
         m_entity->Deactivate();
         auto* colliderComponent =
             m_entity->CreateComponent<PhysX::EditorColliderComponent>(Physics::ColliderConfiguration(), shapeConfiguration);
+        m_entity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         m_entity->Activate();
         m_idPair = AZ::EntityComponentIdPair(m_entity->GetId(), colliderComponent->GetId());
         PhysX::EditorColliderComponentRequestBus::Event(

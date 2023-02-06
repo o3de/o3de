@@ -76,16 +76,8 @@ set(FILES
     Source/Shape/EditorPolygonPrismShapeComponentMode.cpp
     Source/Shape/EditorShapeComponentConverters.h
     Source/Shape/EditorShapeComponentConverters.cpp
-    Source/Ai/EditorNavigationSeedComponent.h
-    Source/Ai/EditorNavigationSeedComponent.cpp
-    Source/Ai/EditorNavigationAreaComponent.h
-    Source/Ai/EditorNavigationAreaComponent.cpp
-    Source/Ai/EditorNavigationUtil.h
-    Source/Ai/EditorNavigationUtil.cpp
     Source/Editor/EditorCommentComponent.h
     Source/Editor/EditorCommentComponent.cpp
-    Source/Ai/NavigationComponent.h
-    Source/Ai/NavigationComponent.cpp
     Source/Scripting/SpawnerComponent.h
     Source/Scripting/SpawnerComponent.cpp
     Source/Shape/TubeShape.h

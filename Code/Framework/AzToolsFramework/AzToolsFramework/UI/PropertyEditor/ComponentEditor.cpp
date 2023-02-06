@@ -644,11 +644,7 @@ namespace AzToolsFramework
         m_componentType = AZ::Uuid::CreateNull();
 
         GetHeader()->SetTitle(ComponentEditorConstants::kUnknownComponentTitle);
-
-        AZStd::string iconPath;
-        AzToolsFramework::EditorRequests::Bus::BroadcastResult(
-            iconPath, &AzToolsFramework::EditorRequests::Bus::Events::GetDefaultComponentEditorIcon);
-        GetHeader()->SetIcon(QIcon(iconPath.c_str()));
+        GetHeader()->SetIcon(QIcon());
     }
 
     QString ComponentEditor::BuildHeaderTooltip()

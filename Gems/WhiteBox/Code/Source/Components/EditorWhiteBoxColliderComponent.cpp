@@ -62,7 +62,6 @@ namespace WhiteBox
     void EditorWhiteBoxColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("WhiteBoxColliderService"));
-        provided.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
     }
 
     void EditorWhiteBoxColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -75,6 +74,9 @@ namespace WhiteBox
     {
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         incompatible.push_back(AZ_CRC_CE("WhiteBoxColliderService"));
+        // Incompatible with other rigid bodies because it handles its own rigid body
+        // internally and it would conflict if another rigid body is added to the entity.
+        incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     void EditorWhiteBoxColliderComponent::Activate()
