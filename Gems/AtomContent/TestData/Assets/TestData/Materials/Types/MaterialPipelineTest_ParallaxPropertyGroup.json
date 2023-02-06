@@ -1,0 +1,133 @@
+{
+    // TODO(MaterialPipeline): This MaterialPipelineTest_ParallaxPropertyGroup.json file is here temporarily because it needs to replace the
+    // lua functor that appears in the original ParallaxPropertyGroup.json. Once we migrate the core material types to the material pipeline
+    // system, replace the functor in ParallaxPropertyGroup.json and delete this file.
+    "name": "parallax",
+    "displayName": "Displacement",
+    "description": "Properties for parallax effect produced by a height map.",
+    "properties": [
+        {
+            "name": "textureMap",
+            "displayName": "Height Map",
+            "description": "Displacement height map to create parallax effect.",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_heightmap"
+            }
+        },
+        {
+            "name": "useTexture",
+            "displayName": "Use Texture",
+            "description": "Whether to use the height map.",
+            "type": "Bool",
+            "defaultValue": true
+        },
+        {
+            "name": "textureMapUv",
+            "displayName": "UV",
+            "description": "Height map UV set",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_parallaxUvIndex"
+            }
+        },
+        {
+            "name": "factor",
+            "displayName": "Height Map Scale",
+            "description": "The total height of the height map in local model units.",
+            "type": "Float",
+            "defaultValue": 0.05,
+            "min": 0.0,
+            "softMax": 0.1,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_heightmapScale"
+            }
+        },
+        {
+            "name": "offset",
+            "displayName": "Offset",
+            "description": "Adjusts the overall displacement amount in local model units.",
+            "type": "Float",
+            "defaultValue": 0.0,
+            "softMin": -0.1,
+            "softMax": 0.1,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_heightmapOffset"
+            }
+        },
+        {
+            "name": "algorithm",
+            "displayName": "Algorithm",
+            "description": "Select the algorithm to use for parallax mapping.",
+            "type": "Enum",
+            "enumValues": [ "Basic", "Steep", "POM", "Relief", "ContactRefinement" ],
+            "defaultValue": "POM",
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_parallax_algorithm"
+            }
+        },
+        {
+            "name": "quality",
+            "displayName": "Quality",
+            "description": "Quality of parallax mapping.",
+            "type": "Enum",
+            "enumValues": [ "Low", "Medium", "High", "Ultra" ],
+            "defaultValue": "Low",
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_parallax_quality"
+            }
+        },
+        {
+            "name": "pdo",
+            "displayName": "Pixel Depth Offset",
+            "description": "Enable PDO to offset the original pixel depths. This will affect any shaders using depth, for example, when receiving shadows.",
+            "type": "Bool",
+            "defaultValue": false,
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_parallax_enablePixelDepthOffset"
+            }
+        },
+        {
+            "name": "shadowFactor",
+            "displayName": "Shadow Factor",
+            "description": "Strength factor for self-shadowing on surfaces with pixel depth offset (PDO). Use lower values to reduce the appearance of shadow acne or other artifacts.",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_parallax_pdo_shadowFactor"
+            }
+        },
+        {
+            "name": "showClipping",
+            "displayName": "Show Clipping",
+            "description": "Highlight areas where the height map is clipped by the mesh surface.",
+            "type": "Bool",
+            "defaultValue": false,
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_parallax_highlightClipping"
+            }
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .json file
+                "file": "TestData/Materials/Types/MaterialPipelineTest_ParallaxState.lua"
+            }
+        }
+    ]
+}
