@@ -268,8 +268,8 @@ set(FILES
     Metadata/MetadataManager.cpp
     Metadata/UuidUtils.h
     Metadata/UuidUtils.cpp
-    Metadata/UuidEntry.h
-    Metadata/UuidEntry.cpp
+    Metadata/MetaUuidEntry.h
+    Metadata/MetaUuidEntry.cpp
     Maths/TransformUtils.h
     PaintBrush/PaintBrushSubModeCluster.cpp
     PaintBrush/PaintBrushSubModeCluster.h
