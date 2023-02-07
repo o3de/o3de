@@ -2014,14 +2014,17 @@ namespace AZ
                 const RPI::ParentPass* passAsParent = pass->AsParent();
 
                 // Add new entry to the timestamp map.
-                PassEntry* entry = addPassEntry(pass, parent);
-
-                // Recur if it's a parent.
-                if (passAsParent)
+                if (pass->IsEnabled())
                 {
-                    for (const auto& childPass : passAsParent->GetChildren())
+                    PassEntry* entry = addPassEntry(pass, parent);
+
+                    // Recur if it's a parent.
+                    if (passAsParent)
                     {
-                        getPassEntryRecursive(childPass.get(), entry);
+                        for (const auto& childPass : passAsParent->GetChildren())
+                        {
+                            getPassEntryRecursive(childPass.get(), entry);
+                        }
                     }
                 }
             };
