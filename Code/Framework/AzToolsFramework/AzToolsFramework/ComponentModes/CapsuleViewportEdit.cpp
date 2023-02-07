@@ -119,9 +119,11 @@ namespace AzToolsFramework
         {
             const float radius = GetCapsuleRadius();
             const AZ::Transform localTransform = GetLocalTransform();
-            const AZ::Transform manipulatorSpace = GetManipulatorSpace();
+            const AZ::Transform localInverse = localTransform.GetInverse();
+            const AZ::Transform manipulatorSpaceInverse = GetManipulatorSpace().GetInverse();
+
             const AZ::Vector3 inverseTransformedForward =
-                (manipulatorSpace * localTransform).GetInverse().TransformVector(cameraState.m_forward);
+                localInverse.TransformVector(manipulatorSpaceInverse.TransformVector(cameraState.m_forward) / GetNonUniformScale());
             AZ::Vector3 axis = inverseTransformedForward.Cross(HeightManipulatorAxis);
             if (axis.GetLengthSq() < AZ::Constants::Tolerance * AZ::Constants::Tolerance)
             {
