@@ -27,13 +27,11 @@
 #include "Audio/AudioSystemComponent.h"
 #include "Audio/AudioTriggerComponent.h"
 #include "Bundling/BundlingSystemComponent.h"
-#include "Ai/NavigationComponent.h"
 #include "Scripting/TagComponent.h"
 #include "Scripting/SimpleStateComponent.h"
 #include "Scripting/SpawnerComponent.h"
 #include "Scripting/LookAtComponent.h"
 #include "Scripting/RandomTimedSpawnerComponent.h"
-#include "Ai/NavigationSystemComponent.h"
 #include "Geometry/GeometrySystemComponent.h"
 #include <Asset/AssetSystemDebugComponent.h>
 
@@ -182,7 +180,6 @@ namespace LmbrCentral
             LmbrCentralAllocatorComponent::CreateDescriptor(),
             LmbrCentralAssetBuilderAllocatorComponent::CreateDescriptor(),
             LmbrCentralSystemComponent::CreateDescriptor(),
-            NavigationComponent::CreateDescriptor(),
             SimpleStateComponent::CreateDescriptor(),
             SpawnerComponent::CreateDescriptor(),
             LookAtComponent::CreateDescriptor(),
@@ -199,7 +196,6 @@ namespace LmbrCentral
             ReferenceShapeComponent::CreateDescriptor(),
             SplineComponent::CreateDescriptor(),
             PolygonPrismShapeComponent::CreateDescriptor(),
-            NavigationSystemComponent::CreateDescriptor(),
             GeometrySystemComponent::CreateDescriptor(),
             RandomTimedSpawnerComponent::CreateDescriptor(),
             SphereShapeDebugDisplayComponent::CreateDescriptor(),
@@ -222,7 +218,8 @@ namespace LmbrCentral
         {
             typeIds.emplace_back(descriptor->GetUuid());
         }
-        EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, typeIds);
+        AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+            &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, typeIds);
     }
 
     //! Request system components on the system entity.
@@ -233,7 +230,6 @@ namespace LmbrCentral
                    azrtti_typeid<LmbrCentralAllocatorComponent>(),
                    azrtti_typeid<LmbrCentralAssetBuilderAllocatorComponent>(),
                    azrtti_typeid<LmbrCentralSystemComponent>(),
-                   azrtti_typeid<NavigationSystemComponent>(),
                    azrtti_typeid<GeometrySystemComponent>(),
                    azrtti_typeid<AudioSystemComponent>(),
                    azrtti_typeid<BundlingSystemComponent>(),

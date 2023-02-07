@@ -330,7 +330,7 @@ namespace LmbrCentral
     AzFramework::SliceInstantiationTicket SpawnerComponent::SpawnSliceInternalRelative(const AZ::Data::Asset<AZ::Data::AssetData>& slice, const AZ::Transform& relative)
     {
         AZ::Transform transform = AZ::Transform::Identity();
-        EBUS_EVENT_ID_RESULT(transform, GetEntityId(), AZ::TransformBus, GetWorldTM);
+        AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
         transform *= relative;
 
@@ -454,7 +454,7 @@ namespace LmbrCentral
     {
         const AzFramework::SliceInstantiationTicket ticket = (*AzFramework::SliceInstantiationResultBus::GetCurrentBusId());
 
-        EBUS_EVENT_ID(GetEntityId(), SpawnerComponentNotificationBus, OnSpawnBegin, ticket);
+        SpawnerComponentNotificationBus::Event(GetEntityId(), &SpawnerComponentNotificationBus::Events::OnSpawnBegin, ticket);
     }
 
     //=========================================================================
@@ -483,12 +483,14 @@ namespace LmbrCentral
             m_entityToTicketMap.emplace(AZStd::make_pair(currEntityId, ticket));
             AZ::EntityBus::MultiHandler::BusConnect(currEntityId);
 
-            EBUS_EVENT_ID(GetEntityId(), SpawnerComponentNotificationBus, OnEntitySpawned, ticket, currEntityId);
+            SpawnerComponentNotificationBus::Event(
+                GetEntityId(), &SpawnerComponentNotificationBus::Events::OnEntitySpawned, ticket, currEntityId);
         }
 
-        EBUS_EVENT_ID(GetEntityId(), SpawnerComponentNotificationBus, OnSpawnEnd, ticket);
+        SpawnerComponentNotificationBus::Event(GetEntityId(), &SpawnerComponentNotificationBus::Events::OnSpawnEnd, ticket);
 
-        EBUS_EVENT_ID(GetEntityId(), SpawnerComponentNotificationBus, OnEntitiesSpawned, ticket, entityIds);
+        SpawnerComponentNotificationBus::Event(
+            GetEntityId(), &SpawnerComponentNotificationBus::Events::OnEntitiesSpawned, ticket, entityIds);
 
         // If slice had no entities, clean it up
         if (entities.empty())

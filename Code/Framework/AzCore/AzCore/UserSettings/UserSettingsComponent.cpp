@@ -46,9 +46,9 @@ namespace AZ
     void UserSettingsComponent::Load()
     {
         AZStd::string settingsPath;
-        EBUS_EVENT_RESULT(settingsPath, UserSettingsFileLocatorBus, ResolveFilePath, m_providerId);
+        UserSettingsFileLocatorBus::BroadcastResult(settingsPath, &UserSettingsFileLocatorBus::Events::ResolveFilePath, m_providerId);
         SerializeContext* serializeContext = nullptr;
-        EBUS_EVENT_RESULT(serializeContext, ComponentApplicationBus, GetSerializeContext);
+        ComponentApplicationBus::BroadcastResult(serializeContext, &ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Warning("UserSettings", serializeContext != nullptr, "Failed to retrieve the serialization context. User settings cannot be loaded.");
         if (!settingsPath.empty() && serializeContext != nullptr)
         {
@@ -60,9 +60,9 @@ namespace AZ
     void UserSettingsComponent::Save()
     {
         AZStd::string settingsPath;
-        EBUS_EVENT_RESULT(settingsPath, UserSettingsFileLocatorBus, ResolveFilePath, m_providerId);
+        UserSettingsFileLocatorBus::BroadcastResult(settingsPath, &UserSettingsFileLocatorBus::Events::ResolveFilePath, m_providerId);
         SerializeContext* serializeContext = nullptr;
-        EBUS_EVENT_RESULT(serializeContext, ComponentApplicationBus, GetSerializeContext);
+        ComponentApplicationBus::BroadcastResult(serializeContext, &ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Warning("UserSettings", serializeContext != nullptr, "Failed to retrieve the serialization context. User settings cannot be stored.");
         if (!settingsPath.empty() && serializeContext != nullptr)
         {

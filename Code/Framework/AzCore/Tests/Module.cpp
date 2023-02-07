@@ -156,7 +156,7 @@ namespace UnitTest
 
             { // Query both modules via the ModuleTestRequestBus
                 EBusAggregateResults<const char*> moduleNames;
-                EBUS_EVENT_RESULT(moduleNames, ModuleTestRequestBus, GetModuleName);
+                ModuleTestRequestBus::BroadcastResult(moduleNames, &ModuleTestRequestBus::Events::GetModuleName);
 
                 EXPECT_TRUE(moduleNames.values.size() == 2);
                 bool foundStaticModule = false;

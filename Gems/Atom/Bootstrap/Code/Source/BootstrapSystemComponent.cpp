@@ -492,6 +492,18 @@ namespace AZ
                     renderPipelineDescriptor.m_name =
                         AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
 
+                    if (renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_customPositionsCount &&
+                        !RHI::RHISystemInterface::Get()->GetDevice()->GetFeatures().m_customSamplePositions)
+                    {
+                        // Disable custom sample positions because they are not supported
+                        AZ_Warning(
+                            "BootstrapSystemComponent",
+                            false,
+                            "Disabling custom sample positions for pipeline %s because they are not supported on this device",
+                            pipelineName.data());
+                        renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_customPositions = {};
+                        renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_customPositionsCount = 0;
+                    }
                     multisampleState = renderPipelineDescriptor.m_renderSettings.m_multisampleState;
 
                     // Create and add render pipeline to the scene (when not added already)
