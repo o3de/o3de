@@ -673,7 +673,8 @@ namespace AzFramework
             {
                 if (NegotiationWithAssetProcessorFailed())
                 {
-                    EBUS_EVENT(AzFramework::AssetSystemConnectionNotificationsBus, NegotiationFailed);
+                    AzFramework::AssetSystemConnectionNotificationsBus::Broadcast(
+                        &AzFramework::AssetSystemConnectionNotificationsBus::Events::NegotiationFailed);
                     StartDisconnectingAssetProcessor();
                     return false;
                 }

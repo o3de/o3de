@@ -81,7 +81,7 @@
          <property name="title">
           <string/>
          </property>
-         <widget class="QGroupBox" name="dynamicBox">
+         <widget class="QGroupBox" name="simulatedBox">
           <property name="geometry">
            <rect>
             <x>0</x>
@@ -107,7 +107,7 @@
             <rect>
              <x>10</x>
              <y>10</y>
-             <width>61</width>
+             <width>71</width>
              <height>21</height>
             </rect>
            </property>
@@ -115,7 +115,7 @@
             <string notr="true">border: none;</string>
            </property>
            <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Dynamic&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Simulated&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
           <widget class="QLabel" name="label_3">
@@ -131,7 +131,7 @@
             <string notr="true">border: none;</string>
            </property>
            <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Used when physics are applied and&lt;br/&gt; automated forces are needed to move assets.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Used when physics is applied and&lt;br/&gt; automated forces are needed to move assets.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
@@ -218,7 +218,7 @@
           <property name="title">
            <string/>
           </property>
-          <widget class="QRadioButton" name="dynamicRadioButton">
+          <widget class="QRadioButton" name="simulatedRadioButton">
            <property name="geometry">
             <rect>
              <x>20</x>
@@ -252,7 +252,7 @@
           </widget>
          </widget>
          <zorder>kinematicBox</zorder>
-         <zorder>dynamicBox</zorder>
+         <zorder>simulatedBox</zorder>
          <zorder>groupBox_5</zorder>
         </widget>
        </item>

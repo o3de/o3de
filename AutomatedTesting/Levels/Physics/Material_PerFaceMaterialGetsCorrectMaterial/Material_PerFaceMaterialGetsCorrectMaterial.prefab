@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -55,6 +51,10 @@
             "Id": "Entity_[263299149192]",
             "Name": "Perface_Entity",
             "Components": {
+                "Component_[11696143035287514767]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 11696143035287514767
+                },
                 "Component_[12895135369190770831]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 12895135369190770831,
@@ -71,10 +71,6 @@
                             "SortIndex": 2
                         }
                     ]
-                },
-                "Component_[12933367835807479524]": {
-                    "$type": "SelectionComponent",
-                    "Id": 12933367835807479524
                 },
                 "Component_[14094829544062915163]": {
                     "$type": "EditorColliderComponent",
@@ -219,10 +215,6 @@
                         }
                     ]
                 },
-                "Component_[1341105588245574408]": {
-                    "$type": "SelectionComponent",
-                    "Id": 1341105588245574408
-                },
                 "Component_[14079522067308699507]": {
                     "$type": "EditorLockComponent",
                     "Id": 14079522067308699507
@@ -244,12 +236,17 @@
                         "Linear damping": 0.0,
                         "Gravity Enabled": false,
                         "Compute Mass": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 10.0
-                        }
+                        "Inertia tensor": [
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0
+                        ]
                     }
                 },
                 "Component_[17367340743922879512]": {
@@ -342,10 +339,6 @@
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 10435545141396253755
                 },
-                "Component_[10589025713121715221]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10589025713121715221
-                },
                 "Component_[1360399676717184302]": {
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 1360399676717184302
@@ -421,12 +414,17 @@
                         "Linear damping": 0.0,
                         "Gravity Enabled": false,
                         "Compute Mass": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 10.0
-                        }
+                        "Inertia tensor": [
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0
+                        ]
                     }
                 }
             },
@@ -462,10 +460,6 @@
                 "Component_[10435545141396253755]": {
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 10435545141396253755
-                },
-                "Component_[10589025713121715221]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10589025713121715221
                 },
                 "Component_[1360399676717184302]": {
                     "$type": "EditorPendingCompositionComponent",
@@ -542,12 +536,17 @@
                         "Linear damping": 0.0,
                         "Gravity Enabled": false,
                         "Compute Mass": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 10.0
-                        }
+                        "Inertia tensor": [
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0
+                        ]
                     }
                 }
             },
@@ -593,10 +592,6 @@
                 "Component_[3047355939801335922]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 3047355939801335922
-                },
-                "Component_[3687396159953003426]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3687396159953003426
                 },
                 "Component_[722204632874297368]": {
                     "$type": "EditorOnlyEntityComponent",

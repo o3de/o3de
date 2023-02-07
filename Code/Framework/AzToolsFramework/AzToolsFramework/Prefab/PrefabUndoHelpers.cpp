@@ -82,6 +82,17 @@ namespace AzToolsFramework
                 
             }
 
+            void AddEntityDoms(
+                const AZStd::vector<const AZ::Entity*>& entityList,
+                TemplateId templateId,
+                UndoSystem::URSequencePoint* undoBatch)
+            {
+                PrefabUndoAddEntityDoms* undoState = aznew PrefabUndoAddEntityDoms("Undo Adding Entity DOMs");
+                undoState->SetParent(undoBatch);
+                undoState->Capture(entityList, templateId);
+                undoState->Redo();
+            }
+
             void RemoveEntityDoms(
                 const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
                 TemplateId templateId,
@@ -97,11 +108,12 @@ namespace AzToolsFramework
                 const PrefabDomValue& entityDomBeforeUpdatingEntity,
                 const PrefabDomValue& entityDomAfterUpdatingEntity,
                 AZ::EntityId entityId,
-                UndoSystem::URSequencePoint* undoBatch)
+                UndoSystem::URSequencePoint* undoBatch,
+                bool updateCache)
             {
                 PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate("Undo Updating Entity");
                 state->SetParent(undoBatch);
-                state->Capture(entityDomBeforeUpdatingEntity, entityDomAfterUpdatingEntity, entityId);
+                state->Capture(entityDomBeforeUpdatingEntity, entityDomAfterUpdatingEntity, entityId, updateCache);
                 state->Redo();
             }
 

@@ -33,7 +33,24 @@ namespace AZ
             D3D12_RESOURCE_ALIASING_BARRIER barrier;
             barrier.pResourceBefore = GetD3D12Resource(resourceBefore);
             barrier.pResourceAfter = GetD3D12Resource(resourceAfter);
-            static_cast<Scope*>(resourceAfter.m_beginScope)->QueueAliasingBarrier(barrier);
+
+            const BarrierOp::CommandListState* state = nullptr;
+            switch (resourceBefore.m_type)
+            {
+            case RHI::AliasedResourceType::Image:
+                {
+                    // Need to set the proper sample positions (or reset them) before emitting the barrier
+                    const auto& descriptor = static_cast<Image*>(resourceBefore.m_resource)->GetDescriptor();
+                    if (RHI::CheckBitsAll(descriptor.m_bindFlags, RHI::ImageBindFlags::Depth))
+                    {
+                        state = &descriptor.m_multisampleState;
+                    }
+                }
+                break;
+            default:
+                break;
+            }
+            static_cast<Scope*>(resourceAfter.m_beginScope)->QueueAliasingBarrier(barrier, state);
         }
     }
 }

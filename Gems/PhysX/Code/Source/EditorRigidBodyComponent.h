@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/EntityBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
@@ -25,8 +26,7 @@
 
 namespace PhysX
 {
-    /// Configuration data for EditorPhysXRigidBodyComponent.
-    ///
+    //! Configuration data for EditorRigidBodyComponent.
     struct EditorRigidBodyConfiguration
         : public AzPhysics::RigidBodyConfiguration
     {
@@ -39,10 +39,10 @@ namespace PhysX
         bool m_centerOfMassDebugDraw = false;
     };
 
-    /// Class for in-editor PhysX Rigid Body Component.
-    ///
+    //! Class for in-editor PhysX Dynamic Rigid Body Component.
     class EditorRigidBodyComponent
         : public AzToolsFramework::Components::EditorComponentBase
+        , public AZ::EntityBus::Handler
         , protected AzFramework::EntityDebugDisplayEventBus::Handler
         , private AZ::TransformNotificationBus::Handler
         , private Physics::ColliderComponentEventBus::Handler
@@ -63,12 +63,12 @@ namespace PhysX
         {
             provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
             provided.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+            provided.push_back(AZ_CRC_CE("PhysicsDynamicRigidBodyService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
-            incompatible.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -78,13 +78,15 @@ namespace PhysX
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC_CE("PhysicsColliderService"));
             dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         // AZ::Component
         void Activate() override;
         void Deactivate() override;
+
+        // AZ::EntityBus overrides ...
+        void OnEntityActivated(const AZ::EntityId& entityId) override;
 
         // BoundsRequestBus overrides ...
         AZ::Aabb GetWorldBounds() override;
