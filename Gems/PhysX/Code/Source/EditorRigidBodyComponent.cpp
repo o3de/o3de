@@ -27,7 +27,7 @@ namespace PhysX
 {
     namespace Internal
     {
-        AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetCollisionShapes(AZ::Entity* entity)
+        AZStd::vector<AZStd::shared_ptr<Physics::Shape>> CreateCollisionShapes(AZ::Entity* entity)
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> allShapes;
 
@@ -48,7 +48,8 @@ namespace PhysX
                 if (shapeConfigurationProxy.IsAssetConfig())
                 {
                     AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-                    Utils::GetShapesFromAsset(shapeConfigurationProxy.m_physicsAsset.m_configuration,
+                    Utils::CreateShapesFromAsset(
+                        shapeConfigurationProxy.m_physicsAsset.m_configuration,
                         colliderConfigurationUnscaled, hasNonUniformScaleComponent, shapeConfigurationProxy.m_subdivisionLevel, shapes);
 
                     for (const auto& shape : shapes)
@@ -492,7 +493,7 @@ namespace PhysX
         configuration.m_position = colliderTransform.GetTranslation();
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
-        configuration.m_colliderAndShapeData = Internal::GetCollisionShapes(GetEntity());
+        configuration.m_colliderAndShapeData = Internal::CreateCollisionShapes(GetEntity());
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
