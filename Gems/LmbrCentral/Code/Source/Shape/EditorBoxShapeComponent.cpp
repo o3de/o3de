@@ -183,4 +183,9 @@ namespace LmbrCentral
     {
         return GetWorldTM();
     }
+
+    AZ::Quaternion EditorBoxShapeComponent::GetRotationOffset() const
+    {
+        return AZ::Quaternion::CreateIdentity();
+    }
 } // namespace LmbrCentral

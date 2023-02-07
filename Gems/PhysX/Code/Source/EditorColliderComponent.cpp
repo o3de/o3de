@@ -1130,6 +1130,11 @@ namespace PhysX
         return GetWorldTM();
     }
 
+    AZ::Quaternion EditorColliderComponent::GetRotationOffset() const
+    {
+        return m_configuration.m_rotation;
+    }
+
     void EditorColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
         if (world.IsClose(m_cachedWorldTransform))

@@ -121,4 +121,8 @@ namespace AzToolsFramework
             m_undoBatch = nullptr;
         }
     }
+
+    void BaseShapeViewportEdit::OnCameraStateChanged([[maybe_unused]] const AzFramework::CameraState& cameraState)
+    {
+    }
 } // namespace AzToolsFramework

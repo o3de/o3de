@@ -59,6 +59,9 @@ namespace AzToolsFramework
         //! This is useful in the main editor viewport for hooking up undo/redo behavior and UI refreshing.
         //! This should be called after Setup. Otherwise, the manipulators will not have been created yet.
         virtual void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) = 0;
+        //! Optionally allows the viewport editing to respond to the camera state changing, for example by repositioning manipulators to
+        //! more conveniently accessible locations.
+        virtual void OnCameraStateChanged(const AzFramework::CameraState& cameraState);
 
     protected:
         AZ::Transform GetManipulatorSpace() const;

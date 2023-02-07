@@ -640,6 +640,8 @@ set(FILES
     ComponentMode/ComponentModeViewportUiRequestBus.h
     ComponentMode/EditorBaseComponentMode.h
     ComponentMode/EditorBaseComponentMode.cpp
+    ComponentModes/BaseShapeComponentMode.h
+    ComponentModes/BaseShapeComponentMode.cpp
     ComponentModes/BaseShapeViewportEdit.h
     ComponentModes/BaseShapeViewportEdit.cpp
     ComponentModes/BoxComponentMode.h
@@ -651,10 +653,12 @@ set(FILES
     ComponentModes/CapsuleViewportEdit.h
     ComponentModes/CapsuleViewportEdit.cpp
     ComponentModes/ShapeComponentModeBus.h
-    ComponentModes/BaseShapeComponentMode.h
-    ComponentModes/BaseShapeComponentMode.cpp
     ComponentModes/ShapeTranslationOffsetViewportEdit.h
     ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
+    ComponentModes/SphereComponentMode.h
+    ComponentModes/SphereComponentMode.cpp
+    ComponentModes/SphereViewportEdit.h
+    ComponentModes/SphereViewportEdit.cpp
     ComponentModes/ViewportEditUtilities.h
     ViewportSelection/EditorBoxSelect.h
     ViewportSelection/EditorBoxSelect.cpp
