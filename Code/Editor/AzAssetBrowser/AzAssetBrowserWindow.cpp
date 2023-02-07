@@ -469,13 +469,18 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         m_toolsMenu->addAction(collapseAllAction);
 
         m_toolsMenu->addSeparator();
-        auto* projectSourceAssets = new QAction(tr("Filter Project and Source Assets"), this);
+        auto* projectSourceAssets = new QAction(tr("Hide Product Assets"), this);
         projectSourceAssets->setCheckable(true);
         projectSourceAssets->setChecked(true);
-        connect(projectSourceAssets, &QAction::triggered, this, [this] { m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(); });
+        connect(projectSourceAssets, &QAction::triggered, this,
+            [this, projectSourceAssets]
+            {
+                m_ui->m_thumbnailView->HideProductAssets(projectSourceAssets->isChecked());
+                m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
+            });
         m_toolsMenu->addAction(projectSourceAssets);
 
-        m_ui->m_searchWidget->GetFilter()->AddFilter(m_ui->m_searchWidget->GetProjectSourceFilter());
+        m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
         m_ui->m_searchWidget->AddFolderFilter();
 
         m_assetBrowserDisplayState = AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::TreeViewMode;

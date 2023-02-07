@@ -434,6 +434,24 @@ namespace EMotionFX
             return 0;
         }
 
+        void AnimGraphComponent::SetActorThreadIndex(AZ::u32 threadIndex)
+        {
+            if (m_actorInstance)
+            {
+                m_actorInstance->SetThreadIndex(threadIndex);
+            }
+        }
+
+        AZ::u32 AnimGraphComponent::GetActorThreadIndex() const
+        {
+            if (m_actorInstance)
+            {
+                return m_actorInstance->GetThreadIndex();
+            }
+
+            return 0;
+        }
+
         void AnimGraphComponent::CheckCreateAnimGraphInstance()
         {
             auto& cfg = m_configuration;

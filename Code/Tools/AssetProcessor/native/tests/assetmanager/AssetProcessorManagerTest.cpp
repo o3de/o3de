@@ -3016,7 +3016,8 @@ TEST_F(AssetProcessorManagerTest, AssessDeletedFile_OnJobInFlight_IsIgnored)
         ASSERT_FALSE(gotUnexpectedAssetToProcess);
 
         // now tell it to stop ignoring the cache delete and let it do the next one.
-        EBUS_EVENT(AssetProcessor::ProcessingJobInfoBus, EndCacheFileUpdate, filePathToGenerate.toUtf8().data(), false);
+        AssetProcessor::ProcessingJobInfoBus::Broadcast(
+            &AssetProcessor::ProcessingJobInfoBus::Events::EndCacheFileUpdate, filePathToGenerate.toUtf8().data(), false);
 
         // simulate a "late" deletion notify coming from the file monitor that it outside the "ignore delete" section.  This should STILL not generate additional
         // deletion notifies as it should ignore these if the file in fact actually there when it gets around to checking it

@@ -71,7 +71,7 @@ namespace UnitTests
         AssetProcessor::IUuidRequests* m_uuidInterface{};
     };
 
-    void MakeFile(const char* path)
+    void MakeFile(AZ::IO::PathView path)
     {
         ASSERT_TRUE(UnitTestUtils::CreateDummyFileAZ(path));
     }
@@ -114,11 +114,13 @@ namespace UnitTests
         EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(
             AZStd::string::format("%s%s", TestFile, AzToolsFramework::MetadataManager::MetadataFileExtension).c_str()));
 
+        // Remove the file
         AZ::IO::FileIOBase::GetInstance()->Remove(TestFile);
         AZ::IO::FileIOBase::GetInstance()->Remove(
             (AZStd::string(TestFile) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
         m_uuidInterface->FileRemoved((AZStd::string(TestFile) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
 
+        // Check the UUID again, expecting an error
         TraceBusErrorChecker errorHandler;
         errorHandler.Begin();
         uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
@@ -207,6 +209,7 @@ namespace UnitTests
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
+        // Move the metadata file and signal the old one is removed
         AZ::IO::FileIOBase::GetInstance()->Rename(
             (AZStd::string(FileA) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str(),
             (AZStd::string(FileB) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
@@ -228,6 +231,7 @@ namespace UnitTests
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
+        // Move the metadata file and signal the old one is removed
         AZ::IO::FileIOBase::GetInstance()->Rename(
             (AZStd::string(FileA) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str(),
             (AZStd::string(FileB) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
@@ -247,6 +251,7 @@ namespace UnitTests
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
+        // Delete the metadata file and signal its removal
         AZ::IO::FileIOBase::GetInstance()->Remove(
             (AZStd::string(TestFile) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
 
@@ -303,14 +308,14 @@ namespace UnitTests
 
     TEST_F(UuidManagerTests, TwoFilesWithSameRelativePath_DisabledType_ReturnsSameUuid)
     {
-        static constexpr const char* FileA = "c:/somepath/folderA/mockfile.png";
-        static constexpr const char* FileB = "c:/somepath/folderB/mockfile.png";
+        static constexpr AZ::IO::FixedMaxPath FileA = "c:/somepath/folderA/mockfile.png"; // png files are disabled
+        static constexpr AZ::IO::FixedMaxPath FileB = "c:/somepath/folderB/mockfile.png";
 
         MakeFile(FileA);
         MakeFile(FileB);
 
-        auto uuidA = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(1, "c:/somepath/folderA", "mockfile.png"));
-        auto uuidB = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(2, "c:/somepath/folderB", "mockfile.png"));
+        auto uuidA = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(1, FileA.ParentPath(), FileA.Filename()));
+        auto uuidB = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(2, FileB.ParentPath(), FileB.Filename()));
 
         EXPECT_FALSE(uuidA.IsNull());
         EXPECT_FALSE(uuidB.IsNull());
@@ -319,17 +324,48 @@ namespace UnitTests
 
     TEST_F(UuidManagerTests, TwoFilesWithSameRelativePath_EnabledType_ReturnsDifferentUuid)
     {
-        static constexpr const char* FileA = "c:/somepath/folderA/mockfile.txt";
-        static constexpr const char* FileB = "c:/somepath/folderB/mockfile.txt";
+        static constexpr AZ::IO::FixedMaxPath FileA = "c:/somepath/folderA/mockfile.txt"; // txt files are enabled
+        static constexpr AZ::IO::FixedMaxPath FileB = "c:/somepath/folderB/mockfile.txt";
 
         MakeFile(FileA);
         MakeFile(FileB);
 
-        auto uuidA = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(1, "c:/somepath/folderA", "mockfile.txt"));
-        auto uuidB = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(2, "c:/somepath/folderB", "mockfile.txt"));
+        auto uuidA = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(1, FileA.ParentPath(), FileA.Filename()));
+        auto uuidB = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(2, FileB.ParentPath(), FileB.Filename()));
 
         EXPECT_FALSE(uuidA.IsNull());
         EXPECT_FALSE(uuidB.IsNull());
         EXPECT_NE(uuidA, uuidB);
+    }
+
+    TEST_F(UuidManagerTests, GetUuid_CorruptedFile_Fails)
+    {
+        static constexpr AZ::IO::FixedMaxPath TestFile = "c:/somepath/mockfile.txt";
+        static constexpr AZ::IO::FixedMaxPath MetadataFile = TestFile.Native() + AzToolsFramework::MetadataManager::MetadataFileExtension;
+
+        MakeFile(TestFile);
+
+        // Generate a metadata file
+        m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
+
+        // Read in the metadata file
+        auto result = AZ::Utils::ReadFile<AZStd::string>(MetadataFile.Native());
+
+        ASSERT_TRUE(result.IsSuccess());
+
+        auto metadataFileContents = result.GetValue();
+
+        // Corrupt the first character of the metadata file and write it back to disk, signalling a file change as well
+        metadataFileContents.data()[0] = 'A';
+        AZ::Utils::WriteFile(metadataFileContents, MetadataFile.Native());
+        m_uuidInterface->FileChanged(MetadataFile);
+
+        // Try to read the metadata again, expecting an error
+        TraceBusErrorChecker errorChecker;
+        errorChecker.Begin();
+        auto uuidRetry = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
+        errorChecker.End(2);
+
+        EXPECT_TRUE(uuidRetry.IsNull());
     }
 }

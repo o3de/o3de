@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 
 namespace AzToolsFramework
@@ -20,7 +21,7 @@ namespace AzToolsFramework
         /// functionality all ComponentModes require.
         class EditorBaseComponentMode
             : public ComponentModeRequestBus::Handler
-            , protected ToolsApplicationNotificationBus::Handler
+            , public Prefab::PrefabPublicNotificationBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR_DECL
@@ -89,8 +90,8 @@ namespace AzToolsFramework
             /// @see To be overridden by derived ComponentModes
             virtual AZStd::vector<ActionOverride> PopulateActionsImpl();
 
-            // ToolsApplicationNotificationBus
-            void AfterUndoRedo() override;
+            // PrefabPublicNotificationBus overrides ...
+            void OnPrefabInstancePropagationEnd() override;
 
             AZ::EntityComponentIdPair m_entityComponentIdPair; ///< Entity and Component Id associated with this ComponentMode.
             AZ::Uuid m_componentType; ///< The underlying type of the Component this ComponentMode is for.

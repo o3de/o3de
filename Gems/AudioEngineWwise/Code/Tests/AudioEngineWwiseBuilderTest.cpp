@@ -8,7 +8,7 @@
 
 #include <AzTest/AzTest.h>
 #include <AzTest/Utils.h>
-#include <Builder/WwiseBuilderComponent.h>
+#include <WwiseBuilderComponent.h>
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>

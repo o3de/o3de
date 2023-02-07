@@ -116,32 +116,37 @@ namespace AZ
             return false;
         }
 
-        void Scope::QueueAliasingBarrier(const D3D12_RESOURCE_ALIASING_BARRIER& barrier)
+        void Scope::QueueAliasingBarrier(
+            const D3D12_RESOURCE_ALIASING_BARRIER& barrier, const BarrierOp::CommandListState* state /*= nullptr*/)
         {
-            m_aliasingBarriers.push_back(barrier);
+            m_aliasingBarriers.emplace_back(barrier, state);
         }
 
-        void Scope::QueueResolveTransition(const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier)
+        void Scope::QueueResolveTransition(
+            const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier, const BarrierOp::CommandListState* state /*= nullptr*/)
         {
             AZ_Assert(
                 transitionBarrier.StateAfter == D3D12_RESOURCE_STATE_RESOLVE_SOURCE || transitionBarrier.StateAfter == D3D12_RESOURCE_STATE_RESOLVE_DEST,
                 "Invalid state for resolve barrier");
-            m_resolveTransitionBarrierRequests.push_back(transitionBarrier);
+            m_resolveTransitionBarrierRequests.emplace_back(transitionBarrier, state);
         }
 
-        void Scope::QueuePrologueTransition(const D3D12_RESOURCE_TRANSITION_BARRIER& barrier)
+        void Scope::QueuePrologueTransition(
+            const D3D12_RESOURCE_TRANSITION_BARRIER& barrier, const BarrierOp::CommandListState* state /*= nullptr*/)
         {
-            m_prologueTransitionBarrierRequests.push_back(barrier);
+            m_prologueTransitionBarrierRequests.emplace_back(barrier, state);
         }
 
-        void Scope::QueueEpilogueTransition(const D3D12_RESOURCE_TRANSITION_BARRIER& barrier)
+        void Scope::QueueEpilogueTransition(
+            const D3D12_RESOURCE_TRANSITION_BARRIER& barrier, const BarrierOp::CommandListState* state /*= nullptr*/)
         {
-            m_epilogueTransitionBarrierRequests.push_back(barrier);
+            m_epilogueTransitionBarrierRequests.emplace_back(barrier, state);
         }
 
-        void Scope::QueuePreDiscardTransition(const D3D12_RESOURCE_TRANSITION_BARRIER& barrier)
+        void Scope::QueuePreDiscardTransition(
+            const D3D12_RESOURCE_TRANSITION_BARRIER& barrier, const BarrierOp::CommandListState* state /*= nullptr*/)
         {
-            m_preDiscardTransitionBarrierRequests.push_back(barrier);
+            m_preDiscardTransitionBarrierRequests.emplace_back(barrier, state);
         }
   
         bool Scope::IsInDiscardResourceRequests(ID3D12Resource* nativeResource) const

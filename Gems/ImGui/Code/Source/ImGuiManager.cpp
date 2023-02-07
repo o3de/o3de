@@ -740,7 +740,7 @@ void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)
     ImGui::ImGuiContextScope contextScope(m_imguiContext);
 
     // Trigger all listeners to run their updates
-    EBUS_EVENT(ImGuiUpdateListenerBus, OnImGuiUpdate);
+    ImGuiUpdateListenerBus::Broadcast(&ImGuiUpdateListenerBus::Events::OnImGuiUpdate);
 
     // Run imgui's internal render and retrieve resulting draw data
     ImGui::Render();

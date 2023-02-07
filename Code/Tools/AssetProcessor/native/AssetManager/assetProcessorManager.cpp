@@ -34,6 +34,7 @@
 
 #include <AssetManager/ProductAsset.h>
 #include <native/AssetManager/SourceAssetReference.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
 
 namespace AssetProcessor
 {
@@ -350,6 +351,48 @@ namespace AssetProcessor
         }
 
         return response;
+    }
+
+    AssetFingerprintClearResponse AssetProcessorManager::ProcessFingerprintClearRequest(MessageData<AssetFingerprintClearRequest> messageData)
+    {
+        AssetFingerprintClearResponse response;
+        ProcessFingerprintClearRequest(*messageData.m_message, response);
+        return response;
+    }
+
+    void AssetProcessorManager::ProcessFingerprintClearRequest(
+        AssetFingerprintClearRequest& request, AssetFingerprintClearResponse& response)
+    {
+        SourceAssetReference sourceAsset;
+
+        if (QFileInfo(request.m_searchTerm.c_str()).isAbsolute())
+        {
+            sourceAsset = SourceAssetReference(request.m_searchTerm.c_str());
+        }
+        else
+        {
+            QString absolutePath = m_platformConfig->FindFirstMatchingFile(request.m_searchTerm.c_str());
+
+            if (absolutePath.isEmpty())
+            {
+                response.m_isSuccess = false;
+                return;
+            }
+
+            sourceAsset = SourceAssetReference(absolutePath.toUtf8().constData());
+        }
+
+        response.m_isSuccess = m_stateData->UpdateFileHashByFileNameAndScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), 0);
+
+        // if setting the file hash failed, still try to clear the job fingerprints.
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
+        if (!m_stateData->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source))
+        {
+            response.m_isSuccess = false;
+            return;
+        }
+
+        response.m_isSuccess = response.m_isSuccess && m_stateData->SetJobFingerprintsBySourceID(source.m_sourceID, 0);
     }
 
     //! A network request came in asking, for a given input asset, what the status is of any jobs related to that request
@@ -794,7 +837,7 @@ namespace AssetProcessor
             // send a network message when not in batch mode.
             const ScanFolderInfo* scanFolder = m_platformConfig->GetScanFolderByPath(jobEntry.m_sourceAssetReference.ScanFolderPath().c_str());
             AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(AZ::OSString(source.m_sourceName.c_str()), AZ::OSString(scanFolder->ScanPath().toUtf8().constData()), AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileFailed, source.m_sourceGuid);
-            EBUS_EVENT(AssetProcessor::ConnectionBus, Send, 0, message);
+            AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::Send, 0, message);
             MessageInfoBus::Broadcast(&MessageInfoBusTraits::OnAssetFailed, source.m_sourceName);
         }
 
@@ -2238,7 +2281,8 @@ namespace AssetProcessor
         ++m_numTotalSourcesFound;
 
         AssetProcessor::BuilderInfoList builderInfoList;
-        EBUS_EVENT(AssetProcessor::AssetBuilderInfoBus, GetMatchingBuildersInfo, sourceAsset.AbsolutePath().c_str(), builderInfoList);
+        AssetProcessor::AssetBuilderInfoBus::Broadcast(
+            &AssetProcessor::AssetBuilderInfoBus::Events::GetMatchingBuildersInfo, sourceAsset.AbsolutePath().c_str(), builderInfoList);
 
         if (builderInfoList.size())
         {
@@ -2354,8 +2398,16 @@ namespace AssetProcessor
                 m_sourceFileModTimeMap[jobDetails.m_jobEntry.m_sourceFileUUID] = mSecsSinceEpoch;
                 QString sourceFile(jobDetails.m_jobEntry.m_sourceAssetReference.RelativePath().c_str());
                 AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(jobDetails.m_jobEntry.m_sourceAssetReference);
-                AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(AZ::OSString(sourceFile.toUtf8().constData()), AZ::OSString(jobDetails.m_scanFolder->ScanPath().toUtf8().constData()), AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileChanged, sourceUUID);
-                EBUS_EVENT(AssetProcessor::ConnectionBus, Send, 0, message);
+
+                if (!sourceUUID.IsNull())
+                {
+                    AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(
+                        AZ::OSString(sourceFile.toUtf8().constData()),
+                        AZ::OSString(jobDetails.m_scanFolder->ScanPath().toUtf8().constData()),
+                        AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileChanged,
+                        sourceUUID);
+                    AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::Send, 0, message);
+                }
             }
         }
 
@@ -3300,6 +3352,7 @@ namespace AssetProcessor
             m_fileModTimes.clear();
             m_fileHashes.clear();
 
+            QueueIdleCheck();
             m_initialScanSkippingFeature = false;
             return;
         }
@@ -3910,6 +3963,19 @@ namespace AssetProcessor
         JobToProcessEntry entry;
 
         AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(sourceAsset);
+
+        if (sourceUUID.IsNull())
+        {
+            auto failureMessage = AZStd::string::format(
+                "CreateJobs failed for %s - Invalid UUID, metadata file " AZ_STRING_FORMAT " is likely corrupt",
+                sourceAsset.AbsolutePath().c_str(),
+                AZ_STRING_ARG(AzToolsFramework::MetadataManager::ToMetadataPath(sourceAsset.AbsolutePath().c_str()).Native()));
+            AutoFailJob(
+                failureMessage,
+                failureMessage,
+                JobEntry(sourceAsset, AZ::Uuid(), { "all", {} }, QString("CreateJobs"), 0, GenerateNewJobRunKey(), sourceUUID, false));
+            return;
+        }
 
         {
             // this scope exists only to narrow the range of m_sourceUUIDToSourceNameMapMutex
@@ -4809,7 +4875,7 @@ namespace AssetProcessor
         sourceDatabaseEntry.m_sourceName = sourceAsset.RelativePath().c_str();
         sourceDatabaseEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset);
 
-        if (!m_stateData->SetSource(sourceDatabaseEntry))
+        if (sourceDatabaseEntry.m_sourceGuid.IsNull() || !m_stateData->SetSource(sourceDatabaseEntry))
         {
             AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to add source to the database!!!");
             return;

@@ -1,12 +1,12 @@
 {
-    "engine_name": "@O3DE_ENGINE_NAME@",
-    "restricted_name": "@O3DE_ENGINE_NAME@",
-    "display_version": "@O3DE_DISPLAY_VERSION_STRING@",
-    "version": "@O3DE_VERSION_STRING@",
+    "engine_name": "@O3DE_INSTALL_ENGINE_NAME@",
+    "restricted_name": "@O3DE_INSTALL_ENGINE_NAME@",
+    "display_version": "@O3DE_INSTALL_DISPLAY_VERSION_STRING@",
+    "version": "@O3DE_INSTALL_VERSION_STRING@",
     "api_versions": @O3DE_INSTALL_API_VERSIONS@,
     "file_version": 2,
     "copyright_year": @O3DE_COPYRIGHT_YEAR@,
-    "build": @O3DE_BUILD_VERSION@,
+    "build": @O3DE_INSTALL_BUILD_VERSION@,
     "external_subdirectories": [@O3DE_INSTALL_EXTERNAL_SUBDIRS@],
     "projects": [@O3DE_INSTALL_PROJECTS@],
     "templates": [@O3DE_INSTALL_TEMPLATES@]

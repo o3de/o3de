@@ -4494,7 +4494,8 @@ namespace AZ
 
             CallFunction<R, Args...>::Member(m_functionPtr, *arguments[0].GetAsUnsafe<C*>(), arguments.data() + 1, result, AZStd::make_index_sequence<sizeof...(Args)>());
 
-            EBUS_EVENT_ID(((void*)(*arguments[0].GetAsUnsafe<C*>())), BehaviorObjectSignals, OnMemberMethodCalled, this);
+            BehaviorObjectSignals::Event(
+                (void*)(*arguments[0].GetAsUnsafe<C*>()), &BehaviorObjectSignals::Events::OnMemberMethodCalled, this);
 
             return true;
         }
@@ -5455,3 +5456,4 @@ namespace AZ
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflection.inl>
 
+DECLARE_EBUS_EXTERN(BehaviorContextEvents);

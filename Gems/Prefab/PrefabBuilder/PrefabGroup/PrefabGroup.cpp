@@ -138,6 +138,8 @@ namespace AZ::SceneAPI::SceneData
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                         ->Attribute(AZ::Edit::Attributes::Max, 1)
                         ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
+                        // There isn't a documentation page for default prefabs under the scene settings documentation category, yet.
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/assets/scene-settings/")
                     ->UIElement(AZ::Edit::UIHandlers::MultiLineEdit, "", prefabTooltip)
                         ->Attribute(AZ::Edit::Attributes::ValueText, "The prefab group controls the generation of default procedural prefabs.")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true);

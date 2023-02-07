@@ -31,6 +31,20 @@
 //!             Ex. AZ_CLASS_ENUM(E, (a, 1), (b, 2), (c, 2) )
 //!             Invoking either ToString(E::b) or ToString(E::c) will result in the string "b" being returned
 //! limitation: maximum of 125 enumerators
+//!
+//! By default, all enums declared with these macros will be assigned a default UUID due to the default enum specialization in TypeInfo.h.
+//! To create a unique UUID, you must use the AZ_TYPE_INFO_SPECIALIZE macro as well. This macro must be declared in the AZ namespace.
+//! Ex:
+//! namespace MyNamespace
+//! {
+//!     AZ_ENUM(MyCoolEnum, A, B);
+//! }
+//! 
+//! namespace AZ
+//! {
+//!     AZ_TYPE_INFO_SPECIALIZE(MyNamespace::MyCoolEnum, "{<SomeGuid>}");
+//! }
+//! 
 #define AZ_ENUM(EnumTypeName, ...)                                                      MAKE_REFLECTABLE_ENUM_UNSCOPED(EnumTypeName, __VA_ARGS__)
 
 //! Generate a decorated enumeration as AZ_ENUM, but with a specific underlying type.

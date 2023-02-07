@@ -19,6 +19,7 @@
 #include <Source/NameConstants.h>
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>
+#include <AzFramework/Physics/PropertyTypes.h>
 
 #include <LyViewPaneNames.h>
 
@@ -174,11 +175,12 @@ namespace PhysX
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_gravityEnabled,
                         "Gravity enabled", "When active, global gravity affects this rigid body.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetGravityVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_kinematic,
-                        "Kinematic", "When active, the rigid body is not affected by gravity or other forces and is moved by script.")
+                    ->DataElement(Physics::Edit::KinematicSelector, &AzPhysics::RigidBodyConfiguration::m_kinematic,
+                        "Type", "Determines how the movement/position of the rigid body is controlled.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetKinematicVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled)
                         ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetKinematicTooltip)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     // Linear axis locking properties
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Linear Axis Locking")
@@ -299,7 +301,14 @@ namespace PhysX
 
     void EditorRigidBodyComponent::Activate()
     {
-        const AZ::EntityId entityId = GetEntityId();
+        // During activation all the editor collider components will create their physics shapes.
+        // Delaying the creation of the editor dynamic rigid body to OnEntityActivated so all the shapes are ready.
+        AZ::EntityBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void EditorRigidBodyComponent::OnEntityActivated(const AZ::EntityId& entityId)
+    {
+        AZ::EntityBus::Handler::BusDisconnect();
 
         AzToolsFramework::Components::EditorComponentBase::Activate();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(entityId);
@@ -328,7 +337,7 @@ namespace PhysX
 
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
             [this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale); });
-        AZ::NonUniformScaleRequestBus::Event(GetEntityId(), &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
+        AZ::NonUniformScaleRequestBus::Event(entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
             m_nonUniformScaleChangedHandler);
 
         if (auto* physXDebug = AZ::Interface<Debug::PhysXDebugInterface>::Get())
@@ -344,13 +353,15 @@ namespace PhysX
         CreateEditorWorldRigidBody();
 
         PhysX::EditorColliderValidationRequestBus::Event(
-            GetEntityId(), &PhysX::EditorColliderValidationRequestBus::Events::ValidateRigidBodyMeshGeometryType);
+            entityId, &PhysX::EditorColliderValidationRequestBus::Events::ValidateRigidBodyMeshGeometryType);
 
-        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(entityId);
     }
 
     void EditorRigidBodyComponent::Deactivate()
     {
+        AZ::EntityBus::Handler::BusDisconnect();
+
         m_debugDisplayDataChangeHandler.Disconnect();
         m_sceneConfigChangedHandler.Disconnect();
 
@@ -395,7 +406,7 @@ namespace PhysX
             if (editContext)
             {
                 editContext->Class<EditorRigidBodyComponent>(
-                    "PhysX Rigid Body", "The entity behaves as a movable rigid object in PhysX.")
+                    "PhysX Dynamic Rigid Body", "The entity behaves as a movable rigid body in PhysX.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
