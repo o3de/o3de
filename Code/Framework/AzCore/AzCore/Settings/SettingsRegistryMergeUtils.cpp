@@ -236,7 +236,7 @@ namespace AZ::Internal
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
 
         AZ::IO::FixedMaxPath engineRoot;
-        if (auto o3deManifestPath = AZ::Utils::GetO3deManifestPath(); !o3deManifestPath.empty())
+        if (auto o3deManifestPath = AZ::Utils::GetO3deManifestPath(&settingsRegistry); !o3deManifestPath.empty())
         {
             bool manifestLoaded{false};
 
@@ -262,17 +262,12 @@ namespace AZ::Internal
                 const auto engineNameKey = FixedValueString::format("%s/engine_name", EngineSettingsRootKey);
                 const auto enginesKey = FixedValueString::format("%s/engines", O3deManifestSettingsRootKey);
 
-                // Remove any existing engine settings because we will use this as a scratch location
-                // while searching for the most compatible engine
-                settingsRegistry.Remove(EngineSettingsRootKey);
-
                 // Avoid modifying the SettingsRegistry while visiting which may invalidate iterators and cause crashes
-                AZ::SettingsRegistryVisitorUtils::VisitArray(
-                    settingsRegistry,
+                AZ::SettingsRegistryVisitorUtils::VisitArray(settingsRegistry,
                     [&](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
                     {
                         EngineInfo engineInfo;
-                        settingsRegistry.Get(engineInfo.m_path.Native(), visitArgs.m_jsonKeyPath);
+                        visitArgs.m_registry.Get(engineInfo.m_path.Native(), visitArgs.m_jsonKeyPath);
                         if (engineInfo.m_path.IsRelative())
                         {
                             if (auto engineRootAbsPath = AZ::Utils::ConvertToAbsolutePath(engineInfo.m_path.Native());
@@ -289,6 +284,8 @@ namespace AZ::Internal
                 EngineInfo mostCompatibleEngineInfo;
                 AZ::IO::FixedMaxPath projectUserPath;
                 settingsRegistry.Get(projectUserPath.Native(), FilePathKey_ProjectUserPath);
+        
+                AZ::SettingsRegistryImpl scratchSettingsRegistry;
 
                 // Look through the manifest engines for the most compatible engine
                 for (auto& engineInfo : searchedEngineInfo)
@@ -301,13 +298,13 @@ namespace AZ::Internal
                     AZ::IO::FixedMaxPath projectUserJsonPath{engineInfo.m_path / projectUserPath / ProjectJsonFilename};
                     AZ::IO::FixedMaxPath engineJsonPath{engineInfo.m_path  / EngineJsonFilename};
 
-                    auto isCompatible = Internal::EngineIsCompatible(settingsRegistry, engineJsonPath, projectJsonPath, projectUserJsonPath);
+                    auto isCompatible = Internal::EngineIsCompatible(scratchSettingsRegistry, engineJsonPath, projectJsonPath, projectUserJsonPath);
 
                     // get the engine name and version
-                    settingsRegistry.Get(engineInfo.m_name, engineNameKey);
+                    scratchSettingsRegistry.Get(engineInfo.m_name, engineNameKey);
 
                     FixedValueString engineVersion;
-                    if (settingsRegistry.Get(engineVersion, engineVersionKey); !engineVersion.empty())
+                    if (scratchSettingsRegistry.Get(engineVersion, engineVersionKey); !engineVersion.empty())
                     {
                         if (auto parseOutcome = AZ::SemanticVersion::ParseFromString(engineVersion.c_str());
                             parseOutcome)
@@ -329,8 +326,10 @@ namespace AZ::Internal
                         }
                     }
 
-                    // Remove engine settings, which will be added back once we know the most compatible engine
-                    settingsRegistry.Remove(EngineSettingsRootKey);
+                    // Remove engine settings which will be different for each engine but keep the
+                    // project settings (ProjectSettingsRootKey) in case the project path is the
+                    // same to avoid re-loading them.
+                    scratchSettingsRegistry.Remove(EngineSettingsRootKey);
 
                     if (!AZ::IO::SystemFile::Exists(projectJsonPath.c_str()))
                     {
@@ -343,7 +342,7 @@ namespace AZ::Internal
                 {
                     engineRoot = mostCompatibleEngineInfo.m_path;
 
-                    // merge back in the engine and project settings with overrides
+                    // merge in the engine and project settings with overrides
                     Internal::MergeEngineAndProjectSettings(settingsRegistry,
                         (engineRoot  / EngineJsonFilename),
                         (engineRoot / projectPath / ProjectJsonFilename),
