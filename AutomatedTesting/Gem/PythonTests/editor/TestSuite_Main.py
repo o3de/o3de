@@ -117,6 +117,9 @@ class TestAutomation(EditorTestSuite):
     class test_EditorWorkflow_EditorCameraTransformCanBeModifiedWhileInBeThisCamera(EditorSingleTest):
         from .EditorScripts import EditorWorkflow_EditorCameraTransformCanBeModifiedWhileInBeThisCamera as test_module
 
+    class test_EditorWorkflow_EditorCameraGameModeTransitionWithMultipleCamerasReportsNoErrors(EditorSingleTest):
+        from .EditorScripts import EditorWorkflow_EditorCameraGameModeTransitionWithMultipleCamerasReportsNoErrors as test_module
+
     class test_EditorWorkflow_EditorCameraBeThisCameraIsClearedWhenChangingLevel(EditorSingleTest):
         # Custom teardown to remove level created during test
         def setup(self, request, workspace):

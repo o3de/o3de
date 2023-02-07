@@ -176,6 +176,7 @@ namespace Camera
         void CameraListModel::Reset()
         {
             m_lastActiveCamera.SetInvalid();
+            // add a single invalid entity id to indicate the default Editor Camera (not tied to an entity or component)
             m_cameraItems = AZStd::vector<CameraListItem>(1, CameraListItem(AZ::EntityId()));
         }
 
@@ -234,8 +235,8 @@ namespace Camera
                 {
                     // if the entity is not in an active state we are most likely in a transition event (going to game mode
                     // or changing level) and we do not want so signal any changes to the camera request bus
-                    const AZ::Entity* entity = AzToolsFramework::GetEntityById(entityId);
-                    if (!entity || (entity && entity->GetState() != AZ::Entity::State::Active))
+                    if (const AZ::Entity* entity = AzToolsFramework::GetEntityById(entityId);
+                        !entity || entity->GetState() != AZ::Entity::State::Active)
                     {
                         return;
                     }
@@ -245,8 +246,6 @@ namespace Camera
             }
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        /// EditorCameraNotificationBus::Handler
         void ViewportCameraSelectorWindow::OnViewportViewEntityChanged(const AZ::EntityId& newViewId)
         {
             if (!m_ignoreViewportViewEntityChanged)
@@ -285,8 +284,8 @@ namespace Camera
         // double click selects the entity
         void ViewportCameraSelectorWindow::mouseDoubleClickEvent([[maybe_unused]] QMouseEvent* event)
         {
-            AZ::EntityId entityId = selectionModel()->currentIndex().data(Qt::CameraIdRole).value<AZ::EntityId>();
-            if (entityId.IsValid())
+            if (const AZ::EntityId entityId = selectionModel()->currentIndex().data(Qt::CameraIdRole).value<AZ::EntityId>();
+                entityId.IsValid())
             {
                 AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                     &AzToolsFramework::ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList{ entityId });
