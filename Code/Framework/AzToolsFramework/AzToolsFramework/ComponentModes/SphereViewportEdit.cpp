@@ -106,7 +106,7 @@ namespace AzToolsFramework
         SetupRadiusManipulator(manipulatorManagerId, worldTransform, localTransform, nonUniformScale);
     }
 
-    void SphereViewportEdit::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    void SphereViewportEdit::AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         if (m_radiusManipulator)
         {
@@ -133,11 +133,9 @@ namespace AzToolsFramework
         }
     }
 
-    void SphereViewportEdit::ResetValues()
+    void SphereViewportEdit::ResetValuesImpl()
     {
-        BeginEditing();
         SetSphereRadius(ResetSphereRadius);
-        EndEditing();
     }
 
     void SphereViewportEdit::Teardown()

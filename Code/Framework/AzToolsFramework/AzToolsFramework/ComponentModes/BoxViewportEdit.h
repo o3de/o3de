@@ -28,8 +28,8 @@ namespace AzToolsFramework
         void Setup(const ManipulatorManagerId manipulatorManagerId) override;
         void Teardown() override;
         void UpdateManipulators() override;
-        void ResetValues() override;
-        void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
+        void ResetValuesImpl() override;
+        void AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
 
         void InstallGetBoxDimensions(AZStd::function<AZ::Vector3()> getBoxDimensions);
         void InstallGetLocalTransform(AZStd::function<AZ::Transform()> getLocalTransform);

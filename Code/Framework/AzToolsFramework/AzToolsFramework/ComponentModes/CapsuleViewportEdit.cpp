@@ -150,7 +150,7 @@ namespace AzToolsFramework
         }
     }
 
-    void CapsuleViewportEdit::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    void CapsuleViewportEdit::AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         for (auto manipulator : { m_radiusManipulator.get(), m_topManipulator.get(), m_bottomManipulator.get() })
         {
@@ -195,12 +195,10 @@ namespace AzToolsFramework
         }
     }
 
-    void CapsuleViewportEdit::ResetValues()
+    void CapsuleViewportEdit::ResetValuesImpl()
     {
-        BeginEditing();
         SetCapsuleHeight(ResetCapsuleHeight);
         SetCapsuleRadius(ResetCapsuleRadius);
-        EndEditing();
     }
 
     void CapsuleViewportEdit::Teardown()

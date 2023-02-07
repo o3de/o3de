@@ -125,4 +125,23 @@ namespace AzToolsFramework
     void BaseShapeViewportEdit::OnCameraStateChanged([[maybe_unused]] const AzFramework::CameraState& cameraState)
     {
     }
+
+    void BaseShapeViewportEdit::ResetValues()
+    {
+        // manipulators handle undo batches for the main viewport themselves, but this function does not work via manipulators
+        // so needs its own undo batch
+        BeginUndoBatch("ViewportEdit Reset");
+        // also provide a hook for other viewports to handle undo/redo, UI refresh, etc
+        BeginEditing();
+        ResetValuesImpl();
+        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+        EndEditing();
+        EndUndoBatch();
+    }
+
+    void BaseShapeViewportEdit::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    {
+        m_entityIds.insert(entityComponentIdPair.GetEntityId());
+        AddEntityComponentIdPairImpl(entityComponentIdPair);
+    }
 } // namespace AzToolsFramework

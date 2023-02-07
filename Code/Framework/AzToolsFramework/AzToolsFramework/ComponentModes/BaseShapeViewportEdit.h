@@ -54,14 +54,17 @@ namespace AzToolsFramework
         //! Call after modifying the shape to ensure that the space the manipulators operate in is updated, along with other properties.
         virtual void UpdateManipulators() = 0;
         //! Reset the shape properties being edited to their default values.
-        virtual void ResetValues() = 0;
+        virtual void ResetValuesImpl() = 0;
         //! Optionally used to associate an EntityComponentIdPair with the shape manipulators.
         //! This is useful in the main editor viewport for hooking up undo/redo behavior and UI refreshing.
         //! This should be called after Setup. Otherwise, the manipulators will not have been created yet.
-        virtual void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) = 0;
+        virtual void AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair) = 0;
         //! Optionally allows the viewport editing to respond to the camera state changing, for example by repositioning manipulators to
         //! more conveniently accessible locations.
         virtual void OnCameraStateChanged(const AzFramework::CameraState& cameraState);
+
+        void ResetValues();
+        void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair);
 
     protected:
         AZ::Transform GetManipulatorSpace() const;
