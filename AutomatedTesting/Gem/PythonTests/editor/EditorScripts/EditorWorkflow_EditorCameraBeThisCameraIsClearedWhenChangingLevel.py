@@ -20,20 +20,20 @@ class Tests:
         "Initial camera positions do not match in first and second level",
     )
     entity_position_changed_when_not_in_be_this_camera = (
-        "Entity position did not change when setting view position while not in 'Be this camera'",
-        "Entity position did change when setting view position while not in 'Be this camera'"
+        "Entity position remained the same when setting view position while not in 'Be this camera'",
+        "Entity position changed when setting view position while not in 'Be this camera'"
     )
     view_position_changed_when_moving_entity_when_not_in_be_this_camera = (
-        "View position did not change when moving entity while not in 'Be this camera' mode",
-        "View position did change when moving entity while not in 'Be this camera' mode",
+        "View position remained the same when moving entity while not in 'Be this camera' mode",
+        "View position changed when moving entity while not in 'Be this camera' mode",
     )
     internal_camera_error = (
-        "Internal camera error did not occur"
-        "Internal camera error did occur"
+        "No internal camera error reported"
+        "Internal camera error reported"
     )
     view_bookmark_error = (
-        "View bookmark error did not occur"
-        "View bookmark error did occur"
+        "No view bookmark error reported"
+        "View bookmark error reported"
     )
 
 
