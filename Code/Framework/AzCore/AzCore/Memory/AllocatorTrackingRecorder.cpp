@@ -25,7 +25,7 @@
 namespace AZ
 {
 #if defined(AZ_ENABLE_TRACING)
-    struct IAllocatorTrackingRecorderData 
+    struct IAllocatorTrackingRecorderData
     {
         AZStd::atomic_size_t m_allocated; // Total amount of bytes allocated (i.e. requested to the OS, assuming 1-alignment)
 
@@ -54,8 +54,9 @@ namespace AZ
         // We wont have more entries than STACK_TRACE_DEPTH_RECORDING
         Debug::SymbolStorage::StackLine lines[STACK_TRACE_DEPTH_RECORDING];
         const size_t stackSize = m_allocationStackTrace.size();
-        Debug::SymbolStorage::DecodeFrames(m_allocationStackTrace.begin(), static_cast<unsigned int>(stackSize), lines);
-        
+        auto recordFrameCount = static_cast<unsigned int>(AZStd::GetMin(stackSize, AZ_ARRAY_SIZE(lines)));
+        Debug::SymbolStorage::DecodeFrames(m_allocationStackTrace.begin(), recordFrameCount, lines);
+
         for (AZStd::size_t i = 0; i < stackSize; ++i)
         {
             AZ_Printf("Memory", "    %s\n", lines[i]);

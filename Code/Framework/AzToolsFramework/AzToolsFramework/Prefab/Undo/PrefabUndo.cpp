@@ -34,6 +34,34 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->GeneratePatch(m_undoPatch, endState, initialState);
         }
 
+        // PrefabUndoAddEntityDoms
+
+        PrefabUndoAddEntityDoms::PrefabUndoAddEntityDoms(const AZStd::string& undoOperationName)
+            : PrefabUndoBase(undoOperationName)
+        {
+        }
+
+        void PrefabUndoAddEntityDoms::Capture(const AZStd::vector<const AZ::Entity*>& entityList, TemplateId templateId)
+        {
+            m_templateId = templateId;
+
+            m_redoPatch.SetArray();
+            m_undoPatch.SetArray();
+
+            for (const AZ::Entity* entity : entityList)
+            {
+                if (entity)
+                {
+                    PrefabDom entityDom;
+                    m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDom, *entity);
+
+                    const AZStd::string& entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entity->GetId());
+                    PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, entityDom, entityAliasPath);
+                    PrefabUndoUtils::AppendRemovePatch(m_undoPatch, entityAliasPath);
+                }
+            }
+        }
+
         // PrefabUndoRemoveEntityDoms
 
         PrefabUndoRemoveEntityDoms::PrefabUndoRemoveEntityDoms(const AZStd::string& undoOperationName)
@@ -70,7 +98,8 @@ namespace AzToolsFramework
             AZ_Assert(m_instanceEntityMapperInterface, "Failed to grab instance entity mapper interface");
         }
 
-        void PrefabUndoEntityUpdate::Capture(const PrefabDomValue& initialState, const PrefabDomValue& endState, AZ::EntityId entityId)
+        void PrefabUndoEntityUpdate::Capture(
+            const PrefabDomValue& initialState, const PrefabDomValue& endState, AZ::EntityId entityId, bool updateCache)
         {
             //get the entity alias for future undo/redo
             auto instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
@@ -94,10 +123,13 @@ namespace AzToolsFramework
             PrefabUndoUtils::GenerateUpdateEntityPatch(m_undoPatch, endState, initialState, entityAliasPath);
 
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
-            PrefabDomReference cachedOwningInstanceDom = instance.GetCachedInstanceDom();
-            if (cachedOwningInstanceDom.has_value())
+            if (updateCache)
             {
-                PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom, endState, entityAliasPath);
+                PrefabDomReference cachedOwningInstanceDom = instance.GetCachedInstanceDom();
+                if (cachedOwningInstanceDom.has_value())
+                {
+                    PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom, endState, entityAliasPath);
+                }
             }
         }
 

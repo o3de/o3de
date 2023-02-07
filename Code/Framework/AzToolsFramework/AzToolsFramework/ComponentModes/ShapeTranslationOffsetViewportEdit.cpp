@@ -17,6 +17,7 @@ namespace AzToolsFramework
 {
     void ShapeTranslationOffsetViewportEdit::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
+        m_entityIds.insert(entityComponentIdPair.GetEntityId());
         if (m_translationManipulators)
         {
             m_translationManipulators->AddEntityComponentIdPair(entityComponentIdPair);
@@ -30,7 +31,7 @@ namespace AzToolsFramework
         }
     }
 
-    void ShapeTranslationOffsetViewportEdit::Setup()
+    void ShapeTranslationOffsetViewportEdit::Setup(const ManipulatorManagerId manipulatorManagerId)
     {
         const AZ::Transform manipulatorSpace = GetManipulatorSpace();
         const AZ::Vector3 nonUniformScale = GetNonUniformScale();
@@ -55,7 +56,7 @@ namespace AzToolsFramework
         m_translationManipulators->InstallLinearManipulatorMouseMoveCallback(mouseMoveHandlerFn);
         m_translationManipulators->InstallPlanarManipulatorMouseMoveCallback(mouseMoveHandlerFn);
 
-        m_translationManipulators->Register(g_mainManipulatorManagerId);
+        m_translationManipulators->Register(manipulatorManagerId);
     }
 
     void ShapeTranslationOffsetViewportEdit::Teardown()
@@ -74,6 +75,10 @@ namespace AzToolsFramework
 
     void ShapeTranslationOffsetViewportEdit::ResetValues()
     {
+        // manipulators handle undo batches themselves, but this function does not work via manipulators so needs its own undo batch
+        BeginUndoBatch("ShapeTranslationOffsetViewportEdit Reset");
         SetTranslationOffset(AZ::Vector3::CreateZero());
+        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+        EndUndoBatch();
     }
 } // namespace AzToolsFramework

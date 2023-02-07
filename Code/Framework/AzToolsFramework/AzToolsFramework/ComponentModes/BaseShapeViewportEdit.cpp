@@ -31,6 +31,16 @@ namespace AzToolsFramework
         m_setTranslationOffset = AZStd::move(setTranslationOffset);
     }
 
+    void BaseShapeViewportEdit::InstallBeginEditing(AZStd::function<void()> beginEditing)
+    {
+        m_beginEditing = AZStd::move(beginEditing);
+    }
+
+    void BaseShapeViewportEdit::InstallEndEditing(AZStd::function<void()> endEditing)
+    {
+        m_endEditing = AZStd::move(endEditing);
+    }
+
     AZ::Transform BaseShapeViewportEdit::GetManipulatorSpace() const
     {
         if (m_getManipulatorSpace)
@@ -70,6 +80,45 @@ namespace AzToolsFramework
         else
         {
             AZ_ErrorOnce("BaseShapeViewportEdit", false, "No implementation provided for SetTranslationOffset");
+        }
+    }
+
+    void BaseShapeViewportEdit::BeginEditing()
+    {
+        if (m_beginEditing)
+        {
+            m_beginEditing();
+        }
+    }
+
+    void BaseShapeViewportEdit::EndEditing()
+    {
+        if (m_endEditing)
+        {
+            m_endEditing();
+        }
+    }
+
+    void BaseShapeViewportEdit::BeginUndoBatch(const char* label)
+    {
+        if (!m_entityIds.empty())
+        {
+            ToolsApplicationRequests::Bus::BroadcastResult(
+                m_undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, label);
+
+            for (const AZ::EntityId& entityId : m_entityIds)
+            {
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
+            }
+        }
+    }
+
+    void BaseShapeViewportEdit::EndUndoBatch()
+    {
+        if (m_undoBatch)
+        {
+            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
+            m_undoBatch = nullptr;
         }
     }
 } // namespace AzToolsFramework

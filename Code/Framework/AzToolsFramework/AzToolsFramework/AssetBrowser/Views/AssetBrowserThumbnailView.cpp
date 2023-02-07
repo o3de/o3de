@@ -141,6 +141,11 @@ namespace AzToolsFramework
                 &AssetBrowserThumbnailView::HandleTreeViewSelectionChanged);
         }
 
+        void AssetBrowserThumbnailView::HideProductAssets(bool checked)
+        {
+            m_thumbnailViewWidget->HideProductAssets(checked);
+        }
+
         void AssetBrowserThumbnailView::setSelectionMode(QAbstractItemView::SelectionMode mode)
         {
             m_thumbnailViewWidget->setSelectionMode(mode);
