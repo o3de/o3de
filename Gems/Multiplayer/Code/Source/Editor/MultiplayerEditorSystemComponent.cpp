@@ -24,6 +24,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzNetworking/Framework/INetworking.h>
@@ -60,7 +61,7 @@ namespace Multiplayer
     AZ_CVAR(AZ::CVarFixedString, editorsv_rhi_override, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Override the default rendering hardware interface (rhi) when launching the Editor server. For example, you may be running an Editor using 'dx12', but want to launch a headless server using 'null'. If empty the server will launch using the same rhi as the Editor.");
     AZ_CVAR(uint16_t, editorsv_max_connection_attempts, 5, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "The maximum times the editor will attempt to connect to the server.");
+        "The maximum times the editor will attempt to connect to the server. Time between attempts is increased based on the number of failed attempts.");
 
     AZ_CVAR(bool, editorsv_print_server_logs, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor should print its server's logs to the Editor console. Useful for seeing server prints, warnings, and errors without having to open up the server console or server.log file. Note: Must be set before entering the editor play mode.");
@@ -410,7 +411,27 @@ namespace Multiplayer
                 editorServerLevelDataPacket.SetLastUpdate(true);
             }
 
-            connection->SendReliablePacket(editorServerLevelDataPacket);
+            // Try to send the packet to the Editor server. Retry if necessary.
+            bool packetSent = false;
+            static constexpr int MaxRetries = 20;
+            int millisecondDelayPerRetry = 10;
+            int numRetries = 0;
+            while (!packetSent && (numRetries < MaxRetries))
+            {
+                packetSent = connection->SendReliablePacket(editorServerLevelDataPacket);
+                if (!packetSent)
+                {
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(millisecondDelayPerRetry));
+                    numRetries++;
+
+                    // Keep doubling the time between retries up to 1 second, then clamp it there.
+                    millisecondDelayPerRetry = AZStd::min(millisecondDelayPerRetry * 2, 1000);
+
+                    // Force the networking buffers to try and flush before sending the packet again.
+                    AZ::Interface<AzNetworking::INetworking>::Get()->ForceUpdate();
+                }
+            }
+            AZ_Assert(packetSent, "Failed to send level packet after %d tries. Server will fail to run the level correctly.", numRetries);
         }
     }
 
@@ -470,6 +491,13 @@ namespace Multiplayer
             AZ_TracePrintf("MultiplayerEditor", "Editor has connected to the editor-server.")
             m_connectionEvent.RemoveFromQueue();
             SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
+        }
+        else
+        {
+            // Increase the wait time based on the number of connection attempts.
+            const double retrySeconds = m_connectionAttempts;
+            constexpr bool autoRequeue = false;
+            m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
         }
     }
 
@@ -557,7 +585,7 @@ namespace Multiplayer
         // Keep trying to connect until the port is finally available.
         m_connectionAttempts = 0;
         constexpr double retrySeconds = 1.0;
-        constexpr bool autoRequeue = true;
+        constexpr bool autoRequeue = false;
         m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
     }
 

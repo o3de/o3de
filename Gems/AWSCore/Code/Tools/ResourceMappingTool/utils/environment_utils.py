@@ -23,7 +23,7 @@ old_os_env: Dict[str, str] = os.environ.copy()
 
 def setup_qt_environment(bin_path: str) -> None:
     """
-    Setup Qt binaries for o3de python runtime environment
+    Setup Qt binaries for O3DE python runtime environment
     :param bin_path: The path of Qt binaries
     """
     if is_qt_linked():
@@ -32,6 +32,15 @@ def setup_qt_environment(bin_path: str) -> None:
     global old_os_env
     old_os_env = os.environ.copy()
     binaries_path: str = file_utils.normalize_file_path(bin_path)
+
+    # Python 3.8 DLL dependencies for extension modules and DLLs loaded with ctypes on Windows
+    # are now resolved more securely. Only the system paths, the directory containing the DLL or PYD file,
+    # and directories added with add_dll_directory() are searched for load-time dependencies.
+    # Specifically, PATH and the current working directory are no longer used, and modifications to these
+    # will no longer have any effect on normal DLL resolution.
+    if platform.system() == 'Windows':
+        os.add_dll_directory(binaries_path)
+
     os.environ["QT_PLUGIN_PATH"] = binaries_path
 
     path = os.environ['PATH']
@@ -67,7 +76,7 @@ def is_qt_linked() -> bool:
 
 def cleanup_qt_environment() -> None:
     """
-    Clean up the linked Qt binaries in o3de python runtime environment
+    Clean up the linked Qt binaries in O3DE python runtime environment
     """
     if not is_qt_linked():
         logger.info("Qt binaries have not been linked, skip Qt uninstall")

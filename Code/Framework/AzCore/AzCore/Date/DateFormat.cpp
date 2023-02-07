@@ -15,12 +15,12 @@ namespace AZ::Date
         return GetIso8601ExtendedFormatTime(utcTimestamp, AZStd::chrono::utc_clock::now());
     }
 
-    bool GetIso8601ExtendedFormatMillisecondsNow(Iso8601TimestampString& utcTimestamp)
+    bool GetIso8601ExtendedFormatNowWithMilliseconds(Iso8601TimestampString& utcTimestamp)
     {
         return GetIso8601ExtendedFormatTimeWithMilliseconds(utcTimestamp, AZStd::chrono::utc_clock::now());
     }
 
-    bool GetIso8601ExtendedFormatMicrosecondsNow(Iso8601TimestampString& utcTimestamp)
+    bool GetIso8601ExtendedFormatNowWithMicroseconds(Iso8601TimestampString& utcTimestamp)
     {
         return GetIso8601ExtendedFormatTimeWithMicroseconds(utcTimestamp, AZStd::chrono::utc_clock::now());
     }
@@ -30,12 +30,12 @@ namespace AZ::Date
         return GetIso8601BasicFormatTime(utcTimestamp, AZStd::chrono::utc_clock::now());
     }
 
-    bool GetIso8601BasicFormatMillisecondsNow(Iso8601TimestampString& utcTimestamp)
+    bool GetIso8601BasicFormatNowWithMilliseconds(Iso8601TimestampString& utcTimestamp)
     {
         return GetIso8601BasicFormatTimeWithMilliseconds(utcTimestamp, AZStd::chrono::utc_clock::now());
     }
 
-    bool GetIso8601BasicFormatMicrosecondsNow(Iso8601TimestampString& utcTimestamp)
+    bool GetIso8601BasicFormatNowWithMicroseconds(Iso8601TimestampString& utcTimestamp)
     {
         return GetIso8601BasicFormatTimeWithMicroseconds(utcTimestamp, AZStd::chrono::utc_clock::now());
     }

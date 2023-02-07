@@ -9,6 +9,7 @@
 
 #include "EditorDefs.h"
 
+#include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AzAssetBrowserRequestHandler.h"
 
 // Qt
@@ -508,6 +509,17 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                         OpenWithOS(fullFilePath);
                     });
             }
+
+            menu->addAction(QObject::tr("Open in another Asset Browser"), [fullFilePath, treeView](){
+                auto* browser1 = qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetBrowser)->Widget());
+                const QString name2 = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
+                auto* browser2 = qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(name2)->Widget());
+                if (browser1->TreeViewBelongsTo(treeView)) {
+                    browser2->SelectAsset(fullFilePath.c_str());
+                } else {
+                    browser1->SelectAsset(fullFilePath.c_str());
+                }
+            });
 
             AZStd::vector<const ProductAssetBrowserEntry*> products;
             entry->GetChildrenRecursively<ProductAssetBrowserEntry>(products);

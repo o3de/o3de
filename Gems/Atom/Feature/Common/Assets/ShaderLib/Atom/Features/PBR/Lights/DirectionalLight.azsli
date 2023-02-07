@@ -88,10 +88,12 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
 
+#if ENABLE_SHADER_DEBUGGING
         if(IsDebuggingEnabled_PLACEHOLDER() && GetRenderDebugViewMode() == RenderDebugViewMode::CascadeShadows)
         {
             customDebugFloats.rgb = currentLitRatio.xxx;
         }
+#endif
     }
 
 #if ENABLE_SHADOWS    

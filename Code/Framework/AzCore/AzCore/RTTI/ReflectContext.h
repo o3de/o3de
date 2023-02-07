@@ -29,6 +29,8 @@ namespace AZ
 {
     class ReflectContext;
 
+    class Attribute;
+
     /// Function type to called for on demand reflection within methods, properties, etc.
     /// OnDemandReflection functions must be static, so we can optimize by just using function pointer instead of object
     using StaticReflectionFunctionPtr = void(*)(ReflectContext* context);
@@ -83,7 +85,7 @@ namespace AZ
         void NoSpecializationFunction();
     };
 
-    AZ_HAS_MEMBER(NoOnDemandReflection, NoSpecializationFunction, void, ())
+    AZ_HAS_MEMBER(NoOnDemandReflection, NoSpecializationFunction, void, ());
 
     /**
      * Base class for all reflection contexts.
@@ -101,7 +103,7 @@ namespace AZ
     class ReflectContext
     {
     public:
-        AZ_RTTI(ReflectContext, "{B18D903B-7FAD-4A53-918A-3967B3198224}")
+        AZ_RTTI(ReflectContext, "{B18D903B-7FAD-4A53-918A-3967B3198224}");
 
         ReflectContext();
         virtual ~ReflectContext() = default;
@@ -132,7 +134,83 @@ namespace AZ
 
         friend OnDemandReflectionOwner;
     };
+}
 
+namespace AZ::Internal
+{
+    template<class RetType, class... Args>
+    struct ClassToVoidInvoker;
+
+    // Specialization for function object with no parameters
+    template<class RetType>
+    struct ClassToVoidInvoker<RetType>
+    {
+        explicit ClassToVoidInvoker(AZStd::function<RetType()> callable)
+            : m_callable(AZStd::move(callable))
+        {}
+
+        // In the case of the function object not accepting at least one argument, then the class type is assumed to be non-existent
+        RetType operator()() const
+        {
+            return m_callable();
+        }
+
+    private:
+        AZStd::function<RetType()> m_callable;
+    };
+
+    // Specialization for function object with at least one parameter
+    // The first parameter is assumed to be the class type
+    // The void pointer instance will be cast to that type
+    template<class RetType, class ClassType, class... Args>
+    struct ClassToVoidInvoker<RetType, ClassType, Args...>
+    {
+        explicit ClassToVoidInvoker(AZStd::function<RetType(ClassType, Args...)> callable)
+            : m_callable(AZStd::move(callable))
+        {}
+        RetType operator()(void* instancePtr, Args... args) const
+        {
+            if constexpr (AZStd::is_pointer_v<ClassType>)
+            {
+                // ClassType is a pointer so cast directly from the void pointer
+                return m_callable(static_cast<ClassType>(instancePtr), static_cast<Args&&>(args)...);
+            }
+            else
+            {
+                // If the ClassType parameter accepts a value type, then cast the void pointer to a class type pointer
+                // and deference
+                return m_callable(*static_cast<AZStd::remove_cvref_t<ClassType>*>(instancePtr), static_cast<Args&&>(args)...);
+            }
+        }
+
+    private:
+        AZStd::function<RetType(ClassType, Args...)> m_callable;
+    };
+
+    template<class RetType>
+    struct FunctionObjectInvoker
+    {
+        template<class... Args>
+        using ClassToVoidArgsInvoker = ClassToVoidInvoker<RetType, Args...>;
+    };
+
+    // Custom struct to use as a unique_ptr deleter which can selectively deletes an attribute if
+    // the caller should the pointer
+    struct AttributeDeleter
+    {
+        AttributeDeleter();
+        AttributeDeleter(bool deletePtr);
+
+        void operator()(AZ::Attribute* attribute);
+
+    private:
+        bool m_deletePtr{ true };
+    };
+} // namespace AZ::Internal
+
+namespace AZ
+{
+    using AttributeUniquePtr = AZStd::unique_ptr<AZ::Attribute, Internal::AttributeDeleter>;
     // Attributes to be used by reflection contexts
 
     /**
@@ -169,6 +247,12 @@ namespace AZ
         virtual bool IsInvokable() const
         {
             return false;
+        }
+
+        virtual AttributeUniquePtr GetVoidInstanceAttributeInvocable()
+        {
+            constexpr bool deleteAttribute = false;
+            return AttributeUniquePtr(this, Internal::AttributeDeleter{ deleteAttribute });
         }
 
         /// Returns true if this attribute is invokable, given a set of arguments.
@@ -238,7 +322,7 @@ namespace AZ
         template<class U>
         explicit AttributeData(U&& data)
             : m_data(AZStd::forward<U>(data)) {}
-        virtual const T& Get(void* instance) const { (void)instance; return m_data; }
+        virtual const T& Get(const void* instance) const { (void)instance; return m_data; }
         T& operator = (T& data) { m_data = data; return m_data; }
         T& operator = (const T& data) { m_data = data; return m_data; }
 
@@ -256,6 +340,8 @@ namespace AZ
     private:
         T   m_data;
     };
+
+    extern template class AttributeData<Crc32>;
 
     /**
     * Generic attribute for class member data, we use the object instance to access member data.
@@ -276,7 +362,7 @@ namespace AZ
         explicit AttributeMemberData(DataPtr p)
             : AttributeData<T>(T())
             , m_dataPtr(p) {}
-        const T& Get(void* instance) const override { return (reinterpret_cast<C*>(instance)->*m_dataPtr); }
+        const T& Get(const void* instance) const override { return (reinterpret_cast<const C*>(instance)->*m_dataPtr); }
         DataPtr GetMemberDataPtr() const { return m_dataPtr; }
 
         AZ::Dom::Value GetAsDomValue(void* instance) override
@@ -437,14 +523,16 @@ namespace AZ
         FunctionPtr m_function;
     };
 
-    // Wraps a type that implements the C++ callable concept(i.e has either an overloaded operator() or a function pointer,
-    // pointer to member data or pointer to member function)
-    // If the type doesn't implement the callable concept stores the type as is
+    // Wraps a type that implements the C++ callable concept[i.e has either an overloaded operator() or a function pointer,
+    // pointer to member data or pointer to member function]
+    // If the type doesn't implement the callable concept stores the raw value type
     template<typename Invocable>
     class AttributeInvocable
         : public Attribute
     {
-        using Callable = AZStd::conditional_t<AZStd::function_traits<Invocable>::value, AZStd::function<typename AZStd::function_traits<Invocable>::function_type>, Invocable>;
+        using Callable = AZStd::conditional_t<AZStd::function_traits<Invocable>::value,
+            AZStd::function<typename AZStd::function_traits<Invocable>::function_type>,
+            AZStd::remove_cvref_t<Invocable>>;
     public:
         AZ_RTTI((AttributeInvocable<Invocable>, "{60D5804F-9AF4-4EB1-8F5A-62AFB4883F9D}", Invocable), AZ::Attribute);
         AZ_CLASS_ALLOCATOR(AttributeInvocable<Invocable>, SystemAllocator, 0);
@@ -452,6 +540,27 @@ namespace AZ
         explicit AttributeInvocable(CallableType&& invocable)
             : m_callable(AZStd::forward<CallableType>(invocable))
         {
+        }
+
+        AttributeUniquePtr GetVoidInstanceAttributeInvocable() override
+        {
+            // Make a temporary AttributeInvocable attribute that can cast from a void pointer
+            // to the class type needed by this AttributeInvocable
+
+            if constexpr (AZStd::function_traits<Callable>::value)
+            {
+                using CallableReturnType = typename AZStd::function_traits<Callable>::return_type;
+                using VoidInstanceCallWrapper = typename AZStd::function_traits<Callable>::template expand_args<
+                    Internal::FunctionObjectInvoker<CallableReturnType>::template ClassToVoidArgsInvoker>;
+                return AttributeUniquePtr(new AttributeInvocable<typename AZStd::function_traits<VoidInstanceCallWrapper>::function_type>(
+                    VoidInstanceCallWrapper{ m_callable }));
+            }
+            else
+            {
+                // Otherwise if the type being wrapped is not callable then assume it is a regular value type and
+                // invoke base class version of this function
+                return Attribute::GetVoidInstanceAttributeInvocable();
+            }
         }
 
         template<typename... FuncArgs>
@@ -490,7 +599,9 @@ namespace AZ
     // If the type has valid function traits(i.e it fits the callable concept, then the function_type is retrieved from the function type),
     // otherwise the type is used without modification
     template<typename Invocable>
-    AttributeInvocable(Invocable&&) -> AttributeInvocable<AZStd::conditional_t<AZStd::function_traits<Invocable>::value, typename AZStd::function_traits<Invocable>::function_type, Invocable>>;
+    AttributeInvocable(Invocable&&) -> AttributeInvocable<AZStd::conditional_t<AZStd::function_traits<Invocable>::value,
+        typename AZStd::function_traits<Invocable>::function_type,
+        AZStd::remove_cvref_t<Invocable>>>;
 
     /**
     * Generic attribute member function pointer container. All function must return non void result (we can implement this)

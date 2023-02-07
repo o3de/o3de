@@ -98,8 +98,7 @@ ComponentDemoWidget::ComponentDemoWidget(QWidget* parent)
     sortedPages.insert("Tree View", new TreeViewPage(this));
     sortedPages.insert("Typography", new TypographyPage(this));
 
-    // Pages hidden in 1.25 release - unused components, still need work before being made public, or not interesting for external devs
-    //sortedPages.insert("AssetBrowserFolder", new AssetBrowserFolderPage(this));
+    sortedPages.insert("AssetBrowserFolder", new AssetBrowserFolderPage(this));
 
     for (const auto& title : sortedPages.keys())
     {

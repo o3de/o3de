@@ -65,6 +65,8 @@ namespace AZ
             static const char* Group;
             static const char* Extension;
 
+            static constexpr AZ::u32 SubId = 0;
+
             static constexpr uint32_t InvalidShaderIndex = static_cast<uint32_t>(-1);
 
             //! Provides data about how to render the material in a particular render pipeline.

@@ -27,4 +27,5 @@ set(FILES
     Tests/PrimitiveShapeFitterTestData.cpp
     Tests/ShapeGeometryTests.cpp
     Tests/EditorCharacterControllerTests.cpp
+    Tests/EditorGameplayControllerTests.cpp
 )

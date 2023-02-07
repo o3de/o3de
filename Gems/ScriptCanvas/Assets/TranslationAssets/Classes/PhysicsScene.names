@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetOnGravityChangeEvent",
-                    "context": "PhysicsScene",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Gravity Change Event"
@@ -20,13 +19,15 @@
                         "tooltip": "Signaled after Get On Gravity Change Event is invoked"
                     },
                     "details": {
-                        "name": "Get On Gravity Change Event"
+                        "name": "Get On Gravity Change Event",
+                        "tooltip": "Get the event fired when the gravity in a scene changes"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Scene Name"
+                                "name": "Scene Name",
+                                "tooltip": "Name of the scene to listen for gravity change events for"
                             }
                         }
                     ],
@@ -34,14 +35,14 @@
                         {
                             "typeid": "{4985DFB0-7CD9-5B28-980B-BA2C701BE3D6}",
                             "details": {
-                                "name": "Gravity Change Event"
+                                "name": "Gravity Change Event",
+                                "tooltip": "Event fired when the gravity in the scene changes"
                             }
                         }
                     ]
                 },
                 {
                     "base": "QueryScene",
-                    "context": "PhysicsScene",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Query Scene"
@@ -51,20 +52,22 @@
                         "tooltip": "Signaled after Query Scene is invoked"
                     },
                     "details": {
-                        "name": "Query Scene"
+                        "name": "Query Scene",
+                        "tooltip": "Execute a scene query (raycast, shapecast or overlap query)"
                     },
                     "params": [
                         {
                             "typeid": "{52BD8163-BDC4-4B09-ABB2-11DD1F601FFD}",
                             "details": {
-                                "name": "Scene"
+                                "name": "Scene",
+                                "tooltip": "Scene"
                             }
                         },
                         {
                             "typeid": "{76ECAB7D-42BA-461F-82E6-DCED8E1BDCB9}",
                             "details": {
-                                "name": "const SceneQueryRequest*",
-                                "tooltip": "Parameters for scene queries"
+                                "name": "Scene Query Request",
+                                "tooltip": "Parameters for scene query"
                             }
                         }
                     ],
@@ -72,7 +75,8 @@
                         {
                             "typeid": "{BAFCC4E7-A06B-4909-B2AE-C89D9E84FE4E}",
                             "details": {
-                                "name": "Scene Query Hits"
+                                "name": "Scene Query Hits",
+                                "tooltip": "Information about hits resulting from the scene query"
                             }
                         }
                     ]

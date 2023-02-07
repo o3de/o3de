@@ -27,7 +27,7 @@
 
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 class ITexture;
 class ISprite;

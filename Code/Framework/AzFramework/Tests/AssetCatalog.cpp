@@ -70,9 +70,6 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             AZ::Data::AssetManager::Descriptor desc;
             AZ::Data::AssetManager::Create(desc);
 
@@ -152,9 +149,6 @@ namespace UnitTest
             AZ::TickBus::ClearQueuedEvents();
 
             AZ::Data::AssetManager::Destroy();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
         void CheckDirectDependencies(AZ::Data::AssetId assetId, AZStd::initializer_list<AZ::Data::AssetId> expectedDependencies)
@@ -957,7 +951,6 @@ namespace UnitTest
         // actual lock inversion.
 
         // Set up job manager with one thread that we can use to set up the concurrent mutex access.
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
         AZ::JobManagerDesc desc;
         AZ::JobManagerThreadDesc threadDesc;
         desc.m_workerThreads.push_back(threadDesc);
@@ -1019,7 +1012,6 @@ namespace UnitTest
         AZ::JobContext::SetGlobalContext(nullptr);
         delete jobContext;
         delete jobManager;
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
     }
 
 
@@ -1093,9 +1085,6 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
 
@@ -1126,8 +1115,6 @@ namespace UnitTest
             DestroyStreamer(m_streamer);
 
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
     };
 

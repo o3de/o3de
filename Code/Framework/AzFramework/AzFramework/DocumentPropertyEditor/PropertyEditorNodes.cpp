@@ -57,8 +57,16 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValues);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::GenericValue<char>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::GenericValue<AZ::s8>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::GenericValue<AZ::u8>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::GenericValue<AZ::s16>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::GenericValue<AZ::u16>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::GenericValue<int>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::GenericValue<AZ::s32>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::GenericValue<AZ::u32>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::GenericValue<AZ::s64>);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::GenericValue<AZ::u64>);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::AddNotify);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::RemoveNotify);

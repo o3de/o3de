@@ -29,7 +29,6 @@
 
 // Components
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
@@ -267,6 +266,7 @@ namespace UnitTest
     class BehaviorDerivedTestClass : public BehaviorTestClass
     {
     public:
+        AZ_CLASS_ALLOCATOR(BehaviorDerivedTestClass, AZ::SystemAllocator)
         AZ_RTTI(BehaviorDerivedTestClass, "{dba8a4e3-8fab-4223-94a6-874c6cff88e5}", BehaviorTestClass);
         int m_data;
 
@@ -3730,23 +3730,23 @@ namespace UnitTest
             // Test sending messages from C++ to LUA handler
             script.Execute("handler = TestBus.Connect(MyBusHandlerMetaTable1)");
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT(TestBus, Set);
+            TestBus::Broadcast(&TestBus::Events::Set);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-            EBUS_EVENT(TestBus, SetNotImplemented); // nothing should happen here
+            TestBus::Broadcast(&TestBus::Events::SetNotImplemented); // nothing should happen here
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT(TestBus, SetSum1, 1);
-            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-            AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT(TestBus, SetSum2, 1, 2);
+            TestBus::Broadcast(&TestBus::Events::SetSum1, 1);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT(TestBus, SetSum3, 1, 2, 3);
+            TestBus::Broadcast(&TestBus::Events::SetSum2, 1, 2);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT(TestBus, SetSum4, 1, 2, 3, 4);
+            TestBus::Broadcast(&TestBus::Events::SetSum3, 1, 2, 3);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT(TestBus, SetSum5, 1, 2, 3, 4, 5);
+            TestBus::Broadcast(&TestBus::Events::SetSum4, 1, 2, 3, 4);
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            TestBus::Broadcast(&TestBus::Events::SetSum5, 1, 2, 3, 4, 5);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             script.Execute("handler:Disconnect()");
 
@@ -4034,16 +4034,16 @@ ramenShop.handler:Connect(4);
 
             // Test sending messages from C++ to two LUA handlers on different bus ids
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT_ID(1, TestIdBus, VoidFunc0);
+            TestIdBus::Event(1, &TestIdBus::Events::VoidFunc0);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT_ID(2, TestIdBus, VoidFunc0);
+            TestIdBus::Event(2, &TestIdBus::Events::VoidFunc0);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             float ret = 0.f;
-            EBUS_EVENT_ID_RESULT(ret, 1, TestIdBus, Pick, 1.f, 2.f, 3.f);
+            TestIdBus::EventResult(ret, 1, &TestIdBus::Events::Pick, 1.f, 2.f, 3.f);
             AZ_TEST_ASSERT(ret == 1.f);
             ret = 0;
-            EBUS_EVENT_ID_RESULT(ret, 2, TestIdBus, Pick, 1.f, 2.f, 3.f);
+            TestIdBus::EventResult(ret, 2, &TestIdBus::Events::Pick, 1.f, 2.f, 3.f);
             AZ_TEST_ASSERT(ret == 2.f);
             script.Execute("handler1:Disconnect()");
             script.Execute("handler2:Disconnect()");

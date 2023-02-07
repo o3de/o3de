@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
+#include <AzToolsFramework/ComponentModes/BaseShapeViewportEdit.h>
 
 namespace AzToolsFramework
 {
@@ -17,34 +18,42 @@ namespace AzToolsFramework
     //! It is designed to be usable either by a component mode or by other contexts which are not associated with a
     //! particular component, so it does not contain any reference to an EntityComponentIdPair or other component-based
     //! identifier.
-    class CapsuleViewportEdit
+    class CapsuleViewportEdit : public BaseShapeViewportEdit
     {
     public:
         CapsuleViewportEdit() = default;
         virtual ~CapsuleViewportEdit() = default;
 
-        void SetupCapsuleManipulators(const ManipulatorManagerId manipulatorManagerId);
-        void TeardownCapsuleManipulators();
-        void UpdateCapsuleManipulators();
-        void ResetCapsuleManipulators();
+        void InstallGetRotationOffset(AZStd::function<AZ::Quaternion()> getRotationOffset);
+        void InstallGetCapsuleRadius(AZStd::function<float()> getCapsuleRadius);
+        void InstallGetCapsuleHeight(AZStd::function<float()> getCapsuleHeight);
+        void InstallSetCapsuleRadius(AZStd::function<void(float)> setCapsuleRadius);
+        void InstallSetCapsuleHeight(AZStd::function<void(float)> setCapsuleHeight);
 
-        virtual AZ::Transform GetCapsuleWorldTransform() const = 0;
-        virtual AZ::Transform GetCapsuleLocalTransform() const = 0;
-        virtual AZ::Vector3 GetCapsuleNonUniformScale() const;
-        virtual float GetCapsuleRadius() const = 0;
-        virtual float GetCapsuleHeight() const = 0;
-        virtual void SetCapsuleRadius(float radius) = 0;
-        virtual void SetCapsuleHeight(float height) = 0;
-        virtual void BeginEditing();
-        virtual void FinishEditing();
+        // BaseShapeViewportEdit overrides ...
+        void Setup(const ManipulatorManagerId manipulatorManagerId = g_mainManipulatorManagerId) override;
+        void Teardown() override;
+        void UpdateManipulators() override;
+        void ResetValues() override;
+        void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
 
-    protected:
         void OnCameraStateChanged(const AzFramework::CameraState& cameraState);
+    private:
+        AZ::Quaternion GetRotationOffset() const;
+        float GetCapsuleRadius() const;
+        float GetCapsuleHeight() const;
+        void SetCapsuleRadius(float radius);
+        void SetCapsuleHeight(float height);
+
+        AZ::Transform GetLocalTransform() const;
+
         void SetupRadiusManipulator(
+            const ManipulatorManagerId manipulatorManagerId,
             const AZ::Transform& worldTransform,
             const AZ::Transform& localTransform,
             const AZ::Vector3& nonUniformScale);
         void SetupHeightManipulator(
+            const ManipulatorManagerId manipulatorManagerId,
             const AZ::Transform& worldTransform,
             const AZ::Transform& localTransform,
             const AZ::Vector3& nonUniformScale);
@@ -56,6 +65,10 @@ namespace AzToolsFramework
         AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_radiusManipulator;
         AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_heightManipulator;
 
-        ManipulatorManagerId m_manipulatorManagerId = InvalidManipulatorManagerId;
+        AZStd::function<AZ::Quaternion()> m_getRotationOffset;
+        AZStd::function<float()> m_getCapsuleRadius;
+        AZStd::function<float()> m_getCapsuleHeight;
+        AZStd::function<void(float)> m_setCapsuleRadius;
+        AZStd::function<void(float)> m_setCapsuleHeight;
     };
 } // namespace AzToolsFramework

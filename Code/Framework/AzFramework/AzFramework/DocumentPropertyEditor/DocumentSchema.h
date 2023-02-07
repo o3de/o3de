@@ -247,21 +247,149 @@ namespace AZ::DocumentPropertyEditor
         AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
     };
 
-    using EnumValuesContainer = AZStd::vector<AZ::Edit::EnumConstant<AZ::u64>>;
-
-    class EnumValuesAttributeDefinition final : public AttributeDefinition<EnumValuesContainer>
+    template <typename GenericValueType>
+    class GenericValueAttributeDefinition final : public AttributeDefinition<AZStd::pair<GenericValueType, AZStd::string>>
     {
     public:
+        using GenericValuePair = AZStd::pair<GenericValueType, AZStd::string>;
+
         static constexpr const char* EntryDescriptionKey = "description";
         static constexpr const char* EntryValueKey = "value";
 
-        explicit constexpr EnumValuesAttributeDefinition(AZStd::string_view name)
-            : AttributeDefinition<EnumValuesContainer>(name)
+        explicit constexpr GenericValueAttributeDefinition(AZStd::string_view name)
+            : AttributeDefinition<GenericValuePair>(name)
         {
         }
 
-        Dom::Value ValueToDom(const EnumValuesContainer& attribute) const override;
-        AZStd::optional<EnumValuesContainer> DomToValue(const Dom::Value& value) const override;
+        Dom::Value ValueToDom(const GenericValuePair& attribute) const override
+        {
+            Dom::Value result(Dom::Type::Object);
+            result[EntryValueKey] = Dom::Value::FromOpaqueValue(AZStd::make_any<GenericValueType>(attribute.first));
+            result[EntryDescriptionKey] = Dom::Value(attribute.second, true);
+            return result;
+        }
+
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
+        {
+            if (attribute == nullptr)
+            {
+                return {};
+            }
+
+            AZ::AttributeReader reader(instance, attribute);
+            if (GenericValuePair value; reader.Read<GenericValuePair>(value))
+            {
+                return ValueToDom(value);
+            }
+
+            return {};
+        }
+
+        AZStd::optional<GenericValuePair> DomToValue(const Dom::Value& value) const override
+        {
+            if (!value.IsObject() || !value.HasMember(EntryDescriptionKey) || !value.HasMember(EntryValueKey))
+            {
+                return {};
+            }
+
+            const AZStd::any* opaqueValue = &value[EntryValueKey].GetOpaqueValue();
+            auto genericValue = AZStd::any_cast<GenericValueType>(opaqueValue);
+            if (opaqueValue->is<GenericValueType>() && genericValue)
+            {
+                AZStd::make_pair<GenericValueType, AZStd::string>(*genericValue, value[EntryDescriptionKey].GetString());
+            }
+
+            return {};
+        }
+    };
+
+    template<typename T>
+    using GenericValueContainer = AZStd::vector<AZStd::pair<T, AZStd::string>>;
+
+    template<typename GenericValueType>
+    class GenericValueListAttributeDefinition final : public AttributeDefinition<GenericValueContainer<GenericValueType>>
+    {
+    public:
+        using GenericValueList = GenericValueContainer<GenericValueType>;
+
+        static constexpr const char* EntryDescriptionKey = "description";
+        static constexpr const char* EntryValueKey = "value";
+
+        explicit constexpr GenericValueListAttributeDefinition(AZStd::string_view name)
+            : AttributeDefinition<GenericValueList>(name)
+        {
+        }
+
+        Dom::Value ValueToDom(const GenericValueList& attribute) const override
+        {
+            Dom::Value result(Dom::Type::Array);
+            for (const auto& entry : attribute)
+            {
+                Dom::Value entryDom(Dom::Type::Object);
+                entryDom[EntryValueKey] = Dom::Value::FromOpaqueValue(AZStd::make_any<GenericValueType>(entry.first));
+                entryDom[EntryDescriptionKey] = Dom::Value(entry.second, true);
+                result.ArrayPushBack(AZStd::move(entryDom));
+            }
+            return result;
+        }
+
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
+        {
+            if (attribute == nullptr)
+            {
+                return {};
+            }
+
+            auto attributeInvocable = attribute->GetVoidInstanceAttributeInvocable();
+            AttributeReader reader = AttributeReader(instance, attributeInvocable.get());
+            if (GenericValueList value; reader.Read<GenericValueList>(value))
+            {
+                return ValueToDom(value);
+            }
+
+            return {};
+        }
+
+        AZStd::optional<GenericValueList> DomToValue(const Dom::Value& value) const override
+        {
+            if (!value.IsArray())
+            {
+                return {};
+            }
+
+            GenericValueList result;
+            for (const Dom::Value& entryDom : value.GetArray())
+            {
+                if (!entryDom.IsObject() || !entryDom.HasMember(EntryValueKey) || !entryDom.HasMember(EntryDescriptionKey))
+                {
+                    continue;
+                }
+
+                if (!entryDom[EntryValueKey].IsOpaqueValue())
+                {
+                    continue;
+                }
+
+                const AZStd::any* opaqueValue = &entryDom[EntryValueKey].GetOpaqueValue();
+                auto genericValue = AZStd::any_cast<GenericValueType>(opaqueValue);
+                if (opaqueValue->is<GenericValueType>() && genericValue)
+                {
+                    result.emplace_back(
+                        AZStd::make_pair<GenericValueType, AZStd::string>(
+                            *genericValue,
+                            entryDom[EntryDescriptionKey].GetString()));
+                }
+            }
+
+            if (result.empty())
+            {
+                return {};
+            }
+            else
+            {
+                return result;
+            }
+        }
     };
 
     //! Defines a callback applicable to a Node.

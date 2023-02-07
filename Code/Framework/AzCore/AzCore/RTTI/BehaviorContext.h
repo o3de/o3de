@@ -676,6 +676,7 @@ namespace AZ
         {
             using base_type = BehaviorMethodImpl<R(C::*)(Args...)>;
         public:
+            AZ_CLASS_ALLOCATOR(BehaviorMethodImpl, AZ::SystemAllocator)
             using base_type::base_type;
             using FunctionPointer = R(C::*)(Args...) noexcept;
             using FunctionPointerConst = R(C::*)(Args...) const noexcept;
@@ -4493,7 +4494,8 @@ namespace AZ
 
             CallFunction<R, Args...>::Member(m_functionPtr, *arguments[0].GetAsUnsafe<C*>(), arguments.data() + 1, result, AZStd::make_index_sequence<sizeof...(Args)>());
 
-            EBUS_EVENT_ID(((void*)(*arguments[0].GetAsUnsafe<C*>())), BehaviorObjectSignals, OnMemberMethodCalled, this);
+            BehaviorObjectSignals::Event(
+                (void*)(*arguments[0].GetAsUnsafe<C*>()), &BehaviorObjectSignals::Events::OnMemberMethodCalled, this);
 
             return true;
         }
@@ -5454,3 +5456,4 @@ namespace AZ
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflection.inl>
 
+DECLARE_EBUS_EXTERN(BehaviorContextEvents);

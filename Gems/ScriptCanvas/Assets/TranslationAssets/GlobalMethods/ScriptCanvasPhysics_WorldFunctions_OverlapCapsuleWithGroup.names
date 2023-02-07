@@ -19,32 +19,36 @@
                         {
                             "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "Pose"
+                                "name": "Pose",
+                                "tooltip": "The position and orientation of the capsule for the overlap query"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Height"
+                                "name": "Height",
+                                "tooltip": "The height of the capsule geometry for the overlap query"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Radius"
+                                "name": "Radius",
+                                "tooltip": "The radius of the capsule geometry for the overlap query"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Collision Group"
+                                "name": "Collision Group",
+                                "tooltip": "Only report objects detected by the overlap query if this collision group would collide with them"
                             }
                         },
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
                                 "name": "Ignore",
-                                "tooltip": "Entity Unique Id"
+                                "tooltip": "Entity Id to be ignored by the overlap query"
                             }
                         }
                     ],
@@ -52,13 +56,15 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Is Overlapping"
+                                "name": "Is Overlapping",
+                                "tooltip": "True if any objects are detected by the overlap query"
                             }
                         },
                         {
                             "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
                             "details": {
-                                "name": "Entity Ids"
+                                "name": "Entity Ids",
+                                "tooltip": "Array of entity Ids for detected objects"
                             }
                         }
                     ]

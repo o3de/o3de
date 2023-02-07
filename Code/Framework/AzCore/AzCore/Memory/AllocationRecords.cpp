@@ -134,6 +134,7 @@ namespace AZ::Debug
             ai.m_stackFrames = m_numStackLevels ? reinterpret_cast<AZ::Debug::StackFrame*>(m_records.get_allocator().allocate(
                                                       sizeof(AZ::Debug::StackFrame) * m_numStackLevels, 1))
                                                 : nullptr;
+            ai.m_stackFramesCount = m_numStackLevels;
             if (ai.m_stackFrames)
             {
                 Debug::StackRecorder::Record(ai.m_stackFrames, m_numStackLevels, stackSuppressCount + 1);
@@ -369,20 +370,25 @@ namespace AZ::Debug
             return;
         }
 
-        Debug::AllocationInfo* ai{};
+        const auto [addressAlreadyRecorded, ai] = [this, address, newAddress]() -> std::pair<bool, Debug::AllocationInfo*>
         {
             AZStd::scoped_lock lock(m_recordsMutex);
             auto node = m_records.extract(address);
             if (node.empty())
             {
-                RegisterAllocation(newAddress, byteSize, alignment, stackSuppressCount);
-                return;
+                return {false, nullptr};
             }
 
             // Make a best effort to avoid reallocations from mutating the
             // records map when recording a reallocation
             node.key() = newAddress;
-            ai = &m_records.insert(AZStd::move(node)).position->second;
+            auto ai = &m_records.insert(AZStd::move(node)).position->second;
+            return {true, ai};
+        }();
+        if (!addressAlreadyRecorded)
+        {
+            RegisterAllocation(newAddress, byteSize, alignment, stackSuppressCount);
+            return;
         }
 
         m_requestedBytes += (byteSize - ai->m_byteSize);

@@ -25,6 +25,15 @@
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 
+// This can be overridden in the build files by defining O3DE_EDITOR_CONNECTION_LISTENER_ENABLE to 0 or 1
+// to force disabling or enabling the listener. But by default, it will be enabled in non-monolithic builds
+// and disabled in monolithic builds.
+#if !defined(O3DE_EDITOR_CONNECTION_LISTENER_ENABLE)
+    #if !defined(AZ_MONOLITHIC_BUILD)
+        #define O3DE_EDITOR_CONNECTION_LISTENER_ENABLE 1
+    #endif
+#endif
+
 namespace AzFramework
 {
     struct SessionConfig;
@@ -192,6 +201,7 @@ namespace Multiplayer
         VersionMismatchEvent m_versionMismatchEvent;
 
         AZ::Event<NetEntityId>::Handler m_autonomousEntityReplicatorCreatedHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
 
         AZStd::queue<AZStd::string> m_pendingConnectionTickets;
         AZStd::unordered_map<uint64_t, NetEntityId> m_playerRejoinData;
@@ -243,8 +253,12 @@ namespace Multiplayer
             OnPhysicsPostSimulate(dt);
         } };
 
-#if !defined(AZ_RELEASE_BUILD)
-        MultiplayerEditorConnection m_editorConnectionListener;
+        // By default, this is only enabled in non-monolithic builds, since the Editor doesn't support monolithic builds.
+#if (O3DE_EDITOR_CONNECTION_LISTENER_ENABLE)
+        // This is a unique_ptr instead of a raw instance so that we can defer the construction
+        // until the Activate(). If it gets constructed during the MultiplayerSystemComponent constructor,
+        // the AzNetworking systems might not be constructed and activated yet, which would crash.
+        AZStd::unique_ptr<MultiplayerEditorConnection> m_editorConnectionListener;
 #endif
     };
 }

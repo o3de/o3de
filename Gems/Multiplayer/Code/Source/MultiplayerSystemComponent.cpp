@@ -27,6 +27,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
@@ -41,6 +42,9 @@
 
 #include <cmath>
 #include <System/PhysXSystem.h>
+
+#include <AzCore/Jobs/JobCompletion.h>
+#include <AzCore/Jobs/JobFunction.h>
 
 AZ_DEFINE_BUDGET(MULTIPLAYER);
 
@@ -113,6 +117,10 @@ namespace Multiplayer
         "Capture either UDP or TCP transport metrics.");
     AZ_CVAR(AZ::TimeMs, bg_captureTransportPeriod, AZ::TimeMs{1000}, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "How often in milliseconds to record transport metrics.");
+
+    AZ_CVAR(bool, bg_parallelNotifyPreRender, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "If true, OnPreRender events will be sent in parallel from job threads. Please make sure the handlers of the event are thread safe.");
+    
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -255,6 +263,10 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Activate()
     {
+#if (O3DE_EDITOR_CONNECTION_LISTENER_ENABLE)
+        m_editorConnectionListener = AZStd::make_unique<MultiplayerEditorConnection>();
+#endif
+
         RegisterMetrics();
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
@@ -272,16 +284,29 @@ namespace Multiplayer
         if (auto console = AZ::Interface<AZ::IConsole>::Get())
         {
             m_consoleCommandHandler.Connect(console->GetConsoleCommandInvokedEvent());
-
-            if (cl_connect_onstartup)
-            {
-                console->PerformCommand("connect");
-            }
         }
 
         if (bg_captureTransportMetrics)
         {
             m_metricsEvent.Enqueue(bg_captureTransportPeriod, true);
+        }
+
+        // If this client wants to connect on startup, wait for all the system components to activate, and then call connect.
+        // Connecting too soon causes a "version mismatch" because all of the system components haven't registered their multiplayer components.
+        if (cl_connect_onstartup)
+        {
+            if (const auto settingsRegistry = AZ::SettingsRegistry::Get())
+            {
+                AZ::ComponentApplicationLifecycle::RegisterHandler(
+                    *settingsRegistry,
+                    m_componentApplicationLifecycleHandler,
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
+                    {
+                        this->Connect(LocalHost, cl_serverport);
+                    },
+                    "SystemComponentsActivated",
+                    /*autoRegisterEvent*/ true);
+            }
         }
     }
 
@@ -325,6 +350,10 @@ namespace Multiplayer
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
 
         m_networkEntityManager.Reset();
+
+#if (O3DE_EDITOR_CONNECTION_LISTENER_ENABLE)
+        m_editorConnectionListener.reset();
+#endif
     }
 
     bool MultiplayerSystemComponent::StartHosting(uint16_t port, bool isDedicated)
@@ -1485,9 +1514,29 @@ namespace Multiplayer
                 }
             });
 
-            for (NetBindComponent* netBindComponent : gatheredEntities)
+            if (bg_parallelNotifyPreRender)
             {
-                netBindComponent->NotifyPreRender(deltaTime);
+                AZ::JobCompletion jobCompletion;
+                for (NetBindComponent* netBindComponent : gatheredEntities)
+                {
+                    AZ::Job* job = AZ::CreateJobFunction([netBindComponent = netBindComponent, deltaTime]()
+                        {
+                            AZ_PROFILE_SCOPE(AzCore, "OnPreRenderJob");
+                            netBindComponent->NotifyPreRender(deltaTime);
+                        }, true, nullptr);
+
+                    job->SetDependent(&jobCompletion);
+                    job->Start();
+                }
+
+                jobCompletion.StartAndWaitForCompletion();
+            }
+            else
+            {
+                for (NetBindComponent* netBindComponent : gatheredEntities)
+                {
+                    netBindComponent->NotifyPreRender(deltaTime);
+                }
             }
         }
         else

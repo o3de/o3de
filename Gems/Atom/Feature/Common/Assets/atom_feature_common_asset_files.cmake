@@ -80,6 +80,7 @@ set(FILES
     Passes/DownsampleLuminanceMinAvgMaxCS.pass
     Passes/DownsampleMinAvgMaxCS.pass
     Passes/DownsampleMipChain.pass
+    Passes/DownsampleSinglePassLuminance.pass
     Passes/EnvironmentCubeMapPipeline.pass
     Passes/EsmShadowmaps.pass
     Passes/EyeAdaptation.pass
@@ -476,6 +477,8 @@ set(FILES
     Shaders/PostProcessing/DownsampleLuminanceMinAvgMaxCS.shader
     Shaders/PostProcessing/DownsampleMinAvgMaxCS.azsl
     Shaders/PostProcessing/DownsampleMinAvgMaxCS.shader
+    Shaders/PostProcessing/DownsampleSinglePassLuminance.azsl
+    Shaders/PostProcessing/DownsampleSinglePassLuminance.shader
     Shaders/PostProcessing/EyeAdaptation.azsl
     Shaders/PostProcessing/EyeAdaptation.shader
     Shaders/PostProcessing/EyeAdaptationUtil.azsli

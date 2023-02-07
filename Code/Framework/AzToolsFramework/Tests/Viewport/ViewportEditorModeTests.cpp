@@ -609,7 +609,7 @@ namespace UnitTest
         ExpectOnlyModeActive(*m_viewportEditorModes, ViewportEditorMode::Default);
     }
 
-    TEST_F(ViewportEditorModeTrackerIntegrationTestFixture, EnteringFocusModeAfterInitialStateHasViewportEditorModeDefaultAndPickActive)
+    TEST_F(ViewportEditorModeTrackerIntegrationTestFixture, EnteringFocusModeAfterInitialStateHasViewportEditorModeDefaultAndFocusActive)
     {
         // When entering focus mode
         m_focusModeInterface->SetFocusRoot(AZ::EntityId{ 1 });

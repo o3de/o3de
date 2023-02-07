@@ -25,6 +25,7 @@ namespace ScriptCanvas::Nodeables::Spawning
     {
         SCRIPTCANVAS_NODE(DespawnNodeable);
     public:
+        AZ_CLASS_ALLOCATOR(DespawnNodeable, AZ::SystemAllocator)
         DespawnNodeable() = default;
         DespawnNodeable(const DespawnNodeable& rhs);
         DespawnNodeable& operator=(const DespawnNodeable& rhs);

@@ -8,6 +8,8 @@
 
 #include "AssetProcessorManagerTest.h"
 #include "native/AssetManager/PathDependencyManager.h"
+#include "native/AssetManager/assetScannerWorker.h"
+
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/Asset/AssetProcessorMessages.h>
 #include <AzToolsFramework/ToolsFileUtils/ToolsFileUtils.h>
@@ -83,8 +85,9 @@ void AssetProcessorManagerTest::SetUp()
 
     qRegisterMetaType<AssetProcessor::SourceAssetReference>("SourceAssetReference");
 
-    AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-    AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+    m_assetRootDir = QDir(m_databaseLocationListener.GetAssetRootDir().c_str());
+    m_scopeDir = AZStd::make_unique<UnitTestUtils::ScopedDir>();
+    m_scopeDir->Setup(m_assetRootDir.path());
 
     m_data = AZStd::make_unique<StaticData>();
 
@@ -102,10 +105,6 @@ void AssetProcessorManagerTest::SetUp()
     m_mockApplicationManager.reset(new AssetProcessor::MockApplicationManager());
 
     AssetUtilities::ResetAssetRoot();
-
-    m_assetRootDir = QDir(m_databaseLocationListener.GetAssetRootDir().c_str());
-    m_scopeDir = AZStd::make_unique<UnitTestUtils::ScopedDir>();
-    m_scopeDir->Setup(m_assetRootDir.path());
 
     auto registry = AZ::SettingsRegistry::Get();
     auto cacheRootKey =
@@ -131,6 +130,10 @@ void AssetProcessorManagerTest::SetUp()
     m_normalizedCacheRootDir.setPath(normalizedCacheRoot);
 
     UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt"));
+    UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/a.txt"));
+    UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/b.txt"));
+    UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/c.txt"));
+    UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/d.txt"));
 
     m_config->EnablePlatform({ "pc", { "host", "renderer", "desktop" } }, true);
 
@@ -140,6 +143,16 @@ void AssetProcessorManagerTest::SetUp()
     m_config->AddScanFolder(ScanFolderInfo(m_assetRootDir.filePath("subfolder4"), "subfolder4", "subfolder4", false, true, m_config->GetEnabledPlatforms(), 1));
     m_config->AddMetaDataType("assetinfo", "");
     m_config->AddIntermediateScanFolder();
+
+    m_aUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")));
+    m_bUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")));
+    m_cUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
+    m_dUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
+
+    ASSERT_FALSE(m_aUuid.IsNull());
+    ASSERT_FALSE(m_bUuid.IsNull());
+    ASSERT_FALSE(m_cUuid.IsNull());
+    ASSERT_FALSE(m_dUuid.IsNull());
 
     AssetRecognizer rec;
     rec.m_name = "txt files";
@@ -184,27 +197,25 @@ void AssetProcessorManagerTest::TearDown()
     m_qApp.reset();
     m_scopeDir.reset();
 
-    AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-    AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
     AssetProcessor::AssetProcessorTest::TearDown();
 }
 
 void AssetProcessorManagerTest::CreateSourceAndFile(const char* tempFolderRelativePath)
 {
     auto absolutePath = m_assetRootDir.absoluteFilePath(tempFolderRelativePath);
-
     auto scanFolder = m_config->GetScanFolderForFile(absolutePath);
+
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(absolutePath));
 
     QString relPath;
     m_config->ConvertToRelativePath(absolutePath, scanFolder, relPath);
 
-    auto uuid = AssetUtilities::CreateSafeSourceUUIDFromName(relPath.toUtf8().constData());
+    auto uuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().constData()));
+
+    ASSERT_FALSE(uuid.IsNull());
 
     AzToolsFramework::AssetDatabase::SourceDatabaseEntry source(scanFolder->ScanFolderID(), relPath.toUtf8().constData(), uuid, "fingerprint");
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source));
-
-    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(absolutePath));
 }
 
 void AssetProcessorManagerTest::PopulateDatabase()
@@ -250,7 +261,7 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-    AZ::Uuid uuid = AssetUtilities::CreateSafeSourceUUIDFromName(relFileName.toUtf8().data());
+    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference);
     AssetJobsInfoRequest request;
     request.m_assetId = AZ::Data::AssetId(uuid, 0);
     request.m_escalateJobs = false;
@@ -491,7 +502,7 @@ TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToD
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-    AZ::Uuid uuid = AssetUtilities::CreateSafeSourceUUIDFromName(relFileName.toUtf8().data());
+    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference);
     AssetJobsInfoRequest request;
     request.m_assetId = AZ::Data::AssetId(uuid, 0);
     request.m_escalateJobs = false;
@@ -560,9 +571,9 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDFailure)
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    QString relFileName("assetProcessorManagerTestFailed.txt");
+    QString absolutePath = m_assetRootDir.absoluteFilePath("assetProcessorManagerTestFailed.txt");
 
-    AZ::Uuid uuid = AssetUtilities::CreateSafeSourceUUIDFromName(relFileName.toUtf8().data());
+    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().data()));
     AssetJobsInfoRequest request;
     request.m_assetId = AZ::Data::AssetId(uuid, 0);
     request.m_escalateJobs = false;
@@ -587,7 +598,7 @@ TEST_F(AssetProcessorManagerTest, UnitTestForCancelledJob)
     entry.m_platformInfo = { "pc", {"host", "renderer", "desktop"} };
     entry.m_jobRunKey = 1;
 
-    AZ::Uuid sourceUUID = AssetUtilities::CreateSafeSourceUUIDFromName(relFileName.toUtf8().constData());
+    AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference);
     bool sourceFound = false;
 
     //Checking the response of the APM when we cancel a job in progress
@@ -3005,7 +3016,8 @@ TEST_F(AssetProcessorManagerTest, AssessDeletedFile_OnJobInFlight_IsIgnored)
         ASSERT_FALSE(gotUnexpectedAssetToProcess);
 
         // now tell it to stop ignoring the cache delete and let it do the next one.
-        EBUS_EVENT(AssetProcessor::ProcessingJobInfoBus, EndCacheFileUpdate, filePathToGenerate.toUtf8().data(), false);
+        AssetProcessor::ProcessingJobInfoBus::Broadcast(
+            &AssetProcessor::ProcessingJobInfoBus::Events::EndCacheFileUpdate, filePathToGenerate.toUtf8().data(), false);
 
         // simulate a "late" deletion notify coming from the file monitor that it outside the "ignore delete" section.  This should STILL not generate additional
         // deletion notifies as it should ignore these if the file in fact actually there when it gets around to checking it
@@ -3019,6 +3031,32 @@ TEST_F(AssetProcessorManagerTest, AssessDeletedFile_OnJobInFlight_IsIgnored)
     ASSERT_FALSE(gotUnexpectedAssetToProcess);
 
     QObject::disconnect(connection);
+}
+
+void SourceFileDependenciesTest::SetUp()
+{
+    AssetProcessorManagerTest::SetUp();
+
+    m_sourceFileUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt")));
+
+    ASSERT_FALSE(m_sourceFileUuid.IsNull());
+
+    // The files need to be created first before a UUID can be assigned
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")));
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")));
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
+
+    m_uuidOfA = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")));
+    m_uuidOfB = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")));
+    m_uuidOfC = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
+    m_uuidOfD = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
+
+    // Clean up the files, different tests have different requirements for which files should exist
+    QFile(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")).remove();
+    QFile(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")).remove();
+    QFile(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")).remove();
+    QFile(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")).remove();
 }
 
 void SourceFileDependenciesTest::SetupData(
@@ -3058,7 +3096,7 @@ void SourceFileDependenciesTest::SetupData(
     // construct the dummy job to feed to the database updater function:
     job.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(m_absPath);
     job.m_sourceFileInfo.m_scanFolder = m_scanFolder;
-    job.m_sourceFileInfo.m_uuid = AssetUtilities::CreateSafeSourceUUIDFromName(job.m_sourceFileInfo.m_sourceAssetReference.RelativePath().c_str());
+    job.m_sourceFileInfo.m_uuid = AssetUtilities::GetSourceUuid(job.m_sourceFileInfo.m_sourceAssetReference);
 
     if (primeMap)
     {
@@ -3421,9 +3459,11 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingF
 
     // now make c exist too and pretend a job came in to process it:
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile1_Job, QString("tempdata\n")));
-    AZ::Uuid uuidOfC = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");
+    AssetProcessor::SourceAssetReference cAssetReference(m_watchFolderPath, "c.txt");
+    AZ::Uuid uuidOfC = AssetUtilities::GetSourceUuid(cAssetReference);
+
     AssetProcessorManager::JobToProcessEntry job3;
-    job3.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(m_watchFolderPath, "c.txt");
+    job3.m_sourceFileInfo.m_sourceAssetReference = cAssetReference;
     job3.m_sourceFileInfo.m_scanFolder = m_scanFolder;
     job3.m_sourceFileInfo.m_uuid = uuidOfC;
     m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfC] = SourceAssetReference{ m_watchFolderPath, "c.txt" };
@@ -3755,7 +3795,7 @@ TEST_F(AssetProcessorManagerTest, SourceFileProcessFailure_ClearsFingerprint)
 
     for(const auto& processResult : processResults)
     {
-        AZStd::string file = (processResult.m_jobEntry.m_sourceAssetReference.RelativePath().Native() + ".arc1");
+        AZStd::string file = AZStd::string(processResult.m_jobEntry.m_sourceAssetReference.RelativePath().c_str()) + ".arc1";
 
         // Create the file on disk
         ASSERT_TRUE(UnitTestUtils::CreateDummyFile((processResult.m_cachePath / file).AsPosix().c_str(), "products."));
@@ -4011,9 +4051,10 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(dependsOnFilec_Job, QString("tempdata\n")));
 
     // construct the dummy job to feed to the database updater function:
-    AZ::Uuid wildcardTestUuid = AssetUtilities::CreateSafeSourceUUIDFromName("wildcardTest.txt");
+    AssetProcessor::SourceAssetReference sourceAsset(absPath);
+    AZ::Uuid wildcardTestUuid = AssetUtilities::GetSourceUuid(sourceAsset);
     AssetProcessorManager::JobToProcessEntry job;
-    job.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(absPath);
+    job.m_sourceFileInfo.m_sourceAssetReference = sourceAsset;
     job.m_sourceFileInfo.m_scanFolder = scanFolder;
     job.m_sourceFileInfo.m_uuid = wildcardTestUuid;
 
@@ -4672,9 +4713,13 @@ void WildcardSourceDependencyTest::SetUp()
 
     AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer dependencies;
 
-    auto aUuid = AssetUtilities::CreateSafeSourceUUIDFromName("a.foo");
-    auto bUuid = AssetUtilities::CreateSafeSourceUUIDFromName("b.foo");
-    auto dUuid = AssetUtilities::CreateSafeSourceUUIDFromName("folder/one/d.foo");
+    auto aUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder2/a.foo")));
+    auto bUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder2/b.foo")));
+    auto dUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder2/folder/one/d.foo")));
+
+    ASSERT_FALSE(aUuid.IsNull());
+    ASSERT_FALSE(bUuid.IsNull());
+    ASSERT_FALSE(dUuid.IsNull());
 
     // Relative path wildcard dependency
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
@@ -4880,7 +4925,53 @@ TEST_F(WildcardSourceDependencyTest, FilesRemovedAfterInitialCache)
     ASSERT_TRUE(excludedFolderCacheInterface);
 
     {
+        m_errorAbsorber->Clear();
         const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+        m_errorAbsorber->ExpectWarnings(1); // because we didn't precache, we'd expect a warning here, about performance.
+
+        ASSERT_EQ(excludedFolders.size(), 3);
+    }
+
+    m_fileStateCache->SignalDeleteEvent(m_assetRootDir.absoluteFilePath("subfolder2/folder/two/ignored"));
+
+    const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+    ASSERT_EQ(excludedFolders.size(), 2);
+}
+
+// same as above test but actually runs a file scanner over the root dir and ensures it still functions
+TEST_F(WildcardSourceDependencyTest, FilesRemovedAfterInitialCache_WithPrecache)
+{
+    // Add a file to a new ignored folder
+    QString newFilePath = m_assetRootDir.absoluteFilePath("subfolder2/folder/two/ignored/three/new.foo");
+    UnitTestUtils::CreateDummyFile(newFilePath);
+
+    {
+        // warm up the cache.
+        AssetScannerWorker worker(m_config.get());
+        bool foundExcludes = false;
+        QObject::connect(
+            &worker,
+            &AssetScannerWorker::ExcludedFound,
+            m_assetProcessorManager.get(),
+            [&](QSet<AssetFileInfo> excluded)
+            {
+                foundExcludes = true;
+                m_assetProcessorManager->RecordExcludesFromScanner(excluded);
+            });
+
+        worker.StartScan();
+        QCoreApplication::processEvents();
+        ASSERT_TRUE(foundExcludes);
+    }
+
+    auto excludedFolderCacheInterface = AZ::Interface<ExcludedFolderCacheInterface>::Get();
+    ASSERT_TRUE(excludedFolderCacheInterface);
+
+    {
+        m_errorAbsorber->Clear();
+        const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+        m_errorAbsorber->ExpectWarnings(0);  // we precached, so there should not be a warning.
 
         ASSERT_EQ(excludedFolders.size(), 3);
     }

@@ -220,24 +220,17 @@ namespace AZ
                 Render::Bootstrap::DefaultWindowBus::Handler::BusConnect();
                 Render::Bootstrap::RequestBus::Handler::BusConnect();
 
-                // If the settings registry isn't available, something earlier in startup will report that failure.
-                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-                {
-                    // Automatically register the event if it's not registered, because
-                    // this system is initialized before the settings registry has loaded the event list.
-                    AZ::ComponentApplicationLifecycle::RegisterHandler(
-                        *settingsRegistry, m_componentApplicationLifecycleHandler,
-                        [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
+                // delay one frame for Initialize which asset system is ready by then
+                AZ::TickBus::QueueFunction(
+                    [this]()
+                    {
+                        Initialize();
+                        if (m_nativeWindow)
                         {
-                            Initialize();
-                            if (m_nativeWindow)
-                            {
-                                // wait until swapchain has been created before setting fullscreen state
-                                m_nativeWindow->SetFullScreenState(r_fullscreen);
-                            }
-                        },
-                        "CriticalAssetsCompiled");
-                }
+                            // wait until swapchain has been created before setting fullscreen state
+                            m_nativeWindow->SetFullScreenState(r_fullscreen);
+                        }
+                    });
             }
 
             void BootstrapSystemComponent::Deactivate()
@@ -267,11 +260,6 @@ namespace AZ
                 }
 
                 m_isInitialized = true;
-
-                if (!RPI::RPISystemInterface::Get()->IsInitialized())
-                {
-                    RPI::RPISystemInterface::Get()->InitializeSystemAssets();
-                }
 
                 if (!RPI::RPISystemInterface::Get()->IsInitialized())
                 {
@@ -520,6 +508,18 @@ namespace AZ
                     renderPipelineDescriptor.m_name =
                         AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
 
+                    if (renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_customPositionsCount &&
+                        !RHI::RHISystemInterface::Get()->GetDevice()->GetFeatures().m_customSamplePositions)
+                    {
+                        // Disable custom sample positions because they are not supported
+                        AZ_Warning(
+                            "BootstrapSystemComponent",
+                            false,
+                            "Disabling custom sample positions for pipeline %s because they are not supported on this device",
+                            pipelineName.data());
+                        renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_customPositions = {};
+                        renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_customPositionsCount = 0;
+                    }
                     multisampleState = renderPipelineDescriptor.m_renderSettings.m_multisampleState;
 
                     // Create and add render pipeline to the scene (when not added already)

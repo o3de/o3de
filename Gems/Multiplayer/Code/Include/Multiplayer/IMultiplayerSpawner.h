@@ -15,7 +15,6 @@ namespace Multiplayer
 {
     struct EntityReplicationData;
     struct MultiplayerAgentDatum;
-    struct PlayerConnectionConfig;
 
     // It's important that this be an ordered associative container
     // as we'll walk corresponding replication sets to compute differences

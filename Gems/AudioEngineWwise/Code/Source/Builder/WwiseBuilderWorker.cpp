@@ -6,7 +6,7 @@
  *
  */
 
-#include <Builder/WwiseBuilderWorker.h>
+#include <WwiseBuilderWorker.h>
 
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/FileIO.h>

@@ -11,7 +11,6 @@
 #include <AzCore/Math/Random.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/functional.h>
 
@@ -31,7 +30,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            if (AZ::Debug::AllocationRecords* records = AZ::AllocatorInstance<AZ::SystemAllocator>::GetAllocator().GetRecords();
+            if (AZ::Debug::AllocationRecords* records = AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetRecords();
                 records != nullptr)
             {
                 records->SetMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);

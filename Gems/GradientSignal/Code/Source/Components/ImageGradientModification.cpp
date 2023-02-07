@@ -436,7 +436,7 @@ namespace GradientSignal
         AzFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
     }
 
-    void ImageGradientModifier::OnBrushStrokeBegin(const AZ::Color& color)
+    void ImageGradientModifier::OnBrushStrokeBegin([[maybe_unused]] const AZ::Color& color)
     {
         AZ::EntityId entityId = m_ownerEntityComponentId.GetEntityId();
 
@@ -448,9 +448,6 @@ namespace GradientSignal
         {
             return;
         }
-
-        m_paintStrokeData.m_intensity = color.GetR();
-        m_paintStrokeData.m_opacity = color.GetA();
 
         // Create the buffer for holding all the changes for a single continuous paint brush stroke.
         // This buffer will get used during the stroke to hold our accumulated stroke opacity layer,
@@ -477,7 +474,7 @@ namespace GradientSignal
         m_modifiedStrokeRegion = {};
     }
 
-    AZ::Color ImageGradientModifier::OnGetColor(const AZ::Vector3& brushCenter)
+    AZ::Color ImageGradientModifier::OnGetColor(const AZ::Vector3& brushCenter) const
     {
         AZ::EntityId entityId = m_ownerEntityComponentId.GetEntityId();
 
@@ -603,14 +600,17 @@ namespace GradientSignal
         }
     }
 
-    void ImageGradientModifier::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn)
+    void ImageGradientModifier::OnPaint(const AZ::Color& color, const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn)
     {
+        const float intensity = color.GetR();
+        const float opacity = color.GetA();
+
         // For paint notifications, we'll use the given blend function to blend the original value and the paint brush intensity
         // using the built-up opacity.
-        auto combineFn = [this,
-                          blendFn]([[maybe_unused]] const AZ::Vector3& worldPosition, float gradientValue, float opacityValue) -> float
+        auto combineFn = [intensity, opacity, blendFn](
+            [[maybe_unused]] const AZ::Vector3& worldPosition, float gradientValue, float opacityValue) -> float
         {
-            return blendFn(gradientValue, m_paintStrokeData.m_intensity, opacityValue * m_paintStrokeData.m_opacity);
+            return blendFn(gradientValue, intensity, opacityValue * opacity);
         };
 
         // Perform all the common logic between painting and smoothing to modify our image gradient.
@@ -618,8 +618,14 @@ namespace GradientSignal
     }
 
     void ImageGradientModifier::OnSmooth(
-        const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, AZStd::span<const AZ::Vector3> valuePointOffsets, SmoothFn& smoothFn)
+        const AZ::Color& color,
+        const AZ::Aabb& dirtyArea,
+        ValueLookupFn& valueLookupFn,
+        AZStd::span<const AZ::Vector3> valuePointOffsets,
+        SmoothFn& smoothFn)
     {
+        const float opacity = color.GetA();
+
         AZ::EntityId entityId = m_ownerEntityComponentId.GetEntityId();
 
         // Declare our vectors of kernel point locations and values once outside of the combine function so that we
@@ -634,7 +640,7 @@ namespace GradientSignal
 
         // For smoothing notifications, we'll need to gather all of the neighboring gradient values to feed into the given smoothing
         // function for our blend operation.
-        auto combineFn = [this, entityId, smoothFn, &valuePointOffsets, valuePointOffsetScale, &kernelPoints, &kernelValues](
+        auto combineFn = [entityId, opacity, smoothFn, &valuePointOffsets, valuePointOffsetScale, &kernelPoints, &kernelValues](
                              const AZ::Vector3& worldPosition, float gradientValue, float opacityValue) -> float
         {
             kernelPoints.clear();
@@ -652,7 +658,7 @@ namespace GradientSignal
                 entityId, &ImageGradientModificationBus::Events::GetPixelValuesByPosition, kernelPoints, kernelValues);
 
             // Blend all the blurring kernel values together and store the blended pixel and new opacity back into our paint stroke buffer.
-            return smoothFn(gradientValue, kernelValues, opacityValue * m_paintStrokeData.m_opacity);
+            return smoothFn(gradientValue, kernelValues, opacityValue * opacity);
         };
 
         // Perform all the common logic between painting and smoothing to modify our image gradient.

@@ -96,6 +96,7 @@ namespace ScriptCanvasEditor
         , private UpgradeNotificationsBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetBrowserModel, AZ::SystemAllocator, 0);
 
         explicit ScriptCanvasAssetBrowserModel(QObject* parent = nullptr)
             : AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent)
@@ -388,13 +389,6 @@ namespace ScriptCanvasEditor
         void OnViewStatisticsPanel();
         void OnViewPresetsEditor();
         void OnRestoreDefaultLayout();
-
-        // ScriptEvent Extension Actions
-        void OnScriptEventAddHelpers();
-        void OnScriptEventClearStatus();
-        void OnScriptEventMenuPreShow();
-        void OnScriptEventOpen(const AZ::IO::Path& filePath);
-        bool OnScriptEventSave(Save save);
 
         void UpdateViewMenu();
         /////////////////////////////////////////////////////////////////////////////////////////////

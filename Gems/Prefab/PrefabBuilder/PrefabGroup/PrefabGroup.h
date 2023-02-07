@@ -50,12 +50,14 @@ namespace AZ::SceneAPI::SceneData
         DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() override;
         const DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() const override;
 
+        // IManifestObject
+        void GetManifestObjectsToRemoveOnRemoved(
+            AZStd::vector<const IManifestObject*>& toRemove, const AZ::SceneAPI::Containers::SceneManifest& manifest) const override;
+
         // Concrete API
         void SetId(Uuid id);
         void SetName(AZStd::string name);
         void SetPrefabDom(AzToolsFramework::Prefab::PrefabDom prefabDom);
-        void SetCreateProceduralPrefab(bool createProceduralPrefab);
-        bool GetCreateProceduralPrefab() const;
 
     private:
         SceneNodeSelectionList m_nodeSelectionList;
@@ -77,5 +79,7 @@ namespace AZ::SceneAPI::SceneData
 
         ProceduralMeshGroupRule() = default;
         ~ProceduralMeshGroupRule() override = default;
+
+        bool ModifyTooltip(AZStd::string& tooltip) override;
     };
 }

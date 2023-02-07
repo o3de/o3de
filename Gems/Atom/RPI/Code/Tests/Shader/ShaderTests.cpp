@@ -92,7 +92,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(TestShaderStageFunction, "{1BAEE536-96CA-4AEB-BA73-D5D72EE35B45}", AZ::RHI::ShaderStageFunction);
-        AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestShaderStageFunction, AZ::SystemAllocator)
 
         static void Reflect(AZ::ReflectContext* context)
         {

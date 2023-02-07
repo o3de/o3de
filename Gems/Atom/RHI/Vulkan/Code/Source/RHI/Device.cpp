@@ -947,7 +947,7 @@ namespace AZ
             m_features.m_geometryShader = (m_enabledDeviceFeatures.geometryShader == VK_TRUE);
             m_features.m_computeShader = true;
             m_features.m_independentBlend = (m_enabledDeviceFeatures.independentBlend == VK_TRUE);
-            m_features.m_customResolvePositions = physicalDevice.IsFeatureSupported(DeviceFeature::CustomSampleLocation);
+            m_features.m_customSamplePositions = physicalDevice.IsFeatureSupported(DeviceFeature::CustomSampleLocation);
 #if AZ_TRAIT_ATOM_VULKAN_DISABLE_DUAL_SOURCE_BLENDING
             // [ATOM-1448] Dual source blending may not work on certain devices due to driver issues.
             m_features.m_dualSourceBlending = false;
@@ -996,6 +996,9 @@ namespace AZ
                 && m_enabledDeviceFeatures.sparseResidencyAliased
                 && deviceProperties.sparseProperties.residencyStandard2DBlockShape
                 && deviceProperties.sparseProperties.residencyStandard3DBlockShape;
+
+            // Check if the Vulkan device support subgroup operations
+            m_features.m_waveOperation = physicalDevice.IsFeatureSupported(DeviceFeature::SubgroupOperation);
 
             // check for the VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME in the list of physical device extensions
             // to determine if ray tracing is supported on this device
