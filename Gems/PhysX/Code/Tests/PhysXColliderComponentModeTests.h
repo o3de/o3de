@@ -8,20 +8,20 @@
 
 #pragma once
 
-#include "TestColliderComponent.h"
+
 
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
-#include <EditorColliderComponent.h>
+#include <TestColliderComponent.h>
 #include <Tests/Viewport/ViewportUiManagerTests.h>
 
 namespace UnitTest
