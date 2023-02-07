@@ -960,7 +960,6 @@ namespace AZ
 
         AZ::Outcome<Utils::ImageDiffResult, FrameCaptureTestError> FrameCaptureSystemComponent::CompareScreenshots(const AZStd::string& filePathA, const AZStd::string& filePathB, float minDiffFilter)
         {
-            Utils::ImageDiffResult result;
             FrameCaptureTestError error;
 
             char resolvedFilePathA[AZ_MAX_PATH_LEN] = { 0 };
