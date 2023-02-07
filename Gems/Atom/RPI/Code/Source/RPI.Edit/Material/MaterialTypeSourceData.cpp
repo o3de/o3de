@@ -32,6 +32,40 @@ namespace AZ
         namespace
         {
             [[maybe_unused]] static constexpr char const MaterialTypeSourceDataDebugName[] = "MaterialTypeSourceData";
+
+            void SortMaterialTypeSourceDataPropertyGroups(
+                AZStd::vector<AZStd::unique_ptr<MaterialTypeSourceData::PropertyGroup>>& propertyGroups)
+            {
+                // Sort child groups alphabetically
+                AZStd::sort(
+                    propertyGroups.begin(),
+                    propertyGroups.end(),
+                    [](auto& group1, auto& group2)
+                    {
+                        return group1->GetName() < group2->GetName();
+                    });
+
+                // Sort general groups to the back of the list
+                AZStd::stable_sort(
+                    propertyGroups.begin(),
+                    propertyGroups.end(),
+                    [](auto& group1, auto& group2)
+                    {
+                        static constexpr AZStd::string_view generalGroupName = "general";
+                        const auto& groupName1 = group1->GetName();
+                        const auto& groupName2 = group2->GetName();
+                        return AZ::StringFunc::Equal(groupName1, generalGroupName) < AZ::StringFunc::Equal(groupName2, generalGroupName);
+                    });
+
+                // Visit and sort all child groups recursively
+                AZStd::for_each(
+                    propertyGroups.begin(),
+                    propertyGroups.end(),
+                    [](auto& group)
+                    {
+                        group->SortProperties();
+                    });
+            }
         }
 
         void MaterialTypeSourceData::Reflect(ReflectContext* context)
@@ -231,6 +265,20 @@ namespace AZ
             return AddPropertyGroup(name, m_propertyGroups);
         }
 
+        void MaterialTypeSourceData::PropertyGroup::SortProperties()
+        {
+            // Sort properties in each group alphabetically
+            AZStd::sort(
+                m_properties.begin(),
+                m_properties.end(),
+                [](auto& property1, auto& property2)
+                {
+                    return property1->GetName() < property2->GetName();
+                });
+
+            SortMaterialTypeSourceDataPropertyGroups(m_propertyGroups);
+        }
+
         MaterialTypeSourceData::PropertyGroup* MaterialTypeSourceData::AddPropertyGroup(AZStd::string_view propertyGroupId)
         {
             AZStd::vector<AZStd::string_view> splitPropertyGroupId = SplitId(propertyGroupId);
@@ -368,6 +416,11 @@ namespace AZ
         {
             AZStd::vector<AZStd::string_view> tokens = TokenizeId(propertyId);
             return FindProperty(tokens, m_propertyLayout.m_propertyGroups);
+        }
+
+        void MaterialTypeSourceData::SortProperties()
+        {
+            SortMaterialTypeSourceDataPropertyGroups(m_propertyLayout.m_propertyGroups);
         }
 
         AZStd::vector<AZStd::string_view> MaterialTypeSourceData::TokenizeId(AZStd::string_view id)
