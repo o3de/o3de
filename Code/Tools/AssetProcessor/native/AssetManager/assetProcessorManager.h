@@ -479,6 +479,11 @@ namespace AssetProcessor
         //! Check whether the specified file is an LFS pointer file.
         bool IsLfsPointerFile(const AZStd::string& filePath);
 
+        //! Given the normalized product path to an asset (usually intermediate assets), returns either the topmost originating
+        //! source asset or a failure if it can't be found. This is intended to help with long intermediate asset chains, to find the
+        //! source asset at the top of the chain.
+        AZ::Outcome<QString, void> GetFirstTopmostSourceAssetForProductPath(const AZStd::string& productPath);
+
         AssetProcessor::PlatformConfiguration* m_platformConfig = nullptr;
 
         bool m_queuedExamination = false;
