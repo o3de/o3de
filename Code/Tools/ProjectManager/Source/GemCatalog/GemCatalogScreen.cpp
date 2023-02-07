@@ -68,13 +68,7 @@ namespace O3DE::ProjectManager
         connect(m_gemModel, &GemModel::gemStatusChanged, this, &GemCatalogScreen::OnGemStatusChanged);
         connect(m_gemModel, &GemModel::dependencyGemStatusChanged, this, &GemCatalogScreen::OnDependencyGemStatusChanged);
         connect(
-            m_gemModel->GetSelectionModel(),
-            &QItemSelectionModel::selectionChanged,
-            this,
-            [this]
-            {
-                ShowInspector();
-            });
+            connect(m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &GemCatalogScreen::ShowInspector);
         connect(m_headerWidget, &GemCatalogHeaderWidget::RefreshGems, this, &GemCatalogScreen::Refresh);
         connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, &GemCatalogScreen::HandleOpenGemRepo);
         connect(m_headerWidget, &GemCatalogHeaderWidget::CreateGem, this, &GemCatalogScreen::HandleCreateGem);
