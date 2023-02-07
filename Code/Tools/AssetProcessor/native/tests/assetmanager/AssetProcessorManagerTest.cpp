@@ -317,7 +317,7 @@ TEST_F(AssetProcessorManagerUuid, UuidUpdated_SendsAssetRemovedMessage)
     auto metadataInterface = AZ::Interface<AzToolsFramework::IMetadataRequests>::Get();
 
     // Get the existing UUID entry
-    AzToolsFramework::UuidEntry uuidEntry;
+    AzToolsFramework::MetaUuidEntry uuidEntry;
 
     ASSERT_TRUE(metadataInterface->GetValue(filePath, AzToolsFramework::UuidUtilComponent::UuidKey, uuidEntry));
 
