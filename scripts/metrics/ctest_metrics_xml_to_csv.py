@@ -23,7 +23,7 @@ TESTING_DIR = 'Testing'
 def _get_default_csv_filename():
     # Format default file name based off of date
     now = datetime.datetime.now()
-    return f"{now.year}_{now.month:02d}_{now.day:02d}.csv"
+    return f"{now.year}_{now.month:02d}_{now.day:02d}_{now.hour:02d}_{now.minute:02d}.csv"
 
 
 # Setup logging.
@@ -79,7 +79,7 @@ def parse_args():
     )
     parser.add_argument(
         "--csv-file", action="store", default=_get_default_csv_filename(),
-        help=f"The directory and file name for the csv to be saved (defaults to YYYY_MM_DD)."
+        help=f"The directory and file name for the csv to be saved (defaults to YYYY_MM_DD_HH_mm)."
     )
     parser.add_argument(
         "-o", "--output-directory", action="store", default="",
@@ -128,7 +128,7 @@ def _get_test_xml_path(build_path, xml_file):
 
 
 def parse_ctest_xml_to_csv(full_xml_path, writer):
-    # type (str, dict, DictWriter) -> None
+    # type (str, DictWriter) -> None
     """
     Parses the CTest xml file and writes the data to a csv file. Each test result will be written as a separate line.
     The structure of the CTest xml is assumed to be as followed:
