@@ -15,6 +15,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include "PropertyEditorAPI.h"
+#include <UI/PropertyEditor/GenericComboBoxCtrl.h>
 
 #include <QWidget>
 #include <QToolButton>
@@ -23,46 +24,47 @@
 
 namespace AzToolsFramework
 {
+    //! Type Alias for the Error String type that is used when an Edit is rejected
+    //! Uses AZStd::fixed_string to avoid dynamic memory allocations
+    using EditRejectString = AZStd::fixed_string<256>;
+
+    //! Outcome that returns the value that the ComboBox control should set on Success
+    //! On Failure a rejection string with the reason for failure is returned
+    using EditResultOutcome = AZ::Outcome<AZStd::string, EditRejectString>;
+
+    //! Callback to implement that determines the new value to update the Combo Box Ctrl with
+    //! or to provide the Combo Box Ctrl system with an error message as to why the new value could not be set
+    //! i.e "new value not convertible to type", "new value is out of range", etc...
+    //! @param currentValue The current value stored in the combo box
+    //! @return Outcome which should store the new value to set in the combo box control or a string supplying the reason why the edit has been rejected.
+    using EditButtonCallback = AZStd::function<EditResultOutcome(AZStd::string currentValue)>;
+
     class PropertyStringComboBoxCtrl
-        : public QWidget
+        : public GenericComboBoxCtrl<AZStd::string>
     {
         friend class StringEnumPropertyComboBoxHandler;
         template<typename T>
         friend class PropertyComboBoxHandlerCommon;
         Q_OBJECT
+        using ComboBoxBase = GenericComboBoxCtrl<AZStd::string>;
     public:
+        AZ_RTTI(PropertyStringComboBoxCtrl, "{886E5B2C-46F5-4046-B0A3-89C28CB28B38}", ComboBoxBase);
         AZ_CLASS_ALLOCATOR(PropertyStringComboBoxCtrl, AZ::SystemAllocator, 0);
 
         PropertyStringComboBoxCtrl(QWidget* pParent = NULL);
         ~PropertyStringComboBoxCtrl() override;
 
-        AZStd::string value() const;
+        //AZStd::string value() const;
 
         void Add(const AZStd::string& value);
         void Add(const AZStd::vector<AZStd::string>& value);
-        int GetCount() const;
-        uint32_t GetCurrentIndex() const;
+        int GetCount();
+        uint32_t GetCurrentIndex();
 
-        QWidget* GetFirstInTabOrder();
-        QWidget* GetLastInTabOrder();
         void UpdateTabOrder();
 
-        QComboBox* GetComboBox();
-        QToolButton* GetEditButton();
-
-    signals:
-        void valueChanged(const AZStd::string& newValue);
-
-    public slots:
-        void setValue(const AZStd::string& str);
-
-    protected slots:
-        void onChildComboBoxValueChange(int comboBoxIndex);
-
     private:
-        QComboBox* m_pComboBox = nullptr;
-        QToolButton* m_editButton = nullptr;
-        AZStd::vector<AZStd::string> m_values;
+        //AZStd::vector<AZStd::string> m_values;
     };
 
     template <class ValueType>
@@ -70,10 +72,7 @@ namespace AzToolsFramework
         : public PropertyHandler<ValueType, PropertyStringComboBoxCtrl>
     {
         AZ::u32 GetHandlerName(void) const override  { return AZ::Edit::UIHandlers::ComboBox; }
-        QWidget* GetFirstInTabOrder(PropertyStringComboBoxCtrl* widget) override { return widget->GetFirstInTabOrder(); }
-        QWidget* GetLastInTabOrder(PropertyStringComboBoxCtrl* widget) override { return widget->GetLastInTabOrder(); }
         void UpdateWidgetInternalTabbing(PropertyStringComboBoxCtrl* widget) override { widget->UpdateTabOrder(); }
-
         void ConsumeAttribute(PropertyStringComboBoxCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
     };
 

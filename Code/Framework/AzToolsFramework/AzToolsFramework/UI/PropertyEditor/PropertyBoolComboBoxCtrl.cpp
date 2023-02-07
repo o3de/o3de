@@ -13,59 +13,17 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem:
 #include <QtWidgets/QHBoxLayout>
 AZ_POP_DISABLE_WARNING
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzToolsFramework
 {
     PropertyBoolComboBoxCtrl::PropertyBoolComboBoxCtrl(QWidget* pParent)
-        : QWidget(pParent)
+        : ComboBoxBase(pParent)
     {
-        // create the gui, it consists of a layout, and in that layout, a text field for the value
-        // and then a slider for the value.
-        QHBoxLayout* pLayout = new QHBoxLayout(this);
-        m_pComboBox = aznew DHQComboBox(this);
-        m_pComboBox->addItem("False");
-        m_pComboBox->addItem("True");
-
-        pLayout->setSpacing(4);
-        pLayout->setContentsMargins(1, 0, 1, 0);
-
-        m_editButton = new QToolButton();
-        m_editButton->setAutoRaise(true);
-        m_editButton->setToolTip(QString("Edit"));
-        m_editButton->setIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
-        m_editButton->setVisible(false);
-
-        pLayout->addWidget(m_pComboBox);
-        pLayout->addWidget(m_editButton);
-
-        m_pComboBox->setMinimumWidth(PropertyQTConstant_MinimumWidth);
-        m_pComboBox->setFixedHeight(PropertyQTConstant_DefaultHeight);
-
-        m_pComboBox->setFocusPolicy(Qt::StrongFocus);
-
-        setLayout(pLayout);
-        setFocusProxy(m_pComboBox);
-        setFocusPolicy(m_pComboBox->focusPolicy());
-
-        connect(m_pComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onChildComboBoxValueChange(int)));
-        connect(m_editButton, &QToolButton::clicked, this, &PropertyBoolComboBoxCtrl::OnEditButtonClicked);
+        AZStd::vector<AZStd::pair<bool, AZStd::string>> options = { AZStd::pair(false, "False"), AZStd::pair(true, "True") };
+        ComboBoxBase::addElements(options);
     };
-
-    void PropertyBoolComboBoxCtrl::setValue(bool value)
-    {
-        m_pComboBox->blockSignals(true);
-        m_pComboBox->setCurrentIndex(value ? 1 : 0);
-        m_pComboBox->blockSignals(false);
-    }
-
-    bool PropertyBoolComboBoxCtrl::value() const
-    {
-        return m_pComboBox->currentIndex() == 1;
-    }
-
-    void PropertyBoolComboBoxCtrl::onChildComboBoxValueChange(int newValue)
-    {
-        emit valueChanged(newValue == 0 ? false : true);
-    }
 
     PropertyBoolComboBoxCtrl::~PropertyBoolComboBoxCtrl()
     {
@@ -73,41 +31,18 @@ namespace AzToolsFramework
 
     QWidget* PropertyBoolComboBoxCtrl::GetFirstInTabOrder()
     {
-        return m_pComboBox;
+        return ComboBoxBase::GetFirstInTabOrder();
     }
+
+
     QWidget* PropertyBoolComboBoxCtrl::GetLastInTabOrder()
     {
-        return m_editButton;
+        return ComboBoxBase::GetLastInTabOrder();
     }
 
     void PropertyBoolComboBoxCtrl::UpdateTabOrder()
     {
         setTabOrder(GetFirstInTabOrder(), GetLastInTabOrder());
-    }
-
-    QComboBox* PropertyBoolComboBoxCtrl::GetComboBox()
-    {
-        return m_pComboBox;
-    }
-
-    QToolButton* PropertyBoolComboBoxCtrl::GetEditButton()
-    {
-        return m_editButton;
-    }
-
-    void PropertyBoolComboBoxCtrl::SetEditButtonCallBack(ComboBoxSelectFunc* function)
-    {
-        m_editButtonCallback = function;
-    }
-
-    void PropertyBoolComboBoxCtrl::OnEditButtonClicked()
-    {
-        if (m_editButtonCallback)
-        {
-            // indexBool refers to the bool of the index value that will be set to on the return of the invoked callback
-            auto indexBool = m_editButtonCallback->Invoke(nullptr, m_pComboBox->currentIndex());
-            m_pComboBox->setCurrentIndex(indexBool ? 1 : 0);
-        }
     }
 
     QWidget* BoolPropertyComboBoxHandler::CreateGUI(QWidget* pParent)
@@ -151,12 +86,10 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ_CRC_CE("EditButtonCallback"))
         {
-            ComboBoxSelectFunc* function = azdynamic_cast<ComboBoxSelectFunc*>(attrValue->GetAttribute());
-
-            if (function)
+            if (auto* editButtonInvokable = azrtti_cast<AZ::AttributeInvocable<EditResultOutcome(bool)>*>(attrValue->GetAttribute()))
             {
-                GUI->SetEditButtonCallBack(function);
-            }
+                GUI->SetEditButtonCallBack(editButtonInvokable->GetCallable());
+            };
         }
         else if (attrib == AZ_CRC_CE("EditButtonToolTip"))
         {
@@ -192,5 +125,8 @@ namespace AzToolsFramework
         EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew BoolPropertyComboBoxHandler());
     }
 }
+
+#pragma optimize("", on)
+#pragma inline_depth()
 
 #include "UI/PropertyEditor/moc_PropertyBoolComboBoxCtrl.cpp"

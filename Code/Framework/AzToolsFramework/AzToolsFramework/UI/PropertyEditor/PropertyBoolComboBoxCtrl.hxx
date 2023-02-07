@@ -17,6 +17,7 @@
 #include <QtWidgets/QWidget>
 #include <QToolButton>
 #include "PropertyEditorAPI.h"
+#include <UI/PropertyEditor/GenericComboBoxCtrl.h>
 #endif
 
 class QComboBox;
@@ -25,44 +26,38 @@ class QPushButton;
 
 namespace AzToolsFramework
 {
-    using ComboBoxSelectFunc = AZ::Edit::AttributeFunction<bool(bool)>;
+    //! Type Alias for the Error String type that is used when an Edit is rejected
+    //! Uses AZStd::fixed_string to avoid dynamic memory allocations
+    using EditRejectString = AZStd::fixed_string<256>;
+
+    //! Outcome that returns the value that the ComboBox control should set on Success
+    //! On Failure a rejection string with the reason for failure is returned
+    using EditResultOutcome = AZ::Outcome<bool, EditRejectString>;
+
+    //! Callback to implement that determines the new value to update the Combo Box Ctrl with
+    //! or to provide the Combo Box Ctrl system with an error message as to why the new value could not be set
+    //! i.e "new value not convertible to type", "new value is out of range", etc...
+    //! @param currentValue The current value stored in the combo box
+    //! @return Outcome which should store the new value to set in the combo box control or a string supplying the reason why the edit has been rejected.
+    using EditButtonCallback = AZStd::function<EditResultOutcome(bool currentValue)>;
 
     class PropertyBoolComboBoxCtrl
-        : public QWidget
+        : public GenericComboBoxCtrl<bool>
     {
         Q_OBJECT
+        using ComboBoxBase = GenericComboBoxCtrl<bool>;
     public:
-        AZ_CLASS_ALLOCATOR(PropertyBoolComboBoxCtrl, AZ::SystemAllocator, 0);
 
-        PropertyBoolComboBoxCtrl(QWidget* pParent = NULL);
+        AZ_RTTI(PropertyBoolComboBoxCtrl, "{44255BDF-38E1-43E1-B920-2F5118B66996}", ComboBoxBase);
+        AZ_CLASS_ALLOCATOR(PropertyBoolComboBoxCtrl, AZ::SystemAllocator, 0);
+        PropertyBoolComboBoxCtrl(QWidget* pParent);
+
         virtual ~PropertyBoolComboBoxCtrl();
 
-        bool value() const;
-
+    public: 
         QWidget* GetFirstInTabOrder();
         QWidget* GetLastInTabOrder();
         void UpdateTabOrder();
-
-        QComboBox* GetComboBox();
-        QToolButton* GetEditButton();
-
-        void SetEditButtonCallBack(ComboBoxSelectFunc* function);
-
-    signals:
-        void valueChanged(bool newValue);
-
-    public slots:
-        void setValue(bool val);
-
-    protected slots:
-        void onChildComboBoxValueChange(int value);
-
-    private:
-        void OnEditButtonClicked();
-
-        QComboBox* m_pComboBox;
-        QToolButton* m_editButton = nullptr;
-        ComboBoxSelectFunc* m_editButtonCallback = nullptr;
     };
 
     class BoolPropertyComboBoxHandler
@@ -74,7 +69,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(BoolPropertyComboBoxHandler, AZ::SystemAllocator, 0);
 
-        virtual AZ::u32 GetHandlerName(void) const override  { return AZ::Edit::UIHandlers::ComboBox; }
+        virtual AZ::u32 GetHandlerName(void) const override { return AZ::Edit::UIHandlers::ComboBox; }
         virtual QWidget* GetFirstInTabOrder(PropertyBoolComboBoxCtrl* widget) override { return widget->GetFirstInTabOrder(); }
         virtual QWidget* GetLastInTabOrder(PropertyBoolComboBoxCtrl* widget) override { return widget->GetLastInTabOrder(); }
         virtual void UpdateWidgetInternalTabbing(PropertyBoolComboBoxCtrl* widget) override { widget->UpdateTabOrder(); }

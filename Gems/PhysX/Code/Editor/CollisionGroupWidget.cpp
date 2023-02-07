@@ -6,15 +6,15 @@
  *
  */
 
-#include <Editor/CollisionGroupWidget.h>
-#include <Editor/ConfigurationWindowBus.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/Physics/PropertyTypes.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <LyViewPaneNames.h>
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Physics/PropertyTypes.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <Editor/CollisionGroupWidget.h>
+#include <Editor/ConfigurationWindowBus.h>
+#include <LyViewPaneNames.h>
 
 namespace PhysX
 {
@@ -36,10 +36,10 @@ namespace PhysX
             picker->GetEditButton()->setVisible(true);
             picker->GetEditButton()->setToolTip("Edit Collision Groups");
 
-            connect(picker->GetComboBox(), &QComboBox::currentTextChanged, this, [picker]()
-            {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
-            });
+            connect(picker, &widget_t::valueChanged, this, [picker]()
+                {
+                    EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+                });
 
             connect(picker->GetEditButton(), &QToolButton::clicked, this, &CollisionGroupWidget::OnEditButtonClicked);
 
@@ -76,12 +76,13 @@ namespace PhysX
             auto groupNames = GetGroupNames();
             for (auto& layerName : groupNames)
             {
+                //GUI->Add(layerName);
                 GUI->GetComboBox()->addItem(layerName.c_str());
             }
 
             auto groupName = GetNameFromGroup(instance);
             GUI->GetComboBox()->setCurrentText(groupName.c_str());
-            return true;
+            return false;
         }
 
         void CollisionGroupWidget::OnEditButtonClicked()

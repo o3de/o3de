@@ -18,6 +18,10 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/UI/PropertyEditor/PropertyQTConstants.h>
 #include <AzToolsFramework/UI/PropertyEditor/DHQComboBox.hxx>
 
+
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace
 {
     template<typename T>
@@ -69,10 +73,17 @@ namespace AzToolsFramework
         auto* pLayout = new QHBoxLayout(this);
         m_pComboBox = aznew AzToolsFramework::DHQComboBox(this);
 
+        m_editButton = new QToolButton();
+        m_editButton->setAutoRaise(true);
+        m_editButton->setToolTip(QString("Edit"));
+        m_editButton->setIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
+        m_editButton->setVisible(false);
+
         pLayout->setSpacing(4);
         pLayout->setContentsMargins(1, 0, 1, 0);
 
         pLayout->addWidget(m_pComboBox);
+        pLayout->addWidget(m_editButton);
 
         m_pComboBox->setMinimumWidth(AzToolsFramework::PropertyQTConstant_MinimumWidth);
         m_pComboBox->setFixedHeight(AzToolsFramework::PropertyQTConstant_DefaultHeight);
@@ -84,6 +95,7 @@ namespace AzToolsFramework
         setFocusPolicy(m_pComboBox->focusPolicy());
 
         connect(m_pComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &GenericComboBoxCtrl<T>::onChildComboBoxValueChange);
+        connect(m_editButton, &QToolButton::clicked, this, &GenericComboBoxCtrl<T>::OnEditButtonClicked);
     }
 
     template<typename T>
@@ -103,7 +115,9 @@ namespace AzToolsFramework
         {
             if (m_values[genericValIndex].first == value)
             {
+                m_pComboBox->blockSignals(true);
                 m_pComboBox->setCurrentIndex(static_cast<int>(genericValIndex));
+                m_pComboBox->blockSignals(false);
                 indexWasFound = true;
                 break;
             }
@@ -203,6 +217,39 @@ namespace AzToolsFramework
     }
 
     template<typename T>
+    QComboBox* GenericComboBoxCtrl<T>::GetComboBox()
+    {
+        return m_pComboBox;
+    }
+
+    template<typename T>
+    QToolButton* GenericComboBoxCtrl<T>::GetEditButton()
+    {
+        return m_editButton;
+    }
+
+    template<typename T>
+    void GenericComboBoxCtrl<T>::SetEditButtonCallBack(GenericEditButtonCallback<T> function)
+    {
+        m_editButtonCallback = function;
+    }
+
+    template<typename T>
+    void GenericComboBoxCtrl<T>::OnEditButtonClicked()
+    {
+        if (m_editButtonCallback)
+        {
+            // A successful outcome returns a bool that determines the new value of the comboBox
+            GenericEditResultOutcome<T> outcome = m_editButtonCallback(value());
+            if (outcome.IsSuccess())
+            {
+                setValue(outcome.GetValue());
+                emit valueChanged(m_values[m_pComboBox->currentIndex()].second);
+            }
+        }
+    }
+
+    template<typename T>
     inline QWidget* GenericComboBoxCtrl<T>::GetFirstInTabOrder()
     {
         return m_pComboBox;
@@ -211,17 +258,15 @@ namespace AzToolsFramework
     template<typename T>
     inline QWidget* GenericComboBoxCtrl<T>::GetLastInTabOrder()
     {
-        return GetFirstInTabOrder();
+        return m_editButton->isVisible() ? m_editButton : GetFirstInTabOrder();
     }
 
     template<typename T>
     inline void GenericComboBoxCtrl<T>::UpdateTabOrder()
     {
-        // There's only one QT widget on this property.
     }
 
     // Property handler
-
     template<typename T>
     QWidget* GenericComboBoxHandler<T>::CreateGUI(QWidget* pParent)
     {
@@ -305,6 +350,29 @@ namespace AzToolsFramework
                 genericGUI->SetWarning(warningText);
             }
         }
+        else if (attrib == AZ_CRC_CE("EditButtonVisible"))
+        {
+            bool visible = false;
+            if (attrReader->Read<bool>(visible))
+            {
+                genericGUI->GetEditButton()->setVisible(visible);
+            }
+        }
+        else if (attrib == AZ_CRC_CE("EditButtonCallback"))
+        {
+            if (auto* editButtonInvokable = azrtti_cast<AZ::AttributeInvocable<GenericEditResultOutcome<T>(T)>*>(attrReader->GetAttribute()))
+            {
+                genericGUI->SetEditButtonCallBack(editButtonInvokable->GetCallable());
+            };
+        }
+        else if (attrib == AZ_CRC_CE("EditButtonToolTip"))
+        {
+            AZStd::string toolTip;
+            if (attrReader->Read<AZStd::string>(toolTip))
+            {
+                genericGUI->GetEditButton()->setToolTip(toolTip.c_str());
+            }
+        }
     }
 
     template<typename T>
@@ -363,4 +431,6 @@ namespace AzToolsFramework
             genericGUI->m_postChangeNotifyCB->Invoke(notifyInstance, oldValue);
         }
     }
-}
+} // namespace AzToolsFramework
+#pragma optimize("", on)
+#pragma inline_depth()

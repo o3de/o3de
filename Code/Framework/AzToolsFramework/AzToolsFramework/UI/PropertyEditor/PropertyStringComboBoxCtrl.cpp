@@ -12,168 +12,69 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QLayoutItem::align
 #include <QtWidgets/QHBoxLayout>
 AZ_POP_DISABLE_WARNING
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
+
 namespace AzToolsFramework
 {
     PropertyStringComboBoxCtrl::PropertyStringComboBoxCtrl(QWidget* pParent)
-        : QWidget(pParent)
+        : ComboBoxBase(pParent)
     {
-        // create the gui, it consists of a layout, and in that layout, a text field for the value
-        // and then a slider for the value.
-        QHBoxLayout* pLayout = new QHBoxLayout(this);
-        m_pComboBox = aznew DHQComboBox(this);
-
-        m_editButton = new QToolButton();
-        m_editButton->setAutoRaise(true);
-        m_editButton->setToolTip(QString("Edit"));
-        m_editButton->setIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
-        m_editButton->setVisible(false);
-
-        // many UI elements hide 1 pixel of their size in a border area that only shows up when they are selected.
-        // The combo box used in this layout does not do this, so adding 1 to the left and right margins will make
-        // sure that it has the same dimensions as the other UI elements when they are unselected.
-        pLayout->setSpacing(4);
-        pLayout->setContentsMargins(1, 0, 1, 0);
-
-        pLayout->addWidget(m_pComboBox);
-        pLayout->addWidget(m_editButton);
-
-        m_pComboBox->setMinimumWidth(PropertyQTConstant_MinimumWidth);
-        m_pComboBox->setFixedHeight(PropertyQTConstant_DefaultHeight);
-
-        m_pComboBox->setFocusPolicy(Qt::StrongFocus);
-        setLayout(pLayout);
-        setFocusProxy(m_pComboBox);
-        setFocusPolicy(m_pComboBox->focusPolicy());
-
-        connect(m_pComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onChildComboBoxValueChange(int)));
     };
 
-    void PropertyStringComboBoxCtrl::setValue(const AZStd::string& str)
+    int PropertyStringComboBoxCtrl::GetCount()
     {
-        m_pComboBox->blockSignals(true);
-
-        bool indexWasFound = false;
-        if (str.empty())
-        {
-            // Value may just not be populated. Don't warn if that's the case.
-            indexWasFound = true;
-            m_pComboBox->setCurrentIndex(-1);
-        }
-
-        for (size_t enumValIndex = 0; enumValIndex < m_values.size(); enumValIndex++)
-        {
-            if (m_values[enumValIndex].compare(str.c_str()) == 0)
-            {
-                m_pComboBox->setCurrentIndex(static_cast<int>(enumValIndex));
-                indexWasFound = true;
-                break;
-            }
-        }
-
-        if (!indexWasFound)
-        {
-            if (m_pComboBox->isEditable())
-            {
-                m_pComboBox->setEditText(QString(str.c_str()));
-            }
-            else
-            {
-                // item not found void out the combo box
-                m_pComboBox->setCurrentIndex(-1);
-            }
-        }
-
-        AZ_Warning("AzToolsFramework", indexWasFound == true, "No index in property enum for value %s", str.c_str());
-
-        m_pComboBox->blockSignals(false);
+        return GetComboBox()->count();
     }
 
-    int PropertyStringComboBoxCtrl::GetCount() const
+    uint32_t PropertyStringComboBoxCtrl::GetCurrentIndex()
     {
-        return m_pComboBox->count();
-    }
-
-    uint32_t PropertyStringComboBoxCtrl::GetCurrentIndex() const
-    {
-        return static_cast<uint32_t>(m_pComboBox->currentIndex());
+        return static_cast<uint32_t>(GetComboBox()->currentIndex());
     }
 
     void PropertyStringComboBoxCtrl::Add(const AZStd::string& val)
     {
-        m_pComboBox->blockSignals(true);
-        m_values.push_back(val);
         if (val != "---")
         {
-            m_pComboBox->addItem(val.c_str());
+            const AZStd::pair<AZStd::string, AZStd::string> valueToAdd = AZStd::pair(val, val);
+            ComboBoxBase::addElement(valueToAdd);
         }
         else
         {
-            m_pComboBox->insertSeparator(m_pComboBox->count());
+            GetComboBox()->blockSignals(true);
+            GetComboBox()->insertSeparator(GetCount());
+            GetComboBox()->blockSignals(false);
         }
-        m_pComboBox->blockSignals(false);
     }
 
     void PropertyStringComboBoxCtrl::Add(const AZStd::vector<AZStd::string>& vals)
     {
-        m_pComboBox->blockSignals(true);
-        m_values.clear();
-        m_pComboBox->clear();
+        GetComboBox()->clear();
         for (size_t valIndex = 0; valIndex < vals.size(); valIndex++)
         {
-            m_values.push_back(vals[valIndex]);
-            if (vals[valIndex] != "---")
+            auto value = vals[valIndex];
+            if (value != "---")
             {
-                m_pComboBox->addItem(vals[valIndex].c_str());
+                const AZStd::pair<AZStd::string, AZStd::string> valueToAdd = AZStd::pair(value.c_str(), value.c_str());
+                ComboBoxBase::addElement(valueToAdd);
             }
             else
             {
-                m_pComboBox->insertSeparator(m_pComboBox->count());
+                GetComboBox()->blockSignals(true);
+                GetComboBox()->insertSeparator(GetCount());
+                GetComboBox()->blockSignals(false);
             }
         }
-        m_pComboBox->blockSignals(false);
-    }
-
-    AZStd::string PropertyStringComboBoxCtrl::value() const
-    {
-        AZ_Assert(m_pComboBox->currentIndex() >= 0 &&
-            m_pComboBox->currentIndex() < static_cast<int>(m_values.size()), "Out of range combo box index %d", m_pComboBox->currentIndex());
-        return m_values[m_pComboBox->currentIndex()];
-    }
-
-    void PropertyStringComboBoxCtrl::onChildComboBoxValueChange(int comboBoxIndex)
-    {
-        AZ_Assert(comboBoxIndex >= 0 &&
-            comboBoxIndex < static_cast<int>(m_values.size()), "Out of range combo box index %d", comboBoxIndex);
-
-        emit valueChanged(m_values[comboBoxIndex]);
     }
 
     PropertyStringComboBoxCtrl::~PropertyStringComboBoxCtrl()
     {
     }
 
-    QWidget* PropertyStringComboBoxCtrl::GetFirstInTabOrder()
-    {
-        return m_pComboBox;
-    }
-    QWidget* PropertyStringComboBoxCtrl::GetLastInTabOrder()
-    {
-        return m_editButton;
-    }
-
     void PropertyStringComboBoxCtrl::UpdateTabOrder()
     {
         setTabOrder(GetFirstInTabOrder(), GetLastInTabOrder());
-    }
-
-    QComboBox* PropertyStringComboBoxCtrl::GetComboBox()
-    {
-        return m_pComboBox;
-    }
-
-    QToolButton* PropertyStringComboBoxCtrl::GetEditButton()
-    {
-        return m_editButton;
     }
 
     template<class ValueType>
@@ -197,7 +98,7 @@ namespace AzToolsFramework
             bool value;
             if (attrValue->Read<bool>(value))
             {
-                GUI->m_pComboBox->setEditable(value);
+                GUI->GetComboBox()->setEditable(value);
             }
             else
             {
@@ -212,6 +113,21 @@ namespace AzToolsFramework
             if (attrValue->Read<bool>(visible))
             {
                 GUI->GetEditButton()->setVisible(visible);
+            }
+        }
+        else if (attrib == AZ_CRC_CE("EditButtonCallback"))
+        {
+            if (auto* editButtonInvokable = azrtti_cast<AZ::AttributeInvocable<EditResultOutcome(AZStd::string)>*>(attrValue->GetAttribute()))
+            {
+                GUI->SetEditButtonCallBack(editButtonInvokable->GetCallable());
+            };
+        }
+        else if (attrib == AZ_CRC_CE("EditButtonToolTip"))
+        {
+            AZStd::string toolTip;
+            if (attrValue->Read<AZStd::string>(toolTip))
+            {
+                GUI->GetEditButton()->setToolTip(toolTip.c_str());
             }
         }
     }
@@ -244,9 +160,14 @@ namespace AzToolsFramework
 
     void RegisterStringComboBoxHandler()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew StringEnumPropertyComboBoxHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew StringEnumPropertyComboBoxHandler());
     }
 
-}
+} // namespace AzToolsFramework
+#pragma optimize("", on)
+#pragma inline_depth()
+
+
 
 #include "UI/PropertyEditor/moc_PropertyStringComboBoxCtrl.cpp"

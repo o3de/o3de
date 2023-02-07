@@ -13,6 +13,10 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem:
 #include <QtWidgets/QHBoxLayout>
 AZ_POP_DISABLE_WARNING
 
+
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzToolsFramework
 {
     PropertyEnumComboBoxCtrl::PropertyEnumComboBoxCtrl(QWidget* pParent)
@@ -118,6 +122,7 @@ namespace AzToolsFramework
     {
         return m_pComboBox;
     }
+
     QWidget* PropertyEnumComboBoxCtrl::GetLastInTabOrder()
     {
         return m_editButton;
@@ -153,5 +158,8 @@ namespace AzToolsFramework
     }
 
 }
+
+#pragma optimize("", on)
+#pragma inline_depth()
 
 #include "UI/PropertyEditor/moc_PropertyEnumComboBoxCtrl.cpp"

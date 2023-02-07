@@ -12,7 +12,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEnumComboBoxCtrl.hxx>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyStringComboBoxCtrl.hxx>
 #endif
 
 namespace PhysX
@@ -21,7 +21,7 @@ namespace PhysX
     {
         class CollisionLayerWidget
             : public QObject
-            , public AzToolsFramework::PropertyHandler<AzPhysics::CollisionLayer, AzToolsFramework::PropertyEnumComboBoxCtrl>
+            , public AzToolsFramework::PropertyHandler<AzPhysics::CollisionLayer, AzToolsFramework::PropertyStringComboBoxCtrl>
         {
             Q_OBJECT
 
