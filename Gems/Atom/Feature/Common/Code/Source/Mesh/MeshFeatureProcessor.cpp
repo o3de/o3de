@@ -908,14 +908,7 @@ namespace AZ
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
-            for (const auto& materialAssignment : m_materialAssignments)
-            {
-                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
-                if (materialInstance.get())
-                {
-                    MaterialAssignmentNotificationBus::MultiHandler::BusDisconnect(materialInstance->GetAssetId());
-                }
-            }
+            MaterialAssignmentNotificationBus::MultiHandler::BusDisconnect();
 
             RemoveRayTracingData(rayTracingFeatureProcessor);
 

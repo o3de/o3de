@@ -26,6 +26,8 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             AZ::AzFramework
+        PUBLIC
+            Gem::AudioSystem.API
 )
 
 ly_add_target(
@@ -86,6 +88,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::Editor.Headers
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
+                Gem::AudioSystem.API
     )
 
     ly_add_target(

@@ -24,7 +24,7 @@ namespace PhysX
 {
     namespace Editor
     {
-        /// Dialog for explaining the difference between Dynamic and Kinematic bodies.
+        /// Dialog for explaining the difference between Simulated and Kinematic bodies.
         class KinematicDescriptionDialog : public QDialog
         {
             Q_OBJECT

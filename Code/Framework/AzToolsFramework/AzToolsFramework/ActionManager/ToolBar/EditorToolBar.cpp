@@ -142,8 +142,13 @@ namespace AzToolsFramework
                         {
                             if (QAction* action = s_actionManagerInternalInterface->GetAction(toolBarItem.m_identifier))
                             {
-                                if (!action->isEnabled() &&
-                                    s_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(toolBarItem.m_identifier))
+                                auto outcome = s_actionManagerInterface->IsActionActiveInCurrentMode(toolBarItem.m_identifier);
+                                bool isActiveInCurrentMode = outcome.IsSuccess() && outcome.GetValue();
+
+                                if (!IsActionVisible(
+                                        s_actionManagerInternalInterface->GetActionToolBarVisibility(toolBarItem.m_identifier),
+                                        isActiveInCurrentMode,
+                                        action->isEnabled()))
                                 {
                                     continue;
                                 }

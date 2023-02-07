@@ -147,7 +147,7 @@ namespace AZ
     {
         for (AZ::ScriptPropertyWatcher* watcher : m_watchers)
         {
-            EBUS_EVENT_ID(watcher, ScriptPropertyWatcherBus, OnObjectModified);
+            ScriptPropertyWatcherBus::Event(watcher, &ScriptPropertyWatcherBus::Events::OnObjectModified);
         }
     }
 

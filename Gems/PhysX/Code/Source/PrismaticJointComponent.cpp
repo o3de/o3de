@@ -16,6 +16,7 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 
 #include <PxPhysicsAPI.h>
+#include <PhysX/NativeTypeIdentifiers.h>
 
 namespace PhysX
 {
@@ -85,100 +86,74 @@ namespace PhysX
                 leadFollowerInfo.m_followerBody->m_bodyHandle);
             m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
         }
-        m_native = GetPhysXD6Joint();
+
+        // Only connect to the JointRequest bus when it's using a PhysX D6 joint,
+        // which only happens when the "Use Motor" option is enabled.
+        // Otherwise it will use internally a PhysX prismatic joint.
+        if (TryCachePhysXD6Joint())
+        {
+            JointRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        }
     }
 
-    void PrismaticJointComponent::Activate()
+    void PrismaticJointComponent::DeinitNativeJoint()
     {
-        JointComponent::Activate();
-        const AZ::EntityComponentIdPair id(GetEntityId(), GetId());
-        PhysX::JointRequestBus::Handler::BusConnect(id);
-    };
+        JointRequestBus::Handler::BusDisconnect();
+        m_nativeD6Joint = nullptr;
+    }
 
-    void PrismaticJointComponent::Deactivate()
+    bool PrismaticJointComponent::TryCachePhysXD6Joint()
     {
-        PhysX::JointRequestBus::Handler::BusDisconnect();
-        JointComponent::Deactivate();
-    };
-
-    physx::PxD6Joint* PrismaticJointComponent::GetPhysXD6Joint()
-    {
-        if (m_native)
+        if (m_nativeD6Joint)
         {
-            return m_native;
+            return true;
         }
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AZ_Assert(sceneInterface, "No sceneInterface");
         const auto* joint = sceneInterface->GetJointFromHandle(m_jointSceneOwner, m_jointHandle);
+        AZ_Assert(joint->GetNativeType() == NativeTypeIdentifiers::PrismaticJoint, "It is not PhysXPrismaticJoint");
         physx::PxJoint* native = static_cast<physx::PxJoint*>(joint->GetNativePointer());
-        if (native && native->is<physx::PxD6Joint>())
-        {
-            physx::PxD6Joint* nativeD6 = static_cast<physx::PxD6Joint*>(joint->GetNativePointer());
-            m_native = nativeD6;
-            return nativeD6;
-        }
-        return nullptr;
+        m_nativeD6Joint = native->is<physx::PxD6Joint>();
+        return m_nativeD6Joint != nullptr;
     }
 
     float PrismaticJointComponent::GetPosition() const
     {
-        if (m_native)
-        {
-            // Underlying PhysX joint is D6, but it simulates PhysXPrismatic joint.
-            // The D6 joint has only X-axis unlocked, so report only X travel.
-            return m_native->getRelativeTransform().p.x;
-        }
-        return 0.f;
+        // Underlying PhysX joint is D6, but it simulates PhysXPrismatic joint.
+        // The D6 joint has only X-axis unlocked, so report only X travel.
+        return m_nativeD6Joint->getRelativeTransform().p.x;
     };
 
     float PrismaticJointComponent::GetVelocity() const
     {
-        if (m_native)
-        {
-            // Undelying PhysX joint is D6, but it simulates PhysXPrismatic joint.
-            // The D6 joint has only X-axis unlocked, so report only X velocity.
-            return m_native->getRelativeLinearVelocity().x;
-        }
-        return 0.f;
+        // Undelying PhysX joint is D6, but it simulates PhysXPrismatic joint.
+        // The D6 joint has only X-axis unlocked, so report only X velocity.
+        return m_nativeD6Joint->getRelativeLinearVelocity().x;
     };
 
     AZStd::pair<float, float> PrismaticJointComponent::GetLimits() const
     {
-        if (m_native)
-        {
-            auto limits = m_native->getLinearLimit(physx::PxD6Axis::eX);
-            return AZStd::pair<float, float>(limits.lower, limits.upper);
-        }
-        return AZStd::make_pair(0.f, 0.f);
+        auto limits = m_nativeD6Joint->getLinearLimit(physx::PxD6Axis::eX);
+        return AZStd::pair<float, float>(limits.lower, limits.upper);
     }
 
     AZ::Transform PrismaticJointComponent::GetTransform() const
     {
-        if (m_native)
-        {
-            const auto worldFromLocal = m_native->getRelativeTransform();
-            return AZ::Transform(
-                AZ::Vector3{ worldFromLocal.p.x, worldFromLocal.p.y, worldFromLocal.p.z },
-                AZ::Quaternion{ worldFromLocal.q.x, worldFromLocal.q.y, worldFromLocal.q.z, worldFromLocal.q.w },
-                1.f);
-        }
-        return AZ::Transform();
+        const auto worldFromLocal = m_nativeD6Joint->getRelativeTransform();
+        return AZ::Transform(
+            AZ::Vector3{ worldFromLocal.p.x, worldFromLocal.p.y, worldFromLocal.p.z },
+            AZ::Quaternion{ worldFromLocal.q.x, worldFromLocal.q.y, worldFromLocal.q.z, worldFromLocal.q.w },
+            1.f);
     };
 
     void PrismaticJointComponent::SetVelocity(float velocity)
     {
-        if (m_native)
-        {
-            m_native->setDriveVelocity({ velocity, 0.0f, 0.0f }, physx::PxVec3(0.0f), true);
-        }
+        m_nativeD6Joint->setDriveVelocity({ velocity, 0.0f, 0.0f }, physx::PxVec3(0.0f), true);
     };
 
     void PrismaticJointComponent::SetMaximumForce(float force)
     {
-        if (m_native)
-        {
-            const physx::PxD6JointDrive drive(0.f , PX_MAX_F32, force, true);
-            m_native->setDrive(physx::PxD6Drive::eX, drive);
-        }
+        const physx::PxD6JointDrive drive(0.f , PX_MAX_F32, force, true);
+        m_nativeD6Joint->setDrive(physx::PxD6Drive::eX, drive);
     };
 } // namespace PhysX

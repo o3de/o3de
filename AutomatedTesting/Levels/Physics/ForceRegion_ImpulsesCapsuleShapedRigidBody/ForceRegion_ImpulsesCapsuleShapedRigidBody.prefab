@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -96,10 +92,6 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 3047355939801335922
                 },
-                "Component_[3687396159953003426]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3687396159953003426
-                },
                 "Component_[9432950532896492451]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 9432950532896492451,
@@ -118,9 +110,9 @@
             "Id": "Entity_[355506484304]",
             "Name": "Force Region",
             "Components": {
-                "Component_[11280909321423981689]": {
-                    "$type": "SelectionComponent",
-                    "Id": 11280909321423981689
+                "Component_[13990796929987269592]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 13990796929987269592
                 },
                 "Component_[16854315530707009745]": {
                     "$type": "EditorDisabledCompositionComponent",
@@ -136,9 +128,11 @@
                     "ColliderConfiguration": {
                         "Trigger": true,
                         "InSceneQueries": false,
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -250,9 +244,11 @@
                             0.0,
                             1.0
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -278,10 +274,6 @@
                         "entityId": "",
                         "Compute Mass": false
                     }
-                },
-                "Component_[16753379648037728845]": {
-                    "$type": "SelectionComponent",
-                    "Id": 16753379648037728845
                 },
                 "Component_[1702798579844760976]": {
                     "$type": "EditorLockComponent",

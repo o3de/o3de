@@ -61,7 +61,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(m_createEntityEvents == 1);
 
             AZ::Uuid contextId = AZ::Uuid::CreateNull();
-            EBUS_EVENT_ID_RESULT(contextId, entity->GetId(), EntityIdContextQueryBus, GetOwningContextId);
+            EntityIdContextQueryBus::EventResult(contextId, entity->GetId(), &EntityIdContextQueryBus::Events::GetOwningContextId);
 
             AZ_TEST_ASSERT(contextId == context.GetContextId()); // Context properly associated with entity?
 

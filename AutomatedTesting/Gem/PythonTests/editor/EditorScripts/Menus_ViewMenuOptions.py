@@ -26,20 +26,15 @@ def Menus_ViewMenuOptions_Work():
     :return: None
     """
 
+    import azlmbr.legacy.general as general
     import editor_python_test_tools.hydra_editor_utils as hydra
     import pyside_utils
     from editor_python_test_tools.utils import Report
 
     view_menu_options = [
-        ("Center on Selection",),
-        ("Show Quick Access Bar",),
-        ("Layouts", "Component Entity Layout",),
-        ("Layouts", "Save Layout",),
         ("Viewport", "Go to Position"),
         ("Viewport", "Center on Selection"),
         ("Viewport", "Go to Location"),
-        ("Viewport", "Remember Location"),
-        ("Viewport", "Switch Camera"),
         ("Viewport", "Show Helpers"),
         ("Viewport", "Show Icons"),
         ("Refresh Style",),
@@ -47,6 +42,11 @@ def Menus_ViewMenuOptions_Work():
 
     # 1) Open an existing simple level
     hydra.open_base_level()
+
+    # The action manager doesn't register the menus until the next system tick, so need to wait
+    # until the menu bar has been populated
+    general.idle_enable(True)
+    general.idle_wait_frames(1)
 
     # 2) Interact with View Menu options
     editor_window = pyside_utils.get_editor_main_window()

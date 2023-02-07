@@ -24,7 +24,8 @@ namespace PhysX
     void ColliderCapsuleMode::Setup(const AZ::EntityComponentIdPair& idPair)
     {
         m_entityComponentIdPair = idPair;
-        m_capsuleViewportEdit = AZStd::make_unique<AzToolsFramework::CapsuleViewportEdit>();
+        const bool allowAsymmetricalEditing = true;
+        m_capsuleViewportEdit = AZStd::make_unique<AzToolsFramework::CapsuleViewportEdit>(allowAsymmetricalEditing);
         m_capsuleViewportEdit->InstallGetManipulatorSpace(
             [this]()
             {
@@ -44,47 +45,53 @@ namespace PhysX
             [this]()
             {
                 AZ::Vector3 colliderTranslation = AZ::Vector3::CreateZero();
-                PhysX::EditorColliderComponentRequestBus::EventResult(
-                    colliderTranslation, m_entityComponentIdPair, &PhysX::EditorColliderComponentRequests::GetColliderOffset);
+                EditorColliderComponentRequestBus::EventResult(
+                    colliderTranslation, m_entityComponentIdPair, &EditorColliderComponentRequests::GetColliderOffset);
                 return colliderTranslation;
             });
         m_capsuleViewportEdit->InstallGetRotationOffset(
             [this]()
             {
                 AZ::Quaternion colliderRotation = AZ::Quaternion::CreateIdentity();
-                PhysX::EditorColliderComponentRequestBus::EventResult(
-                    colliderRotation, m_entityComponentIdPair, &PhysX::EditorColliderComponentRequests::GetColliderRotation);
+                EditorColliderComponentRequestBus::EventResult(
+                    colliderRotation, m_entityComponentIdPair, &EditorColliderComponentRequests::GetColliderRotation);
                 return colliderRotation;
             });
         m_capsuleViewportEdit->InstallGetCapsuleRadius(
             [this]()
             {
                 float capsuleRadius = 0.0f;
-                PhysX::EditorColliderComponentRequestBus::EventResult(
-                    capsuleRadius, m_entityComponentIdPair, &PhysX::EditorColliderComponentRequests::GetCapsuleRadius);
+                EditorColliderComponentRequestBus::EventResult(
+                    capsuleRadius, m_entityComponentIdPair, &EditorColliderComponentRequests::GetCapsuleRadius);
                 return capsuleRadius;
             });
         m_capsuleViewportEdit->InstallGetCapsuleHeight(
             [this]()
             {
                 float capsuleHeight = 0.0f;
-                PhysX::EditorColliderComponentRequestBus::EventResult(
-                    capsuleHeight, m_entityComponentIdPair, &PhysX::EditorColliderComponentRequests::GetCapsuleHeight);
+                EditorColliderComponentRequestBus::EventResult(
+                    capsuleHeight, m_entityComponentIdPair, &EditorColliderComponentRequests::GetCapsuleHeight);
                 return capsuleHeight;
             });
         m_capsuleViewportEdit->InstallSetCapsuleRadius(
             [this](float radius)
             {
-                PhysX::EditorColliderComponentRequestBus::Event(
-                    m_entityComponentIdPair, &PhysX::EditorColliderComponentRequests::SetCapsuleRadius, radius);
+                EditorColliderComponentRequestBus::Event(
+                    m_entityComponentIdPair, &EditorColliderComponentRequests::SetCapsuleRadius, radius);
             });
         m_capsuleViewportEdit->InstallSetCapsuleHeight(
             [this](float height)
             {
-                PhysX::EditorColliderComponentRequestBus::Event(
-                    m_entityComponentIdPair, &PhysX::EditorColliderComponentRequests::SetCapsuleHeight, height);
+                EditorColliderComponentRequestBus::Event(
+                    m_entityComponentIdPair, &EditorColliderComponentRequests::SetCapsuleHeight, height);
             });
-        m_capsuleViewportEdit->Setup();
+        m_capsuleViewportEdit->InstallSetTranslationOffset(
+            [this](const AZ::Vector3& translationOffset)
+            {
+                EditorColliderComponentRequestBus::Event(
+                    m_entityComponentIdPair, &EditorColliderComponentRequests::SetColliderOffset, translationOffset);
+            });
+        m_capsuleViewportEdit->Setup(AzToolsFramework::g_mainManipulatorManagerId);
         m_capsuleViewportEdit->AddEntityComponentIdPair(idPair);
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(idPair.GetEntityId());
     }
@@ -126,4 +133,4 @@ namespace PhysX
             m_capsuleViewportEdit->OnCameraStateChanged(cameraState);
         }
     }
-}
+} // namespace PhysX
