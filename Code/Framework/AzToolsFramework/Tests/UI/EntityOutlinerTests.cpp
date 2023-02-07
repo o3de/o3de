@@ -256,11 +256,13 @@ namespace UnitTest
 
         // Reparent the Car prefab under the Garage entity.
         auto appendForInvalid = AzToolsFramework::EntityOutlinerListModel::AppendBeginning; // test the opposite way of appending
-        bool isCarReparented = m_model->ReparentEntities(garageEntityId, { carContainerId }, GetRootContainerEntityId(), appendForInvalid);
+        bool isCarReparented =
+            m_model->ReparentEntities(garageEntityId, { carContainerId }, GetRootContainerEntityId(), appendForInvalid);
         EXPECT_TRUE(isCarReparented);
 
         // Reparent the Bike prefab under the Garage entity.
-        bool isBikeReparented = m_model->ReparentEntities(garageEntityId, { bikeContainerId }, GetRootContainerEntityId(), appendForInvalid);
+        bool isBikeReparented =
+            m_model->ReparentEntities(garageEntityId, { bikeContainerId }, GetRootContainerEntityId(), appendForInvalid);
         EXPECT_TRUE(isBikeReparented);
 
         // Validate that the parent entity of the Car and Bike prefabs is the Garage entity.
