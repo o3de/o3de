@@ -273,20 +273,23 @@ namespace AZ
             AzFramework::StringFunc::Path::GetFolderPath(resolvedOutputFilePath, lutGenerationCacheFolder);
             AZ::IO::SystemFile::CreateDir(lutGenerationCacheFolder.c_str());
 
-            AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
+            AZ::Outcome<AZ::Render::FrameCaptureId, AZ::Render::FrameCaptureError> outcome;
             AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-                frameCaptureId,
+                outcome,
                 &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment,
+                m_currentTiffFilePath,
                 LutGenerationPassHierarchy,
                 AZStd::string(LutAttachment),
-                m_currentTiffFilePath,
                 AZ::RPI::PassAttachmentReadbackOption::Output);
 
-            if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
+            if (outcome.IsSuccess())
             {
-                AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(frameCaptureId);
+                AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(outcome.GetValue());
                 AZ::TickBus::Handler::BusDisconnect();
             }
+
+            AZ_Error("EditorHDRColorGradingComponent", outcome.IsSuccess(),
+                "Frame capture initialization failed. %s", outcome.GetError().m_errorMessage.c_str());
         }
 
         void EditorHDRColorGradingComponent::OnFrameCaptureFinished([[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]]const AZStd::string& info)
