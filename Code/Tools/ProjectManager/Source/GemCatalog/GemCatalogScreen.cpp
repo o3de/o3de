@@ -67,8 +67,7 @@ namespace O3DE::ProjectManager
 
         connect(m_gemModel, &GemModel::gemStatusChanged, this, &GemCatalogScreen::OnGemStatusChanged);
         connect(m_gemModel, &GemModel::dependencyGemStatusChanged, this, &GemCatalogScreen::OnDependencyGemStatusChanged);
-        connect(
-            connect(m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &GemCatalogScreen::ShowInspector);
+        connect(m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &GemCatalogScreen::ShowInspector);
         connect(m_headerWidget, &GemCatalogHeaderWidget::RefreshGems, this, &GemCatalogScreen::Refresh);
         connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, &GemCatalogScreen::HandleOpenGemRepo);
         connect(m_headerWidget, &GemCatalogHeaderWidget::CreateGem, this, &GemCatalogScreen::HandleCreateGem);
@@ -76,7 +75,7 @@ namespace O3DE::ProjectManager
         connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
 
-        setupScreensControl(parent);
+        SetUpScreensControl(parent);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);

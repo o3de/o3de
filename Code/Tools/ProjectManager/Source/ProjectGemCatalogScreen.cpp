@@ -26,7 +26,7 @@ namespace O3DE::ProjectManager
         // We have to fetch the parent of our parent, because Project Manager Gem Catalog is usually embedded inside another workflow, like
         // CreateProjectScreen or UpdateProjectScreen
         // As such, it does not have direct access to ScreenControls
-        setupScreensControl(parent->parentWidget());
+        SetUpScreensControl(parent->parentWidget());
     }
 
     ProjectManagerScreen ProjectGemCatalogScreen::GetScreenEnum()

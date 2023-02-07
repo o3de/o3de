@@ -69,7 +69,7 @@ namespace O3DE::ProjectManager
         void showEvent(QShowEvent* event) override;
         void resizeEvent(QResizeEvent* event) override;
         void moveEvent(QMoveEvent* event) override;
-        virtual void setupScreensControl(QWidget* parent);
+        virtual void SetUpScreensControl(QWidget* parent);
 
         GemModel* m_gemModel = nullptr;
         QSet<QString> m_gemsToRegisterWithProject;
