@@ -111,9 +111,7 @@ namespace AzToolsFramework
         {
             if (m_values[genericValIndex].first == value)
             {
-                m_pComboBox->blockSignals(true);
                 m_pComboBox->setCurrentIndex(static_cast<int>(genericValIndex));
-                m_pComboBox->blockSignals(false);
                 indexWasFound = true;
                 break;
             }

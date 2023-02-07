@@ -75,8 +75,8 @@ namespace AzToolsFramework
         : public GenericComboBoxCtrlBase
     {
         friend class GenericComboBoxHandler<T>;
-    public:
 
+    public:
         AZ_RTTI((GenericComboBoxCtrl, "{FA7EC12F-1DA3-4734-ABDE-CBFD99450571}", T), GenericComboBoxCtrlBase);
         AZ_CLASS_ALLOCATOR(GenericComboBoxCtrl, AZ::SystemAllocator, 0);
 
