@@ -110,7 +110,21 @@ namespace AZ
         ConsoleFunctorFlags requiredClear
     )
     {
-        return DispatchCommand(command, commandArgs, silentMode, invokedFrom, requiredSet, requiredClear);
+        if (!DispatchCommand(command, commandArgs, silentMode, invokedFrom, requiredSet, requiredClear))
+        {
+            // If the command could not be dispatched at this time add it to the deferred commands queue
+            DeferredCommand deferredCommand{ AZStd::string_view{ command },
+                                             DeferredCommand::DeferredArguments{ commandArgs.begin(), commandArgs.end() },
+                                             silentMode,
+                                             invokedFrom,
+                                             requiredSet,
+                                             requiredClear };
+
+            m_deferredCommands.emplace_back(AZStd::move(deferredCommand));
+            return false;
+        }
+
+        return true;
     }
 
     void Console::ExecuteConfigFile(AZStd::string_view configFileName)
@@ -584,24 +598,8 @@ namespace AZ
                     commandTrace += commandArg;
                 }
 
-                if (!m_console.PerformCommand(command, commandArgs, ConsoleSilentMode::NotSilent,
-                    ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null))
-                {
-                    // If the command could not be dispatched at this time add it to the
-                    // deferred commands queue
-                    using DeferredCommand = Console::DeferredCommand;
-                    DeferredCommand deferredCommand
-                    {
-                        AZStd::string_view{command},
-                        DeferredCommand::DeferredArguments{commandArgs.begin(), commandArgs.end()},
-                        ConsoleSilentMode::NotSilent,
-                        ConsoleInvokedFrom::AzConsole,
-                        ConsoleFunctorFlags::Null,
-                        ConsoleFunctorFlags::Null
-                    };
-
-                    m_console.m_deferredCommands.emplace_back(AZStd::move(deferredCommand));
-                }
+                m_console.PerformCommand(command, commandArgs, ConsoleSilentMode::NotSilent,
+                    ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null);
             }
         }
 
