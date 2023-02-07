@@ -64,8 +64,8 @@ namespace AZ
 
         void ClearDeferredConsoleCommands() override;
 
-        bool HasCommand(AZStd::string_view command) override;
-        ConsoleFunctorBase* FindCommand(AZStd::string_view command) override;
+        bool HasCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags = ConsoleFunctorFlags::IsInvisible) override;
+        ConsoleFunctorBase* FindCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags = ConsoleFunctorFlags::IsInvisible) override;
         AZStd::string AutoCompleteCommand(AZStd::string_view command, AZStd::vector<AZStd::string>* matches = nullptr) override;
         void VisitRegisteredFunctors(const FunctorVisitor& visitor) override;
         void RegisterFunctor(ConsoleFunctorBase* functor) override;

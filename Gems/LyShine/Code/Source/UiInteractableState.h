@@ -18,7 +18,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 
 #include <AzCore/Math/Color.h>
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 #include <LyShine/UiAssetTypes.h>
 
 #include <IFont.h>

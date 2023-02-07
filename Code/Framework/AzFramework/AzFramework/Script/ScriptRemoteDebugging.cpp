@@ -235,14 +235,16 @@ namespace AzFramework
 
         // register default app script context if there is one
         AZ::ScriptContext* defaultScriptContext = nullptr;
-        EBUS_EVENT_RESULT(defaultScriptContext, AZ::ScriptSystemRequestBus, GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
+        AZ::ScriptSystemRequestBus::BroadcastResult(
+            defaultScriptContext, &AZ::ScriptSystemRequestBus::Events::GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
         if (defaultScriptContext)
         {
             RegisterContext(defaultScriptContext, "Default");
         }
 
         AZ::ScriptContext* cryScriptContext = nullptr;
-        EBUS_EVENT_RESULT(cryScriptContext, AZ::ScriptSystemRequestBus, GetContext, AZ::ScriptContextIds::CryScriptContextId);
+        AZ::ScriptSystemRequestBus::BroadcastResult(
+            cryScriptContext, &AZ::ScriptSystemRequestBus::Events::GetContext, AZ::ScriptContextIds::CryScriptContextId);
         if (cryScriptContext)
         {
             RegisterContext(cryScriptContext, "Cry");
@@ -763,8 +765,11 @@ namespace AzFramework
         static bool registeredComponentUuidWithMetricsAlready = false;
         if (!registeredComponentUuidWithMetricsAlready)
         {
-            // have to let the metrics system know that it's ok to send back the name of the ScriptDebugAgent component to Amazon as plain text, without hashing
-            EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, AZStd::vector<AZ::Uuid>{ azrtti_typeid<ScriptDebugAgent>() });
+            // have to let the metrics system know that it's ok to send back the name of the ScriptDebugAgent component to Amazon as plain
+            // text, without hashing
+            AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+                &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending,
+                AZStd::vector<AZ::Uuid>{ azrtti_typeid<ScriptDebugAgent>() });
 
             // only ever do this once
             registeredComponentUuidWithMetricsAlready = true;

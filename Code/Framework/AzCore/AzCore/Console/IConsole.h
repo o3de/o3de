@@ -106,12 +106,12 @@ namespace AZ
         //! HasCommand is used to determine if the console knows about a command.
         //! @param command the command we are checking for
         //! @return boolean true on if the command is registered, false otherwise
-        virtual bool HasCommand(AZStd::string_view command) = 0;
+        virtual bool HasCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags = ConsoleFunctorFlags::IsInvisible) = 0;
 
         //! FindCommand finds the console command with the specified console string.
         //! @param command the command that is being searched for
         //! @return non-null pointer to the console command if found
-        virtual ConsoleFunctorBase* FindCommand(AZStd::string_view command) = 0;
+        virtual ConsoleFunctorBase* FindCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags = ConsoleFunctorFlags::IsInvisible) = 0;
 
         //! Finds all commands where the input command is a prefix and returns
         //! the longest matching substring prefix the results have in common.

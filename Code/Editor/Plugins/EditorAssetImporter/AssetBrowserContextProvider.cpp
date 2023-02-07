@@ -32,7 +32,8 @@ namespace AZ
     bool AssetBrowserContextProvider::HandlesSource(const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* entry) const
     {
         AZStd::unordered_set<AZStd::string> extensions;
-        EBUS_EVENT(AZ::SceneAPI::Events::AssetImportRequestBus, GetSupportedFileExtensions, extensions);
+        AZ::SceneAPI::Events::AssetImportRequestBus::Broadcast(
+            &AZ::SceneAPI::Events::AssetImportRequestBus::Events::GetSupportedFileExtensions, extensions);
         if (extensions.empty())
         {
             return false;
@@ -84,7 +85,8 @@ namespace AZ
         {
             // this does include the "." in the extension.
             AZStd::unordered_set<AZStd::string> extensions;
-            EBUS_EVENT(AZ::SceneAPI::Events::AssetImportRequestBus, GetSupportedFileExtensions, extensions);
+            AZ::SceneAPI::Events::AssetImportRequestBus::Broadcast(
+                &AZ::SceneAPI::Events::AssetImportRequestBus::Events::GetSupportedFileExtensions, extensions);
             for (AZStd::string potentialExtension : extensions)
             {
                 if (AzFramework::StringFunc::Equal(extensionString.c_str(), potentialExtension.c_str()))

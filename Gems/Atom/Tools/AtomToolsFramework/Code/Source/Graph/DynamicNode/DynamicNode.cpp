@@ -9,6 +9,7 @@
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNode.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <GraphModel/Model/Graph.h>
 #include <GraphModel/Model/GraphContext.h>
 #include <GraphModel/Model/Slot.h>
@@ -79,6 +80,9 @@ namespace AtomToolsFramework
         AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
             m_config, m_toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetConfigById, m_configId);
 
+        const bool enablePropertyEditingOnNodeUI =
+            GetSettingsValue("/O3DE/AtomToolsFramework/DynamicNode/EnablePropertyEditingOnNodeUI", true);
+
         for (const auto& slotConfig : m_config.m_propertySlots)
         {
             // Property slots only support one data type. Search for the first valid supported data type.
@@ -116,7 +120,7 @@ namespace AtomToolsFramework
                 nullptr,
                 slotConfig.m_enumValues,
                 slotConfig.m_visibleOnNode,
-                slotConfig.m_editableOnNode));
+                slotConfig.m_editableOnNode && enablePropertyEditingOnNodeUI));
         }
 
         // Register all of the input data slots with the dynamic node
@@ -158,7 +162,7 @@ namespace AtomToolsFramework
                 nullptr,
                 slotConfig.m_enumValues,
                 slotConfig.m_visibleOnNode,
-                slotConfig.m_editableOnNode));
+                slotConfig.m_editableOnNode && enablePropertyEditingOnNodeUI));
         }
 
         for (const auto& slotConfig : m_config.m_outputSlots)
@@ -184,7 +188,7 @@ namespace AtomToolsFramework
                 nullptr,
                 slotConfig.m_enumValues,
                 slotConfig.m_visibleOnNode,
-                slotConfig.m_editableOnNode));
+                slotConfig.m_editableOnNode && enablePropertyEditingOnNodeUI));
         }
     }
 } // namespace AtomToolsFramework

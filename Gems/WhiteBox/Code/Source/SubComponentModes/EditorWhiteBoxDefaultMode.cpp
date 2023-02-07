@@ -172,7 +172,7 @@ namespace WhiteBox
             actionProperties.m_category = "White Box Component Mode - Default";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -232,7 +232,7 @@ namespace WhiteBox
             actionProperties.m_category = "White Box Component Mode - Default";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -303,8 +303,8 @@ namespace WhiteBox
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "WhiteBoxDefaultMode - could not get MenuManagerInterface on BindActionsToMenus.");
 
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.Default.hideEdge", 6000);
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.Default.hideVertex", 6001);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.Default.hideEdge", 6000);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.Default.hideVertex", 6001);
     }
 
     void DefaultMode::Refresh()

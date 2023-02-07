@@ -27,6 +27,7 @@
 #include <Source/CapsuleColliderComponent.h>
 #include <Source/EditorColliderComponent.h>
 #include <Source/EditorRigidBodyComponent.h>
+#include <Source/EditorStaticRigidBodyComponent.h>
 #include <Editor/Source/Components/EditorSystemComponent.h>
 #include <Source/MeshColliderComponent.h>
 #include <Source/SphereColliderComponent.h>
@@ -187,6 +188,7 @@ namespace PhysX
     void EditorColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     void EditorColliderComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -403,6 +405,8 @@ namespace PhysX
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusConnect(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(
+            AZ::EntityComponentIdPair(GetEntityId(), GetId()));
         ColliderShapeRequestBus::Handler::BusConnect(GetEntityId());
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
         EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
@@ -459,6 +463,7 @@ namespace PhysX
         EditorColliderComponentRequestBus::Handler::BusDisconnect();
         AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
         ColliderShapeRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusDisconnect();
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         PhysX::MeshColliderComponentRequestsBus::Handler::BusDisconnect();
@@ -604,8 +609,6 @@ namespace PhysX
             AZ_Warning("EditorColliderComponent", false, "Unsupported shape type for building game entity!");
             break;
         }
-
-        StaticRigidBodyUtils::TryCreateRuntimeComponent(*GetEntity(), *gameEntity);
     }
 
     AZ::Transform EditorColliderComponent::GetColliderLocalTransform() const
@@ -637,9 +640,7 @@ namespace PhysX
     {
         m_cachedAabbDirty = true;
 
-        // Don't create static rigid body in the editor if current entity components
-        // don't allow creation of runtime static rigid body component
-        if (!StaticRigidBodyUtils::CanCreateRuntimeComponent(*GetEntity()))
+        if (!GetEntity()->FindComponent<EditorStaticRigidBodyComponent>())
         {
             return;
         }

@@ -119,9 +119,17 @@ namespace GraphModel
         //! Return our full map of node wrappings
         const NodeWrappingMap& GetNodeWrappings();
 
+        //! Search for a note with the corresponding ID
         NodePtr GetNode(NodeId nodeId);
+
+        //! Return a map of all nodes in the graph
         const NodeMap& GetNodes();
+
+        //! Return a map of all nodes in the graph
         ConstNodeMap GetNodes() const;
+
+        //! Return the number of nodes in the graph
+        size_t GetNodeCount() const;
 
         //! Adds a new connection between sourceSlot and targetSlot and returns the
         //! new Connection, or returns the existing Connection if one already exists.
@@ -130,7 +138,11 @@ namespace GraphModel
         //! Removes a connection from the Graph, and returns whether it was found and removed
         bool RemoveConnection(ConstConnectionPtr connection);
 
+        //! Return a container of all connections in the graph
         const ConnectionList& GetConnections();
+
+        //! Return the number of connections for all nodes and slots in the graph
+        size_t GetConnectionCount() const;
 
         //! Set/gets a bundle of generic metadata that is provided by the node graph UI
         //! system. This may include node positions, comment blocks, node groupings, and 
@@ -140,6 +152,9 @@ namespace GraphModel
         GraphModelIntegration::GraphCanvasMetadata& GetUiMetadata();
 
         AZStd::shared_ptr<Slot> FindSlot(const Endpoint& endpoint);
+
+        //! Reset any data that was cached for this graph
+        void ClearCachedData();
 
     protected:
         bool Contains(SlotPtr slot) const;

@@ -136,6 +136,10 @@
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 13711420870643673468
                 },
+                "Component_[13722683864759125153]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 13722683864759125153
+                },
                 "Component_[138002849734991713]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 138002849734991713
@@ -742,20 +746,6 @@
                 "Component_[460678799589944781]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 460678799589944781
-                },
-                "Component_[6338428544016584613]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 6338428544016584613,
-                    "m_template": {
-                        "$type": "NetworkPlayerSpawnerComponent",
-                        "SpawnableAsset": {
-                            "assetId": {
-                                "guid": "{129F7D66-108C-5549-92C6-5C909B95DA62}",
-                                "subId": 738868766
-                            },
-                            "assetHint": "levels/multiplayer/reactivatingnetentity/player.network.spawnable"
-                        }
-                    }
                 },
                 "Component_[7753493077417004814]": {
                     "$type": "EditorEntitySortComponent",

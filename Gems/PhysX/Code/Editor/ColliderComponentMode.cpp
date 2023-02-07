@@ -63,7 +63,7 @@ namespace PhysX
             actionProperties.m_category = "Collider Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -93,7 +93,7 @@ namespace PhysX
             actionProperties.m_category = "Collider Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -123,7 +123,7 @@ namespace PhysX
             actionProperties.m_category = "Collider Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -153,7 +153,7 @@ namespace PhysX
             actionProperties.m_category = "Collider Component Mode";
 
             actionManagerInterface->RegisterAction(
-                EditorActionContext::MainWindowContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -197,10 +197,10 @@ namespace PhysX
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "ColliderComponentMode - could not get MenuManagerInterface on BindActionsToMenus.");
 
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.colliderComponentMode.setOffsetSubMode", 6000);
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.colliderComponentMode.setRotationSubMode", 6001);
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.colliderComponentMode.setResizeSubMode", 6002);
-        menuManagerInterface->AddActionToMenu(EditorMenu::EditMenuIdentifier, "o3de.action.colliderComponentMode.resetCurrentMode", 6003);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.colliderComponentMode.setOffsetSubMode", 6000);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.colliderComponentMode.setRotationSubMode", 6001);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.colliderComponentMode.setResizeSubMode", 6002);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.colliderComponentMode.resetCurrentMode", 6003);
     }
 
     ColliderComponentMode::ColliderComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
@@ -399,13 +399,20 @@ namespace PhysX
     }
 
     static AzToolsFramework::ViewportUi::ButtonId RegisterClusterButton(
-        AzToolsFramework::ViewportUi::ClusterId clusterId, const char* iconName)
+        AzToolsFramework::ViewportUi::ClusterId clusterId, const char* iconName, const char* tooltip)
     {
         AzToolsFramework::ViewportUi::ButtonId buttonId;
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
             AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
+
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+            clusterId,
+            buttonId,
+            tooltip);
 
         return buttonId;
     }
@@ -426,9 +433,12 @@ namespace PhysX
 
         // create and register the buttons
         m_buttonIds.resize(static_cast<size_t>(SubMode::NumModes));
-        m_buttonIds[static_cast<size_t>(SubMode::Offset)] = RegisterClusterButton(m_modeSelectionClusterId, "Move");
-        m_buttonIds[static_cast<size_t>(SubMode::Rotation)] = RegisterClusterButton(m_modeSelectionClusterId, "Rotate");
-        m_buttonIds[static_cast<size_t>(SubMode::Dimensions)] = RegisterClusterButton(m_modeSelectionClusterId, "Scale");
+        m_buttonIds[static_cast<size_t>(SubMode::Offset)] =
+            RegisterClusterButton(m_modeSelectionClusterId, "Move", "Switch to translation offset mode");
+        m_buttonIds[static_cast<size_t>(SubMode::Rotation)] =
+            RegisterClusterButton(m_modeSelectionClusterId, "Rotate", "Switch to rotation offset mode");
+        m_buttonIds[static_cast<size_t>(SubMode::Dimensions)] =
+            RegisterClusterButton(m_modeSelectionClusterId, "Scale", "Switch to dimensions mode");
 
         SetCurrentMode(SubMode::Offset);
 

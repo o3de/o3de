@@ -10,7 +10,7 @@
 
 #include <AzCore/std/string/string_view.h>
 
-namespace EditorMenu
+namespace EditorIdentifiers
 {
     // Editor main window top MenuBar
     inline constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";

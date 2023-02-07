@@ -16,6 +16,8 @@ set(FILES
     Source/EditorComponentDescriptors.h
     Source/EditorRigidBodyComponent.cpp
     Source/EditorRigidBodyComponent.h
+    Source/EditorStaticRigidBodyComponent.cpp
+    Source/EditorStaticRigidBodyComponent.h
     Source/EditorColliderComponent.cpp
     Source/EditorColliderComponent.h
     Source/EditorShapeColliderComponent.cpp
@@ -107,6 +109,9 @@ set(FILES
     Editor/KinematicDescriptionDialog.ui
     Editor/Source/Components/EditorSystemComponent.h
     Editor/Source/Components/EditorSystemComponent.cpp
+    Editor/Source/Components/Conversion/CollidersPrefabConversion.cpp
+    Editor/Source/Components/Conversion/PrefabConversionUtils.h
+    Editor/Source/Components/Conversion/PrefabConversionUtils.cpp
     Editor/Source/ComponentModes/Joints/JointsComponentMode.h
     Editor/Source/ComponentModes/Joints/JointsComponentMode.cpp
     Editor/Source/ComponentModes/Joints/JointsComponentModeBus.h

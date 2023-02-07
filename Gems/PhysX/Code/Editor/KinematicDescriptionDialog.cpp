@@ -10,7 +10,7 @@
 
 #include <Editor/ui_KinematicDescriptionDialog.h>
 
-static constexpr const char* const DynamicDescription = "With <b>Dynamic</b> rigid bodies, you can use physics forces "
+static constexpr const char* const SimulatedDescription = "With <b>Simulated</b> rigid bodies, you can use physics forces "
                                                   "(gravity, collision, etc.) to control the movement and "
                                                   "position of the object.";
 
@@ -48,9 +48,9 @@ namespace PhysX
 
         void KinematicDescriptionDialog::InitializeButtons()
         {
-            connect(m_ui->dynamicRadioButton, &QPushButton::clicked, this, &KinematicDescriptionDialog::OnButtonClicked);
+            connect(m_ui->simulatedRadioButton, &QPushButton::clicked, this, &KinematicDescriptionDialog::OnButtonClicked);
             connect(m_ui->kinematicRadioButton, &QPushButton::clicked, this, &KinematicDescriptionDialog::OnButtonClicked);
-            connect(m_ui->dynamicBox, &QGroupBox::clicked, this, &KinematicDescriptionDialog::OnButtonClicked);
+            connect(m_ui->simulatedBox, &QGroupBox::clicked, this, &KinematicDescriptionDialog::OnButtonClicked);
             connect(m_ui->kinematicBox, &QGroupBox::clicked, this, &KinematicDescriptionDialog::OnButtonClicked);
 
             if (m_kinematicSetting)
@@ -59,7 +59,7 @@ namespace PhysX
             }
             else
             {
-                m_ui->dynamicRadioButton->setChecked(true);
+                m_ui->simulatedRadioButton->setChecked(true);
             }
 
             // running OnButtonClicked manually to get initial border highlight
@@ -71,16 +71,16 @@ namespace PhysX
             const QString boxStyleSheet = QString("background-color: rgb(51, 51, 51);");
             const QString boxBorderStyleSheet = QString(" border: 1px solid rgb(30, 112, 235);");
 
-            if (m_ui->dynamicRadioButton->isChecked())
+            if (m_ui->simulatedRadioButton->isChecked())
             {
-                m_ui->dynamicBox->setStyleSheet(boxStyleSheet + boxBorderStyleSheet);
+                m_ui->simulatedBox->setStyleSheet(boxStyleSheet + boxBorderStyleSheet);
                 m_ui->kinematicBox->setStyleSheet(boxStyleSheet + " border: none;");
                 m_kinematicSetting = false;
             }
             else
             {
                 m_ui->kinematicBox->setStyleSheet(boxStyleSheet + boxBorderStyleSheet);
-                m_ui->dynamicBox->setStyleSheet(boxStyleSheet + " border: none;");
+                m_ui->simulatedBox->setStyleSheet(boxStyleSheet + " border: none;");
                 m_kinematicSetting = true;
             }
 
@@ -107,9 +107,9 @@ namespace PhysX
             }
             else
             {
-                m_ui->dynamicRadioButton->setChecked(true);
+                m_ui->simulatedRadioButton->setChecked(true);
 
-                m_ui->selectedDescriptionLabel->setText(DynamicDescription);
+                m_ui->selectedDescriptionLabel->setText(SimulatedDescription);
 
                 m_ui->validLabel1->setText(CollisionsText);
                 m_ui->validLabel2->setText(GravityText);

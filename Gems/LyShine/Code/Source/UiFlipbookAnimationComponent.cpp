@@ -296,7 +296,7 @@ AZ::u32 UiFlipbookAnimationComponent::GetMaxFrame() const
 {
     AZ::u32 numImageIndices = 0;
 
-    EBUS_EVENT_ID_RESULT(numImageIndices, GetEntityId(), UiIndexableImageBus, GetImageIndexCount);
+    UiIndexableImageBus::EventResult(numImageIndices, GetEntityId(), &UiIndexableImageBus::Events::GetImageIndexCount);
 
     return numImageIndices;
 }
@@ -418,7 +418,7 @@ void UiFlipbookAnimationComponent::Activate()
         // this is unlikely but possible. To get here a client would have to start the flipbook
         // playing and then deactivate and reactivate (e.g. add a component).
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         if (canvasEntityId.IsValid())
         {
             UiCanvasUpdateNotificationBus::Handler::BusConnect(canvasEntityId);
@@ -448,7 +448,7 @@ void UiFlipbookAnimationComponent::Update(float deltaTime)
             {
                 m_useStartDelay = false;
                 m_elapsedTime = 0.0f;
-                EBUS_EVENT_ID(GetEntityId(), UiIndexableImageBus, SetImageIndex, m_currentFrame);
+                UiIndexableImageBus::Event(GetEntityId(), &UiIndexableImageBus::Events::SetImageIndex, m_currentFrame);
             }
             return;
         }
@@ -487,7 +487,8 @@ void UiFlipbookAnimationComponent::Update(float deltaTime)
                 if (m_currentFrame > m_endFrame)
                 {
                     m_currentFrame = m_loopStartFrame;
-                    EBUS_EVENT_ID(GetEntityId(), UiFlipbookAnimationNotificationsBus, OnLoopSequenceCompleted);
+                    UiFlipbookAnimationNotificationsBus::Event(
+                        GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnLoopSequenceCompleted);
                 }
                 break;
             case LoopType::PingPong:
@@ -495,13 +496,15 @@ void UiFlipbookAnimationComponent::Update(float deltaTime)
                 {
                     m_currentLoopDirection = -1;
                     m_currentFrame = m_endFrame;
-                    EBUS_EVENT_ID(GetEntityId(), UiFlipbookAnimationNotificationsBus, OnLoopSequenceCompleted);
+                    UiFlipbookAnimationNotificationsBus::Event(
+                        GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnLoopSequenceCompleted);
                 }
                 else if (m_currentLoopDirection < 0 && m_currentFrame <= m_loopStartFrame)
                 {
                     m_currentLoopDirection = 1;
                     m_currentFrame = m_loopStartFrame;
-                    EBUS_EVENT_ID(GetEntityId(), UiFlipbookAnimationNotificationsBus, OnLoopSequenceCompleted);
+                    UiFlipbookAnimationNotificationsBus::Event(
+                        GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnLoopSequenceCompleted);
                 }
                 break;
             default:
@@ -509,7 +512,7 @@ void UiFlipbookAnimationComponent::Update(float deltaTime)
             }
 
             // Show current frame
-            EBUS_EVENT_ID(GetEntityId(), UiIndexableImageBus, SetImageIndex, m_currentFrame);
+            UiIndexableImageBus::Event(GetEntityId(), &UiIndexableImageBus::Events::SetImageIndex, m_currentFrame);
         }
     }
 }
@@ -523,7 +526,7 @@ void UiFlipbookAnimationComponent::InGamePostActivate()
         if (!UiCanvasUpdateNotificationBus::Handler::BusIsConnected())
         {
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
             if (canvasEntityId.IsValid())
             {
                 UiCanvasUpdateNotificationBus::Handler::BusConnect(canvasEntityId);
@@ -548,14 +551,14 @@ void UiFlipbookAnimationComponent::Start()
     // Show current frame
     if (!m_useStartDelay)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiIndexableImageBus, SetImageIndex, m_currentFrame);
+        UiIndexableImageBus::Event(GetEntityId(), &UiIndexableImageBus::Events::SetImageIndex, m_currentFrame);
     }
 
     // Start the update loop
     if (!UiCanvasUpdateNotificationBus::Handler::BusIsConnected())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         // if this element has not been fixed up yet then canvasEntityId will be invalid. We handle this
         // in InGamePostActivate
         if (canvasEntityId.IsValid())
@@ -565,7 +568,7 @@ void UiFlipbookAnimationComponent::Start()
     }
 
     // Let listeners know that we started playing
-    EBUS_EVENT_ID(GetEntityId(), UiFlipbookAnimationNotificationsBus, OnAnimationStarted);
+    UiFlipbookAnimationNotificationsBus::Event(GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnAnimationStarted);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -574,7 +577,7 @@ void UiFlipbookAnimationComponent::Stop()
     m_isPlaying = false;
     UiCanvasUpdateNotificationBus::Handler::BusDisconnect();
 
-    EBUS_EVENT_ID(GetEntityId(), UiFlipbookAnimationNotificationsBus, OnAnimationStopped);
+    UiFlipbookAnimationNotificationsBus::Event(GetEntityId(), &UiFlipbookAnimationNotificationsBus::Events::OnAnimationStopped);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -615,7 +618,7 @@ void UiFlipbookAnimationComponent::SetCurrentFrame(AZ::u32 currentFrame)
     }
 
     m_currentFrame = currentFrame;
-    EBUS_EVENT_ID(GetEntityId(), UiIndexableImageBus, SetImageIndex, m_currentFrame);
+    UiIndexableImageBus::Event(GetEntityId(), &UiIndexableImageBus::Events::SetImageIndex, m_currentFrame);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

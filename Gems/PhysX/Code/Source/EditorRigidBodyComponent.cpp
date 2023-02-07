@@ -326,7 +326,14 @@ namespace PhysX
 
     void EditorRigidBodyComponent::Activate()
     {
-        const AZ::EntityId entityId = GetEntityId();
+        // During activation all the editor collider components will create their physics shapes.
+        // Delaying the creation of the editor dynamic rigid body to OnEntityActivated so all the shapes are ready.
+        AZ::EntityBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void EditorRigidBodyComponent::OnEntityActivated(const AZ::EntityId& entityId)
+    {
+        AZ::EntityBus::Handler::BusDisconnect();
 
         AzToolsFramework::Components::EditorComponentBase::Activate();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(entityId);
@@ -355,7 +362,7 @@ namespace PhysX
 
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
             [this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale); });
-        AZ::NonUniformScaleRequestBus::Event(GetEntityId(), &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
+        AZ::NonUniformScaleRequestBus::Event(entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
             m_nonUniformScaleChangedHandler);
 
         if (auto* physXDebug = AZ::Interface<Debug::PhysXDebugInterface>::Get())
@@ -371,13 +378,15 @@ namespace PhysX
         CreateEditorWorldRigidBody();
 
         PhysX::EditorColliderValidationRequestBus::Event(
-            GetEntityId(), &PhysX::EditorColliderValidationRequestBus::Events::ValidateRigidBodyMeshGeometryType);
+            entityId, &PhysX::EditorColliderValidationRequestBus::Events::ValidateRigidBodyMeshGeometryType);
 
-        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(entityId);
     }
 
     void EditorRigidBodyComponent::Deactivate()
     {
+        AZ::EntityBus::Handler::BusDisconnect();
+
         m_debugDisplayDataChangeHandler.Disconnect();
         m_sceneConfigChangedHandler.Disconnect();
 
@@ -422,7 +431,7 @@ namespace PhysX
             if (editContext)
             {
                 editContext->Class<EditorRigidBodyComponent>(
-                    "PhysX Rigid Body", "The entity behaves as a movable rigid object in PhysX.")
+                    "PhysX Dynamic Rigid Body", "The entity behaves as a movable rigid body in PhysX.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")

@@ -69,6 +69,11 @@ namespace AZ
         return Uuid{};
     }
 
+    constexpr Uuid Uuid::CreateInvalid()
+    {
+        return Uuid{ "{00000BAD-0BAD-0BAD-0BAD-000000000BAD}" };
+    }
+
     constexpr Uuid Uuid::CreateString(const char* string, size_t stringLength)
     {
         return CreateString({ string, stringLength });
