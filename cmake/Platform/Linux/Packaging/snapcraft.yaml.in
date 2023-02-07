@@ -36,6 +36,7 @@ parts:
      - libsm6
      - libcurl4
      - libfontconfig1
+     - libunwind-dev
     stage-snaps:
      - cmake
 
