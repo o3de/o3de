@@ -52,7 +52,7 @@ namespace AzToolsFramework
             auto value = vals[valIndex];
             if (value != "---")
             {
-                const AZStd::pair<AZStd::string, AZStd::string> valueToAdd = AZStd::pair(value.c_str(), value.c_str());
+                const AZStd::pair<AZStd::string, AZStd::string> valueToAdd = AZStd::pair(value, value);
                 ComboBoxBase::addElement(valueToAdd);
             }
             else

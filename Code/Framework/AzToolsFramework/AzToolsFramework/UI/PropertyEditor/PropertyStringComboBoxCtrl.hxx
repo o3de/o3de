@@ -32,6 +32,7 @@ namespace AzToolsFramework
         friend class PropertyComboBoxHandlerCommon;
         Q_OBJECT
         using ComboBoxBase = GenericComboBoxCtrl<AZStd::string>;
+
     public:
         AZ_RTTI(PropertyStringComboBoxCtrl, "{886E5B2C-46F5-4046-B0A3-89C28CB28B38}", ComboBoxBase);
         AZ_CLASS_ALLOCATOR(PropertyStringComboBoxCtrl, AZ::SystemAllocator, 0);
@@ -39,17 +40,12 @@ namespace AzToolsFramework
         PropertyStringComboBoxCtrl(QWidget* pParent = NULL);
         ~PropertyStringComboBoxCtrl() override;
 
-        //AZStd::string value() const;
-
         void Add(const AZStd::string& value);
         void Add(const AZStd::vector<AZStd::string>& value);
         int GetCount();
         uint32_t GetCurrentIndex();
 
-        void UpdateTabOrder();
-
-    private:
-        //AZStd::vector<AZStd::string> m_values;
+        void UpdateTabOrder() override;
     };
 
     template <class ValueType>

@@ -26,17 +26,6 @@ namespace AzToolsFramework
     {
     }
 
-    QWidget* PropertyBoolComboBoxCtrl::GetFirstInTabOrder()
-    {
-        return ComboBoxBase::GetFirstInTabOrder();
-    }
-
-
-    QWidget* PropertyBoolComboBoxCtrl::GetLastInTabOrder()
-    {
-        return ComboBoxBase::GetLastInTabOrder();
-    }
-
     void PropertyBoolComboBoxCtrl::UpdateTabOrder()
     {
         setTabOrder(GetFirstInTabOrder(), GetLastInTabOrder());

@@ -40,9 +40,7 @@ namespace AzToolsFramework
         virtual ~PropertyBoolComboBoxCtrl();
 
     public: 
-        QWidget* GetFirstInTabOrder();
-        QWidget* GetLastInTabOrder();
-        void UpdateTabOrder();
+        void UpdateTabOrder() override;
     };
 
     class BoolPropertyComboBoxHandler
@@ -55,8 +53,6 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(BoolPropertyComboBoxHandler, AZ::SystemAllocator, 0);
 
         virtual AZ::u32 GetHandlerName(void) const override { return AZ::Edit::UIHandlers::ComboBox; }
-        virtual QWidget* GetFirstInTabOrder(PropertyBoolComboBoxCtrl* widget) override { return widget->GetFirstInTabOrder(); }
-        virtual QWidget* GetLastInTabOrder(PropertyBoolComboBoxCtrl* widget) override { return widget->GetLastInTabOrder(); }
         virtual void UpdateWidgetInternalTabbing(PropertyBoolComboBoxCtrl* widget) override { widget->UpdateTabOrder(); }
 
         virtual QWidget* CreateGUI(QWidget* pParent) override;

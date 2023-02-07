@@ -227,7 +227,7 @@ namespace AzToolsFramework
     template<typename T>
     void GenericComboBoxCtrl<T>::SetEditButtonCallBack(GenericEditButtonCallback<T> function)
     {
-        m_editButtonCallback = function;
+        m_editButtonCallback = AZStd::move(function);
     }
 
     template<typename T>
@@ -235,7 +235,7 @@ namespace AzToolsFramework
     {
         if (m_editButtonCallback)
         {
-            // A successful outcome returns a bool that determines the new value of the comboBox
+            // A successful outcome returns the new value of the comboBox
             GenericEditResultOutcome<T> outcome = m_editButtonCallback(value());
             if (outcome.IsSuccess())
             {
