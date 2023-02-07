@@ -301,6 +301,7 @@ namespace Multiplayer
                 m_componentApplicationLifecycleHandler,
                 [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
                 {
+                    // It's now safe to register and execute the "host" command
                     m_hostConsoleCommand = AZStd::make_unique<AZ::ConsoleFunctor<MultiplayerSystemComponent, false>>(
                         "host",
                         "Opens a multiplayer connection as a host for other clients to connect to",
@@ -309,19 +310,45 @@ namespace Multiplayer
                         *this,
                         &MultiplayerSystemComponent::HostConsoleCommand);
 
-                    if (sv_isDedicated && sv_dedicated_host_onstartup)
-                    {
-                        this->StartHosting(sv_port, /*is dedicated*/true);
-                    }
-
-                    if (cl_connect_onstartup)
-                    {
-                        this->Connect(LocalHost, cl_serverport);
-                    }
-
                     AZ::Interface<AZ::IConsole>::Get()->ExecuteDeferredConsoleCommands();
+
+                    // Begin hosting or connecting if desired
+                    if (const auto console = AZ::Interface<AZ::IConsole>::Get())
+                    {
+                        // Don't access cvars directly (their values might be stale https://github.com/o3de/o3de/issues/5537)
+                        bool isDedicatedServer = false;
+                        bool dedicatedServerHostOnStartup = false;
+                        bool clientConnectOnStartup = false;
+                        if (console->GetCvarValue("sv_isDedicated", isDedicatedServer) != AZ::GetValueResult::Success)
+                        {
+                            AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_isDedicated).")
+                            return;
+                        }
+
+                        if (console->GetCvarValue("sv_dedicated_host_onstartup", dedicatedServerHostOnStartup) != AZ::GetValueResult::Success)
+                        {
+                            AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_dedicated_host_onstartup).")
+                            return;
+                        }
+
+                        if (console->GetCvarValue("cl_connect_onstartup", clientConnectOnStartup) != AZ::GetValueResult::Success)
+                        {
+                            AZLOG_WARN("Multiplayer system failed to access cvar on startup (cl_connect_onstartup).")
+                            return;
+                        }
+
+                        if (isDedicatedServer && dedicatedServerHostOnStartup)
+                        {
+                            this->StartHosting(sv_port, /*is dedicated*/ true);
+                        }
+
+                        if (clientConnectOnStartup)
+                        {
+                            this->Connect(LocalHost, cl_serverport);
+                        }
+                    }
                 },
-                "LegacySystemInterfaceCreated",
+                "SystemComponentsActivated",
                 /*autoRegisterEvent*/ true);
         }
     }
