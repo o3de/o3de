@@ -145,9 +145,7 @@ namespace AZ
         }
 
         void EditorModeFeatureProcessor::SetEnableRender(bool enableRender)
-        {
-            m_enableRender = enableRender;
-            
+        {            
             if (!m_editorStatePassSystem)
             {
                 return;
@@ -156,9 +154,9 @@ namespace AZ
             const auto templateName = Name(m_editorStatePassSystem->GetParentPassTemplateName());
 
             auto passFilter = AZ::RPI::PassFilter::CreateWithTemplateName(templateName, GetParentScene());
-            AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter,  [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+            AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter,  [enableRender](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
-                    pass->SetEnabled(m_enableRender);
+                    pass->SetEnabled(enableRender);
                     return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
         }

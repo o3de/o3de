@@ -44,7 +44,7 @@ namespace AZ
             // AZ::TickBus overrides ...
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-            //! Enable or disable the rendering editor mode feedback
+            //! Enable or disable the rendering editor mode feedback.
             void SetEnableRender(bool enableRender);
 
         private:
@@ -56,8 +56,6 @@ namespace AZ
 
             //! Material for sending draw packets to the entity mask pass.
             Data::Instance<RPI::Material> m_maskMaterial = nullptr;
-
-            bool m_enableRender = true;
         };
     } // namespace Render
 } // namespace AZ

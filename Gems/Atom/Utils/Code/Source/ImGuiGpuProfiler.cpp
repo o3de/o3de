@@ -2011,11 +2011,10 @@ namespace AZ
             // NOTE: Write it all out, can't have recursive functions for lambdas.
             const AZStd::function<void(const RPI::Pass*, PassEntry*)> getPassEntryRecursive = [&addPassEntry, &getPassEntryRecursive](const RPI::Pass* pass, PassEntry* parent) -> void
             {
-                const RPI::ParentPass* passAsParent = pass->AsParent();
-
                 // Add new entry to the timestamp map.
                 if (pass->IsEnabled())
                 {
+                    const RPI::ParentPass* passAsParent = pass->AsParent();
                     PassEntry* entry = addPassEntry(pass, parent);
 
                     // Recur if it's a parent.

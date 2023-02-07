@@ -42,9 +42,8 @@ namespace AZ
             // EditorModeFeedbackInterface overrides ...
             bool IsEnabled() const override;
 
-        private:            
-            ///////////////////////////////////////////////////////////////////////
-            // AzToolsFramework::EditorEntityContextNotificationBus overrides
+        private:
+            // EditorEntityContextNotificationBus overrides ...
             void OnStartPlayInEditorBegin() override;
             void OnStopPlayInEditor() override;
 

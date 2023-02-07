@@ -95,20 +95,26 @@ namespace AZ
         void EditorModeFeedbackSystemComponent::SetEnableRender(bool enableRender)
         {
             auto sceneSystem = AzFramework::SceneSystemInterface::Get();
-            if (sceneSystem)
+            if (!sceneSystem)
             {
-                AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
-                if (mainScene)
-                {
-                    AZ::RPI::ScenePtr* rpiScene = mainScene->FindSubsystem<AZ::RPI::ScenePtr>();
-                    if (rpiScene)
-                    {
-                        if (AZ::Render::EditorModeFeatureProcessor* fp = (*rpiScene)->GetFeatureProcessor<AZ::Render::EditorModeFeatureProcessor>())
-                        {
-                            fp->SetEnableRender(enableRender);
-                        }
-                    }
-                }
+                return;
+            }
+
+            AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+            if (!mainScene)
+            {
+                return;
+            }
+
+            AZ::RPI::ScenePtr* rpiScene = mainScene->FindSubsystem<AZ::RPI::ScenePtr>();
+            if (!rpiScene)
+            {
+                return;
+            }
+
+            if (AZ::Render::EditorModeFeatureProcessor* fp = (*rpiScene)->GetFeatureProcessor<AZ::Render::EditorModeFeatureProcessor>())
+            {
+                fp->SetEnableRender(enableRender);
             }
         }
     } // namespace Render
