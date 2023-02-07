@@ -232,7 +232,7 @@ namespace AssetProcessor
         return newUuid;
     }
 
-    AZ::Outcome<void, AZStd::string> UuidManager::CacheUuidEntry(AZStd::string_view normalizedPath, AzToolsFramework::UuidEntry entry, bool enabledType)
+    AZ::Outcome<void, AZStd::string> UuidManager::CacheUuidEntry(AZStd::string_view normalizedPath, AzToolsFramework::MetaUuidEntry entry, bool enabledType)
     {
         if (enabledType)
         {

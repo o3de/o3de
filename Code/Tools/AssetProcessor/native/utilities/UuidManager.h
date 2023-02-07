@@ -79,7 +79,7 @@ namespace AssetProcessor
         AZ::Outcome<AzToolsFramework::MetaUuidEntry, AZStd::string> GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset);
         AzToolsFramework::IMetadataRequests* GetMetadataManager();
         AzToolsFramework::MetaUuidEntry CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType);
-        AZ::Outcome<void, AZStd::string> CacheUuidEntry(AZStd::string_view normalizedPath, AzToolsFramework::UuidEntry entry, bool enabledType);
+        AZ::Outcome<void, AZStd::string> CacheUuidEntry(AZStd::string_view normalizedPath, AzToolsFramework::MetaUuidEntry entry, bool enabledType);
         AZ::Uuid CreateUuid();
         AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file);
         void InvalidateCacheEntry(AZ::IO::FixedMaxPath file);
