@@ -14,9 +14,6 @@
 #include <Editor/PropertyTypes.h>
 #include <Editor/MeshNodeHandler.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace NvCloth
 {
     namespace Editor
@@ -129,6 +126,4 @@ namespace NvCloth
     } // namespace Editor
 } // namespace NvCloth
 
-#pragma optimize("", on)
-#pragma inline_depth()
 #include <Source/Editor/moc_MeshNodeHandler.cpp>

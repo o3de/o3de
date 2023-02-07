@@ -23,7 +23,7 @@ namespace PhysX
     {
         class CollisionGroupWidget
             : public QObject
-            , public AzToolsFramework::PropertyHandler<AzPhysics::CollisionGroups::Id, AzToolsFramework::PropertyEnumComboBoxCtrl>
+            , public AzToolsFramework::PropertyHandler<AzPhysics::CollisionGroups::Id, AzToolsFramework::PropertyStringComboBoxCtrl>
         {
             Q_OBJECT
 

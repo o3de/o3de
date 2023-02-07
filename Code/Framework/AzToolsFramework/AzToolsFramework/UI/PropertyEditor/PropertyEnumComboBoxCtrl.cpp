@@ -13,10 +13,6 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem:
 #include <QtWidgets/QHBoxLayout>
 AZ_POP_DISABLE_WARNING
 
-
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework
 {
     PropertyEnumComboBoxCtrl::PropertyEnumComboBoxCtrl(QWidget* pParent)
@@ -27,12 +23,6 @@ namespace AzToolsFramework
         QHBoxLayout* pLayout = new QHBoxLayout(this);
         m_pComboBox = aznew DHQComboBox(this);
 
-        m_editButton = new QToolButton();
-        m_editButton->setAutoRaise(true);
-        m_editButton->setToolTip(QString("Edit"));
-        m_editButton->setIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
-        m_editButton->setVisible(false);
-
         // many UI elements hide 1 pixel of their size in a border area that only shows up when they are selected.
         // The combo box used in this layout does not do this, so adding 1 to the left and right margins will make
         // sure that it has the same dimensions as the other UI elements when they are unselected.
@@ -40,7 +30,6 @@ namespace AzToolsFramework
         pLayout->setContentsMargins(1, 0, 1, 0);
 
         pLayout->addWidget(m_pComboBox);
-        pLayout->addWidget(m_editButton);
 
         m_pComboBox->setMinimumWidth(PropertyQTConstant_MinimumWidth);
         m_pComboBox->setFixedHeight(PropertyQTConstant_DefaultHeight);
@@ -122,20 +111,9 @@ namespace AzToolsFramework
     {
         return m_pComboBox;
     }
-
     QWidget* PropertyEnumComboBoxCtrl::GetLastInTabOrder()
     {
-        return m_editButton;
-    }
-
-    QComboBox* PropertyEnumComboBoxCtrl::GetComboBox()
-    {
         return m_pComboBox;
-    }
-
-    QToolButton* PropertyEnumComboBoxCtrl::GetEditButton()
-    {
-        return m_editButton;
     }
 
     void PropertyEnumComboBoxCtrl::UpdateTabOrder()
@@ -158,8 +136,5 @@ namespace AzToolsFramework
     }
 
 }
-
-#pragma optimize("", on)
-#pragma inline_depth()
 
 #include "UI/PropertyEditor/moc_PropertyEnumComboBoxCtrl.cpp"

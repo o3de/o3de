@@ -22,7 +22,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
 
 #include <QWidget>
-#include <QtWidgets/QToolButton>
 #endif
 
 class QComboBox;
@@ -49,9 +48,6 @@ namespace AzToolsFramework
         QWidget* GetLastInTabOrder();
         void UpdateTabOrder();
 
-        QComboBox* GetComboBox();
-        QToolButton* GetEditButton();
-
     signals:
         void valueChanged(AZ::s64 newValue);
 
@@ -62,9 +58,8 @@ namespace AzToolsFramework
         void onChildComboBoxValueChange(int comboBoxIndex);
 
     private:
-        QComboBox* m_pComboBox = nullptr;
-        QToolButton* m_editButton = nullptr;
-        AZStd::vector<AZStd::pair<AZ::s64, AZStd::string>> m_enumValues;
+        QComboBox* m_pComboBox;
+        AZStd::vector< AZStd::pair<AZ::s64, AZStd::string>  > m_enumValues;
     };
 
     template <class ValueType>

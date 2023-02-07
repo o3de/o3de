@@ -12,10 +12,6 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QLayoutItem::align
 #include <QtWidgets/QHBoxLayout>
 AZ_POP_DISABLE_WARNING
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
-
 namespace AzToolsFramework
 {
     PropertyStringComboBoxCtrl::PropertyStringComboBoxCtrl(QWidget* pParent)
@@ -117,7 +113,7 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ_CRC_CE("EditButtonCallback"))
         {
-            if (auto* editButtonInvokable = azrtti_cast<AZ::AttributeInvocable<EditResultOutcome(AZStd::string)>*>(attrValue->GetAttribute()))
+            if (auto* editButtonInvokable = azrtti_cast<AZ::AttributeInvocable<GenericEditResultOutcome<AZStd::string>(AZStd::string)>*>(attrValue->GetAttribute()))
             {
                 GUI->SetEditButtonCallBack(editButtonInvokable->GetCallable());
             };
@@ -165,9 +161,5 @@ namespace AzToolsFramework
     }
 
 } // namespace AzToolsFramework
-#pragma optimize("", on)
-#pragma inline_depth()
-
-
 
 #include "UI/PropertyEditor/moc_PropertyStringComboBoxCtrl.cpp"

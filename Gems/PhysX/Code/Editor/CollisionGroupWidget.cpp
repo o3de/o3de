@@ -76,8 +76,7 @@ namespace PhysX
             auto groupNames = GetGroupNames();
             for (auto& layerName : groupNames)
             {
-                //GUI->Add(layerName);
-                GUI->GetComboBox()->addItem(layerName.c_str());
+                GUI->Add(layerName);
             }
 
             auto groupName = GetNameFromGroup(instance);

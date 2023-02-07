@@ -128,7 +128,7 @@ namespace PhysX
             &AzToolsFramework::EditorRequests::OpenViewPane, LyViewPane::PhysXConfigurationEditor);
     }
 
-    static AzToolsFramework::EditResultOutcome OnEditButtonClicked(bool comboBoxValue)
+    static AzToolsFramework::GenericEditResultOutcome<bool> OnEditButtonClicked(bool comboBoxValue)
     {
         QWidget* mainWindow = nullptr;
         AzToolsFramework::EditorRequestBus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::GetMainWindow);
@@ -203,7 +203,7 @@ namespace PhysX
                         ->Attribute(AZ_CRC_CE("SetTrueLabel"), "Kinematic")
                         ->Attribute(AZ_CRC_CE("SetFalseLabel"), "Dynamic")
                     ->Attribute(
-                        AZ_CRC_CE("EditButtonCallback"), AzToolsFramework::EditButtonCallback(&OnEditButtonClicked))
+                        AZ_CRC_CE("EditButtonCallback"), AzToolsFramework::GenericEditButtonCallback<bool>(&OnEditButtonClicked))
                         ->Attribute(AZ_CRC_CE("EditButtonToolTip"), "Open Type dialog for a detailed description on the motion types")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
