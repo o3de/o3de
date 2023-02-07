@@ -11,6 +11,35 @@
 
 namespace UnitTest
 {
+    AZ::Entity* PhysXColliderComponentModeTest::CreateColliderComponent()
+    {
+        AZ::Entity* entity = nullptr;
+        AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
+
+        entity->Deactivate();
+
+        // Add placeholder component which implements component mode.
+        auto colliderComponent = entity->CreateComponent<TestColliderComponentMode>();
+
+        m_colliderComponentId = colliderComponent->GetId();
+
+        entity->Activate();
+
+        AzToolsFramework::SelectEntity(entityId);
+
+        return entity;
+    }
+
+    void PhysXColliderComponentModeTest::SetUpEditorFixtureImpl()
+    {
+        m_viewportManagerWrapper.Create();
+    }
+
+    void PhysXColliderComponentModeTest::TearDownEditorFixtureImpl()
+    {
+        m_viewportManagerWrapper.Destroy();
+    }
+
     TEST_F(PhysXColliderComponentModeTest, MouseWheelUpShouldSetNextMode)
     {
         // Given there is a collider component in component mode.

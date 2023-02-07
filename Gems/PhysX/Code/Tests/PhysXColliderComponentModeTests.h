@@ -29,33 +29,10 @@ namespace UnitTest
     class PhysXColliderComponentModeTest : public ToolsApplicationFixture<false>
     {
     protected:
-        AZ::Entity* CreateColliderComponent()
-        {
-            AZ::Entity* entity = nullptr;
-            AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
+        AZ::Entity* CreateColliderComponent();
 
-            entity->Deactivate();
-
-            // Add placeholder component which implements component mode.
-            auto colliderComponent = entity->CreateComponent<TestColliderComponentMode>();
-
-            m_colliderComponentId = colliderComponent->GetId();
-
-            entity->Activate();
-
-            AzToolsFramework::SelectEntity(entityId);
-
-            return entity;
-        }
-
-        void SetUpEditorFixtureImpl() override
-        {
-            m_viewportManagerWrapper.Create();
-        }
-        void TearDownEditorFixtureImpl() override
-        {
-            m_viewportManagerWrapper.Destroy();
-        }
+        void SetUpEditorFixtureImpl() override;
+        void TearDownEditorFixtureImpl() override;
 
         // Needed to support ViewportUi request calls.
         ViewportManagerWrapper m_viewportManagerWrapper;

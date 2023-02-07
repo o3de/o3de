@@ -84,15 +84,8 @@ namespace UnitTest
     public:
         ViewportUiManagerTestFixture() = default;
 
-        void SetUp() override
-        {
-            m_viewportManagerWrapper.Create();
-        }
-
-        void TearDown() override
-        {
-            m_viewportManagerWrapper.Destroy();
-        }
+        void SetUp() override;
+        void TearDown() override;
 
     protected:
         ViewportManagerWrapper m_viewportManagerWrapper;

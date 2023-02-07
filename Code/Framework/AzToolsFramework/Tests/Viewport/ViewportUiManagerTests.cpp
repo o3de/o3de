@@ -10,6 +10,16 @@
 
 namespace UnitTest
 {
+    void ViewportUiManagerTestFixture::SetUp()
+    {
+        m_viewportManagerWrapper.Create();
+    }
+
+    void ViewportUiManagerTestFixture::TearDown()
+    {
+        m_viewportManagerWrapper.Destroy();
+    }
+
     TEST_F(ViewportUiManagerTestFixture, CreateClusterAddsNewClusterAndReturnsId)
     {
         auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);
