@@ -47,6 +47,20 @@ ly_add_target(
         *.AutoPackets.xml,AutoPacketDispatcher_Inline.jinja,$path/$fileprefix.AutoPacketDispatcher.inl
 )
 
+# Typically, the Editor Connection Listener is enabled in all regular builds, and disabled in all monolithic builds.
+# This can be overridden by passing -DFORCE_ENABLE_O3DE_EDITOR_CONNECTION_LISTENER=0 or 1 when generating the build files.
+# The override can be removed by passing -UFORCE_ENABLE_O3DE_EDITOR_CONNECTION_LISTENER when generating the build files.
+set(FORCE_ENABLE_O3DE_EDITOR_CONNECTION_LISTENER "" CACHE STRING 
+"Overrides the creation of the Editor Connection Listener.
+  If unset, it is only created in non-monolithic builds.
+  0 always disables the Editor Connection Listener.
+  1 always enables the Editor Connection Listener.")
+
+# If there's a value in FORCE_ENABLE_O3DE_EDITOR_CONNECTION_LISTENER, the compiler flag will get set to it.
+# Otherwise, the variable will be empty and no compiler flag will be set, leaving it to the code to decide
+# whether or not to include the listener.
+set(O3DE_EDITOR_CONNECTION_LISTENER_ENABLE_FLAG $<$<NOT:$<STREQUAL:"${FORCE_ENABLE_O3DE_EDITOR_CONNECTION_LISTENER}","">>:O3DE_EDITOR_CONNECTION_LISTENER_ENABLE=$<BOOL:${FORCE_ENABLE_O3DE_EDITOR_CONNECTION_LISTENER}>>)
+
 ly_add_target(
     NAME Multiplayer.Client.Static STATIC
     NAMESPACE Gem
@@ -63,6 +77,7 @@ ly_add_target(
         PUBLIC
             AZ_TRAIT_CLIENT=1
             AZ_TRAIT_SERVER=0
+            ${O3DE_EDITOR_CONNECTION_LISTENER_ENABLE_FLAG}
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::Multiplayer.Common.Static
@@ -92,6 +107,7 @@ ly_add_target(
         PUBLIC
             AZ_TRAIT_CLIENT=0
             AZ_TRAIT_SERVER=1
+            ${O3DE_EDITOR_CONNECTION_LISTENER_ENABLE_FLAG}
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::Multiplayer.Common.Static
@@ -121,6 +137,7 @@ ly_add_target(
         PUBLIC
             AZ_TRAIT_CLIENT=1
             AZ_TRAIT_SERVER=1
+            ${O3DE_EDITOR_CONNECTION_LISTENER_ENABLE_FLAG}
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::Multiplayer.Common.Static

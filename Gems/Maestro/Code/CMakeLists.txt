@@ -19,6 +19,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
+        PUBLIC
+            Gem::AudioSystem.API
 )
 
 ly_add_target(

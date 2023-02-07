@@ -7,10 +7,6 @@
 #
 
 set(FILES
-    include/LmbrCentral/Ai/NavigationComponentBus.h
-    include/LmbrCentral/Ai/NavigationAreaBus.h
-    include/LmbrCentral/Ai/NavigationSystemBus.h
-    include/LmbrCentral/Ai/NavigationSeedBus.h
     include/LmbrCentral/Animation/AttachmentComponentBus.h
     include/LmbrCentral/Animation/SkeletalHierarchyRequestBus.h
     include/LmbrCentral/Audio/AudioEnvironmentComponentBus.h

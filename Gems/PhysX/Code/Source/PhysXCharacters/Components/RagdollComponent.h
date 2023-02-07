@@ -45,6 +45,10 @@ namespace PhysX
         {
             incompatible.push_back(AZ_CRC_CE("PhysicsRagdollService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+            // Incompatible with static/dynamic rigid bodies, but still compatible
+            // with character controller (which also provides rigid body service).
+            incompatible.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
+            incompatible.push_back(AZ_CRC_CE("PhysicsDynamicRigidBodyService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -54,7 +58,6 @@ namespace PhysX
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC_CE("PhysicsColliderService"));
             dependent.push_back(AZ_CRC_CE("CharacterPhysicsDataService"));
         }
 
