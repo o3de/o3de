@@ -15,6 +15,7 @@ namespace AZ
 {
     namespace Render
     {
+        //! The errors met when calling frame capture test request bus.
         struct FrameCaptureTestError
         {
             AZ_TYPE_INFO(FrameCaptureError, "{C96D1649-6B7C-42AE-87C3-3253EA5214E2}");
