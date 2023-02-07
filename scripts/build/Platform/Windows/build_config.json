@@ -28,6 +28,9 @@
   "test_cpu_profile_internal_metrics": {
     "TAGS": [],
     "COMMAND": "build_test_windows.cmd",
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows",
