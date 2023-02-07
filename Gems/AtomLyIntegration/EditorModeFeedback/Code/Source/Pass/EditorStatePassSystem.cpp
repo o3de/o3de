@@ -212,6 +212,11 @@ namespace AZ::Render
             state->UpdatePassDataForPipelines();
         }
     }
+    
+    const char* EditorStatePassSystem::GetParentPassTemplateName() const
+    {
+        return MainPassParentTemplateName;
+    }
 
     void EditorStatePassSystem::ConfigureStatePassesForPipeline([[maybe_unused]]RPI::RenderPipeline* renderPipeline)
     {
