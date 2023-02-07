@@ -6,7 +6,7 @@
  *
  */
 
-#include <Tests/PhysXColliderComponentmodeTests.h>
+#include <PhysXColliderComponentmodeTests.h>
 #include <Source/EditorRigidBodyComponent.h>
 
 namespace UnitTest
