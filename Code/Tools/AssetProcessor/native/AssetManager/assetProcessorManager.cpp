@@ -36,8 +36,6 @@
 #include <native/AssetManager/SourceAssetReference.h>
 #include <AzToolsFramework/Metadata/MetadataManager.h>
 
-#pragma optimize("", off)
-
 namespace AssetProcessor
 {
     const AZ::u32 FAILED_FINGERPRINT = 1;
@@ -869,6 +867,42 @@ namespace AssetProcessor
         }
 
         return m_lfsPointerFileValidator->IsLfsPointerFile(filePath);
+    }
+
+    AZ::Outcome<QString, void> AssetProcessorManager::GetFirstTopmostSourceAssetForProductPath(const AZStd::string& productPath)
+    {
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sourcesForProduct;
+
+        if (!m_stateData->GetSourcesByProductName(productPath.c_str(), sourcesForProduct) || sourcesForProduct.size() == 0)
+        {
+            return AZ::Failure();
+        }
+
+        // Only looking for the first topmost source, so use index 0.
+        AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolder;
+        if (!m_stateData->GetScanFolderByScanFolderID(sourcesForProduct[0].m_scanFolderPK, scanfolder))
+        {
+            // Only a printf for now because the calling point of this function may resolve this.
+            AZ_Printf(AssetProcessor::ConsoleChannel, "Could not locate scan folder for source %.*s, "
+                "the asset database may be corrupted and may need to be rebuilt.",
+                AZ_STRING_ARG(sourcesForProduct[0].m_sourceName));
+            return AZ::Failure();
+        }
+
+        QString fullPathToSource =
+            AssetUtilities::NormalizeFilePath(QDir(scanfolder.m_scanFolder.c_str()).filePath(sourcesForProduct[0].m_sourceName.c_str()));
+
+        // If this source is not an intermediate asset, then the topmost asset has been found.
+        if (!IsInIntermediateAssetsFolder(fullPathToSource))
+        {
+            return AZ::Success(fullPathToSource);
+        }
+        // If the source is an intermediate asset, keep searching upward.
+        QString relativePath, scanfolderPath;
+        m_platformConfig->ConvertToRelativePath(fullPathToSource, relativePath, scanfolderPath);
+        auto productName = AssetUtilities::GetIntermediateAssetDatabaseName(relativePath.toUtf8().constData());
+
+        return GetFirstTopmostSourceAssetForProductPath(productName);
     }
 
     AZStd::vector<AZStd::string> AssetProcessorManager::GetPotentialRepositoryRoots()
@@ -3187,41 +3221,25 @@ namespace AssetProcessor
                 return;
             }
 
-            AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sourcesForProduct;
-            
+            AZ::Outcome<QString, void> topmostSourceAsset = GetFirstTopmostSourceAssetForProductPath(productName);
 
-            if (m_stateData->GetSourcesByProductName(productName.c_str(), sourcesForProduct))
+            if (topmostSourceAsset.IsSuccess())
             {
-                AZ_Printf("AP", "Source found for this asset...\n");
-
-                
-                for (const auto& source : sourcesForProduct)
+                if (!QFile::exists(topmostSourceAsset.GetValue()))
                 {
-                    AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolder;
-                    if (!m_stateData->GetScanFolderByScanFolderID(source.m_scanFolderPK, scanfolder))
-                    {
-                        AZ_Printf("AP", "Scan folder not found for this asset...\n");
-                    }
-                    else
-                    {
-                        AZ_Printf("AP", "Scan folder found...\n");
-                        QString path = QString("%1/%2").arg(scanfolder.m_scanFolder.c_str()).arg(source.m_sourceName.c_str());
-
-                        if (QFile::exists(path))
-                        {
-                            AZ_Printf("AP", "Original source still exists...\n");
-                        }
-                        else
-                        {
-                            AZ_Printf("AP", "\n\nOriginal source %s for %s is now gone!\n\n\n", path.toUtf8().data(), productName.c_str());
-                            return;
-                        }
-                    }
+                    AZ_Printf("AP", "Topmost source '%s' for intermediate asset '%.*s' no longer exists, "
+                        "so this intermediate asset will not be reprocessed.",
+                        topmostSourceAsset.GetValue().toUtf8().data(),
+                        AZ_STRING_ARG(productName));
+                    return;
                 }
             }
             else
             {
-                AZ_Printf("AP", "No source for this intermediate asset...\n");
+                // Failed to find topmost source - don't process this asset, there's a gap or issue in the asset database.
+                // This will hopefully be resolved once all of AP finishes processing.
+                // No need to print anything out - GetFirstTopmostSourceAssetForProductPath will have printed out a message.
+                return;
             }
         }
 
@@ -5735,4 +5753,3 @@ namespace AssetProcessor
         return filesFound;
     }
 } // namespace AssetProcessor
-#pragma optimize("", on)
