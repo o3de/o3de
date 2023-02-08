@@ -467,11 +467,8 @@ namespace AZ::Debug
             m_requestedAllocs = 0;
         }
 
-        AZ_Warning(
-            "Memory", m_mode != RECORD_NO_RECORDS || mode == RECORD_NO_RECORDS,
-            "Records recording was disabled and now it's enabled! You might get assert when you free memory, if a you have allocations "
-            "which were not recorded!");
-
+        // Don't print anything out - if an issue occurs, an assert will fire off later.
+        // Any printing here will show up frequently in automated tests, making it difficult to parse the logs.
         m_mode = mode;
     }
 
