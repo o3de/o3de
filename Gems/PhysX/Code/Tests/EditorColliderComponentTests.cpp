@@ -8,11 +8,12 @@
 
 #include <PhysXColliderComponentmodeTests.h>
 #include <Source/EditorRigidBodyComponent.h>
+#include <EditorColliderComponent.h>
 
 namespace UnitTest
 {
     static const float uniformScale = 1.0f;
-    static const AZ::Quaternion ShapeRotation = AZ::Quaternion(0.0f, 0, 0, 1);
+    static const AZ::Quaternion ShapeRotation = AZ::Quaternion(0, 0, 0, 1);
     static const AZ::Quaternion EntityRotation = AZ::Quaternion(0, 0, 0, 1);
     static const AZ::Vector3 ShapeOffset = AZ::Vector3(0, 0, 0);
     static const AZ::Vector3 EntityTranslation = AZ::Vector3(5.0f, 15.0f, 10.0f);
@@ -78,11 +79,11 @@ namespace UnitTest
     {
          // Given the setup conditions
          const AZ::Vector3 boxDimensions(5.0f, 5.0f, 5.0f);
-         SetupCollider(Physics::BoxShapeConfiguration(boxDimensions), ShapeRotation, ShapeOffset);
          SetupTransform(EntityRotation, EntityTranslation, uniformScale);
 
          // The collider should be selectable with a collider and rigid body component
          m_entity->Deactivate();
+         m_entity->CreateComponent<PhysX::EditorColliderComponent>(Physics::ColliderConfiguration(), Physics::BoxShapeConfiguration(boxDimensions));
          m_entity->CreateComponent<PhysX::EditorRigidBodyComponent>();
          m_entity->Activate();
 
