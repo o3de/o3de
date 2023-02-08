@@ -149,7 +149,7 @@ namespace O3DE::ProjectManager
         m_notificationsView->SetMaxQueuedNotifications(1);
     }
 
-    void GemCatalogScreen::setupScreensControl(QWidget* parent)
+    void GemCatalogScreen::SetUpScreensControl(QWidget* parent)
     {
         m_screensControl = qobject_cast<ScreensCtrl*>(parent);
         if (m_screensControl)
