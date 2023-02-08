@@ -570,7 +570,7 @@ namespace AzToolsFramework
                 // Do not show the option when it is not a prefab edit.
                 if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(parentEntityId))
                 {
-                    QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
+                    QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab"));
                     QObject::connect(
                         detachPrefabAction, &QAction::triggered, detachPrefabAction,
                         [this, selectedEntityId]
@@ -1273,6 +1273,9 @@ namespace AzToolsFramework
             {
                 m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
             }
+
+            // Lazily initialize the PrefabToastNotificationsView so that the main window is ready to show the prefab toasts.
+            m_prefabSaveHandler.InitializePrefabToastNotificationsView();
         }
 
         void PrefabIntegrationManager::OnPrefabFocusChanged(

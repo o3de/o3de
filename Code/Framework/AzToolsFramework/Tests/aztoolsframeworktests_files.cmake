@@ -102,6 +102,7 @@ set(FILES
     Prefab/PrefabCreateTests.cpp
     Prefab/PrefabDeleteTests.cpp
     Prefab/PrefabDeleteAsOverrideTests.cpp
+    Prefab/PrefabDetachPrefabTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabInstanceDomGeneratorTestFixture.cpp
