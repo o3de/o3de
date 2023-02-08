@@ -18,10 +18,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/UI/PropertyEditor/PropertyQTConstants.h>
 #include <AzToolsFramework/UI/PropertyEditor/DHQComboBox.hxx>
 
-
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace
 {
     template<typename T>
@@ -445,5 +441,3 @@ namespace AzToolsFramework
         }
     }
 } // namespace AzToolsFramework
-#pragma optimize("", on)
-#pragma inline_depth()
