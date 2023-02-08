@@ -17,7 +17,6 @@ namespace AZ::Render
         , m_shapeBus(shapeBus)
     {
         InitBase(entityId);
-        shapeBus->SetHeight(0.0f);
     }
 
     void PolygonLightDelegate::SetLightEmitsBothDirections(bool lightEmitsBothDirections)
