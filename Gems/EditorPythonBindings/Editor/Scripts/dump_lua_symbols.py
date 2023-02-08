@@ -12,11 +12,11 @@
 # Will produce the file <game_project>\lua_symbols.txt
 #
 # Alternatively from the Editor console:
-# pyRunFile C:\GIT\o3de\Assets\Editor\Scripts\dump_lua_symbols.py
+# pyRunFile C:\GIT\o3de\Gems\EditorPythonBindings\Editor\Scripts\dump_lua_symbols.py
 # Will produce the file <game_project>\lua_symbols.txt
 #
 # or if you need to customize the name of the output file
-# pyRunFile C:\GIT\o3de\Assets\Editor\Scripts\dump_lua_symbols.py -o my_lua_name.txt
+# pyRunFile C:\GIT\o3de\Gems\EditorPythonBindings\Editor\Scripts\dump_lua_symbols.py -o my_lua_name.txt
 # Will produce the file <game_project>\my_lua_name.txt
 
 # This script shows basic usage of the LuaSymbolsReporterBus,
