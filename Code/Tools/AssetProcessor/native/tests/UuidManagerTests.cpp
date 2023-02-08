@@ -400,7 +400,6 @@ namespace UnitTests
 
         MakeFile(TestFile);
 
-        static constexpr AZ::Uuid testUuid{ "{2EE0C7C2-F21E-4254-A180-174992819254}" };
         AZStd::string contents = AZStd::string::format("{\"UUID\": {\"originalPath\": \" " AZ_STRING_FORMAT " \"}}", AZ_STRING_ARG(TestFile.Filename().Native()));
 
         AZ::Utils::WriteFile(contents, MetadataFile.Native());
