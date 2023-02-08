@@ -35,8 +35,12 @@ namespace AZStd
         typedef T               argument_type;
         typedef AZStd::size_t   result_type;
         // If you implement your own hash operator, consider making it constexpr if it makes sense.
-        // This is intentionally not declared constexpr here, as this would cause every implementation
-        // to require constexpr or suffer a compile error.
+        // This is intentionally not declared constexpr here, as this would force every implementation
+        // to require constexpr or suffer a compile error in certain compilers.  This means forcing them to implement
+        // their hash function in their headers, without being able to forward declare them.
+        // If you end up in a situation where you have implemented a custom constexpr operator() for your custom type
+        // and find that it needs to call an existing hash::operator() that is auto-generated from the below non-constexpr,
+        // you can add an explicit instantiation for it with constexpr.  See the example of hash<AZ::u64> below.
         result_type operator()(const argument_type& value) const { return static_cast<result_type>(value); }
         static bool OnlyUnspecializedTypesShouldHaveThis() { return true; }
     };
@@ -144,6 +148,17 @@ namespace AZStd
         : public hash<const T[N]>
     {
         //typedef T[N]          argument_type;
+    };
+
+    template<>
+    struct hash<AZ::u64>
+    {
+        typedef AZ::u64 argument_type;
+        typedef AZStd::size_t result_type;
+        constexpr inline result_type operator()(argument_type value) const
+        {
+             return static_cast<result_type>(value); 
+        }
     };
 
     template<>
