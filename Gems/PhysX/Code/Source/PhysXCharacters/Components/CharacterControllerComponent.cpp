@@ -107,10 +107,14 @@ namespace PhysX
         Physics::CharacterRequestBus::Handler::BusConnect(entityId);
         Physics::CollisionFilteringRequestBus::Handler::BusConnect(entityId);
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(entityId);
+
+        Physics::CharacterNotificationBus::Event(entityId, &Physics::CharacterNotificationBus::Events::OnCharacterActivated);
     }
 
     void CharacterControllerComponent::Deactivate()
     {
+        Physics::CharacterNotificationBus::Event(GetEntityId(), & Physics::CharacterNotificationBus::Events::OnCharacterDeactivated);
+
         DisableController();
 
         AZ::EntityBus::Handler::BusDisconnect();

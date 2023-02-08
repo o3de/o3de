@@ -103,4 +103,22 @@ namespace Physics
     };
 
     using CharacterRequestBus = AZ::EBus<CharacterRequests>;
-} // namespace Physics
+
+    /// Messages sent by character controllers.
+    class CharacterNotifications : public AZ::ComponentBus
+    {
+    public:
+        virtual ~CharacterNotifications() = default;
+
+        virtual void OnCharacterActivated()
+        {
+        }
+
+        virtual void OnCharacterDeactivated()
+        {
+        }
+    };
+
+    using CharacterNotificationBus = AZ::EBus<CharacterNotifications>;
+
+    } // namespace Physics

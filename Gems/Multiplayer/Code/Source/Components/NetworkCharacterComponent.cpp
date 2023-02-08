@@ -107,7 +107,13 @@ namespace Multiplayer
     {
     }
 
+
     void NetworkCharacterComponent::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+        Physics::CharacterNotificationBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void NetworkCharacterComponent::OnCharacterActivated()
     {
         Physics::CharacterRequests* characterRequests = Physics::CharacterRequestBus::FindFirstHandler(GetEntityId());
         m_physicsCharacter = (characterRequests != nullptr) ? characterRequests->GetCharacter() : nullptr;
@@ -132,7 +138,7 @@ namespace Multiplayer
 
     void NetworkCharacterComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        ;
+        Physics::CharacterNotificationBus::Handler::BusDisconnect();
     }
 
     void NetworkCharacterComponent::OnTranslationChangedEvent([[maybe_unused]] const AZ::Vector3& translation)
