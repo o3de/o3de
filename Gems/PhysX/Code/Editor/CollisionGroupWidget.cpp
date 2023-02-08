@@ -71,7 +71,7 @@ namespace PhysX
         bool CollisionGroupWidget::ReadValuesIntoGUI([[maybe_unused]] size_t index, widget_t* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
         {
             QSignalBlocker signalBlocker(GUI->GetComboBox());
-            GUI->GetComboBox()->clear();
+            GUI->clearElements();
 
             auto groupNames = GetGroupNames();
             for (auto& layerName : groupNames)

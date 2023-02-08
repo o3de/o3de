@@ -92,6 +92,7 @@ namespace AzToolsFramework
         void addElements(const AZStd::vector<AZStd::pair<T, AZStd::string>>& genericValues);
         void addElement(const AZStd::pair<T, AZStd::string>& genericValue);
         void setElements(const AZStd::vector<AZStd::pair<T, AZStd::string>>& genericValues);
+        void clearElements();
 
         void SetWarning(const AZStd::string& warningText);
 
