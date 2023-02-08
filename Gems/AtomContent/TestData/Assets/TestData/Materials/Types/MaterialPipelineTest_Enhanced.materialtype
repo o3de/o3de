@@ -1,0 +1,113 @@
+{
+    "description": "This material type demonstrates how to use the material pipeline system. This is temporary and can be removed after the core material types are ported to the new system.",
+    "version": 3,
+    "propertyLayout": {
+        "propertyGroups": [
+            { 
+                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/BaseColorPropertyGroup.json"
+            },
+            { 
+                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/MetallicPropertyGroup.json"
+            },
+            { 
+                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/RoughnessPropertyGroup.json"
+            },
+            { 
+                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/SpecularPropertyGroup.json"
+            },
+            { 
+                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/NormalPropertyGroup.json"
+            },
+            { 
+                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/DetailMapsPropertyGroup.json"
+            },
+            {
+                "name": "anisotropy",
+                "displayName": "Anisotropic Response",
+                "description": "How much is this material response anisotropic.",
+                "properties": [
+                    {
+                        "name": "enableAnisotropy",
+                        "displayName": "Enable Anisotropy",
+                        "description": "Enable anisotropic surface response for non uniform reflection along the axis",
+                        "type": "Bool",
+                        "defaultValue": false,
+                        "connection": {
+                            "type": "ShaderOption",
+                            "name": "o_enableAnisotropy"
+                        }
+                    },
+                    {
+                        "name": "factor",
+                        "displayName": "Anisotropy Factor",
+                        "description": "Strength factor for the anisotropy: negative = along v, positive = along u",
+                        "type": "Float",
+                        "defaultValue": 0.0,
+                        "min": -0.95,
+                        "max": 0.95,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_anisotropicFactor"
+                        }
+                    },
+                    {
+                        "name": "anisotropyAngle",
+                        "displayName": "Anisotropy Angle",
+                        "description": "Anisotropy direction of major reflection axis: 0 = 0 degrees, 1.0 = 180 degrees",
+                        "type": "Float",
+                        "defaultValue": 0.0,
+                        "min": 0.0,
+                        "max": 1.0,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_anisotropicAngle"
+                        }
+                    }
+                ],
+                "functors": [
+                    {
+                        "type": "Lua",
+                        "args": {
+                            "file": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/EnhancedPBR_Anisotropy.lua"
+                        }
+                    }
+                ]
+            },
+            { 
+                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/OcclusionPropertyGroup.json"
+            },
+            { 
+                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/EmissivePropertyGroup.json"
+            },
+            { 
+                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/SubsurfaceAndTransmissionPropertyGroup.json"
+            },
+            { 
+                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/ClearCoatPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialPipelineTest_ParallaxPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialPipelineTest_OpacityPropertyGroup.json"
+            },
+            { 
+                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/UvPropertyGroup.json"
+            },
+            { 
+                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/IrradiancePropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialPipelineTest_GeneralCommonPropertyGroup.json"
+            }
+        ]
+    },
+    "lightingModel": "Enhanced",
+    "materialShaderCode": "./MaterialPipelineTest_Enhanced.azsli",
+    "functors": [
+    ],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    }
+}

@@ -109,7 +109,7 @@ namespace AzFramework
 
             if (!m_serializeContext)
             {
-                EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+                AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             }
 
             AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<AssetType>::Uuid());
@@ -171,8 +171,9 @@ namespace AzFramework
 
         void Register()
         {
-            EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, EnableCatalogForAsset, AZ::AzTypeInfo<AssetType>::Uuid());
-            EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, AddExtension, m_extension.c_str());
+            AZ::Data::AssetCatalogRequestBus::Broadcast(
+                &AZ::Data::AssetCatalogRequestBus::Events::EnableCatalogForAsset, AZ::AzTypeInfo<AssetType>::Uuid());
+            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::AddExtension, m_extension.c_str());
 
             AZ_Assert(AZ::Data::AssetManager::IsReady(), "AssetManager isn't ready!");
             AZ::Data::AssetManager::Instance().RegisterHandler(this, AZ::AzTypeInfo<AssetType>::Uuid());
@@ -189,7 +190,7 @@ namespace AzFramework
         bool CanHandleAsset(const AZ::Data::AssetId& id) const override
         {
             AZStd::string assetPath;
-            EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, id);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, id);
             if (!assetPath.empty())
             {
                 AZStd::string assetExtension;

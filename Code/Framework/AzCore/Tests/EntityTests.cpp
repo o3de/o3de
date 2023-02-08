@@ -345,7 +345,8 @@ namespace UnitTest
     AZ::ComponentDescriptor* SortOrderTestComponentWrapper::CreateDescriptor()
     {
         AZ::ComponentDescriptor* descriptor = nullptr;
-        EBUS_EVENT_ID_RESULT(descriptor, SortOrderTestComponentWrapper::RTTI_Type(), AZ::ComponentDescriptorBus, GetDescriptor);
+        AZ::ComponentDescriptorBus::EventResult(
+            descriptor, SortOrderTestComponentWrapper::RTTI_Type(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
 
         return descriptor ? descriptor : aznew SortOrderComponentWrapperDescriptor();
     }

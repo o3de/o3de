@@ -1,0 +1,109 @@
+{
+    // TODO(MaterialPipeline): This file is here temporarily because it needs to connect the doubleSided and castShadows flags differently.
+    // Once we migrate the core material types to the material pipeline system, we can merge this with the original file.
+    "name": "general",
+    "displayName": "General Settings",
+    "description": "General settings.",
+    "properties": [
+        {
+            "name": "doubleSided",
+            "displayName": "Double-sided",
+            "description": "Whether to render back-faces or just front-faces.",
+            "type": "Bool",
+            "connection": {
+                "type": "InternalProperty",
+                "name": "doubleSided"
+            }
+        },
+        {
+            "name": "applySpecularAA",
+            "displayName": "Apply Specular AA",
+            "description": "Whether to apply specular anti-aliasing in the shader.",
+            "type": "Bool",
+            "defaultValue": true,
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_applySpecularAA"
+            }
+        },
+        {
+            "name": "enableShadows",
+            "displayName": "Receive Shadows",
+            "description": "Whether to use the shadow maps during lighting.",
+            "type": "Bool",
+            "defaultValue": true,
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_enableShadows"
+            }
+        },
+        {
+            // This will have to be connected manually by the .materialtype, because some material types
+            // have an additional "Shadowmap_WithPS" shader in addition to "Shadowmap".
+            "name": "castShadows",
+            "displayName": "Cast Shadows",
+            "description": "Whether to cast shadows onto other objects.",
+            "type": "Bool",
+            "defaultValue": true,
+            "connection": {
+                "type": "InternalProperty",
+                "name": "castShadows"
+            }
+        },
+        {
+            "name": "enableDirectionalLights",
+            "displayName": "Enable Directional Lights",
+            "description": "Whether to use directional lights.",
+            "type": "Bool",
+            "defaultValue": true,
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_enableDirectionalLights"
+            }
+        },
+        {
+            "name": "enablePunctualLights",
+            "displayName": "Enable Punctual Lights",
+            "description": "Whether to use punctual lights.",
+            "type": "Bool",
+            "defaultValue": true,
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_enablePunctualLights"
+            }
+        },
+        {
+            "name": "enableAreaLights",
+            "displayName": "Enable Area Lights",
+            "description": "Whether to use area lights.",
+            "type": "Bool",
+            "defaultValue": true,
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_enableAreaLights"
+            }
+        },
+        {
+            "name": "enableIBL",
+            "displayName": "Enable IBL",
+            "description": "Whether to use Image Based Lighting (IBL).",
+            "type": "Bool",
+            "defaultValue": true,
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_enableIBL"
+            }
+        },
+        {
+            "name": "forwardPassIBLSpecular",
+            "displayName": "Forward Pass IBL Specular",
+            "description": "Whether to apply IBL specular in the forward pass.",
+            "type": "Bool",
+            "defaultValue": false,
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_materialUseForwardPassIBLSpecular"
+            }
+        }
+    ]
+}

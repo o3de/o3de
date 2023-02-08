@@ -30,7 +30,7 @@ namespace PhysX
             const JointMotorProperties& motorProperties = JointMotorProperties());
         ~HingeJointComponent() = default;
 
-        // JointRequestBus::Handler overrides
+        // JointRequestBus::Handler overrides ...
         float GetPosition() const override;
         float GetVelocity() const override;
         AZ::Transform GetTransform() const override;
@@ -38,16 +38,14 @@ namespace PhysX
         void SetMaximumForce(float force) override;
         AZStd::pair<float, float> GetLimits() const override;
 
-        // AZ::Component overrides
-        void Activate() override;
-        void Deactivate() override;
-
     protected:
-        // JointComponent
+        // JointComponent overrides ...
         void InitNativeJoint() override;
+        void DeinitNativeJoint() override;
 
     private:
-       physx::PxRevoluteJoint* GetPhysXNativeRevoluteJoint();
-       physx::PxRevoluteJoint* m_nativeJoint{ nullptr };
+        void CachePhysXNativeRevoluteJoint();
+
+        physx::PxRevoluteJoint* m_nativeJoint{ nullptr };
     };
 } // namespace PhysX

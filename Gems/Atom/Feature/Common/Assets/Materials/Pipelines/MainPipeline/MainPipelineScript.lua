@@ -21,7 +21,6 @@ function MaterialTypeSetup(context)
     
     context:IncludeShader("DepthPass")
     context:IncludeShader("ShadowmapPass")
-    context:IncludeShader("MeshMotionVector")
 
     if(lightingModel == "Base") then
         context:IncludeShader("ForwardPass_BaseLighting")
@@ -35,8 +34,6 @@ function MaterialTypeSetup(context)
         context:IncludeShader("TintedTransparent_StandardLighting")
         context:IncludeShader("DepthPass_CustomZ")
         context:IncludeShader("ShadowmapPass_CustomZ")
-        context:IncludeShader("DepthPassTransparentMin")
-        context:IncludeShader("DepthPassTransparentMax")
         return true
     end
     
@@ -47,16 +44,9 @@ function MaterialTypeSetup(context)
         context:IncludeShader("TintedTransparent_EnhancedLighting")
         context:IncludeShader("DepthPass_CustomZ")
         context:IncludeShader("ShadowmapPass_CustomZ")
-        context:IncludeShader("DepthPassTransparentMin")
-        context:IncludeShader("DepthPassTransparentMax")
         return true
     end
-    
-    if(lightingModel == "Skin") then
-        context:IncludeShader("ForwardPass_SkinLighting")
-        return true
-    end
-     
+
     Error('Unsupported lighting model "' .. lightingModel .. '".')
     return false
 end

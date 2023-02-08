@@ -129,10 +129,10 @@ namespace EMotionFX
             {
                 BeginEditing();
             });
-        m_capsuleViewportEdit->InstallFinishEditing(
+        m_capsuleViewportEdit->InstallEndEditing(
             [this]()
             {
-                FinishEditing();
+                EndEditing();
             });
     }
 
@@ -145,7 +145,8 @@ namespace EMotionFX
             return;
         }
 
-        m_capsuleViewportEdit = AZStd::make_unique<AzToolsFramework::CapsuleViewportEdit>();
+        const bool allowAsymmetricalEditing = true;
+        m_capsuleViewportEdit = AZStd::make_unique<AzToolsFramework::CapsuleViewportEdit>(allowAsymmetricalEditing);
         InstallCapsuleViewportEditFunctions();
         m_capsuleViewportEdit->Setup(EMStudio::g_animManipulatorManagerId);
 
@@ -211,7 +212,7 @@ namespace EMotionFX
         }
     }
 
-    void ColliderCapsuleManipulators::FinishEditing()
+    void ColliderCapsuleManipulators::EndEditing()
     {
         if (m_commandGroup.IsEmpty())
         {

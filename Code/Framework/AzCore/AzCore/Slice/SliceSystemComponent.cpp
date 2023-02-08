@@ -57,10 +57,12 @@ namespace AZ
         }
 
         // Register with AssetCatalog
-        EBUS_EVENT(Data::AssetCatalogRequestBus, EnableCatalogForAsset, AZ::AzTypeInfo<AZ::SliceAsset>::Uuid());
-        EBUS_EVENT(Data::AssetCatalogRequestBus, AddExtension, "slice");
-        EBUS_EVENT(Data::AssetCatalogRequestBus, EnableCatalogForAsset, AZ::AzTypeInfo<AZ::DynamicSliceAsset>::Uuid());
-        EBUS_EVENT(Data::AssetCatalogRequestBus, AddExtension, "dynamicslice");
+        Data::AssetCatalogRequestBus::Broadcast(
+            &Data::AssetCatalogRequestBus::Events::EnableCatalogForAsset, AZ::AzTypeInfo<AZ::SliceAsset>::Uuid());
+        Data::AssetCatalogRequestBus::Broadcast(&Data::AssetCatalogRequestBus::Events::AddExtension, "slice");
+        Data::AssetCatalogRequestBus::Broadcast(
+            &Data::AssetCatalogRequestBus::Events::EnableCatalogForAsset, AZ::AzTypeInfo<AZ::DynamicSliceAsset>::Uuid());
+        Data::AssetCatalogRequestBus::Broadcast(&Data::AssetCatalogRequestBus::Events::AddExtension, "dynamicslice");
     }
 
     void SliceSystemComponent::Deactivate()

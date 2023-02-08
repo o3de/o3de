@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -87,10 +83,6 @@
                 "Component_[3047355939801335922]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 3047355939801335922
-                },
-                "Component_[3687396159953003426]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3687396159953003426
                 },
                 "Component_[4712694840150876798]": {
                     "$type": "EditorOnlyEntityComponent",
@@ -134,10 +126,6 @@
                             "SortIndex": 3
                         }
                     ]
-                },
-                "Component_[11346323631807681262]": {
-                    "$type": "SelectionComponent",
-                    "Id": 11346323631807681262
                 },
                 "Component_[1153076453892596685]": {
                     "$type": "EditorEntityIconComponent",
@@ -214,12 +202,17 @@
                         ],
                         "Gravity Enabled": false,
                         "Compute Mass": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 10.0
-                        }
+                        "Inertia tensor": [
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0
+                        ]
                     }
                 },
                 "Component_[7385062050909259476]": {
@@ -233,10 +226,6 @@
             "Id": "Entity_[285015917770]",
             "Name": "terrain",
             "Components": {
-                "Component_[12368241148684771968]": {
-                    "$type": "SelectionComponent",
-                    "Id": 12368241148684771968
-                },
                 "Component_[14478545718944713607]": {
                     "$type": "EditorLockComponent",
                     "Id": 14478545718944713607
@@ -254,11 +243,6 @@
                                 {
                                     "Name": "Entire object"
                                 }
-                            ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
                             ]
                         }
                     },
@@ -317,6 +301,10 @@
                 "Component_[7071637913266534486]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 7071637913266534486
+                },
+                "Component_[7476780700387468022]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 7476780700387468022
                 }
             }
         },
@@ -341,9 +329,9 @@
                         }
                     ]
                 },
-                "Component_[16014778893970138866]": {
-                    "$type": "SelectionComponent",
-                    "Id": 16014778893970138866
+                "Component_[15909051135029218004]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 15909051135029218004
                 },
                 "Component_[17048341836974969891]": {
                     "$type": "EditorDisabledCompositionComponent",
@@ -368,11 +356,6 @@
                                 {
                                     "Name": "Entire object"
                                 }
-                            ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
                             ]
                         }
                     },
