@@ -15,7 +15,6 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapper.h>
@@ -54,7 +53,6 @@ namespace AzToolsFramework
             : public AZ::Component
             , private PrefabSystemComponentInterface
             , private AZ::SystemTickBus::Handler
-            , private AzToolsFramework::AssetSystemBus::Handler
         {
         public:
 
@@ -383,12 +381,6 @@ namespace AzToolsFramework
 
             // Helper function for GetDirtyTemplatePaths(). It uses vector to speed up iteration times.
             void GetDirtyTemplatePathsHelper(TemplateId rootTemplateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths);
-
-            //! Called by the AssetProcessor when the source file has been changed.
-            void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
-
-            //! Called by the AssetProcessor when the source file has been removed.
-            void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
 
             //! Free memory if memory is available to free.  This is only necessary if the underlying system
             //! retains memory (ie, rapidjson, not AZ::DOM).  Doing so will invalidate all existing PrefabDom&

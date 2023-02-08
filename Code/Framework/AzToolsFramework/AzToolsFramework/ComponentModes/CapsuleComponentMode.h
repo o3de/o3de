@@ -9,19 +9,20 @@
 #pragma once
 
 #include <AzToolsFramework/ComponentModes/BaseShapeComponentMode.h>
-#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
+#include <AzToolsFramework/ComponentModes/CapsuleViewportEdit.h>
 
 namespace AzToolsFramework
 {
-    void InstallBoxViewportEditFunctions(BoxViewportEdit* boxViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
+    void InstallCapsuleViewportEditFunctions(
+        CapsuleViewportEdit* capsuleViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
 
-    //! The specific ComponentMode responsible for handling box editing.
-    class BoxComponentMode
+    //! The specific ComponentMode responsible for handling capsule editing.
+    class CapsuleComponentMode
         : public BaseShapeComponentMode
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
-        AZ_RTTI(BoxComponentMode, "{8E09B2C1-ED99-4945-A0B1-C4AFE6FE2FA9}", BaseShapeComponentMode)
+        AZ_RTTI(CapsuleComponentMode, "{17036B78-EB62-4F2B-8F74-C9FB037D8973}", BaseShapeComponentMode)
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -29,16 +30,16 @@ namespace AzToolsFramework
         static void BindActionsToModes();
         static void BindActionsToMenus();
 
-        BoxComponentMode(
+        CapsuleComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType, bool allowAsymmetricalEditing = false);
-        BoxComponentMode(const BoxComponentMode&) = delete;
-        BoxComponentMode& operator=(const BoxComponentMode&) = delete;
-        BoxComponentMode(BoxComponentMode&&) = delete;
-        BoxComponentMode& operator=(BoxComponentMode&&) = delete;
-        ~BoxComponentMode() = default;
+        CapsuleComponentMode(const CapsuleComponentMode&) = delete;
+        CapsuleComponentMode& operator=(const CapsuleComponentMode&) = delete;
+        CapsuleComponentMode(CapsuleComponentMode&&) = delete;
+        CapsuleComponentMode& operator=(CapsuleComponentMode&&) = delete;
+        ~CapsuleComponentMode() = default;
 
         // EditorBaseComponentMode overrides ...
         AZStd::string GetComponentModeName() const override;
         AZ::Uuid GetComponentModeType() const override;
-   };
+    };
 } // namespace AzToolsFramework

@@ -19,6 +19,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_Main_Null_Render_01
@@ -32,6 +33,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_Main_Null_Render_02
@@ -45,6 +47,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_Main_Null_Render_03
@@ -58,6 +61,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_TestSuite_Sandbox
@@ -84,6 +88,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_TestSuite_Main_GPU
@@ -98,6 +103,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_TestSuite_Benchmark_GPU
@@ -125,6 +131,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             MaterialEditor
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_Main_Null_Render_MaterialCanvas
@@ -138,6 +145,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             MaterialCanvas
         COMPONENT
             Atom
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_Periodic_Null_Render_01
