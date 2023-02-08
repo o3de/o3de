@@ -29,6 +29,7 @@ namespace PhysX
         {
             widget_t* picker = new widget_t(parent);
 
+            picker->GetEditButton()->setVisible(true);
             picker->GetEditButton()->setToolTip("Edit Collision Layers");
 
             connect(picker->GetComboBox(), &QComboBox::currentTextChanged, this, [picker]()
@@ -72,12 +73,12 @@ namespace PhysX
             auto layerNames = GetLayerNames();
             for (auto& layerName : layerNames)
             {
-                GUI->GetComboBox()->addItem(layerName.c_str());
+                GUI->Add(layerName);
             }
-            
+
             auto layerName = GetNameFromLayer(instance);
             GUI->GetComboBox()->setCurrentText(layerName.c_str());
-            
+
             return true;
         }
 
@@ -117,8 +118,7 @@ namespace PhysX
             }
             return layerNames;
         }
-    }
-    
+    } // namespace Editor
 } // namespace PhysX
 
 #include <Editor/moc_CollisionLayerWidget.cpp>

@@ -221,7 +221,8 @@
                 ]
             },
             {
-                // TODO(MaterialPipeline): If we move enableMultiScatterCompensation to the General property group for all the other material types, we can replace this whole section with $import GeneralCommonPropertyGroup.json.
+                // TODO(MaterialPipeline): After this material type is ported to use material pipelines, castShadows can be changed to match GeneralCommonPropertyGroup.json.
+                // Then if we move enableMultiScatterCompensation to the General property group for all the other material types, we can replace this whole section with $import GeneralCommonPropertyGroup.json.
                 "name": "general",
                 "displayName": "General Settings",
                 "description": "General settings.",
@@ -265,8 +266,8 @@
                         "type": "Bool",
                         "defaultValue": true,
                         "connection": {
-                            "type": "InternalProperty",
-                            "name": "castShadows"
+                            "type": "ShaderEnabled",
+                            "name": "Shadowmap"
                         }
                     },
                     {
@@ -361,9 +362,43 @@
             }
         ]
     },
-    "lightingModel": "Standard",
-    "materialShaderCode": "StandardMultilayerPBR.azsli",
+    "shaders": [ 
+        {
+            "file": "Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_ForwardPass.shader",
+            "tag": "ForwardPass"
+        },
+        {
+            "file": "Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_ForwardPass_EDS.shader",
+            "tag": "ForwardPass_EDS"
+        },
+        {
+            "file": "Shaders/Shadow/Shadowmap.shader",
+            "tag": "Shadowmap"
+        },
+        {
+            "file": "Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Shadowmap_WithPS.shader",
+            "tag": "Shadowmap_WithPS"
+        },
+        {
+            "file": "Shaders/Depth/DepthPass.shader",
+            "tag": "DepthPass"
+        },
+        {
+            "file": "Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_DepthPass_WithPS.shader",
+            "tag": "DepthPass_WithPS"
+        },
+        {
+            "file": "Shaders/MotionVector/MeshMotionVector.shader",
+            "tag": "MeshMotionVector"
+        }    
+    ],
     "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/StandardMultilayerPBR_ShaderEnable.lua"
+            }
+        },
         {
             "type": "Lua",
             "args": {

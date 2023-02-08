@@ -399,13 +399,20 @@ namespace PhysX
     }
 
     static AzToolsFramework::ViewportUi::ButtonId RegisterClusterButton(
-        AzToolsFramework::ViewportUi::ClusterId clusterId, const char* iconName)
+        AzToolsFramework::ViewportUi::ClusterId clusterId, const char* iconName, const char* tooltip)
     {
         AzToolsFramework::ViewportUi::ButtonId buttonId;
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
             AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
+
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+            clusterId,
+            buttonId,
+            tooltip);
 
         return buttonId;
     }
@@ -426,9 +433,12 @@ namespace PhysX
 
         // create and register the buttons
         m_buttonIds.resize(static_cast<size_t>(SubMode::NumModes));
-        m_buttonIds[static_cast<size_t>(SubMode::Offset)] = RegisterClusterButton(m_modeSelectionClusterId, "Move");
-        m_buttonIds[static_cast<size_t>(SubMode::Rotation)] = RegisterClusterButton(m_modeSelectionClusterId, "Rotate");
-        m_buttonIds[static_cast<size_t>(SubMode::Dimensions)] = RegisterClusterButton(m_modeSelectionClusterId, "Scale");
+        m_buttonIds[static_cast<size_t>(SubMode::Offset)] =
+            RegisterClusterButton(m_modeSelectionClusterId, "Move", "Switch to translation offset mode");
+        m_buttonIds[static_cast<size_t>(SubMode::Rotation)] =
+            RegisterClusterButton(m_modeSelectionClusterId, "Rotate", "Switch to rotation offset mode");
+        m_buttonIds[static_cast<size_t>(SubMode::Dimensions)] =
+            RegisterClusterButton(m_modeSelectionClusterId, "Scale", "Switch to dimensions mode");
 
         SetCurrentMode(SubMode::Offset);
 
