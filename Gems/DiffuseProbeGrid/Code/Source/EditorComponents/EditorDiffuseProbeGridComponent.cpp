@@ -578,7 +578,6 @@ namespace AZ
             bakeDialog.setLabelText(QObject::tr("Baking Diffuse Probe Grid..."));
             bakeDialog.setWindowModality(Qt::WindowModal);
             bakeDialog.setMaximumSize(QSize(256, 96));
-            bakeDialog.setMinimum(0);
             bakeDialog.setMaximum(0);
             bakeDialog.setMinimumDuration(0);
             bakeDialog.setAutoClose(false);
