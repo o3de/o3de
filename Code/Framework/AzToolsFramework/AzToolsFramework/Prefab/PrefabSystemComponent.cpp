@@ -46,6 +46,7 @@ namespace AzToolsFramework
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
+            AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Handler::BusConnect();
             if (AzToolsFramework::Prefab::IsHotReloadingEnabled())
             {
                 AzToolsFramework::AssetSystemBus::Handler::BusConnect();
@@ -58,6 +59,7 @@ namespace AzToolsFramework
             {
                 AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
             }
+            AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Handler::BusDisconnect();
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_prefabSystemScriptingHandler.Disconnect();
             m_prefabPublicRequestHandler.Disconnect();
@@ -142,6 +144,20 @@ namespace AzToolsFramework
         {
             m_instanceUpdateExecutor.UpdateTemplateInstancesInQueue();
             GarbageCollectTemplates(false);
+        }
+
+        void PrefabSystemComponent::OnSourceFilePathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName)
+        {
+            // Convert to prefab relative path
+            AZ::IO::Path fromRelativePath = m_prefabLoader.GenerateRelativePath(fromPathName);
+
+            // Update loaded template with new pathname
+            if (Prefab::TemplateId templateId = GetTemplateIdFromFilePath(fromRelativePath); templateId != InvalidTemplateId)
+            {
+                AZ::IO::Path toRelativePath = m_prefabLoader.GenerateRelativePath(toPathName);
+                UpdateTemplateFilePath(templateId, toRelativePath);
+                PropagateTemplateChanges(templateId);
+            }
         }
 
         AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefab(

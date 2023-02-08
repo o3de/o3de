@@ -377,5 +377,23 @@ namespace AzToolsFramework
         };
         using AssetBrowserFileCreationNotificationBus = AZ::EBus<AssetBrowserFileCreationNotifications>;
 
+        //////////////////////////////////////////////////////////////////////////
+        // File action notifications
+        //////////////////////////////////////////////////////////////////////////
+
+        //! Used for sending and/or recieving notifications regarding source file manipulation through the Asset Browser.
+        class AssetBrowserFileActionNotifications
+            : public AZ::EBusTraits
+        {
+        public:
+            //! Notifies when a source file has been moved or renamed
+            virtual void OnSourceFilePathNameChanged(
+                [[maybe_unused]] const AZStd::string_view fromPathName, [[maybe_unused]] const AZStd::string_view toPathName) {}
+
+        protected:
+            ~AssetBrowserFileActionNotifications() = default;
+        };
+        using AssetBrowserFileActionNotificationBus = AZ::EBus<AssetBrowserFileActionNotifications>;
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

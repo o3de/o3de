@@ -773,6 +773,12 @@ namespace AzToolsFramework
             AssetChangeReportResponse moveResponse;
             if (SendRequest(moveRequest, moveResponse))
             {
+                // Send notification for listeners to update any in-memory states
+                AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
+                    &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFilePathNameChanged,
+                    fromPath.c_str(),
+                    toPath.c_str());
+
                 if (!moveResponse.m_lines.empty())
                 {
                     AZStd::string message;
@@ -950,6 +956,12 @@ namespace AzToolsFramework
                     {
                         if (!response.m_lines.empty())
                         {
+                            // Send notification for listeners to update any in-memory states
+                            AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
+                                &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFilePathNameChanged,
+                                fromPath,
+                                toPath);
+
                             AZStd::string moveMessage;
                             AZ::StringFunc::Join(moveMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
                             AzQtComponents::FixedWidthMessageBox moveMsgBox(
