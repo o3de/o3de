@@ -43,6 +43,8 @@ namespace AzToolsFramework
 
             void HideProductAssets(bool checked);
 
+            void UpdateThumbnailview();
+
             AzQtComponents::AssetFolderThumbnailView* GetThumbnailViewWidget() const;
 
             void setSelectionMode(QAbstractItemView::SelectionMode mode);

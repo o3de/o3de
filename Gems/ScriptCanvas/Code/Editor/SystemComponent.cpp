@@ -245,10 +245,11 @@ namespace ScriptCanvasEditor
                 else
                 {
                     AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
-                        AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId
-                        , &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor
-                        , source.AbsolutePath().Native()
-                        , AZ::Crc32());
+                        AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                        &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                        source.AbsolutePath().Native(),
+                        AZ::Crc32(),
+                        true);
                 }
 
                 fileStream.Close();

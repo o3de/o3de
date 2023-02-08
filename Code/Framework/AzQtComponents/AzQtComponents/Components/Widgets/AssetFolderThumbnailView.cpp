@@ -459,6 +459,12 @@ namespace AzQtComponents
         }
     }
 
+    void AssetFolderThumbnailView::RefreshRootIndex()
+    {
+        QAbstractItemView::setRootIndex(rootIndex());
+        emit rootIndexChanged(rootIndex());
+    }
+
     QModelIndex AssetFolderThumbnailView::moveCursor(QAbstractItemView::CursorAction cursorAction, Qt::KeyboardModifiers modifiers)
     {
         Q_UNUSED(modifiers);

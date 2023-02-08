@@ -78,6 +78,7 @@ namespace AzToolsFramework
                 m_thumbnailViewProxyModel,
                 &AssetBrowserThumbnailViewProxyModel::SetRootIndex);
 
+
             auto layout = new QVBoxLayout();
             layout->addWidget(m_thumbnailViewWidget);
             setLayout(layout);
@@ -177,6 +178,11 @@ namespace AzToolsFramework
             {
                 m_thumbnailViewWidget->setRootIndex({});
             }
+        }
+
+        void AssetBrowserThumbnailView::UpdateThumbnailview()
+        {
+            m_thumbnailViewWidget->RefreshRootIndex();
         }
 
         void AssetBrowserThumbnailView::UpdateFilterInLocalFilterModel()
