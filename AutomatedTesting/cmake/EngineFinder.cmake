@@ -15,8 +15,6 @@ include_guard()
 
 include(cmake/VersionUtils.cmake)
 
-set(ENGINE_FINDER_VERBOSE FALSE CACHE BOOL "Increase EngineFinder.cmake verbosity.  Useful for debugging engine selection based on compatibility.")
-
 # Read the engine name from the shared or user project.json
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/project.json project_json)
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/project.json)
@@ -27,11 +25,12 @@ if(json_error)
 endif()
  
 # Let the user override the engine to use
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/user/project.json)
-    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/user/project.json user_project_json)
-    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/user/project.json)
+cmake_path(SET user_project_json_path ${CMAKE_CURRENT_SOURCE_DIR}/user/project.json)
+if(EXISTS "${user_project_json_path}")
+    file(READ "${user_project_json_path}" user_project_json)
     string(JSON user_project_engine_name ERROR_VARIABLE json_error GET ${user_project_json} engine)
     if(NOT json_error)
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${user_project_json_path}")
         set(O3DE_ENGINE_NAME_TO_USE ${user_project_engine_name})
     endif()
     string(JSON user_engine_path ERROR_VARIABLE json_error GET ${user_project_json} "engine_path")
@@ -45,8 +44,9 @@ set(LY_ENGINE_NAME_TO_USE ${O3DE_ENGINE_NAME_TO_USE})
 
 if(CMAKE_MODULE_PATH)
     foreach(module_path ${CMAKE_MODULE_PATH})
-        if(EXISTS ${module_path}/Findo3de.cmake)
-            o3de_engine_compatible(${module_path}/../ ${O3DE_ENGINE_NAME_TO_USE} ${O3DE_ENGINE_SPECIFIER_OP} ${O3DE_ENGINE_SPECIFIER_VERSION} is_compatible engine_version ${ENGINE_FINDER_VERBOSE})
+        if(EXISTS "${module_path}/Findo3de.cmake")
+            cmake_path(GET module_path PARENT_PATH candidate_engine_path)
+            o3de_engine_compatible("${candidate_engine_path}" ${O3DE_ENGINE_NAME_TO_USE} ${O3DE_ENGINE_SPECIFIER_OP} ${O3DE_ENGINE_SPECIFIER_VERSION} is_compatible engine_version FALSE)
             if(is_compatible)
                 return() # Engine being forced through CMAKE_MODULE_PATH
             endif()
@@ -60,13 +60,13 @@ if(user_engine_path)
         # always be verbose on this compatibility check
         o3de_engine_compatible(${user_engine_path} ${O3DE_ENGINE_NAME_TO_USE} ${O3DE_ENGINE_SPECIFIER_OP} ${O3DE_ENGINE_SPECIFIER_VERSION} is_compatible engine_version TRUE)
         if(is_compatible)
-            message("-- Selecting engine from 'user/project.json' at '${user_engine_path}'")
+            message(STATUS "Selecting engine from '${user_project_json_path}' at '${user_engine_path}'")
             list(APPEND CMAKE_MODULE_PATH "${user_engine_path}/cmake")
             return()
         endif()
     else()
         string(CONCAT engine_path_info "Unable to use the engine_path from "
-            "'${CMAKE_CURRENT_SOURCE_DIR}/user/project.json' because "
+            "'${user_project_json_path}' because "
             "'${user_engine_path}/cmake' does not exist.\n"
             "Falling back to look for an engine named '${O3DE_ENGINE_NAME_TO_USE}' in o3de_manifest.json")
         message(INFO " ${engine_path_info}")
@@ -84,12 +84,7 @@ Engine registration is required before configuring a project.
 Run 'scripts/o3de register --this-engine' from the engine root.
 ]=])
 
-# Read the ~/.o3de/o3de_manifest.json file and look through the 'engines' array.
-# Search all known engines for one with the matching name and compatible version
-if(EXISTS ${manifest_path})
-    file(READ ${manifest_path} manifest_json)
-    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${manifest_path})
-
+function(o3de_get_most_compatible_engine manifest_json output_engine_path output_engine_version)
     string(JSON engines_count ERROR_VARIABLE json_error LENGTH ${manifest_json} engines)
     if(json_error)
         message(FATAL_ERROR "Unable to read key 'engines' from '${manifest_path}'\nError: ${json_error}\n${registration_error}")
@@ -117,17 +112,13 @@ if(EXISTS ${manifest_path})
                 if(NOT most_compatible_engine_path)
                     set(most_compatible_engine_path ${engine_path})
                     set(most_compatible_engine_version ${engine_version})
-                    if(ENGINE_FINDER_VERBOSE)
-                        message("-- Considering engine '${O3DE_ENGINE_NAME_TO_USE}' with version '${engine_version}' from '${engine_path}'")
-                    endif()
+                    message(VERBOSE "Considering engine '${O3DE_ENGINE_NAME_TO_USE}' version '${engine_version}' from '${engine_path}'")
                 elseif(${engine_version} VERSION_GREATER ${most_compatible_engine_version})
-                    if(ENGINE_FINDER_VERBOSE)
-                        message("-- Considering engine '${O3DE_ENGINE_NAME_TO_USE}' with version '${engine_version}' from '${engine_path}' because it has a greater version number")
-                    endif()
+                    message(VERBOSE "Considering engine '${O3DE_ENGINE_NAME_TO_USE}' version '${engine_version}' from '${engine_path}' because it has a greater version number")
                     set(most_compatible_engine_path ${engine_path})
                     set(most_compatible_engine_version ${engine_version})
-                elseif(ENGINE_FINDER_VERBOSE)
-                    message("-- Not considering engine '${O3DE_ENGINE_NAME_TO_USE}' with version '${engine_version}' from '${engine_path}' because it does not have a greater version number than the engine at '${most_compatible_engine_path}' (${most_compatible_engine_version})")
+                else()
+                    message(VERBOSE "Not considering engine '${O3DE_ENGINE_NAME_TO_USE}' version '${engine_version}' from '${engine_path}' because it does not have a greater version number than the engine at '${most_compatible_engine_path}' (${most_compatible_engine_version})")
                 endif()
             endif()
         else()
@@ -135,8 +126,21 @@ if(EXISTS ${manifest_path})
         endif()
     endforeach()
 
+    set(${output_engine_path} ${most_compatible_engine_path} PARENT_SCOPE)
+    set(${output_engine_version} ${most_compatible_engine_version} PARENT_SCOPE)
+endfunction()
+
+
+# Read the ~/.o3de/o3de_manifest.json file and look through the 'engines' array.
+# Search all known engines for one with the matching name and compatible version
+if(EXISTS ${manifest_path})
+    file(READ ${manifest_path} manifest_json)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${manifest_path})
+
+    o3de_get_most_compatible_engine(${manifest_json} most_compatible_engine_path most_compatible_engine_version )
+
     if(most_compatible_engine_path)
-        message("-- Selecting most compatible engine '${O3DE_ENGINE_NAME_TO_USE}' with version '${most_compatible_engine_version}' found at '${most_compatible_engine_path}'")
+        message(STATUS "Selecting most compatible engine '${O3DE_ENGINE_NAME_TO_USE}' version '${most_compatible_engine_version}' found at '${most_compatible_engine_path}'")
         list(APPEND CMAKE_MODULE_PATH "${most_compatible_engine_path}/cmake")
         return()
     endif()
