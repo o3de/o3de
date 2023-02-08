@@ -98,8 +98,7 @@ namespace NvCloth
 
         bool MeshNodeHandler::ReadValuesIntoGUI([[maybe_unused]] size_t index, widget_t* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
         {
-            QSignalBlocker signalBlocker(GUI->GetComboBox());
-            GUI->GetComboBox()->setCurrentText(instance.c_str());
+            GUI->setValue(instance);
             return true;
         }
 

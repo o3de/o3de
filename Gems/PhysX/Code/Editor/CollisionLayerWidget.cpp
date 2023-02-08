@@ -74,9 +74,7 @@ namespace PhysX
                 GUI->Add(layerName);
             }
 
-            auto layerName = GetNameFromLayer(instance);
-            GUI->GetComboBox()->setCurrentText(layerName.c_str());
-
+            GUI->setValue(GetNameFromLayer(instance));
             return true;
         }
 
