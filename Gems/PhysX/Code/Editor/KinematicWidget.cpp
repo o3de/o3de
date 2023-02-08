@@ -38,7 +38,7 @@ namespace PhysX
                 });
 
             auto comboBox = picker->GetComboBox();
-            comboBox->addItem("Dynamic");
+            comboBox->addItem("Simulated");
             comboBox->addItem("Kinematic");
 
             picker->GetEditButton()->setToolTip("Open Type dialog for a detailed description on the motion types");

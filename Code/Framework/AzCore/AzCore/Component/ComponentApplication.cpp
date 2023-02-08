@@ -1426,7 +1426,7 @@ namespace AZ
         AZ_PROFILE_SCOPE(System, "Component application tick");
 
         SystemTickBus::ExecuteQueuedEvents();
-        EBUS_EVENT(SystemTickBus, OnSystemTick);
+        SystemTickBus::Broadcast(&SystemTickBus::Events::OnSystemTick);
     }
 
     bool ComponentApplication::ShouldAddSystemComponent(AZ::ComponentDescriptor* descriptor)
@@ -1456,7 +1456,7 @@ namespace AZ
         for (const Uuid& componentId : GetRequiredSystemComponents())
         {
             ComponentDescriptor* componentDescriptor = nullptr;
-            EBUS_EVENT_ID_RESULT(componentDescriptor, componentId, ComponentDescriptorBus, GetDescriptor);
+            ComponentDescriptorBus::EventResult(componentDescriptor, componentId, &ComponentDescriptorBus::Events::GetDescriptor);
             if (!componentDescriptor)
             {
                 AZ_Error("Module", false, "Failed to add system component required by application. No component descriptor found for: %s",

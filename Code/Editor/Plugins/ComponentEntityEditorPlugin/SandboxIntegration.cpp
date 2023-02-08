@@ -60,8 +60,10 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <MathConversion.h>
 
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 
 #include "Objects/ComponentEntityObject.h"
@@ -1119,18 +1121,24 @@ bool SandboxIntegrationManager::CanGoToSelectedEntitiesInViewports()
 
 bool SandboxIntegrationManager::CanGoToEntityOrChildren(const AZ::EntityId& entityId) const
 {
+    AZ::Entity* entity = nullptr;
+    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+    if (entity == nullptr)
+    {
+        return false;
+    }
+
+    // If this is a layer entity, check if the layer has any children that are visible in the viewport
     bool isLayerEntity = false;
     AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
         isLayerEntity,
         entityId,
         &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-    // If this entity is not a layer
     if (!isLayerEntity)
     {
-        // check if the entity exists to determine if we can go to it (e.g. system & internal entities are not visible in the viewport)
-        AZ::Entity* entity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-        return entity != nullptr;
+        // Skip if this entity doesn't have a transform;
+        // UI entities and system components don't have transforms and thus aren't visible in the Editor viewport
+        return entity->GetTransform() != nullptr;
     }
 
     AZStd::vector<AZ::EntityId> layerChildren;
@@ -1917,6 +1925,48 @@ AZStd::string SandboxIntegrationManager::GetComponentIconPath(const AZ::Uuid& co
                 if (pathFound)
                 {
                     iconPath = AZStd::move(iconFullPath);
+                }
+                else
+                {
+                    // If we couldn't find the full source path, try appending the product extension if the icon
+                    // source asset is one of the supported image assets. Most component icons are in .svg format,
+                    // which isn't actually consumed by the Asset Processor so the GetFullSourcePathFromRelativeProductPath
+                    // API can find the source asset without needing the product extension as well. So this edge case is
+                    // to cover any component icons that are still using other formats (e.g. png), that haven't been converted
+                    // to .svg yet, or for customers that prefer to use image formats besides .svg.
+                    AZStd::string extension;
+                    AzFramework::StringFunc::Path::GetExtension(iconPath.c_str(), extension);
+                    bool supportedStreamingImage = false;
+                    for (int i = 0; i < ImageProcessingAtom::s_TotalSupportedImageExtensions; ++i)
+                    {
+                        if (AZStd::wildcard_match(ImageProcessingAtom::s_SupportedImageExtensions[i], extension.c_str()))
+                        {
+                            supportedStreamingImage = true;
+                            break;
+                        }
+                    }
+                    if (supportedStreamingImage)
+                    {
+                        iconPath = AZStd::string::format("%s.%s", iconPath.c_str(), AZ::RPI::StreamingImageAsset::Extension);
+
+                        AssetSysReqBus::BroadcastResult(
+                            pathFound, &AssetSysReqBus::Events::GetFullSourcePathFromRelativeProductPath,
+                            iconPath, iconFullPath);
+                    }
+
+                    if (pathFound)
+                    {
+                        iconPath = AZStd::move(iconFullPath);
+                    }
+                    else
+                    {
+                        AZ_Warning(
+                            "SandboxIntegration",
+                            false,
+                            "Unable to find icon path \"%s\" for component type: %s",
+                            iconPath.c_str(),
+                            classData->m_editData->m_name);
+                    }
                 }
             }
         }

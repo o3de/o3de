@@ -187,8 +187,16 @@ namespace AzToolsFramework
                     {
                         if (QAction* action = s_actionManagerInternalInterface->GetAction(menuItem.m_identifier))
                         {
-                            if (!action->isEnabled() &&
-                                s_actionManagerInternalInterface->GetHideFromMenusWhenDisabled(menuItem.m_identifier))
+                            auto outcome = s_actionManagerInterface->IsActionActiveInCurrentMode(menuItem.m_identifier);
+                            bool isActiveInCurrentMode = outcome.IsSuccess() && outcome.GetValue();
+
+                            if (
+                                !IsActionVisible(
+                                    s_actionManagerInternalInterface->GetActionMenuVisibility(menuItem.m_identifier),
+                                    isActiveInCurrentMode,
+                                    action->isEnabled()
+                                )
+                            )
                             {
                                 continue;
                             }
