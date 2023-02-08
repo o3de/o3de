@@ -36,25 +36,23 @@ namespace AZ
             void SortMaterialTypeSourceDataPropertyGroups(
                 AZStd::vector<AZStd::unique_ptr<MaterialTypeSourceData::PropertyGroup>>& propertyGroups)
             {
-                // Sort child groups alphabetically
+                // Sort child groups alphabetically with general groups to the back of the list
                 AZStd::sort(
                     propertyGroups.begin(),
                     propertyGroups.end(),
                     [](auto& group1, auto& group2)
                     {
-                        return group1->GetName() < group2->GetName();
-                    });
-
-                // Sort general groups to the back of the list
-                AZStd::stable_sort(
-                    propertyGroups.begin(),
-                    propertyGroups.end(),
-                    [](auto& group1, auto& group2)
-                    {
                         static constexpr AZStd::string_view generalGroupName = "general";
+
                         const auto& groupName1 = group1->GetName();
+                        const AZStd::tuple<bool, AZStd::string_view> compare1(
+                            AZ::StringFunc::Equal(generalGroupName, groupName1), groupName1);
+
                         const auto& groupName2 = group2->GetName();
-                        return AZ::StringFunc::Equal(groupName1, generalGroupName) < AZ::StringFunc::Equal(groupName2, generalGroupName);
+                        const AZStd::tuple<bool, AZStd::string_view> compare2(
+                            AZ::StringFunc::Equal(generalGroupName, groupName2), groupName2);
+
+                        return compare1 < compare2;
                     });
 
                 // Visit and sort all child groups recursively
