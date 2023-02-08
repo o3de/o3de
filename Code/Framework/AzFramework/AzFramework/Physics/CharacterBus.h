@@ -110,10 +110,16 @@ namespace Physics
     public:
         virtual ~CharacterNotifications() = default;
 
+        /// Notifies that the character controller has activated on this entity.
+        /// Other components on the entity that depend on the character controller can't simply rely on the component service
+        /// dependencies because the character controller isn't necessarily activated at component activation.
         virtual void OnCharacterActivated()
         {
         }
 
+        // Notifies that the character controller has deactivated on this entity.
+        /// Other components on the entity that depend on the character controller can't simply rely on the component service
+        /// dependencies because the character controller isn't necessarily deactivated at component deactivation.
         virtual void OnCharacterDeactivated()
         {
         }
