@@ -87,3 +87,5 @@ namespace AzFramework
         return AZ::Aabb::CreateCenterHalfExtents(worldTranslation, AZ::Vector3(0.5f));
     }
 } // namespace AzFramework
+
+DECLARE_EBUS_EXTERN(AzFramework::BoundsRequests);

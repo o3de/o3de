@@ -208,31 +208,14 @@ namespace AzFramework
         return !(*this == other);
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    inline const InputChannel* InputChannelRequests::FindInputChannel(const InputChannelId& channelId,
-                                                                      AZ::u32 deviceIndex)
-    {
-        const InputChannel* inputChannel = nullptr;
-        const BusIdType inputChannelRequestId(channelId, deviceIndex);
-        InputChannelRequestBus::EventResult(inputChannel,
-                                            inputChannelRequestId,
-                                            &InputChannelRequests::GetInputChannel);
-        return inputChannel;
-    }
 } // namespace AzFramework
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AZStd
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! Hash structure specialization for InputChannelRequests::BusIdType
-    template<> struct hash<AzFramework::InputChannelRequests::BusIdType>
-    {
-        inline size_t operator()(const AzFramework::InputChannelRequests::BusIdType& busIdType) const
-        {
-            size_t hashValue = busIdType.m_channelId.GetNameCrc32();
-            AZStd::hash_combine(hashValue, busIdType.m_deviceIndex);
-            return hashValue;
-        }
-    };
-} // namespace AZStd
+    // forward declaration of the hash operator() function, to avoid instantiation of the ebus template in the header.
+    template<> size_t hash<AzFramework::InputChannelRequests::BusIdType>::operator()(const AzFramework::InputChannelRequests::BusIdType& busIdType) const;
+}
+
+DECLARE_EBUS_EXTERN(AzFramework::InputChannelRequests);

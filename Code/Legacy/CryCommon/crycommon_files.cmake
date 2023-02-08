@@ -42,6 +42,7 @@ set(FILES
     CryListenerSet.h
     CryPath.h
     CrySystemBus.h
+    CrySystemBus.cpp
     CryVersion.h
     MiniQueue.h
     MultiThread_Containers.h

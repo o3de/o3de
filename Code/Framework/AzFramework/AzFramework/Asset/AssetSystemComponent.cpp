@@ -29,6 +29,8 @@
 #include <AzFramework/Asset/Benchmark/BenchmarkCommands.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 
+DECLARE_EBUS_INSTANTIATION(AzFramework::AssetSystem::AssetSystemRequests);
+
 AZ_DECLARE_BUDGET(AzFramework);
 
 namespace AzFramework

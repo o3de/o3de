@@ -15,6 +15,8 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzCore/Slice/SliceComponent.h>
 
+DECLARE_EBUS_INSTANTIATION(AzToolsFramework::Components::EditorSelectionAccentingRequests);
+
 namespace AzToolsFramework
 {
     namespace Components

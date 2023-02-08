@@ -62,11 +62,13 @@ set(FILES
     AzToolsFrameworkModule.h
     AzToolsFrameworkModule.cpp
     API/ToolsApplicationAPI.h
+    API/ToolsApplicationAPI.cpp
     API/EditorAssetSystemAPI.h
     API/EditorAssetSystemAPI.cpp
     API/AssetDatabaseBus.h
     API/ComponentEntityObjectBus.h
     API/ComponentEntitySelectionBus.h
+    API/ComponentEntitySelectionBus.cpp
     API/ComponentModeCollectionInterface.h
     API/EditorCameraBus.h
     API/EditorCameraBus.cpp

@@ -34,7 +34,10 @@ namespace AZStd
     {
         typedef T               argument_type;
         typedef AZStd::size_t   result_type;
-        constexpr result_type operator()(const argument_type& value) const { return static_cast<result_type>(value); }
+        // If you implement your own hash operator, consider making it constexpr if it makes sense.
+        // This is intentionally not declared constexpr here, as this would cause every implementation
+        // to require constexpr or suffer a compile error.
+        result_type operator()(const argument_type& value) const { return static_cast<result_type>(value); }
         static bool OnlyUnspecializedTypesShouldHaveThis() { return true; }
     };
 

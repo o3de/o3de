@@ -10,6 +10,8 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
+DECLARE_EBUS_INSTANTIATION(AzFramework::BoundsRequests);
+
 namespace AzFramework
 {
     void BoundsRequests::Reflect(AZ::ReflectContext* context)

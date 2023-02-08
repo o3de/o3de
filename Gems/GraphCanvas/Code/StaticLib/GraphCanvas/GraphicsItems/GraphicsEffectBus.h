@@ -31,3 +31,5 @@ namespace GraphCanvas
     
     using GraphicsEffectRequestBus = AZ::EBus<GraphicsEffectRequests>;
 }
+
+DECLARE_EBUS_EXTERN(GraphCanvas::GraphicsEffectRequests);
