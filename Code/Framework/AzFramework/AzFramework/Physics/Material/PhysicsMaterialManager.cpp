@@ -70,8 +70,8 @@ namespace Physics
 
         // Block until the material asset is loaded.
         // It's important that the loading of physics material assets is not delayed,
-        // otherwise objects would react differently during simulation during a few
-        // frames until the material is loaded, causing unexpected behaviours.
+        // otherwise objects would react differently during simulation for a few
+        // frames until the material is loaded, causing unexpected behaviors.
         AZ::Data::Asset<AZ::Data::AssetData> assetLocal = materialAsset; // Take a reference so we can mutate it for loading.
         if (!assetLocal.IsReady())
         {
