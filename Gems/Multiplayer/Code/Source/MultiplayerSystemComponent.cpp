@@ -301,6 +301,13 @@ namespace Multiplayer
                 m_componentApplicationLifecycleHandler,
                 [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
                 {
+                    const auto console = AZ::Interface<AZ::IConsole>::Get();
+                    if (!console)
+                    {
+                        AZ_Assert(false, "Multiplayer system is attempting to register console commands before AZ::Console is available.");
+                        return;
+                    }
+
                     // It's now safe to register and execute the "host" command
                     m_hostConsoleCommand = AZStd::make_unique<AZ::ConsoleFunctor<MultiplayerSystemComponent, false>>(
                         "host",
@@ -310,42 +317,41 @@ namespace Multiplayer
                         *this,
                         &MultiplayerSystemComponent::HostConsoleCommand);
 
-                    AZ::Interface<AZ::IConsole>::Get()->ExecuteDeferredConsoleCommands();
+                    // ExecuteDeferredConsoleCommands will execute any previous deferred "host" commands now that it has been registered with the AZ Console
+                    console->ExecuteDeferredConsoleCommands();
 
-                    // Begin hosting or connecting if desired
-                    if (const auto console = AZ::Interface<AZ::IConsole>::Get())
+                    // Don't access cvars directly (their values might be stale https://github.com/o3de/o3de/issues/5537)
+                    bool isDedicatedServer = false;
+                    bool dedicatedServerHostOnStartup = false;
+                    bool clientConnectOnStartup = false;
+                    if (console->GetCvarValue("sv_isDedicated", isDedicatedServer) != AZ::GetValueResult::Success)
                     {
-                        // Don't access cvars directly (their values might be stale https://github.com/o3de/o3de/issues/5537)
-                        bool isDedicatedServer = false;
-                        bool dedicatedServerHostOnStartup = false;
-                        bool clientConnectOnStartup = false;
-                        if (console->GetCvarValue("sv_isDedicated", isDedicatedServer) != AZ::GetValueResult::Success)
-                        {
-                            AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_isDedicated).")
-                            return;
-                        }
+                        AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_isDedicated).")
+                        return;
+                    }
 
-                        if (console->GetCvarValue("sv_dedicated_host_onstartup", dedicatedServerHostOnStartup) != AZ::GetValueResult::Success)
-                        {
-                            AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_dedicated_host_onstartup).")
-                            return;
-                        }
+                    if (console->GetCvarValue("sv_dedicated_host_onstartup", dedicatedServerHostOnStartup) != AZ::GetValueResult::Success)
+                    {
+                        AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_dedicated_host_onstartup).")
+                        return;
+                    }
 
-                        if (console->GetCvarValue("cl_connect_onstartup", clientConnectOnStartup) != AZ::GetValueResult::Success)
-                        {
-                            AZLOG_WARN("Multiplayer system failed to access cvar on startup (cl_connect_onstartup).")
-                            return;
-                        }
+                    if (console->GetCvarValue("cl_connect_onstartup", clientConnectOnStartup) != AZ::GetValueResult::Success)
+                    {
+                        AZLOG_WARN("Multiplayer system failed to access cvar on startup (cl_connect_onstartup).")
+                        return;
+                    }
 
-                        if (isDedicatedServer && dedicatedServerHostOnStartup)
-                        {
-                            this->StartHosting(sv_port, /*is dedicated*/ true);
-                        }
+                    // Dedicated servers will automatically begin hosting
+                    if (isDedicatedServer && dedicatedServerHostOnStartup)
+                    {
+                        this->StartHosting(sv_port, /*is dedicated*/ true);
+                    }
 
-                        if (clientConnectOnStartup)
-                        {
-                            this->Connect(LocalHost, cl_serverport);
-                        }
+                    // Connect client now if cl_connect_onstartup
+                    if (clientConnectOnStartup)
+                    {
+                        this->Connect(LocalHost, cl_serverport);
                     }
                 },
                 "SystemComponentsActivated",
