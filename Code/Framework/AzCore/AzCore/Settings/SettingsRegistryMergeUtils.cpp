@@ -172,28 +172,28 @@ namespace AZ::Internal
         return AZ::Success();
     }
 
-    AZ::IO::FixedMaxPath ReconcileEngineRootFromProjectUserPath(
+    AZ::Outcome<AZ::IO::FixedMaxPath, AZStd::string> ReconcileEngineRootFromProjectUserPath(
         SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& projectPath)
     {
         using namespace AZ::SettingsRegistryMergeUtils;
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
         constexpr auto format = AZ::SettingsRegistryInterface::Format::JsonMergePatch;
+        AZ::IO::FixedMaxPath engineRoot{};
 
         AZ::IO::FixedMaxPath projectUserPath;
         if (!settingsRegistry.Get(projectUserPath.Native(), FilePathKey_ProjectUserPath) ||
             projectUserPath.empty())
         {
-            return {};
+            return AZ::Success(engineRoot);
         }
 
         const auto projectUserJsonPath = (projectUserPath / Internal::ProjectJsonFilename).LexicallyNormal();
         if (auto outcome = MergeSettingsFile(settingsRegistry, projectUserJsonPath, ProjectSettingsRootKey);
             !outcome)
         {
-            return {};
+            return AZ::Success(engineRoot);
         }
 
-        AZ::IO::FixedMaxPath engineRoot;
         settingsRegistry.Get(engineRoot.Native(), FixedValueString::format("%s/engine_path", ProjectSettingsRootKey));
         if (!engineRoot.empty())
         {
@@ -212,12 +212,11 @@ namespace AZ::Internal
                 projectJsonPath, projectUserJsonPath);
                 !isCompatible)
             {
-                settingsRegistry.Set(FilePathKey_ErrorText, isCompatible.GetError().c_str());
-                return {};
+                return AZ::Failure(isCompatible.GetError());
             }
         }
 
-        return engineRoot;
+        return AZ::Success(engineRoot);
     }
 
     AZ::IO::FixedMaxPath ReconcileEngineRootFromProjectPath(SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& projectPath)
@@ -550,14 +549,20 @@ namespace AZ::SettingsRegistryMergeUtils
             return {};
         }
 
-        // Check for alternate 'engine_path' setting in '<project-root>/user/project.json'
-        if (engineRoot = Internal::ReconcileEngineRootFromProjectUserPath(settingsRegistry, projectRoot); !engineRoot.empty())
+        // Step 3 Check for alternate 'engine_path' setting in '<project-root>/user/project.json'
+        if (auto outcome = Internal::ReconcileEngineRootFromProjectUserPath(settingsRegistry, projectRoot); !outcome)
+        {
+            // An error occurred that needs to be shown the the user, possibly an invalid engine name or path
+            settingsRegistry.Set(FilePathKey_ErrorText, outcome.GetError().c_str());
+            return {};
+        }
+        else if (engineRoot = outcome.TakeValue(); !engineRoot.empty())
         {
             settingsRegistry.Set(engineRootKey, engineRoot.c_str());
             return engineRoot;
         }
 
-        // Step 3 locate the project root and attempt to find the most compatible engine
+        // Step 4 locate the project root and attempt to find the most compatible engine
         // using the engine name and optional version in project.json
         if (engineRoot = Internal::ReconcileEngineRootFromProjectPath(settingsRegistry, projectRoot); !engineRoot.empty())
         {

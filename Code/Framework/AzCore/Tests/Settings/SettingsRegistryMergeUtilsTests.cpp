@@ -765,7 +765,7 @@ tags=tools,renderer,metal)"
     static auto MakeFindEngineRootTestingValues()
     {
         return AZStd::array{
-            // when project engine is o3de1 with no override expect success
+            // Selects correct engine based on name 
             SettingsRegistryFindEngineRootParams{
                 // engine.json files
                 {
@@ -774,7 +774,7 @@ tags=tools,renderer,metal)"
                 },
 
                 // project/project.json
-                R"({ "project_name": "TestProject", "engine":"o3de1"  })",
+                R"({ "project_name": "TestProject", "engine":"o3de1" })",
 
                 // project/user/project.json
                 R"({})",
@@ -782,7 +782,24 @@ tags=tools,renderer,metal)"
                 0 // expect o3de1
             },
 
-            // when project engine is o3de-not-found expect failure 
+            // Selects engine with highest version when multiple of same name found 
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de", "version": "1.2.3"})",
+                   R"({ "engine_name": "o3de", "version": "2.3.4"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de" })",
+
+                // project/user/project.json
+                R"({})",
+
+                1 // expect second engine with higher version number
+            },
+
+            // Fails to find engine with name that isn't registered
             SettingsRegistryFindEngineRootParams{
                 // engine.json files
                 {
@@ -799,7 +816,24 @@ tags=tools,renderer,metal)"
                 -1 // not found
             },
 
-            // when engine.json has legacy version and project uses it, engine is found 
+            // Fails to find engine with version that isn't registered 
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de1", "version": "1.0.0"})",
+                   R"({ "engine_name": "o3de2", "version": "1.2.3"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de==1.1.1"  })",
+
+                // project/user/project.json
+                R"({})",
+
+                -1 // not found
+            },
+
+            // Selects engine that has a legacy version field
             SettingsRegistryFindEngineRootParams{
                 // engine.json files
                 {
@@ -816,7 +850,7 @@ tags=tools,renderer,metal)"
                 0 // o3de 
             },
 
-            // when multiple engines found with ambiguous project engine, first engine is returned
+            // Selects first engine when multiple engines found with ambiguous project engine
             SettingsRegistryFindEngineRootParams{
                 // engine.json files
                 {
@@ -833,7 +867,7 @@ tags=tools,renderer,metal)"
                 0 // first engine
             },
 
-            // when project uses engine version specifier, the correct engine is found 
+            // Selects correct engine when a version specifier is used
             SettingsRegistryFindEngineRootParams{
                 // engine.json files
                 {
@@ -850,7 +884,7 @@ tags=tools,renderer,metal)"
                 1 // o3de2
             },
 
-            // when user overrides engine, the correct engine is found 
+            // Selects the engine specified by name in project/user/project.json
             SettingsRegistryFindEngineRootParams{
                 // engine.json files
                 {
@@ -862,10 +896,45 @@ tags=tools,renderer,metal)"
                 R"({ "project_name": "TestProject", "engine":"o3de2==2.3.4"  })",
 
                 // project/user/project.json
-                R"({ "engine":"o3de1==1.2.3"})",
+                R"({ "engine":"o3de1==1.2.3" })",
 
                 0 // o3de1
             },
+
+            // Selects the engine specified by path in project/user/project.json
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de", "version": "1.2.3"})",
+                   R"({ "engine_name": "o3de", "version": "1.2.3"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de"  })",
+
+                // project/user/project.json
+                R"({ "engine_path":"<engine_path1>" })",
+
+                1 // 2nd engine, even though both have same name & version
+            },
+
+            // Fails if invalid engine specified in project/user/project.json
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de", "version": "1.2.3"})",
+                   R"({ "engine_name": "o3de-other", "version": "1.2.3"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de"  })",
+
+                // project/user/project.json
+                R"({ "engine_path":"c:/path/not/found" })",
+
+                -1 // engine used by shared project.json 
+            },
+
         };
     }
 
@@ -889,21 +958,11 @@ tags=tools,renderer,metal)"
             AZ::IO::FixedMaxPath projectUserPath = tempRootFolder / "project" /  "user";
             AZ::IO::FixedMaxPath userProjectManifestPath = projectUserPath / "project.json";
 
-            // for now keep this constant
-            const char* o3deManifest = R"({ "o3de_manifest_name": "testmanifest", "engines":[] })";
-            auto readJsonOutcome = AZ::JsonSerializationUtils::ReadJsonString(o3deManifest);
-            ASSERT_TRUE(readJsonOutcome);
-
-            rapidjson::Document document = readJsonOutcome.TakeValue();
-            auto engineArray = document["engines"].GetArray();
-
             for (int i = 0; i < params.m_engineManifestsJson.size(); ++i)
             {
-                AZ::IO::FixedMaxPath enginePath = tempRootFolder / AZStd::string::format("engine%d",i) ;
-                AZ::IO::FixedMaxPath engineManifestPath = enginePath / "engine.json";
-                ASSERT_TRUE(CreateTestFile(engineManifestPath, params.m_engineManifestsJson[i]));
+                const AZ::IO::FixedMaxPath enginePath = tempRootFolder / AZStd::string::format("engine%d",i) ;
+                ASSERT_TRUE(CreateTestFile(enginePath / "engine.json", params.m_engineManifestsJson[i]));
 
-                engineArray.PushBack(Value(enginePath.c_str(), document.GetAllocator()).Move(), document.GetAllocator());
                 m_enginePaths.emplace_back(AZStd::move(enginePath));
             }
 
@@ -914,13 +973,24 @@ tags=tools,renderer,metal)"
             m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath,
                 projectUserPath.Native());
 
-            AZStd::string serializedJson;
-            auto writeJson = AZ::JsonSerializationUtils::WriteJsonString(document, serializedJson);
-            ASSERT_TRUE(writeJson);
 
-            ASSERT_TRUE(CreateTestFile(o3deManifestFilePath, serializedJson.c_str()));
-            ASSERT_TRUE(CreateTestFile(projectManifestPath, params.m_projectManifestJson));
-            ASSERT_TRUE(CreateTestFile(userProjectManifestPath, params.m_userProjectManifestJson));
+            const char* o3deManifest = R"({ "o3de_manifest_name": "testmanifest", "engines":["<engine_path0>","<engine_path1>"] })";
+            ASSERT_TRUE(CreateTestFileWithSubstitutions(o3deManifestFilePath, o3deManifest));
+            ASSERT_TRUE(CreateTestFileWithSubstitutions(projectManifestPath, params.m_projectManifestJson));
+            ASSERT_TRUE(CreateTestFileWithSubstitutions(userProjectManifestPath, params.m_userProjectManifestJson));
+        }
+
+        bool CreateTestFileWithSubstitutions(const AZ::IO::FixedMaxPath& testPath, AZStd::string_view content)
+        {
+            // replace instances of <engine0>, <engine1> etc. with actual engine paths
+            AZStd::string contentString{ content };
+            for (int i = 0; i < m_enginePaths.size(); ++i)
+            {
+                AZStd::string enginePath{ m_enginePaths[i].Native().c_str() };
+                AZ::StringFunc::Json::ToEscapedString(enginePath);
+                AZ::StringFunc::Replace(contentString, AZStd::string::format("<engine_path%d>", i).c_str(), enginePath.c_str());
+            }
+            return CreateTestFile(testPath, contentString.c_str());
         }
 
         void TearDown() override
