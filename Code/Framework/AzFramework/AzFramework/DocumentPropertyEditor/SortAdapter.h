@@ -30,31 +30,49 @@ namespace AZ::DocumentPropertyEditor
     protected:
         Dom::Value GenerateContents() override;
 
-        struct SortInfoNode;
-
-        static bool indexLessThan(const AZStd::unique_ptr<SortInfoNode>& lhs, const AZStd::unique_ptr<SortInfoNode>& rhs)
+        struct SortInfoBase
         {
-            return lhs->m_domIndex < rhs->m_domIndex;
-        }
+            size_t m_domIndex;
 
-        struct SortInfoNode
+            SortInfoBase()
+                : m_domIndex(0)
+            {
+            }
+
+            SortInfoBase(size_t domIndex)
+                : m_domIndex(domIndex)
+            {
+            }
+
+            bool operator<(const SortInfoBase& rhs) const
+            {
+                return m_domIndex < rhs.m_domIndex;
+            }
+        };
+
+        struct SortInfoNode : public SortInfoBase
         {
             using AdapterSortType = std::function<bool(SortInfoNode*, SortInfoNode*)>;
-            using IndexSortType = std::function<bool(const AZStd::unique_ptr<SortInfoNode>&, const AZStd::unique_ptr<SortInfoNode>&)>;
+            using IndexSortType = std::function<bool(const AZStd::unique_ptr<SortInfoBase>&, const AZStd::unique_ptr<SortInfoBase>&)>;
 
             virtual ~SortInfoNode()
             {
             }
 
-            size_t m_domIndex;
+            SortInfoNode* m_parentNode = nullptr;
 
             //! holds the row childNodes in DOM order
-            AZStd::set<AZStd::unique_ptr<SortInfoNode>, IndexSortType> m_indexSortedChildren;
+            AZStd::set<AZStd::unique_ptr<SortInfoBase>, IndexSortType> m_indexSortedChildren;
 
             //! holds a sorted multiset of the above children as defined by their RowSortAdapter::lessThan
-            AZStd::multiset<SortInfoNode*, AdapterSortType> m_adapterSortedChildren;
+            AZStd::set<SortInfoNode*, AdapterSortType> m_adapterSortedChildren;
 
         protected:
+            static bool indexLessThan(const AZStd::unique_ptr<SortInfoBase>& lhs, const AZStd::unique_ptr<SortInfoBase>& rhs)
+            {
+                return *lhs < *rhs;
+            }
+
             SortInfoNode(const RowSortAdapter* owningAdapter)
                 : m_indexSortedChildren(&indexLessThan)
                 , m_adapterSortedChildren(
@@ -79,11 +97,15 @@ namespace AZ::DocumentPropertyEditor
         void HandleReset() override;
         void HandleDomChange(const Dom::Patch& patch) override;
 
+        SortInfoNode* GetNodeAtSourcePath(Dom::Path sortedPath);
+
         void GenerateFullTree();
         void PopulateChildren(const Dom::Value& value, SortInfoNode* sortInfo);
 
         Dom::Value GetSortedValue(const Dom::Value& sourceValue, SortInfoNode* sortInfo);
-        void ResortRow(Dom::Path sortedPath);
+
+        //! re-sorts the row at the given path relative to its siblings and adds a patch operation if its place changed
+        void ResortRow(Dom::Path sortedPath, Dom::Patch& outgoingPatch);
 
         bool m_sortActive = true;
         bool m_reverseSort = false;

@@ -11,6 +11,16 @@
 
 namespace AZ::DocumentPropertyEditor
 {
+    // necessary little helper to walk non-sequential containers (like sorted sets) by a given distance
+    template<typename IteratorType>
+    void IncrementIterator(IteratorType iter, size_t distance)
+    {
+        for (size_t index = 0; index < distance; ++index)
+        {
+            ++iter;
+        }
+    }
+
     RowSortAdapter::~RowSortAdapter()
     {
     }
@@ -57,14 +67,21 @@ namespace AZ::DocumentPropertyEditor
                 bool found = false;
                 for (auto [indexSortedNode, adapterSortedNode] : AZStd::views::zip(currNode->m_indexSortedChildren, currNode->m_adapterSortedChildren))
                 {
-                    const SortInfoNode* comparisonNode = (mapToSource ? adapterSortedNode : indexSortedNode.get());
-                    if (comparisonNode->m_domIndex == pathEntry.GetIndex())
+                    const SortInfoNode* comparisonNode = static_cast<SortInfoNode*>((mapToSource ? adapterSortedNode : indexSortedNode.get()));
+                    const auto comparisonIndex = comparisonNode->m_domIndex;
+                    const auto pathIndex = pathEntry.GetIndex();
+                    if (comparisonIndex == pathIndex)
                     {
                         // set the mapped entry
                         const auto mappedIndex = (mapToSource ? indexSortedNode->m_domIndex : adapterSortedNode->m_domIndex);
                         mappedPath.Push(mappedIndex);
                         currNode = comparisonNode;
                         found = true;
+                        break;
+                    }
+                    else if (!mapToSource && pathIndex < comparisonIndex)
+                    {
+                        // if we're searching the index-ordered container, we can stop if we've passed the index we're looking for
                         break;
                     }
                 }
@@ -143,7 +160,11 @@ namespace AZ::DocumentPropertyEditor
 
                         // the replaced column entry might've changed the row's sorting. Updated it
                         sortedPath.Pop();
-                        ResortRow(sortedPath);
+                        ResortRow(sortedPath, outgoingPatch);
+                    }
+                    else
+                    {
+                        needsReset = true;
                     }
                 }
                 else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
@@ -180,6 +201,26 @@ namespace AZ::DocumentPropertyEditor
         HandleReset();
     }
 
+    RowSortAdapter::SortInfoNode* RowSortAdapter::GetNodeAtSourcePath(Dom::Path sortedPath)
+    {
+        SortInfoNode* currNode = m_rootNode.get();
+        for (auto pathIter = sortedPath.begin(), endIter = sortedPath.end(); pathIter != endIter; ++pathIter)
+        {
+            if (!pathIter->IsIndex())
+            {
+                return nullptr;
+            }
+            auto searchChild = AZStd::make_unique<SortInfoBase>(pathIter->GetIndex());
+            auto foundChild = currNode->m_indexSortedChildren.find(searchChild);
+            if (foundChild == currNode->m_indexSortedChildren.end())
+            {
+                return nullptr;
+            }
+            currNode = static_cast<SortInfoNode*>(foundChild->get());
+        }
+        return currNode;
+    }
+
     void RowSortAdapter::GenerateFullTree()
     {
         const auto& sourceContents = m_sourceAdapter->GetContents();
@@ -198,6 +239,7 @@ namespace AZ::DocumentPropertyEditor
             if (IsRow(childValue))
             {
                 auto newChild = NewSortInfoNode();
+                newChild->m_parentNode = sortInfo;
                 newChild->m_domIndex = childIndex;
                 CacheDomInfoForNode(childValue, newChild);
 
@@ -237,11 +279,43 @@ namespace AZ::DocumentPropertyEditor
         return sortedValue;
     }
 
-    void RowSortAdapter::ResortRow(Dom::Path sortedPath)
+    void RowSortAdapter::ResortRow(Dom::Path sortedPath, Dom::Patch& outgoingPatch)
     {
-        // TODO once the DPE supports move operations:
-        // record row's sorted index, remove it, re-cache its data,add it, check its new index. If changed, generate move operation
-        // NB: this isn't necessary for flat adapters that can't be re-ordered, so the CVarAdapter doesn't need this
+        // record row's existing sorted index for comparison
+        auto& lastEntry = *(sortedPath.end() - 1);
+        AZ_Assert(lastEntry.IsIndex(), "rows are always referenced by index!");
+        const auto oldIndex = lastEntry.GetIndex();
+
+        // get the actual node at sortedPath
+        auto sourcePath = MapToSourcePath(sortedPath);
+        auto* node = GetNodeAtSourcePath(sourcePath);
+
+        // remove the (possibly changed) node from its sorted set and re-add it to see if it ends up in the same position
+        auto& parentNode = node->m_parentNode;
+        auto& sortedSet = parentNode->m_adapterSortedChildren;
+        auto sortedIter = sortedSet.find(node);
+        AZ_Assert(sortedIter != sortedSet.end(), "node not found in sorted set!");
+        sortedSet.erase(sortedIter);
+        auto insertedIter = sortedSet.insert(node).first;
+        auto indexIter = parentNode->m_indexSortedChildren.begin();
+        sortedIter = sortedSet.begin();
+
+        // walk both sets until we get to the newly inserted node
+        while (sortedIter != insertedIter && sortedIter != sortedSet.end())
+        {
+            ++sortedIter;
+            ++indexIter;
+        }
+        AZ_Assert(sortedIter != sortedSet.end(), "re-inserted node not found!");
+        const auto newIndex = (*indexIter)->m_domIndex;
+
+        if (newIndex != oldIndex)
+        {
+            auto newPath = sortedPath;
+            newPath.Pop();
+            newPath.Push(newIndex);
+            outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(newPath, sortedPath));
+        }
     }
 
 } // namespace AZ::DocumentPropertyEditor
