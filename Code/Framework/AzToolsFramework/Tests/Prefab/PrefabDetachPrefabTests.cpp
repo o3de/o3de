@@ -18,15 +18,18 @@ namespace UnitTest
         // Level
         // | Car       (prefab)  <-- detach prefab
         //   | Tire
+        //     | Belt
 
         const AZStd::string carPrefabName = "CarPrefab";
         const AZStd::string tireEntityName = "Tire";
+        const AZStd::string beltEntityName = "Belt";
 
         AZ::IO::Path engineRootPath;
         m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
         AZ::IO::Path carPrefabFilepath = engineRootPath / carPrefabName;
 
         AZ::EntityId tireEntityId = CreateEditorEntityUnderRoot(tireEntityName);
+        CreateEditorEntity(beltEntityName, tireEntityId);
         AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { tireEntityId });
 
         InstanceAlias carInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), carPrefabName);
@@ -43,8 +46,8 @@ namespace UnitTest
         InstanceOptionalReference levelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
         EXPECT_TRUE(levelInstance.has_value());
 
-        // Validate there are two entities in the level prefab instance.
-        EXPECT_EQ(levelInstance->get().GetEntityAliasCount(), 2);
+        // Validate there are three entities in the level prefab instance.
+        EXPECT_EQ(levelInstance->get().GetEntityAliasCount(), 3);
 
         // Validate that the car's parent entity is the level container entity.
         AZStd::string carEntityAliasAfterDetach = FindEntityAliasInInstance(GetRootContainerEntityId(), carPrefabName);
@@ -63,6 +66,15 @@ namespace UnitTest
         AZ::EntityId parentEntityIdForTire;
         AZ::TransformBus::EventResult(parentEntityIdForTire, tireEntityIdAfterDetach, &AZ::TransformInterface::GetParentId);
         EXPECT_EQ(carEntityIdAfterDetach, parentEntityIdForTire);
+
+        // Validate that the belt's parent entity is the tire.
+        AZStd::string beltEntityAliasAfterDetach = FindEntityAliasInInstance(GetRootContainerEntityId(), beltEntityName);
+        AZ::EntityId beltEntityIdAfterDetach = levelInstance->get().GetEntityId(beltEntityAliasAfterDetach);
+        EXPECT_TRUE(beltEntityIdAfterDetach.IsValid());
+
+        AZ::EntityId parentEntityIdForBelt;
+        AZ::TransformBus::EventResult(parentEntityIdForBelt, beltEntityIdAfterDetach, &AZ::TransformInterface::GetParentId);
+        EXPECT_EQ(tireEntityIdAfterDetach, parentEntityIdForBelt);
     }
 
     TEST_F(PrefabDetachPrefabTests, DetachPrefabUnderParentSucceeds)
