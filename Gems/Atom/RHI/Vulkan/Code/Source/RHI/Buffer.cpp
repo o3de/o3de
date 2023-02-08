@@ -51,7 +51,9 @@ namespace AZ
             return &m_memoryView;
         }
 
-        RHI::ResultCode Buffer::Init(Device& device, const RHI::BufferDescriptor& bufferDescriptor, BufferMemoryView& memmoryView)
+// @CYA EDIT: Replace O3DE allocator by VMA
+        RHI::ResultCode Buffer::Init(Device& device, const RHI::BufferDescriptor& bufferDescriptor, const BufferMemoryView& memmoryView)
+// @CYA END
         {
             DeviceObject::Init(device);
             m_ownerQueue.Init(bufferDescriptor);

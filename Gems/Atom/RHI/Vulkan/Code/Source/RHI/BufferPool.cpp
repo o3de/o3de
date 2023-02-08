@@ -14,6 +14,10 @@
 #include <RHI/BufferPoolResolver.h>
 #include <RHI/Device.h>
 #include <RHI/MemoryView.h>
+// @CYA EDIT: Replace O3DE allocator by VMA
+#include <RHI/Conversion.h>
+#include <vma/vk_mem_alloc.h>
+// @CYA END
 
 namespace AZ
 {
@@ -97,23 +101,28 @@ namespace AZ
             auto& buffer = static_cast<Buffer&>(bufferBase);
             auto& device = static_cast<Device&>(GetDevice());
 
-            // Note that InputAssembly, RayTracingAccelerationStructure, and RayTracingShaderBindingTable buffers must be unique allocations.
-            // This is necessary since the alignment on a paged memory allocation is not compatible with the required raytracing alignment.
-            bool forceUnique = RHI::CheckBitsAny(
-                bufferDescriptor.m_bindFlags,
-                RHI::BufferBindFlags::InputAssembly |
-                RHI::BufferBindFlags::DynamicInputAssembly |
-                RHI::BufferBindFlags::RayTracingAccelerationStructure |
-                RHI::BufferBindFlags::RayTracingShaderTable);
+// @CYA EDIT: Replace O3DE allocator by VMA
+            RHI::Ptr<BufferMemory> bufferMemory = BufferMemory::Create();
+            RHI::ResultCode result = bufferMemory->Init(device, bufferDescriptor);
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            BufferMemoryView memoryView = m_memoryAllocator.Allocate(bufferDescriptor.m_byteCount, 1, forceUnique);
-            if (!memoryView.IsValid())
-            {
-                return RHI::ResultCode::OutOfMemory;
-            }
+            const VmaAllocationInfo& allocInfo = bufferMemory->GetVmaAllocationInfo();
 
-            RHI::ResultCode result = buffer.Init(device, bufferDescriptor, memoryView);
-            return result;
+            VkMemoryPropertyFlags memoryProperties;
+            vmaGetMemoryTypeProperties(device.GetMemoryAllocator(), allocInfo.memoryType, &memoryProperties);
+
+            RHI::HeapMemoryLevel heapMemoryLevel =
+                (memoryProperties & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ? RHI::HeapMemoryLevel::Device : RHI::HeapMemoryLevel::Host;
+
+            auto& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+            memoryUsage.m_totalResidentInBytes += allocInfo.size;
+
+#ifdef CYA_DEBUG_VMA_ALLOC
+            m_allocations.emplace(bufferMemory.get(), allocInfo.size);
+#endif
+
+            return buffer.Init(device, bufferDescriptor, BufferMemoryView(bufferMemory, 0, bufferMemory->GetDescriptor().m_byteCount, bufferMemory->GetDescriptor().m_alignment, MemoryAllocationType::Unique));
+// @CYA END
         }
 
         void BufferPool::ShutdownResourceInternal(RHI::Resource& resource) 
@@ -129,6 +138,30 @@ namespace AZ
                 ResourcePoolResolver* poolResolver = static_cast<ResourcePoolResolver*>(resolver);
                 poolResolver->OnResourceShutdown(resource);
             }
+
+// @CYA EDIT: Replace O3DE allocator by VMA
+            if (BufferMemory* bufferMemory = buffer.GetBufferMemoryView()->GetBufferMemory(); bufferMemory->IsVmaAllocated())
+            {
+                const VmaAllocationInfo& allocInfo = buffer.GetBufferMemoryView()->GetBufferMemory()->GetVmaAllocationInfo();
+
+                VkMemoryPropertyFlags memoryProperties;
+                vmaGetMemoryTypeProperties(device.GetMemoryAllocator(), allocInfo.memoryType, &memoryProperties);
+
+                RHI::HeapMemoryLevel heapMemoryLevel =
+                    (memoryProperties & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ? RHI::HeapMemoryLevel::Device : RHI::HeapMemoryLevel::Host;
+
+#ifdef CYA_DEBUG_VMA_ALLOC
+                auto it = m_allocations.find(bufferMemory);
+                AZ_Assert(it != m_allocations.end(), "Allocation not found");
+                AZ_Assert(it->second == allocInfo.size, "Size mismatch");
+
+                m_allocations.erase(it);
+#endif
+
+                auto& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+                memoryUsage.m_totalResidentInBytes -= allocInfo.size;
+            }
+// @CYA END
 
             m_memoryAllocator.DeAllocate(buffer.m_memoryView);
             buffer.m_memoryView = BufferMemoryView();

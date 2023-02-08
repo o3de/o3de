@@ -68,7 +68,9 @@ namespace AZ
 
         private:
             Buffer() = default;
-            RHI::ResultCode Init(Device& device, const RHI::BufferDescriptor& bufferDescriptor, BufferMemoryView& memmoryView);
+// @CYA EDIT: Replace O3DE allocator by VMA
+            RHI::ResultCode Init(Device& device, const RHI::BufferDescriptor& bufferDescriptor, const BufferMemoryView& memmoryView);
+// @CYA END
 
             void Invalidate();
 

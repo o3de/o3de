@@ -31,6 +31,15 @@
 #include <Vulkan_Traits_Platform.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 
+// @CYA EDIT: Replace Vulkan allocator by VMA
+#define VMA_IMPLEMENTATION
+#define VMA_STATIC_VULKAN_FUNCTIONS 0
+
+#pragma warning(push, 3)
+#include <vma/vk_mem_alloc.h>
+#pragma warning(pop)
+// @CYA END
+
 namespace AZ
 {
     namespace Vulkan
@@ -293,6 +302,12 @@ namespace AZ
                 accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
             }
 
+// @CYA EDIT: Replace Vulkan allocator by VMA (add VK_EXT_MEMORY_BUDGET_EXTENSION_NAME if supported)
+            StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
+            if (AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) != deviceExtensions.end())
+                requiredExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
+// @CYA END
+
             deviceInfo.flags = 0;
             deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreationInfo.size());
             deviceInfo.pQueueCreateInfos = queueCreationInfo.data();
@@ -330,6 +345,12 @@ namespace AZ
                     return RHI::ResultCode::Fail;
                 }
             }
+
+// @CYA EDIT: Replace Vulkan allocator by VMA
+            RHI::ResultCode resultCode = InitVulkanAllocator(physicalDeviceBase);
+            if (resultCode != RHI::ResultCode::Success)
+                return resultCode;
+// @CYA END
 
             for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
             {
@@ -662,6 +683,10 @@ namespace AZ
         {
             m_imageMemoryRequirementsCache.Clear();
             m_bufferMemoryRequirementsCache.Clear();
+
+// @CYA EDIT: Replace Vulkan allocator by VMA
+            ShutdownVulkanAllocator();
+// @CYA END
 
             // Only destroy VkDevice if created locally and not passed in by a XR module
             if (!m_isXrNativeDevice)
@@ -1198,6 +1223,86 @@ namespace AZ
 
             return bufferUsageFlags;
         }
+
+// @CYA EDIT: Replace Vulkan allocator by VMA
+        RHI::ResultCode Device::InitVulkanAllocator(RHI::PhysicalDevice& physicalDeviceBase)
+        {
+            auto& physicalDevice = static_cast<Vulkan::PhysicalDevice&>(physicalDeviceBase);
+            const auto& physicalProperties = physicalDevice.GetPhysicalDeviceProperties();
+
+            auto& instance = Instance::GetInstance();
+            auto& context = instance.GetContext();
+
+            VmaVulkanFunctions vulkanFunctions = {
+                context.GetInstanceProcAddr,
+                context.GetDeviceProcAddr,
+                context.GetPhysicalDeviceProperties,
+                context.GetPhysicalDeviceMemoryProperties,
+                context.AllocateMemory,
+                context.FreeMemory,
+                context.MapMemory,
+                context.UnmapMemory,
+                context.FlushMappedMemoryRanges,
+                context.InvalidateMappedMemoryRanges,
+                context.BindBufferMemory,
+                context.BindImageMemory,
+                context.GetBufferMemoryRequirements,
+                context.GetImageMemoryRequirements,
+                context.CreateBuffer,
+                context.DestroyBuffer,
+                context.CreateImage,
+                context.DestroyImage,
+                context.CmdCopyBuffer,
+#if VMA_DEDICATED_ALLOCATION || VMA_VULKAN_VERSION >= 1001000
+                context.GetBufferMemoryRequirements2,
+                context.GetImageMemoryRequirements2,
+#endif
+#if VMA_BIND_MEMORY2 || VMA_VULKAN_VERSION >= 1001000
+                context.BindBufferMemory2,
+                context.BindImageMemory2,
+#endif
+#if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
+                context.GetPhysicalDeviceMemoryProperties2,
+#endif
+#if VMA_VULKAN_VERSION >= 1003000
+                vkGetDeviceBufferMemoryRequirements,
+                vkGetDeviceImageMemoryRequirements,
+#endif
+            };
+
+            StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
+
+            VmaAllocatorCreateInfo allocatorInfo = {};
+            allocatorInfo.physicalDevice = physicalDevice.GetNativePhysicalDevice();
+            allocatorInfo.device = m_nativeDevice;
+            allocatorInfo.instance = instance.GetNativeInstance();
+            allocatorInfo.vulkanApiVersion = physicalProperties.apiVersion;
+            allocatorInfo.pVulkanFunctions = &vulkanFunctions;
+
+            if (context.GetBufferMemoryRequirements2 && context.GetImageMemoryRequirements2)
+                allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+
+            if (context.BindBufferMemory2 && context.BindImageMemory2)
+                allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT;
+
+            if (AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) != deviceExtensions.end())
+                allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+
+            if (physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures().bufferDeviceAddress)
+                allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+
+            VkResult errorCode = vmaCreateAllocator(&allocatorInfo, &m_vmaMemoryAllocator);
+            AssertSuccess(errorCode);
+
+            return ConvertResult(errorCode);
+        }
+
+        void Device::ShutdownVulkanAllocator()
+        {
+            if (m_vmaMemoryAllocator != VK_NULL_HANDLE)
+                vmaDestroyAllocator(m_vmaMemoryAllocator);
+        }
+// @CYA END
 
         VkBuffer Device::CreateBufferResouce(const RHI::BufferDescriptor& descriptor) const
         {

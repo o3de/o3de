@@ -18,6 +18,45 @@ namespace AZ
             return aznew BufferMemory();
         }
 
+// @CYA EDIT: Replace O3DE allocator by VMA
+        RHI::ResultCode BufferMemory::Init(Device& device, const Descriptor& descriptor)
+        {
+            Base::Init(device);
+            m_descriptor = descriptor;
+
+            AZ_Assert(descriptor.m_sharedQueueMask != RHI::HardwareQueueClassMask::None, "Invalid shared queue mask");
+            AZStd::vector<uint32_t> queueFamilies(device.GetCommandQueueContext().GetQueueFamilyIndices(descriptor.m_sharedQueueMask));
+
+            VkBufferCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            createInfo.pNext = nullptr;
+            createInfo.flags = 0;
+            createInfo.size = descriptor.m_byteCount;
+            createInfo.usage = device.GetBufferUsageFlagBitsUnderRestrictions(descriptor.m_bindFlags);
+            // Trying to guess here if the buffers are going to be used as attachments. Maybe it would be better to add an explicit flag in
+            // the descriptor.
+            createInfo.sharingMode =
+                (RHI::CheckBitsAny(
+                     descriptor.m_bindFlags,
+                     RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect) ||
+                 (queueFamilies.size()) <= 1)
+                ? VK_SHARING_MODE_EXCLUSIVE
+                : VK_SHARING_MODE_CONCURRENT;
+            createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilies.size());
+            createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
+
+            VmaAllocationCreateInfo allocInfo = {};
+            allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
+            allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+
+            VmaAllocator allocator = device.GetMemoryAllocator();
+            if (vmaCreateBuffer(allocator, &createInfo, &allocInfo, &m_vkBuffer, &m_vmaAllocation, &m_vmaAllocationInfo) != VK_SUCCESS)
+                return RHI::ResultCode::OutOfMemory;
+
+            return RHI::ResultCode::Success;
+        }
+// @CYA END
+
         RHI::ResultCode BufferMemory::Init(Device& device, const MemoryView& memoryView, const Descriptor& descriptor)
         {
             return Init(device, device.CreateBufferResouce(descriptor), memoryView, descriptor);
@@ -39,15 +78,48 @@ namespace AZ
             return result;
         }
 
+// @CYA EDIT: Replace O3DE allocator by VMA
+        bool BufferMemory::IsVmaAllocated() const
+        {
+            return m_vmaAllocation != VK_NULL_HANDLE;
+        }
+
+        const VmaAllocationInfo& BufferMemory::GetVmaAllocationInfo() const
+        {
+            AZ_Assert(IsVmaAllocated(), "Buffer memory was not allocated with VMA");
+            return m_vmaAllocationInfo;
+        }
+
         CpuVirtualAddress BufferMemory::Map(size_t offset, size_t size, RHI::HostMemoryAccess hostAccess)
         {
-            return m_memoryView.GetMemory()->Map(m_memoryView.GetOffset() + offset, size, hostAccess);
+            Device& device = static_cast<Device&>(GetDevice());
+
+            void* mappedPtr;
+            VkResult vkResult = vmaMapMemory(device.GetMemoryAllocator(), m_vmaAllocation, &mappedPtr);
+            if (vkResult != VK_SUCCESS)
+                return nullptr;
+
+            if (hostAccess == RHI::HostMemoryAccess::Read)
+            {
+                // VMA will check if this is necessary
+                vkResult = vmaInvalidateAllocation(device.GetMemoryAllocator(), m_vmaAllocation, offset, size);
+                if (vkResult != VK_SUCCESS)
+                    return nullptr;
+            }
+
+            return static_cast<CpuVirtualAddress>(mappedPtr);
         }
 
         void BufferMemory::Unmap(size_t offset, RHI::HostMemoryAccess hostAccess)
         {
-            return m_memoryView.GetMemory()->Unmap(m_memoryView.GetOffset() + offset, hostAccess);
+            Device& device = static_cast<Device&>(GetDevice());
+
+            if (hostAccess == RHI::HostMemoryAccess::Write)
+                vmaFlushAllocation(device.GetMemoryAllocator(), m_vmaAllocation, offset, VK_WHOLE_SIZE);
+
+            vmaUnmapMemory(device.GetMemoryAllocator(), m_vmaAllocation);
         }
+// @CYA END
 
         const VkBuffer BufferMemory::GetNativeBuffer()
         {
@@ -77,8 +149,11 @@ namespace AZ
             if (m_vkBuffer != VK_NULL_HANDLE)
             {
                 Device& device = static_cast<Device&>(GetDevice());
-                device.DestroyBufferResource(m_vkBuffer);
+// @CYA EDIT: Replace O3DE allocator by VMA
+                vmaDestroyBuffer(device.GetMemoryAllocator(), m_vkBuffer, m_vmaAllocation);
                 m_vkBuffer = VK_NULL_HANDLE;
+                m_vmaAllocation = VK_NULL_HANDLE;
+// @CYA END
             }
 
             m_memoryView = MemoryView();

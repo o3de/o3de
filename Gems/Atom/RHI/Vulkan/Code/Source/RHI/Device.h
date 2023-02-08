@@ -37,6 +37,9 @@
 #include <RHI/RenderPass.h>
 #include <RHI/Sampler.h>
 #include <RHI/SemaphoreAllocator.h>
+// @CYA EDIT: Replace Vulkan allocator by VMA
+#include <vma/vk_mem_alloc.h>
+// @CYA END
 
 #include "BindlessDescriptorPool.h"
 
@@ -90,6 +93,13 @@ namespace AZ
             const AZStd::vector<VkQueueFamilyProperties>& GetQueueFamilyProperties() const;
 
             AsyncUploadQueue& GetAsyncUploadQueue();
+
+// @CYA EDIT: Replace Vulkan allocator by VMA
+            VmaAllocator GetMemoryAllocator()
+            {
+                return m_vmaMemoryAllocator;
+            }
+// @CYA END
 
             BindlessDescriptorPool& GetBindlessDescriptorPool();
 
@@ -171,6 +181,9 @@ namespace AZ
 
             //! Get the vulkan buffer usage flags from buffer bind flags.
             //! Flags will be corrected if required features or extensions are not enabled.
+// @CYA EDIT: Replace Vulkan allocator by VMA
+            friend class BufferMemory;
+// @CYA END
             VkBufferUsageFlags GetBufferUsageFlagBitsUnderRestrictions(RHI::BufferBindFlags bindFlags) const;
 
             VkDevice m_nativeDevice = VK_NULL_HANDLE;
@@ -214,6 +227,14 @@ namespace AZ
 
             BindlessDescriptorPool m_bindlessDescriptorPool;
             ShadingRateImageMode m_imageShadingRateMode = ShadingRateImageMode::None;
+
+// @CYA EDIT: Replace Vulkan allocator by VMA
+            RHI::ResultCode InitVulkanAllocator(RHI::PhysicalDevice& physicalDevice);
+            void ShutdownVulkanAllocator();
+
+            VmaAllocator m_vmaMemoryAllocator;
+// @CYA END
+
         };
 
         template<typename ObjectType, typename ...Args>
