@@ -414,7 +414,7 @@ namespace AzToolsFramework
             for (const AZ::EntityId& id : selectedAndReferencedEntities)
             {
                 AZ::Entity* entity = nullptr;
-                EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, id);
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
                 if (entity)
                 {
                     if (entities.find(id) != entities.end())
@@ -617,7 +617,7 @@ namespace AzToolsFramework
 
             if (!serializeContext)
             {
-                EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+                AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
                 AZ_Assert(serializeContext, "Failed to retrieve application serialize context.");
             }
 
@@ -784,7 +784,11 @@ namespace AzToolsFramework
                     newParentWorldTM.SetTranslation(sliceRootEntityPosition);
 
                     //signal entities that parent is about to move
-                    EBUS_EVENT_ID(entity->GetId(), AZ::TransformNotificationBus, OnParentTransformWillChange, oldParentWorldTM, newParentWorldTM);
+                    AZ::TransformNotificationBus::Event(
+                        entity->GetId(),
+                        &AZ::TransformNotificationBus::Events::OnParentTransformWillChange,
+                        oldParentWorldTM,
+                        newParentWorldTM);
 
                     ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entity->GetId());
 
@@ -940,7 +944,7 @@ namespace AzToolsFramework
                 floodQueue.pop_back();
 
                 AZ::Entity* entity = nullptr;
-                EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, id);
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
 
                 if (entity)
                 {
@@ -2911,7 +2915,7 @@ namespace AzToolsFramework
                     if (usedNameEntities.find(id) == usedNameEntities.end())
                     {
                         AZ::Entity* entity = nullptr;
-                        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, id);
+                        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
                         if (entity)
                         {
                             AZStd::string entityNameFiltered = entity->GetName();

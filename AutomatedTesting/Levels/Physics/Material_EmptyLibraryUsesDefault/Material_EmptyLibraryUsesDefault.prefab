@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -59,9 +55,11 @@
                     "$type": "EditorShapeColliderComponent",
                     "Id": 10131916318786260150,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -126,10 +124,6 @@
                     "$type": "EditorVisibilityComponent",
                     "Id": 15308818810773485994
                 },
-                "Component_[15840538373800101541]": {
-                    "$type": "SelectionComponent",
-                    "Id": 15840538373800101541
-                },
                 "Component_[17755930108359081035]": {
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 17755930108359081035
@@ -149,6 +143,10 @@
                 "Component_[6534162403380073417]": {
                     "$type": "EditorLockComponent",
                     "Id": 6534162403380073417
+                },
+                "Component_[938689551918509263]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 938689551918509263
                 }
             }
         },
@@ -167,10 +165,6 @@
                 "Component_[13724541256316894675]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 13724541256316894675
-                },
-                "Component_[14278953062209923807]": {
-                    "$type": "SelectionComponent",
-                    "Id": 14278953062209923807
                 },
                 "Component_[16046379088641642538]": {
                     "$type": "EditorInspectorComponent",
@@ -197,9 +191,11 @@
                     "$type": "EditorShapeColliderComponent",
                     "Id": 17099031793310612741,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -219,12 +215,17 @@
                     "Configuration": {
                         "entityId": "",
                         "Compute Mass": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 10.0
-                        }
+                        "Inertia tensor": [
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0
+                        ]
                     }
                 },
                 "Component_[3607123429290193540]": {
@@ -274,10 +275,6 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 13724541256316894675
                 },
-                "Component_[14278953062209923807]": {
-                    "$type": "SelectionComponent",
-                    "Id": 14278953062209923807
-                },
                 "Component_[16046379088641642538]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 16046379088641642538,
@@ -303,9 +300,11 @@
                     "$type": "EditorShapeColliderComponent",
                     "Id": 17099031793310612741,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -325,12 +324,17 @@
                     "Configuration": {
                         "entityId": "",
                         "Compute Mass": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 10.0
-                        }
+                        "Inertia tensor": [
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0
+                        ]
                     }
                 },
                 "Component_[3607123429290193540]": {
@@ -380,10 +384,6 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 13724541256316894675
                 },
-                "Component_[14278953062209923807]": {
-                    "$type": "SelectionComponent",
-                    "Id": 14278953062209923807
-                },
                 "Component_[16046379088641642538]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 16046379088641642538,
@@ -414,9 +414,11 @@
                     "$type": "EditorShapeColliderComponent",
                     "Id": 17099031793310612741,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -442,12 +444,17 @@
                             0.0,
                             -0.5
                         ],
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 2.3999998569488525
-                        },
+                        "Inertia tensor": [
+                            2.3999998569488525,
+                            0.0,
+                            0.0,
+                            0.0,
+                            2.3999998569488525,
+                            0.0,
+                            0.0,
+                            0.0,
+                            2.3999998569488525
+                        ],
                         "Debug Draw Center of Mass": true
                     }
                 },
@@ -493,10 +500,6 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 13724541256316894675
                 },
-                "Component_[14278953062209923807]": {
-                    "$type": "SelectionComponent",
-                    "Id": 14278953062209923807
-                },
                 "Component_[14564167809659215569]": {
                     "$type": "EditorBoxShapeComponent",
                     "Id": 14564167809659215569,
@@ -527,9 +530,11 @@
                     "$type": "EditorShapeColliderComponent",
                     "Id": 17099031793310612741,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -555,12 +560,17 @@
                             0.0,
                             -0.5
                         ],
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 2.3999998569488525
-                        },
+                        "Inertia tensor": [
+                            2.3999998569488525,
+                            0.0,
+                            0.0,
+                            0.0,
+                            2.3999998569488525,
+                            0.0,
+                            0.0,
+                            0.0,
+                            2.3999998569488525
+                        ],
                         "Debug Draw Center of Mass": true
                     }
                 },

@@ -100,7 +100,7 @@ namespace AzToolsFramework
         m_metadataEntityByIdMap.clear();
         m_sliceAddressToRootMetadataMap.clear();
 
-        EBUS_EVENT(SliceMetadataEntityContextNotificationBus, OnContextReset);
+        SliceMetadataEntityContextNotificationBus::Broadcast(&SliceMetadataEntityContextNotificationBus::Events::OnContextReset);
     }
 
     /*!  Called to reset the current context.

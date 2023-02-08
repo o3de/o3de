@@ -54,7 +54,7 @@ namespace LmbrCentral
         for (AZ::EntityId childEntity : m_configuration.GetChildEntities())
         {
             AZ::Aabb childAabb = AZ::Aabb::CreateNull();
-            EBUS_EVENT_ID_RESULT(childAabb, childEntity, ShapeComponentRequestsBus, GetEncompassingAabb);
+            ShapeComponentRequestsBus::EventResult(childAabb, childEntity, &ShapeComponentRequestsBus::Events::GetEncompassingAabb);
             if (childAabb.IsValid())
             {
                 finalAabb.AddAabb(childAabb);
@@ -103,7 +103,7 @@ namespace LmbrCentral
         bool result = false;
         for (AZ::EntityId childEntity : m_configuration.GetChildEntities())
         {
-            EBUS_EVENT_ID_RESULT(result, childEntity, ShapeComponentRequestsBus, IsPointInside, point);
+            ShapeComponentRequestsBus::EventResult(result, childEntity, &ShapeComponentRequestsBus::Events::IsPointInside, point);
             if (result)
             {
                 break;
@@ -118,7 +118,8 @@ namespace LmbrCentral
         for (AZ::EntityId childEntity : m_configuration.GetChildEntities())
         {
             float currentDistanceSquared = FLT_MAX;
-            EBUS_EVENT_ID_RESULT(currentDistanceSquared, childEntity, ShapeComponentRequestsBus, DistanceSquaredFromPoint, point);
+            ShapeComponentRequestsBus::EventResult(
+                currentDistanceSquared, childEntity, &ShapeComponentRequestsBus::Events::DistanceSquaredFromPoint, point);
             if (currentDistanceSquared < smallestDistanceSquared)
             {
                 smallestDistanceSquared = currentDistanceSquared;
@@ -149,7 +150,10 @@ namespace LmbrCentral
 
         if (ShapeComponentRequestsBus::Handler::BusIsConnected() && CompoundShapeComponentRequestsBus::Handler::BusIsConnected())
         {
-            EBUS_EVENT_ID(GetEntityId(), ShapeComponentNotificationsBus, OnShapeChanged, ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+            ShapeComponentNotificationsBus::Event(
+                GetEntityId(),
+                &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
         }
     }
 
@@ -157,20 +161,30 @@ namespace LmbrCentral
     {
         m_currentlyActiveChildren--;
         ShapeComponentNotificationsBus::MultiHandler::BusDisconnect(id);
-        EBUS_EVENT_ID(GetEntityId(), ShapeComponentNotificationsBus, OnShapeChanged, ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        ShapeComponentNotificationsBus::Event(
+            GetEntityId(),
+            &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+            ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
     void CompoundShapeComponent::OnShapeChanged(ShapeComponentNotifications::ShapeChangeReasons changeReason)
     {
         if (changeReason == ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged)
         {
-            EBUS_EVENT_ID(GetEntityId(), ShapeComponentNotificationsBus, OnShapeChanged, ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+            ShapeComponentNotificationsBus::Event(
+                GetEntityId(),
+                &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
         }
         else if (changeReason == ShapeComponentNotifications::ShapeChangeReasons::TransformChanged)
         {
-            // If there are multiple shapes in a compound shape, then moving one of them changes the overall compound shape, otherwise the transform change is bubbled up directly
-            EBUS_EVENT_ID(GetEntityId(), ShapeComponentNotificationsBus, OnShapeChanged, (m_currentlyActiveChildren > 1) ? ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged
-                          : ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
+            // If there are multiple shapes in a compound shape, then moving one of them changes the overall compound shape, otherwise the
+            // transform change is bubbled up directly
+            ShapeComponentNotificationsBus::Event(
+                GetEntityId(),
+                &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                (m_currentlyActiveChildren > 1) ? ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged
+                                                : ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
         }
     }
 

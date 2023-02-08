@@ -89,6 +89,9 @@ void Surface::ApplySpecularAA()
     float kernelRoughnessA2 = min(2.0 * variance , varianceThresh );
     float filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
     roughnessA2 = filteredRoughnessA2;
+
+    roughnessA = sqrt(roughnessA2);
+    roughnessLinear = sqrt(roughnessA);
 }
 
 void Surface::CalculateRoughnessA()

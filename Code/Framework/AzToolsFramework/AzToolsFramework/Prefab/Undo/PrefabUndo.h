@@ -29,7 +29,16 @@ namespace AzToolsFramework
                 const PrefabDom& endState,
                 TemplateId templateId);
         };
-        
+
+        //! Undo class for handling addition of entity DOMs to a prefab template.
+        class PrefabUndoAddEntityDoms : public PrefabUndoBase
+        {
+        public:
+            explicit PrefabUndoAddEntityDoms(const AZStd::string& undoOperationName);
+
+            void Capture(const AZStd::vector<const AZ::Entity*>& entityList, TemplateId templateId);
+        };
+
         //! Undo class for handling removal of entity DOMs to a prefab template.
         class PrefabUndoRemoveEntityDoms
             : public PrefabUndoBase
@@ -51,7 +60,7 @@ namespace AzToolsFramework
 
             explicit PrefabUndoEntityUpdate(const AZStd::string& undoOperationName);
 
-            void Capture(const PrefabDomValue& initialState, const PrefabDomValue& endState, AZ::EntityId entity);
+            void Capture(const PrefabDomValue& initialState, const PrefabDomValue& endState, AZ::EntityId entity, bool updateCache = true);
 
             void Undo() override;
             void Redo() override;

@@ -104,7 +104,7 @@ namespace AZ::EntityUtils
     SerializeContext* GetApplicationSerializeContext()
     {
         SerializeContext* context = nullptr;
-        EBUS_EVENT_RESULT(context, ComponentApplicationBus, GetSerializeContext);
+        ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
         return context;
     }
 

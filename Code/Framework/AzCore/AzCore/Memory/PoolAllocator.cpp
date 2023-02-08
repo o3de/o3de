@@ -32,6 +32,11 @@
 #define POOL_ALLOCATION_MIN_ALLOCATION_SIZE size_t{8}
 #define POOL_ALLOCATION_MAX_ALLOCATION_SIZE size_t{512}
 
+namespace AZ::Internal
+{
+    template class PoolAllocatorHelper<PoolSchema>;
+}
+
 namespace
 {
     struct Magic32
