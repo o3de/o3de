@@ -81,8 +81,6 @@ set(FILES
     Editor/DocumentationLinkWidget.cpp
     Editor/InertiaPropertyHandler.h
     Editor/InertiaPropertyHandler.cpp
-    Editor/ComboBoxEditButtonPair.h
-    Editor/ComboBoxEditButtonPair.cpp
     Editor/ColliderComponentMode.h
     Editor/ColliderComponentMode.cpp
     Editor/ColliderOffsetMode.h
@@ -106,12 +104,9 @@ set(FILES
     Editor/EditorJointConfiguration.h
     Editor/EditorViewportEntityPicker.cpp
     Editor/EditorViewportEntityPicker.h
-    Editor/KinematicWidget.cpp
-    Editor/KinematicWidget.h
-    Editor/KinematicDescriptionDialog.cpp
     Editor/KinematicDescriptionDialog.h
+    Editor/KinematicDescriptionDialog.cpp
     Editor/KinematicDescriptionDialog.ui
-
     Editor/Source/Components/EditorSystemComponent.h
     Editor/Source/Components/EditorSystemComponent.cpp
     Editor/Source/Components/Conversion/CollidersPrefabConversion.cpp
