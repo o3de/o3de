@@ -33,7 +33,7 @@ namespace AzToolsFramework
 
             void Setup(bool stringFilter, bool assetTypeFilter);
 
-            void ToggleProjectSourceAssetFilter();
+            void ToggleProjectSourceAssetFilter(bool checked);
 
             void AddFolderFilter();
 

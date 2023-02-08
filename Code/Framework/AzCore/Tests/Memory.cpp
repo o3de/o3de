@@ -40,12 +40,16 @@ namespace UnitTest
         void SetUp() override
         {
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             AZ::AllocatorManager::Instance().EnterProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
         }
         void TearDown() override
         {
             AZ::AllocatorManager::Instance().GarbageCollect();
             AZ::AllocatorManager::Instance().ExitProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
         }
     };
@@ -119,8 +123,6 @@ namespace UnitTest
             // On windows we don't require to preallocate memory to function.
             // On most consoles we do!
             {
-                AllocatorInstance<SystemAllocator>::Create();
-
                 IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
 
                 for (int i = 0; i < 100; ++i)
@@ -154,14 +156,10 @@ namespace UnitTest
                         m_threads[i].join();
                     }
                 }
-                //////////////////////////////////////////////////////////////////////////
-
-                AllocatorInstance<SystemAllocator>::Destroy();
             }
 #endif
             memset(address, 0, AZ_ARRAY_SIZE(address) * sizeof(void*));
 
-            AllocatorInstance<SystemAllocator>::Create();
             IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
 
             for (int i = 0; i < 100; ++i)
@@ -195,7 +193,8 @@ namespace UnitTest
                 // This is possible on deprecated platforms too, but we would need to load the map file manually and so on... it's tricky.
                 // Note: depending on where the tests are run from the call stack may differ.
                 SymbolStorage::StackLine stackLine[20];
-                SymbolStorage::DecodeFrames(ai.m_stackFrames, AZ_ARRAY_SIZE(stackLine), stackLine);
+                auto recordFrameCount = AZ::GetMin(ai.m_stackFramesCount, static_cast<unsigned int>(AZ_ARRAY_SIZE(stackLine)));
+                SymbolStorage::DecodeFrames(ai.m_stackFrames, recordFrameCount, stackLine);
                 bool found = false;
                 int foundIndex = 0;  // After finding it for the first time, save the index so it can be reused
 
@@ -287,8 +286,6 @@ namespace UnitTest
             //AZStd::chrono::microseconds exTime = AZStd::chrono::steady_clock::now() - startTime;
             //AZ_Printf("UnitTest::SystemAllocatorTest::mspaces","Time: %d Ms\n",exTime.count());
             //////////////////////////////////////////////////////////////////////////
-
-            AllocatorInstance<SystemAllocator>::Destroy();
         }
     };
 
@@ -302,21 +299,6 @@ namespace UnitTest
     {
     protected:
     public:
-        void SetUp() override
-        {
-            MemoryTrackingFixture::SetUp();
-
-            AllocatorInstance<SystemAllocator>::Create();
-            AllocatorInstance<PoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<SystemAllocator>::Destroy();
-            MemoryTrackingFixture::TearDown();
-        }
-
         void run()
         {
             IAllocator& poolAllocator = AllocatorInstance<PoolAllocator>::Get();
@@ -456,17 +438,6 @@ namespace UnitTest
             {
                 m_desc[i].m_stackSize = m_threadStackSize;
             }
-
-            AllocatorInstance<SystemAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<SystemAllocator>::Destroy();
-
-            MemoryTrackingFixture::TearDown();
         }
 
         void AllocDeallocFunc()
@@ -683,9 +654,6 @@ namespace UnitTest
             }
             //////////////////////////////////////////////////////////////////////////
 
-            // Our pools will support only 512 byte allocations
-            AZ::AllocatorInstance<MyThreadPoolAllocator>::Create();
-
             void* pooled512 = AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().Allocate(512, 512);
             ASSERT_TRUE(pooled512);
             AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().DeAllocate(pooled512);
@@ -694,8 +662,6 @@ namespace UnitTest
             void* pooled2048 = AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().Allocate(2048, 2048);
             (void)pooled2048;
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-
-            AZ::AllocatorInstance<MyThreadPoolAllocator>::Destroy();
         }
     };
 
@@ -711,21 +677,6 @@ namespace UnitTest
         : public MemoryTrackingFixture
     {
     public:
-        void SetUp() override
-        {
-            MemoryTrackingFixture::SetUp();
-
-            AllocatorInstance<SystemAllocator>::Create();
-            AllocatorInstance<PoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<SystemAllocator>::Destroy();
-            MemoryTrackingFixture::TearDown();
-        }
-
         void run()
         {
             IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
@@ -813,22 +764,6 @@ namespace UnitTest
             MyDerivedClass() = default;
         };
     public:
-        void SetUp() override
-        {
-            MemoryTrackingFixture::SetUp();
-
-            AllocatorInstance<SystemAllocator>::Create();
-            AllocatorInstance<PoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<SystemAllocator>::Destroy();
-
-            MemoryTrackingFixture::TearDown();
-        }
-
         void run()
         {
             IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
@@ -940,15 +875,13 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorInstance<SystemAllocator>::Create();
             tr = (test_record*)AZ_OS_MALLOC(sizeof(test_record)*N, 8);
             MAX_SIZE = 4096;
         }
-        
+
         void TearDown() override
         {
             AZ_OS_FREE(tr);
-            AllocatorInstance<SystemAllocator>::Destroy();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -2076,7 +2009,7 @@ namespace UnitTest
                           pool.Create();
                           ThreadPoolSchemaHelper<nullptr_t> threadPool;
                           threadPool.Create();
-            
+
                           printf("---- Single Thread ----\n");
                           // any allocations
                           MAX_SIZE = 4096;
@@ -2085,7 +2018,7 @@ namespace UnitTest
                           // pool allocations
                           MAX_SIZE = 256;
                           allocdealloc(hpha,pool,true,true,true);
-            
+
                           // threads
                           printf("\n---- 4 Threads ----\n");
                           // any allocations

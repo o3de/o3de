@@ -124,6 +124,8 @@ namespace AzToolsFramework
 
         /*!
          * Fired just after applying a requested undo or redo operation.
+         * Note that prefab propagation will not have occurred at this point, so data may not yet be updated.
+         * Consider listening to OnPrefabInstancePropagationEnd on PrefabPublicNotificationBus instead.
          */
         virtual void AfterUndoRedo() {}
 
@@ -627,7 +629,9 @@ namespace AzToolsFramework
             {
                 AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
                 EntityIdList selectedEntities;
-                EBUS_EVENT_RESULT(selectedEntities, ToolsApplicationRequests::Bus, GetSelectedEntities);
+                ToolsApplicationRequests::Bus::BroadcastResult(
+                    selectedEntities,
+                    &ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
                 if (AZStd::find(selectedEntities.begin(), selectedEntities.end(), id) != selectedEntities.end())
                 {
                     handler->OnSelected();

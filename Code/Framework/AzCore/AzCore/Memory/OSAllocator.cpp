@@ -14,9 +14,6 @@ namespace AZ
     {
         Create();
         PostCreate();
-#if defined(AZ_ENABLE_TRACING)
-        SetProfilingActive(true);
-#endif
     }
     OSAllocator::~OSAllocator()
     {

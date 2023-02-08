@@ -21,7 +21,7 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Random.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 #include <Particle/UiParticle.h>
 

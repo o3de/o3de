@@ -579,7 +579,6 @@ namespace
         nodeOrder[static_cast<int>(AnimNodeType::Alembic)] = 4;
         nodeOrder[static_cast<int>(AnimNodeType::CVar)] = 6;
         nodeOrder[static_cast<int>(AnimNodeType::ScriptVar)] = 7;
-        nodeOrder[static_cast<int>(AnimNodeType::Material)] = 8;
         nodeOrder[static_cast<int>(AnimNodeType::Event)] = 9;
         nodeOrder[static_cast<int>(AnimNodeType::Layer)] = 10;
         nodeOrder[static_cast<int>(AnimNodeType::Comment)] = 11;

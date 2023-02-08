@@ -38,19 +38,19 @@ void ViewportAnchor::Draw(Draw2dHelper& draw2d, AZ::Entity* element, bool drawUn
 
     // get the anchors from the element's transform component
     UiTransform2dInterface::Anchors anchors;
-    EBUS_EVENT_ID_RESULT(anchors, element->GetId(), UiTransform2dBus, GetAnchors);
+    UiTransform2dBus::EventResult(anchors, element->GetId(), &UiTransform2dBus::Events::GetAnchors);
     // get the parent element's pre-transform points and its transform.
     // The anchors are in terms of the parent's space
     UiTransformInterface::RectPoints parentPoints;
-    EBUS_EVENT_ID(parentElement->GetId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, parentPoints);
+    UiTransformBus::Event(parentElement->GetId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, parentPoints);
 
     AZ::Vector2 parentSize = parentPoints.GetAxisAlignedSize();
 
     AZ::Matrix4x4 parentTransform;
-    EBUS_EVENT_ID(parentElement->GetId(), UiTransformBus, GetTransformToViewport, parentTransform);
+    UiTransformBus::Event(parentElement->GetId(), &UiTransformBus::Events::GetTransformToViewport, parentTransform);
 
     UiTransformInterface::RectPoints elemRect;
-    EBUS_EVENT_ID(element->GetId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, elemRect);
+    UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, elemRect);
 
     // Here we optionally draw a rect outline, either the element's rect or the parent element's
     // rect depending on the situation
@@ -104,7 +104,7 @@ void ViewportAnchor::Draw(Draw2dHelper& draw2d, AZ::Entity* element, bool drawUn
             if (drawAnchorLines)
             {
                 AZ::Vector2 pivot;
-                EBUS_EVENT_ID_RESULT(pivot, element->GetId(), UiTransformBus, GetCanvasSpacePivotNoScaleRotate);
+                UiTransformBus::EventResult(pivot, element->GetId(), &UiTransformBus::Events::GetCanvasSpacePivotNoScaleRotate);
                 m_dottedLine->DrawAnchorLines(draw2d, anchorPos, pivot, parentTransform, true, true, true);
             }
 
@@ -119,7 +119,7 @@ void ViewportAnchor::Draw(Draw2dHelper& draw2d, AZ::Entity* element, bool drawUn
             if (drawAnchorLines)
             {
                 AZ::Vector2 pivot;
-                EBUS_EVENT_ID_RESULT(pivot, element->GetId(), UiTransformBus, GetCanvasSpacePivotNoScaleRotate);
+                UiTransformBus::EventResult(pivot, element->GetId(), &UiTransformBus::Events::GetCanvasSpacePivotNoScaleRotate);
 
                 AZ::Vector2 topTarget;
                 AZ::Vector2 bottomTarget;
@@ -145,7 +145,7 @@ void ViewportAnchor::Draw(Draw2dHelper& draw2d, AZ::Entity* element, bool drawUn
             if (drawAnchorLines)
             {
                 AZ::Vector2 pivot;
-                EBUS_EVENT_ID_RESULT(pivot, element->GetId(), UiTransformBus, GetCanvasSpacePivotNoScaleRotate);
+                UiTransformBus::EventResult(pivot, element->GetId(), &UiTransformBus::Events::GetCanvasSpacePivotNoScaleRotate);
 
                 AZ::Vector2 leftTarget;
                 AZ::Vector2 rightTarget;
@@ -170,7 +170,7 @@ void ViewportAnchor::Draw(Draw2dHelper& draw2d, AZ::Entity* element, bool drawUn
             if (drawAnchorLines)
             {
                 AZ::Vector2 pivot;
-                EBUS_EVENT_ID_RESULT(pivot, element->GetId(), UiTransformBus, GetCanvasSpacePivotNoScaleRotate);
+                UiTransformBus::EventResult(pivot, element->GetId(), &UiTransformBus::Events::GetCanvasSpacePivotNoScaleRotate);
 
                 AZ::Vector2 anchorMidpoint = (topLeftAnchorPos + bottomRightAnchorPos) * 0.5f;
 

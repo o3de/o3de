@@ -265,31 +265,4 @@ namespace TestImpact
         auto engineRuns = CompileTestEngineRuns<TestJobRunner, TestTarget>(testTargets, runnerJobs, AZStd::move(engineJobs));
         return AZStd::pair{ CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
-
-    template<typename TestEngineJob>
-    auto GenerateInstrumentedRunResult(const AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJob>>& engineJobs, Policy::IntegrityFailure integrityFailurePolicy)
-    {
-        const auto& [result, engineRuns] = engineJobs;
-
-        // Now that we know the true result of successful jobs that return non-zero we can deduce if we have any integrity failures
-        // where a test target ran and completed its tests without incident yet failed to produce coverage data
-        if (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
-        {
-            for (const auto& engineRun : engineRuns)
-            {
-                if (const auto testResult = engineRun.GetTestResult();
-                    testResult == Client::TestRunResult::AllTestsPass || testResult == Client::TestRunResult::TestFailures)
-                {
-                    AZ_TestImpact_Eval(
-                        engineRun.GetCoverge().has_value(),
-                        TestEngineException,
-                        AZStd::string::format(
-                            "Test target %s completed its test run but failed to produce coverage data",
-                            engineRun.GetTestTarget()->GetName().c_str()));
-                }
-            }
-        }
-
-        return AZStd::pair{ result, engineRuns };
-    }
 } // namespace TestImpact

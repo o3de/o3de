@@ -1113,23 +1113,94 @@ void ConsoleVariableModel::ClearModifiedRows()
     m_modifiedRows.clear();
 }
 
+template<typename T, int expectedCvarType>
+static bool SetCVarFromConsoleCommand(ICVar* cvar, AZ::ConsoleFunctorBase* consoleCommand)
+{
+    bool succeeded = false;
+    if (T value; consoleCommand->GetValue(value) == AZ::GetValueResult::Success)
+    {
+        if (cvar->GetType() == expectedCvarType)
+        {
+            if constexpr (expectedCvarType == CVAR_INT)
+            {
+                cvar->Set(static_cast<int>(value));
+                succeeded = true;
+            }
+            else if constexpr (expectedCvarType == CVAR_FLOAT)
+            {
+                cvar->Set(static_cast<float>(value));
+                succeeded = true;
+            }
+            else if constexpr (expectedCvarType == CVAR_STRING)
+            {
+                if (!value.empty())
+                {
+                    cvar->Set(value.data());
+                    succeeded = true;
+                }
+            }
+        }
+        else if (cvar->GetType() == CVAR_STRING)
+        {
+            if constexpr (expectedCvarType != CVAR_STRING)
+            {
+                auto stringified = AZStd::to_string(value);
+                if (!stringified.empty())
+                {
+                    cvar->Set(stringified.c_str());
+                }
+            }
+        }
+    }
+    return succeeded;
+}
+
 AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedHandler(
     [](AZStd::string_view command,
        const AZ::ConsoleCommandContainer&,
        AZ::ConsoleFunctorFlags,
        AZ::ConsoleInvokedFrom)
     {
-        if (command == AzToolsFramework::DocumentPropertyEditor::GetEnableDPECVarName())
+        if (command == AzToolsFramework::DocumentPropertyEditor::GetEnableCVarEditorName())
         {
             // the cvar editor pref changed, unregister the old and register the new
             AzToolsFramework::UnregisterViewPane(LyViewPane::ConsoleVariables);
             ConsoleVariableEditor::RegisterViewClass();
         }
-        else
+
+        // find the cvar that changed and keep the console informed
+        auto changedCVar = GetIEditor()->GetSystem()->GetIConsole()->GetCVar(AZStd::string(command).c_str());
+        if (changedCVar)
         {
-            // find the cvar that changed and keep the ConsoleVariableEditor informed
-            auto changedCVar = GetIEditor()->GetSystem()->GetIConsole()->GetCVar(AZStd::string(command).c_str());
-            if (changedCVar)
+            auto console = AZ::Interface<AZ::IConsole>::Get();
+            auto azConsoleCommand = console->FindCommand(command);
+            if (azConsoleCommand)
+            {
+                const bool handled =
+                    (SetCVarFromConsoleCommand<AZStd::string, CVAR_STRING>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::CVarFixedString, CVAR_STRING>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::s8, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::s16, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::s32, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::s64, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::u8, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::u16, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::u32, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::u64, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<bool, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<long, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<unsigned long, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<float, CVAR_FLOAT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<double, CVAR_FLOAT>(changedCVar, azConsoleCommand)
+                     );
+
+                if (!handled)
+                {
+                    AZ_Warning("ConsoleSCB", false, "an unknown type could not be read into the console!");
+                }
+            }
+
+            if (!AzToolsFramework::DocumentPropertyEditor::ShouldReplaceRPE())
             {
                 OnVariableUpdated(changedCVar);
             }
@@ -1215,7 +1286,7 @@ void ConsoleVariableEditor::RegisterViewClass()
     }
     m_commandInvokedHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
 
-    if (AzToolsFramework::DocumentPropertyEditor::ShouldReplaceRPE())
+    if (AzToolsFramework::DocumentPropertyEditor::ShouldReplaceCVarEditor())
     {
         AzToolsFramework::CvarDPE::RegisterViewClass();
     }
@@ -1223,7 +1294,6 @@ void ConsoleVariableEditor::RegisterViewClass()
     {
         AzToolsFramework::ViewPaneOptions opts;
         opts.paneRect = QRect(100, 100, 340, 500);
-        opts.isDeletable = false;
         AzToolsFramework::RegisterViewPane<ConsoleVariableEditor>(LyViewPane::ConsoleVariables, LyViewPane::CategoryOther, opts);
     }
 }

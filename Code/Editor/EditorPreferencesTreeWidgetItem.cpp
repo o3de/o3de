@@ -46,7 +46,7 @@ void EditorPreferencesTreeWidgetItem::Setup(IPreferencesPage* page)
     setData(0, Qt::DisplayRole, m_preferencesPage->GetTitle());
 
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(serializeContext, "Serialization context not available");
 
     // Grab all property names on the page so we can filter by property text by recursing through the hierarchy

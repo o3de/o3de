@@ -1023,9 +1023,10 @@ namespace AzToolsFramework
                 AZStd::string devAssetPath = fileIO->GetAlias("@projectroot@");
                 AZStd::string userPath = fileIO->GetAlias("@user@");
                 AZStd::string tempPath = fullPath;
-                EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, devAssetPath);
-                EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, userPath);
-                EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, tempPath);
+                AzFramework::ApplicationRequests::Bus::Broadcast(
+                    &AzFramework::ApplicationRequests::Bus::Events::NormalizePath, devAssetPath);
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePath, userPath);
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePath, tempPath);
                 AzFramework::StringFunc::Replace(tempPath, "@projectroot@", devAssetPath.c_str());
                 AzFramework::StringFunc::Replace(tempPath, devAssetPath.c_str(), userPath.c_str());
                 tempPath.append(".slicetemp");
@@ -1094,7 +1095,8 @@ namespace AzToolsFramework
                         // Bump the slice asset up in the asset processor's queue.
                         {
                             AZ_PROFILE_SCOPE(AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDisk:TempToTargetFileReplacement:GetAssetStatus");
-                            EBUS_EVENT(AzFramework::AssetSystemRequestBus, EscalateAssetBySearchTerm, targetPath);
+                            AzFramework::AssetSystemRequestBus::Broadcast(
+                                &AzFramework::AssetSystemRequestBus::Events::EscalateAssetBySearchTerm, targetPath);
                         }
                         return AZ::Success();
                     }

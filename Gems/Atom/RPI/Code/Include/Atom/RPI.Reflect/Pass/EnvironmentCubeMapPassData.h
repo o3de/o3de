@@ -24,16 +24,7 @@ namespace AZ
             EnvironmentCubeMapPassData() = default;
             virtual ~EnvironmentCubeMapPassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<EnvironmentCubeMapPassData, PassData>()
-                        ->Version(0)
-                        ->Field("Position", &EnvironmentCubeMapPassData::m_position)
-                        ;
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             //! World space position to render the environment cubemap
             Vector3 m_position;

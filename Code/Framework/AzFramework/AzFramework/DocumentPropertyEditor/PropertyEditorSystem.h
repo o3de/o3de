@@ -40,6 +40,6 @@ namespace AZ::DocumentPropertyEditor
 
         mutable AZStd::unordered_map<AZ::Crc32, AZ::Name> m_crcToName;
         AZStd::unordered_map<AZ::Name, NodeMetadata> m_nodeMetadata;
-        AZStd::unordered_map<AZ::Name, AZStd::unordered_map<AZ::Name, const AttributeDefinitionInterface*>> m_attributeMetadata;
+        AZStd::unordered_map<AZ::Name, AZStd::unordered_multimap<AZ::Name, const AttributeDefinitionInterface*>> m_attributeMetadata;
     };
 } // namespace AZ::DocumentPropertyEditor

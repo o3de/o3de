@@ -16,67 +16,69 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AzToolsFramework/AzToolsFrameworkModule.h>
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
-#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsSystemComponent.h>
-#include <AzToolsFramework/Undo/UndoSystem.h>
-#include <AzToolsFramework/Application/ToolsApplication.h>
-#include <AzToolsFramework/Commands/EntityStateCommand.h>
-#include <AzToolsFramework/Commands/SelectionCommand.h>
-#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
-#include <AzToolsFramework/ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h>
-#include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
-#include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
-#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
-#include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
-#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
-#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntitySystemComponent.h>
-#include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
-#include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
-#include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
-#include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
-#include <AzToolsFramework/Component/EditorComponentAPIComponent.h>
-#include <AzToolsFramework/Component/EditorLevelComponentAPIComponent.h>
-#include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
-#include <AzToolsFramework/Entity/EditorEntityFixupComponent.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <AzToolsFramework/SourceControl/PerforceComponent.h>
-#include <AzToolsFramework/Archive/ArchiveComponent.h>
-#include <AzToolsFramework/Asset/AssetSystemComponent.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
-#include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
-#include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
-#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
-#include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
-#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
-#include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
+#include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/AzToolsFrameworkModule.h>
+#include <AzToolsFramework/Archive/ArchiveComponent.h>
+#include <AzToolsFramework/Asset/AssetSystemComponent.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
+#include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
+#include <AzToolsFramework/AssetEditor/AssetEditorWidget.h>
+#include <AzToolsFramework/Commands/EntityStateCommand.h>
+#include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/Component/EditorComponentAPIComponent.h>
+#include <AzToolsFramework/Component/EditorLevelComponentAPIComponent.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
+#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
+#include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityFixupComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityModelComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
-#include <AzToolsFramework/Entity/EditorEntityModelComponent.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntitySystemComponent.h>
+#include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsSystemComponent.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
+#include <AzToolsFramework/Render/EditorIntersectorComponent.h>
+#include <AzToolsFramework/Script/LuaEditorSystemComponent.h>
+#include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
 #include <AzToolsFramework/Slice/SliceDependencyBrowserComponent.h>
+#include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
 #include <AzToolsFramework/Slice/SliceRequestComponent.h>
+#include <AzToolsFramework/Slice/SliceUtilities.h>
+#include <AzToolsFramework/SourceControl/PerforceComponent.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <AzToolsFramework/ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h>
+#include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
+#include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
+#include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
+#include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiSystemComponent.h>
 #include <AzToolsFramework/UI/LegacyFramework/MainWindowSavedState.h>
-#include <AzToolsFramework/AssetEditor/AssetEditorWidget.h>
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
+#include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
+#include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
+#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/Undo/UndoCacheInterface.h>
+#include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkSystemComponent.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
-#include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
-#include <AzToolsFramework/Render/EditorIntersectorComponent.h>
-#include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiSystemComponent.h>
-#include <AzToolsFramework/Undo/UndoCacheInterface.h>
-#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
-#include <AzToolsFramework/Viewport/ViewBookmarkSystemComponent.h>
+
 #include <Entity/EntityUtilityComponent.h>
-#include <AzToolsFramework/Script/LuaEditorSystemComponent.h>
-#include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
 #include <Metadata/MetadataManager.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
 
@@ -125,8 +127,8 @@ namespace AzToolsFramework
 
             UndoSystem::UndoStack* undoStack = nullptr;
             PreemptiveUndoCache* preemptiveUndoCache = nullptr;
-            EBUS_EVENT_RESULT(undoStack, ToolsApplicationRequests::Bus, GetUndoStack);
-            EBUS_EVENT_RESULT(preemptiveUndoCache, ToolsApplicationRequests::Bus, GetUndoCache);
+            ToolsApplicationRequests::Bus::BroadcastResult(undoStack, &ToolsApplicationRequests::Bus::Events::GetUndoStack);
+            ToolsApplicationRequests::Bus::BroadcastResult(preemptiveUndoCache, &ToolsApplicationRequests::Bus::Events::GetUndoCache);
             AZ_Assert(undoStack, "Failed to retrieve undo stack.");
             AZ_Assert(preemptiveUndoCache, "Failed to retrieve preemptive undo cache.");
             if (undoStack && preemptiveUndoCache)
@@ -136,7 +138,7 @@ namespace AzToolsFramework
                 // Commands always execute themselves first and then their children (when going forwards)
                 // and do the opposite when going backwards.
                 AzToolsFramework::EntityIdList selection;
-                EBUS_EVENT_RESULT(selection, ToolsApplicationRequests::Bus, GetSelectedEntities);
+                ToolsApplicationRequests::Bus::BroadcastResult(selection, &ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
                 AzToolsFramework::SelectionCommand* selCommand = aznew AzToolsFramework::SelectionCommand(selection, "Delete Entities");
 
                 // We insert a "deselect all" command before we delete the entities. This ensures the delete operations aren't changing
@@ -153,7 +155,7 @@ namespace AzToolsFramework
                     for (const auto& entityId : entityIds)
                     {
                         AZ::Entity* entity = nullptr;
-                        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+                        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
                         if (entity)
                         {
@@ -175,7 +177,7 @@ namespace AzToolsFramework
 
             if (createdUndo)
             {
-                EBUS_EVENT(ToolsApplicationRequests::Bus, EndUndoBatch);
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
             }
         }
 
@@ -403,6 +405,13 @@ namespace AzToolsFramework
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            // wrap BeginUndoBatch so we do not have to return a pointer to URSequencePoint which is not currently exposed to Python
+            // note: This could be added as a 'handle' that could then be resolved as a pointer but this functionality is not needed yet
+            auto BeginUndoBatchWrapper = [](ToolsApplicationRequests*, const char* name) {
+                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequestBus::Events::BeginUndoBatch, name);
+            };
+
             behaviorContext->EBus<ToolsApplicationRequestBus>("ToolsApplicationRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
@@ -425,6 +434,9 @@ namespace AzToolsFramework
                 ->Event("IsSelected", &ToolsApplicationRequests::IsSelected)
                 ->Event("AreAnyEntitiesSelected", &ToolsApplicationRequests::AreAnyEntitiesSelected)
                 ->Event("GetSelectedEntitiesCount", &ToolsApplicationRequests::GetSelectedEntitiesCount)
+                ->Event("BeginUndoBatch", BeginUndoBatchWrapper)
+                ->Event("EndUndoBatch", &ToolsApplicationRequests::EndUndoBatch)
+                ->Event("AddDirtyEntity", &ToolsApplicationRequests::AddDirtyEntity)
                 ;
 
             behaviorContext->EBus<ToolsApplicationNotificationBus>("ToolsApplicationNotificationBus")
@@ -486,7 +498,7 @@ namespace AzToolsFramework
 
         if (result)
         {
-            EBUS_EVENT(ToolsApplicationEvents::Bus, EntityRegistered, entity->GetId());
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::EntityRegistered, entity->GetId());
         }
 
         return result;
@@ -505,7 +517,7 @@ namespace AzToolsFramework
         MarkEntityDeselected(entity->GetId());
         SetEntityHighlighted(entity->GetId(), false);
 
-        EBUS_EVENT(ToolsApplicationEvents::Bus, EntityDeregistered, entity->GetId());
+        ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::EntityDeregistered, entity->GetId());
 
         {
             AZ_PROFILE_SCOPE(AzToolsFramework, "ToolsApplication::RemoveEntity:CallApplicationRemoveEntity");
@@ -521,7 +533,7 @@ namespace AzToolsFramework
     void ToolsApplication::PreExportEntity(AZ::Entity& source, AZ::Entity& target)
     {
         AZ::SerializeContext* serializeContext = nullptr;
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "No serialization context found");
 
         const AZ::Entity::ComponentArrayType& editorComponents = source.GetComponents();
@@ -808,7 +820,7 @@ namespace AzToolsFramework
             output.insert(id);
 
             tempList.clear();
-            EBUS_EVENT_ID_RESULT(tempList, id, AZ::TransformBus, GetAllDescendants);
+            AZ::TransformBus::EventResult(tempList, id, &AZ::TransformBus::Events::GetAllDescendants);
             output.insert(tempList.begin(), tempList.end());
         }
 
@@ -1449,9 +1461,9 @@ namespace AzToolsFramework
             if (m_undoStack->CanUndo())
             {
                 m_isDuringUndoRedo = true;
-                EBUS_EVENT(ToolsApplicationEvents::Bus, BeforeUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::BeforeUndoRedo);
                 m_undoStack->Undo();
-                EBUS_EVENT(ToolsApplicationEvents::Bus, AfterUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::AfterUndoRedo);
                 m_isDuringUndoRedo = false;
 
 #if defined(ENABLE_UNDOCACHE_CONSISTENCY_CHECKS)
@@ -1468,9 +1480,9 @@ namespace AzToolsFramework
             if (m_undoStack->CanRedo())
             {
                 m_isDuringUndoRedo = true;
-                EBUS_EVENT(ToolsApplicationEvents::Bus, BeforeUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::BeforeUndoRedo);
                 m_undoStack->Redo();
-                EBUS_EVENT(ToolsApplicationEvents::Bus, AfterUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::AfterUndoRedo);
                 m_isDuringUndoRedo = false;
 
 #if defined(ENABLE_UNDOCACHE_CONSISTENCY_CHECKS)
@@ -1516,7 +1528,7 @@ namespace AzToolsFramework
             // notify Cry undo has started (SandboxIntegrationManager)
             // Only do this at the root level. OnEndUndo will be called at the root
             // level when EndUndoBatch is called.
-            EBUS_EVENT(ToolsApplicationEvents::Bus, OnBeginUndo, label);
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::OnBeginUndo, label);
         }
         else
         {
@@ -1649,7 +1661,7 @@ namespace AzToolsFramework
             for (AZ::EntityId entityId : m_dirtyEntities)
             {
                 AZ::Entity* entity = nullptr;
-                EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
                 if (entity)
                 {
