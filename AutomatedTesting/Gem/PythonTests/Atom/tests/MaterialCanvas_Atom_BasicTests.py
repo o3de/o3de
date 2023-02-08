@@ -72,7 +72,6 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
 
     import os
 
-    import azlmbr.general as general
     import azlmbr.math as math
 
     import Atom.atom_utils.atom_tools_utils as atom_tools_utils
@@ -158,7 +157,6 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
         # 10. Add the world_position_node to the material_document_graph.
         # This test will be verified when the nodes are connected as if it doesn't exist the connection won't be made.
         material_canvas_utils.add_node(material_graph_document, world_position_node, math.Vector2(-200.0, 10.0))
-        general.idle_wait(1.0)
 
         # 11. Create a new standard_pbr_node in memory.
         standard_pbr_node = material_canvas_utils.create_node_by_name(material_graph_document, "Standard PBR")
@@ -169,7 +167,6 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
         # 12. Add the standard_pbr_node to the material_document_graph.
         # This test will be verified when the nodes are connected as if it doesn't exist the connection won't be made.
         material_canvas_utils.add_node(material_graph_document, standard_pbr_node, math.Vector2(10.0, 220.0))
-        general.idle_wait(1.0)
 
         # 13. Create outbound_slot for our world_position_node and inbound_slot for our standard_pbr_node.
         # This test will be verified when the nodes are connected as if it doesn't exist the connection won't be made.
