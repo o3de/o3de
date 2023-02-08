@@ -53,7 +53,7 @@ namespace AZ
         MoveFunctorsToDeferredHead(AZ::ConsoleFunctorBase::GetDeferredHead());
     }
 
-    bool Console::PerformCommand
+    PerformCommandResult Console::PerformCommand
     (
         const char* command,
         ConsoleSilentMode silentMode,
@@ -83,7 +83,7 @@ namespace AZ
         return PerformCommand(commandView, commandArgsView, silentMode, invokedFrom, requiredSet, requiredClear);
     }
 
-    bool Console::PerformCommand
+    PerformCommandResult Console::PerformCommand
     (
         const ConsoleCommandContainer& commandAndArgs,
         ConsoleSilentMode silentMode,
@@ -94,13 +94,13 @@ namespace AZ
     {
         if (commandAndArgs.empty())
         {
-            return false;
+            return AZ::Failure("CommandAndArgs is empty.");
         }
 
         return PerformCommand(commandAndArgs.front(), ConsoleCommandContainer(commandAndArgs.begin() + 1, commandAndArgs.end()), silentMode, invokedFrom, requiredSet, requiredClear);
     }
 
-    bool Console::PerformCommand
+    PerformCommandResult Console::PerformCommand
     (
         AZStd::string_view command,
         const ConsoleCommandContainer& commandArgs,
@@ -120,11 +120,14 @@ namespace AZ
                                              requiredSet,
                                              requiredClear };
 
+            CVarFixedString commandLowercase(command);
+            AZStd::to_lower(commandLowercase.begin(), commandLowercase.end());
             m_deferredCommands.emplace_back(AZStd::move(deferredCommand));
-            return false;
+            return AZ::Failure(AZStd::string::format(
+                "Command \"%s\" is not yet registered. Deferring to attempt execution later.", commandLowercase.c_str()));
         }
 
-        return true;
+        return AZ::Success();
     }
 
     void Console::ExecuteConfigFile(AZStd::string_view configFileName)
