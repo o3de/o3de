@@ -6,7 +6,7 @@
  *
  */
 
-#include <PhysXColliderComponentmodeTests.h>
+#include <PhysXColliderComponentModeTests.h>
 #include <Source/EditorRigidBodyComponent.h>
 #include <EditorColliderComponent.h>
 
