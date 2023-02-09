@@ -48,7 +48,7 @@ namespace EMotionFX
                 AZ::Data::AssetId motionAssetId;
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                     motionAssetId,
-                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
                     motionFile,
                     azrtti_typeid<MotionAsset>(),
                     false);
@@ -195,7 +195,7 @@ namespace EMotionFX
                 AZ::Data::AssetId motionAssetId;
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                     motionAssetId,
-                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
                     motionFilename,
                     AZ::Data::s_invalidAssetType,
                     false);
