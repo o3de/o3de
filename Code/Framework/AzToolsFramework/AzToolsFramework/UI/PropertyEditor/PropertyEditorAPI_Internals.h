@@ -22,6 +22,7 @@
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzCore/Asset/AssetSerializer.h>
@@ -267,10 +268,18 @@ namespace AzToolsFramework
             auto value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node);
             if (value.has_value())
             {
-                AZ::JsonSerializationResult::ResultCode loadResult = AZ::Dom::Utils::LoadViaJsonSerialization(m_proxyValue, value.value());
-                if (loadResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                if (!Prefab::IsInspectorOverrideManagementEnabled())
                 {
                     m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
+                }
+                else
+                {
+                    AZ::JsonSerializationResult::ResultCode loadResult =
+                        AZ::Dom::Utils::LoadViaJsonSerialization(m_proxyValue, value.value());
+                    if (loadResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                    {
+                        m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
+                    }
                 }
             }
 
