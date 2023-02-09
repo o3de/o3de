@@ -81,6 +81,7 @@ namespace AssetProcessor
             AssertAbsorber m_absorber;
             AZStd::string m_databaseLocation;
             QCoreApplication coreApp;
+            AzToolsFramework::UuidUtilComponent m_uuidUtil;
             AzToolsFramework::MetadataManager m_metadataManager;
             AssetProcessor::UuidManager m_uuidManager;
             int argc = 0;
@@ -898,6 +899,7 @@ namespace AssetProcessor
             AZStd::string m_assetTestString    = "Its the Asset A";
             AZStd::string m_productTestString  = "Its a product A";
             UnitTests::MockVirtualFileIO m_virtualFileIO;
+            AzToolsFramework::UuidUtilComponent m_uuidUtil;
             AzToolsFramework::MetadataManager m_metadataManager;
             AssetProcessor::UuidManager m_uuidManager;
         };

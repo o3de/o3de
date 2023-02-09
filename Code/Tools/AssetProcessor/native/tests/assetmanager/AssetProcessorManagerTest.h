@@ -175,6 +175,7 @@ protected:
     AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
     AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_config;
     ::UnitTests::MockVirtualFileIO m_virtualFileIO;
+    AzToolsFramework::UuidUtilComponent m_uuidUtil;
     AzToolsFramework::MetadataManager m_metadataManager;
     AssetProcessor::UuidManager m_uuidManager;
     QString m_gameName;
