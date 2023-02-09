@@ -177,6 +177,7 @@ set(FILES
     OutcomeTests.cpp
     Patching.cpp
     RemappableId.cpp
+    RTTI/IsTypeofBenchmarks.cpp
     RTTI/TypeSafeIntegralTests.cpp
     Rtti.cpp
     Script.cpp

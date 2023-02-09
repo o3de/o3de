@@ -10,7 +10,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QDialog>
-#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #endif
 
 class QTreeView;
