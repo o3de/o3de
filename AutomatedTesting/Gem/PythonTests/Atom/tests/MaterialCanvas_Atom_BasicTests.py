@@ -58,11 +58,11 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
     5) Use the CloseAllDocumentsExcept bus call to close all but one.
     6) Verify Node Palette pane visibility.
     7) Verify material graph name is 'test1'.
-    8) Create a new material_graph from material_graph_document_id.
+    8) Create a new material_graph from material_graph_document_ids[0].
     9) Create a new world_position_node in memory.
-    10) Add the world_position_node to the material_document_graph.
+    10) Add the world_position_node to the material_graph.
     11) Create a new standard_pbr_node in memory.
-    12) Add the standard_pbr_node to the material_document_graph.
+    12) Add the standard_pbr_node to the material_graph
     13) Create outbound_slot for our world_position_node and inbound_slot for our standard_pbr_node.
     14) Create a node connection between world_position_node and standard_pbr_node successfully.
     15) Look for errors and asserts.
@@ -141,9 +141,9 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
             Tests.material_graph_name_is_test1,
             material_graph_name == "test1")
 
-        # 8. Create a new material_graph from material_graph_document_id.
-        material_graph_document_id = material_graph_document_ids[0]
-        material_graph = material_canvas_utils.get_graph(material_graph_document_id)
+        # 8. Create a new material_graph from material_graph_document_ids[0].
+        material_graph = material_canvas_utils.get_graph(material_graph_document_ids[0])
+        material_graph_id = material_canvas_utils.get_graph_id(material_graph_document_ids[0])
         Report.result(
             Tests.material_graph_created,
             material_graph.typename == "AZStd::shared_ptr<Graph>" and material_graph is not None)
@@ -154,19 +154,19 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
             Tests.world_position_node_created,
             world_position_node.typename == "AZStd::shared_ptr<Node>" and world_position_node is not None)
 
-        # 10. Add the world_position_node to the material_document_graph.
+        # 10. Add the world_position_node to the material_graph.
         # This test will be verified when the nodes are connected as if it doesn't exist the connection won't be made.
-        material_canvas_utils.add_node(material_graph_document, world_position_node, math.Vector2(-200.0, 10.0))
+        material_canvas_utils.add_node(material_graph_id, world_position_node, math.Vector2(-200.0, 10.0))
 
         # 11. Create a new standard_pbr_node in memory.
-        standard_pbr_node = material_canvas_utils.create_node_by_name(material_graph_document, "Standard PBR")
+        standard_pbr_node = material_canvas_utils.create_node_by_name(material_graph, "Standard PBR")
         Report.result(
             Tests.standard_pbr_node_created,
             standard_pbr_node.typename == "AZStd::shared_ptr<Node>" and standard_pbr_node is not None)
 
-        # 12. Add the standard_pbr_node to the material_document_graph.
+        # 12. Add the standard_pbr_node to the material_graph.
         # This test will be verified when the nodes are connected as if it doesn't exist the connection won't be made.
-        material_canvas_utils.add_node(material_graph_document, standard_pbr_node, math.Vector2(10.0, 220.0))
+        material_canvas_utils.add_node(material_graph_id, standard_pbr_node, math.Vector2(10.0, 220.0))
 
         # 13. Create outbound_slot for our world_position_node and inbound_slot for our standard_pbr_node.
         # This test will be verified when the nodes are connected as if it doesn't exist the connection won't be made.
@@ -175,9 +175,9 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
 
         # 14. Create a node connection between world_position_node and standard_pbr_node successfully.
         material_canvas_utils.add_connection_by_slot_id(
-            material_graph_document_id, world_position_node, outbound_slot, standard_pbr_node, inbound_slot)
+            material_graph_id, world_position_node, outbound_slot, standard_pbr_node, inbound_slot)
         are_slots_connected = material_canvas_utils.are_slots_connected(
-                material_graph_document_id, world_position_node, outbound_slot, standard_pbr_node, inbound_slot)
+                material_graph_id, world_position_node, outbound_slot, standard_pbr_node, inbound_slot)
         Report.result(Tests.nodes_connected, are_slots_connected is True)
 
         # 15. Look for errors and asserts.

@@ -14,31 +14,31 @@ from Atom.atom_utils.atom_constants import (
     DynamicNodeManagerRequestBusEvents, GraphControllerRequestBusEvents, GraphDocumentRequestBusEvents)
 
 
-def get_graph_name(graph_document_id: math.Uuid) -> str:
+def get_graph_name(document_id: math.Uuid) -> str:
     """
-    Gets the graph name of the given graph_document_id and returns it as a string.
-    :param graph_document_id: The UUID of a given graph document file.
-    :return: str representing the graph name of graph_document_id
+    Gets the graph name of the given document_id and returns it as a string.
+    :param document_id: The UUID of a given graph document file.
+    :return: str representing the graph name contained in document_id
     """
-    return atomtools.GraphDocumentRequestBus(bus.Event, GraphDocumentRequestBusEvents.GET_GRAPH_NAME, graph_document_id)
+    return atomtools.GraphDocumentRequestBus(bus.Event, GraphDocumentRequestBusEvents.GET_GRAPH_NAME, document_id)
 
 
-def get_graph_id(graph_document_id: math.Uuid) -> int:
+def get_graph_id(document_id: math.Uuid) -> int:
     """
-    Gets the graph ID of the given graph_document_id and returns it as an int.
-    :param graph_document_id: The UUID of a given graph document file.
-    :return: int representing the graph ID of graph_document_id
+    Gets the graph ID of the given document_id and returns it as an int.
+    :param document_id: The UUID of a given graph document file.
+    :return: int representing the graph ID of the graph contained in document_id
     """
-    return atomtools.GraphDocumentRequestBus(bus.Event, GraphDocumentRequestBusEvents.GET_GRAPH_ID, graph_document_id)
+    return atomtools.GraphDocumentRequestBus(bus.Event, GraphDocumentRequestBusEvents.GET_GRAPH_ID, document_id)
 
 
-def get_graph(graph_document_id: math.Uuid) -> object:
+def get_graph(document_id: math.Uuid) -> object:
     """
-    Gets the graph object of the given graph_document_id and returns it.
-    :param graph_document_id: The UUID of a given graph document file.
+    Gets the graph object of the given document_id and returns it.
+    :param document_id: The UUID of a given graph document file.
     :return: An AZStd::shared_ptr<Graph> object.
     """
-    return atomtools.GraphDocumentRequestBus(bus.Event, GraphDocumentRequestBusEvents.GET_GRAPH, graph_document_id)
+    return atomtools.GraphDocumentRequestBus(bus.Event, GraphDocumentRequestBusEvents.GET_GRAPH, document_id)
 
 
 def create_node_by_name(graph: object, node_name: str) -> object:
@@ -53,16 +53,16 @@ def create_node_by_name(graph: object, node_name: str) -> object:
         bus.Broadcast, DynamicNodeManagerRequestBusEvents.CREATE_NODE_BY_NAME, graph, node_name)
 
 
-def add_node(graph_document_id: math.Uuid, node: object, position: math.Vector2) -> int:
+def add_node(graph_id: math.Uuid, node: object, position: math.Vector2) -> int:
     """
     Adds a node saved in memory to the current graph document at a specific position on the graph grid.
-    :param graph_document_id: The UUID of a given graph document file.
+    :param graph_id: int representing the ID value of a given graph AZStd::shared_ptr<Graph> object.
     :param node: An AZStd::shared_ptr<Node> object.
     :param position: math.Vector2(x,y) value that determines where to place the node on the graph grid.
     :return: int representing the node ID of the newly placed node.
     """
     return graph.GraphControllerRequestBus(
-        bus.Event, GraphControllerRequestBusEvents.ADD_NODE, graph_document_id, node, position)
+        bus.Event, GraphControllerRequestBusEvents.ADD_NODE, graph_id, node, position)
 
 
 def get_graph_model_slot_id(slot_name: str) -> object:
@@ -75,12 +75,12 @@ def get_graph_model_slot_id(slot_name: str) -> object:
 
 
 def add_connection_by_slot_id(
-        graph_document_id: math.Uuid,
+        graph_id: math.Uuid,
         source_node: object, source_slot: object,
         target_node: object, target_slot: object) -> object:
     """
     Adds a new connection between a source node slot and a target node slot.
-    :param graph_document_id: The UUID of a given graph document file.
+    :param graph_id: int representing the ID value of a given graph AZStd::shared_ptr<Graph> object.
     :param source_node: An AZStd::shared_ptr<Node> object representing the source node to start the connection from.
     :param source_slot: An GraphModelSlotId object representing the slot on the source node to use for the connection.
     :param target_node: An AZStd::shared_ptr<Node> object representing the target node to end the connection to.
@@ -88,17 +88,17 @@ def add_connection_by_slot_id(
     :return: An AZStd::shared_ptr<Connection> object.
     """
     return graph.GraphControllerRequestBus(
-        bus.Event, GraphControllerRequestBusEvents.ADD_CONNECTION_BY_SLOT_ID, graph_document_id,
+        bus.Event, GraphControllerRequestBusEvents.ADD_CONNECTION_BY_SLOT_ID, graph_id,
         source_node, source_slot, target_node, target_slot)
 
 
 def are_slots_connected(
-        graph_document_id: math.Uuid,
+        graph_id: math.Uuid,
         source_node: object, source_slot: object,
         target_node: object, target_slot: object) -> bool:
     """
     Determines if 2 nodes have a connection formed between them and returns a boolean for success/failure.
-    :param graph_document_id: The UUID of a given graph document file.
+    :param graph_id: int representing the ID value of a given graph AZStd::shared_ptr<Graph> object.
     :param source_node: An AZStd::shared_ptr<Node> object representing the source node for the connection.
     :param source_slot: An GraphModelSlotId object representing the slot on the source node the connection uses.
     :param target_node: An AZStd::shared_ptr<Node> object representing the target node for the connection.
@@ -106,5 +106,5 @@ def are_slots_connected(
     :return: bool representing success (True) or failure (False).
     """
     return graph.GraphControllerRequestBus(
-        bus.Event, GraphControllerRequestBusEvents.ARE_SLOTS_CONNECTED, graph_document_id,
+        bus.Event, GraphControllerRequestBusEvents.ARE_SLOTS_CONNECTED, graph_id,
         source_node, source_slot, target_node, target_slot)
