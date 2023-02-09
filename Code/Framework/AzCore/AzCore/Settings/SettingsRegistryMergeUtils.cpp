@@ -116,16 +116,19 @@ namespace AZ::Internal
         const auto projectEngineKey = FixedValueString::format("%s/engine", ProjectSettingsRootKey);
         if (!settingsRegistry.Get(projectEngineMoniker, projectEngineKey) || projectEngineMoniker.empty())
         {
-            return AZ::Failure("Could not find 'engine' key in 'project.json'. "
-                "Please verify the project is registered and try again.");
+            return AZ::Failure("Could not find an 'engine' key in 'project.json'.\n"
+                "Please verify the project is registered with a compatible engine.");
         }
 
         FixedValueString engineName;
         const auto engineNameKey = FixedValueString::format("%s/engine_name", EngineSettingsRootKey);
         if (!settingsRegistry.Get(engineName, engineNameKey) || engineName.empty())
         {
-            return AZ::Failure("Could not find 'engine_name' key in 'engine.json'. "
-                "Please verify the 'engine.json' file is not corrupt and try again.");
+            return AZ::Failure(AZStd::string::format(
+                "Could not find an 'engine_name' key in '%s'.\n"
+                "Please verify the 'engine.json' file is not corrupt "
+                "and that the engine is installed and registered.",
+                engineJsonPath.c_str()));
         }
 
         FixedValueString projectEngineMonikerWithSpecifier = projectEngineMoniker;
@@ -141,8 +144,9 @@ namespace AZ::Internal
         if (projectEngineMoniker != engineName)
         {
             return AZ::Failure(AZStd::string::format(
-                "Project engine name '%s' does not match engine name '%s'",
-                projectEngineMoniker.c_str(), engineName.c_str()));
+                "Engine name '%s' in project.json does not match the engine_name '%s' found in '%s'.\n"
+                "Please verify the project has been registered to the correct engine.",
+                projectEngineMoniker.c_str(), engineName.c_str(), engineJsonPath.c_str()));
         }
 
         if (engineDependency.GetBounds().empty())
@@ -163,8 +167,10 @@ namespace AZ::Internal
                 if(!engineDependency.IsFullfilledBy(SemanticSpecifier(AZ::Uuid::CreateNull(), engineVersion)))
                 {
                     return AZ::Failure(AZStd::string::format(
-                        "Engine version '%s' does not satisfy the project's engine constraints '%s' ",
-                        engineVersionValue.c_str(), projectEngineMonikerWithSpecifier.c_str()));
+                        "Engine version '%s' in '%s' does not satisfy the project.json engine constraints '%s'.\n"
+                        "Please verify you have a compatible engine installed and that the project is registered  "
+                        " to the correct engine.",
+                        engineVersionValue.c_str(), engineJsonPath.c_str(), projectEngineMonikerWithSpecifier.c_str()));
                 }
             }
         }
@@ -207,7 +213,7 @@ namespace AZ::Internal
             }
 
             AZ::IO::FixedMaxPath engineJsonPath{ engineRoot / Internal::EngineJsonFilename };
-            AZ::IO::FixedMaxPath projectJsonPath{ engineRoot / projectPath / Internal::ProjectJsonFilename };
+            AZ::IO::FixedMaxPath projectJsonPath{ projectPath / Internal::ProjectJsonFilename };
             if (auto isCompatible = Internal::EngineIsCompatible(settingsRegistry, engineJsonPath,
                 projectJsonPath, projectUserJsonPath);
                 !isCompatible)
@@ -293,8 +299,8 @@ namespace AZ::Internal
                     // absolute project paths, due to the way AZ::IO::Path handles appending of paths.
                     // if projectPath is absolute, engineInfo.m_path will be discarded e.g. <projectPath>/project.json
                     // if projectPath is relative, projectJsonPath will include the engine path e.g. <enginePath>/<projectPath>/project.json
-                    AZ::IO::FixedMaxPath projectJsonPath{engineInfo.m_path / projectPath / ProjectJsonFilename};
-                    AZ::IO::FixedMaxPath projectUserJsonPath{engineInfo.m_path / projectUserPath / ProjectJsonFilename};
+                    AZ::IO::FixedMaxPath projectJsonPath{projectPath / ProjectJsonFilename};
+                    AZ::IO::FixedMaxPath projectUserJsonPath{projectUserPath / ProjectJsonFilename};
                     AZ::IO::FixedMaxPath engineJsonPath{engineInfo.m_path  / EngineJsonFilename};
 
                     auto isCompatible = Internal::EngineIsCompatible(scratchSettingsRegistry, engineJsonPath, projectJsonPath, projectUserJsonPath);
@@ -333,7 +339,7 @@ namespace AZ::Internal
                     if (!AZ::IO::SystemFile::Exists(projectJsonPath.c_str()))
                     {
                         // add the project path where we looked for 'project.json'
-                        missingProjectJsonPaths.insert((engineInfo.m_path / projectPath).LexicallyNormal());
+                        missingProjectJsonPaths.insert((projectPath).LexicallyNormal());
                     }
                 }
 
@@ -344,7 +350,7 @@ namespace AZ::Internal
                     // merge in the engine and project settings with overrides
                     Internal::MergeEngineAndProjectSettings(settingsRegistry,
                         (engineRoot  / EngineJsonFilename),
-                        (engineRoot / projectPath / ProjectJsonFilename),
+                        (projectPath / ProjectJsonFilename),
                         (engineRoot / projectUserPath / ProjectJsonFilename)
                         );
                 }
@@ -543,6 +549,7 @@ namespace AZ::SettingsRegistryMergeUtils
         }
 
         AZ::IO::FixedMaxPath projectRoot;
+        // Note: the projectRoot should be absolute because of FindProjectRoot
         settingsRegistry.Get(projectRoot.Native(), FilePathKey_ProjectPath);
         if (projectRoot.empty())
         {
@@ -570,8 +577,7 @@ namespace AZ::SettingsRegistryMergeUtils
             return engineRoot;
         }
 
-        // Do not use the project root as the engine root, otherwise we won't detect that the engine root
-        // is missing and notify the user.
+        // no engine root was found
         return {};
     }
 
@@ -1010,11 +1016,20 @@ namespace AZ::SettingsRegistryMergeUtils
 
         // Engine root folder - corresponds to the @engroot@ alias
         AZ::IO::FixedMaxPath engineRoot = FindEngineRoot(registry);
+        if (engineRoot.empty())
+        {
+            // Use the project path if the engine root wasn't found, this can happen
+            // when running the game launcher with bundled assets which are not loaded
+            // until after the SettingsRegistry has determined file paths
+            engineRoot = projectPath;
+        }
+
         if (!engineRoot.empty())
         {
             engineRoot = engineRoot.LexicallyNormal();
             registry.Set(FilePathKey_EngineRootFolder, engineRoot.Native());
         }
+
 
         // Cache folder
         AZ::IO::FixedMaxPath projectCachePath = FindProjectCachePath(registry, projectPath).LexicallyNormal();
