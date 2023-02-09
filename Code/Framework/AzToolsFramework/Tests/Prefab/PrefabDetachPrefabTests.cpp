@@ -470,14 +470,14 @@ namespace UnitTest
 
         // Create the wheels, red wheel and tire entities.
         AZ::EntityId wheelsEntityId = CreateEditorEntityUnderRoot(wheelsEntityName);
-        AZ::EntityId redWheelEntityId = CreateEditorEntity(redWheelEntityName, wheelsEntityId);
+        CreateEditorEntity(redWheelEntityName, wheelsEntityId);
         AZ::EntityId tireEntityId = CreateEditorEntity(tireEntityName, wheelsEntityId);
 
         // Create the wheel prefab.
-        AZ::EntityId wheelContainerId = CreateEditorPrefab(wheelPrefabFilepath, { tireEntityId });
+        CreateEditorPrefab(wheelPrefabFilepath, { tireEntityId });
 
         // Create the black wheel entity.
-        AZ::EntityId blackWheelEntityId = CreateEditorEntity(blackWheelEntityName, wheelsEntityId);
+        CreateEditorEntity(blackWheelEntityName, wheelsEntityId);
 
         // Create the car prefab.
         AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { wheelsEntityId });
