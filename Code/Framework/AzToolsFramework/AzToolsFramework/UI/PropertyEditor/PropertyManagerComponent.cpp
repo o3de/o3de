@@ -235,7 +235,9 @@ namespace AzToolsFramework
             PropertyHandlerBase* pHandlerFound = nullptr;
             while ((it != m_Handlers.end()) && (it->first == handlerName))
             {
-                if ((it->second->Priority() > highestPriorityFound) && (it->second->HandlesType(handlerType)))
+                // Don't need to check against the handlerType if its null, which would only happen
+                // for non-data elements (e.g. UIElement) where the handler was requested specifically by name
+                if ((it->second->Priority() > highestPriorityFound) && (handlerType.IsNull() || it->second->HandlesType(handlerType)))
                 {
                     highestPriorityFound = it->second->Priority();
                     pHandlerFound = it->second;
