@@ -60,4 +60,4 @@ namespace GraphCanvas
     {
         return m_paletteCrc;
     }
-}
+} // namespace GraphCanvas

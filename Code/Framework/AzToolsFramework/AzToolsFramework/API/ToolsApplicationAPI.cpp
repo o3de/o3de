@@ -66,4 +66,4 @@ namespace AzToolsFramework
             isDuringUndoRedo, &ToolsApplicationRequests::IsDuringUndoRedo);
         return isDuringUndoRedo;
     }
-}
+} // namespace AzToolsFramework

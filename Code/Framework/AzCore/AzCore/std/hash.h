@@ -150,6 +150,90 @@ namespace AZStd
         //typedef T[N]          argument_type;
     };
 
+    // In the following section, we define template specializations for
+    // signed and unsigned integers of each size, as well as float double, etc, applying
+    // constexpr to them as appropriate.  This allows the code to be backward compatible with
+    // existing implementations that use these primitives inside their own more complicated hash function
+    // and have declared their own hash function as constexpr.  It allows the code to do this without
+    // forcing the generic hash template to be constexpr, which would force all the callers to be the same.
+
+    template<>
+    struct hash<AZ::u8>
+    {
+        typedef AZ::u8 argument_type;
+        typedef AZStd::size_t result_type;
+        constexpr inline result_type operator()(argument_type value) const
+        {
+            return static_cast<result_type>(value);
+        }
+    };
+
+    template<>
+    struct hash<AZ::s8>
+    {
+        typedef AZ::s8 argument_type;
+        typedef AZStd::size_t result_type;
+        constexpr inline result_type operator()(argument_type value) const
+        {
+            return static_cast<result_type>(value);
+        }
+    };
+
+    template<>
+    struct hash<AZ::u16>
+    {
+        typedef AZ::u16 argument_type;
+        typedef AZStd::size_t result_type;
+        constexpr inline result_type operator()(argument_type value) const
+        {
+            return static_cast<result_type>(value);
+        }
+    };
+
+    template<>
+    struct hash<AZ::s16>
+    {
+        typedef AZ::s16 argument_type;
+        typedef AZStd::size_t result_type;
+        constexpr inline result_type operator()(argument_type value) const
+        {
+            return static_cast<result_type>(value);
+        }
+    };
+
+    template<>
+    struct hash<AZ::s32>
+    {
+        typedef AZ::s32 argument_type;
+        typedef AZStd::size_t result_type;
+        constexpr inline result_type operator()(argument_type value) const
+        {
+            return static_cast<result_type>(value);
+        }
+    };
+
+    template<>
+    struct hash<AZ::u32>
+    {
+        typedef AZ::u32 argument_type;
+        typedef AZStd::size_t result_type;
+        constexpr inline result_type operator()(argument_type value) const
+        {
+            return static_cast<result_type>(value);
+        }
+    };
+
+    template<>
+    struct hash<AZ::s64>
+    {
+        typedef AZ::s64 argument_type;
+        typedef AZStd::size_t result_type;
+        constexpr inline result_type operator()(argument_type value) const
+        {
+            return static_cast<result_type>(value);
+        }
+    };
+
     template<>
     struct hash<AZ::u64>
     {
