@@ -72,8 +72,7 @@ namespace LmbrCentral
 
         SphereShape m_sphereShape; //!< Stores underlying sphere representation for this component.
 
-        using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
-        ComponentModeDelegate
-            m_componentModeDelegate; //!< Responsible for detecting ComponentMode activation and creating a concrete ComponentMode.
+        //! Responsible for detecting ComponentMode activation and creating a concrete ComponentMode.
+        AzToolsFramework::ComponentModeFramework::ComponentModeDelegate m_componentModeDelegate; 
     };
 } // namespace LmbrCentral
