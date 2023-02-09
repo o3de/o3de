@@ -181,7 +181,7 @@ namespace LmbrCentral
                 sourceTM.SetRotation(lookAtTransform.GetRotation());
                 sourceTM.SetTranslation(lookAtTransform.GetTranslation());
 
-                EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus, SetWorldTM, lookAtTransform);
+                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, lookAtTransform);
                 AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, sourceTM);
             }
             AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());

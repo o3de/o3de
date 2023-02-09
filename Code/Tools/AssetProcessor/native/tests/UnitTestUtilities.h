@@ -33,6 +33,8 @@ namespace UnitTests
         bool OnPreError(const char* window, const char* fileName, int line, const char* func, const char* message) override;
         bool OnPreWarning(const char* window, const char* fileName, int line, const char* func, const char* message) override;
 
+        void RecordError(const char* fileName, int line, const char* func, const char* message);
+
         bool m_expectingFailure = false;
         AZStd::vector<AZStd::string> m_suppressedMessages;
     };

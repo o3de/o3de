@@ -31,6 +31,7 @@ namespace NvCloth
             picker->GetEditButton()->setToolTip("Open Scene Settings to setup Cloth Modifiers");
             picker->GetEditButton()->setText("");
             picker->GetEditButton()->setEnabled(false);
+            picker->GetEditButton()->setVisible(true);
 
             connect(picker->GetComboBox(), 
                 &QComboBox::currentTextChanged, this,
@@ -41,9 +42,9 @@ namespace NvCloth
 
             connect(picker->GetEditButton(), 
                 &QToolButton::clicked, this,
-                [this, picker]()
+                [this]()
                 {
-                    OnEditButtonClicked(picker);
+                    OnEditButtonClicked();
                 });
 
             return picker;
@@ -61,7 +62,7 @@ namespace NvCloth
                 AZ::EntityId value;
                 if (attrValue->Read<AZ::EntityId>(value))
                 {
-                    GUI->SetEntityId(value);
+                    m_entityId = value;
                 }
                 else
                 {
@@ -81,7 +82,7 @@ namespace NvCloth
                         GUI->GetComboBox()->addItem(item.c_str());
                     }
 
-                    bool hasAsset = GetMeshAsset(GUI->GetEntityId()).Get() != nullptr;
+                    bool hasAsset = GetMeshAsset(m_entityId).Get() != nullptr;
                     GUI->GetEditButton()->setEnabled(hasAsset);
                 }
                 else
@@ -103,9 +104,9 @@ namespace NvCloth
             return true;
         }
 
-        void MeshNodeHandler::OnEditButtonClicked(widget_t* GUI)
+        void MeshNodeHandler::OnEditButtonClicked()
         {
-            AZ::Data::Asset<AZ::Data::AssetData> meshAsset = GetMeshAsset(GUI->GetEntityId());
+            AZ::Data::Asset<AZ::Data::AssetData> meshAsset = GetMeshAsset(m_entityId);
             if (meshAsset)
             {
                 // Open the asset with the preferred asset editor, which for Mesh and Actor Assets it's Scene Settings.

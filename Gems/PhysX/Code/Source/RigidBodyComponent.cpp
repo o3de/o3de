@@ -142,7 +142,7 @@ namespace PhysX
         {
             // Early out if there's no relevant physics world present.
             // It may be a valid case when we have game-time components assigned to editor entities via a script
-            // So no need to print a warning here.
+            // so no need to print a warning here.
             return;
         }
 
@@ -162,11 +162,18 @@ namespace PhysX
             return;
         }
 
-        AzFramework::EntityContextId gameContextId = AzFramework::EntityContextId::CreateNull();
-        AzFramework::GameEntityContextRequestBus::BroadcastResult(gameContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
+        // During activation all the collider components will create their physics shapes.
+        // Delaying the creation of the rigid body to OnEntityActivated so all the shapes are ready.
+        AZ::EntityBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void RigidBodyComponent::OnEntityActivated([[maybe_unused]] const AZ::EntityId& entityId)
+    {
+        AZ::EntityBus::Handler::BusDisconnect();
 
         // Create and setup rigid body & associated bus handlers
         CreatePhysics();
+
         // Add to world
         EnablePhysics();
     }
@@ -181,14 +188,19 @@ namespace PhysX
         if (m_cachedSceneInterface)
         {
             m_cachedSceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_rigidBodyHandle);
+            m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
 
+        AZ::EntityBus::Handler::BusDisconnect();
         Physics::RigidBodyRequestBus::Handler::BusDisconnect();
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
         m_sceneFinishSimHandler.Disconnect();
         m_activeBodySyncTransformHandler.Disconnect();
         AZ::TickBus::Handler::BusDisconnect();
+
+        m_isLastMovementFromKinematicSource = false;
+        m_rigidBodyTransformNeedsUpdateOnPhysReEnable = false;
     }
 
     void RigidBodyComponent::OnTick(float deltaTime, AZ::ScriptTimePoint /*currentTime*/)
@@ -384,14 +396,14 @@ namespace PhysX
         m_interpolator = std::make_unique<TransformForwardTimeInterpolator>();
         m_interpolator->Reset(transform.GetTranslation(), rotation);
 
-        Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled);
+        Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled, GetEntityId());
     }
 
     void RigidBodyComponent::DisablePhysics()
     {
         SetSimulationEnabled(false);
 
-        Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsDisabled);
+        Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsDisabled, GetEntityId());
     }
 
     bool RigidBodyComponent::IsPhysicsEnabled() const

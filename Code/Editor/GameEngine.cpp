@@ -34,7 +34,6 @@
 #include "Settings.h"
 
 // CryCommon
-#include <CryCommon/INavigationSystem.h>
 #include <CryCommon/MainThreadRenderRequestBus.h>
 
 // Editor
@@ -350,7 +349,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
     sip.bEditor = true;
     sip.bDedicatedServer = false;
-    AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
     sip.bPreview = bPreviewMode;
     sip.bTestMode = bTestMode;
     sip.hInstance = nullptr;
@@ -830,13 +828,8 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
     }
 }
 
-void CGameEngine::OnAreaModified(const AABB& modifiedArea)
+void CGameEngine::OnAreaModified([[maybe_unused]] const AABB& modifiedArea)
 {
-    INavigationSystem* pNavigationSystem = nullptr; // INavigationSystem will be converted to an AZInterface (LY-111343)
-    if (pNavigationSystem)
-    {
-        pNavigationSystem->WorldChanged(modifiedArea);
-    }
 }
 
 void CGameEngine::ExecuteQueuedEvents()

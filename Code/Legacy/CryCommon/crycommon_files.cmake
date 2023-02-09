@@ -28,7 +28,6 @@ set(FILES
     IValidator.h
     IWindowMessageHandler.h
     IXml.h
-    INavigationSystem.h
     IMNM.h
     SerializationTypes.h
     CryEndian.h

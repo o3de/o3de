@@ -167,7 +167,6 @@
    <addaction name="menuView_2"/>
    <addaction name="menuTools_2"/>
    <addaction name="menuSettings_2"/>
-   <addaction name="menuScript_Events_PREVIEW"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_New_Script">
@@ -415,6 +414,9 @@
    <property name="shortcut">
     <string>Ctrl+D</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
    <property name="autoRepeat">
     <bool>false</bool>
    </property>
@@ -425,6 +427,9 @@
    </property>
    <property name="text">
     <string>Delete</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
    <property name="autoRepeat">
     <bool>false</bool>
