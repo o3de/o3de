@@ -36,6 +36,7 @@ namespace AzToolsFramework
     void RegisterCrcHandler();
     void ReflectPropertyEditor(AZ::ReflectContext* context);
     void RegisterExeSelectPropertyHandler();
+    void RegisterLabelHandler();
 
     namespace Components
     {
@@ -222,6 +223,7 @@ namespace AzToolsFramework
             RegisterButtonPropertyHandlers();
             RegisterMultiLineEditHandler();
             RegisterExeSelectPropertyHandler();
+            RegisterLabelHandler();
 
             // GenericComboBoxHandlers
             RegisterGenericComboBoxHandler<AZ::Crc32>();
