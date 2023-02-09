@@ -69,9 +69,13 @@ namespace O3DE::ProjectManager
         void showEvent(QShowEvent* event) override;
         void resizeEvent(QResizeEvent* event) override;
         void moveEvent(QMoveEvent* event) override;
+        virtual void SetUpScreensControl(QWidget* parent);
 
         GemModel* m_gemModel = nullptr;
         QSet<QString> m_gemsToRegisterWithProject;
+        ScreensCtrl* m_screensControl = nullptr;
+
+
 
     private slots:
         void HandleOpenGemRepo();
@@ -98,7 +102,6 @@ namespace O3DE::ProjectManager
         QVBoxLayout* m_filterWidgetLayout = nullptr;
         GemFilterWidget* m_filterWidget = nullptr;
         DownloadController* m_downloadController = nullptr;
-        ScreensCtrl* m_screensControl = nullptr;
         bool m_notificationsEnabled = true;
         QString m_projectPath;
         bool m_readOnly;

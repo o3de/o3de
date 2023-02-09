@@ -36,9 +36,9 @@ namespace AzToolsFramework
         m_beginEditing = AZStd::move(beginEditing);
     }
 
-    void BaseShapeViewportEdit::InstallFinishEditing(AZStd::function<void()> finishEditing)
+    void BaseShapeViewportEdit::InstallEndEditing(AZStd::function<void()> endEditing)
     {
-        m_finishEditing = AZStd::move(finishEditing);
+        m_endEditing = AZStd::move(endEditing);
     }
 
     AZ::Transform BaseShapeViewportEdit::GetManipulatorSpace() const
@@ -91,11 +91,34 @@ namespace AzToolsFramework
         }
     }
 
-    void BaseShapeViewportEdit::FinishEditing()
+    void BaseShapeViewportEdit::EndEditing()
     {
-        if (m_finishEditing)
+        if (m_endEditing)
         {
-            m_finishEditing();
+            m_endEditing();
+        }
+    }
+
+    void BaseShapeViewportEdit::BeginUndoBatch(const char* label)
+    {
+        if (!m_entityIds.empty())
+        {
+            ToolsApplicationRequests::Bus::BroadcastResult(
+                m_undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, label);
+
+            for (const AZ::EntityId& entityId : m_entityIds)
+            {
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
+            }
+        }
+    }
+
+    void BaseShapeViewportEdit::EndUndoBatch()
+    {
+        if (m_undoBatch)
+        {
+            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
+            m_undoBatch = nullptr;
         }
     }
 } // namespace AzToolsFramework

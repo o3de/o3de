@@ -27,6 +27,7 @@
 #include <Source/CapsuleColliderComponent.h>
 #include <Source/EditorColliderComponent.h>
 #include <Source/EditorRigidBodyComponent.h>
+#include <Source/EditorStaticRigidBodyComponent.h>
 #include <Editor/Source/Components/EditorSystemComponent.h>
 #include <Source/MeshColliderComponent.h>
 #include <Source/SphereColliderComponent.h>
@@ -187,6 +188,7 @@ namespace PhysX
     void EditorColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     void EditorColliderComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -607,8 +609,6 @@ namespace PhysX
             AZ_Warning("EditorColliderComponent", false, "Unsupported shape type for building game entity!");
             break;
         }
-
-        StaticRigidBodyUtils::TryCreateRuntimeComponent(*GetEntity(), *gameEntity);
     }
 
     AZ::Transform EditorColliderComponent::GetColliderLocalTransform() const
@@ -640,9 +640,7 @@ namespace PhysX
     {
         m_cachedAabbDirty = true;
 
-        // Don't create static rigid body in the editor if current entity components
-        // don't allow creation of runtime static rigid body component
-        if (!StaticRigidBodyUtils::CanCreateRuntimeComponent(*GetEntity()))
+        if (!GetEntity()->FindComponent<EditorStaticRigidBodyComponent>())
         {
             return;
         }
@@ -669,7 +667,7 @@ namespace PhysX
         if (m_shapeConfiguration.IsAssetConfig())
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-            Utils::GetShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration,
+            Utils::CreateShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration,
                 m_configuration, m_hasNonUniformScale, m_shapeConfiguration.m_subdivisionLevel, shapes);
             configuration.m_colliderAndShapeData = shapes;
         }
@@ -825,7 +823,7 @@ namespace PhysX
             m_shapeConfiguration.m_physicsAsset.m_pxAsset.IsReady())
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-            Utils::GetShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration, m_configuration, m_hasNonUniformScale,
+            Utils::CreateShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration, m_configuration, m_hasNonUniformScale,
                 m_shapeConfiguration.m_subdivisionLevel, shapes);
 
             if (shapes.empty())

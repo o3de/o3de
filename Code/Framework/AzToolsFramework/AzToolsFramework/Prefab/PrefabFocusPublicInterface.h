@@ -26,7 +26,9 @@ namespace AzToolsFramework::Prefab
         SHOW_NESTED_INSTANCES_CONTENT
     };
 
-    //! Public Interface for external systems to utilize the Prefab Focus system.
+    //! Public Interface for external systems to utilize the Prefab Focus system. This interface shouldn't expose
+    //! internal prefab constructs like TemplateIds and prefab instances. For such cases, use the PrefabFocusInterface
+    //! instead.
     class PrefabFocusPublicInterface
     {
     public:
