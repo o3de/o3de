@@ -17,6 +17,9 @@ namespace AzToolsFramework
         // By default let the text wrap so that the label can grow to fit any text specified
         label->setWordWrap(true);
 
+        // Also enable link activation in case the user wants to embed links to content such as documentation
+        label->setOpenExternalLinks(true);
+
         return label;
     }
 
