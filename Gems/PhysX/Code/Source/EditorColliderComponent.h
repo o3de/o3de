@@ -173,7 +173,7 @@ namespace PhysX
         void OnSelected() override;
         void OnDeselected() override;
 
-        // DisplayCallback overrides...
+        // DisplayCallback overrides ...
         void Display(const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) const override;
 

@@ -65,7 +65,8 @@ set(FILES
     ManipulatorBoundsTests.cpp
     ManipulatorCoreTests.cpp
     ManipulatorViewTests.cpp
-    MetadataManagerTests.cpp
+    Metadata/MetadataManagerTests.cpp
+    Metadata/UuidUtilTests.cpp
     PerforceComponentTests.cpp
     PlatformAddressedAssetCatalogTests.cpp
     Prefab/Benchmark/Link/SingleInstanceMultiplePatchesBenchmarks.cpp
@@ -101,6 +102,7 @@ set(FILES
     Prefab/PrefabCreateTests.cpp
     Prefab/PrefabDeleteTests.cpp
     Prefab/PrefabDeleteAsOverrideTests.cpp
+    Prefab/PrefabDetachPrefabTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabInstanceDomGeneratorTestFixture.cpp

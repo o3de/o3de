@@ -1,0 +1,91 @@
+{
+    // TODO(MaterialPipeline): This MaterialPipelineTest_OpacityPropertyGroup.json file is here temporarily because it needs to replace the
+    // lua functor that appears in the original OpacityPropertyGroup.json. Once we migrate the core material types to the material pipeline
+    // system, replace the functor in OpacityPropertyGroup.json and delete this file.
+    "name": "opacity",
+    "displayName": "Opacity",
+    "description": "Properties for configuring the materials transparency.",
+    "properties": [
+        {
+            "name": "mode",
+            "displayName": "Opacity Mode",
+            "description": "Indicates the general approach how transparency is to be applied.",
+            "type": "Enum",
+            "enumValues": [ "Opaque", "Cutout", "Blended", "TintedTransparent" ],
+            "defaultValue": "Opaque",
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_opacity_mode"
+            }
+        },
+        {
+            "name": "alphaSource",
+            "displayName": "Alpha Source",
+            "description": "Indicates whether to get the opacity texture from the Base Color map (Packed) or from a separate greyscale texture (Split).",
+            "type": "Enum",
+            "enumValues": [ "Packed", "Split", "None" ],
+            "defaultValue": "Packed",
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_opacity_source"
+            }
+        },
+        {
+            "name": "textureMap",
+            "displayName": "Texture",
+            "description": "Texture for defining surface opacity.",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_opacityMap"
+            }
+        },
+        {
+            "name": "textureMapUv",
+            "displayName": "UV",
+            "description": "Opacity map UV set",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_opacityMapUvIndex"
+            }
+        },
+        {
+            "name": "factor",
+            "displayName": "Factor",
+            "description": "Factor for cutout threshold and blending",
+            "type": "Float",
+            "min": 0.0,
+            "max": 1.0,
+            "defaultValue": 0.5,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_opacityFactor"
+            }
+        },
+        {
+            "name": "alphaAffectsSpecular",
+            "displayName": "Alpha affects specular",
+            "description": "How much the alpha value should also affect specular reflection. This should be 0.0 for materials where light can transmit through their physical surface (like glass), but 1.0 when alpha determines the very presence of a surface (like hair or grass)",
+            "type": "float",
+            "min": 0.0,
+            "max": 1.0,
+            "defaultValue": 0.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_opacityAffectsSpecularFactor"
+            }
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .json file
+                "file": "TestData/Materials/Types/MaterialPipelineTest_HandleOpacityMode.lua"
+            }
+        }
+    ]
+}

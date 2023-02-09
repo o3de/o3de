@@ -348,7 +348,7 @@ namespace AZ
         // Verify that we can successfully execute a free-standing console functor.
         // The test functor puts the number of arguments into s_consoleFreeFuncArgs.
         s_consoleFreeFuncArgs = 0;
-        bool result = console->PerformCommand("TestFreeFunc arg1 arg2");
+        bool result = static_cast<bool>(console->PerformCommand("TestFreeFunc arg1 arg2"));
         EXPECT_TRUE(result);
         EXPECT_EQ(2, s_consoleFreeFuncArgs);
     }
@@ -361,7 +361,7 @@ namespace AZ
         // Verify that we can successfully execute a class instance console functor.
         // The test functor puts the number of arguments into m_classFuncArgs.
         m_classFuncArgs = 0;
-        bool result = console->PerformCommand("ConsoleTests.TestClassFunc arg1 arg2");
+        bool result = static_cast<bool>(console->PerformCommand("ConsoleTests.TestClassFunc arg1 arg2"));
         EXPECT_TRUE(result);
         EXPECT_EQ(2, m_classFuncArgs);
     }
@@ -389,7 +389,7 @@ namespace AZ
         AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
         ASSERT_TRUE(console);
 
-        bool result = console->PerformCommand("Example.TestClassFunc arg1 arg2");
+        bool result = static_cast<bool>(console->PerformCommand("Example.TestClassFunc arg1 arg2"));
         EXPECT_TRUE(result);
         for (auto& instance : multiInstances)
         {

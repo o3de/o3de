@@ -82,11 +82,13 @@
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
@@ -438,6 +440,19 @@ namespace ScriptCanvasEditor
         m_emptyCanvas->RegisterAcceptedMimeType(AzToolsFramework::EditorEntityIdContainer::GetMimeType());
 
         m_editorToolbar = aznew GraphCanvas::AssetEditorToolbar(ScriptCanvasEditor::AssetEditorId);
+
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            static constexpr AZStd::string_view ScriptCanvasActionContextIdentifier = "o3de.context.editor.scriptcanvas";
+
+            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+
+            AzToolsFramework::ActionContextProperties contextProperties;
+            contextProperties.m_name = "O3DE Script Canvas";
+
+            // Register a custom action context to allow duplicated shortcut hotkeys to work
+            actionManagerInterface->RegisterActionContext("", ScriptCanvasActionContextIdentifier, contextProperties, this);
+        }
 
         // Custom Actions
         {
@@ -1866,6 +1881,12 @@ namespace ScriptCanvasEditor
         ui->action_Copy->setShortcut(QKeySequence(QKeySequence::Copy));
         ui->action_Paste->setShortcut(QKeySequence(QKeySequence::Paste));
         ui->action_Delete->setShortcut(QKeySequence(QKeySequence::Delete));
+        addAction(ui->action_Undo);
+        addAction(ui->action_Cut);
+        addAction(ui->action_Copy);
+        addAction(ui->action_Paste);
+        addAction(ui->action_Delete);
+        addAction(ui->action_Duplicate);
 
         connect(ui->menuEdit, &QMenu::aboutToShow, this, &MainWindow::OnEditMenuShow);
 
