@@ -24,19 +24,24 @@ namespace
 {
     QString elidedTextWithExtension(const QFontMetrics& fm, const QString& text, int width)
     {
-        if (fm.horizontalAdvance(text) <= width)
-            return text;
-
-        const int dot = text.lastIndexOf(QLatin1Char{'.'});
-        if (dot != -1)
+        // Create a second line if text width is wider than the given space
+        auto textWidth = fm.horizontalAdvance(text);
+        if (textWidth <= width)
         {
-            const auto baseName = text.left(dot);
-            const auto extension = text.mid(dot + 1);
-            return fm.elidedText(baseName, Qt::ElideRight, width - fm.horizontalAdvance(extension)) + extension;
+            return text;
         }
         else
         {
-            return fm.elidedText(text, Qt::ElideRight, width);
+            // Calculate the number of characters needed in each line to not exceed the given space
+            double percentOfTextPerLine = static_cast<double>(width) / static_cast<double>(textWidth);
+            int charactersPerLine = percentOfTextPerLine * text.size() - 1;
+            // If the second line is wider than the given space, elide it
+            QString firstLine = text.mid(0, charactersPerLine);
+            QString secondLine = text.mid(charactersPerLine);
+            auto secondLineWidth = fm.horizontalAdvance(secondLine);
+            return (secondLineWidth <= width ?
+                firstLine + "\n" + secondLine :
+                firstLine + "\n" + fm.elidedText(secondLine, Qt::ElideRight, width));
         }
     }
 }
@@ -160,26 +165,26 @@ namespace AzQtComponents
             // text
 
             const auto textHeight = option.fontMetrics.height();
-            const auto textRect = QRect{rect.left(), rect.bottom() - textHeight, rect.width(), textHeight};
+            const auto textRect = QRect{rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2};
 
             painter->setPen(option.palette.color(QPalette::Text));
             painter->drawText(
                 textRect,
-                elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width()),
-                QTextOption{ option.decorationAlignment });
+                Qt::AlignTop | Qt::AlignHCenter,
+                elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width()));
         }
         else
         {
             // text
 
             const auto textHeight = option.fontMetrics.height();
-            const auto textRect = QRect{ rect.left(), rect.bottom() - textHeight, rect.width(), textHeight };
+            const auto textRect = QRect{ rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2};
 
             painter->setPen(option.palette.color(QPalette::Text));
             painter->drawText(
                 textRect,
-                elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width()),
-                QTextOption{ option.decorationAlignment });
+                Qt::AlignTop | Qt::AlignHCenter,
+                elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width()));
         }
 
         painter->restore();
