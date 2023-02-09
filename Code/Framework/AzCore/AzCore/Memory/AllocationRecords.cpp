@@ -456,6 +456,11 @@ namespace AZ::Debug
     //=========================================================================
     void AllocationRecords::SetMode(Mode mode)
     {
+        // If records recording was previously disabled and is now being enabled, some allocations
+        // may not be properly recorded. No need to print out a warning or log here, because an assert will occur
+        // later if that's a problem. There was previously a warning here to catch this situation earlier,
+        // but this warning was frequently being triggered in automated tests, and the assert was not occuring because
+        // the allocations were being properly handled.
         if (mode == RECORD_NO_RECORDS)
         {
             {
@@ -466,9 +471,6 @@ namespace AZ::Debug
             m_requestedBytesPeak = 0;
             m_requestedAllocs = 0;
         }
-
-        // Don't print anything out - if an issue occurs, an assert will fire off later.
-        // Any printing here will show up frequently in automated tests, making it difficult to parse the logs.
         m_mode = mode;
     }
 
