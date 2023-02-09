@@ -1738,6 +1738,8 @@ namespace AssetProcessor
             }
         }
 
+        bool originalIsMetadata = false;
+
         // if metadata file change, pretend the actual file changed
         // the fingerprint will be different anyway since metadata file is folded in
 
@@ -1749,6 +1751,7 @@ namespace AssetProcessor
             if (normalizedFilePath.endsWith("." + metaInfo.first, Qt::CaseInsensitive))
             {
                 //its a meta file.  What was the original?
+                originalIsMetadata = true;
 
                 normalizedFilePath = normalizedFilePath.left(normalizedFilePath.length() - (metaInfo.first.length() + 1));
                 if (!metaInfo.second.isEmpty())
@@ -1798,6 +1801,64 @@ namespace AssetProcessor
                 break;
             }
         }
+
+        if (m_metaCreationDelayMs > 0)
+        {
+            AZ::IO::Path absolutePath = normalizedFilePath.toUtf8().constData();
+
+            // Metadata file added, see if it matches a waiting file
+            if (originalIsMetadata && !source.m_isDelete)
+            {
+                auto itr = m_delayProcessMetadataFiles.find(absolutePath);
+
+                if (itr != m_delayProcessMetadataFiles.end())
+                {
+                    // Metadata file matches a waiting file, remove from queue and proceed
+                    m_delayProcessMetadataFiles.erase(itr);
+                }
+            }
+            else
+            {
+                // Regular file added or metadata deleted, make sure it has a metadata file before proceeding
+                if (m_delayProcessMetadataFiles.contains(absolutePath))
+                {
+                    auto duration = m_delayProcessMetadataFiles[absolutePath].msecsTo(QDateTime::currentDateTime());
+                    if (source.m_isDelete)
+                    {
+                        m_delayProcessMetadataFiles.erase(absolutePath);
+                    }
+                    else if (duration < m_metaCreationDelayMs)
+                    {
+                        // Already waiting on file, keep waiting
+                        return;
+                    }
+                    else
+                    {
+                        // Times up, process the file
+                        m_delayProcessMetadataFiles.erase(absolutePath);
+                    }
+                }
+                else if ((originalIsMetadata || !source.m_isDelete) && !CheckMetadataIsAvailable(absolutePath))
+                {
+                    //File not in queue and invalid metadata, add to queue
+                    AZ_TracePrintf(
+                        AssetProcessor::DebugChannel,
+                        "Source " AZ_STRING_FORMAT " has no metadata file yet, delaying processing to wait for metadata file.\n",
+                        AZ_STRING_ARG(absolutePath.Native()));
+
+                    m_delayProcessMetadataFiles.emplace(absolutePath, QDateTime::currentDateTime());
+
+                    if (!m_delayProcessMetadataQueued)
+                    {
+                        m_delayProcessMetadataQueued = true;
+                        QTimer::singleShot(m_metaCreationDelayMs, this, SLOT(DelayedMetadataFileCheck()));
+                    }
+
+                    return;
+                }
+            }
+        }
+
         // even if the entry already exists,
         // overwrite the entry here, so if you modify, then delete it, its the latest action thats always on the list.
 
@@ -5815,5 +5876,62 @@ namespace AssetProcessor
             }
         }
         return filesFound;
+    }
+
+    void AssetProcessorManager::SetMetaCreationDelay(AZ::u32 milliseconds)
+    {
+        m_metaCreationDelayMs = milliseconds;
+    }
+
+    bool AssetProcessorManager::CheckMetadataIsAvailable(AZ::IO::PathView absolutePath)
+    {
+        auto* fileStateInterface = AZ::Interface<IFileStateRequests>::Get();
+        auto* uuidInterface = AZ::Interface<IUuidRequests>::Get();
+
+        AZ_Assert(fileStateInterface, "Programmer Error - IFileStateRequests is not available.");
+        AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests is not available.");
+
+        return !uuidInterface->IsGenerationEnabledForFile(absolutePath) ||
+            fileStateInterface->Exists(AzToolsFramework::MetadataManager::ToMetadataPath(absolutePath).c_str());
+    }
+
+    void AssetProcessorManager::DelayedMetadataFileCheck()
+    {
+        m_delayProcessMetadataQueued = false;
+        auto now = QDateTime::currentDateTime();
+        bool rerun = false;
+        int minWaitTime = m_metaCreationDelayMs;
+
+        for (const auto& [file, time] : m_delayProcessMetadataFiles)
+        {
+            auto duration = time.msecsTo(now);
+
+            // QTimer is not a precise timer, it could fire several milliseconds before or after the required wait time.
+            // Just check if the elapsed time is relatively close; 30ms is arbitrary but should be sufficient.
+            // Precise timing isn't necessary here anyway.
+            constexpr double ToleranceMs = 30;
+            if (duration + ToleranceMs >= m_metaCreationDelayMs)
+            {
+                // Times up, process it
+                AssessFileInternal(file.c_str(), false);
+            }
+            else
+            {
+                rerun = true;
+                // Figure out the shortest amount of time left to wait for the next file.
+                // This avoids waiting the full duration again in the case that a file was added to the wait list after the timer was already started.
+                // Example:
+                // t=0, A is added and the timer is started with 5000ms delay
+                // t=1000, B is added
+                // t=5000, this function runs and A is processed.  Timer is started again with 1000ms wait
+                minWaitTime = AZ::GetMin(minWaitTime, AZ::GetMax(0, int(m_metaCreationDelayMs - duration)));
+            }
+        }
+
+        if (rerun)
+        {
+            m_delayProcessMetadataQueued = true;
+            QTimer::singleShot(minWaitTime, this, SLOT(DelayedMetadataFileCheck()));
+        }
     }
 } // namespace AssetProcessor

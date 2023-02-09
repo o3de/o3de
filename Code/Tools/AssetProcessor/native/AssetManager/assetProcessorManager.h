@@ -240,6 +240,11 @@ namespace AssetProcessor
         //! or the scan folder ID hasn't been set for the platform config.
         AZStd::optional<AZ::s64> GetIntermediateAssetScanFolderId() const;
 
+        //! Sets the maximum amount of time to wait before automatically generating a metadata file for an asset which does not currently have a metadata file.
+        //! Only applies to file types which are using the metadata system.
+        //! This is used to prevent AP generating new metadata files while someone is trying to rename an existing file.
+        void SetMetaCreationDelay(AZ::u32 milliseconds);
+
     Q_SIGNALS:
         void NumRemainingJobsChanged(int newNumJobs);
 
@@ -343,6 +348,8 @@ namespace AssetProcessor
 
         void OnBuildersRegistered();
         void OnCatalogReady();
+
+        void DelayedMetadataFileCheck();
 
     private:
         template <class R>
@@ -480,6 +487,8 @@ namespace AssetProcessor
         //! Check whether the specified file is an LFS pointer file.
         bool IsLfsPointerFile(const AZStd::string& filePath);
 
+        bool CheckMetadataIsAvailable(AZ::IO::PathView absolutePath);
+
         AssetProcessor::PlatformConfiguration* m_platformConfig = nullptr;
 
         bool m_queuedExamination = false;
@@ -492,6 +501,15 @@ namespace AssetProcessor
         ThreadController<AssetCatalog>* m_assetCatalog;
         typedef QHash<QString, FileEntry> FileExamineContainer;
         FileExamineContainer m_filesToExamine; // order does not actually matter in this (yet)
+
+        // Set of files which are metadata-enabled but don't have a metadata file.
+        // These files will be delayed for processing for a short time to wait for a metadata file to show up.
+        AZStd::unordered_map<AZ::IO::Path, QDateTime> m_delayProcessMetadataFiles;
+        // Indicates if DelayedMetadataFileCheck has already been queued to run or not.
+        bool m_delayProcessMetadataQueued = false;
+        // Max delay time before creating a metadata file.  Defaults to 1000ms.
+        // Avoid setting this too high as it will delay processing of new files.
+        AZ::u32 m_metaCreationDelayMs = 1000;
 
         // this map contains a list of source files that were discovered in the database before asset scanning began.
         // (so files from a previous run).

@@ -26,7 +26,10 @@ namespace AssetProcessor
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<UuidSettings>()->Version(1)->Field("EnabledTypes", &UuidSettings::m_enabledTypes);
+            serializeContext->Class<UuidSettings>()
+                ->Version(2)
+                ->Field("EnabledTypes", &UuidSettings::m_enabledTypes)
+                ->Field("MetaCreationDelayMs", &UuidSettings::m_metaCreationDelayMs);
         }
     }
 

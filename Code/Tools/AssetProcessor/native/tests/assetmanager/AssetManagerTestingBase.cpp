@@ -88,6 +88,7 @@ namespace UnitTests
 
         // Create the APM
         m_assetProcessorManager = AZStd::make_unique<TestingAssetProcessorManager>(m_platformConfig.get());
+        m_assetProcessorManager->SetMetaCreationDelay(0);
 
         // Cache the db pointer because the TEST_F generates a subclass which can't access this private member
         m_stateData = m_assetProcessorManager->m_stateData;

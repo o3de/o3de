@@ -165,6 +165,7 @@ void AssetProcessorManagerTest::SetUp()
     m_mockApplicationManager->BusConnect();
 
     m_assetProcessorManager.reset(new AssetProcessorManager_Test(m_config.get()));
+    m_assetProcessorManager->SetMetaCreationDelay(0);
     m_errorAbsorber->Clear();
 
     m_isIdling = false;
