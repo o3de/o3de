@@ -246,6 +246,28 @@ namespace AZStd
     };
 
     template<>
+    struct hash<long>
+    {
+        typedef long argument_type;
+        typedef AZStd::size_t result_type;
+        constexpr inline result_type operator()(argument_type value) const
+        {
+            return static_cast<result_type>(value);
+        }
+    };
+
+    template<>
+    struct hash<unsigned long>
+    {
+        typedef unsigned long argument_type;
+        typedef AZStd::size_t result_type;
+        constexpr inline result_type operator()(argument_type value) const
+        {
+            return static_cast<result_type>(value);
+        }
+    };
+
+    template<>
     struct hash< float >
     {
         typedef float           argument_type;
