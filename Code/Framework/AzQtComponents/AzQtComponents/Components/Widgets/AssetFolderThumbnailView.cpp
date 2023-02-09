@@ -462,7 +462,7 @@ namespace AzQtComponents
     void AssetFolderThumbnailView::RefreshThumbnailview()
     {
         updateGeometries();
-        repaint();
+        update();
     }
 
     QModelIndex AssetFolderThumbnailView::moveCursor(QAbstractItemView::CursorAction cursorAction, Qt::KeyboardModifiers modifiers)
