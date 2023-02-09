@@ -306,10 +306,18 @@ namespace AZ::Internal
                         {
                             mostCompatibleEngineInfo = engineInfo;
                         }
-                        // is it more compatible?
-                        else if (!engineInfo.m_version.IsZero() && engineInfo.m_version > mostCompatibleEngineInfo.m_version)
+                        else if (!engineInfo.m_version.IsZero())
                         {
-                            mostCompatibleEngineInfo = engineInfo;
+                            AZ_Warning("SettingsRegistryMergeUtils", engineInfo.m_version != mostCompatibleEngineInfo.m_version,
+                                "Not using the engine at '%s' because another engine with the same name '%s' and version '%s' was already found at '%s'",
+                                engineInfo.m_path.c_str(), engineInfo.m_name.c_str(), engineInfo.m_version.ToString().c_str(),
+                                mostCompatibleEngineInfo.m_path.c_str());
+
+                            // is it more compatible?
+                            if (engineInfo.m_version > mostCompatibleEngineInfo.m_version)
+                            {
+                                mostCompatibleEngineInfo = engineInfo;
+                            }
                         }
                     }
 
