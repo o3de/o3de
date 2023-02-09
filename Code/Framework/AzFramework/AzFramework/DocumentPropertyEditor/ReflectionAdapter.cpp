@@ -678,6 +678,10 @@ namespace AZ::DocumentPropertyEditor
         m_propertyChangeEvent.Signal(changeInfo);
     }
 
+    void ReflectionAdapter::OnBeginRow(AdapterBuilder*, AZStd::string_view)
+    {
+    }
+
     Dom::Value ReflectionAdapter::GenerateContents()
     {
         m_impl->m_builder.BeginAdapter();

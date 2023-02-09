@@ -147,7 +147,7 @@ namespace AZ::DocumentPropertyEditor
         return returnValue;
     }
 
-    void ComponentAdapter::OnBeginRow(AdapterBuilder* adapterBuilder, const AZStd::string_view& serializedPath)
+    void ComponentAdapter::OnBeginRow(AdapterBuilder* adapterBuilder, AZStd::string_view serializedPath)
     {
         if (!serializedPath.empty())
         {

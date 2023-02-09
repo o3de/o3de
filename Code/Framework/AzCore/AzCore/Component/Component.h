@@ -118,12 +118,9 @@ namespace AZ
          */
         void SetId(const ComponentId& id)   { m_id = id; }
 
-        virtual void SetSerializedIdentifier(const AZStd::string&){};
+        virtual void SetSerializedIdentifier(const AZStd::string&);
 
-        virtual AZStd::string GetSerializedIdentifier()
-        {
-            return AZStd::string();
-        }
+        virtual AZStd::string GetSerializedIdentifier() const;
 
         /**
         * Override to conduct per-component or per-slice validation logic during slice asset processing.

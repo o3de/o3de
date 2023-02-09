@@ -49,7 +49,7 @@ namespace AZ::DocumentPropertyEditor
 
         Dom::Value HandleMessage(const AdapterMessage& message) override;
 
-        void OnBeginRow(AdapterBuilder* adapterBuilder, const AZStd::string_view& serializedPath) override;
+        void OnBeginRow(AdapterBuilder* adapterBuilder, AZStd::string_view serializedPath) override;
 
     protected:
 

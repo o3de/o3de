@@ -117,15 +117,9 @@ namespace AzToolsFramework
             virtual void Deactivate() override;
             //////////////////////////////////////////////////////////////////////////
 
-            void SetSerializedIdentifier(const AZStd::string& alias) override
-            {
-                m_alias = alias;
-            }
+            void SetSerializedIdentifier(const AZStd::string& alias) override;
 
-            AZStd::string GetSerializedIdentifier() override
-            {
-                return m_alias;
-            }
+            AZStd::string GetSerializedIdentifier() const override;
 
             /**
              * Gets the transform interface of the entity that the component
