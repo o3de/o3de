@@ -18,7 +18,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceSerializer.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
+#include <AzCore/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/Spawnable/EditorInfoRemover.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
@@ -46,7 +46,7 @@ namespace AzToolsFramework
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
-            if (AzToolsFramework::Prefab::IsHotReloadingEnabled())
+            if (AZ::Prefab::IsHotReloadingEnabled())
             {
                 AzToolsFramework::AssetSystemBus::Handler::BusConnect();
             }
@@ -54,7 +54,7 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::Deactivate()
         {
-            if (AzToolsFramework::Prefab::IsHotReloadingEnabled())
+            if (AZ::Prefab::IsHotReloadingEnabled())
             {
                 AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
             }

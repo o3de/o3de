@@ -27,7 +27,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceDomGeneratorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
+#include <AzCore/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicHandler.h>

@@ -8,10 +8,10 @@
 
 #pragma once
 
-namespace AzToolsFramework::Prefab
+namespace AZ::Prefab
 {
     bool IsHotReloadingEnabled();
     bool IsPrefabOverridesUxEnabled();
     bool IsInspectorOverrideManagementEnabled();
 
-} // namespace AzToolsFramework::Prefab
+} // namespace AZ::Prefab

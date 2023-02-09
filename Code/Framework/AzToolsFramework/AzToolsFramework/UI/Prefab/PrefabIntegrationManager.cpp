@@ -30,7 +30,7 @@
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
-#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
+#include <AzCore/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
@@ -398,7 +398,7 @@ namespace AzToolsFramework
                                 );
                             }
 
-                            if (IsPrefabOverridesUxEnabled())
+                            if (AZ::Prefab::IsPrefabOverridesUxEnabled())
                             {
                                 if (!s_containerEntityInterface->IsContainerOpen(selectedEntity))
                                 {
@@ -665,7 +665,7 @@ namespace AzToolsFramework
 
             // Revert Overrides
             {
-                if (IsPrefabOverridesUxEnabled() && selectedEntities.size() == 1)
+                if (AZ::Prefab::IsPrefabOverridesUxEnabled() && selectedEntities.size() == 1)
                 {
                     AZ::EntityId selectedEntity = selectedEntities[0];
                     if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&

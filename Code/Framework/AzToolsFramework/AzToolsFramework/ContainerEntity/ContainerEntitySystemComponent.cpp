@@ -11,7 +11,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
-#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
+#include <AzCore/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 
 namespace AzToolsFramework
@@ -116,7 +116,7 @@ namespace AzToolsFramework
         auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
-        if (Prefab::IsPrefabOverridesUxEnabled())
+        if (AZ::Prefab::IsPrefabOverridesUxEnabled())
         {
             // Get currently selected entities
             EntityIdList selectedEntities;

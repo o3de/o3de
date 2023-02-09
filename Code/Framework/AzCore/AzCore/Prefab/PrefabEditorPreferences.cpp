@@ -6,11 +6,11 @@
  *
  */
 
-#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
-#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Prefab/PrefabEditorPreferences.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
-namespace AzToolsFramework::Prefab
+namespace AZ::Prefab
 {
     static constexpr AZStd::string_view EnablePrefabOverridesUxKey = "/O3DE/Preferences/Prefabs/EnableOverridesUx";
     static constexpr AZStd::string_view InspectorOverrideManagementKey = "/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement";
@@ -50,9 +50,13 @@ namespace AzToolsFramework::Prefab
             registry->Get(prefabOverridesUxEnabled, EnablePrefabOverridesUxKey);
         }
 
-        return (
-            isInspectorOverrideManagementEnabled && prefabOverridesUxEnabled &&
-            AzToolsFramework::DocumentPropertyEditor::ShouldReplaceRPE());
+        bool dpeEnabled = false;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("ed_enableDPE", dpeEnabled);
+        }
+
+        return (isInspectorOverrideManagementEnabled && prefabOverridesUxEnabled && dpeEnabled);
     }
 
-} // namespace AzToolsFramework::Prefab
+} // namespace AZ::Prefab

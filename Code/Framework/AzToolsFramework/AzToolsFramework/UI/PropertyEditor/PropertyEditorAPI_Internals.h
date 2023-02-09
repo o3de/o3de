@@ -22,7 +22,7 @@
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
-#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
+#include <AzCore/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzCore/Asset/AssetSerializer.h>
@@ -268,7 +268,7 @@ namespace AzToolsFramework
             auto value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node);
             if (value.has_value())
             {
-                if (!Prefab::IsInspectorOverrideManagementEnabled())
+                if (!AZ::Prefab::IsInspectorOverrideManagementEnabled())
                 {
                     m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
                 }
