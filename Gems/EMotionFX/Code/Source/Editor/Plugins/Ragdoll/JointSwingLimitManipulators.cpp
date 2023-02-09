@@ -73,7 +73,7 @@ namespace EMotionFX
         m_swingYManipulator->InstallLeftMouseUpCallback(
             [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
             {
-                FinishEditing();
+                EndEditing();
             });
 
         // swing limit Z manipulator
@@ -113,7 +113,7 @@ namespace EMotionFX
         m_swingZManipulator->InstallLeftMouseUpCallback(
             [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
             {
-                FinishEditing();
+                EndEditing();
             });
 
         Refresh();
@@ -178,7 +178,7 @@ namespace EMotionFX
             BeginEditing();
             m_physicsSetupManipulatorData.m_jointConfiguration->SetPropertyValue(AZ::Name("SwingLimitY"), 45.0f);
             m_physicsSetupManipulatorData.m_jointConfiguration->SetPropertyValue(AZ::Name("SwingLimitZ"), 45.0f);
-            FinishEditing();
+            EndEditing();
             Refresh();
         }
     }
@@ -206,7 +206,7 @@ namespace EMotionFX
         CreateCommandAdjustJointLimit(m_commandGroup, m_physicsSetupManipulatorData);
     }
 
-    void JointSwingLimitManipulators::FinishEditing()
+    void JointSwingLimitManipulators::EndEditing()
     {
         ExecuteCommandAdjustJointLimit(m_commandGroup, m_physicsSetupManipulatorData);
     }

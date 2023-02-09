@@ -211,25 +211,23 @@ namespace
 
     AZ::Vector3 PyGetCurrentViewPosition()
     {
-        auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get();
-        if (viewportContextRequests)
+        if (const auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get())
         {
-            AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetDefaultViewportContext();
-            AZ::Transform transform = viewportContext->GetCameraTransform();
-            return transform.GetTranslation();
+            AZ::RPI::ConstViewportContextPtr viewportContext = viewportContextRequests->GetDefaultViewportContext();
+            return viewportContext->GetCameraTransform().GetTranslation();
         }
+
         return AZ::Vector3();
     }
 
     AZ::Vector3 PyGetCurrentViewRotation()
     {
-        auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get();
-        if (viewportContextRequests)
+        if (const auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get())
         {
-            AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetDefaultViewportContext();
-            AZ::Transform transform = viewportContext->GetCameraTransform();
-            return transform.GetRotation().GetEulerDegrees();
+            AZ::RPI::ConstViewportContextPtr viewportContext = viewportContextRequests->GetDefaultViewportContext();
+            return viewportContext->GetCameraTransform().GetRotation().GetEulerDegrees();
         }
+
         return AZ::Vector3();
     }
 

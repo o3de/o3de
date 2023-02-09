@@ -10,6 +10,7 @@
 #include <EditorTestUtilities.h>
 #include <EditorColliderComponent.h>
 #include <EditorShapeColliderComponent.h>
+#include <EditorStaticRigidBodyComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AZTestShared/Utils/Utils.h>
@@ -27,6 +28,7 @@ namespace PhysXEditorTests
         colliderConfig.m_position = AZ::Vector3(1.0f, 2.0f, 3.0f);
         Physics::BoxShapeConfiguration boxShapeConfig(AZ::Vector3(0.5f, 0.7f, 0.9f));
         boxEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, boxShapeConfig);
+        boxEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         boxEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
         boxEntity->Activate();
 
@@ -53,6 +55,7 @@ namespace PhysXEditorTests
         colliderConfig.m_position = AZ::Vector3(3.0f, -1.0f, 2.0f);
         Physics::BoxShapeConfiguration boxShapeConfig(AZ::Vector3(1.2f, 0.4f, 1.3f));
         boxEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, boxShapeConfig);
+        boxEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         boxEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
         boxEntity->Activate();
 
@@ -81,6 +84,7 @@ namespace PhysXEditorTests
         colliderConfig.m_position = AZ::Vector3(1.0f, -2.0f, 1.0f);
         Physics::BoxShapeConfiguration boxShapeConfig(AZ::Vector3(0.8f, 0.7f, 1.6f));
         boxEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, boxShapeConfig);
+        boxEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         boxEntity->Activate();
 
         AZ::EntityId boxId = boxEntity->GetId();
@@ -112,6 +116,7 @@ namespace PhysXEditorTests
         colliderConfig.m_position = AZ::Vector3(2.0f, 5.0f, 3.0f);
         Physics::CapsuleShapeConfiguration capsuleShapeConfig(1.4f, 0.3f);
         capsuleEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, capsuleShapeConfig);
+        capsuleEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         capsuleEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
         capsuleEntity->Activate();
 
@@ -138,6 +143,7 @@ namespace PhysXEditorTests
         colliderConfig.m_position = AZ::Vector3(2.0f, -2.0f, 3.0f);
         Physics::CapsuleShapeConfiguration capsuleShapeConfig(1.2f, 0.2f);
         capsuleEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, capsuleShapeConfig);
+        capsuleEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         capsuleEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
         capsuleEntity->Activate();
 
@@ -166,6 +172,7 @@ namespace PhysXEditorTests
         colliderConfig.m_position = AZ::Vector3(3.0f, -2.0f, 2.0f);
         Physics::SphereShapeConfiguration sphereShapeConfig(0.7f);
         sphereEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, sphereShapeConfig);
+        sphereEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         sphereEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
         sphereEntity->Activate();
 
@@ -192,6 +199,7 @@ namespace PhysXEditorTests
         colliderConfig.m_position = AZ::Vector3(-1.0f, -2.0f, 1.0f);
         Physics::SphereShapeConfiguration sphereShapeConfig(0.4f);
         sphereEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, sphereShapeConfig);
+        sphereEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         sphereEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
         sphereEntity->Activate();
 

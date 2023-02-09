@@ -114,12 +114,22 @@ namespace AzToolsFramework
             // in focused instance DOM with the one seen by the root.
             else if (PrefabInstanceUtils::IsDescendantInstance(focusedInstance->get(), instance))
             {
+                TemplateReference focusedTemplate = m_prefabSystemComponentInterface->FindTemplate(focusedInstance->get().GetTemplateId());
+
+                if (!focusedTemplate.has_value())
+                {
+                    AZ_Assert(
+                        false,
+                        "Prefab - InstanceDomGenerator::GetInstanceDomFromTemplate - A focused instance was found but there is no "
+                        "corresponding prefab template associated with it.");
+                    return;
+                }
+                
                 // use instanceDom's allocator, because ultimately we will be setting this data back into
                 // instanceDom with move semantics.
                 PrefabDom focusedTemplateDomCopy(&instanceDom.GetAllocator());
 
-                focusedTemplateDomCopy.CopyFrom(
-                    m_prefabSystemComponentInterface->FindTemplateDom(focusedInstance->get().GetTemplateId()), instanceDom.GetAllocator());
+                focusedTemplateDomCopy.CopyFrom(focusedTemplate->get().GetPrefabDom(), instanceDom.GetAllocator());
 
                 UpdateContainerEntityInDomFromHighestAncestor(focusedTemplateDomCopy, focusedInstance->get());
 

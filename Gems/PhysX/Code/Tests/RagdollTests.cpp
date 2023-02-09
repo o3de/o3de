@@ -44,7 +44,7 @@ namespace PhysX
         EXPECT_EQ(errorHandler.GetErrorCount(), 0);
     }
 
-    Physics::RagdollState GetTPose(Physics::SimulationType simulationType = Physics::SimulationType::Dynamic)
+    Physics::RagdollState GetTPose(Physics::SimulationType simulationType = Physics::SimulationType::Simulated)
     {
         Physics::RagdollState ragdollState;
         for (int nodeIndex = 0; nodeIndex < RagdollTestData::NumNodes; nodeIndex++)
