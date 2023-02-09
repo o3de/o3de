@@ -762,6 +762,9 @@ set(FILES
     UI/PropertyEditor/Model/AssetCompleterModel.cpp
     UI/PropertyEditor/View/AssetCompleterListView.h
     UI/PropertyEditor/View/AssetCompleterListView.cpp
+    Prefab/DocumentPropertyEditor/PrefabAdapter.h
+    Prefab/DocumentPropertyEditor/PrefabAdapter.cpp
+    Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h
     Prefab/EditorPrefabComponent.h
     Prefab/EditorPrefabComponent.cpp
     Prefab/PrefabDomTypes.h

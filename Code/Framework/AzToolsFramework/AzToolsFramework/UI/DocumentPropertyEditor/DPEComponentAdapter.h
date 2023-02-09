@@ -26,6 +26,7 @@ namespace AZ::DocumentPropertyEditor
         , private AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler
     {
     public:
+
         //! Creates an uninitialized (empty) ComponentAdapter.
         ComponentAdapter();
         //! Creates a ComponentAdapter with a specific component instance, see SetComponent
@@ -49,7 +50,7 @@ namespace AZ::DocumentPropertyEditor
 
         Dom::Value HandleMessage(const AdapterMessage& message) override;
 
-        void AddIconIfPropertyOverride(AdapterBuilder* adapterBuilder, const AZStd::string_view& serializedPath) override;
+        void OnBeginRow(AdapterBuilder* adapterBuilder, const AZStd::string_view& serializedPath) override;
 
     protected:
 
@@ -66,8 +67,6 @@ namespace AZ::DocumentPropertyEditor
 
         enum AzToolsFramework::PropertyModificationRefreshLevel m_queuedRefreshLevel =
             AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None;
-
-        AzToolsFramework::Prefab::PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
     };
 
 } // namespace AZ::DocumentPropertyEditor

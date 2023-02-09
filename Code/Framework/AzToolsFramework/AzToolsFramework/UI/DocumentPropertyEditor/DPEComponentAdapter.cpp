@@ -8,6 +8,7 @@
 
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
@@ -22,13 +23,6 @@ namespace AZ::DocumentPropertyEditor
                 this->GeneratePropertyEditPatch(changeInfo);
             });
         ConnectPropertyChangeHandler(m_propertyChangeHandler);
-        m_prefabOverridePublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get();
-        if (m_prefabOverridePublicInterface == nullptr)
-        {
-            AZ_Assert(false, "Could not get PrefabOverridePublicInterface on ComponentAdapter construction.");
-            return;
-        }
-        
     }
 
     ComponentAdapter::ComponentAdapter(AZ::Component* componentInstace)
@@ -167,18 +161,16 @@ namespace AZ::DocumentPropertyEditor
         return returnValue;
     }
 
-    void ComponentAdapter::AddIconIfPropertyOverride(AdapterBuilder* adapterBuilder, const AZStd::string_view& serializedPath)
+    void ComponentAdapter::OnBeginRow(AdapterBuilder* adapterBuilder, const AZStd::string_view& serializedPath)
     {
-        AZ::Dom::Path prefabPatchPath(AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName);
-        prefabPatchPath /= m_componentAlias;
-        prefabPatchPath /= AZ::Dom::Path(serializedPath);
-        if (!serializedPath.empty() && m_prefabOverridePublicInterface->AreOverridesPresent(m_entityId, prefabPatchPath))
+        if (!serializedPath.empty())
         {
-            adapterBuilder->BeginPropertyEditor<Nodes::OverrideIcon>();
-            adapterBuilder->Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
-            adapterBuilder->Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
-            adapterBuilder->Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignLeft);
-            adapterBuilder->EndPropertyEditor();
+            AZ::Dom::Path componentPathFromEntity(AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName);
+            componentPathFromEntity /= m_componentAlias;
+            componentPathFromEntity /= AZ::Dom::Path(serializedPath);
+
+            auto* prefabAdapterInterface = AZ::Interface<AzToolsFramework::Prefab::DocumentPropertyEditor::PrefabAdapterInterface>::Get();
+            prefabAdapterInterface->AddPropertyHandlerIfOverridden(adapterBuilder, componentPathFromEntity, m_entityId);
         }
     }
 
@@ -188,6 +180,25 @@ namespace AZ::DocumentPropertyEditor
         {
             AZ::Dom::Value domValue = GetContents();
             AZ::Dom::Path serializedPath = propertyChangeInfo.path / Reflection::DescriptorAttributes::SerializedPath;
+
+
+            // Try to add property editor here
+            AZ::Dom::Path pathToModifiedProperty = propertyChangeInfo.path;
+            pathToModifiedProperty.Pop();
+
+            AZ::Dom::Value& parentValue = domValue[pathToModifiedProperty];
+            if (parentValue.IsNode() && parentValue.GetNodeName() == Dpe::GetNodeName<Dpe::Nodes::Row>())
+            {
+                AdapterBuilder adapterBuilder;
+                adapterBuilder.BeginPropertyEditor<Nodes::OverrideIcon>();
+                adapterBuilder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
+                adapterBuilder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
+                adapterBuilder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignLeft);
+                adapterBuilder.EndPropertyEditor();
+                //AZ::Dom::Value overrideIconPropertyEditor = adapterBuilder.FinishAndTakeResult();
+
+                //NotifyContentsChanged({ Dom::PatchOperation::AddOperation(pathToModifiedProperty / 0, overrideIconPropertyEditor) });
+            }
 
             AZ::Dom::Path prefabPatchPath(AzToolsFramework::Prefab::PrefabDomUtils::EntitiesName);
             prefabPatchPath /= m_entityAlias;

@@ -387,7 +387,7 @@ namespace AZ::DocumentPropertyEditor
 
             AZ::Reflection::AttributeDataType serializedPathAttribute =
                 attributes.Find(AZ::Reflection::DescriptorAttributes::SerializedPath);
-            m_adapter->AddIconIfPropertyOverride(&m_builder, serializedPathAttribute.GetString());
+            m_adapter->OnBeginRow(&m_builder, serializedPathAttribute.GetString());
 
             for (const auto& attribute : Nodes::Row::RowAttributes)
             {

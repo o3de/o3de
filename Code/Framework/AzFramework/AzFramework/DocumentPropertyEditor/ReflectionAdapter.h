@@ -62,7 +62,7 @@ namespace AZ::DocumentPropertyEditor
         //! property editor instances has altered its value.
         void NotifyPropertyChanged(const PropertyChangeInfo& changeInfo);
 
-        virtual void AddIconIfPropertyOverride(AdapterBuilder*, const AZStd::string_view&)
+        virtual void OnBeginRow(AdapterBuilder*, const AZStd::string_view&)
         {
         }
 

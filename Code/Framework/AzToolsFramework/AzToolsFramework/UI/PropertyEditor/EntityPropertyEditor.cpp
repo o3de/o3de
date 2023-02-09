@@ -502,6 +502,8 @@ namespace AzToolsFramework
 
         initEntityPropertyEditorResources();
 
+        m_prefabAdapter = AZStd::make_unique<Prefab::DocumentPropertyEditor::PrefabAdapter>();
+
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         AZ_Assert(m_prefabPublicInterface != nullptr, "EntityPropertyEditor requires a PrefabPublicInterface instance on Initialize.");
 
