@@ -456,11 +456,11 @@ def get_gems_json_data_by_name(engine_path:pathlib.Path = None,
 
     param: engine_path optional engine path
     param: project_path optional project path
-    param: gem_path optional gem path
     param: include_manifest_gems if True, include gems found using the o3de manifest 
     param: include_engine_gems if True, include gems found using the engine, 
     will use the current engine if no engine_path is provided and none can be deduced from
     the project_path
+    param: external_subdirectories optional external_subdirectories to include
     return: a dictionary of gem_name -> gem.json data
     """
     all_gems_json_data = {}
