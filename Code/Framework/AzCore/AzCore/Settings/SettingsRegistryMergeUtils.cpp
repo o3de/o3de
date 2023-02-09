@@ -38,20 +38,6 @@ namespace AZ::Internal
 
     static constexpr const char* ProductCacheDirectoryName = "Cache";
 
-    AZ::Outcome<void, AZStd::string> MergeSettingsFile(
-        AZ::SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& path, AZStd::string_view anchorKey)
-    {
-        if (!AZ::IO::SystemFile::Exists(path.c_str()))
-        {
-            return AZ::Failure(AZStd::string::format("The setreg file: '%s' does not exist and cannot be merged.", path.c_str()));
-        }
-        else if (!settingsRegistry.MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, anchorKey))
-        {
-            return AZ::Failure(AZStd::string::format("Could not merge '%s' registry settings.", path.c_str()));
-        }
-        return AZ::Success();
-    }
-
     AZ::Outcome<void, AZStd::string> MergeEngineAndProjectSettings(
         AZ::SettingsRegistryInterface& settingsRegistry,
         const AZ::IO::FixedMaxPath& engineJsonPath,
@@ -62,8 +48,9 @@ namespace AZ::Internal
 
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
         using namespace AZ::SettingsRegistryMergeUtils;
+        constexpr auto format = AZ::SettingsRegistryInterface::Format::JsonMergePatch;
 
-        if (auto outcome = MergeSettingsFile(settingsRegistry, engineJsonPath.LexicallyNormal(), EngineSettingsRootKey);
+        if (auto outcome = settingsRegistry.MergeSettingsFile(engineJsonPath.LexicallyNormal().c_str(), format, EngineSettingsRootKey);
             !outcome)
         {
             return outcome;
@@ -76,7 +63,7 @@ namespace AZ::Internal
             return AZ::Success();
         }
 
-        if (auto outcome = MergeSettingsFile(settingsRegistry, projectJsonPath.LexicallyNormal(), ProjectSettingsRootKey);
+        if (auto outcome = settingsRegistry.MergeSettingsFile(projectJsonPath.LexicallyNormal().c_str(), format, ProjectSettingsRootKey);
             !outcome)
         {
             return outcome;
@@ -85,7 +72,7 @@ namespace AZ::Internal
         // '<project-root>/user/project.json' file overrides are optional
         if (!projectUserJsonPath.empty())
         {
-            MergeSettingsFile(settingsRegistry, projectUserJsonPath.LexicallyNormal(), ProjectSettingsRootKey);
+            settingsRegistry.MergeSettingsFile(projectUserJsonPath.LexicallyNormal().c_str(), format, ProjectSettingsRootKey);
         }
 
         // Set the InternalProjectJsonPathKey to avoid loading again
@@ -194,7 +181,7 @@ namespace AZ::Internal
         }
 
         const auto projectUserJsonPath = (projectUserPath / Internal::ProjectJsonFilename).LexicallyNormal();
-        if (auto outcome = MergeSettingsFile(settingsRegistry, projectUserJsonPath, ProjectSettingsRootKey);
+        if (auto outcome = settingsRegistry.MergeSettingsFile(projectUserJsonPath.c_str(), format, ProjectSettingsRootKey);
             !outcome)
         {
             return AZ::Success(engineRoot);
@@ -243,13 +230,8 @@ namespace AZ::Internal
         AZ::IO::FixedMaxPath engineRoot;
         if (auto o3deManifestPath = AZ::Utils::GetO3deManifestPath(&settingsRegistry); !o3deManifestPath.empty())
         {
-            bool manifestLoaded{false};
-
-            if (AZ::IO::SystemFile::Exists(o3deManifestPath.c_str()))
-            {
-                manifestLoaded = settingsRegistry.MergeSettingsFile( o3deManifestPath,
+            const auto manifestLoaded = settingsRegistry.MergeSettingsFile(o3deManifestPath,
                     AZ::SettingsRegistryInterface::Format::JsonMergePatch, O3deManifestSettingsRootKey);
-            }
 
             struct EngineInfo
             {

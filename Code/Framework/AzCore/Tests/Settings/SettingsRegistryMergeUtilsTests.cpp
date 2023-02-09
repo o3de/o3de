@@ -960,7 +960,7 @@ tags=tools,renderer,metal)"
 
             for (int i = 0; i < params.m_engineManifestsJson.size(); ++i)
             {
-                const AZ::IO::FixedMaxPath enginePath = tempRootFolder / AZStd::string::format("engine%d",i) ;
+                const AZ::IO::FixedMaxPath enginePath = tempRootFolder / AZStd::string::format("engine%d", i);
                 ASSERT_TRUE(CreateTestFile(enginePath / "engine.json", params.m_engineManifestsJson[i]));
 
                 m_enginePaths.emplace_back(AZStd::move(enginePath));
