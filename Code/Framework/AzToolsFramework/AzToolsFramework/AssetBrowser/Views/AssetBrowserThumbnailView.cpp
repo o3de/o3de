@@ -181,7 +181,7 @@ namespace AzToolsFramework
 
         void AssetBrowserThumbnailView::UpdateThumbnailview()
         {
-            m_thumbnailViewWidget->RefreshRootIndex();
+            m_thumbnailViewWidget->RefreshThumbnailview();
         }
 
         void AssetBrowserThumbnailView::UpdateFilterInLocalFilterModel()

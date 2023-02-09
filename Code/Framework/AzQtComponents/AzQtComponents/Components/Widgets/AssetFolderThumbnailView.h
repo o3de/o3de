@@ -107,7 +107,7 @@ namespace AzQtComponents
 
         void setRootIndex(const QModelIndex &index) override;
 
-        void RefreshRootIndex();
+        void RefreshThumbnailview();
 
         void SetShowSearchResultsMode(bool searchMode);
 
