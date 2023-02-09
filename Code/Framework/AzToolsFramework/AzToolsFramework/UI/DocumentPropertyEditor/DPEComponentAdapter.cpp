@@ -17,22 +17,10 @@ namespace AZ::DocumentPropertyEditor
 {
     ComponentAdapter::ComponentAdapter()
     {
-        m_propertyChangeHandler = ReflectionAdapter::PropertyChangeEvent::Handler(
-            [this](const ReflectionAdapter::PropertyChangeInfo& changeInfo)
-            {
-                this->GeneratePropertyEditPatch(changeInfo);
-            });
-        ConnectPropertyChangeHandler(m_propertyChangeHandler);
     }
 
     ComponentAdapter::ComponentAdapter(AZ::Component* componentInstace)
     {
-        m_propertyChangeHandler = ReflectionAdapter::PropertyChangeEvent::Handler(
-            [this](const ReflectionAdapter::PropertyChangeInfo& changeInfo)
-            {
-                this->GeneratePropertyEditPatch(changeInfo);
-            });
-        ConnectPropertyChangeHandler(m_propertyChangeHandler);
         SetComponent(componentInstace);
     }
 
@@ -173,87 +161,4 @@ namespace AZ::DocumentPropertyEditor
             prefabAdapterInterface->AddPropertyHandlerIfOverridden(adapterBuilder, componentPathFromEntity, m_entityId);
         }
     }
-
-    void ComponentAdapter::GeneratePropertyEditPatch(const ReflectionAdapter::PropertyChangeInfo& propertyChangeInfo)
-    {
-        if (propertyChangeInfo.changeType == Nodes::ValueChangeType::FinishedEdit)
-        {
-            AZ::Dom::Value domValue = GetContents();
-            AZ::Dom::Path serializedPath = propertyChangeInfo.path / Reflection::DescriptorAttributes::SerializedPath;
-
-
-            // Try to add property editor here
-            AZ::Dom::Path pathToModifiedProperty = propertyChangeInfo.path;
-            pathToModifiedProperty.Pop();
-
-            AZ::Dom::Value& parentValue = domValue[pathToModifiedProperty];
-            if (parentValue.IsNode() && parentValue.GetNodeName() == Dpe::GetNodeName<Dpe::Nodes::Row>())
-            {
-                AdapterBuilder adapterBuilder;
-                adapterBuilder.BeginPropertyEditor<Nodes::OverrideIcon>();
-                adapterBuilder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
-                adapterBuilder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
-                adapterBuilder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignLeft);
-                adapterBuilder.EndPropertyEditor();
-                //AZ::Dom::Value overrideIconPropertyEditor = adapterBuilder.FinishAndTakeResult();
-
-                //NotifyContentsChanged({ Dom::PatchOperation::AddOperation(pathToModifiedProperty / 0, overrideIconPropertyEditor) });
-            }
-
-            AZ::Dom::Path prefabPatchPath(AzToolsFramework::Prefab::PrefabDomUtils::EntitiesName);
-            prefabPatchPath /= m_entityAlias;
-            prefabPatchPath /= AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName;
-            prefabPatchPath /= m_componentAlias;
-            prefabPatchPath /= serializedPath;
-
-             
-            AzToolsFramework::Prefab::PrefabDom prefabPatch;
-            prefabPatch.SetObject();
-
-            AZStd::string patchPath = domValue[serializedPath].GetString();
-            rapidjson::Value path = rapidjson::Value(patchPath.c_str(),
-                aznumeric_caster(patchPath.size()),
-                prefabPatch.GetAllocator());
-            prefabPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("replace"), prefabPatch.GetAllocator())
-                .AddMember(
-                    rapidjson::StringRef("path"),
-                    rapidjson::Value(patchPath.c_str(), aznumeric_caster(patchPath.size())),
-                    prefabPatch.GetAllocator());
-            
-            
-            if (propertyChangeInfo.newValue.IsOpaqueValue())
-            {
-                AZStd::any opaqueValue = propertyChangeInfo.newValue.GetOpaqueValue();
-                void* marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(propertyChangeInfo.newValue, opaqueValue.type());
-                rapidjson::Document patchValue;
-                auto result =
-                    JsonSerialization::Store(patchValue, prefabPatch.GetAllocator(), marshalledPointer, nullptr, opaqueValue.type());
-                prefabPatch.AddMember(rapidjson::StringRef("value"), AZStd::move(patchValue), prefabPatch.GetAllocator());
-            }
-            else
-            {
-                auto convertToRapidJsonOutcome = AZ::Dom::Json::WriteToRapidJsonDocument(
-                    [propertyChangeInfo](AZ::Dom::Visitor& visitor)
-                    {
-                        const bool copyStrings = false;
-                        return propertyChangeInfo.newValue.Accept(visitor, copyStrings);
-                    });
-
-                if (!convertToRapidJsonOutcome.IsSuccess())
-                {
-                    AZ_Assert(false, "PrefabDom value converted from AZ::Dom::Value.");
-                }
-                else
-                {
-                    AzToolsFramework::Prefab::PrefabDom prefabPatchValue = convertToRapidJsonOutcome.TakeValue();
-                    prefabPatch.AddMember(rapidjson::StringRef("value"), AZStd::move(prefabPatchValue), prefabPatch.GetAllocator());
-                    AZ_Warning("Prefab", !prefabPatch.IsNull(), "Prefab patch generated from DPE is null");
-                }
-            }
-
-            auto* prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get();
-            AZ_Assert(prefabFocusPublicInterface, "PrefabFocusPublicInterface cannot be fetched.");
-        }
-    }
-
 } // namespace AZ::DocumentPropertyEditor

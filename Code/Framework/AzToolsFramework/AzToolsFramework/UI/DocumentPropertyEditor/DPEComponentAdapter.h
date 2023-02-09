@@ -54,13 +54,10 @@ namespace AZ::DocumentPropertyEditor
 
     protected:
 
-        void GeneratePropertyEditPatch(const ReflectionAdapter::PropertyChangeInfo& propertyChangeInfo);
-
         AZStd::string m_entityAlias;
         AZStd::string m_componentAlias;
         AZ::EntityId m_entityId;
 
-        ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
         AZ::Component* m_componentInstance = nullptr;
 
         AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoNode = nullptr;
