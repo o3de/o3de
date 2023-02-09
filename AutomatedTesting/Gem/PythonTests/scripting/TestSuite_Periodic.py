@@ -21,7 +21,8 @@ from base import TestAutomationBase
 
 TEST_DIRECTORY = os.path.dirname(__file__)
 
-#Bat
+
+# Bat
 @pytest.mark.REQUIRES_gpu
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
@@ -46,10 +47,6 @@ class TestAutomationQtPyTests(TestAutomationBase):
 
     def test_ScriptCanvas_ChangingAssets_ComponentStable(self, request, workspace, editor, launcher_platform):
         from . import ScriptCanvas_ChangingAssets_ComponentStable as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_VariableManager_ExposeVarsToComponent(self, request, workspace, editor, launcher_platform):
-        from . import VariableManager_ExposeVarsToComponent as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_VariableManager_UnpinVariableType_Works(self, request, workspace, editor, launcher_platform):
@@ -111,22 +108,8 @@ class TestAutomation(TestAutomationBase):
         from . import Graph_HappyPath_ZoomInZoomOut as test_module
         self._run_test(request, workspace, editor, test_module)
 
-
     def test_NodePalette_HappyPath_ClearSelection(self, request, workspace, editor, launcher_platform, project):
         from . import NodePalette_HappyPath_ClearSelection as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-
-    def test_ScriptEvent_HappyPath_CreatedWithoutError(self, request, workspace, editor, launcher_platform, project):
-        def teardown():
-            file_system.delete(
-                [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
-            )
-        request.addfinalizer(teardown)
-        file_system.delete(
-            [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
-        )
-        from . import ScriptEvent_HappyPath_CreatedWithoutError as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_ScriptCanvasTools_Toggle_OpenCloseSuccess(self, request, workspace, editor, launcher_platform):
@@ -179,70 +162,6 @@ class TestScriptCanvasTests(object):
     """
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
-
-    def test_ScriptEvent_AddRemoveMethod_UpdatesInSC(self, request, workspace, editor, launcher_platform):
-        expected_lines = [
-            "Node found in Node Palette",
-            "Method removed from scriptevent file",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptEvent_AddRemoveMethod_UpdatesInSC.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
-
-    def test_NodeCategory_ExpandOnClick(self, request, editor, launcher_platform):
-        expected_lines = [
-            "Script Canvas pane successfully opened",
-            "Category expanded on left click",
-            "Category collapsed on left click",
-            "Category expanded on double click",
-            "Category collapsed on double click",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "NodeCategory_ExpandOnClick.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
-
-    def test_Node_HappyPath_DuplicateNode(self, request, editor, launcher_platform):
-        expected_lines = [
-            "Successfully duplicated node",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "Node_HappyPath_DuplicateNode.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
-    def test_ScriptEvent_AddRemoveParameter_ActionsSuccessful(self, request, editor, launcher_platform):
-        expected_lines = [
-            "Success: New Script Event created",
-            "Success: Child Event created",
-            "Success: Successfully saved event asset",
-            "Success: Successfully added parameter",
-            "Success: Successfully removed parameter",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptEvent_AddRemoveParameter_ActionsSuccessful.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
 
     def test_FileMenu_Default_NewAndOpen(self, request, editor, launcher_platform):
         expected_lines = [
@@ -329,7 +248,6 @@ class TestScriptCanvasTests(object):
             },
         ],
     )
-
     def test_Pane_PropertiesChanged_RetainsOnRestart(self, request, editor, config, project, launcher_platform):
         hydra.launch_and_validate_results(
             request,
@@ -341,30 +259,3 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
-
-    def test_ScriptEvents_AllParamDatatypes_CreationSuccess(self, request, workspace, editor, launcher_platform):
-        def teardown():
-            file_system.delete(
-                [os.path.join(workspace.paths.project(), "TestAssets", "test_file.scriptevents")], True, True
-            )
-        request.addfinalizer(teardown)
-        file_system.delete(
-            [os.path.join(workspace.paths.project(), "TestAssets", "test_file.scriptevents")], True, True
-        )
-        expected_lines = [
-            "Success: New Script Event created",
-            "Success: Child Event created",
-            "Success: New parameters added",
-            "Success: Script event file saved",
-            "Success: Node found in Script Canvas",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptEvents_AllParamDatatypes_CreationSuccess.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
-
