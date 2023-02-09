@@ -13,6 +13,7 @@
 #include <QItemSelection>
 #include <QWidget>
 #include <QAbstractItemView>
+#include <QStyledItemDelegate>
 #endif
 
 namespace AzQtComponents
@@ -28,6 +29,16 @@ namespace AzToolsFramework
         class AssetBrowserTreeView;
         class AssetBrowserExpandedTableViewProxyModel;
         class AssetBrowserEntry;
+
+        class ExpandedTableViewDelegate
+            : public QStyledItemDelegate
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(ExpandedTableViewDelegate, AZ::SystemAllocator, 0);
+            ExpandedTableViewDelegate(QWidget* parent = nullptr);
+
+            void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        };
 
         class AssetBrowserExpandedTableView
             : public QWidget

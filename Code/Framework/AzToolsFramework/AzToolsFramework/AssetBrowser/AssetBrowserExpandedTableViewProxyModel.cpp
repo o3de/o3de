@@ -38,7 +38,7 @@ namespace AzToolsFramework
                     switch (index.column())
                     {
                     case 0:
-                        return static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetFileName().c_str();
+                        return static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
                     case 1:
                         {
                             switch (assetBrowserEntry->GetEntryType())
@@ -87,7 +87,7 @@ namespace AzToolsFramework
 
         int AssetBrowserExpandedTableViewProxyModel::columnCount([[maybe_unused]]const QModelIndex& parent) const
         {
-            return 7;
+            return 6;
         }
 
         void AssetBrowserExpandedTableViewProxyModel::SetRootIndex(const QModelIndex& index)

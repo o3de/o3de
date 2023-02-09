@@ -62,7 +62,6 @@ namespace AzToolsFramework
             "Display Name",
             "Type",
             "Disk Size",
-            "Related Asset",
             "Vertices",
             "Approximate Size",
             "Source Control Status"

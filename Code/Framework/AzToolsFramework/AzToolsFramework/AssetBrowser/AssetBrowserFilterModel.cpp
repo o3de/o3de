@@ -41,7 +41,6 @@ namespace AzToolsFramework
                 m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Path));
                 m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Type));
                 m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DiskSize));
-                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::RelatedAsset));
                 m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Vertices));
                 m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::ApproxSize));
                 m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::SourceControlStatus));

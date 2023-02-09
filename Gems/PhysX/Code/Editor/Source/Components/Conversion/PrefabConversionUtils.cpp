@@ -217,7 +217,7 @@ namespace PhysX::Utils
                 "Missing entity id in the map.");
         }
 
-        outputValue.SetString(it->second.c_str(), it->second.size(), context.GetJsonAllocator());
+        outputValue.SetString(it->second.c_str(), static_cast <rapidjson_ly::SizeType>(it->second.size()), context.GetJsonAllocator());
 
         return context.Report(
             AZ::JsonSerializationResult::Tasks::WriteValue,

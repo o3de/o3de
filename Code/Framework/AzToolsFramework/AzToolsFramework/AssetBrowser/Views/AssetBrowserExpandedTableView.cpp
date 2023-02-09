@@ -17,7 +17,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QVBoxLayout>
-
+#include <QtWidgets/QApplication>
 #endif
 
 namespace AzToolsFramework
@@ -35,6 +35,7 @@ namespace AzToolsFramework
             m_assetFilterModel->sort(0, Qt::DescendingOrder);
             m_expandedTableViewProxyModel->setSourceModel(m_assetFilterModel);
             m_expandedTableViewWidget->setModel(m_expandedTableViewProxyModel);
+            m_expandedTableViewWidget->setItemDelegateForColumn(0, new ExpandedTableViewDelegate(m_expandedTableViewWidget));
 
             connect(
                 m_expandedTableViewWidget,
@@ -197,5 +198,34 @@ namespace AzToolsFramework
             filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Up | AssetBrowserEntryFilter::Down);
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
         }
+
+        ExpandedTableViewDelegate::ExpandedTableViewDelegate(QWidget* parent)
+            : QStyledItemDelegate(parent)
+
+        {
+        }
+#pragma optimize("",off)
+        void ExpandedTableViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+        {
+            const QVariant text = index.data(Qt::DisplayRole);
+            if (text.isValid())
+            {
+                QStyleOptionViewItem options{ option };
+                initStyleOption(&options, index);
+
+                QIcon icon;
+                icon.addFile(QString::fromUtf8(":/Entity/prefab_edit.svg"), QSize(), QIcon::Normal, QIcon::On);
+                int height = options.rect.height();
+                QRect iconRect(0, options.rect.y() + 5, height - 10, height - 10);
+                QSize iconSize = icon.actualSize(iconRect.size());
+                QStyle* style = options.widget ? options.widget->style() : qApp->style();
+                style->drawItemPixmap(painter, iconRect, Qt::AlignLeft | Qt::AlignVCenter, icon.pixmap(iconSize));
+                QRect textRect{options.rect};
+                textRect.setX(textRect.x() + 4);
+                style->drawItemText(
+                    painter, options.rect, Qt::AlignLeft | Qt::AlignVCenter, options.palette, options.state & QStyle::State_Enabled, text.toString());
+            }
+        }
+#pragma optimize("", on)
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

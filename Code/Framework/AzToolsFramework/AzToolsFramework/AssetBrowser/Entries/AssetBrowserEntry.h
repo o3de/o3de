@@ -72,7 +72,6 @@ namespace AzToolsFramework
                 DisplayName,
                 Type,
                 DiskSize,
-                RelatedAsset,
                 Vertices,
                 ApproxSize,
                 SourceControlStatus,
