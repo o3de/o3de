@@ -56,7 +56,7 @@ namespace Multiplayer
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
     protected:
-        void OnCharacterActivated() override;
+        void OnCharacterActivated(const AZ::EntityId& entityId) override;
 
     private:
         void OnTranslationChangedEvent(const AZ::Vector3& translation);
