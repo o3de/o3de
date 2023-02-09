@@ -591,6 +591,12 @@ namespace AZ
         {
             return DomInvokeHelper<Callable>::Invoke(m_callable, arguments);
         }
+
+        const Callable& GetCallable() const
+        {
+            return m_callable;
+        }
+
     private:
         Callable m_callable;
     };
