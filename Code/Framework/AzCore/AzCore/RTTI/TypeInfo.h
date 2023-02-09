@@ -28,6 +28,7 @@
 
 namespace AZStd
 {
+    class allocator;
     template <class T>
     struct less;
     template <class T>
@@ -390,6 +391,7 @@ namespace AZ
             }
         };
 
+        extern template struct AggregateTypes<Crc32>;
 
         // Represents the "*" typeid that can be combined with non-pointer types T to form a unique T* typeid
         inline constexpr AZ::TypeId PointerTypeId_v{ "{35C8A027-FE00-4769-AE36-6997CFFAF8AE}" };
@@ -1310,6 +1312,7 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(Crc32, "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}");
     AZ_TYPE_INFO_SPECIALIZE(PlatformID, "{0635D08E-DDD2-48DE-A7AE-73CC563C57C3}");
     AZ_TYPE_INFO_SPECIALIZE(AZStd::monostate, "{B1E9136B-D77A-4643-BE8E-2ABDA246AE0E}");
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(AZStd::allocator, "{E9F5A3BE-2B3D-4C62-9E6B-4E00A13AB452}", "allocator");
 
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_CV(T, T*, "", "*");
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_CV(T, T &, "", "&");
@@ -1387,7 +1390,10 @@ namespace AZ
     } \
     static constexpr AZ::TypeId TYPEINFO_Uuid() \
     { \
-        return AZ::TypeId(_ClassUuid) + AZ::Internal::AggregateTypes<__VA_ARGS__>::Uuid(); \
+        /* using a local constexpr variable ensures that the TypeId's string is
+         * parsed at compile time */ \
+        constexpr auto typeId = AZ::TypeId(_ClassUuid) + AZ::Internal::AggregateTypes<__VA_ARGS__>::Uuid(); \
+        return typeId; \
     }
 
 // Template class type info
@@ -1486,4 +1492,6 @@ namespace AZ
     }
 
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::tuple, "AZStd::tuple", "{F99F9308-DC3E-4384-9341-89CBF1ABD51E}", AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
+
+    extern template struct AzTypeInfo<AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::allocator >, false>;
 }

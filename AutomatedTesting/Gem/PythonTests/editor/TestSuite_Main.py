@@ -93,8 +93,41 @@ class TestAutomation(EditorTestSuite):
 
     # These tests require no UI interaction or modal dialog interactions
 
+    def cleanup_temp_levels(self, workspace):
+        file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level_1")],
+                        True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level_2")],
+                        True, True)
+
     class test_EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform(EditorBatchedTest):
         from .EditorScripts import EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform as test_module
 
     class test_EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform(EditorBatchedTest):
         from .EditorScripts import EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform as test_module
+
+    class test_EditorWorkflow_EditorCameraMovesToEntityTransformWithBeThisCamera(EditorSingleTest):
+        from .EditorScripts import EditorWorkflow_EditorCameraMovesToEntityTransformWithBeThisCamera as test_module
+
+    class test_EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenTogglingBeThisCamera(EditorSingleTest):
+        from .EditorScripts import EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenTogglingBeThisCamera as test_module
+
+    class test_EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenLeavingGameMode(EditorSingleTest):
+        from .EditorScripts import EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenLeavingGameMode as test_module
+
+    class test_EditorWorkflow_EditorCameraTransformCanBeModifiedWhileInBeThisCamera(EditorSingleTest):
+        from .EditorScripts import EditorWorkflow_EditorCameraTransformCanBeModifiedWhileInBeThisCamera as test_module
+
+    class test_EditorWorkflow_EditorCameraGameModeTransitionWithMultipleCamerasReportsNoErrors(EditorSingleTest):
+        from .EditorScripts import EditorWorkflow_EditorCameraGameModeTransitionWithMultipleCamerasReportsNoErrors as test_module
+
+    class test_EditorWorkflow_EditorCameraBeThisCameraIsClearedWhenChangingLevel(EditorSingleTest):
+        # Custom teardown to remove level created during test
+        def setup(self, request, workspace):
+            self.cleanup_temp_levels(workspace)
+
+        def teardown(self, request, workspace, editor_test_results):
+            self.cleanup_temp_levels(workspace)
+        
+        from .EditorScripts import EditorWorkflow_EditorCameraBeThisCameraIsClearedWhenChangingLevel as test_module
+
+

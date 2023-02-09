@@ -25,6 +25,15 @@
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 
+// This can be overridden in the build files by defining O3DE_EDITOR_CONNECTION_LISTENER_ENABLE to 0 or 1
+// to force disabling or enabling the listener. But by default, it will be enabled in non-monolithic builds
+// and disabled in monolithic builds.
+#if !defined(O3DE_EDITOR_CONNECTION_LISTENER_ENABLE)
+    #if !defined(AZ_MONOLITHIC_BUILD)
+        #define O3DE_EDITOR_CONNECTION_LISTENER_ENABLE 1
+    #endif
+#endif
+
 namespace AzFramework
 {
     struct SessionConfig;
@@ -167,6 +176,8 @@ namespace Multiplayer
         static void StartServerToClientReplication(uint64_t userId, NetworkEntityHandle controlledEntity, AzNetworking::IConnection* connection);
 
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
+        void HostConsoleCommand(const AZ::ConsoleCommandContainer& arguments);
+        AZStd::unique_ptr<AZ::ConsoleFunctor<MultiplayerSystemComponent, false>> m_hostConsoleCommand;
 
         AzNetworking::INetworkInterface* m_networkInterface = nullptr;
         AZ::ConsoleCommandInvokedEvent::Handler m_consoleCommandHandler;
@@ -244,8 +255,12 @@ namespace Multiplayer
             OnPhysicsPostSimulate(dt);
         } };
 
-#if !defined(AZ_RELEASE_BUILD)
-        MultiplayerEditorConnection m_editorConnectionListener;
+        // By default, this is only enabled in non-monolithic builds, since the Editor doesn't support monolithic builds.
+#if (O3DE_EDITOR_CONNECTION_LISTENER_ENABLE)
+        // This is a unique_ptr instead of a raw instance so that we can defer the construction
+        // until the Activate(). If it gets constructed during the MultiplayerSystemComponent constructor,
+        // the AzNetworking systems might not be constructed and activated yet, which would crash.
+        AZStd::unique_ptr<MultiplayerEditorConnection> m_editorConnectionListener;
 #endif
     };
 }
