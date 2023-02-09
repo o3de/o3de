@@ -218,9 +218,7 @@ def main(args: dict):
                 args['mars_index_prefix'], tiaf_result, sys.argv, args['build_number'])
 
         logger.info("Complete!")
-        # Non-gating will be removed from this script and handled at the job level in SPEC-7413
-        # sys.exit(result.return_code)
-        sys.exit(0)
+        sys.exit(tiaf_result.return_code)
     except Exception as e:
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         logger.error(f"Exception caught by TIAF driver: '{e}'.")
