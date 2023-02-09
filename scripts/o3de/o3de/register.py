@@ -421,7 +421,7 @@ def register_gem_path(json_data: dict,
         # because most gems depend on engine gems which would not be found 
         if project_path and manifest.get_project_engine_path(project_path):
             # note this check includes engine and manifest gems
-            incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path)
+            incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_path, gem_json_data, project_path)
             if incompatible_objects: 
                 logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
                     'following objects/APIs and requires the --force parameter to register:\n  '+
@@ -432,8 +432,11 @@ def register_gem_path(json_data: dict,
             if not engine_json_data:
                 logger.error(f'Failed to load engine.json data needed for registration from {engine_path}')
                 return 1
-            # note this does NOT include o3de manifest gems, just engine gems
-            engine_gems_json_data = manifest.get_gems_json_data_by_name(engine_path=engine_path)
+            # note this does NOT include o3de manifest gems, just engine gems and any gems that may
+            # be nested inside the gem we're adding which will now be available
+            engine_gems_json_data = manifest.get_gems_json_data_by_name(engine_path=engine_path,
+                external_subdirectories=[gem_path])
+
             incompatible_objects = compatibility.get_gem_engine_incompatible_objects(gem_json_data, engine_json_data, engine_gems_json_data)
             if incompatible_objects: 
                 logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
