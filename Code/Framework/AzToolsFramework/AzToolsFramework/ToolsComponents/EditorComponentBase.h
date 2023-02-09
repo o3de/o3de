@@ -117,12 +117,12 @@ namespace AzToolsFramework
             virtual void Deactivate() override;
             //////////////////////////////////////////////////////////////////////////
 
-            void SetAlias(const AZStd::string& alias) override
+            void SetSerializedIdentifier(const AZStd::string& alias) override
             {
                 m_alias = alias;
             }
 
-            AZStd::string GetAlias() override
+            AZStd::string GetSerializedIdentifier() override
             {
                 return m_alias;
             }

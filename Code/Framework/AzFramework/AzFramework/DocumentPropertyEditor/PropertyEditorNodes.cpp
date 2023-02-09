@@ -96,7 +96,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<ContainerActionButton>(ContainerActionButton::Action);
         system->RegisterNodeAttribute<ContainerActionButton>(ContainerActionButton::OnActivate);
 
-        system->RegisterPropertyEditor<OverrideIcon>();
+        system->RegisterPropertyEditor<PrefabOverrideProperty>();
 
         system->RegisterPropertyEditor<CheckBox>();
         system->RegisterPropertyEditor<Color>();

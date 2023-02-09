@@ -8,7 +8,7 @@
 
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/OverrideIconHandler.h>
 
-namespace AzToolsFramework::Prefab::DocumentPropertyEditor
+namespace AzToolsFramework::Prefab
 {
     OverrideIconHandler::OverrideIconHandler()
     {
@@ -36,4 +36,4 @@ namespace AzToolsFramework::Prefab::DocumentPropertyEditor
             // This is the place where revert override code will be added later.
         }
     }
-} // namespace AzToolsFramework::Prefab::DocumentPropertyEditor
+} // namespace AzToolsFramework::Prefab

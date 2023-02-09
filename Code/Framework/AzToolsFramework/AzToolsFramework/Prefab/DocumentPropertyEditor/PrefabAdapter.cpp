@@ -9,8 +9,9 @@
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapter.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 
-namespace AzToolsFramework::Prefab::DocumentPropertyEditor
+namespace AzToolsFramework::Prefab
 {
     PrefabAdapter::PrefabAdapter()
     {
@@ -34,7 +35,7 @@ namespace AzToolsFramework::Prefab::DocumentPropertyEditor
     {
         if (m_prefabOverridePublicInterface->AreOverridesPresent(entityId, componentPathFromEntity))
         {
-            adapterBuilder->BeginPropertyEditor<AZ::DocumentPropertyEditor::Nodes::OverrideIcon>();
+            adapterBuilder->BeginPropertyEditor<AZ::DocumentPropertyEditor::Nodes::PrefabOverrideProperty>();
             adapterBuilder->Attribute(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::SharePriorColumn, true);
             adapterBuilder->Attribute(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::UseMinimumWidth, true);
             adapterBuilder->Attribute(

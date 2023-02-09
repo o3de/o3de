@@ -28,7 +28,7 @@ namespace AzToolsFramework
     void PropertyEditorToolsSystem::RegisterDefaultHandlers()
     {
         PropertyEditorToolsSystemInterface::RegisterHandler<ContainerActionButtonHandler>();
-        PropertyEditorToolsSystemInterface::RegisterHandler<Prefab::DocumentPropertyEditor::OverrideIconHandler>();
+        PropertyEditorToolsSystemInterface::RegisterHandler<Prefab::OverrideIconHandler>();
     }
 
     PropertyEditorToolsSystem::PropertyHandlerId PropertyEditorToolsSystem::GetPropertyHandlerForNode(const AZ::Dom::Value node)

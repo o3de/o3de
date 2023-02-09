@@ -505,7 +505,7 @@ namespace AzToolsFramework
 
         if (Prefab::IsInspectorOverrideManagementEnabled())
         {
-            m_prefabAdapter = AZStd::make_unique<Prefab::DocumentPropertyEditor::PrefabAdapter>();
+            m_prefabAdapter = AZStd::make_unique<Prefab::PrefabAdapter>();
         }
 
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();

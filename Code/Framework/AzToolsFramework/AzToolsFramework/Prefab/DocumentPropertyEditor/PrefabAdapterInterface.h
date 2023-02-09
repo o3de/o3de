@@ -17,7 +17,7 @@ namespace AZ
     class Dom::Path;
 }
 
-namespace AzToolsFramework::Prefab::DocumentPropertyEditor
+namespace AzToolsFramework::Prefab
 {
     class PrefabAdapterInterface
     {
@@ -26,4 +26,4 @@ namespace AzToolsFramework::Prefab::DocumentPropertyEditor
 
         virtual void AddPropertyHandlerIfOverridden(AZ::DocumentPropertyEditor::AdapterBuilder*, const AZ::Dom::Path&, AZ::EntityId entityId) = 0;
     };
-} // namespace AzToolsFramework::Prefab::DocumentPropertyEditor
+} // namespace AzToolsFramework::Prefab

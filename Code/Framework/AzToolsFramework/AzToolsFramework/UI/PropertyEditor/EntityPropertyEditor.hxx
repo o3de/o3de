@@ -641,7 +641,7 @@ namespace AzToolsFramework
         QStandardItem* m_comboItems[StatusItems];
         EntityIdSet m_overrideSelectedEntityIds;
 
-        AZStd::unique_ptr<Prefab::DocumentPropertyEditor::PrefabAdapter> m_prefabAdapter;
+        AZStd::unique_ptr<Prefab::PrefabAdapter> m_prefabAdapter;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         Prefab::InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         bool m_prefabsAreEnabled = false;

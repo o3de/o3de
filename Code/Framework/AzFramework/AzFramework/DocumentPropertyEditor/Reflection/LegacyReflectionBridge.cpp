@@ -254,6 +254,9 @@ namespace AZ::Reflection
                 else if (classElement)
                 {
                     AZStd::string_view elementName = classElement->m_name;
+
+                    // Construct the serialized path for only those elements that have valid edit data. Otherwise, you can end up with
+                    // serialized paths looking like "token1////token2/token3"
                     if (!elementName.empty() && classElement->m_editData)
                     {
                         path.append("/");

@@ -118,9 +118,9 @@ namespace AZ
          */
         void SetId(const ComponentId& id)   { m_id = id; }
 
-        virtual void SetAlias(const AZStd::string&){};
+        virtual void SetSerializedIdentifier(const AZStd::string&){};
 
-        virtual AZStd::string GetAlias()
+        virtual AZStd::string GetSerializedIdentifier()
         {
             return AZStd::string();
         }

@@ -355,7 +355,6 @@ namespace AZ::DocumentPropertyEditor
 
                 if (!parentContainer->IsFixedSize())
                 {
-                    [[maybe_unused]] auto serializedPathAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::SerializedPath);
                     m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
                     m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
                     m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
@@ -511,7 +510,7 @@ namespace AZ::DocumentPropertyEditor
                             // the json serialized value (which is mostly human-readable text) as an attribute, so any change to the Json would
                             // trigger an update. This would have the advantage of allowing opaque and pointer types to be searchable by the
                             // string-based Filter adapter. Without this, things like Vector3 will not have searchable values by text. These
-                            // advantages would have to be measured against the size changes in the DOM and the time taken to populate and parse them. return newValue;
+                            // advantages would have to be measured against the size changes in the DOM and the time taken to populate and parse them.
                             return newValue;
                         },
                         false,
@@ -519,18 +518,12 @@ namespace AZ::DocumentPropertyEditor
                 }
                 else
                 {
-                    const AZ::TypeId opaqueType = access.GetType();
-                    [[maybe_unused]] void* pointerFromAccess = access.Get();
-                    AZ::Dom::Value instancePointerValue1 = AZ::Dom::Utils::MarshalTypedPointerToValue(access.Get(), access.GetType());
-                    void* marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(instancePointerValue1, opaqueType);
-                    // TODO: The below 2 lines can be removed. serialize context somehow gets picked up even if you don't explicitly pass it
-                    // here.
-                    JsonSerializerSettings serializeSettings;
-                    serializeSettings.m_serializeContext = m_serializeContext;
+                    const AZ::TypeId valueType = access.GetType();
+                    void* valuePointer = access.Get();
 
                     rapidjson::Document serializedValue;
-                    auto result = JsonSerialization::Store(
-                        serializedValue, serializedValue.GetAllocator(), marshalledPointer, nullptr, opaqueType, serializeSettings);
+                    auto result =
+                        JsonSerialization::Store(serializedValue, serializedValue.GetAllocator(), valuePointer, nullptr, valueType);
 
                     AZ::Dom::Value instancePointerValue;
                     auto outputWriter = instancePointerValue.GetWriteHandler();
@@ -540,17 +533,17 @@ namespace AZ::DocumentPropertyEditor
                         instancePointerValue,
                         access.Get(),
                         attributes,
-                        [valuePointer = access.Get(), opaqueType, this](const Dom::Value& newValue)
+                        [valuePointer = access.Get(), valueType, this](const Dom::Value& newValue)
                         {
-                            void* marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, opaqueType);
+                            void* marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType);
                             rapidjson::Document serializedValue;
                             auto result = JsonSerialization::Store(
-                                serializedValue, serializedValue.GetAllocator(), marshalledPointer, nullptr, opaqueType);
+                                serializedValue, serializedValue.GetAllocator(), marshalledPointer, nullptr, valueType);
 
                             JsonDeserializerSettings deserializeSettings;
                             deserializeSettings.m_serializeContext = m_serializeContext;
                             // now deserialize that value into the original location
-                            JsonSerialization::Load(valuePointer, opaqueType, serializedValue, deserializeSettings);
+                            JsonSerialization::Load(valuePointer, valueType, serializedValue, deserializeSettings);
 
                             AZ::Dom::Value newInstancePointerValue;
                             auto outputWriter = newInstancePointerValue.GetWriteHandler();

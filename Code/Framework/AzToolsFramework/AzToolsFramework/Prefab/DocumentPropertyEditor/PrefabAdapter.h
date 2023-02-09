@@ -11,8 +11,10 @@
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
 
-namespace AzToolsFramework::Prefab::DocumentPropertyEditor
+namespace AzToolsFramework::Prefab
 {
+    class PrefabOverridePublicInterface;
+
     class PrefabAdapter
         : public AZ::DocumentPropertyEditor::ReflectionAdapter
         , private PrefabAdapterInterface
@@ -27,4 +29,4 @@ namespace AzToolsFramework::Prefab::DocumentPropertyEditor
         AzToolsFramework::Prefab::PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
     };
 
-} // namespace AzToolsFramework::Prefab::DocumentPropertyEditor
+} // namespace AzToolsFramework::Prefab

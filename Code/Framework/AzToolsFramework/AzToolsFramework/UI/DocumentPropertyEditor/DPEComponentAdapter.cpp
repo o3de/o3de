@@ -81,7 +81,7 @@ namespace AZ::DocumentPropertyEditor
         AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
         AZ::Uuid instanceTypeId = azrtti_typeid(m_componentInstance);
         SetValue(m_componentInstance, instanceTypeId);
-        m_componentAlias = componentInstance->GetAlias();
+        m_componentAlias = componentInstance->GetSerializedIdentifier();
         auto owningInstance = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get()->FindOwningInstance(m_entityId);
         AZ_Assert(owningInstance.has_value(), "Entity owning the component doesn't have an owning prefab instance.");
         auto entityAlias = owningInstance->get().GetEntityAlias(m_entityId);
@@ -155,7 +155,7 @@ namespace AZ::DocumentPropertyEditor
             componentPathFromEntity /= m_componentAlias;
             componentPathFromEntity /= AZ::Dom::Path(serializedPath);
 
-            auto* prefabAdapterInterface = AZ::Interface<AzToolsFramework::Prefab::DocumentPropertyEditor::PrefabAdapterInterface>::Get();
+            auto* prefabAdapterInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabAdapterInterface>::Get();
             prefabAdapterInterface->AddPropertyHandlerIfOverridden(adapterBuilder, componentPathFromEntity, m_entityId);
         }
     }
