@@ -10,14 +10,13 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
-#include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
-#include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
+    class AdapterBuilder;
+
     //! ComponentAdapter is responsible to listening for signals that affect each component in the Entity Inspector
     class ComponentAdapter
         : public ReflectionAdapter

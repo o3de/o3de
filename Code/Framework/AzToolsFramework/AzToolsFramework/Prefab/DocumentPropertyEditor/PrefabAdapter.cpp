@@ -8,7 +8,6 @@
 
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
-
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapter.h>
 
 namespace AzToolsFramework::Prefab::DocumentPropertyEditor

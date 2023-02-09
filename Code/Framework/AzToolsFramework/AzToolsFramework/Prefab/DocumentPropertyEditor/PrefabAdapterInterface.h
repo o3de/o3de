@@ -8,15 +8,14 @@
 
 #pragma once
 
-#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/RTTI/RTTI.h>
 
 namespace AZ
 {
     class DocumentPropertyEditor::AdapterBuilder;
     class Dom::Path;
 }
-
 
 namespace AzToolsFramework::Prefab::DocumentPropertyEditor
 {

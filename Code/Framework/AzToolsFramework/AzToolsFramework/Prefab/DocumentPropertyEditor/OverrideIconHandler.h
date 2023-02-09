@@ -17,7 +17,7 @@
 #include <QToolButton>
 
 
-namespace AzToolsFramework
+namespace AzToolsFramework::Prefab::DocumentPropertyEditor
 {
     class OverrideIconHandler
         : public PropertyHandlerWidget<QToolButton>
@@ -25,17 +25,14 @@ namespace AzToolsFramework
     public:
         OverrideIconHandler();
 
-        void SetValueFromDom(const AZ::Dom::Value& node);
+        void SetValueFromDom(const AZ::Dom::Value&);
 
         static constexpr const AZStd::string_view GetHandlerName()
         {
             return AZ::DocumentPropertyEditor::Nodes::OverrideIcon::Name;
         }
 
-    public slots:
-        void showContextMenu(const QPoint&);
-
     private:
-        AZ::Dom::Value m_node;
+        void ShowContextMenu(const QPoint&);
     };
-} // namespace AzToolsFramework
+} // namespace AzToolsFramework::Prefab::DocumentPropertyEditor

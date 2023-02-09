@@ -16,7 +16,6 @@ namespace AzToolsFramework::Prefab
     static constexpr AZStd::string_view InspectorOverrideManagementKey = "/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement";
     static constexpr AZStd::string_view HotReloadToggleKey = "/O3DE/Preferences/Prefabs/EnableHotReloading";
 
-
     bool IsHotReloadingEnabled()
     {
         bool isHotReloadingEnabled = false;

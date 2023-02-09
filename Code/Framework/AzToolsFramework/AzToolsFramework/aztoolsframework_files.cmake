@@ -396,8 +396,6 @@ set(FILES
     UI/DocumentPropertyEditor/FilteredDPE.cpp
     UI/DocumentPropertyEditor/FilteredDPE.h
     UI/DocumentPropertyEditor/FilteredDPE.ui
-    UI/DocumentPropertyEditor/OverrideIconHandler.cpp
-    UI/DocumentPropertyEditor/OverrideIconHandler.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
@@ -762,6 +760,8 @@ set(FILES
     UI/PropertyEditor/Model/AssetCompleterModel.cpp
     UI/PropertyEditor/View/AssetCompleterListView.h
     UI/PropertyEditor/View/AssetCompleterListView.cpp
+    Prefab/DocumentPropertyEditor/OverrideIconHandler.h
+    Prefab/DocumentPropertyEditor/OverrideIconHandler.cpp
     Prefab/DocumentPropertyEditor/PrefabAdapter.h
     Prefab/DocumentPropertyEditor/PrefabAdapter.cpp
     Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
+#include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
@@ -15,9 +16,7 @@
 #include <QtCore/QTimer>
 namespace AZ::DocumentPropertyEditor
 {
-    ComponentAdapter::ComponentAdapter()
-    {
-    }
+    ComponentAdapter::ComponentAdapter() = default;
 
     ComponentAdapter::ComponentAdapter(AZ::Component* componentInstace)
     {
@@ -76,19 +75,18 @@ namespace AZ::DocumentPropertyEditor
     void ComponentAdapter::SetComponent(AZ::Component* componentInstance)
     {
         m_componentInstance = componentInstance;
-        AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_componentInstance->GetEntityId());
+        m_entityId = m_componentInstance->GetEntityId();
+        AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_entityId);
         AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
         AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
         AZ::Uuid instanceTypeId = azrtti_typeid(m_componentInstance);
         SetValue(m_componentInstance, instanceTypeId);
         m_componentAlias = componentInstance->GetAlias();
-        auto owningInstance =
-            AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get()->FindOwningInstance(componentInstance->GetEntityId());
+        auto owningInstance = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get()->FindOwningInstance(m_entityId);
         AZ_Assert(owningInstance.has_value(), "Entity owning the component doesn't have an owning prefab instance.");
-        auto entityAlias = owningInstance->get().GetEntityAlias(componentInstance->GetEntityId());
+        auto entityAlias = owningInstance->get().GetEntityAlias(m_entityId);
         AZ_Assert(entityAlias.has_value(), "Owning entity of component doesn't have a valid entity alias in the owning prefab.");
         m_entityAlias = entityAlias->get();
-        m_entityId = m_componentInstance->GetEntityId();
     }
 
     void ComponentAdapter::DoRefresh()
