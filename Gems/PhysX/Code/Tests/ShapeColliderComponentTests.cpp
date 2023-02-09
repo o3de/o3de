@@ -12,6 +12,7 @@
 #include <EditorColliderComponent.h>
 #include <EditorForceRegionComponent.h>
 #include <EditorRigidBodyComponent.h>
+#include <EditorStaticRigidBodyComponent.h>
 #include <EditorShapeColliderComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <LmbrCentral/Shape/CompoundShapeComponentBus.h>
@@ -57,6 +58,7 @@ namespace PhysXEditorTests
     {
         EntityPtr entity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         entity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        entity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         entity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
 
         // the entity should be in a valid state because the shape component requirement is satisfied
@@ -68,8 +70,21 @@ namespace PhysXEditorTests
     {
         EntityPtr entity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         entity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        entity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
 
         // the entity should not be in a valid state because the shape collider component requires a shape component
+        AZ::Entity::DependencySortOutcome sortOutcome = entity->EvaluateDependenciesGetDetails();
+        EXPECT_FALSE(sortOutcome.IsSuccess());
+        EXPECT_TRUE(sortOutcome.GetError().m_code == AZ::Entity::DependencySortResult::MissingRequiredService);
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_RigidBodyDependencyMissing_EntityIsInvalid)
+    {
+        EntityPtr entity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
+        entity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        entity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
+
+        // the entity should not be in a valid state because the shape collider component requires a rigid body component
         AZ::Entity::DependencySortOutcome sortOutcome = entity->EvaluateDependenciesGetDetails();
         EXPECT_FALSE(sortOutcome.IsSuccess());
         EXPECT_TRUE(sortOutcome.GetError().m_code == AZ::Entity::DependencySortResult::MissingRequiredService);
@@ -79,6 +94,7 @@ namespace PhysXEditorTests
     {
         EntityPtr entity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         entity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        entity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         entity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
 
         // adding a second shape collider component should make the entity invalid
@@ -94,6 +110,7 @@ namespace PhysXEditorTests
     {
         EntityPtr entity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         entity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        entity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         entity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
 
         // the shape collider component should be compatible with multiple collider components
@@ -110,6 +127,7 @@ namespace PhysXEditorTests
         // create an editor entity with a shape collider component and a box shape component
         EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
         editorEntity->Activate();
 
@@ -125,6 +143,7 @@ namespace PhysXEditorTests
         // create an editor entity with a shape collider component and a box shape component
         EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
         editorEntity->Activate();
 
@@ -360,6 +379,7 @@ namespace PhysXEditorTests
         // create an editor entity with a shape collider component and a polygon prism shape component
         EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->CreateComponent(LmbrCentral::EditorPolygonPrismShapeComponentTypeId);
 
         // suppress the shape collider error that will be raised because the polygon prism vertices have not been set yet
@@ -403,6 +423,7 @@ namespace PhysXEditorTests
         // create an editor entity with a shape collider component and a polygon prism shape component
         EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->CreateComponent(LmbrCentral::EditorPolygonPrismShapeComponentTypeId);
 
         // add a non-uniform scale component
@@ -439,6 +460,7 @@ namespace PhysXEditorTests
         // create an editor entity with a shape collider component and a cylinder shape component
         EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->CreateComponent(LmbrCentral::EditorCylinderShapeComponentTypeId);
         editorEntity->Activate();
 
@@ -454,6 +476,7 @@ namespace PhysXEditorTests
         // create an editor entity with a shape collider component and a cylinder shape component
         EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->CreateComponent(LmbrCentral::EditorCylinderShapeComponentTypeId);
         editorEntity->Activate();
         
@@ -526,6 +549,7 @@ namespace PhysXEditorTests
         // create an editor entity with a shape collider component and a cylinder shape component
         EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->CreateComponent(LmbrCentral::EditorCylinderShapeComponentTypeId);
         editorEntity->Activate();
 
@@ -614,6 +638,7 @@ namespace PhysXEditorTests
         // create an editor entity with a shape collider component and a box shape component
         EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
         editorEntity->Activate();
         AZ::EntityId editorEntityId = editorEntity->GetId();
@@ -708,6 +733,7 @@ namespace PhysXEditorTests
         SetTrigger(shapeColliderComponent, true);
         forceRegionEditorEntity->CreateComponent(LmbrCentral::EditorPolygonPrismShapeComponentTypeId);
         forceRegionEditorEntity->CreateComponent<PhysX::EditorForceRegionComponent>();
+        forceRegionEditorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
 
         // suppress the shape collider error that will be raised because the polygon prism vertices have not been set yet
         UnitTest::ErrorHandler polygonPrismErrorHandler("Invalid polygon prism");
@@ -798,6 +824,7 @@ namespace PhysXEditorTests
         auto* shapeColliderComponent = editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
         SetSingleSided(shapeColliderComponent, singleSided);
         editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         const auto entityId = editorEntity->GetId();
 
         editorEntity->Activate();
@@ -828,6 +855,7 @@ namespace PhysXEditorTests
         auto* boxShapeComponent = editorEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
         auto* shapeColliderComponent = editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
         SetTrigger(shapeColliderComponent, initialTriggerSetting);
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->Activate();
 
         // the trigger setting should be what it was set to
@@ -859,31 +887,34 @@ namespace PhysXEditorTests
     {
         bool initialSingleSidedSetting = GetParam();
 
-        // create an editor entity without a rigid body (that means both single-sided and double-sided quads are valid)
+        // create an editor entity with a static rigid body (that means both single-sided and double-sided quads are valid)
         EntityPtr editorEntity = CreateInactiveEditorEntity("QuadEntity");
         editorEntity->CreateComponent(LmbrCentral::EditorQuadShapeComponentTypeId);
         auto* shapeColliderComponent = editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
         SetSingleSided(shapeColliderComponent, initialSingleSidedSetting);
+        auto* staticRigidBodyComponent = editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorEntity->Activate();
 
         // verify that the single sided setting matches the initial value
         EXPECT_EQ(IsSingleSided(shapeColliderComponent), initialSingleSidedSetting);
 
-        // add an editor rigid body component (this should mean single-sided quads are not supported)
+        // add a dynamic rigid body component (this should mean single-sided quads are not supported)
         editorEntity->Deactivate();
-        auto rigidBodyComponent = editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        editorEntity->RemoveComponent(staticRigidBodyComponent);
+        auto* rigidBodyComponent = editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
         editorEntity->Activate();
 
         EXPECT_FALSE(IsSingleSided(shapeColliderComponent));
 
-        // remove the editor rigid body component (the previous single-sided setting should be restored)
+        // add back the the static rigid body (the previous single-sided setting should be restored)
         editorEntity->Deactivate();
         editorEntity->RemoveComponent(rigidBodyComponent);
+        editorEntity->AddComponent(staticRigidBodyComponent);
         editorEntity->Activate();
 
         EXPECT_EQ(IsSingleSided(shapeColliderComponent), initialSingleSidedSetting);
 
-        // the rigid body component is no longer attached to the entity so won't be automatically cleared up
+        // the dynamic rigid body component is no longer attached to the entity so won't be automatically cleared up
         delete rigidBodyComponent;
     }
 
@@ -896,6 +927,7 @@ namespace PhysXEditorTests
         editorQuadEntity->CreateComponent(LmbrCentral::EditorQuadShapeComponentTypeId);
         auto* shapeColliderComponent = editorQuadEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
         SetSingleSided(shapeColliderComponent, true);
+        editorQuadEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
         editorQuadEntity->Activate();
         LmbrCentral::QuadShapeComponentRequestBus::Event(editorQuadEntity->GetId(), &LmbrCentral::QuadShapeComponentRequests::SetQuadHeight, 10.0f);
         LmbrCentral::QuadShapeComponentRequestBus::Event(editorQuadEntity->GetId(), &LmbrCentral::QuadShapeComponentRequests::SetQuadWidth, 10.0f);

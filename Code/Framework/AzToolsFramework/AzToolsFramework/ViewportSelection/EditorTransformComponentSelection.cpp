@@ -1025,8 +1025,13 @@ namespace AzToolsFramework
 
         m_editorHelpers = AZStd::make_unique<EditorHelpers>(entityDataCache);
 
-        ActionManagerRegistrationNotificationBus::Handler::BusConnect();
-        EditorEventsBus::Handler::BusConnect();
+        // New Action Manager registers an action to handle Escape.
+        if (!IsNewActionManagerEnabled())
+        {
+            EditorEventsBus::Handler::BusConnect();
+        }
+
+        ActionManagerRegistrationNotificationBus::Handler::BusConnect();        
         EditorTransformComponentSelectionRequestBus::Handler::BusConnect(entityContextId);
         ToolsApplicationNotificationBus::Handler::BusConnect();
         Camera::EditorCameraNotificationBus::Handler::BusConnect();
@@ -1107,8 +1112,12 @@ namespace AzToolsFramework
         Camera::EditorCameraNotificationBus::Handler::BusDisconnect();
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EditorTransformComponentSelectionRequestBus::Handler::BusDisconnect();
-        EditorEventsBus::Handler::BusDisconnect();
         ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+
+        if (!IsNewActionManagerEnabled())
+        {
+            EditorEventsBus::Handler::BusDisconnect();
+        }
     }
 
     void EditorTransformComponentSelection::SetupBoxSelect()
@@ -2660,6 +2669,30 @@ namespace AzToolsFramework
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+A");
         }
 
+        // Deselect All
+        {
+            const AZStd::string_view actionIdentifier = "o3de.action.edit.deselectAll";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Deselect All";
+            actionProperties.m_description = "Deselect All Entities";
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                [this]()
+                {
+                    DeselectEntities();
+                }
+            );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Esc");
+        }
+
         // Invert Selection
         {
             const AZStd::string_view actionIdentifier = "o3de.action.edit.invertSelection";
@@ -3115,6 +3148,7 @@ namespace AzToolsFramework
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.delete", 500);
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EditMenuIdentifier, 600);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.selectAll", 700);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.deselectAll", 750);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.invertSelection", 800);
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EditMenuIdentifier, 900);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.edit.togglePivot", 1000);

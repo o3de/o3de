@@ -26,6 +26,8 @@ namespace StartingPointInput
         SCRIPTCANVAS_NODE(InputHandlerNodeable)
 
     public:
+        AZ_CLASS_ALLOCATOR(InputHandlerNodeable, AZ::SystemAllocator, 0);
+
         ~InputHandlerNodeable() override;
 
     protected:

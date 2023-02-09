@@ -199,7 +199,7 @@ namespace EMotionFX
         {
             AzToolsFramework::Components::EditorComponentBase::Activate();
 
-            UpdateRenderFlags();
+            OnRenderFlagChanged();
             LoadActorAsset();
 
             const AZ::EntityId entityId = GetEntityId();

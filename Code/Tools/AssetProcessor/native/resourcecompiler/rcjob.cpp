@@ -9,6 +9,7 @@
 #include "rcjob.h"
 
 #include <AzToolsFramework/UI/Logging/LogLine.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 
 #include <native/utilities/BuilderManager.h>
 #include <native/utilities/ThreadHelper.h>
@@ -290,6 +291,7 @@ namespace AssetProcessor
         builderParams.m_intermediateOutputDir = GetIntermediateOutputPath();
         builderParams.m_relativePath = GetRelativePath();
         builderParams.m_assetBuilderDesc = m_jobDetails.m_assetBuilderDesc;
+        builderParams.m_sourceUuid = m_jobDetails.m_sourceUuid;
 
         // when the job finishes, record the results and emit Finished()
         connect(this, &RCJob::JobFinished, this, [this](AssetBuilderSDK::ProcessJobResponse result)
@@ -736,6 +738,7 @@ namespace AssetProcessor
         // and  the second is the product destination we intend to copy it to.
         QList< QPair<QString, QString> > outputsToCopy;
         outputsToCopy.reserve(static_cast<int>(response.m_outputProducts.size()));
+        QList<QPair<QString, AZ::Uuid>> intermediateOutputPaths;
         qint64 fileSizeRequired = 0;
 
         bool needCacheDirectory = false;
@@ -795,7 +798,7 @@ namespace AssetProcessor
                 AZ_Error(
                     AssetProcessor::ConsoleChannel, false,
                     "Product asset outputs are not currently supported for the %s platform.  "
-                    "Either change the Job platform a normal platform or change the output flag to AssetBuilderSDK::ProductOutputFlags::IntermediateAsset",
+                    "Either change the Job platform to a normal platform or change the output flag to AssetBuilderSDK::ProductOutputFlags::IntermediateAsset",
                     AssetBuilderSDK::CommonPlatformName);
                 return false;
             }
@@ -828,9 +831,28 @@ namespace AssetProcessor
                     relativeFilePath = product.m_outputPathOverride;
                 }
 
-                if (!VerifyOutputProduct(
-                    QDir(intermediateDirectory.c_str()), outputFilename, absolutePathOfSource,
-                    fileSizeRequired, outputsToCopy))
+                if (VerifyOutputProduct(
+                        QDir(intermediateDirectory.c_str()), outputFilename, absolutePathOfSource, fileSizeRequired, outputsToCopy))
+                {
+                    // A null uuid indicates the source is not using metadata files.
+                    // The assumption for the UUID generated below is that the source UUID will not change.  A type which has no metadata
+                    // file currently may be updated later to have a metadata file, which would break that assumption.  In that case, stick
+                    // with the default path-based UUID.
+                    if (!params.m_sourceUuid.IsNull())
+                    {
+                        // Generate a UUID for the intermediate as:
+                        // SourceUuid:BuilderUuid:SubId
+                        auto uuid = AZ::Uuid::CreateName(AZStd::string::format(
+                            "%s:%s:%d",
+                            params.m_sourceUuid.ToFixedString().c_str(),
+                            params.m_assetBuilderDesc.m_busId.ToFixedString().c_str(),
+                            product.m_productSubID));
+
+                        // Add the product absolute path to the list of intermediates
+                        intermediateOutputPaths.append(QPair(outputsToCopy.back().second, uuid));
+                    }
+                }
+                else
                 {
                     return false;
                 }
@@ -874,6 +896,23 @@ namespace AssetProcessor
         {
             AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Failed to create intermediate directory: %s\n", intermediateDirectory.c_str());
             return false;
+        }
+
+        auto* uuidInterface = AZ::Interface<AzToolsFramework::IUuidUtil>::Get();
+
+        if (!uuidInterface)
+        {
+            AZ_Assert(false, "Programmer Error - IUuidUtil interface is not available");
+            return false;
+        }
+
+        // Go through all the intermediate products and output the assigned UUID
+        for (auto [intermediateProduct, uuid] : intermediateOutputPaths)
+        {
+            if(!uuidInterface->CreateSourceUuid(intermediateProduct.toUtf8().constData(), uuid))
+            {
+                AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Failed to create metadata file for intermediate product " AZ_STRING_FORMAT, AZ_STRING_ARG(intermediateProduct));
+            }
         }
 
         bool anyFileFailed = false;

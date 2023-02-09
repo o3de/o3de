@@ -606,22 +606,22 @@ namespace UnitTest
         MaterialAssetCreator materialCreator;
 
         Data::Asset<MaterialAsset> materialAssetV1;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(1);
         EXPECT_TRUE(materialCreator.End(materialAssetV1));
 
         Data::Asset<MaterialAsset> materialAssetV3;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(3);
         EXPECT_TRUE(materialCreator.End(materialAssetV3));
 
         Data::Asset<MaterialAsset> materialAssetV6;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(6);
         EXPECT_TRUE(materialCreator.End(materialAssetV6));
 
         Data::Asset<MaterialAsset> materialAssetV9;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(9);
         EXPECT_TRUE(materialCreator.End(materialAssetV9));
 
@@ -711,7 +711,7 @@ namespace UnitTest
         // Add the MaterialTypeAsset to a MaterialAsset to trigger the value updates
         Data::Asset<MaterialAsset> materialAsset;
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(1);
         EXPECT_TRUE(materialCreator.End(materialAsset));
 
