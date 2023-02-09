@@ -182,17 +182,22 @@ def register_all_engines_in_folder(engines_path: pathlib.Path,
 
 def register_all_projects_in_folder(projects_path: pathlib.Path,
                                     remove: bool = False,
-                                    engine_path: pathlib.Path = None) -> int:
-    return register_all_o3de_objects_of_type_in_folder(projects_path, 'project', remove, False,
-                                                       stop_on_template_folders, engine_path=engine_path)
+                                    engine_path: pathlib.Path = None,
+                                    force: bool = False,
+                                    dry_run: bool = False) -> int:
+    return register_all_o3de_objects_of_type_in_folder(projects_path, 'project', remove, force,
+                                                       stop_on_template_folders, engine_path=engine_path, 
+                                                       dry_run=dry_run)
 
 
 def register_all_gems_in_folder(gems_path: pathlib.Path,
                                 remove: bool = False,
                                 engine_path: pathlib.Path = None,
-                                project_path: pathlib.Path = None) -> int:
-    return register_all_o3de_objects_of_type_in_folder(gems_path, 'gem', remove, False, stop_on_template_folders,
-                                                       engine_path=engine_path)
+                                project_path: pathlib.Path = None,
+                                force: bool = False,
+                                dry_run: bool = False) -> int:
+    return register_all_o3de_objects_of_type_in_folder(gems_path, 'gem', remove, force, stop_on_template_folders,
+                                                       engine_path=engine_path, dry_run=dry_run)
 
 
 def register_all_templates_in_folder(templates_path: pathlib.Path,
@@ -451,7 +456,7 @@ def register_gem_path(json_data: dict,
                                      dry_run=dry_run)
 
     if result == 0 and dry_run:
-        logger.info('Gem path was not registered because --dry-run option was specified')
+        logger.info(f'Gem path {gem_path} was not registered because the --dry-run option was specified')
 
     return result
 
@@ -894,9 +899,9 @@ def _run_register(args: argparse) -> int:
     elif args.all_engines_path:
         return register_all_engines_in_folder(args.all_engines_path, args.remove, args.force)
     elif args.all_projects_path:
-        return register_all_projects_in_folder(args.all_projects_path, args.remove)
+        return register_all_projects_in_folder(args.all_projects_path, args.remove, force=args.force, dry_run=args.dry_run)
     elif args.all_gems_path:
-        return register_all_gems_in_folder(args.all_gems_path, args.remove)
+        return register_all_gems_in_folder(args.all_gems_path, args.remove, force=args.force, dry_run=args.dry_run)
     elif args.all_templates_path:
         return register_all_templates_in_folder(args.all_templates_path, args.remove)
     elif args.all_restricted_path:
