@@ -639,9 +639,11 @@ namespace PhysX
     void EditorColliderComponent::CreateStaticEditorCollider()
     {
         m_cachedAabbDirty = true;
+        Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
 
         if (!GetEntity()->FindComponent<EditorStaticRigidBodyComponent>())
         {
+            m_colliderDebugDraw.ClearCachedGeometry();
             return;
         }
 
