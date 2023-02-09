@@ -10,7 +10,7 @@
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/DOM/DomUtils.h>
-#include <AzCore/Prefab/PrefabEditorPreferences.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h>
@@ -25,6 +25,8 @@ namespace AZ::DocumentPropertyEditor
         AdapterBuilder m_builder;
         // Look-up table of onChanged callbacks for handling property changes
         AZ::Dom::DomPrefixTree<AZStd::function<Dom::Value(const Dom::Value&)>> m_onChangedCallbacks;
+
+        static constexpr AZStd::string_view InspectorOverrideManagementKey = "/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement";
 
         struct BoundContainer
         {
@@ -284,6 +286,18 @@ namespace AZ::DocumentPropertyEditor
                 false);
         }
 
+        bool IsInspectorOverrideManagementEnabled()
+        {
+            bool isInspectorOverrideManagementEnabled = false;
+
+            if (auto* registry = AZ::SettingsRegistry::Get())
+            {
+                registry->Get(isInspectorOverrideManagementEnabled, InspectorOverrideManagementKey);
+            }
+
+            return isInspectorOverrideManagementEnabled;
+        }
+
         template<class T>
         void VisitPrimitive(T& value, const Reflection::IAttributes& attributes)
         {
@@ -523,7 +537,7 @@ namespace AZ::DocumentPropertyEditor
                     hashValue = true;
                 }
 
-                if (AZ::Prefab::IsInspectorOverrideManagementEnabled() && !serializedPathAttribute.GetString().empty())
+                if (IsInspectorOverrideManagementEnabled() && !serializedPathAttribute.GetString().empty())
                 {
                     VisitValueWithSerializedPath(access, attributes);
                 }

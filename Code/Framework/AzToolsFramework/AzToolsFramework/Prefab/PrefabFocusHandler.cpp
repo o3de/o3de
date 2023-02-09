@@ -17,7 +17,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzCore/Prefab/PrefabEditorPreferences.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusUndo.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
@@ -114,7 +114,7 @@ namespace AzToolsFramework::Prefab
             "ReadOnly Entity Query Interface could not be found. "
             "Check that it is being correctly initialized.");
 
-        if (AZ::Prefab::IsPrefabOverridesUxEnabled())
+        if (AzToolsFramework::Prefab::IsPrefabOverridesUxEnabled())
         {
             m_prefabEditScope = PrefabEditScope::SHOW_NESTED_INSTANCES_CONTENT;
         }
@@ -276,7 +276,7 @@ namespace AzToolsFramework::Prefab
         // Close all container entities in the old path.
         SetInstanceContainersOpenState(m_rootAliasFocusPath, false);
 
-        if (AZ::Prefab::IsPrefabOverridesUxEnabled())
+        if (AzToolsFramework::Prefab::IsPrefabOverridesUxEnabled())
         {
             // Always close all nested instances in the old focus subtree.
             SetInstanceContainersOpenStateOfAllDescendantContainers(GetInstanceReference(m_rootAliasFocusPath), false);
@@ -331,7 +331,7 @@ namespace AzToolsFramework::Prefab
         // Open all container entities in the new path.
         SetInstanceContainersOpenState(m_rootAliasFocusPath, true);
 
-        if (AZ::Prefab::IsPrefabOverridesUxEnabled())
+        if (AzToolsFramework::Prefab::IsPrefabOverridesUxEnabled())
         {
             // Set open state on all nested instances in the new focus subtree based on edit scope.
             SetInstanceContainersOpenStateOfAllDescendantContainers(GetInstanceReference(m_rootAliasFocusPath), true);
@@ -555,7 +555,7 @@ namespace AzToolsFramework::Prefab
         RefreshInstanceFocusPath();
         PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusRefreshed);
 
-        if (AZ::Prefab::IsPrefabOverridesUxEnabled())
+        if (AzToolsFramework::Prefab::IsPrefabOverridesUxEnabled())
         {
             SwitchToEditScope();
         }

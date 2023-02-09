@@ -465,8 +465,6 @@ set(FILES
     PlatformId/PlatformId.h
     PlatformId/PlatformId.cpp
     PlatformIncl.h
-    Prefab/PrefabEditorPreferences.h
-    Prefab/PrefabEditorPreferences.cpp
     Preprocessor/Enum.h
     Preprocessor/EnumReflectUtils.h
     Preprocessor/Sequences.h

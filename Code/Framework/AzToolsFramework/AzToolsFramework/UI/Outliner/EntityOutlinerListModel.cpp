@@ -50,7 +50,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
-#include <AzCore/Prefab/PrefabEditorPreferences.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
@@ -1262,7 +1262,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerListModel::OnContainerEntityStatusChanged(AZ::EntityId entityId, [[maybe_unused]] bool open)
     {
-        if (!AZ::Prefab::IsPrefabOverridesUxEnabled())
+        if (!AzToolsFramework::Prefab::IsPrefabOverridesUxEnabled())
         {
             // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
             QueueEntityUpdate(entityId);

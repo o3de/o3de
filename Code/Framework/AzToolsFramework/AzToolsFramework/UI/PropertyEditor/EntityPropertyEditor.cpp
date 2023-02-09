@@ -50,7 +50,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
-#include <AzCore/Prefab/PrefabEditorPreferences.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Slice/SliceDataFlagsCommand.h>
@@ -503,7 +503,7 @@ namespace AzToolsFramework
 
         initEntityPropertyEditorResources();
 
-        if (AZ::Prefab::IsInspectorOverrideManagementEnabled())
+        if (AzToolsFramework::Prefab::IsInspectorOverrideManagementEnabled())
         {
             m_prefabAdapter = AZStd::make_unique<Prefab::PrefabAdapter>();
         }
