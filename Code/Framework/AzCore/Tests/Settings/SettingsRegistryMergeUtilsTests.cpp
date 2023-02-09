@@ -958,9 +958,9 @@ tags=tools,renderer,metal)"
             AZ::IO::FixedMaxPath projectUserPath = tempRootFolder / "project" /  "user";
             AZ::IO::FixedMaxPath userProjectManifestPath = projectUserPath / "project.json";
 
-            for (int i = 0; i < params.m_engineManifestsJson.size(); ++i)
+            for (size_t i = 0; i < params.m_engineManifestsJson.size(); ++i)
             {
-                const AZ::IO::FixedMaxPath enginePath = tempRootFolder / AZStd::string::format("engine%d", i);
+                const AZ::IO::FixedMaxPath enginePath = tempRootFolder / AZStd::string::format("engine%zu", i);
                 ASSERT_TRUE(CreateTestFile(enginePath / "engine.json", params.m_engineManifestsJson[i]));
 
                 m_enginePaths.emplace_back(AZStd::move(enginePath));
@@ -984,11 +984,11 @@ tags=tools,renderer,metal)"
         {
             // replace instances of <engine0>, <engine1> etc. with actual engine paths
             AZStd::string contentString{ content };
-            for (int i = 0; i < m_enginePaths.size(); ++i)
+            for (size_t i = 0; i < m_enginePaths.size(); ++i)
             {
                 AZStd::string enginePath{ m_enginePaths[i].Native().c_str() };
                 AZ::StringFunc::Json::ToEscapedString(enginePath);
-                AZ::StringFunc::Replace(contentString, AZStd::string::format("<engine_path%d>", i).c_str(), enginePath.c_str());
+                AZ::StringFunc::Replace(contentString, AZStd::string::format("<engine_path%zu>", i).c_str(), enginePath.c_str());
             }
             return CreateTestFile(testPath, contentString.c_str());
         }
