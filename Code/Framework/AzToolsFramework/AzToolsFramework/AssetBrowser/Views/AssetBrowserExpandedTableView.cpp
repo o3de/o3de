@@ -7,7 +7,7 @@
  */
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserExpandedTableView.h>
 
-#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserExpandedFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserExpandedTableViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
@@ -28,7 +28,7 @@ namespace AzToolsFramework
             : QWidget(parent)
             , m_expandedTableViewWidget(new AzQtComponents::AssetFolderExpandedTableView(parent))
             , m_expandedTableViewProxyModel(new AssetBrowserExpandedTableViewProxyModel(parent))
-            , m_assetFilterModel(new AssetBrowserFilterModel(parent, true))
+            , m_assetFilterModel(new AssetBrowserExpandedFilterModel(parent))
         {
             // Using our own instance of AssetBrowserFilterModel to be able to show also files when the main model
             // only lists directories, and at the same time get sort and filter entries features from AssetBrowserFilterModel.

@@ -37,7 +37,7 @@ namespace AzToolsFramework
 
         public:
             AZ_CLASS_ALLOCATOR(AssetBrowserFilterModel, AZ::SystemAllocator, 0);
-            explicit AssetBrowserFilterModel(QObject* parent = nullptr, bool expanded = false);
+            explicit AssetBrowserFilterModel(QObject* parent = nullptr);
             ~AssetBrowserFilterModel() override;
 
             // QSortFilterProxyModel
@@ -79,7 +79,6 @@ namespace AzToolsFramework
             QCollator m_collator;  // cache the collator as its somewhat expensive to constantly create and destroy one.
             AZ_POP_DISABLE_WARNING
             bool m_invalidateFilter = false;
-            bool m_expanded{ false };
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

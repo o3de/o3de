@@ -31,27 +31,13 @@ namespace AzToolsFramework
     {
         //////////////////////////////////////////////////////////////////////////
         //AssetBrowserFilterModel
-        AssetBrowserFilterModel::AssetBrowserFilterModel(QObject* parent, [[maybe_unused]]bool expanded)
+        AssetBrowserFilterModel::AssetBrowserFilterModel(QObject* parent)
             : QSortFilterProxyModel(parent)
-            , m_expanded(expanded)
         {
-            if (m_expanded)
+            m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
+            if (ed_useNewAssetBrowserTableView)
             {
-                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
                 m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Path));
-                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Type));
-                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DiskSize));
-                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Vertices));
-                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::ApproxSize));
-                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::SourceControlStatus));
-            }
-            else
-            {
-                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
-                if (ed_useNewAssetBrowserTableView)
-                {
-                    m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Path));
-                }
             }
             m_collator.setNumericMode(true);
             AssetBrowserComponentNotificationBus::Handler::BusConnect();

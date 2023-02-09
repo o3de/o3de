@@ -25,7 +25,7 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class AssetBrowserFilterModel;
+        class AssetBrowserExpandedFilterModel;
         class AssetBrowserTreeView;
         class AssetBrowserExpandedTableViewProxyModel;
         class AssetBrowserEntry;
@@ -65,7 +65,7 @@ namespace AzToolsFramework
             AssetBrowserTreeView* m_assetTreeView = nullptr;
             AzQtComponents::AssetFolderExpandedTableView* m_expandedTableViewWidget = nullptr;
             AssetBrowserExpandedTableViewProxyModel* m_expandedTableViewProxyModel = nullptr;
-            AssetBrowserFilterModel* m_assetFilterModel = nullptr;
+            AssetBrowserExpandedFilterModel* m_assetFilterModel = nullptr;
 
             void HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
             void UpdateFilterInLocalFilterModel();

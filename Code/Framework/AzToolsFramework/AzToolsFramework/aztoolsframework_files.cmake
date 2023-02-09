@@ -686,6 +686,8 @@ set(FILES
     AssetBrowser/AssetBrowserEntry.h
     AssetBrowser/AssetBrowserEntityInspectorWidget.h
     AssetBrowser/AssetBrowserEntityInspectorWidget.cpp
+    AssetBrowser/AssetBrowserExpandedFilterModel.cpp
+    AssetBrowser/AssetBrowserExpandedFilterModel.h
     AssetBrowser/AssetBrowserFilterModel.cpp
     AssetBrowser/AssetBrowserFilterModel.h
     AssetBrowser/AssetBrowserTableModel.cpp
