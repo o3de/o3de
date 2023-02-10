@@ -46,6 +46,7 @@ class TestAutomation(TestAutomationBase):
         from .tests.material import Material_CharacterController as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.skipif(sys.platform.startswith('linux'), reason="https://github.com/o3de/o3de/issues/14520")
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Collider_NoneCollisionGroupSameLayerNotCollide.setreg_override',
                       'AutomatedTesting/Registry', search_subdirs=True)

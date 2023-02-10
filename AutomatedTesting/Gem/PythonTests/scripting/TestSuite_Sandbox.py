@@ -175,3 +175,20 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
+
+    def test_NewScriptEventButton_HappyPath_ContainsSCCategory(self, request, editor, launcher_platform):
+        expected_lines = [
+            "New Script event action found: True",
+            "Asset Editor opened: True",
+            "Asset Editor created with new asset: True",
+            "New Script event created in Asset Editor: True",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "NewScriptEventButton_HappyPath_ContainsSCCategory.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
