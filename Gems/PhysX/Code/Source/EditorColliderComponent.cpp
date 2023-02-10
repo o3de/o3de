@@ -985,7 +985,7 @@ namespace PhysX
 
     void EditorColliderComponent::DisplayMeshCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
     {
-        if (!m_colliderDebugDraw.HasCachedGeometry())
+        if (!m_colliderDebugDraw.HasCachedGeometry() || !m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset.IsReady())
         {
             return;
         }
