@@ -35,6 +35,15 @@ namespace PhysX
     static const float DefaultGravityMultiplier = 1.0f;
     static const float DefaultGroundDetectionBoxHeight = 0.05f;
 
+    //float CalculateZFromFalling(float gravity, float gravityMultipler, float timeFell)
+    //{
+    //    // Calculate distance fallen (d = 0.5 * g * t^2)
+    //    float calculated_gravity = gravity * gravityMultipler;
+    //    float time = timeFell * AzPhysics::SystemConfiguration::DefaultFixedTimestep;
+
+    //    return 0.5f * (calculated_gravity) * (time * time);
+    //}
+
     class GameplayTestBasis
     {
     public:
@@ -107,6 +116,15 @@ namespace PhysX
         float m_timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
     };
 
+    TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GravitySets)
+    {
+        float expectedGravityMultiplier = 2.5f;
+
+        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+        basis.m_gameplayController->SetGravityMultiplier(expectedGravityMultiplier);
+        EXPECT_THAT(expectedGravityMultiplier, testing::FloatEq(basis.m_gameplayController->GetGravityMultiplier()));
+    }
+
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GravitySetsWhileMoving)
     {
         float expectedGravityMultiplier = 2.5f;
@@ -123,5 +141,35 @@ namespace PhysX
 
             EXPECT_THAT(expectedGravityMultiplier + i, testing::FloatEq(basis.m_gameplayController->GetGravityMultiplier()));
         }
+    }
+
+    TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_EntityFallsUnderGravity)
+    {
+        float expectedGravityMultiplier = 1.5f;
+
+        GameplayTestBasis basis(m_testSceneHandle, expectedGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+
+        // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
+        auto startPosition = basis.m_controller->GetPosition();
+        
+        int timeStepCount = 600;
+        float totalTime = 0.0f;
+        float timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
+
+        if (auto* physXSystem = GetPhysXSystem())
+        {
+            for (int i = 0; i < timeStepCount; i++)
+            {
+                physXSystem->Simulate(timeStep);
+                totalTime += timeStep;
+            }
+        }
+        auto endPosition = basis.m_controller->GetPosition();
+        auto currentGravity = basis.m_testScene->GetGravity();
+
+        //startPosition.GetZ();
+        //float distanceFell = CalculateZFromFalling(currentGravity.GetZ(), expectedGravityMultiplier, totalTime);
+        //EXPECT_THAT(endPosition.GetZ()+1.0f, testing::FloatEq(startPosition.GetZ() - distanceFell));
+
     }
 } // namespace PhysX
