@@ -564,13 +564,13 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::EnableRayRequests()
         {
-            RaycastRequestBus::Handler::BusDisconnect();
-            RaycastRequestBus::Handler::BusConnect();
+            AZ::Interface<IRaycastRequests>::Unregister(this);
+            AZ::Interface<IRaycastRequests>::Register(this);
         }
 
         void SystemComponent::DisableRayRequests()
         {
-            RaycastRequestBus::Handler::BusDisconnect();
+            AZ::Interface<IRaycastRequests>::Unregister(this);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -759,9 +759,10 @@ namespace EMotionFX
 
 
         //////////////////////////////////////////////////////////////////////////
-        RaycastRequests::RaycastResult SystemComponent::Raycast([[maybe_unused]] AZ::EntityId entityId, const RaycastRequests::RaycastRequest& rayRequest)
+        IRaycastRequests::RaycastResult SystemComponent::Raycast(
+            [[maybe_unused]] AZ::EntityId entityId, const IRaycastRequests::RaycastRequest& rayRequest)
         {
-            RaycastRequests::RaycastResult rayResult;
+            IRaycastRequests::RaycastResult rayResult;
 
             // Build the ray request in the physics system.
             AzPhysics::RayCastRequest physicsRayRequest;
