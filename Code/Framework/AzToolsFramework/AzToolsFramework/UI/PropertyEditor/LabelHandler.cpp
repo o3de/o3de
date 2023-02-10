@@ -28,7 +28,7 @@ namespace AzToolsFramework
         return AZ::Edit::UIHandlers::Label;
     }
 
-    void LabelHandler::ConsumeAttribute(QLabel* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName)
+    void LabelHandler::ConsumeAttribute(QLabel* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, [[maybe_unused]] const char* debugName)
     {
         if (attrib == AZ::Edit::Attributes::ValueText)
         {
