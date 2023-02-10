@@ -55,7 +55,7 @@ namespace AzToolsFramework
     {
         if (m_getNonUniformScale)
         {
-            return m_getNonUniformScale();
+            return m_getNonUniformScale().GetMax(AZ::Vector3(AZ::MinTransformScale));
         }
         AZ_ErrorOnce("BaseShapeViewportEdit", false, "No implementation provided for GetNonUniformScale");
         return AZ::Vector3::CreateOne();
