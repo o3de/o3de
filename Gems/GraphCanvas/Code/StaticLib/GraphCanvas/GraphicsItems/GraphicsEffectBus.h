@@ -10,8 +10,12 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/EntityId.h>
 
+class QGraphicsItem;
+
 namespace GraphCanvas
 {
+    using GraphicsEffectId = AZ::EntityId;
+
     class GraphicsEffectRequests
         : public AZ::EBusTraits
     {
