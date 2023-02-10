@@ -2007,8 +2007,7 @@ namespace AssetProcessor
         {
             if (IsInIntermediateAssetsFolder(sourceAsset))
             {
-                auto topLevelSource = AssetUtilities::GetTopLevelSourcePathForIntermediateAsset(
-                    SourceAssetReference(source.m_scanFolderPK, source.m_sourceName.c_str()), m_stateData);
+                auto topLevelSource = AssetUtilities::GetTopLevelSourcePathForIntermediateAsset(sourceAsset, m_stateData);
 
                 if (topLevelSource)
                 {
@@ -3187,7 +3186,9 @@ namespace AssetProcessor
             {
                 if (!AZ::Interface<IFileStateRequests>::Get()->Exists(topLevelSource.value().c_str()))
                 {
-                    AZ_Printf("AP", "Top level source '%s' for intermediate asset '%.*s' no longer exists, "
+                    AZ_TracePrintf(
+                        AssetProcessor::ConsoleChannel,
+                        "Top level source '%s' for intermediate asset '%.*s' no longer exists, "
                         "so this intermediate asset will not be reprocessed.\n",
                         topLevelSource.value().c_str(),
                         AZ_STRING_ARG(productName));
