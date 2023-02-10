@@ -163,7 +163,7 @@ class TestScriptCanvasTests(object):
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
 
-    def test_NewScriptEventButton_HappyPath_ContainsSCCategory(self, request, editor, launcher_platform):
+    def test_NewScriptEventButton_HappyPath_ContainsSCCategory(self, request, workspace, editor, launcher_platform):
         expected_lines = [
             "New Script event action found: True",
             "Asset Editor opened: True",
