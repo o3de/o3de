@@ -1231,35 +1231,7 @@ namespace AssetProcessor
             else if (sourceUuid != source.m_sourceGuid)
             {
                 // UUID has changed, update catalog and database
-
-                const AZ::Uuid oldUuid = source.m_sourceGuid;
-
-                // Send a Removed message for each existing product, otherwise they'll just get stuck in the catalog
-                AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer oldProducts;
-                m_stateData->GetProductsBySourceID(source.m_sourceID, oldProducts);
-
-                for (const auto& product : oldProducts)
-                {
-                    AzToolsFramework::AssetDatabase::JobDatabaseEntry job;
-                    m_stateData->GetJobByJobID(product.m_jobPK, job);
-
-                    AZStd::string relativeProductPath =
-                        AssetUtilities::StripAssetPlatform(product.m_productName).toUtf8().constData();
-
-                    AssetNotificationMessage oldAssetRemovedMessage(
-                        relativeProductPath,
-                        AzFramework::AssetSystem::AssetNotificationMessage::NotificationType::AssetRemoved,
-                        product.m_assetType,
-                        job.m_platform);
-                    oldAssetRemovedMessage.m_assetId = AZ::Data::AssetId(oldUuid, product.m_subID);
-
-                    Q_EMIT AssetMessage(oldAssetRemovedMessage);
-                }
-
-                // Update the database
-                source.m_sourceGuid = sourceUuid;
-
-                m_stateData->SetSource(source);
+                HandleSourceUuidChange(source, sourceUuid);
             }
 
             //create/update the job
@@ -1647,6 +1619,36 @@ namespace AssetProcessor
         // If we rely on the file watcher only, it might fire before the AssetMessage signal has been responded to and the
         // Asset Catalog may not realize that things are dirty by that point.
         QueueIdleCheck();
+    }
+
+    void AssetProcessorManager::HandleSourceUuidChange(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& source, AZ::Uuid newUuid)
+    {
+        const AZ::Uuid oldUuid = source.m_sourceGuid;
+
+        // Send a Removed message for each existing product, otherwise they'll just get stuck in the catalog
+        AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer oldProducts;
+        m_stateData->GetProductsBySourceID(source.m_sourceID, oldProducts);
+
+        for (const auto& product : oldProducts)
+        {
+            AzToolsFramework::AssetDatabase::JobDatabaseEntry job;
+            m_stateData->GetJobByJobID(product.m_jobPK, job);
+
+            AZStd::string relativeProductPath = AssetUtilities::StripAssetPlatform(product.m_productName).toUtf8().constData();
+
+            AssetNotificationMessage oldAssetRemovedMessage(
+                relativeProductPath,
+                AzFramework::AssetSystem::AssetNotificationMessage::NotificationType::AssetRemoved,
+                product.m_assetType,
+                job.m_platform);
+            oldAssetRemovedMessage.m_assetId = AZ::Data::AssetId(oldUuid, product.m_subID);
+
+            Q_EMIT AssetMessage(oldAssetRemovedMessage);
+        }
+
+        // Update the database
+        source.m_sourceGuid = newUuid;
+        m_stateData->SetSource(source);
     }
 
     void AssetProcessorManager::WriteProductTableInfo(AZStd::pair<AzToolsFramework::AssetDatabase::ProductDatabaseEntry, const AssetBuilderSDK::JobProduct*>& pair, AZStd::vector<AZ::u32>& subIds, AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyContainer, const AZStd::string& platform)
@@ -3181,7 +3183,7 @@ namespace AssetProcessor
             // Make a special case check for MetadataManager files
             // An update to one of these types of files needs to cause a re-process of the intermediate file.
             // Converting a metadata file to the real file normally happens later in the processing but needs to be done
-            // up front for intermediates to avoid bypassing this whole block - which stops processing intermediates before they're recorded in the db.
+            // up front for intermediates to avoid bypassing this whole block - which stops processing intermediates before they're recorded in the database.
             AzToolsFramework::MetadataManager::MetadataFileExtension;
             AZ::IO::FixedMaxPath absolutePath(normalizedFullFile.toUtf8().constData());
 
