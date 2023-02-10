@@ -12,8 +12,6 @@
 
 #include <AzCore/EBus/EBus.h>
 
-#include <AzCore/RTTI/ReflectContext.h>
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
@@ -83,6 +81,14 @@ namespace AzFramework
             // Variables
             InputChannelId m_channelId;   //!< Id of the input channel to address requests
             AZ::u32        m_deviceIndex; //!< Index of the input device to address requests
+
+            //! Size_t conversion operator for std::hash to return a reasonable hash.
+            [[nodiscard]] explicit constexpr operator size_t() const
+            {
+                size_t hashValue = m_channelId.GetNameCrc32();
+                AZStd::hash_combine(hashValue, m_deviceIndex);
+                return hashValue;
+            }       
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -209,13 +215,5 @@ namespace AzFramework
     }
 
 } // namespace AzFramework
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace AZStd
-{
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // forward declaration of the hash operator() function, to avoid instantiation of the ebus template in the header.
-    template<> size_t hash<AzFramework::InputChannelRequests::BusIdType>::operator()(const AzFramework::InputChannelRequests::BusIdType& busIdType) const;
-}
 
 DECLARE_EBUS_EXTERN(AzFramework::InputChannelRequests);

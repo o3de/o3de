@@ -10,16 +10,6 @@
 
 DECLARE_EBUS_INSTANTIATION(AzFramework::InputChannelRequests);
 
-namespace AZStd
-{
-    template<> size_t hash<AzFramework::InputChannelRequests::BusIdType>::operator()(const AzFramework::InputChannelRequests::BusIdType& busIdType) const
-    {
-            size_t hashValue = busIdType.m_channelId.GetNameCrc32();
-            AZStd::hash_combine(hashValue, busIdType.m_deviceIndex);
-            return hashValue;
-    };
-}
-
 namespace AzFramework
 {
     const InputChannel* InputChannelRequests::FindInputChannel(const InputChannelId& channelId, AZ::u32 deviceIndex)
