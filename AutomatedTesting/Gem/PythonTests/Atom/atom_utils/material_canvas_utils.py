@@ -36,7 +36,7 @@ def get_graph(document_id: math.Uuid) -> object:
     """
     Gets the graph object of the given document_id and returns it.
     :param document_id: The UUID of a given graph document file.
-    :return: An AZStd::shared_ptr<Graph> object.
+    :return: azlmbr.object.PythonProxyObject representing a C++ AZStd::shared_ptr<Graph> object.
     """
     return atomtools.GraphDocumentRequestBus(bus.Event, GraphDocumentRequestBusEvents.GET_GRAPH, document_id)
 
@@ -47,7 +47,7 @@ def create_node_by_name(graph: object, node_name: str) -> object:
     i.e. "World Position" for node_name would create a World Position node.
     :param graph: An AZStd::shared_ptr<Graph> graph object to create the new node on.
     :param node_name: String representing the type of node to add to the graph.
-    :return: An AZStd::shared_ptr<Node> object.
+    :return: azlmbr.object.PythonProxyObject representing a C++ AZStd::shared_ptr<Node> object.
     """
     return atomtools.DynamicNodeManagerRequestBus(
         bus.Broadcast, DynamicNodeManagerRequestBusEvents.CREATE_NODE_BY_NAME, graph, node_name)
@@ -81,11 +81,11 @@ def add_connection_by_slot_id(
     """
     Adds a new connection between a source node slot and a target node slot.
     :param graph_id: int representing the ID value of a given graph AZStd::shared_ptr<Graph> object.
-    :param source_node: An AZStd::shared_ptr<Node> object representing the source node to start the connection from.
-    :param source_slot: An GraphModelSlotId object representing the slot on the source node to use for the connection.
-    :param target_node: An AZStd::shared_ptr<Node> object representing the target node to end the connection to.
-    :param target_slot: An GraphModelSlotId object representing the slot on the target node to use for the connection.
-    :return: An AZStd::shared_ptr<Connection> object.
+    :param source_node: A proxy AZStd::shared_ptr<Node> object for the source node to start the connection from.
+    :param source_slot: A proxy GraphModelSlotId object for the slot on the source node to use for the connection.
+    :param target_node: A proxy AZStd::shared_ptr<Node> object for the target node to end the connection to.
+    :param target_slot: A proxy GraphModelSlotId object for the slot on the target node to use for the connection.
+    :return: azlmbr.object.PythonProxyObject representing a C++ AZStd::shared_ptr<Connection> object.
     """
     return graph.GraphControllerRequestBus(
         bus.Event, GraphControllerRequestBusEvents.ADD_CONNECTION_BY_SLOT_ID, graph_id,
