@@ -32,7 +32,7 @@ namespace ImageProcessingAtomEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PresetInfoPopup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PresetInfoPopup, AZ::SystemAllocator);
         explicit PresetInfoPopup(const ImageProcessingAtom::PresetSettings* preset, QWidget* parent = nullptr);
         ~PresetInfoPopup();
         void RefreshPresetInfoLabel(const ImageProcessingAtom::PresetSettings* presetSettings);

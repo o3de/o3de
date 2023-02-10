@@ -26,7 +26,7 @@ namespace LandscapeCanvas
     class ImageGradientNode : public BaseGradientNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(ImageGradientNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ImageGradientNode, AZ::SystemAllocator);
         AZ_RTTI(ImageGradientNode, "{EA6E28AC-19C3-45B5-8D3E-01778B57AA85}", BaseGradientNode);
 
         static void Reflect(AZ::ReflectContext* context);

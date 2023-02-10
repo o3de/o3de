@@ -19,7 +19,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(TransformData, TransformDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(TransformData, TransformDataAllocator)
 
     // default constructor
     TransformData::TransformData()

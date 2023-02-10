@@ -21,7 +21,7 @@ namespace ScriptCanvas
         using GetterFunction = AZStd::function<AZ::Outcome<Datum, AZStd::string>(const Datum&)>;
         struct GetterWrapper
         {
-            AZ_CLASS_ALLOCATOR(GetterWrapper, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GetterWrapper, AZ::SystemAllocator);
             GetterFunction m_getterFunction;
             Data::Type m_propertyType;
             AZStd::string m_propertyName;
@@ -32,7 +32,7 @@ namespace ScriptCanvas
         using SetterFunction = AZStd::function<AZ::Outcome<void, AZStd::string>(Datum&, const Datum&)>;
         struct SetterWrapper
         {
-            AZ_CLASS_ALLOCATOR(SetterWrapper, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SetterWrapper, AZ::SystemAllocator);
             SetterFunction m_setterFunction;
             Data::Type m_propertyType;
             AZStd::string m_propertyName;
@@ -43,7 +43,7 @@ namespace ScriptCanvas
         struct PropertyMetadata
         {
             AZ_TYPE_INFO(PropertyMetadata, "{A4910EF1-0139-4A7A-878C-E60E18F3993A}");
-            AZ_CLASS_ALLOCATOR(PropertyMetadata, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PropertyMetadata, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* reflectContext);
 
             SlotId m_propertySlotId;
@@ -539,7 +539,7 @@ namespace ScriptCanvas
         {
             struct TypeErasedPropertyTraits
             {
-                AZ_CLASS_ALLOCATOR(TypeErasedPropertyTraits, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(TypeErasedPropertyTraits, AZ::SystemAllocator);
 
                 TypeErasedPropertyTraits() = default;
 

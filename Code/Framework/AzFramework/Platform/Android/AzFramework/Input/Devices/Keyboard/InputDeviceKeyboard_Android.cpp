@@ -321,7 +321,7 @@ namespace AzFramework
         , public RawInputNotificationBusAndroid::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(InputDeviceKeyboardAndroid, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceKeyboardAndroid, AZ::SystemAllocator);
 
 
         InputDeviceKeyboardAndroid(InputDeviceKeyboard& inputDevice);

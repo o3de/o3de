@@ -22,7 +22,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI((SceneMemberComponentSaveData, "{2DF9A652-DF5D-43B1-932F-B6A838E36E97}", DataType), ComponentSaveData);
-        AZ_CLASS_ALLOCATOR(SceneMemberComponentSaveData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SceneMemberComponentSaveData, AZ::SystemAllocator);
 
         SceneMemberComponentSaveData()
         {

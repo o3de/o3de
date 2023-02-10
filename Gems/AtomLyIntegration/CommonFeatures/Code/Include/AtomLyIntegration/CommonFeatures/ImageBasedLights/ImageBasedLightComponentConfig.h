@@ -21,7 +21,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(ImageBasedLightComponentConfig, "{2BD353A5-562B-4D84-9508-B2EFAFF1415E}", ComponentConfig);
-            AZ_CLASS_ALLOCATOR(ImageBasedLightComponentConfig, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageBasedLightComponentConfig, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 

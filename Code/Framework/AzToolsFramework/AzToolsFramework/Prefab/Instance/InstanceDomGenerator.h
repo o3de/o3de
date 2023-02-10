@@ -28,7 +28,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(InstanceDomGenerator, "{07E23525-1D91-41AA-B85F-136360BD1938}", InstanceDomGeneratorInterface);
-            AZ_CLASS_ALLOCATOR(InstanceDomGenerator, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InstanceDomGenerator, AZ::SystemAllocator);
 
             void RegisterInstanceDomGeneratorInterface();
             void UnregisterInstanceDomGeneratorInterface();

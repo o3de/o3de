@@ -25,7 +25,7 @@ namespace AudioEngineWwiseGem
     {
     public:
         AZ_RTTI(AudioEngineWwiseModule, "{303B0192-D866-4378-9342-728AA6E66F74}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(AudioEngineWwiseModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AudioEngineWwiseModule, AZ::SystemAllocator);
 
         AudioEngineWwiseModule()
             : CryHooksModule()

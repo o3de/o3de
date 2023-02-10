@@ -128,7 +128,7 @@ namespace AZ
             : public FrameGraphBuilder
         {
         public:
-            AZ_CLASS_ALLOCATOR(FrameScheduler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameScheduler, AZ::SystemAllocator);
             virtual ~FrameScheduler() = default;
             FrameScheduler() = default;
             FrameScheduler(const FrameScheduler&) = delete;

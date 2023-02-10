@@ -35,7 +35,7 @@ namespace LmbrCentral
         : public ShapeComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(BoxShapeConfig, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(BoxShapeConfig, AZ::SystemAllocator)
         AZ_RTTI(BoxShapeConfig, BoxShapeConfigTypeId, ShapeComponentConfig)
 
         static void Reflect(AZ::ReflectContext* context);

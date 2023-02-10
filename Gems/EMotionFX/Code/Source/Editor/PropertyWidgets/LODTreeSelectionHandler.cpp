@@ -18,7 +18,7 @@ namespace EMotionFX
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(LODTreeSelectionHandler, PropertyWidgetAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(LODTreeSelectionHandler, PropertyWidgetAllocator)
 
             QWidget* LODTreeSelectionHandler::CreateGUI(QWidget* parent)
             {

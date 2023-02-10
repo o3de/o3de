@@ -46,7 +46,7 @@ namespace PhysX
     AZ_CVAR(size_t, physx_parallelTransformSyncBatchSize, 250, nullptr, AZ::ConsoleFunctorFlags::Null,
         "How many rigid bodies should be processed per task");
 
-    AZ_CLASS_ALLOCATOR_IMPL(PhysXScene, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(PhysXScene, AZ::SystemAllocator);
 
     AZ_CVAR(bool, physx_profileSimulationDatapoints, true, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Expose PhysX simulation statistics to profiler. "

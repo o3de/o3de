@@ -36,7 +36,7 @@ namespace AZ
     public:
 
         //! Specifies that this class should use AZ::SystemAllocator for memory management by default.
-        AZ_CLASS_ALLOCATOR(Entity, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Entity, SystemAllocator);
 
         //! Adds run-time type information to this class.
         AZ_RTTI(AZ::Entity, "{75651658-8663-478D-9090-2432DFCAFA44}");

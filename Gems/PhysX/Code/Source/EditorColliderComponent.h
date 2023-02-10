@@ -49,7 +49,7 @@ namespace PhysX
     //! Edit context wrapper for the physics asset and asset specific parameters in the shape configuration.
     struct EditorProxyAssetShapeConfig
     {
-        AZ_CLASS_ALLOCATOR(EditorProxyAssetShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorProxyAssetShapeConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorProxyAssetShapeConfig, "{C1B46450-C2A3-4115-A2FB-E5FF3BAAAD15}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -60,7 +60,7 @@ namespace PhysX
     //! Edit context wrapper for cylinder specific parameters and cached geometry.
     struct EditorProxyCylinderShapeConfig
     {
-        AZ_CLASS_ALLOCATOR(EditorProxyCylinderShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorProxyCylinderShapeConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorProxyCylinderShapeConfig, "{2394B3D0-E7A1-4B66-8C42-0FFDC1FCAA26}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -76,7 +76,7 @@ namespace PhysX
     //! Proxy container for only displaying a specific shape configuration depending on the shapeType selected.
     struct EditorProxyShapeConfig
     {
-        AZ_CLASS_ALLOCATOR(EditorProxyShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorProxyShapeConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorProxyShapeConfig, "{531FB42A-42A9-4234-89BA-FD349EF83D0C}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -134,7 +134,7 @@ namespace PhysX
         AZ_RTTI(EditorColliderComponent, "{FD429282-A075-4966-857F-D0BBF186CFE6}", AzToolsFramework::Components::EditorComponentBase);
         AZ_EDITOR_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(EditorColliderComponent);
 
-        AZ_CLASS_ALLOCATOR(EditorColliderComponent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorColliderComponent, AZ::SystemAllocator);
         friend class EditorColliderComponentDescriptor;
 
         static void Reflect(AZ::ReflectContext* context);
@@ -311,7 +311,7 @@ namespace PhysX
         public AZ::ComponentDescriptorHelper<EditorColliderComponent>
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorColliderComponentDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorColliderComponentDescriptor, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorColliderComponentDescriptor, "{E099B5D6-B03F-436C-AB8E-7ADE4DAD74A0}");
 
         EditorColliderComponentDescriptor() = default;

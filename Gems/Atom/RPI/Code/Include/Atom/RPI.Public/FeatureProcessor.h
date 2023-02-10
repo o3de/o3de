@@ -75,7 +75,7 @@ namespace AZ
             };            
 
             AZ_RTTI(FeatureProcessor, "{B8027170-C65C-4237-964D-B557FC9D7575}");
-            AZ_CLASS_ALLOCATOR(FeatureProcessor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FeatureProcessor, AZ::SystemAllocator);
 
             FeatureProcessor() = default;
             virtual ~FeatureProcessor() = default;

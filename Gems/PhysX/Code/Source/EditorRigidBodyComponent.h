@@ -29,7 +29,7 @@ namespace PhysX
     struct EditorRigidBodyConfiguration
         : public AzPhysics::RigidBodyConfiguration
     {
-        AZ_CLASS_ALLOCATOR(PhysX::EditorRigidBodyConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysX::EditorRigidBodyConfiguration, AZ::SystemAllocator);
         AZ_RTTI(PhysX::EditorRigidBodyConfiguration, "{27297024-5A99-4C58-8614-4EF18137CE69}", AzPhysics::RigidBodyConfiguration);
 
         static void Reflect(AZ::ReflectContext* context);

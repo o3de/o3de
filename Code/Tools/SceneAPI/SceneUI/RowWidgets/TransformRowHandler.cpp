@@ -18,7 +18,7 @@ namespace AZ
     {
         namespace SceneUI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(TranformRowHandler, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(TranformRowHandler, SystemAllocator);
 
             TranformRowHandler* TranformRowHandler::s_instance = nullptr;
 

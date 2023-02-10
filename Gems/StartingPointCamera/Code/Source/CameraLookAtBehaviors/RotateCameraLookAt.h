@@ -30,7 +30,7 @@ namespace Camera
     public:
         ~RotateCameraLookAt() override = default;
         AZ_RTTI(RotateCameraLookAt, "{B72C5BE7-2DAF-412B-BBBB-F216B3DFB9A0}", ICameraLookAtBehavior);
-        AZ_CLASS_ALLOCATOR(RotateCameraLookAt, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RotateCameraLookAt, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* reflection);
 
         //////////////////////////////////////////////////////////////////////////

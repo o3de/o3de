@@ -30,7 +30,7 @@ namespace PhysX
         , public AZStd::enable_shared_from_this<Shape>
     {
     public:
-        AZ_CLASS_ALLOCATOR(Shape, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Shape, AZ::SystemAllocator);
         AZ_RTTI(Shape, "{A84BCCA2-7F29-4E17-830F-911E7BB3E80C}", Physics::Shape);
 
         Shape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration);

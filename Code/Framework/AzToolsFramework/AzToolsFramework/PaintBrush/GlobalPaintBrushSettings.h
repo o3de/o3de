@@ -32,7 +32,7 @@ namespace AzToolsFramework
     class GlobalPaintBrushSettings : public AzFramework::PaintBrushSettings
     {
     public:
-        AZ_CLASS_ALLOCATOR(GlobalPaintBrushSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GlobalPaintBrushSettings, AZ::SystemAllocator);
         AZ_RTTI(GlobalPaintBrushSettings, "{524696C2-22A8-4A22-8790-D48093B71497}", PaintBrushSettings);
         static void Reflect(AZ::ReflectContext* context);
 

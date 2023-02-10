@@ -103,7 +103,7 @@ namespace AZ
             : public AZStd::intrusive_base
         {
         public:
-            AZ_CLASS_ALLOCATOR(PipelineStateCache, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineStateCache, SystemAllocator);
 
             //! The maximum number of libraries is configurable at compile time. A fixed number is used
             //! to avoid having to lazily resize thread-local arrays when traversing them, and also to

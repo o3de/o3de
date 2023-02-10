@@ -14,7 +14,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(RagdollMultiJointHandler, PropertyWidgetAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(RagdollMultiJointHandler, PropertyWidgetAllocator)
 
     AZ::u32 RagdollMultiJointHandler::GetHandlerName() const
     {
