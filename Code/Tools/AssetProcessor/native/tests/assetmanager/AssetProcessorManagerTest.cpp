@@ -21,6 +21,7 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Jobs/JobManagerDesc.h>
+#include <AzCore/Utils/Utils.h>
 #include <tests/assetmanager/AssetManagerTestingBase.h>
 
 using namespace AssetProcessor;
@@ -541,6 +542,168 @@ TEST_F(AssetProcessorManagerFinishTests, MultipleFiles_WithDuplicateJobs_Analysi
     EXPECT_TRUE(finishedAnalysisOccurred);
     EXPECT_EQ(remainingFiles, 0);
     EXPECT_EQ(maxWaitingFiles, 1);
+}
+
+
+class AssetProcessorIntermediateAssetTests
+    : public UnitTests::AssetManagerTestingBase
+{
+protected:
+    void DeleteSourceAndValidateNoAdditionalJobs(QString expectedIntermediatePath)
+    {
+        // Delete the originating source for the intermediate asset
+        // Using Qt to remove because AZ::IO::FileIOStream (used by AZ::Utils::WriteFile) doesn't have a file deletion option.
+        QFile sourceAsset(m_testFilePath.c_str());
+        EXPECT_TRUE(sourceAsset.remove());
+
+        // Purposely call AssessModifiedFile on the intermediate asset before assessing the deleted source asset.
+        QMetaObject::invokeMethod(
+            m_assetProcessorManager.get(),
+            "AssessModifiedFile",
+            Qt::QueuedConnection,
+            Q_ARG(QString, expectedIntermediatePath));
+        QCoreApplication::processEvents();
+
+        // In the previous test, after modifying the intermediate asset and calling AssessModifiedFile + processing the event,
+        // the active file count went to 1 because it had to be processed.
+        // However, now that the source is deleted, it did not add the file to the list of active filess
+        m_assetProcessorManager->CheckFilesToExamine(0);
+        m_assetProcessorManager->CheckActiveFiles(0);
+        m_assetProcessorManager->CheckJobEntries(0);
+
+        // The deleted file has to be assessed before the asset processing step can be done, otherwise it crashes.
+        m_assetProcessorManager->AssessDeletedFile(m_testFilePath.c_str());
+        QCoreApplication::processEvents();
+
+        // There will now be one file to examine, but nothing active to be processed.
+        m_assetProcessorManager->CheckFilesToExamine(1);
+        m_assetProcessorManager->CheckActiveFiles(0);
+        m_assetProcessorManager->CheckJobEntries(0);
+
+        m_assetProcessorManager->ProcessFilesToExamineQueue();
+
+        // Make sure nothing is left to process - the intermediate asset should never have had a job added
+        // because the source was deleted at the same time it was modified.
+        m_assetProcessorManager->CheckFilesToExamine(0);
+        m_assetProcessorManager->CheckActiveFiles(0);
+        m_assetProcessorManager->CheckJobEntries(0);
+
+        // Nothing should have failed to process.
+        EXPECT_FALSE(m_fileFailed);
+    }
+
+};
+
+TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_ModifiedToFail_FailsToProcess)
+{
+    // This validates the setup for IntermediateAsset_SourceDeleted_IntermediateDoesNotReprocess:
+    // It makes sure that the modified intermediate asset fails to process when the source is not deleted.
+
+    //  Given:
+    //      A source asset that outputs an intermediate asset
+    //      The intermediate asset outputs a product asset
+    //  When:
+    //      The intermediate asset is modified to fail on being processed
+    //  Then:
+    //      The asset fails to process when processed
+    using namespace AssetBuilderSDK;
+
+    // Given: set up the test
+    CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
+    CreateBuilder("stage2", "*.stage2", "stage3", false, ProductOutputFlags::ProductAsset);
+    ProcessFileMultiStage(2, true);
+
+    // When:
+    // Write text to the intermediate asset file that will cause it to auto-fail the job.
+    auto expectedIntermediatePath = GetIntermediateAssetsDir() / AZStd::string("test.stage2");
+    EXPECT_TRUE(AZ::Utils::WriteFile(GetJobProcessFailText(), expectedIntermediatePath.c_str()).IsSuccess());
+
+    QMetaObject::invokeMethod(
+        m_assetProcessorManager.get(),
+        "AssessModifiedFile",
+        Qt::QueuedConnection,
+        Q_ARG(QString, QString(expectedIntermediatePath.c_str())));
+    QCoreApplication::processEvents();
+    EXPECT_FALSE(m_fileFailed);
+    // Verify the file is in the queue to be processed.
+    // Not totally necessary for this test - the file failed bool flipping tells this test what it needs.
+    // However, this is done to verify asset processing state to compare to other tests.
+    // If this test verifies the file is in the queue here, then other tests can check the file is not queued.
+    m_assetProcessorManager->CheckFilesToExamine(0);
+    m_assetProcessorManager->CheckActiveFiles(1);
+    m_assetProcessorManager->CheckJobEntries(0);
+
+    // Then: The file fails to process.
+    ProcessSingleStep(1, 1, 0, /*expectSuccess*/ false);
+    EXPECT_TRUE(m_fileFailed);
+    m_assetProcessorManager->CheckFilesToExamine(0);
+    m_assetProcessorManager->CheckActiveFiles(0);
+    m_assetProcessorManager->CheckJobEntries(0);
+}
+
+TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceDeleted_IntermediateDoesNotReprocess)
+{
+    // This is a regression test.
+    // There was a situation where a change to the material system was not compatible with old intermediate assets.
+    // The source assets for those intermediate assets had been deleted, so it was a surprise and unexpected
+    // when the stale intermediate assets were failing to process, causing Jenkins jobs to fail due to asset failures.
+    // What was expected was that, because the source asset that generated those intermediate assets had been removed,
+    // the Asset Processor would no longer attempt to process the intermediate assets.
+
+    //  Given:
+    //      A source asset that outputs an intermediate asset
+    //      The intermediate asset outputs a product asset
+    //  When:
+    //      While the asset processor is not running, so these operations are picked up at the same time:
+    //          The source asset is deleted
+    //          A change has been made that would cause the intermediate asset to reprocess
+    //          The next time the intermediate asset reprocesses, it will fail to process
+    //  Then:
+    //      The intermediate asset should not reprocess, because the source asset was deleted
+
+    using namespace AssetBuilderSDK;
+
+    // Given: set up the test
+    CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
+    CreateBuilder("stage2", "*.stage2", "stage3", false, ProductOutputFlags::ProductAsset);
+    ProcessFileMultiStage(2, true);
+
+    auto expectedIntermediatePath = GetIntermediateAssetsDir() / AZStd::string("test.stage2");
+
+    // When:
+    // Write text to the intermediate asset file that would cause it to auto-fail the job if it were processed again.
+    EXPECT_TRUE(AZ::Utils::WriteFile(GetJobProcessFailText(), expectedIntermediatePath.c_str()).IsSuccess());
+
+    // When: The source is deleted.
+    // Then: No additional jobs are created for the modified intermediate asset, and no jobs fail.
+    DeleteSourceAndValidateNoAdditionalJobs(expectedIntermediatePath.c_str());
+}
+
+TEST_F(AssetProcessorIntermediateAssetTests, NestedIntermediateAsset_SourceDeleted_IntermediateDoesNotReprocess)
+{
+    // This test is a variant of IntermediateAsset_SourceDeleted_IntermediateDoesNotReprocess, but
+    // it tests with a deeply collection of intermediate assets. Source -> Intermediate A -> Intermediate B -> Intermediate C.
+    // It verifies that deleting the root source, and making a change that causes these deeper intermediate assets to reprocess
+    // will not end up re-processing the deep intermediate assets, and instead skip processing them because the root source is gone.
+
+    using namespace AssetBuilderSDK;
+
+    // Given: a deeply nested set of intermediate assets.
+    CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
+    CreateBuilder("stage2", "*.stage2", "stage3", true, ProductOutputFlags::IntermediateAsset);
+    CreateBuilder("stage3", "*.stage3", "stage4", true, ProductOutputFlags::IntermediateAsset);
+    CreateBuilder("stage4", "*.stage4", "stage5", true, ProductOutputFlags::IntermediateAsset);
+    CreateBuilder("stage5", "*.stage5", "stage6", false, ProductOutputFlags::ProductAsset);
+    ProcessFileMultiStage(5, true);
+
+    // When:
+    // Write text to the intermediate asset file that would cause it to auto-fail the job if it were processed again.
+    auto expectedIntermediatePath = GetIntermediateAssetsDir() / AZStd::string("test.stage5");
+    EXPECT_TRUE(AZ::Utils::WriteFile(GetJobProcessFailText(), expectedIntermediatePath.c_str()).IsSuccess());
+
+    // When: The source is deleted.
+    // Then: No additional jobs are created for the modified intermediate asset, and no jobs fail.
+    DeleteSourceAndValidateNoAdditionalJobs(expectedIntermediatePath.c_str());
 }
 
 TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToDatabase)

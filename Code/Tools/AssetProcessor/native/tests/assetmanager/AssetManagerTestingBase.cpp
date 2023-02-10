@@ -22,6 +22,8 @@
 
 namespace UnitTests
 {
+    const char* JOB_PROCESS_FAIL_TEXT = "AUTO_FAIL_JOB";
+
     void TestingAssetProcessorManager::CheckActiveFiles(int count)
     {
         ASSERT_EQ(m_activeFiles.size(), count);
@@ -270,6 +272,19 @@ namespace UnitTests
         // Capture by copy because we need these to stay around a long time
         return [outputExtension, flags, outputExtraFile](const ProcessJobRequest& request, ProcessJobResponse& response)
         {
+            // If tests put the text "FAIL_JOB" at the beginning of the source file, then fail this job instead.
+            // This lets tests easily handle cases where they want job processing to fail.
+            auto readResult = AZ::Utils::ReadFile<AZStd::string>(request.m_fullPath, AZStd::numeric_limits<size_t>::max());
+            // Don't fail if the read fails, there may be existing tests that create unreadable files.
+            if (readResult.IsSuccess())
+            {
+                if (readResult.GetValue().starts_with(JOB_PROCESS_FAIL_TEXT))
+                {
+                    response.m_resultCode = ProcessJobResult_Failed;
+                    return;
+                }
+            }
+
             AZ::IO::Path outputFile = request.m_sourceFile;
             outputFile.ReplaceExtension(outputExtension.c_str());
 
@@ -300,6 +315,21 @@ namespace UnitTests
         };
     }
 
+    const char* AssetManagerTestingBase::GetJobProcessFailText()
+    {
+        return JOB_PROCESS_FAIL_TEXT;
+    }
+
+    AZ::IO::Path AssetManagerTestingBase::GetCacheDir()
+    {
+        return AZ::IO::Path(m_databaseLocationListener.GetAssetRootDir()) / "Cache";
+    }
+
+    AZ::IO::FixedMaxPath AssetManagerTestingBase::GetIntermediateAssetsDir()
+    {
+        return AssetUtilities::GetIntermediateAssetsFolder(GetCacheDir());
+    }
+
     void AssetManagerTestingBase::CreateBuilder(
         const char* name,
         const char* inputFilter,
@@ -321,7 +351,7 @@ namespace UnitTests
 
     AZStd::string AssetManagerTestingBase::MakePath(const char* filename, bool intermediate)
     {
-        auto cacheDir = AZ::IO::Path(m_databaseLocationListener.GetAssetRootDir()) / "Cache";
+        auto cacheDir = GetCacheDir();
 
         if (intermediate)
         {
@@ -381,8 +411,7 @@ namespace UnitTests
     void AssetManagerTestingBase::ProcessFileMultiStage(
         int endStage, bool doProductOutputCheck, const char* file, int startStage, bool expectAutofail, bool hasExtraFile)
     {
-        auto cacheDir = AZ::IO::Path(m_databaseLocationListener.GetAssetRootDir()) / "Cache";
-        auto intermediatesDir = AssetUtilities::GetIntermediateAssetsFolder(cacheDir);
+        auto intermediatesDir = GetIntermediateAssetsDir();
 
         if (file == nullptr)
         {

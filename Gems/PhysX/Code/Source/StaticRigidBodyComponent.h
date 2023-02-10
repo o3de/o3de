@@ -57,7 +57,8 @@ namespace PhysX
         AzPhysics::SimulatedBody* GetSimulatedBody() override;
 
     private:
-        void InitStaticRigidBody();
+        void CreateRigidBody();
+        void DestroyRigidBody();
 
         // AZ::Component
         void Activate() override;

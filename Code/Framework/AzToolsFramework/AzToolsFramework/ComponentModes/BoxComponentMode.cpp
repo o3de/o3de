@@ -71,6 +71,11 @@ namespace AzToolsFramework
         ShapeComponentModeRequestBus::Handler::BusConnect(m_entityComponentIdPair);
     }
 
+    BoxComponentMode::~BoxComponentMode()
+    {
+        ShapeComponentModeRequestBus::Handler::BusDisconnect();
+    }
+
     AZStd::string BoxComponentMode::GetComponentModeName() const
     {
         return "Box Edit Mode";
