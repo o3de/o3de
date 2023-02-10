@@ -172,7 +172,7 @@ namespace PhysX
         AZ::EntityBus::Handler::BusDisconnect();
 
         // Create and setup rigid body & associated bus handlers
-        CreatePhysics();
+        CreateRigidBody();
 
         // Add to world
         EnablePhysics();
@@ -185,22 +185,11 @@ namespace PhysX
             return;
         }
 
-        if (m_cachedSceneInterface)
-        {
-            m_cachedSceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_rigidBodyHandle);
-            m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-        }
+        DisablePhysics();
+
+        DestroyRigidBody();
 
         AZ::EntityBus::Handler::BusDisconnect();
-        Physics::RigidBodyRequestBus::Handler::BusDisconnect();
-        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
-        AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
-        m_sceneFinishSimHandler.Disconnect();
-        m_activeBodySyncTransformHandler.Disconnect();
-        AZ::TickBus::Handler::BusDisconnect();
-
-        m_isLastMovementFromKinematicSource = false;
-        m_rigidBodyTransformNeedsUpdateOnPhysReEnable = false;
     }
 
     void RigidBodyComponent::OnTick(float deltaTime, AZ::ScriptTimePoint /*currentTime*/)
@@ -302,7 +291,7 @@ namespace PhysX
         }
     }
 
-    void RigidBodyComponent::CreatePhysics()
+    void RigidBodyComponent::CreateRigidBody()
     {
         BodyConfigurationComponentBus::EventResult(m_configuration, GetEntityId(), &BodyConfigurationComponentRequests::GetRigidBodyConfiguration);
 
@@ -347,6 +336,25 @@ namespace PhysX
         AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
         Physics::RigidBodyRequestBus::Handler::BusConnect(GetEntityId());
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void RigidBodyComponent::DestroyRigidBody()
+    {
+        if (m_cachedSceneInterface)
+        {
+            m_cachedSceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_rigidBodyHandle);
+            m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        }
+
+        Physics::RigidBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
+        AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
+        m_sceneFinishSimHandler.Disconnect();
+        m_activeBodySyncTransformHandler.Disconnect();
+        AZ::TickBus::Handler::BusDisconnect();
+
+        m_isLastMovementFromKinematicSource = false;
+        m_rigidBodyTransformNeedsUpdateOnPhysReEnable = false;
     }
 
     void RigidBodyComponent::ApplyPhysxSpecificConfiguration()
@@ -401,6 +409,11 @@ namespace PhysX
 
     void RigidBodyComponent::DisablePhysics()
     {
+        if (!IsPhysicsEnabled())
+        {
+            return;
+        }
+
         SetSimulationEnabled(false);
 
         Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsDisabled, GetEntityId());

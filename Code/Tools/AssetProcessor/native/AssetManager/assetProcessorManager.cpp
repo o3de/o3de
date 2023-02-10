@@ -35,6 +35,7 @@
 #include <AssetManager/ProductAsset.h>
 #include <native/AssetManager/SourceAssetReference.h>
 #include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <native/utilities/UuidManager.h>
 
 namespace AssetProcessor
 {
@@ -4150,6 +4151,18 @@ namespace AssetProcessor
                         newJob.m_priority = jobDescriptor.m_priority;
                         newJob.m_scanFolder = scanFolder;
                         newJob.m_checkServer = jobDescriptor.m_checkServer;
+
+                        auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+
+                        if (!uuidInterface)
+                        {
+                            AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+                            return;
+                        }
+
+                        const bool isEnabledType = uuidInterface->IsGenerationEnabledForFile(sourceAsset.AbsolutePath());
+
+                        newJob.m_sourceUuid = isEnabledType ? sourceUUID : AZ::Uuid{};
 
                         if (m_builderDebugFlag)
                         {

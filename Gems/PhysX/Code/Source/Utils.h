@@ -172,7 +172,7 @@ namespace PhysX
 
         bool TriggerColliderExists(AZ::EntityId entityId);
 
-        void GetShapesFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
+        void CreateShapesFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
             const Physics::ColliderConfiguration& originalColliderConfiguration, bool hasNonUniformScale,
             AZ::u8 subdivisionLevel, AZStd::vector<AZStd::shared_ptr<Physics::Shape>>& resultingShapes);
 
