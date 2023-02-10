@@ -156,20 +156,18 @@ namespace PhysX
         float totalTime = 0.0f;
         float timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
 
-        if (auto* physXSystem = GetPhysXSystem())
+        for (int i = 0; i < timeStepCount; i++)
         {
-            for (int i = 0; i < timeStepCount; i++)
-            {
-                physXSystem->Simulate(timeStep);
-                totalTime += timeStep;
-            }
+            basis.Update();
+            totalTime += timeStep;
         }
+
         auto endPosition = basis.m_controller->GetPosition();
         auto currentGravity = basis.m_testScene->GetGravity();
 
         //startPosition.GetZ();
         //float distanceFell = CalculateZFromFalling(currentGravity.GetZ(), expectedGravityMultiplier, totalTime);
-        //EXPECT_THAT(endPosition.GetZ()+1.0f, testing::FloatEq(startPosition.GetZ() - distanceFell));
+        EXPECT_THAT(endPosition.GetZ()+1.0f, testing::FloatEq(startPosition.GetZ() - 9000));
 
     }
 } // namespace PhysX
