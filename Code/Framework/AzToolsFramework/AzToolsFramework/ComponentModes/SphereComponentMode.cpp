@@ -6,27 +6,20 @@
  *
  */
 
-#include <AzToolsFramework/ComponentModes/CapsuleComponentMode.h>
+#include <AzToolsFramework/ComponentModes/SphereComponentMode.h>
 
 #include <AzToolsFramework/ComponentModes/ShapeTranslationOffsetViewportEdit.h>
-#include <AzToolsFramework/Manipulators/CapsuleManipulatorRequestBus.h>
 #include <AzToolsFramework/Manipulators/RadiusManipulatorRequestBus.h>
 #include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 namespace AzToolsFramework
 {
-    void InstallCapsuleViewportEditFunctions(CapsuleViewportEdit* capsuleViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair)
+    void InstallSphereViewportEditFunctions(SphereViewportEdit* sphereViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        auto getCapsuleHeight = [entityComponentIdPair]()
+        auto getSphereRadius = [entityComponentIdPair]()
         {
-            float height = 1.0f;
-            CapsuleManipulatorRequestBus::EventResult(height, entityComponentIdPair, &CapsuleManipulatorRequestBus::Events::GetHeight);
-            return height;
-        };
-        auto getCapsuleRadius = [entityComponentIdPair]()
-        {
-            float radius = 0.25f;
+            float radius = 0.5f;
             RadiusManipulatorRequestBus::EventResult(radius, entityComponentIdPair, &RadiusManipulatorRequestBus::Events::GetRadius);
             return radius;
         };
@@ -37,36 +30,30 @@ namespace AzToolsFramework
                 rotationOffset, entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetRotationOffset);
             return rotationOffset;
         };
-        auto setCapsuleHeight = [entityComponentIdPair](float height)
-        {
-            CapsuleManipulatorRequestBus::Event(entityComponentIdPair, &CapsuleManipulatorRequestBus::Events::SetHeight, height);
-        };
-        auto setCapsuleRadius = [entityComponentIdPair](float radius)
+        auto setSphereRadius = [entityComponentIdPair](float radius)
         {
             RadiusManipulatorRequestBus::Event(entityComponentIdPair, &RadiusManipulatorRequestBus::Events::SetRadius, radius);
         };
-        capsuleViewportEdit->InstallGetCapsuleHeight(AZStd::move(getCapsuleHeight));
-        capsuleViewportEdit->InstallGetCapsuleRadius(AZStd::move(getCapsuleRadius));
-        capsuleViewportEdit->InstallGetRotationOffset(AZStd::move(getRotationOffset));
-        capsuleViewportEdit->InstallSetCapsuleHeight(AZStd::move(setCapsuleHeight));
-        capsuleViewportEdit->InstallSetCapsuleRadius(AZStd::move(setCapsuleRadius));
+        sphereViewportEdit->InstallGetSphereRadius(AZStd::move(getSphereRadius));
+        sphereViewportEdit->InstallGetRotationOffset(AZStd::move(getRotationOffset));
+        sphereViewportEdit->InstallSetSphereRadius(AZStd::move(setSphereRadius));
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(CapsuleComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SphereComponentMode, AZ::SystemAllocator, 0)
 
-    void CapsuleComponentMode::Reflect(AZ::ReflectContext* context)
+        void SphereComponentMode::Reflect(AZ::ReflectContext* context)
     {
-        ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<CapsuleComponentMode>(context);
+        ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<SphereComponentMode>(context);
     }
 
-    CapsuleComponentMode::CapsuleComponentMode(
+    SphereComponentMode::SphereComponentMode(
         const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType, bool allowAsymmetricalEditing)
         : BaseShapeComponentMode(entityComponentIdPair, componentType, allowAsymmetricalEditing)
     {
-        auto capsuleViewportEdit = AZStd::make_unique<CapsuleViewportEdit>(m_allowAsymmetricalEditing);
-        InstallBaseShapeViewportEditFunctions(capsuleViewportEdit.get(), m_entityComponentIdPair);
-        InstallCapsuleViewportEditFunctions(capsuleViewportEdit.get(), m_entityComponentIdPair);
-        m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)] = AZStd::move(capsuleViewportEdit);
+        auto sphereViewportEdit = AZStd::make_unique<SphereViewportEdit>();
+        InstallBaseShapeViewportEditFunctions(sphereViewportEdit.get(), m_entityComponentIdPair);
+        InstallSphereViewportEditFunctions(sphereViewportEdit.get(), m_entityComponentIdPair);
+        m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)] = AZStd::move(sphereViewportEdit);
 
         if (m_allowAsymmetricalEditing)
         {
@@ -87,44 +74,44 @@ namespace AzToolsFramework
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(m_entityComponentIdPair.GetEntityId());
     }
 
-    CapsuleComponentMode::~CapsuleComponentMode()
+    SphereComponentMode::~SphereComponentMode()
     {
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         ShapeComponentModeRequestBus::Handler::BusDisconnect();
     }
 
-    void CapsuleComponentMode::DisplayEntityViewport(
+    void SphereComponentMode::DisplayEntityViewport(
         const AzFramework::ViewportInfo& viewportInfo, [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay)
     {
         const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
         m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->OnCameraStateChanged(cameraState);
     }
 
-    AZStd::string CapsuleComponentMode::GetComponentModeName() const
+    AZStd::string SphereComponentMode::GetComponentModeName() const
     {
-        return "Capsule Edit Mode";
+        return "Sphere Edit Mode";
     }
 
-    AZ::Uuid CapsuleComponentMode::GetComponentModeType() const
+    AZ::Uuid SphereComponentMode::GetComponentModeType() const
     {
-        return azrtti_typeid<CapsuleComponentMode>();
+        return azrtti_typeid<SphereComponentMode>();
     }
 
-    void CapsuleComponentMode::RegisterActions()
+    void SphereComponentMode::RegisterActions()
     {
-        BaseShapeComponentMode::RegisterActions("capsule");
+        BaseShapeComponentMode::RegisterActions("sphere");
     }
 
-    void CapsuleComponentMode::BindActionsToModes()
+    void SphereComponentMode::BindActionsToModes()
     {
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         BaseShapeComponentMode::BindActionsToModes(
-            "capsule", serializeContext->FindClassData(azrtti_typeid<CapsuleComponentMode>())->m_name);
+            "sphere", serializeContext->FindClassData(azrtti_typeid<SphereComponentMode>())->m_name);
     }
 
-    void CapsuleComponentMode::BindActionsToMenus()
+    void SphereComponentMode::BindActionsToMenus()
     {
-        BaseShapeComponentMode::BindActionsToMenus("capsule");
+        BaseShapeComponentMode::BindActionsToMenus("sphere");
     }
 } // namespace AzToolsFramework
