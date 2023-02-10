@@ -23,17 +23,25 @@ namespace AZ::Render
 {
     struct MeshInstanceData
     {
+        // Only allow passing in a specific allocator wrapper
+        MeshInstanceData() = delete;
+        MeshInstanceData(AZStdIAllocator allocator)
+            : m_perViewDrawPackets(allocator)
+        {
+        }
+
         // The original draw packet, shared by every instance
         RPI::MeshDrawPacket m_drawPacket;
 
         // We modify the original draw packet each frame with a new instance count and a new root constant
-        AZStd::vector<RHI::Ptr<RHI::DrawPacket>> m_perViewDrawPackets;
+        AZStd::vector<RHI::Ptr<RHI::DrawPacket>, AZStdIAllocator> m_perViewDrawPackets;
         AZStd::vector<AZStd::vector<uint32_t>> m_perViewInstanceData;
 
         // We store the shaderIntputConstantIndex for m_instanceData here, so we don't have to look it up every frame
         AZStd::vector<RHI::ShaderInputConstantIndex> m_drawSrgInstanceDataIndices;
-        AZStd::vector<RHI::Interval> m_drawRootConstantIntervals;
 
+        // We are assuming that all draw items in a draw packet share the same root constant layout
+        RHI::Interval m_drawRootConstantInterval;
 
         // We store a key to make it faster to remove the instance from the map
         // via the index
@@ -63,7 +71,7 @@ namespace AZ::Render
         using OwningHandle = StableDynamicArrayHandle<MeshInstanceData>;
         // adds a data entry to the list, or increments the reference count, and returns the index of the data
         // Note: the index returned is an indirection index, meaning it is stable when other entries are removed
-        InsertResult Add(const MeshInstanceKey& key);
+        InsertResult Add(const MeshInstanceKey& key, AZStdIAllocator allocator);
 
         // removes a data entry from the list, or decrements the reference count
         // Note: removing a data entry will not affect any previously returned indices for other resources

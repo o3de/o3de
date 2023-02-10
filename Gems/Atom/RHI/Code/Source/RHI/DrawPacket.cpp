@@ -131,12 +131,8 @@ namespace AZ
         }
 
         
-        void DrawPacket::SetRootConstant(size_t drawItemIndex, const Interval& interval, const AZStd::span<uint8_t>& data)
+        void DrawPacket::SetRootConstant(const Interval& interval, const AZStd::span<uint8_t>& data)
         {
-            const DrawItem* drawItem = m_drawItems + drawItemIndex;
-            AZ_Assert(
-                drawItem->m_rootConstantSize >= interval.m_min + data.size(),
-                "Attempting to set root constants that don't match the size of the DrawItem's root constant size.");
             memcpy(
                 (void*)(m_rootConstants + interval.m_min),
                 data.data(),

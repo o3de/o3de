@@ -11,7 +11,7 @@
 
 namespace AZ::Render
 {
-    InsertResult MeshInstanceList::Add(const MeshInstanceKey& key)
+    InsertResult MeshInstanceList::Add(const MeshInstanceKey& key, AZ::AZStdIAllocator allocator)
     {
         WeakHandle handle;
         bool wasIndexInserted = false;
@@ -21,7 +21,7 @@ namespace AZ::Render
         {
             // add the data map entry containing the dataIndex and reference count
             IndexMapEntry entry;
-            entry.m_handle = m_pagedDataVector.emplace(MeshInstanceData{});
+            entry.m_handle = m_pagedDataVector.emplace(MeshInstanceData{ allocator });
             entry.m_count = 1;
             handle = entry.m_handle.GetWeakHandle();
 

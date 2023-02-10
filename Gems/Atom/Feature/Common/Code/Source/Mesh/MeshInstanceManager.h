@@ -25,6 +25,10 @@ namespace AZ::Render
         InsertResult AddInstance(MeshInstanceKey meshInstanceData);
         void RemoveInstance(MeshInstanceKey meshInstanceData);
         void RemoveInstance(Handle handle);
+        void SetAllocator(IAllocator* allocator)
+        {
+            m_instanceDataAllocator = allocator;
+        }
         uint32_t GetItemCount() const
         {
             return m_instanceData.GetItemCount();
@@ -38,7 +42,7 @@ namespace AZ::Render
     private:
 
         MeshInstanceList m_instanceData;
-
+        IAllocator* m_instanceDataAllocator;
         // Adding and removing entries in a MeshInstanceList is not threadsafe, and should be guarded with a mutex
         AZStd::mutex m_instanceDataMutex;
 

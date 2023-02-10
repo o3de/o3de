@@ -14,7 +14,7 @@ namespace AZ
         InsertResult MeshInstanceManager::AddInstance(MeshInstanceKey meshInstanceKey)
         {
             AZStd::scoped_lock lock(m_instanceDataMutex);
-            InsertResult result = m_instanceData.Add(meshInstanceKey);
+            InsertResult result = m_instanceData.Add(meshInstanceKey, AZStdIAllocator(m_instanceDataAllocator));
             if (result.m_wasInserted)
             {
                 // The MeshInstanceManager is including the key as part of the data vector,

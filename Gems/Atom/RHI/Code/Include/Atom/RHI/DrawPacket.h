@@ -66,7 +66,8 @@ namespace AZ
             //! Copy this DrawPacket, but with different DrawArguments (e.g. InstanceCount) and RootConstants
             DrawPacket* Clone(/* const DrawArguments& drawArguments, const AZ::RHI::ConstantsData& rootConstants*/) const;
 
-            void SetRootConstant(size_t drawItemIndex, const Interval& interval, const AZStd::span<uint8_t>& data);
+            //! Update the root constant at the specefied interval. The same root constants are shared by all draw items in the draw packet
+            void SetRootConstant(const Interval& interval, const AZStd::span<uint8_t>& data);
             void SetInstanceCount(uint32_t instanceCount);
         private:
             /// Use DrawPacketBuilder to construct an instance.

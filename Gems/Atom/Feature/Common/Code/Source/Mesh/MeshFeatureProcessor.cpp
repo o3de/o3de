@@ -36,6 +36,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Name/NameDictionary.h>
+#include <algorithm>
+#include <execution>
 
 namespace AZ
 {
@@ -142,6 +144,8 @@ namespace AZ
 
             // Pre-allocate memory for mesh data
             m_meshData.resize(allocatorDescriptor.m_capacityInBytes);
+
+            m_meshInstanceManager.SetAllocator(&m_postCullingPoolAllocator);
         }
 
         void MeshFeatureProcessor::Deactivate()
@@ -217,7 +221,6 @@ namespace AZ
                         // Clear any cached draw packets, since they need to be re-created
                         instanceData.m_perViewDrawPackets.clear();
                         instanceData.m_drawSrgInstanceDataIndices.clear();
-                        instanceData.m_drawRootConstantIntervals.clear();
                         // We're going to need an index for m_instanceOffset every frame for each draw item, so cache those here
                         for (auto& drawSrg : drawPacket.GetDrawSrgs())
                         {
@@ -229,20 +232,20 @@ namespace AZ
                         const RPI::MeshDrawPacket::RootConstantsLayoutList& rootConstantsLayouts =
                             instanceData.m_drawPacket.GetRootConstantsLayouts();
 
-                        for (size_t i = 0; i < rootConstantsLayouts.size(); ++i)
+                        if (!rootConstantsLayouts.empty())
                         {
                             // Get the root constant layout
                             RHI::ShaderInputConstantIndex shaderInputIndex =
-                                rootConstantsLayouts[i]->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
+                                rootConstantsLayouts[0]->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
 
                             if (shaderInputIndex.IsValid())
                             {
-                                RHI::Interval interval = rootConstantsLayouts[i]->GetInterval(shaderInputIndex);
-                                instanceData.m_drawRootConstantIntervals.push_back(interval);
+                                RHI::Interval interval = rootConstantsLayouts[0]->GetInterval(shaderInputIndex);
+                                instanceData.m_drawRootConstantInterval = interval;
                             }
                             else
                             {
-                                instanceData.m_drawRootConstantIntervals.push_back(RHI::Interval{});
+                                instanceData.m_drawRootConstantInterval = RHI::Interval{};
                             }
                         }
                     }
@@ -293,7 +296,7 @@ namespace AZ
                             // material properties can impact which actual shader is used, which impacts the SRG in the draw packet.
                             // This is scheduled to be optimized so the work is only done on draw packets that need it instead of having
                             // to check every one.
-                            modelDataInstance->UpdateDrawPackets(m_forceRebuildDrawPackets);
+                            //modelDataInstance->UpdateDrawPackets(m_forceRebuildDrawPackets);
                         }
                     }
                 };
@@ -348,6 +351,9 @@ namespace AZ
                 }
 
                 // Now that the init stage is complete, run the instance draw packet update
+                // TODO: this needs to be going the parent job. Simulate is being called in a job already. If we create a new job here, and call StartAndWaitForCompletion, then this thread might try to steal work, and end up excuting something that is trying to do a blocking asset load.
+                // And that blocking load will wait for the main thread to tick to load the asset. But the main thread is in RenderTick and waiting for this job to complete.
+                // Although I'm not certain if utilizing the parent job will fix the problem. 
                 Job* perInstanceGroupJob =
                     aznew JobFunction<decltype(perInstanceGroupJobLambda)>(perInstanceGroupJobLambda, true, nullptr); // Auto-deletes
                 perInstanceGroupJob->StartAndWaitForCompletion();
@@ -389,10 +395,11 @@ namespace AZ
                     // Initialize the instance data if it hasn't been created yet
                     if (m_perViewInstanceData.size() <= viewIndex)
                     {
-                        m_perViewInstanceData.push_back(AZStd::vector<uint32_t>());
+                        m_perViewInstanceData.push_back(
+                            AZStd::vector<uint32_t, AZStdIAllocator>(AZStdIAllocator(&m_postCullingPoolAllocator)));
                     }
 
-                    AZStd::vector<uint32_t>& perViewInstanceData = m_perViewInstanceData[viewIndex];
+                    AZStd::vector<uint32_t, AZStdIAllocator>& perViewInstanceData = m_perViewInstanceData[viewIndex];
 
                     // Initialize the buffer handler if it hasn't been created yet
                     if (m_perViewInstanceDataBufferHandlers.size() <= viewIndex)
@@ -410,10 +417,10 @@ namespace AZ
 
                     if (instanceBufferCount > 0)
                     {
-                        perViewInstanceData.reserve(instanceBufferCount);
+                        //perViewInstanceData.reserve(instanceBufferCount);
                         perViewInstanceData.clear();
                     }
-
+                    m_perViewSortInstanceData.clear();
                     AZStd::unordered_set<uint32_t> visibleInstanceIndices;
                     // Even though this is larger than actual number of visible instance groups, reserve memory here to avoid several allocations later
                     visibleInstanceIndices.reserve(instanceBufferCount);
@@ -427,9 +434,12 @@ namespace AZ
                             for (uint32_t meshDataIndex = meshOffset; meshDataIndex < meshOffset + meshCount;
                                  ++meshDataIndex)
                             {
-                                uint32_t instanceIndex = m_meshData[meshDataIndex].m_instanceGroupHandle_metaDataMeshOffset;
-                                uint32_t objectId = m_meshData[meshDataIndex].m_objectId_metaDataMeshCount;
-                                MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
+                                SortInstanceData instanceData;
+                                instanceData.m_instanceIndex = m_meshData[meshDataIndex].m_instanceGroupHandle_metaDataMeshOffset;
+                                instanceData.m_objectId = m_meshData[meshDataIndex].m_objectId_metaDataMeshCount;
+                                instanceData.m_depth = visibilityEntry.m_depth;
+
+                                /* MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
 
                                 // The per-instance data is just the objectId, which is used to look up the object transform
                                 // After this first pass, we will accumulate all the per-instance data into one buffer for the view,
@@ -440,12 +450,324 @@ namespace AZ
                                     instanceData.m_perViewDrawPackets.resize(viewIndex + 1);
                                 }
                                 instanceData.m_perViewInstanceData[viewIndex].push_back(objectId);
-                                visibleInstanceIndices.insert(instanceIndex);
+                                visibleInstanceIndices.insert(instanceIndex);*/
+                                m_perViewSortInstanceData.push_back(instanceData);
                             }
                         }
                     }
 
-                    for (uint32_t instanceIndex : visibleInstanceIndices)
+                    std::sort(std::execution::par_unseq, m_perViewSortInstanceData.begin(), m_perViewSortInstanceData.end());
+                    uint32_t totalVisibleInstanceCount =
+                        static_cast<uint32_t>(m_perViewSortInstanceData.size());
+                    if (totalVisibleInstanceCount > 0)
+                    {
+                        /// Serial iteration over visible data
+                        ///
+                        ///
+                        /// 
+                        /*uint32_t instanceDataOffset = 0;
+                        uint32_t currentInstanceGroup = m_perViewSortInstanceData[0].m_instanceIndex;
+                        perViewInstanceData.reserve(m_perViewSortInstanceData.size());
+                        perViewInstanceData.push_back(m_perViewSortInstanceData[0].m_objectId);
+                        for (uint32_t i = 1; i < totalVisibleInstanceCount; ++i)
+                        {
+                            perViewInstanceData.push_back(m_perViewSortInstanceData[i].m_objectId);
+                            // Anytime the instance group changes, submit a draw
+                            if (m_perViewSortInstanceData[i].m_instanceIndex != currentInstanceGroup)
+                            {
+                                // Submit a draw
+                                MeshInstanceData& instanceData = m_meshInstanceManager[currentInstanceGroup];
+
+                                if (instanceData.m_perViewDrawPackets.size() <= viewIndex)
+                                {
+                                    instanceData.m_perViewDrawPackets.resize(viewIndex + 1);
+                                }
+
+                                // Cache a cloned drawpacket here
+                                if (!instanceData.m_perViewDrawPackets[viewIndex])
+                                {
+                                    // Clone the draw packet
+                                    RHI::DrawPacketBuilder drawPacketBuilder;
+                                    instanceData.m_perViewDrawPackets[viewIndex] =
+                                        const_cast<RHI::DrawPacket*>(drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
+                                }
+
+                                RHI::Ptr<RHI::DrawPacket> clonedDrawPacket = instanceData.m_perViewDrawPackets[viewIndex];
+
+                                // Get the root constant layout
+                                if (instanceData.m_drawRootConstantInterval.IsValid())
+                                {
+                                    // Set the instance data offset
+                                    for (size_t drawItemIndex = 0; drawItemIndex < clonedDrawPacket->GetDrawItemCount(); ++drawItemIndex)
+                                    {
+                                        AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
+                                        clonedDrawPacket->SetRootConstant(
+                                            drawItemIndex, instanceData.m_drawRootConstantInterval, data);
+                                    }
+                                }
+                                else
+                                {
+                                    AZ_Error(
+                                        "MeshFeatureProcessor",
+                                        false,
+                                        "Trying to instance something that is missing s_m_rootConstantInstanceDataOffset_Name from its "
+                                        "root constant layout.");
+                                }
+
+                                // This is the number of visible instances for this view
+                                uint32_t instanceCount = i - instanceDataOffset;
+
+                                // Set the cloned draw packet instance count
+                                clonedDrawPacket->SetInstanceCount(instanceCount);
+
+                                // Submit the draw packet
+                                view->AddDrawPacket(clonedDrawPacket.get(), 0.0f);
+
+                                // Update the loop trackers
+                                instanceDataOffset = i;
+                                currentInstanceGroup = m_perViewSortInstanceData[i].m_instanceIndex;
+                            }
+                        }
+
+                        // submit the last instance group
+                        {
+                            // Submit a draw
+                            MeshInstanceData& instanceData = m_meshInstanceManager[currentInstanceGroup];
+
+                            if (instanceData.m_perViewDrawPackets.size() <= viewIndex)
+                            {
+                                instanceData.m_perViewDrawPackets.resize(viewIndex + 1);
+                            }
+
+                            // Cache a cloned drawpacket here
+                            if (!instanceData.m_perViewDrawPackets[viewIndex])
+                            {
+                                // Clone the draw packet
+                                RHI::DrawPacketBuilder drawPacketBuilder;
+                                instanceData.m_perViewDrawPackets[viewIndex] =
+                                    const_cast<RHI::DrawPacket*>(drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
+                            }
+
+                            RHI::Ptr<RHI::DrawPacket> clonedDrawPacket = instanceData.m_perViewDrawPackets[viewIndex];
+
+                            // Set the instance data offset
+                            for (size_t i = 0; i < clonedDrawPacket->GetDrawItemCount(); ++i)
+                            {
+                                // Get the root constant layout
+                                if (instanceData.m_drawRootConstantInterval.IsValid())
+                                {
+                                    AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
+                                    clonedDrawPacket->SetRootConstant(i, instanceData.m_drawRootConstantInterval, data);
+                                }
+                                else
+                                {
+                                    AZ_Error(
+                                        "MeshFeatureProcessor",
+                                        false,
+                                        "Trying to instance something that is missing s_m_rootConstantInstanceDataOffset_Name from its "
+                                        "root constant layout.");
+                                }
+                            }
+
+                            // This is the number of visible instances for this view
+                            uint32_t instanceCount = static_cast<uint32_t>(perViewInstanceData.size()) - instanceDataOffset;
+                            // Set the cloned draw packet instance count
+                            clonedDrawPacket->SetInstanceCount(instanceCount);
+
+                            // Submit the draw packet
+                            view->AddDrawPacket(clonedDrawPacket.get(), 0.0f);
+                        }*/
+
+
+
+                        /// Parallel iteration over instance data
+                        ///
+                        ///
+                        ///
+                        ///
+                        ///
+                        ///
+
+                        // Make space for the final data
+                        perViewInstanceData.resize_no_construct(m_perViewSortInstanceData.size());
+
+                        // Create the task graph
+                        static const AZ::TaskDescriptor buildInstanceBufferTaskDescriptor{ "AZ::Render::MeshFeatureProcessor::OnEndCulling - process instance data", "Graphics" };
+                        AZ::TaskGraphEvent buildInstanceBufferTGEvent{ "BuildInstanceBuffer Wait" };
+                        AZ::TaskGraph buildInstanceBufferTG{ "BuildInstanceBuffer" };
+                        
+                        // Divy up the work into tasks
+                        constexpr uint32_t approximateBatchSize = 256;
+                        uint32_t taskCount = totalVisibleInstanceCount / approximateBatchSize;
+                        uint32_t currentBatchStart = 0;
+                        uint32_t currentBatchEndNonInclusive = 0;
+                        // For each task, find the next boundary where the work needs to be split
+                        // TODO: find the boundary in the task itself? Would need to also find the correct starting point, instead of basing start on the previous end
+                        for (uint32_t taskIndex = 0; taskIndex < taskCount; ++taskIndex)
+                        {
+                            if (taskIndex < taskCount - 1)
+                            {
+                                // End location is roughly here
+                                uint32_t approximateEndOffset = taskIndex * approximateBatchSize + approximateBatchSize;
+                                uint32_t batchEndInstanceGroup = m_perViewSortInstanceData[approximateEndOffset].m_instanceIndex;
+                                // TODO: validate what happens whenthe offset overruns the start of the next batch
+                                for (uint32_t actualEndOffset = approximateEndOffset;
+                                     actualEndOffset < approximateEndOffset + approximateBatchSize;
+                                     ++actualEndOffset)
+                                {
+                                    if (m_perViewSortInstanceData[actualEndOffset].m_instanceIndex != batchEndInstanceGroup)
+                                    {
+                                        // We've found where the current batch ends
+                                        currentBatchEndNonInclusive = actualEndOffset;
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                currentBatchEndNonInclusive = totalVisibleInstanceCount;
+                            }
+
+                            // Process data up to but not including actualEndOffset
+                            buildInstanceBufferTG.AddTask(
+                                buildInstanceBufferTaskDescriptor,
+                                [this, currentBatchStart, currentBatchEndNonInclusive, viewIndex, &view, &perViewInstanceData]()
+                                {
+                                    uint32_t currentInstanceGroup = m_perViewSortInstanceData[currentBatchStart].m_instanceIndex;
+                                    uint32_t instanceDataOffset = currentBatchStart;
+                                    float depth = 0.0f;
+                                    for (uint32_t i = currentBatchStart; i < currentBatchEndNonInclusive; ++i)
+                                    {
+                                        perViewInstanceData[i] = m_perViewSortInstanceData[i].m_objectId;
+                                        depth += m_perViewSortInstanceData[i].m_depth;
+                                        // Anytime the instance group changes, submit a draw
+                                        if (m_perViewSortInstanceData[i].m_instanceIndex != currentInstanceGroup)
+                                        {
+                                            // Submit a draw
+                                            MeshInstanceData& instanceData = m_meshInstanceManager[currentInstanceGroup];
+
+                                            if (instanceData.m_perViewDrawPackets.size() <= viewIndex)
+                                            {
+                                                AZStd::scoped_lock meshDataLock(m_meshDataMutex);
+                                                instanceData.m_perViewDrawPackets.resize(viewIndex + 1);
+                                            }
+
+                                            // Cache a cloned drawpacket here
+                                            if (!instanceData.m_perViewDrawPackets[viewIndex])
+                                            {
+                                                // Clone the draw packet
+                                                RHI::DrawPacketBuilder drawPacketBuilder;
+                                                instanceData.m_perViewDrawPackets[viewIndex] = const_cast<RHI::DrawPacket*>(
+                                                    drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
+                                            }
+
+                                            RHI::Ptr<RHI::DrawPacket> clonedDrawPacket = instanceData.m_perViewDrawPackets[viewIndex];
+
+                                            // Get the root constant layout
+                                            // TODO: Verify the validity of the root constant interval elsewhere
+                                            //if (instanceData.m_drawRootConstantInterval.IsValid())
+                                            {
+                                                // Set the instance data offset
+                                                AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset),
+                                                                            sizeof(uint32_t) };
+                                                clonedDrawPacket->SetRootConstant(instanceData.m_drawRootConstantInterval, data);
+                                            }
+                                            /* else
+                                            {
+                                                AZ_Error(
+                                                    "MeshFeatureProcessor",
+                                                    false,
+                                                    "Trying to instance something that is missing s_m_rootConstantInstanceDataOffset_Name "
+                                                    "from its "
+                                                    "root constant layout.");
+                                            }*/
+
+                                            // This is the number of visible instances for this view
+                                            uint32_t instanceCount = i - instanceDataOffset;
+
+                                            // Set the cloned draw packet instance count
+                                            clonedDrawPacket->SetInstanceCount(instanceCount);
+
+                                            float averageDepth = depth / static_cast<float>(instanceCount);
+                                            depth = 0;
+
+                                            // Submit the draw packet
+                                            // TODO: accumulate average depth and submit here
+                                            view->AddDrawPacket(clonedDrawPacket.get(), averageDepth);
+
+                                            // Update the loop trackers
+                                            instanceDataOffset = i;
+                                            currentInstanceGroup = m_perViewSortInstanceData[i].m_instanceIndex;
+                                        }
+                                    }
+
+                                    // submit the last instance group
+                                    {
+                                        // Submit a draw
+                                        MeshInstanceData& instanceData = m_meshInstanceManager[currentInstanceGroup];
+
+                                        if (instanceData.m_perViewDrawPackets.size() <= viewIndex)
+                                        {
+                                            AZStd::scoped_lock meshDataLock(m_meshDataMutex);
+                                            instanceData.m_perViewDrawPackets.resize(viewIndex + 1);
+                                        }
+
+                                        // Cache a cloned drawpacket here
+                                        if (!instanceData.m_perViewDrawPackets[viewIndex])
+                                        {
+                                            // Clone the draw packet
+                                            RHI::DrawPacketBuilder drawPacketBuilder;
+                                            instanceData.m_perViewDrawPackets[viewIndex] = const_cast<RHI::DrawPacket*>(
+                                                drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
+                                        }
+
+                                        RHI::Ptr<RHI::DrawPacket> clonedDrawPacket = instanceData.m_perViewDrawPackets[viewIndex];
+
+                                        // Get the root constant layout
+                                        // TODO: Verify the validity of the root constant interval elsewhere
+                                        // if (instanceData.m_drawRootConstantInterval.IsValid())
+                                        {
+                                            // Set the instance data offset
+                                            AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
+                                            clonedDrawPacket->SetRootConstant(instanceData.m_drawRootConstantInterval, data);
+                                        }
+                                        /* else
+                                        {
+                                            AZ_Error(
+                                                "MeshFeatureProcessor",
+                                                false,
+                                                "Trying to instance something that is missing s_m_rootConstantInstanceDataOffset_Name "
+                                                "from its "
+                                                "root constant layout.");
+                                        }*/
+
+                                        // This is the number of visible instances for this view
+                                        uint32_t instanceCount = currentBatchEndNonInclusive - instanceDataOffset;
+                                        // Set the cloned draw packet instance count
+                                        clonedDrawPacket->SetInstanceCount(instanceCount);
+
+                                        // Submit the draw packet
+                                        view->AddDrawPacket(clonedDrawPacket.get(), 0.0f);
+                                    }
+                                });
+
+                                currentBatchStart = currentBatchEndNonInclusive;
+                        }
+
+                        // submit the tasks
+                        buildInstanceBufferTG.Submit(&buildInstanceBufferTGEvent);
+                        buildInstanceBufferTGEvent.Wait();
+                    }
+
+
+
+
+
+                    /// Mesh instance manager owns partial lists of instance data
+                    ///
+                    ///
+                    /// 
+                    /* for (uint32_t instanceIndex : visibleInstanceIndices)
                     {
                         MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
 
@@ -505,7 +827,7 @@ namespace AZ
 
                         // Submit the draw packet
                         view->AddDrawPacket(clonedDrawPacket.get(), 0.0f);
-                    }
+                    }*/
 
                     // Use the correct srg for the view
                     instanceDataBufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
@@ -514,7 +836,7 @@ namespace AZ
                     // Eventually, this could be a transient buffer
 
                     // create output buffer descriptors
-                    instanceDataBufferHandler.UpdateBuffer(perViewInstanceData);
+                    instanceDataBufferHandler.UpdateBuffer(perViewInstanceData.data(), static_cast<uint32_t>(perViewInstanceData.size()));
                     viewIndex++;
                 }
             }
@@ -1467,7 +1789,7 @@ namespace AZ
                     key.m_lodIndex = static_cast<uint32_t>(modelLodIndex);
                     key.m_meshIndex = static_cast<uint32_t>(meshIndex);
                     key.m_materialId = material->GetId();
-                    key.m_forceInstancingOff = Uuid::CreateNull();
+                    key.m_forceInstancingOff = Uuid::CreateRandom();
                     key.m_stencilRef = stencilRef;
                     key.m_sortKey = m_sortKey;
                     index = meshInstanceManager.AddInstance(key);
@@ -1482,7 +1804,13 @@ namespace AZ
                 if (!r_enableHardwareInstancing || index.m_wasInserted)
                 {
                     // setup the mesh draw packet
-                    RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, meshObjectSrg, materialAssignment.m_matModUvOverrides);
+                    RPI::MeshDrawPacket drawPacket(
+                        modelLod,
+                        meshIndex,
+                        material,
+                        meshObjectSrg,
+                        materialAssignment.m_matModUvOverrides,
+                        nullptr);
 
                     // set the shader option to select forward pass IBL specular if necessary
                     if (!drawPacket.SetShaderOption(s_o_meshUseForwardPassIBLSpecular_Name, AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
@@ -1514,20 +1842,20 @@ namespace AZ
                         const RPI::MeshDrawPacket::RootConstantsLayoutList& rootConstantsLayouts =
                             instanceData.m_drawPacket.GetRootConstantsLayouts();
 
-                        for (size_t i = 0; i < rootConstantsLayouts.size(); ++i)
+                        if (!rootConstantsLayouts.empty())
                         {
                             // Get the root constant layout
                             RHI::ShaderInputConstantIndex shaderInputIndex =
-                                rootConstantsLayouts[i]->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
+                                rootConstantsLayouts[0]->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
 
                             if (shaderInputIndex.IsValid())
                             {
-                                RHI::Interval interval = rootConstantsLayouts[i]->GetInterval(shaderInputIndex);
-                                instanceData.m_drawRootConstantIntervals.push_back(interval);
+                                RHI::Interval interval = rootConstantsLayouts[0]->GetInterval(shaderInputIndex);
+                                instanceData.m_drawRootConstantInterval = interval;
                             }
                             else
                             {
-                                instanceData.m_drawRootConstantIntervals.push_back(RHI::Interval{});
+                                instanceData.m_drawRootConstantInterval = RHI::Interval{};
                             }
                         }
                     }

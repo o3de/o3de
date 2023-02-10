@@ -52,7 +52,8 @@ namespace AZ
                 size_t modelLodMeshIndex,
                 Data::Instance<Material> materialOverride,
                 Data::Instance<ShaderResourceGroup> objectSrg,
-                const MaterialModelUvOverrideMap& materialModelUvMap = {});
+                const MaterialModelUvOverrideMap& materialModelUvMap = {},
+                IAllocator* allocator = nullptr);
 
             AZ_DEFAULT_COPY(MeshDrawPacket);
             AZ_DEFAULT_MOVE(MeshDrawPacket);
@@ -128,6 +129,7 @@ namespace AZ
             typedef AZStd::pair<Name, RPI::ShaderOptionValue> ShaderOptionPair;
             typedef AZStd::vector<ShaderOptionPair> ShaderOptionVector;
             ShaderOptionVector m_shaderOptions;
+            IAllocator* m_allocator;
         };
         
         using MeshDrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;

@@ -43,6 +43,24 @@ namespace AZ
         class RayTracingFeatureProcessor;
         class ReflectionProbeFeatureProcessor;
         class MeshFeatureProcessor;
+
+        constexpr size_t postCullingPoolPageSize = size_t{ 1024 } * size_t{ 1024 } * size_t{ 64 };
+        constexpr size_t postCullingPoolMinAllocationSize = size_t{ 32 };
+        constexpr size_t postCullingPoolMaxAllocationSize = size_t{ 1024 } * size_t{ 1024 };
+        class PostCullingMeshDataAllocator final : public AZ::Internal::PoolAllocatorHelper<AZ::PoolSchema>
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(PostCullingMeshDataAllocator, AZ::SystemAllocator, 0)
+            AZ_TYPE_INFO(PostCullingMeshDataAllocator, "{A3199670-180C-4A46-92BF-8DEBFE5E8A47}")
+
+            PostCullingMeshDataAllocator()
+                // Invoke the base constructor explicitely to use the override that takes custom page, min, and max allocation sizes
+                : AZ::Internal::PoolAllocatorHelper<AZ::PoolSchema>(
+                      postCullingPoolPageSize, postCullingPoolMinAllocationSize, postCullingPoolMaxAllocationSize)
+            {
+            }
+        };
+
         namespace MeshFP
         {
             struct MeshDataIndicesForLod
@@ -207,7 +225,13 @@ namespace AZ
 
             static void Reflect(AZ::ReflectContext* context);
 
-            MeshFeatureProcessor() = default;
+            MeshFeatureProcessor()
+                : m_postCullingPoolAllocator()
+                , m_perViewSortInstanceData(AZStdIAllocator(&m_postCullingPoolAllocator))
+                , m_perViewInstanceData(AZStdIAllocator(&m_postCullingPoolAllocator))
+            {
+            }
+
             virtual ~MeshFeatureProcessor() = default;
 
             // FeatureProcessor overrides ...
@@ -278,6 +302,29 @@ namespace AZ
 
             MeshFP::MeshDataIndicesForLod AcquireMeshIndices(uint32_t lodCount, uint32_t meshCount);
             void ReleaseMeshIndices(MeshFP::MeshDataIndicesForLod meshDataIndices);
+
+            
+            //! This pool allocator keeps post-culling data cache friendly
+            //! It should only be used for data that is accessed after culling is complete
+            AZ::AZStdIAllocator GetPostCullingPoolAllocator()
+            {
+                return AZStdIAllocator(&m_postCullingPoolAllocator);
+            }
+
+            IAllocator* GetPostCullingPoolAllocatorPtr()
+            {
+                return &m_postCullingPoolAllocator;
+            }
+
+            void LockMeshDataMutex()
+            {
+                m_meshDataMutex.lock();
+            }
+
+            void UnlockMeshDataMutex()
+            {
+                m_meshDataMutex.unlock();
+            }
         private:
             MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
 
@@ -314,9 +361,24 @@ namespace AZ
             };
             AZStd::vector<MeshData> m_meshData;
 
+            struct SortInstanceData
+            {
+                uint32_t m_instanceIndex = 0;
+                uint32_t m_objectId = 0;
+                float m_depth = 0.0f;
+
+                bool operator<(const SortInstanceData& rhs)
+                {
+                    return AZStd::tie(m_instanceIndex,  m_depth) < AZStd::tie(rhs.m_instanceIndex, rhs.m_depth);
+                }
+            };
+            AZStd::vector<SortInstanceData, AZStdIAllocator> m_perViewSortInstanceData;
         private:
             AZStd::mutex m_meshDataMutex;
             RHI::FreeListAllocator m_meshDataAllocator;
+
+            // Use this pool allocator to keep data that is accessed after culling cache friendly
+            PostCullingMeshDataAllocator m_postCullingPoolAllocator;
             MeshInstanceManager m_meshInstanceManager;
             // TODO: handle this in a better way, but for now we're using this to iterate over each instance group exactly once
             AZStd::unordered_set<MeshInstanceManager::Handle> m_instanceGroupIndices;
@@ -327,7 +389,7 @@ namespace AZ
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
             RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
             AZ::RHI::Handle<uint32_t> m_meshMovedFlag;
-            AZStd::vector<AZStd::vector<uint32_t>> m_perViewInstanceData;
+            AZStd::vector<AZStd::vector<uint32_t, AZStdIAllocator>, AZStdIAllocator> m_perViewInstanceData;
             AZStd::vector<GpuBufferHandler> m_perViewInstanceDataBufferHandlers;
             bool m_forceRebuildDrawPackets = false;
             bool m_reportShaderOptionFlags = false;

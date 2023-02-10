@@ -34,13 +34,15 @@ namespace AZ
             size_t modelLodMeshIndex,
             Data::Instance<Material> materialOverride,
             Data::Instance<ShaderResourceGroup> objectSrg,
-            const MaterialModelUvOverrideMap& materialModelUvMap
+            const MaterialModelUvOverrideMap& materialModelUvMap,
+            IAllocator* allocator
         )
             : m_modelLod(&modelLod)
             , m_modelLodMeshIndex(modelLodMeshIndex)
             , m_objectSrg(objectSrg)
             , m_material(materialOverride)
             , m_materialModelUvMap(materialModelUvMap)
+            , m_allocator(allocator)
         {
             if (!m_material)
             {
@@ -168,7 +170,7 @@ namespace AZ
             ShaderReloadDebugTracker::ScopedSection reloadSection("MeshDrawPacket::DoUpdate");
 
             RHI::DrawPacketBuilder drawPacketBuilder;
-            drawPacketBuilder.Begin(nullptr);
+            drawPacketBuilder.Begin(m_allocator);
 
             drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
             drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView);
