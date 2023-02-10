@@ -566,7 +566,6 @@ border-right: 1px solid  rgb(136, 136, 136); </string>
  </widget>
  <resources>
   <include location="../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc"/>
-  <include location="Source/PhysX.qrc"/>
  </resources>
  <connections>
   <connection>
@@ -598,6 +597,38 @@ border-right: 1px solid  rgb(136, 136, 136); </string>
     <hint type="destinationlabel">
      <x>320</x>
      <y>153</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dynamicBox</sender>
+   <signal>clicked()</signal>
+   <receiver>dynamicRadioButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>168</x>
+     <y>94</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>298</x>
+     <y>78</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>kinematicBox</sender>
+   <signal>clicked()</signal>
+   <receiver>kinematicRadioButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>168</x>
+     <y>174</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>298</x>
+     <y>158</y>
     </hint>
    </hints>
   </connection>

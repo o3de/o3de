@@ -349,7 +349,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
     sip.bEditor = true;
     sip.bDedicatedServer = false;
-    AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
     sip.bPreview = bPreviewMode;
     sip.bTestMode = bTestMode;
     sip.hInstance = nullptr;

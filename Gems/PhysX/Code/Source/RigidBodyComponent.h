@@ -150,7 +150,8 @@ namespace PhysX
 
     private:
         void SetupConfiguration();
-        void CreatePhysics();
+        void CreateRigidBody();
+        void DestroyRigidBody();
         void ApplyPhysxSpecificConfiguration();
         void InitPhysicsTickHandler();
         void PostPhysicsTick(float fixedDeltaTime);

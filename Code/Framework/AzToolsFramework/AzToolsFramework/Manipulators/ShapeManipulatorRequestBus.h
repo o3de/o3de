@@ -27,6 +27,8 @@ namespace AzToolsFramework
         virtual void SetTranslationOffset(const AZ::Vector3& translationOffset) = 0;
         //! Get the space in which the manipulators are defined.
         virtual AZ::Transform GetManipulatorSpace() const = 0;
+        //! Get the rotation of the shape relative to the manipulator space.
+        virtual AZ::Quaternion GetRotationOffset() const = 0;
 
     protected:
         ~ShapeManipulatorRequests() = default;
