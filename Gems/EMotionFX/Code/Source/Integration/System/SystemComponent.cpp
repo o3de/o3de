@@ -564,6 +564,7 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::EnableRayRequests()
         {
+            AZ::Interface<IRaycastRequests>::Unregister(this);
             AZ::Interface<IRaycastRequests>::Register(this);
         }
 
