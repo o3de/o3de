@@ -120,9 +120,11 @@ namespace AzToolsFramework
         {
             const float radius = GetCapsuleRadius();
             const AZ::Transform localTransform = GetLocalTransform();
-            const AZ::Transform manipulatorSpace = GetManipulatorSpace();
+            const AZ::Transform localInverse = localTransform.GetInverse();
+            const AZ::Transform manipulatorSpaceInverse = GetManipulatorSpace().GetInverse();
+
             const AZ::Vector3 inverseTransformedForward =
-                (manipulatorSpace * localTransform).GetInverse().TransformVector(cameraState.m_forward);
+                localInverse.TransformVector(manipulatorSpaceInverse.TransformVector(cameraState.m_forward) / GetNonUniformScale());
             AZ::Vector3 axis = inverseTransformedForward.Cross(HeightManipulatorAxis);
             if (axis.GetLengthSq() < AZ::Constants::Tolerance * AZ::Constants::Tolerance)
             {
@@ -151,7 +153,7 @@ namespace AzToolsFramework
         }
     }
 
-    void CapsuleViewportEdit::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    void CapsuleViewportEdit::AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         for (auto manipulator : { m_radiusManipulator.get(), m_topManipulator.get(), m_bottomManipulator.get() })
         {
@@ -196,12 +198,10 @@ namespace AzToolsFramework
         }
     }
 
-    void CapsuleViewportEdit::ResetValues()
+    void CapsuleViewportEdit::ResetValuesImpl()
     {
-        BeginEditing();
         SetCapsuleHeight(ResetCapsuleHeight);
         SetCapsuleRadius(ResetCapsuleRadius);
-        EndEditing();
     }
 
     void CapsuleViewportEdit::Teardown()
