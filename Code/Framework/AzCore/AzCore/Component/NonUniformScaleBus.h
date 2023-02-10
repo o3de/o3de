@@ -37,3 +37,5 @@ namespace AZ
 
     using NonUniformScaleRequestBus = AZ::EBus<NonUniformScaleRequests>;
 } // namespace AZ
+
+DECLARE_EBUS_EXTERN(NonUniformScaleRequests);
