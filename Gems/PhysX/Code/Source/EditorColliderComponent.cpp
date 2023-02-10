@@ -667,7 +667,7 @@ namespace PhysX
         if (m_shapeConfiguration.IsAssetConfig())
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-            Utils::GetShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration,
+            Utils::CreateShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration,
                 m_configuration, m_hasNonUniformScale, m_shapeConfiguration.m_subdivisionLevel, shapes);
             configuration.m_colliderAndShapeData = shapes;
         }
@@ -823,7 +823,7 @@ namespace PhysX
             m_shapeConfiguration.m_physicsAsset.m_pxAsset.IsReady())
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-            Utils::GetShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration, m_configuration, m_hasNonUniformScale,
+            Utils::CreateShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration, m_configuration, m_hasNonUniformScale,
                 m_shapeConfiguration.m_subdivisionLevel, shapes);
 
             if (shapes.empty())
