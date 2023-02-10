@@ -35,15 +35,6 @@ namespace PhysX
     static const float DefaultGravityMultiplier = 1.0f;
     static const float DefaultGroundDetectionBoxHeight = 0.05f;
 
-    //float CalculateZFromFalling(float gravity, float gravityMultipler, float timeFell)
-    //{
-    //    // Calculate distance fallen (d = 0.5 * g * t^2)
-    //    float calculated_gravity = gravity * gravityMultipler;
-    //    float time = timeFell * AzPhysics::SystemConfiguration::DefaultFixedTimestep;
-
-    //    return 0.5f * (calculated_gravity) * (time * time);
-    //}
-
     class GameplayTestBasis
     {
     public:
@@ -148,13 +139,16 @@ namespace PhysX
         float expectedGravityMultiplier = 1.5f;
 
         GameplayTestBasis basis(m_testSceneHandle, expectedGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
-
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        sceneInterface->RemoveSimulatedBody(basis.m_sceneHandle, basis.m_floor->m_bodyHandle);
+        
         // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
         auto startPosition = basis.m_controller->GetPosition();
         
-        int timeStepCount = 600;
+        int timeStepCount = 2;
         float totalTime = 0.0f;
         float timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
+        float distanceFell = 0.0f;
 
         for (int i = 0; i < timeStepCount; i++)
         {
@@ -164,10 +158,10 @@ namespace PhysX
 
         auto endPosition = basis.m_controller->GetPosition();
         auto currentGravity = basis.m_testScene->GetGravity();
+        // calculate distance fallen (d = 0.5 * g * t^2)
+        distanceFell = 0.5f * (currentGravity.GetZ() * expectedGravityMultiplier) * (totalTime * totalTime);
 
-        //startPosition.GetZ();
-        //float distanceFell = CalculateZFromFalling(currentGravity.GetZ(), expectedGravityMultiplier, totalTime);
-        EXPECT_THAT(endPosition.GetZ()+1.0f, testing::FloatEq(startPosition.GetZ() - 9000));
-
+        EXPECT_THAT(endPosition.GetZ(), testing::FloatEq(startPosition.GetZ() - distanceFell));
     }
+
 } // namespace PhysX
