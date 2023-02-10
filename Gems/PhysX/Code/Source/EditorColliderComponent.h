@@ -265,8 +265,8 @@ namespace PhysX
         // Cylinder collider
         void UpdateCylinderCookedMesh();
 
+        void UpdateCollider();
         void CreateStaticEditorCollider();
-        void ClearStaticEditorCollider();
 
         void BuildDebugDrawMesh() const;
 
