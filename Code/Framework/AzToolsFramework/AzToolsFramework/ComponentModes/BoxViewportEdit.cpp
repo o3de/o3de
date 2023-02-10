@@ -35,11 +35,6 @@ namespace AzToolsFramework
         m_getBoxDimensions = AZStd::move(getBoxDimensions);
     }
 
-    void BoxViewportEdit::InstallGetLocalTransform(AZStd::function<AZ::Transform()> getLocalTransform)
-    {
-        m_getLocalTransform = AZStd::move(getLocalTransform);
-    }
-
     void BoxViewportEdit::InstallSetBoxDimensions(AZStd::function<void(const AZ::Vector3&)> setBoxDimensions)
     {
         m_setBoxDimensions = AZStd::move(setBoxDimensions);
@@ -53,16 +48,6 @@ namespace AzToolsFramework
         }
         AZ_ErrorOnce("BoxViewportEdit", false, "No implementation provided for GetBoxDimensions");
         return AZ::Vector3::CreateOne();
-    }
-
-    AZ::Transform BoxViewportEdit::GetLocalTransform() const
-    {
-        if (m_getLocalTransform)
-        {
-            return m_getLocalTransform();
-        }
-        AZ_ErrorOnce("BoxViewportEdit", false, "No implementation provided for GetLocalTransform");
-        return AZ::Transform::CreateIdentity();
     }
 
     void BoxViewportEdit::SetBoxDimensions(const AZ::Vector3& boxDimensions)

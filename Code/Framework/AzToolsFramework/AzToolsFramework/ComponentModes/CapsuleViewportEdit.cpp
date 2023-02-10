@@ -30,11 +30,6 @@ namespace AzToolsFramework
     {
     }
 
-    void CapsuleViewportEdit::InstallGetRotationOffset(AZStd::function<AZ::Quaternion()> getRotationOffset)
-    {
-        m_getRotationOffset = AZStd::move(getRotationOffset);
-    }
-
     void CapsuleViewportEdit::InstallGetCapsuleRadius(AZStd::function<float()> getCapsuleRadius)
     {
         m_getCapsuleRadius = AZStd::move(getCapsuleRadius);
@@ -53,16 +48,6 @@ namespace AzToolsFramework
     void CapsuleViewportEdit::InstallSetCapsuleHeight(AZStd::function<void(float)> setCapsuleHeight)
     {
         m_setCapsuleHeight = AZStd::move(setCapsuleHeight);
-    }
-
-    AZ::Quaternion CapsuleViewportEdit::GetRotationOffset() const
-    {
-        if (m_getRotationOffset)
-        {
-            return m_getRotationOffset();
-        }
-        AZ_ErrorOnce("CapsuleViewportEdit", false, "No implementation provided for GetRotationOffset");
-        return AZ::Quaternion::CreateIdentity();
     }
 
     float CapsuleViewportEdit::GetCapsuleRadius() const
@@ -107,11 +92,6 @@ namespace AzToolsFramework
         {
             AZ_ErrorOnce("CapsuleViewportEdit", false, "No implementation provided for SetCapsuleHeight");
         }
-    }
-
-    AZ::Transform CapsuleViewportEdit::GetLocalTransform() const
-    {
-        return AZ::Transform::CreateFromQuaternionAndTranslation(GetRotationOffset(), GetTranslationOffset());
     }
 
     void CapsuleViewportEdit::OnCameraStateChanged(const AzFramework::CameraState& cameraState)

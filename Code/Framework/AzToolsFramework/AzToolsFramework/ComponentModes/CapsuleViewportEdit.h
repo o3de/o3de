@@ -22,7 +22,6 @@ namespace AzToolsFramework
     public:
         CapsuleViewportEdit(bool allowAsymmetricalEditing = false, bool ensureHeightExceedsTwiceRadius = true);
 
-        void InstallGetRotationOffset(AZStd::function<AZ::Quaternion()> getRotationOffset);
         void InstallGetCapsuleRadius(AZStd::function<float()> getCapsuleRadius);
         void InstallGetCapsuleHeight(AZStd::function<float()> getCapsuleHeight);
         void InstallSetCapsuleRadius(AZStd::function<void(float)> setCapsuleRadius);
@@ -37,13 +36,10 @@ namespace AzToolsFramework
 
         void OnCameraStateChanged(const AzFramework::CameraState& cameraState);
     private:
-        AZ::Quaternion GetRotationOffset() const;
         float GetCapsuleRadius() const;
         float GetCapsuleHeight() const;
         void SetCapsuleRadius(float radius);
         void SetCapsuleHeight(float height);
-
-        AZ::Transform GetLocalTransform() const;
 
         void SetupRadiusManipulator(
             const ManipulatorManagerId manipulatorManagerId,
@@ -67,7 +63,6 @@ namespace AzToolsFramework
         bool m_allowAsymmetricalEditing = false; //!< Whether moving the ends of the capsule independently is allowed.
         bool m_ensureHeightExceedsTwiceRadius = true; //!< Whether to force height to exceed twice the radius when editing.
 
-        AZStd::function<AZ::Quaternion()> m_getRotationOffset;
         AZStd::function<float()> m_getCapsuleRadius;
         AZStd::function<float()> m_getCapsuleHeight;
         AZStd::function<void(float)> m_setCapsuleRadius;
