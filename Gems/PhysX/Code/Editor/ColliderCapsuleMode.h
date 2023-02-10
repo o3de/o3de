@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
-#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzToolsFramework/ComponentModes/CapsuleViewportEdit.h>
+#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
 
 namespace PhysX
 {

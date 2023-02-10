@@ -18,6 +18,7 @@
 #include <native/utilities/AssetUtilEBusHelper.h>
 #include <unittests/UnitTestUtils.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/Serialization/Json/JsonSystemComponent.h>
 
 namespace UnitTests
 {
@@ -98,7 +99,19 @@ namespace UnitTests
         m_builderInfoHandler.BusConnect();
 
         // Set up the Job Context, required for the PathDependencyManager to do its work
+        // Set up serialize and json context
         m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+        m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
+        m_componentApplication = AZStd::make_unique<testing::NiceMock<MockComponentApplication>>();
+
+        using namespace testing;
+
+        ON_CALL(*m_componentApplication.get(), GetSerializeContext()).WillByDefault(Return(m_serializeContext.get()));
+        ON_CALL(*m_componentApplication.get(), GetJsonRegistrationContext()).WillByDefault(Return(m_jsonRegistrationContext.get()));
+        ON_CALL(*m_componentApplication.get(), AddEntity(_)).WillByDefault(Return(true));
+
+        AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
+
         m_descriptor = AZ::JobManagerComponent::CreateDescriptor();
         m_descriptor->Reflect(m_serializeContext.get());
 
@@ -106,6 +119,9 @@ namespace UnitTests
         m_jobManagerEntity->CreateComponent<AZ::JobManagerComponent>();
         m_jobManagerEntity->Init();
         m_jobManagerEntity->Activate();
+
+        AzToolsFramework::MetadataManager::Reflect(m_serializeContext.get());
+        AzToolsFramework::UuidUtilComponent::Reflect(m_serializeContext.get());
 
         // Set up a mock disk space responder, required for RCController to process a job
         m_diskSpaceResponder = AZStd::make_unique<::testing::NiceMock<MockDiskSpaceResponder>>();
@@ -156,6 +172,13 @@ namespace UnitTests
         m_builderInfoHandler.BusDisconnect();
 
         AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+
+        m_jsonRegistrationContext->EnableRemoveReflection();
+        AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
+        m_jsonRegistrationContext->DisableRemoveReflection();
+
+        m_jsonRegistrationContext.reset();
+        m_serializeContext.reset();
 
         if (m_localFileIo)
         {
@@ -252,7 +275,7 @@ namespace UnitTests
             AZ::IO::LocalFileIO::GetInstance()->Copy(
                 request.m_fullPath.c_str(), (AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str());
 
-            auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName(outputExtension.c_str()), 1 };
+            auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName(outputExtension.c_str()), AssetSubId };
 
             product.m_outputFlags = flags;
             product.m_dependenciesHandled = true;
@@ -265,7 +288,7 @@ namespace UnitTests
 
                 AZ::Utils::WriteFile("unit test file", extraFilePath.Native());
 
-                auto extraProduct = JobProduct{ extraFilePath.c_str(), AZ::Data::AssetType::CreateName("extra"), 2 };
+                auto extraProduct = JobProduct{ extraFilePath.c_str(), AZ::Data::AssetType::CreateName("extra"), ExtraAssetSubId };
 
                 extraProduct.m_outputFlags = flags;
                 extraProduct.m_dependenciesHandled = true;
@@ -315,10 +338,13 @@ namespace UnitTests
         EXPECT_EQ(AZ::IO::SystemFile::Exists(expectedProductPath.c_str()), exists) << expectedProductPath.c_str();
     }
 
-    void AssetManagerTestingBase::CheckIntermediate(const char* relativePath, bool exists)
+    void AssetManagerTestingBase::CheckIntermediate(const char* relativePath, bool exists, bool hasMetadata)
     {
         auto expectedIntermediatePath = MakePath(relativePath, true);
+        auto expectedMetadataPath = AzToolsFramework::MetadataManager::ToMetadataPath(expectedIntermediatePath);
+
         EXPECT_EQ(AZ::IO::SystemFile::Exists(expectedIntermediatePath.c_str()), exists) << expectedIntermediatePath.c_str();
+        EXPECT_EQ(AZ::IO::SystemFile::Exists(expectedMetadataPath.c_str()), hasMetadata) << expectedMetadataPath.c_str();
     }
 
     void AssetManagerTestingBase::ProcessSingleStep(int expectedJobCount, int expectedFileCount, int jobToRun, bool expectSuccess)

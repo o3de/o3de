@@ -81,6 +81,7 @@
 #include <Entity/EntityUtilityComponent.h>
 #include <Metadata/MetadataManager.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 
 #include <QtWidgets/QMessageBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
@@ -90,6 +91,7 @@ AZ_POP_DISABLE_WARNING
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMap>
+
 
 // Not possible to use AZCore's operator new overrides until we address the overall problems
 // with allocators, or more likely convert AzToolsFramework to a DLL and restrict overloading to
@@ -304,6 +306,7 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::Script::LuaEditorSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::GlobalPaintBrushSettingsSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::MetadataManager>(),
+                azrtti_typeid<AzToolsFramework::UuidUtilComponent>(),
             });
 
         return components;
