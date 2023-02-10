@@ -9,21 +9,21 @@
 #pragma once
 
 #include <AzToolsFramework/ComponentModes/BaseShapeComponentMode.h>
-#include <AzToolsFramework/ComponentModes/CapsuleViewportEdit.h>
+#include <AzToolsFramework/ComponentModes/SphereViewportEdit.h>
 
 namespace AzToolsFramework
 {
-    void InstallCapsuleViewportEditFunctions(
-        CapsuleViewportEdit* capsuleViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
+    void InstallSphereViewportEditFunctions(
+        SphereViewportEdit* sphereViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
 
-    //! The specific ComponentMode responsible for handling capsule editing.
-    class CapsuleComponentMode
+    //! The specific ComponentMode responsible for handling sphere editing.
+    class SphereComponentMode
         : public BaseShapeComponentMode
         , private AzFramework::EntityDebugDisplayEventBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
-        AZ_RTTI(CapsuleComponentMode, "{17036B78-EB62-4F2B-8F74-C9FB037D8973}", BaseShapeComponentMode)
+        AZ_RTTI(SphereComponentMode, "{540CD123-86E7-4C4F-894D-56F06FC3F9D1}", BaseShapeComponentMode)
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -31,13 +31,13 @@ namespace AzToolsFramework
         static void BindActionsToModes();
         static void BindActionsToMenus();
 
-        CapsuleComponentMode(
+        SphereComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType, bool allowAsymmetricalEditing = false);
-        CapsuleComponentMode(const CapsuleComponentMode&) = delete;
-        CapsuleComponentMode& operator=(const CapsuleComponentMode&) = delete;
-        CapsuleComponentMode(CapsuleComponentMode&&) = delete;
-        CapsuleComponentMode& operator=(CapsuleComponentMode&&) = delete;
-        ~CapsuleComponentMode();
+        SphereComponentMode(const SphereComponentMode&) = delete;
+        SphereComponentMode& operator=(const SphereComponentMode&) = delete;
+        SphereComponentMode(SphereComponentMode&&) = delete;
+        SphereComponentMode& operator=(SphereComponentMode&&) = delete;
+        ~SphereComponentMode();
 
         // EditorBaseComponentMode overrides ...
         AZStd::string GetComponentModeName() const override;

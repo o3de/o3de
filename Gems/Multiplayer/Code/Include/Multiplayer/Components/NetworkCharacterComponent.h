@@ -57,6 +57,7 @@ namespace Multiplayer
 
     protected:
         void OnCharacterActivated(const AZ::EntityId& entityId) override;
+        void OnCharacterDeactivated(const AZ::EntityId& entityId) override;
 
     private:
         void OnTranslationChangedEvent(const AZ::Vector3& translation);

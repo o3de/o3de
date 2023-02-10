@@ -35,7 +35,7 @@ namespace AzToolsFramework
         BoxComponentMode& operator=(const BoxComponentMode&) = delete;
         BoxComponentMode(BoxComponentMode&&) = delete;
         BoxComponentMode& operator=(BoxComponentMode&&) = delete;
-        ~BoxComponentMode() = default;
+        ~BoxComponentMode();
 
         // EditorBaseComponentMode overrides ...
         AZStd::string GetComponentModeName() const override;
