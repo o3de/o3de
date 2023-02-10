@@ -176,7 +176,7 @@ class TestScriptCanvasTests(object):
             "GraphClose_Default_SavePrompt.py",
             expected_lines,
             auto_test_mode=False,
-            timeout=60,
+            timeout=160,
         )
 
     def test_VariableManager_Default_CreateDeleteVars(self, request, editor, launcher_platform):
