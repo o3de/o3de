@@ -3184,7 +3184,6 @@ namespace AssetProcessor
             // An update to one of these types of files needs to cause a re-process of the intermediate file.
             // Converting a metadata file to the real file normally happens later in the processing but needs to be done
             // up front for intermediates to avoid bypassing this whole block - which stops processing intermediates before they're recorded in the database.
-            AzToolsFramework::MetadataManager::MetadataFileExtension;
             AZ::IO::FixedMaxPath absolutePath(normalizedFullFile.toUtf8().constData());
 
             if (absolutePath.Extension() == AzToolsFramework::MetadataManager::MetadataFileExtension)
