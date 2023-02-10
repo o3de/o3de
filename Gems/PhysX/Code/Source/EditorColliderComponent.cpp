@@ -445,8 +445,6 @@ namespace PhysX
             UpdateMeshAsset();
         }
 
-        UpdateShapeConfiguration();
-
         UpdateCollider();
     }
 
@@ -500,7 +498,6 @@ namespace PhysX
             &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::Refresh,
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
 
-        UpdateShapeConfiguration();
         UpdateCollider();
         ValidateRigidBodyMeshGeometryType();
 
@@ -632,6 +629,7 @@ namespace PhysX
 
     void EditorColliderComponent::UpdateCollider()
     {
+        UpdateShapeConfiguration();
         CreateStaticEditorCollider();
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
     }
@@ -1133,7 +1131,6 @@ namespace PhysX
         }
         m_cachedWorldTransform = world;
 
-        UpdateShapeConfiguration();
         UpdateCollider();
     }
 
@@ -1141,7 +1138,6 @@ namespace PhysX
     {
         m_cachedNonUniformScale = nonUniformScale;
 
-        UpdateShapeConfiguration();
         UpdateCollider();
     }
 
@@ -1416,7 +1412,7 @@ namespace PhysX
 
     Physics::ShapeType EditorColliderComponent::GetShapeType() const
     {
-        return m_shapeConfiguration.GetCurrent().GetShapeType();
+        return m_shapeConfiguration.m_shapeType;
     }
 
     void EditorColliderComponent::SetSphereRadius(float radius)

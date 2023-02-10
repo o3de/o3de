@@ -24,8 +24,9 @@ namespace AzToolsFramework
         const float ResetCapsuleRadius = 0.25f;
     } // namespace
 
-    CapsuleViewportEdit::CapsuleViewportEdit(bool allowAsymmetricalEditing)
+    CapsuleViewportEdit::CapsuleViewportEdit(bool allowAsymmetricalEditing, bool ensureHeightExceedsTwiceRadius)
         : m_allowAsymmetricalEditing(allowAsymmetricalEditing)
+        , m_ensureHeightExceedsTwiceRadius(ensureHeightExceedsTwiceRadius)
     {
     }
 
@@ -298,8 +299,10 @@ namespace AzToolsFramework
         extent = AZ::GetMax(extent, MinCapsuleRadius);
         m_radiusManipulator->SetLocalTransform(localTransform * AZ::Transform::CreateTranslation(extent * action.m_fixed.m_axis));
 
-        // adjust the height manipulator so it is always clamped to twice the radius.
-        AdjustHeightManipulators(extent);
+        if (m_ensureHeightExceedsTwiceRadius)
+        {
+            AdjustHeightManipulators(extent);
+        }
 
         SetCapsuleRadius(extent);
     }
@@ -317,14 +320,16 @@ namespace AzToolsFramework
         const float symmetryFactor = symmetrical ? 2.0f : 1.0f;
 
         const float oldCapsuleHeight = GetCapsuleHeight();
-        const float newAxisLength = symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis);
+        const float newAxisLength = AZ::GetMax(0.5f * MinCapsuleHeight, symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis));
         const float oldAxisLength = 0.5f * symmetryFactor * oldCapsuleHeight;
         const float capsuleHeightDelta = newAxisLength - oldAxisLength;
 
         const float newCapsuleHeight = AZ::GetMax(oldCapsuleHeight + capsuleHeightDelta, MinCapsuleHeight);
 
-        // adjust the radius manipulator so it is always clamped to half the capsule height.
-        AdjustRadiusManipulator(newCapsuleHeight);
+        if (m_ensureHeightExceedsTwiceRadius)
+        {
+            AdjustRadiusManipulator(newCapsuleHeight);
+        }
 
         SetCapsuleHeight(newCapsuleHeight);
 

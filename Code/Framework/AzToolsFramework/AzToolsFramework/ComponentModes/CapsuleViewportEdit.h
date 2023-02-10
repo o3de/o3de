@@ -21,7 +21,7 @@ namespace AzToolsFramework
     class CapsuleViewportEdit : public BaseShapeViewportEdit
     {
     public:
-        CapsuleViewportEdit(bool allowAsymmetricalEditing = false);
+        CapsuleViewportEdit(bool allowAsymmetricalEditing = false, bool ensureHeightExceedsTwiceRadius = true);
 
         void InstallGetRotationOffset(AZStd::function<AZ::Quaternion()> getRotationOffset);
         void InstallGetCapsuleRadius(AZStd::function<float()> getCapsuleRadius);
@@ -65,7 +65,8 @@ namespace AzToolsFramework
         AZStd::shared_ptr<LinearManipulator> m_radiusManipulator;
         AZStd::shared_ptr<LinearManipulator> m_topManipulator;
         AZStd::shared_ptr<LinearManipulator> m_bottomManipulator;
-        bool m_allowAsymmetricalEditing = false; ///< Whether moving the ends of the capsule independently is allowed.
+        bool m_allowAsymmetricalEditing = false; //!< Whether moving the ends of the capsule independently is allowed.
+        bool m_ensureHeightExceedsTwiceRadius = true; //!< Whether to force height to exceed twice the radius when editing.
 
         AZStd::function<AZ::Quaternion()> m_getRotationOffset;
         AZStd::function<float()> m_getCapsuleRadius;
