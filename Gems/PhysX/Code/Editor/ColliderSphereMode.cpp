@@ -19,7 +19,6 @@ namespace PhysX
     void ColliderSphereMode::Setup(const AZ::EntityComponentIdPair& idPair)
     {
         m_entityComponentIdPair = idPair;
-        const bool allowAsymmetricalEditing = true;
         m_sphereViewportEdit = AZStd::make_unique<AzToolsFramework::SphereViewportEdit>();
         AzToolsFramework::InstallBaseShapeViewportEditFunctions(m_sphereViewportEdit.get(), idPair);
         m_sphereViewportEdit->InstallGetRotationOffset(
