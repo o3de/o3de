@@ -556,10 +556,11 @@ namespace AZ
         // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
 
-#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-        // Only merge the Global User Registry (~/.o3de/Registry) in debug and profile configurations
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
-#endif
+        if (SettingsRegistryMergeUtils::AllowDevelopmentSettingsOverrides())
+        {
+            // Only merge the Global User Registry (~/.o3de/Registry) in debug and profile configurations
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+        }
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
     }
@@ -929,18 +930,22 @@ namespace AZ
         SetSettingsRegistrySpecializations(specializations);
 
         AZStd::vector<char> scratchBuffer;
-#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-        // In development builds apply the o3de registry and the command line to allow early overrides. This will
-        // allow developers to override things like default paths or Asset Processor connection settings. Any additional
-        // values will be replaced by later loads, so this step will happen again at the end of loading.
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-        // Project User Registry is merged after the command line here to allow make sure the any command line override of the project path
-        // is used for merging the project's user registry
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
-#endif
+        if (SettingsRegistryMergeUtils::AllowDevelopmentSettingsOverrides())
+        {
+            // In development builds apply the o3de registry and the command line to allow early overrides. This will
+            // allow developers to override things like default paths or Asset Processor connection settings. Any additional
+            // values will be replaced by later loads, so this step will happen again at the end of loading.
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+            // Project User Registry is merged after the command line here to allow make sure the any command line override of the project
+            // path is used for merging the project's user registry
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
+                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
+        }
+
         //! Retrieves the list gem targets that the project has load dependencies on
         //! This populates the /Amazon/Gems/<GemName> field entries which is required
         //! by the MergeSettingsToRegistry_GemRegistry() function below to locate the gem's root folder
@@ -964,12 +969,17 @@ namespace AZ
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
-#endif
+
+        if (SettingsRegistryMergeUtils::AllowDevelopmentSettingsOverrides())
+        {
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
+                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
+        }
+
         // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
     }

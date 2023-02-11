@@ -100,6 +100,11 @@ namespace AZ::SettingsRegistryMergeUtils
     //! If a gem contains multiple targets module it will be stored underneath this key
     inline constexpr const char* ActiveGemsRootKey = "/O3DE/Gems";
 
+    //! Determines whether or not development settings (user registry files, project registry files, etc) should
+    //! be allowed to override the default settings.
+    //! @return true if development overrides are allowed, false if not.
+    bool AllowDevelopmentSettingsOverrides();
+
     //! Examines the Settings Registry for a "${BootstrapSettingsRootKey}/engine_path" key
     //! to use as an override for the Engine Root.
     //! Otherwise a directory walk upwards from the executable directory is performed
