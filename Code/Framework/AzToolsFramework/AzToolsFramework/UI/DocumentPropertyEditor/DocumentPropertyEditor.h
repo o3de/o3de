@@ -101,7 +101,9 @@ namespace AzToolsFramework
         void Clear(); //!< destroy all layout contents and clear DOM children
         ~DPERowWidget();
 
+        DPERowWidget* GetPriorRowInLayout(size_t domIndex);
         void AddChildFromDomValue(const AZ::Dom::Value& childValue, size_t domIndex);
+        void RemoveChildAt(size_t childIndex);
 
         //! clears and repopulates all children from a given DOM array
         void SetValueFromDom(const AZ::Dom::Value& domArray);
@@ -142,9 +144,6 @@ namespace AzToolsFramework
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
         DPELayout* m_columnLayout = nullptr;
 
-        // This widget's indexed path from the root
-        AZ::Dom::Path m_domPath;
-
         //! widget children in DOM specified order; mix of row and column widgets
         AZStd::deque<QWidget*> m_domOrderedChildren;
 
@@ -184,6 +183,7 @@ namespace AzToolsFramework
         , public IPropertyEditor
     {
         Q_OBJECT
+        friend class DPERowWidget;
 
     public:
         AZ_CLASS_ALLOCATOR(DocumentPropertyEditor, AZ::SystemAllocator, 0);
@@ -251,6 +251,7 @@ namespace AzToolsFramework
 
     protected:
         QVBoxLayout* GetVerticalLayout();
+        QWidget* GetWidgetAtPath(const AZ::Dom::Path& path);
 
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);

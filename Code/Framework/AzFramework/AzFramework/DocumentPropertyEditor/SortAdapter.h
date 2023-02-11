@@ -107,6 +107,9 @@ namespace AZ::DocumentPropertyEditor
         //! re-sorts the row at the given path relative to its siblings and adds a patch operation if its place changed
         void ResortRow(Dom::Path sortedPath, Dom::Patch& outgoingPatch);
 
+        void GenerateMovePatches(
+            const SortInfoNode* sortNode, Dom::Path indexPath, Dom::Path sortedPath, bool mapToSource, Dom::Patch& outgoingPatch);
+
         bool m_sortActive = true;
         bool m_reverseSort = false;
     };

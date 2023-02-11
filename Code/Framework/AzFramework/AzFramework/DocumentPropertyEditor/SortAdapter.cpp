@@ -6,8 +6,8 @@
  *
  */
 
-#include <AzFramework/DocumentPropertyEditor/SortAdapter.h>
 #include <AzCore/std/ranges/zip_view.h>
+#include <AzFramework/DocumentPropertyEditor/SortAdapter.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -30,21 +30,25 @@ namespace AZ::DocumentPropertyEditor
         if (m_sortActive != active)
         {
             m_sortActive = active;
+
+            Dom::Patch outgoingPatch;
             if (active)
             {
-                // TODO: This method should generate patches to/from source once custom patching is implemented
-                HandleReset();
-
                 // we can use the currently cached tree, if it still exists. NB it will be cleared by DOM changes
                 if (!m_rootNode)
                 {
-                    // TODO: GenerateFullTree();
+                    GenerateFullTree();
                 }
-                // TODO: generate RemovalsFromSource patch
+                GenerateMovePatches(m_rootNode.get(), Dom::Path(), Dom::Path(), false, outgoingPatch);
             }
             else
             {
-                // TODO: generate PatchToSource patch
+                AZ_Assert(m_rootNode, "if filter was enabled, m_rootNode should be populated");
+                GenerateMovePatches(m_rootNode.get(), Dom::Path(), Dom::Path(), true, outgoingPatch);
+            }
+            if (outgoingPatch.size())
+            {
+                NotifyContentsChanged(outgoingPatch);
             }
         }
     }
@@ -65,9 +69,11 @@ namespace AZ::DocumentPropertyEditor
             if (pathEntry.IsIndex())
             {
                 bool found = false;
-                for (auto [indexSortedNode, adapterSortedNode] : AZStd::views::zip(currNode->m_indexSortedChildren, currNode->m_adapterSortedChildren))
+                for (auto [indexSortedNode, adapterSortedNode] :
+                     AZStd::views::zip(currNode->m_indexSortedChildren, currNode->m_adapterSortedChildren))
                 {
-                    const SortInfoNode* comparisonNode = static_cast<SortInfoNode*>((mapToSource ? adapterSortedNode : indexSortedNode.get()));
+                    const SortInfoNode* comparisonNode =
+                        static_cast<SortInfoNode*>((mapToSource ? adapterSortedNode : indexSortedNode.get()));
                     const auto comparisonIndex = comparisonNode->m_domIndex;
                     const auto pathIndex = pathEntry.GetIndex();
                     if (comparisonIndex == pathIndex)
@@ -179,7 +185,7 @@ namespace AZ::DocumentPropertyEditor
 
             if (needsReset)
             {
-                // TODO: handle other patch types here. Some of this is not currently possible, 
+                // TODO: handle other patch types here. Some of this is not currently possible,
                 // because a sort change is mostly move operations, and the DPE doesn't handle moves yet.
                 HandleReset();
             }
@@ -271,7 +277,7 @@ namespace AZ::DocumentPropertyEditor
 
             // sort the source child before copying it
             auto sortedChild = GetSortedValue(sourceValue[nextInSort], *nextSortedIter);
-            
+
             // do the actual copy into the current position
             sortedValue[nextIndex] = sortedChild;
         }
@@ -315,6 +321,39 @@ namespace AZ::DocumentPropertyEditor
             newPath.Pop();
             newPath.Push(newIndex);
             outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(newPath, sortedPath));
+        }
+    }
+
+    void RowSortAdapter::GenerateMovePatches(
+        const SortInfoNode* sortNode, Dom::Path indexPath, Dom::Path sortedPath, bool mapToSource, Dom::Patch& outgoingPatch)
+    {
+        AZStd::set<size_t> moveOrigins;
+        for (auto [indexSortedNode, adapterSortedNode] :
+             AZStd::views::zip(sortNode->m_indexSortedChildren, sortNode->m_adapterSortedChildren))
+        {
+            // <apm> adjust to handle mapToSource as well
+            const size_t destinationIndex = indexSortedNode->m_domIndex;
+            size_t originIndex = adapterSortedNode->m_domIndex;
+
+            auto originIter = moveOrigins.begin();
+            while (originIter != moveOrigins.end() && *originIter <= destinationIndex)
+            {
+                originIter = moveOrigins.erase(originIter);
+            }
+            originIndex += moveOrigins.size();
+
+            indexPath /= destinationIndex;
+            sortedPath /= originIndex;
+
+            if (mapToSource)
+            {
+                outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(sortedPath, indexPath));
+            }
+            else
+            {
+                outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(indexPath, sortedPath));
+            }
+            GenerateMovePatches(static_cast<SortInfoNode*>(indexSortedNode.get()), indexPath, sortedPath, mapToSource, outgoingPatch);
         }
     }
 
