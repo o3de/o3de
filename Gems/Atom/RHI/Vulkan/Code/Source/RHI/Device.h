@@ -129,6 +129,8 @@ namespace AZ
 
             ShadingRateImageMode GetImageShadingRateMode() const;
 
+            RHI::Ptr<BufferPool> GetConstantBufferPool();
+
         private:
             Device();
 
@@ -185,6 +187,8 @@ namespace AZ
             AZStd::unordered_map<RHI::Format, VkImageUsageFlags> m_imageUsageOfFormat;
 
             RHI::Ptr<BufferPool> m_stagingBufferPool;
+
+            RHI::Ptr<BufferPool> m_constantBufferPool;
 
             ReleaseQueue m_releaseQueue;
             CommandQueueContext m_commandQueueContext;
