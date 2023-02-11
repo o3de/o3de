@@ -44,7 +44,7 @@ namespace UnitTest
         ValidateNestedInstanceNotUnderInstance(GetRootContainerEntityId(), carInstanceAlias);
 
         InstanceOptionalReference levelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
-        EXPECT_TRUE(levelInstance.has_value());
+        ASSERT_TRUE(levelInstance.has_value());
 
         // Validate there are three entities in the level prefab instance.
         EXPECT_EQ(levelInstance->get().GetEntityAliasCount(), 3);
@@ -108,7 +108,7 @@ namespace UnitTest
         ValidateNestedInstanceNotUnderInstance(GetRootContainerEntityId(), carInstanceAlias);
 
         InstanceOptionalReference levelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
-        EXPECT_TRUE(levelInstance.has_value());
+        ASSERT_TRUE(levelInstance.has_value());
 
         // Validate there are three entities in the level prefab instance.
         EXPECT_EQ(levelInstance->get().GetEntityAliasCount(), 3);        
@@ -178,7 +178,7 @@ namespace UnitTest
         ValidateNestedInstanceUnderInstance(GetRootContainerEntityId(), wheelInstanceAlias);
 
         InstanceOptionalReference levelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
-        EXPECT_TRUE(levelInstance.has_value());
+        ASSERT_TRUE(levelInstance.has_value());
         
         AZStd::vector<InstanceOptionalReference> nestedInstances;
         levelInstance->get().GetNestedInstances(
@@ -266,7 +266,7 @@ namespace UnitTest
         ValidateNestedInstanceUnderInstance(GetRootContainerEntityId(), wheelInstanceAlias);
 
         InstanceOptionalReference levelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
-        EXPECT_TRUE(levelInstance.has_value());
+        ASSERT_TRUE(levelInstance.has_value());
 
         AZStd::vector<InstanceOptionalReference> nestedInstances;
         levelInstance->get().GetNestedInstances(
@@ -421,7 +421,7 @@ namespace UnitTest
         PropagateAllTemplateChanges();
 
         InstanceOptionalReference levelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
-        EXPECT_TRUE(levelInstance.has_value());
+        ASSERT_TRUE(levelInstance.has_value());
 
         // Validate child entity order under the car after detaching the car prefab.
         EntityAlias carEntityAliasAfterDetach = FindEntityAliasInInstance(levelInstance->get().GetContainerEntityId(), carPrefabName);
@@ -483,7 +483,7 @@ namespace UnitTest
         AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { wheelsEntityId });
 
         InstanceOptionalReference levelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
-        EXPECT_TRUE(levelInstance.has_value());
+        ASSERT_TRUE(levelInstance.has_value());
 
         // Validate child entity order under wheels before detaching the car prefab.
         EntityAlias wheelsEntityAlias = FindEntityAliasInInstance(carContainerId, wheelsEntityName);
