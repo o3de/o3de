@@ -1468,6 +1468,28 @@ namespace AssetUtilities
         return source;
     }
 
+    AZStd::optional<AZ::IO::Path> GetTopLevelSourcePathForIntermediateAsset(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
+    {
+        auto topLevelSourceDbEntry = GetTopLevelSourceForIntermediateAsset(sourceAsset, db);
+
+        if (!topLevelSourceDbEntry)
+        {
+            return {};
+        }
+
+        AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolderForTopLevelSource;
+        if(!db->GetScanFolderByScanFolderID(topLevelSourceDbEntry->m_scanFolderPK, scanfolderForTopLevelSource))
+        {
+            return {};
+        }
+
+        AZ::IO::Path fullPath = scanfolderForTopLevelSource.m_scanFolder;
+        fullPath /= topLevelSourceDbEntry->m_sourceName;
+
+        return fullPath;
+    }
+
     AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(
         const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
     {
