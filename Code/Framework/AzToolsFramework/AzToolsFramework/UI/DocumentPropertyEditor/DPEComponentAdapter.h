@@ -49,6 +49,9 @@ namespace AZ::DocumentPropertyEditor
 
         Dom::Value HandleMessage(const AdapterMessage& message) override;
 
+        //! Request the PrefabAdapterInterface to add a property handler if an override is present corresponding to the path provided.
+        //! @param adapterBuilder The adapter builder to use for adding property handler
+        //! @param serializedpath The serialized path to use to check whether an override is present corresponding to it
         void OnBeginRow(AdapterBuilder* adapterBuilder, AZStd::string_view serializedPath) override;
 
     protected:

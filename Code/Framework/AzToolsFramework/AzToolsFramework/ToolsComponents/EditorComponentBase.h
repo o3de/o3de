@@ -117,8 +117,12 @@ namespace AzToolsFramework
             virtual void Deactivate() override;
             //////////////////////////////////////////////////////////////////////////
 
-            void SetSerializedIdentifier(const AZStd::string& alias) override;
+            //! Sets the provided string as the serialized identifier for the component.
+            //! @param serializedIdentifer The unique identifier for this component within the entity it lives in.
+            void SetSerializedIdentifier(const AZStd::string& serializedIdentifier) override;
 
+            //! Gets the serialzied identifier of this component within an entity.
+            //! @return The serialized identifier of this component.
             AZStd::string GetSerializedIdentifier() const override;
 
             /**

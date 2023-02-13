@@ -641,6 +641,7 @@ namespace AzToolsFramework
         QStandardItem* m_comboItems[StatusItems];
         EntityIdSet m_overrideSelectedEntityIds;
 
+        // An adapter that works in conjuction with the DPE system as a manager for all prefab related operations in a DPE DOM.
         AZStd::unique_ptr<Prefab::PrefabAdapter> m_prefabAdapter;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         Prefab::InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;

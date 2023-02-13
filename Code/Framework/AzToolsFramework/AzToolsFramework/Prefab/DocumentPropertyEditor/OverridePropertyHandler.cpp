@@ -6,17 +6,17 @@
  *
  */
 
-#include <AzToolsFramework/Prefab/DocumentPropertyEditor/OverrideIconHandler.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/OverridePropertyHandler.h>
 
 namespace AzToolsFramework::Prefab
 {
-    OverrideIconHandler::OverrideIconHandler()
+    OverridePropertyHandler::OverridePropertyHandler()
     {
         setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(this, &OverrideIconHandler::customContextMenuRequested, this, &OverrideIconHandler::ShowContextMenu);
+        connect(this, &OverridePropertyHandler::customContextMenuRequested, this, &OverridePropertyHandler::ShowContextMenu);
     }
 
-    void OverrideIconHandler::SetValueFromDom(const AZ::Dom::Value&)
+    void OverridePropertyHandler::SetValueFromDom(const AZ::Dom::Value&)
     {
         static QIcon s_overrideIcon(QStringLiteral(":/Entity/entity_modified_as_override.svg"));
 
@@ -24,7 +24,7 @@ namespace AzToolsFramework::Prefab
         setIconSize(QSize(8, 8));
     }
 
-    void OverrideIconHandler::ShowContextMenu(const QPoint& position)
+    void OverridePropertyHandler::ShowContextMenu(const QPoint& position)
     {
         QMenu contextMenu;
         QAction* revertAction = contextMenu.addAction(tr("Revert Override"));

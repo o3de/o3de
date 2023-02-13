@@ -19,13 +19,17 @@
 
 namespace AzToolsFramework::Prefab
 {
-    class OverrideIconHandler
+    //! Class to handle the override property when encountered in a DPE DOM.
+    //! Responsible for setting the ui/ux for overridden properties.
+    class OverridePropertyHandler
         : public PropertyHandlerWidget<QToolButton>
     {
     public:
-        OverrideIconHandler();
-
-        void SetValueFromDom(const AZ::Dom::Value&);
+        OverridePropertyHandler();
+        
+        //! Specifies the behavior when override property is encountered in the DPE DOM.
+        //! @param value The value holding the overridden property in the DPE DOM
+        void SetValueFromDom(const AZ::Dom::Value& value);
 
         static constexpr const AZStd::string_view GetHandlerName()
         {
@@ -33,6 +37,7 @@ namespace AzToolsFramework::Prefab
         }
 
     private:
+        //! Shows a custom menu when the property is clicked. Can handle operations like 'Revert', etc.
         void ShowContextMenu(const QPoint&);
     };
 } // namespace AzToolsFramework::Prefab
