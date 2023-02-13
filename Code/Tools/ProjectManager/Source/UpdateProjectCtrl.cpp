@@ -42,7 +42,7 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_header);
 
         m_updateSettingsScreen = new UpdateProjectSettingsScreen();
-        m_projectGemCatalogScreen = new ProjectGemCatalogScreen(downloadController);
+        m_projectGemCatalogScreen = new ProjectGemCatalogScreen(downloadController, this);
         m_gemRepoScreen = new GemRepoScreen(this);
 
         connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);

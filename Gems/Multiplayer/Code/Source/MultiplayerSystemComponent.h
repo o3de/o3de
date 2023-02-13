@@ -166,6 +166,7 @@ namespace Multiplayer
         //! @}
 
     private:
+        bool IsHosting() const;
 
         bool AttemptPlayerConnect(AzNetworking::IConnection* connection, MultiplayerPackets::Connect& packet);
         void TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds);
@@ -176,6 +177,12 @@ namespace Multiplayer
         static void StartServerToClientReplication(uint64_t userId, NetworkEntityHandle controlledEntity, AzNetworking::IConnection* connection);
 
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
+        void HostConsoleCommand(const AZ::ConsoleCommandContainer& arguments);
+        void ConnectConsoleCommand(const AZ::ConsoleCommandContainer& arguments);
+
+        AZStd::unique_ptr<AZ::ConsoleFunctor<MultiplayerSystemComponent, false>> m_hostConsoleCommand;
+        AZStd::unique_ptr<AZ::ConsoleFunctor<MultiplayerSystemComponent, false>> m_connectConsoleCommand;
+
 
         AzNetworking::INetworkInterface* m_networkInterface = nullptr;
         AZ::ConsoleCommandInvokedEvent::Handler m_consoleCommandHandler;

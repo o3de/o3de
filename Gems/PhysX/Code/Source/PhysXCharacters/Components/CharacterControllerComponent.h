@@ -141,9 +141,8 @@ namespace PhysX
         // Creates the physics character controller in the current default physics scene.
         // This will do nothing if the controller is already created.
         void CreateController();
-        // Removes the physics character controller from the scene and will call DestroyController for clean up.
-        void DisableController();
-        // Cleans up all references and events used with the physics character controller.
+        // Removes the physics character controller from the scene and cleans up all
+        // references and events used with the physics character controller.
         void DestroyController();
 
         void OnPostSimulate(float deltaTime);

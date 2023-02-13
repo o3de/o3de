@@ -445,6 +445,9 @@ namespace O3DELauncher
             gameApplicationStartupParams.m_loadDynamicModules = false;
         #endif // defined(AZ_MONOLITHIC_BUILD)
 
+            const char* isDedicatedServerCommand = IsDedicatedServer() ? "sv_isDedicated true" : "sv_isDedicated false";
+            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(isDedicatedServerCommand);
+
             gameApplication.Start({}, gameApplicationStartupParams);
 
 
@@ -486,16 +489,7 @@ namespace O3DELauncher
         systemInitParams.hInstance = mainInfo.m_instance;
         systemInitParams.hWnd = mainInfo.m_window;
         systemInitParams.pPrintSync = mainInfo.m_printSink;
-
         systemInitParams.bDedicatedServer = IsDedicatedServer();
-        if (IsDedicatedServer())
-        {
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated true");
-        }
-        else
-        {
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
-        }
 
         AZ::s64 remoteFileSystemEnabled{};
         AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, remoteFileSystemEnabled,
@@ -598,8 +592,10 @@ namespace O3DELauncher
         }
     #endif // !defined(_RELEASE)
 
-        delete systemInitParams.pSystem;
+        SAFE_DELETE(systemInitParams.pSystem);
         crySystemLibrary.reset(nullptr);
+    #else
+        SAFE_DELETE(systemInitParams.pSystem);
     #endif // !defined(AZ_MONOLITHIC_BUILD)
 
         gameApplication.Stop();

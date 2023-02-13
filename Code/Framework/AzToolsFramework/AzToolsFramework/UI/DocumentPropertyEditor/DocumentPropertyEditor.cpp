@@ -34,7 +34,7 @@ AZ_CVAR(
 AZ_CVAR(
     bool,
     ed_enableCVarDPE,
-    false,
+    true,
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, enables experimental DPE-based CVar Editor");

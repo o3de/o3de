@@ -304,7 +304,8 @@ namespace AzFramework
 #endif // #if !defined(AZCORE_EXCLUDE_LUA)
         };
 
-        EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, componentUuidsForMetricsCollection);
+        AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+            &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, componentUuidsForMetricsCollection);
     }
 
     void Application::Reflect(AZ::ReflectContext* context)
@@ -431,7 +432,7 @@ namespace AzFramework
     {
         AZ::Uuid uuid(AZ::Uuid::CreateNull());
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
         if (entity)
         {
             AZ::Component* component = entity->FindComponent(componentId);

@@ -123,7 +123,7 @@ namespace UnitTest
             // This requires advanced knowledge of the EBus and it's NOT recommended as a schema for
             // generic functionality. You should just call TickBus::Handler::BusConnect(GetEntityId()); in place
             // make sure you are doing this from the main thread.
-            EBUS_QUEUE_FUNCTION(TickBus, &TickBus::Handler::BusConnect, this);
+            TickBus::QueueFunction(&TickBus::Handler::BusConnect, this);
             m_isActivated = true;
         }
         void Deactivate() override
@@ -219,7 +219,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(entity->GetId() == oldID); // id should be unaffected.
 
                                                   // try to send a component message, since it's not active nobody should listen to it
-        EBUS_EVENT(SimpleComponentMessagesBus, DoA, 1);
+        SimpleComponentMessagesBus::Broadcast(&SimpleComponentMessagesBus::Events::DoA, 1);
         AZ_TEST_ASSERT(comp1->m_a == 0); // it should still be 0
 
                                          // activate
@@ -228,7 +228,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(comp1->m_isActivated);
 
         // now the component should be active responsive to message
-        EBUS_EVENT(SimpleComponentMessagesBus, DoA, 1);
+        SimpleComponentMessagesBus::Broadcast(&SimpleComponentMessagesBus::Events::DoA, 1);
         AZ_TEST_ASSERT(comp1->m_a == 1);
 
         // Make sure its NOT possible to set the id of the entity after Activate
@@ -269,7 +269,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(comp1->m_isActivated == false);
 
         // try to send a component message, since it's not active nobody should listen to it
-        EBUS_EVENT(SimpleComponentMessagesBus, DoA, 2);
+        SimpleComponentMessagesBus::Broadcast(&SimpleComponentMessagesBus::Events::DoA, 2);
         AZ_TEST_ASSERT(comp1->m_a == 1);
 
         // make sure we can remove components
