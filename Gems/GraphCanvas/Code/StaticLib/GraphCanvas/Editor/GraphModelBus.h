@@ -252,3 +252,5 @@ namespace GraphCanvas
 
     using GraphModelNotificationBus = AZ::EBus<GraphModelNotifications>;
 }
+
+DECLARE_EBUS_EXTERN(GraphCanvas::GraphModelRequests);

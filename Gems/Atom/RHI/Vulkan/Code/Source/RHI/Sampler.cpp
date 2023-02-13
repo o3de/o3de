@@ -105,7 +105,7 @@ namespace AZ
             createInfo.addressModeV = ConvertAddressMode(samplerState.m_addressV);
             createInfo.addressModeW = ConvertAddressMode(samplerState.m_addressW);
             createInfo.mipLodBias = samplerState.m_mipLodBias;
-            createInfo.maxAnisotropy = AZStd::min(samplerState.m_anisotropyMax * 1.f, maxSamplerAnisotropy);
+            createInfo.maxAnisotropy = AZStd::clamp(samplerState.m_anisotropyMax * 1.f, 1.f, maxSamplerAnisotropy);
             createInfo.compareEnable = samplerState.m_comparisonFunc != RHI::ComparisonFunc::Always;
             createInfo.compareOp = ConvertComparisonFunction(samplerState.m_comparisonFunc);
             createInfo.minLod = samplerState.m_mipLodMin;

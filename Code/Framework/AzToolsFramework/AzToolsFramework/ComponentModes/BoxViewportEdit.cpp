@@ -97,7 +97,7 @@ namespace AzToolsFramework
         }
     }
 
-    void BoxViewportEdit::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    void BoxViewportEdit::AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_linearManipulators.size(); ++manipulatorIndex)
         {
@@ -112,7 +112,7 @@ namespace AzToolsFramework
         }
     }
 
-    void BoxViewportEdit::Setup()
+    void BoxViewportEdit::Setup(const ManipulatorManagerId manipulatorManagerId)
     {
         const AZ::Transform worldFromLocal = GetManipulatorSpace();
 
@@ -163,7 +163,7 @@ namespace AzToolsFramework
                 });
             }
 
-            linearManipulator->Register(g_mainManipulatorManagerId);
+            linearManipulator->Register(manipulatorManagerId);
         }
 
         UpdateManipulators();
@@ -181,7 +181,7 @@ namespace AzToolsFramework
         }
     }
 
-    void BoxViewportEdit::ResetValues()
+    void BoxViewportEdit::ResetValuesImpl()
     {
         SetBoxDimensions(AZ::Vector3::CreateOne());
         SetTranslationOffset(AZ::Vector3::CreateZero());

@@ -41,6 +41,8 @@ namespace AzToolsFramework
 
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
 
+            void HideProductAssets(bool checked);
+
             AzQtComponents::AssetFolderThumbnailView* GetThumbnailViewWidget() const;
 
             void setSelectionMode(QAbstractItemView::SelectionMode mode);
@@ -50,6 +52,9 @@ namespace AzToolsFramework
             void entryClicked(const AssetBrowserEntry* entry);
             void entryDoubleClicked(const AssetBrowserEntry* entry);
             void showInFolderTriggered(const AssetBrowserEntry* entry);
+
+        public Q_SLOTS:
+            void UpdateThumbnailview();
 
         private:
             AssetBrowserTreeView* m_assetTreeView = nullptr;

@@ -107,7 +107,11 @@ namespace AzQtComponents
 
         void setRootIndex(const QModelIndex &index) override;
 
+        void RefreshThumbnailview();
+
         void SetShowSearchResultsMode(bool searchMode);
+
+        void HideProductAssets(bool checked);
 
     signals:
         void rootIndexChanged(const QModelIndex& idx);
@@ -158,6 +162,7 @@ namespace AzQtComponents
         ThumbnailSize m_thumbnailSize;
         Config m_config;
         bool m_showSearchResultsMode = false;
+        bool m_hideProductAssets = true;
         QMenu* m_contextMenu = nullptr;
     };
 }

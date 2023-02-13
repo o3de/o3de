@@ -459,6 +459,12 @@ namespace AzQtComponents
         }
     }
 
+    void AssetFolderThumbnailView::RefreshThumbnailview()
+    {
+        updateGeometries();
+        update();
+    }
+
     QModelIndex AssetFolderThumbnailView::moveCursor(QAbstractItemView::CursorAction cursorAction, Qt::KeyboardModifiers modifiers)
     {
         Q_UNUSED(modifiers);
@@ -548,7 +554,7 @@ namespace AzQtComponents
 
     bool AssetFolderThumbnailView::isExpandable(const QModelIndex& index) const
     {
-        return index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsExpandable)).value<bool>();
+        return (m_hideProductAssets ? false : index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsExpandable)).value<bool>());
     }
 
     void AssetFolderThumbnailView::paintEvent(QPaintEvent* event)
@@ -946,6 +952,11 @@ namespace AzQtComponents
     void AssetFolderThumbnailView::SetShowSearchResultsMode(bool searchMode)
     {
         m_showSearchResultsMode = searchMode;
+    }
+
+    void AssetFolderThumbnailView::HideProductAssets(bool checked)
+    {
+        m_hideProductAssets = checked;
     }
 
 } // namespace AzQtComponents

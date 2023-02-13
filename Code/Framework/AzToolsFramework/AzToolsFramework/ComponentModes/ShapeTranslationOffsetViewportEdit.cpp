@@ -15,7 +15,7 @@
 
 namespace AzToolsFramework
 {
-    void ShapeTranslationOffsetViewportEdit::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    void ShapeTranslationOffsetViewportEdit::AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         if (m_translationManipulators)
         {
@@ -30,7 +30,7 @@ namespace AzToolsFramework
         }
     }
 
-    void ShapeTranslationOffsetViewportEdit::Setup()
+    void ShapeTranslationOffsetViewportEdit::Setup(const ManipulatorManagerId manipulatorManagerId)
     {
         const AZ::Transform manipulatorSpace = GetManipulatorSpace();
         const AZ::Vector3 nonUniformScale = GetNonUniformScale();
@@ -55,7 +55,7 @@ namespace AzToolsFramework
         m_translationManipulators->InstallLinearManipulatorMouseMoveCallback(mouseMoveHandlerFn);
         m_translationManipulators->InstallPlanarManipulatorMouseMoveCallback(mouseMoveHandlerFn);
 
-        m_translationManipulators->Register(g_mainManipulatorManagerId);
+        m_translationManipulators->Register(manipulatorManagerId);
     }
 
     void ShapeTranslationOffsetViewportEdit::Teardown()
@@ -72,7 +72,7 @@ namespace AzToolsFramework
         m_translationManipulators->SetBoundsDirty();
     }
 
-    void ShapeTranslationOffsetViewportEdit::ResetValues()
+    void ShapeTranslationOffsetViewportEdit::ResetValuesImpl()
     {
         SetTranslationOffset(AZ::Vector3::CreateZero());
     }

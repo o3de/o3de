@@ -37,7 +37,7 @@ namespace AZ
         {
             using Base = RHI::DeviceObject;
         public:
-            AZ_RTTI(IndirectBufferSignature, "IndirectBufferSignature", Base);
+            AZ_RTTI(IndirectBufferSignature, "{3A2F9DF0-589B-4E05-9205-B688EB896AEA}", Base);
             virtual ~IndirectBufferSignature() {};
 
             //! Initialize an IndirectBufferSignature object.

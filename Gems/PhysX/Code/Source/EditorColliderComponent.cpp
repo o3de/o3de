@@ -27,6 +27,7 @@
 #include <Source/CapsuleColliderComponent.h>
 #include <Source/EditorColliderComponent.h>
 #include <Source/EditorRigidBodyComponent.h>
+#include <Source/EditorStaticRigidBodyComponent.h>
 #include <Editor/Source/Components/EditorSystemComponent.h>
 #include <Source/MeshColliderComponent.h>
 #include <Source/SphereColliderComponent.h>
@@ -187,6 +188,7 @@ namespace PhysX
     void EditorColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     void EditorColliderComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -445,9 +447,7 @@ namespace PhysX
 
         UpdateShapeConfiguration();
 
-        CreateStaticEditorCollider();
-
-        Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
+        UpdateCollider();
     }
 
     void EditorColliderComponent::Deactivate()
@@ -501,12 +501,8 @@ namespace PhysX
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
 
         UpdateShapeConfiguration();
-        CreateStaticEditorCollider();
+        UpdateCollider();
         ValidateRigidBodyMeshGeometryType();
-
-        m_colliderDebugDraw.ClearCachedGeometry();
-
-        Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
 
         return AZ::Edit::PropertyRefreshLevels::None;
     }
@@ -607,8 +603,6 @@ namespace PhysX
             AZ_Warning("EditorColliderComponent", false, "Unsupported shape type for building game entity!");
             break;
         }
-
-        StaticRigidBodyUtils::TryCreateRuntimeComponent(*GetEntity(), *gameEntity);
     }
 
     AZ::Transform EditorColliderComponent::GetColliderLocalTransform() const
@@ -636,14 +630,19 @@ namespace PhysX
         return shapeConfig.m_hasNonUniformScale && (Utils::IsPrimitiveShape(shapeConfig.GetCurrent()) || shapeConfig.IsCylinderConfig());
     }
 
+    void EditorColliderComponent::UpdateCollider()
+    {
+        CreateStaticEditorCollider();
+        Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
+    }
+
     void EditorColliderComponent::CreateStaticEditorCollider()
     {
         m_cachedAabbDirty = true;
 
-        // Don't create static rigid body in the editor if current entity components
-        // don't allow creation of runtime static rigid body component
-        if (!StaticRigidBodyUtils::CanCreateRuntimeComponent(*GetEntity()))
+        if (!GetEntity()->FindComponent<EditorStaticRigidBodyComponent>())
         {
+            m_colliderDebugDraw.ClearCachedGeometry();
             return;
         }
 
@@ -669,7 +668,7 @@ namespace PhysX
         if (m_shapeConfiguration.IsAssetConfig())
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-            Utils::GetShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration,
+            Utils::CreateShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration,
                 m_configuration, m_hasNonUniformScale, m_shapeConfiguration.m_subdivisionLevel, shapes);
             configuration.m_colliderAndShapeData = shapes;
         }
@@ -799,13 +798,7 @@ namespace PhysX
             m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset = asset;
 
             UpdateMaterialSlotsFromMeshAsset();
-            CreateStaticEditorCollider();
-
-            // Invalidate debug draw cached data
-            m_colliderDebugDraw.ClearCachedGeometry();
-
-            // Notify about the data update of the collider
-            Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
+            UpdateCollider();
             ValidateRigidBodyMeshGeometryType();
         }
         else
@@ -825,7 +818,7 @@ namespace PhysX
             m_shapeConfiguration.m_physicsAsset.m_pxAsset.IsReady())
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-            Utils::GetShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration, m_configuration, m_hasNonUniformScale,
+            Utils::CreateShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration, m_configuration, m_hasNonUniformScale,
                 m_shapeConfiguration.m_subdivisionLevel, shapes);
 
             if (shapes.empty())
@@ -1108,7 +1101,7 @@ namespace PhysX
     void EditorColliderComponent::SetDimensions(const AZ::Vector3& dimensions)
     {
         m_shapeConfiguration.m_box.m_dimensions = dimensions;
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     AZ::Vector3 EditorColliderComponent::GetTranslationOffset() const
@@ -1119,7 +1112,7 @@ namespace PhysX
     void EditorColliderComponent::SetTranslationOffset(const AZ::Vector3& translationOffset)
     {
         m_configuration.m_position = translationOffset;
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     AZ::Transform EditorColliderComponent::GetCurrentLocalTransform() const
@@ -1132,6 +1125,11 @@ namespace PhysX
         return GetWorldTM();
     }
 
+    AZ::Quaternion EditorColliderComponent::GetRotationOffset() const
+    {
+        return m_configuration.m_rotation;
+    }
+
     void EditorColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
         if (world.IsClose(m_cachedWorldTransform))
@@ -1141,7 +1139,7 @@ namespace PhysX
         m_cachedWorldTransform = world;
 
         UpdateShapeConfiguration();
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     void EditorColliderComponent::OnNonUniformScaleChanged(const AZ::Vector3& nonUniformScale)
@@ -1149,7 +1147,7 @@ namespace PhysX
         m_cachedNonUniformScale = nonUniformScale;
 
         UpdateShapeConfiguration();
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     // PhysX::ColliderShapeBus
@@ -1172,14 +1170,13 @@ namespace PhysX
     {
         auto& shapeConfiguration = m_shapeConfiguration.GetCurrent();
         shapeConfiguration.m_scale = GetWorldTM().ExtractUniformScale() * m_cachedNonUniformScale;
-        m_colliderDebugDraw.ClearCachedGeometry();
     }
 
     void EditorColliderComponent::EnablePhysics()
     {
         if (!IsPhysicsEnabled())
         {
-            CreateStaticEditorCollider();
+            UpdateCollider();
         }
     }
 
@@ -1252,7 +1249,7 @@ namespace PhysX
     void EditorColliderComponent::SetColliderOffset(const AZ::Vector3& offset)
     {
         m_configuration.m_position = offset;
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     AZ::Vector3 EditorColliderComponent::GetColliderOffset() const
@@ -1263,7 +1260,7 @@ namespace PhysX
     void EditorColliderComponent::SetColliderRotation(const AZ::Quaternion& rotation)
     {
         m_configuration.m_rotation = rotation;
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     AZ::Quaternion EditorColliderComponent::GetColliderRotation() const
@@ -1419,7 +1416,7 @@ namespace PhysX
             UpdateCylinderCookedMesh();
         }
 
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     Physics::ShapeType EditorColliderComponent::GetShapeType() const
@@ -1430,7 +1427,7 @@ namespace PhysX
     void EditorColliderComponent::SetSphereRadius(float radius)
     {
         m_shapeConfiguration.m_sphere.m_radius = radius;
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     float EditorColliderComponent::GetSphereRadius() const
@@ -1441,7 +1438,7 @@ namespace PhysX
     void EditorColliderComponent::SetCapsuleRadius(float radius)
     {
         m_shapeConfiguration.m_capsule.m_radius = radius;
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     float EditorColliderComponent::GetCapsuleRadius() const
@@ -1452,7 +1449,7 @@ namespace PhysX
     void EditorColliderComponent::SetCapsuleHeight(float height)
     {
         m_shapeConfiguration.m_capsule.m_height = height;
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     float EditorColliderComponent::GetCapsuleHeight() const
@@ -1470,7 +1467,7 @@ namespace PhysX
 
         m_shapeConfiguration.m_cylinder.m_radius = radius;
         UpdateCylinderCookedMesh();
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     float EditorColliderComponent::GetCylinderRadius() const
@@ -1488,7 +1485,7 @@ namespace PhysX
 
         m_shapeConfiguration.m_cylinder.m_height = height;
         UpdateCylinderCookedMesh();
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     float EditorColliderComponent::GetCylinderHeight() const
@@ -1509,7 +1506,7 @@ namespace PhysX
             GetEntity()->GetName().c_str());
         m_shapeConfiguration.m_cylinder.m_subdivisionCount = clampedSubdivisionCount;
         UpdateCylinderCookedMesh();
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     AZ::u8 EditorColliderComponent::GetCylinderSubdivisionCount() const
@@ -1520,7 +1517,7 @@ namespace PhysX
     void EditorColliderComponent::SetAssetScale(const AZ::Vector3& scale)
     {
         m_shapeConfiguration.m_physicsAsset.m_configuration.m_assetScale = scale;
-        CreateStaticEditorCollider();
+        UpdateCollider();
     }
 
     AZ::Vector3 EditorColliderComponent::GetAssetScale() const

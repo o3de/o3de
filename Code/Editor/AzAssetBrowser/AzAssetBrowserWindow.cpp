@@ -333,8 +333,14 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     connect(m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearTypeFilter,
         m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
-    connect(m_assetBrowserModel, &AzAssetBrowser::AssetBrowserModel::RequestOpenItemForEditing,
+    connect(
+        m_assetBrowserModel,
+        &AzAssetBrowser::AssetBrowserModel::RequestOpenItemForEditing,
         m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::OpenItemForEditing);
+
+    connect(
+        m_assetBrowserModel, &AzAssetBrowser::AssetBrowserModel::RequestThumbnailviewUpdate,
+            m_ui->m_thumbnailView, &AzAssetBrowser::AssetBrowserThumbnailView::UpdateThumbnailview);
 
     connect(this, &AzAssetBrowserWindow::SizeChangedSignal,
         m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
@@ -475,6 +481,7 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         connect(projectSourceAssets, &QAction::triggered, this,
             [this, projectSourceAssets]
             {
+                m_ui->m_thumbnailView->HideProductAssets(projectSourceAssets->isChecked());
                 m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
             });
         m_toolsMenu->addAction(projectSourceAssets);
