@@ -42,5 +42,6 @@
         <file>hidden.png</file>
         <file>Slice_Entity.svg</file>
         <file>trash-small.png</file>
+        <file>reset_icon.png</file>
     </qresource>
 </RCC>
