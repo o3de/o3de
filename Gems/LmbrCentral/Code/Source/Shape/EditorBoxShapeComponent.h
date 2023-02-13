@@ -63,6 +63,7 @@ namespace LmbrCentral
         AZ::Vector3 GetTranslationOffset() const override;
         void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
         AZ::Transform GetManipulatorSpace() const override;
+        AZ::Quaternion GetRotationOffset() const override;
 
         void ConfigurationChanged();        
 

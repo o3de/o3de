@@ -266,3 +266,6 @@ namespace AzToolsFramework
         }
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework
+
+DECLARE_EBUS_EXTERN(AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests);
+DECLARE_EBUS_EXTERN_WITH_TRAITS(AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequests, AzToolsFramework::ComponentModeFramework::ComponentModeMouseViewportRequests)
