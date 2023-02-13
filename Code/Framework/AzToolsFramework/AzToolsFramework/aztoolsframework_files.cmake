@@ -62,11 +62,13 @@ set(FILES
     AzToolsFrameworkModule.h
     AzToolsFrameworkModule.cpp
     API/ToolsApplicationAPI.h
+    API/ToolsApplicationAPI.cpp
     API/EditorAssetSystemAPI.h
     API/EditorAssetSystemAPI.cpp
     API/AssetDatabaseBus.h
     API/ComponentEntityObjectBus.h
     API/ComponentEntitySelectionBus.h
+    API/ComponentEntitySelectionBus.cpp
     API/ComponentModeCollectionInterface.h
     API/EditorCameraBus.h
     API/EditorCameraBus.cpp
@@ -220,6 +222,7 @@ set(FILES
     Manipulators/BaseManipulator.cpp
     Manipulators/BaseManipulator.h
     Manipulators/BoxManipulatorRequestBus.h
+    Manipulators/CapsuleManipulatorRequestBus.h
     Manipulators/EditorVertexSelection.h
     Manipulators/EditorVertexSelection.cpp
     Manipulators/EditorVertexSelectionBus.h
@@ -247,6 +250,7 @@ set(FILES
     Manipulators/PaintBrushManipulator.h
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
+    Manipulators/RadiusManipulatorRequestBus.h
     Manipulators/RotationManipulators.cpp
     Manipulators/RotationManipulators.h
     Manipulators/ScaleManipulators.cpp
@@ -264,6 +268,10 @@ set(FILES
     Manipulators/TranslationManipulators.h
     Metadata/MetadataManager.h
     Metadata/MetadataManager.cpp
+    Metadata/UuidUtils.h
+    Metadata/UuidUtils.cpp
+    Metadata/MetaUuidEntry.h
+    Metadata/MetaUuidEntry.cpp
     Maths/TransformUtils.h
     PaintBrush/PaintBrushSubModeCluster.cpp
     PaintBrush/PaintBrushSubModeCluster.h
@@ -474,6 +482,8 @@ set(FILES
     UI/PropertyEditor/GenericComboBoxCtrl.inl
     UI/PropertyEditor/InstanceDataHierarchy.cpp
     UI/PropertyEditor/InstanceDataHierarchy.h
+    UI/PropertyEditor/LabelHandler.h
+    UI/PropertyEditor/LabelHandler.cpp
     UI/PropertyEditor/PropertyAssetCtrl.hxx
     UI/PropertyEditor/PropertyAssetCtrl.cpp
     UI/PropertyEditor/PropertyAudioCtrl.h
@@ -638,17 +648,25 @@ set(FILES
     ComponentMode/ComponentModeViewportUiRequestBus.h
     ComponentMode/EditorBaseComponentMode.h
     ComponentMode/EditorBaseComponentMode.cpp
+    ComponentModes/BaseShapeComponentMode.h
+    ComponentModes/BaseShapeComponentMode.cpp
     ComponentModes/BaseShapeViewportEdit.h
     ComponentModes/BaseShapeViewportEdit.cpp
     ComponentModes/BoxComponentMode.h
     ComponentModes/BoxComponentMode.cpp
     ComponentModes/BoxViewportEdit.h
     ComponentModes/BoxViewportEdit.cpp
+    ComponentModes/CapsuleComponentMode.h
+    ComponentModes/CapsuleComponentMode.cpp
     ComponentModes/CapsuleViewportEdit.h
     ComponentModes/CapsuleViewportEdit.cpp
     ComponentModes/ShapeComponentModeBus.h
     ComponentModes/ShapeTranslationOffsetViewportEdit.h
     ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
+    ComponentModes/SphereComponentMode.h
+    ComponentModes/SphereComponentMode.cpp
+    ComponentModes/SphereViewportEdit.h
+    ComponentModes/SphereViewportEdit.cpp
     ComponentModes/ViewportEditUtilities.h
     ViewportSelection/EditorBoxSelect.h
     ViewportSelection/EditorBoxSelect.cpp

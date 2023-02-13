@@ -720,8 +720,8 @@ namespace MaterialCanvas
                 AZStd::string srgMember;
                 srgMember += AZStd::string::format("Sampler SLOTNAME\n");
                 srgMember += AZStd::string::format("{\n");
-                srgMember += AZStd::string::format("MaxAnisotropy = %u;\n", v->m_anisotropyMax);
-                //srgMember += AZStd::string::format("AnisotropyEnable = %u;\n", v->m_anisotropyEnable);
+                srgMember += AZStd::string::format("MaxAnisotropy = %u;\n", AZStd::max<uint32_t>(v->m_anisotropyMax, 1));
+                //srgMember += AZStd::string::format("AnisotropyEnable = %u;\n", AZStd::clamp<uint32_t>(v->m_anisotropyEnable, 0, 1);
                 srgMember += AZStd::string::format("MinFilter = %s;\n", AZ::RHI::FilterModeNamespace::ToString(v->m_filterMin).data());
                 srgMember += AZStd::string::format("MagFilter = %s;\n", AZ::RHI::FilterModeNamespace::ToString(v->m_filterMag).data());
                 srgMember += AZStd::string::format("MipFilter = %s;\n", AZ::RHI::FilterModeNamespace::ToString(v->m_filterMip).data());
@@ -730,9 +730,9 @@ namespace MaterialCanvas
                 srgMember += AZStd::string::format("AddressU = %s;\n", AZ::RHI::AddressModeNamespace::ToString(v->m_addressU).data());
                 srgMember += AZStd::string::format("AddressV = %s;\n", AZ::RHI::AddressModeNamespace::ToString(v->m_addressV).data());
                 srgMember += AZStd::string::format("AddressW = %s;\n", AZ::RHI::AddressModeNamespace::ToString(v->m_addressW).data());
-                srgMember += AZStd::string::format("MinLOD = %f;\n", v->m_mipLodMin);
-                srgMember += AZStd::string::format("MaxLOD = %f;\n", v->m_mipLodMax);
-                srgMember += AZStd::string::format("MipLODBias = %f;\n", v->m_mipLodBias);
+                srgMember += AZStd::string::format("MinLOD = %f;\n", AZStd::max(v->m_mipLodMin, 0.0f));
+                srgMember += AZStd::string::format("MaxLOD = %f;\n", AZStd::max(v->m_mipLodMax, 0.0f));
+                srgMember += AZStd::string::format("MipLODBias = %f;\n", AZStd::max(v->m_mipLodBias, 0.0f));
                 srgMember += AZStd::string::format("BorderColor = %s;\n", AZ::RHI::BorderColorNamespace::ToString(v->m_borderColor).data());
                 srgMember += "};\n";
                 return srgMember;
@@ -1288,6 +1288,9 @@ namespace MaterialCanvas
                 }
             }
         }
+
+        // Sorting groups and properties in the source data layout to force consistent ordering of the generated material type.
+        materialTypeSourceData.SortProperties();
 
         // The file is written to an in memory buffer before saving to facilitate string substitutions.
         AZStd::string templateOutputText;

@@ -486,6 +486,13 @@ namespace AZ
                 return;
             }
 
+            const BarrierOp::CommandListState* barrierState = nullptr;
+            if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::Depth))
+            {
+                // Depth/Stencil resources needs to set the sample positions before doing barrier operations.
+                barrierState = &image.GetDescriptor().m_multisampleState;
+            }
+
             D3D12_RESOURCE_TRANSITION_BARRIER transition = {0};
             transition.pResource = image.GetMemoryView().GetMemory();
 
@@ -508,7 +515,7 @@ namespace AZ
                             firstScope.IsStateSupportedByQueue(transition.StateAfter))
                         {
                             logger.LogPreDiscardTransition(firstScope);
-                            firstScope.QueuePreDiscardTransition(transition);
+                            firstScope.QueuePreDiscardTransition(transition, barrierState);
                         }
                         else
                         {
@@ -518,7 +525,7 @@ namespace AZ
                             if (previousScope)
                             {
                                 logger.LogEpilogueTransition(*previousScope);
-                                previousScope->QueueEpilogueTransition(transition);
+                                previousScope->QueueEpilogueTransition(transition, barrierState);
                             }
                         }
                         logger.SetStateBefore(transition.StateBefore);
@@ -563,11 +570,11 @@ namespace AZ
                         logger.LogPrologueTransition(scopeAfter);
                         if (scopeAttachment->HasUsage(RHI::ScopeAttachmentUsage::Resolve))
                         {
-                            scopeAfter.QueueResolveTransition(transition);
+                            scopeAfter.QueueResolveTransition(transition, barrierState);
                         }
                         else
                         {
-                            scopeAfter.QueuePrologueTransition(transition);
+                            scopeAfter.QueuePrologueTransition(transition, barrierState);
                         }
                     }
 
@@ -636,7 +643,7 @@ namespace AZ
                                 logger.SetStateBefore(transition.StateBefore);
                                 logger.SetStateAfter(transition.StateAfter);
                                 logger.LogPrologueTransition(scopeAfter);
-                                scopeAfter.QueuePrologueTransition(transition);
+                                scopeAfter.QueuePrologueTransition(transition, barrierState);
                             }
 
                             // Moving into copy queue.
@@ -649,14 +656,14 @@ namespace AZ
                                 // since state promotion will take care of it.
                                 logger.SetStateAfter(transitionCopy.StateAfter);
                                 logger.LogEpilogueTransition(*scopeBefore);
-                                scopeBefore->QueueEpilogueTransition(transitionCopy);
+                                scopeBefore->QueueEpilogueTransition(transitionCopy, barrierState);
                             }
 
                             // Moving between compute / graphics queue.
                             else
                             {
                                 logger.LogEpilogueTransition(*scopeBefore);
-                                scopeBefore->QueueEpilogueTransition(transition);
+                                scopeBefore->QueueEpilogueTransition(transition, barrierState);
                             }
                         }
                     }
@@ -667,9 +674,8 @@ namespace AZ
                     {
                         transition.StateBefore = transition.StateAfter;
                         transition.StateAfter = D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
-                        scopeAfter.QueueResolveTransition(transition);
+                        scopeAfter.QueueResolveTransition(transition, barrierState);
                     }
-
                 }
 
                 scopeAttachment = scopeAttachment->GetNext();

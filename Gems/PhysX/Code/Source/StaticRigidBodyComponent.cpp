@@ -64,7 +64,7 @@ namespace PhysX
     {
     }
 
-    void StaticRigidBodyComponent::InitStaticRigidBody()
+    void StaticRigidBodyComponent::CreateRigidBody()
     {
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
@@ -90,8 +90,22 @@ namespace PhysX
             m_staticRigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &configuration);
         }
 
+        AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         Physics::RigidBodyRequestBus::Handler::BusConnect(GetEntityId());
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void StaticRigidBodyComponent::DestroyRigidBody()
+    {
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
+            m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        }
+
+        Physics::RigidBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
+        AZ::TransformNotificationBus::Handler::BusDisconnect();
     }
 
     void StaticRigidBodyComponent::Activate()
@@ -114,13 +128,11 @@ namespace PhysX
         AZ::EntityBus::Handler::BusConnect(GetEntityId());
     }
 
-    void StaticRigidBodyComponent::OnEntityActivated(const AZ::EntityId& entityId)
+    void StaticRigidBodyComponent::OnEntityActivated([[maybe_unused]] const AZ::EntityId& entityId)
     {
         AZ::EntityBus::Handler::BusDisconnect();
 
-        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
-
-        InitStaticRigidBody();
+        CreateRigidBody();
 
         EnablePhysics();
     }
@@ -132,16 +144,11 @@ namespace PhysX
             return;
         }
 
-        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
-        {
-            sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
-            m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-        }
+        DisablePhysics();
+
+        DestroyRigidBody();
 
         AZ::EntityBus::Handler::BusDisconnect();
-        Physics::RigidBodyRequestBus::Handler::BusDisconnect();
-        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
-        AZ::TransformNotificationBus::Handler::BusDisconnect();
     }
 
     void StaticRigidBodyComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
@@ -168,6 +175,10 @@ namespace PhysX
 
     void StaticRigidBodyComponent::DisablePhysics()
     {
+        if (!IsPhysicsEnabled())
+        {
+            return;
+        }
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->DisableSimulationOfBody(m_attachedSceneHandle, m_staticRigidBodyHandle);

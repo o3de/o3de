@@ -33,7 +33,7 @@ namespace AZ
 
         //! IConsole interface
         //! @{
-        bool PerformCommand
+        PerformCommandResult PerformCommand
         (
             const char* command,
             ConsoleSilentMode silentMode = ConsoleSilentMode::NotSilent,
@@ -41,7 +41,7 @@ namespace AZ
             ConsoleFunctorFlags requiredSet = ConsoleFunctorFlags::Null,
             ConsoleFunctorFlags requiredClear = ConsoleFunctorFlags::ReadOnly
         ) override;
-        bool PerformCommand
+        PerformCommandResult PerformCommand
         (
             const ConsoleCommandContainer& commandAndArgs,
             ConsoleSilentMode silentMode = ConsoleSilentMode::NotSilent,
@@ -49,7 +49,7 @@ namespace AZ
             ConsoleFunctorFlags requiredSet = ConsoleFunctorFlags::Null,
             ConsoleFunctorFlags requiredClear = ConsoleFunctorFlags::ReadOnly
         ) override;
-        bool PerformCommand
+        PerformCommandResult PerformCommand
         (
             AZStd::string_view command,
             const ConsoleCommandContainer& commandArgs,

@@ -31,7 +31,7 @@ CoordinateSystemToolbarSection::CoordinateSystemToolbarSection(QToolBar* parent,
     AZ_Assert(m_editorWindow, "Invalid hierarchy of windows.");
 
     m_combobox->setToolTip(QString("Reference coordinate system (%1)").arg(UICANVASEDITOR_COORDINATE_SYSTEM_CYCLE_SHORTCUT_KEY_SEQUENCE.toString()));
-    m_combobox->setMinimumContentsLength(5);
+    m_combobox->setMinimumContentsLength(6);
 
     // Combobox.
     {

@@ -16,19 +16,20 @@ namespace AzToolsFramework
 {
     class LinearManipulator;
 
-    /// Wraps 6 linear manipulators, providing a viewport experience for 
-    /// modifying the extents of a box
+    //! Wraps 6 linear manipulators, providing a viewport experience for modifying the extents of a box.
+    //! It is designed to be usable either by a component mode or by other contexts which are not associated with a
+    //! particular component, so editing does not rely on an EntityComponentIdPair or other component-based identifier.
     class BoxViewportEdit : public BaseShapeViewportEdit
     {
     public:
         BoxViewportEdit(bool allowAsymmetricalEditing = false);
 
         // BaseShapeViewportEdit overrides ...
-        void Setup(const ManipulatorManagerId manipulatorManagerId = g_mainManipulatorManagerId) override;
+        void Setup(const ManipulatorManagerId manipulatorManagerId) override;
         void Teardown() override;
         void UpdateManipulators() override;
-        void ResetValues() override;
-        void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
+        void ResetValuesImpl() override;
+        void AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
 
         void InstallGetBoxDimensions(AZStd::function<AZ::Vector3()> getBoxDimensions);
         void InstallGetLocalTransform(AZStd::function<AZ::Transform()> getLocalTransform);

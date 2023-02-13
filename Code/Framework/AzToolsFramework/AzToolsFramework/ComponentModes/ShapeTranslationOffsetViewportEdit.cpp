@@ -15,7 +15,7 @@
 
 namespace AzToolsFramework
 {
-    void ShapeTranslationOffsetViewportEdit::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    void ShapeTranslationOffsetViewportEdit::AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         if (m_translationManipulators)
         {
@@ -72,7 +72,7 @@ namespace AzToolsFramework
         m_translationManipulators->SetBoundsDirty();
     }
 
-    void ShapeTranslationOffsetViewportEdit::ResetValues()
+    void ShapeTranslationOffsetViewportEdit::ResetValuesImpl()
     {
         SetTranslationOffset(AZ::Vector3::CreateZero());
     }

@@ -43,30 +43,39 @@ namespace AzToolsFramework
         //! but they may be useful in other viewports.
         //! @{
         void InstallBeginEditing(AZStd::function<void()> beginEditing);
-        void InstallFinishEditing(AZStd::function<void()> finishEditing);
+        void InstallEndEditing(AZStd::function<void()> endEditing);
         //! @}
 
         //! Create manipulators for the shape properties to be edited.
         //! Make sure to install all the required functions before calling Setup.
-        virtual void Setup(const ManipulatorManagerId manipulatorManagerId = g_mainManipulatorManagerId) = 0;
+        virtual void Setup(const ManipulatorManagerId manipulatorManagerId) = 0;
         //! Destroy the manipulators for the shape properties being edited.
         virtual void Teardown() = 0;
         //! Call after modifying the shape to ensure that the space the manipulators operate in is updated, along with other properties.
         virtual void UpdateManipulators() = 0;
         //! Reset the shape properties being edited to their default values.
-        virtual void ResetValues() = 0;
+        void ResetValues();
         //! Optionally used to associate an EntityComponentIdPair with the shape manipulators.
         //! This is useful in the main editor viewport for hooking up undo/redo behavior and UI refreshing.
         //! This should be called after Setup. Otherwise, the manipulators will not have been created yet.
-        virtual void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) = 0;
+        void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair);
+        //! Optionally allows the viewport editing to respond to the camera state changing, for example by repositioning manipulators to
+        //! more conveniently accessible locations.
+        virtual void OnCameraStateChanged(const AzFramework::CameraState& cameraState);
 
     protected:
+        virtual void ResetValuesImpl() = 0;
+        virtual void AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair) = 0;
+
         AZ::Transform GetManipulatorSpace() const;
         AZ::Vector3 GetNonUniformScale() const;
         AZ::Vector3 GetTranslationOffset() const;
         void SetTranslationOffset(const AZ::Vector3& translationOffset);
         void BeginEditing();
-        void FinishEditing();
+        void EndEditing();
+
+        void BeginUndoBatch(const char* label);
+        void EndUndoBatch();
 
         AZStd::function<AZ::Transform()> m_getManipulatorSpace;
         AZStd::function<AZ::Vector3()> m_getNonUniformScale;
@@ -74,6 +83,9 @@ namespace AzToolsFramework
         AZStd::function<void(const AZ::Vector3&)> m_setTranslationOffset;
 
         AZStd::function<void()> m_beginEditing;
-        AZStd::function<void()> m_finishEditing;
+        AZStd::function<void()> m_endEditing;
+
+        AZStd::unordered_set<AZ::EntityId> m_entityIds;
+        UndoSystem::URSequencePoint* m_undoBatch = nullptr;
     };
 } // namespace AzToolsFramework
