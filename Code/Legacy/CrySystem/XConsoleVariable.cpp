@@ -249,7 +249,7 @@ const char* CXConsoleVariableBase::GetDataProbeString() const
     return GetOwnDataProbeString();
 }
 
-void CXConsoleVariableString::Set(const char* s)
+void CXConsoleVariableString::Set(const char* s, const Cry::SetCVarOptions& setCvarArgs)
 {
     if (!s)
     {
@@ -268,13 +268,16 @@ void CXConsoleVariableString::Set(const char* s)
             m_sValue = s;
         }
 
-        CallOnChangeFunctions();
+        if (!setCvarArgs.m_supressOnChangeFunctions)
+        {
+            CallOnChangeFunctions();
+        }
 
         m_pConsole->OnAfterVarChange(this);
     }
 }
 
-void CXConsoleVariableString::Set(float f)
+void CXConsoleVariableString::Set(float f, const Cry::SetCVarOptions& setCvarArgs)
 {
     stack_string s = stack_string::format("%g", f);
 
@@ -284,10 +287,10 @@ void CXConsoleVariableString::Set(float f)
     }
 
     m_nFlags |= VF_MODIFIED;
-    Set(s.c_str());
+    Set(s.c_str(), setCvarArgs);
 }
 
-void CXConsoleVariableString::Set(int i)
+void CXConsoleVariableString::Set(int i, const Cry::SetCVarOptions& setCvarArgs)
 {
     stack_string s = stack_string::format("%d", i);
 
@@ -297,7 +300,7 @@ void CXConsoleVariableString::Set(int i)
     }
 
     m_nFlags |= VF_MODIFIED;
-    Set(s.c_str());
+    Set(s.c_str(), setCvarArgs);
 }
 
 const char* CXConsoleVariableInt::GetString() const
@@ -308,19 +311,19 @@ const char* CXConsoleVariableInt::GetString() const
     return szReturnString;
 }
 
-void CXConsoleVariableInt::Set(const char* s)
+void CXConsoleVariableInt::Set(const char* s, const Cry::SetCVarOptions& setCvarArgs)
 {
     int nValue = TextToInt(s, m_iValue, (m_nFlags & VF_BITFIELD) != 0);
 
-    Set(nValue);
+    Set(nValue, setCvarArgs);
 }
 
-void CXConsoleVariableInt::Set(float f)
+void CXConsoleVariableInt::Set(float f, const Cry::SetCVarOptions& setCvarArgs)
 {
-    Set((int)f);
+    Set(static_cast<int>(f), setCvarArgs);
 }
 
-void CXConsoleVariableInt::Set(int i)
+void CXConsoleVariableInt::Set(int i, const Cry::SetCVarOptions& setCvarArgs)
 {
     if (i == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
     {
@@ -334,7 +337,10 @@ void CXConsoleVariableInt::Set(int i)
         m_nFlags |= VF_MODIFIED;
         m_iValue = i;
 
-        CallOnChangeFunctions();
+        if (!setCvarArgs.m_supressOnChangeFunctions)
+        {
+            CallOnChangeFunctions();
+        }
 
         m_pConsole->OnAfterVarChange(this);
     }
@@ -348,7 +354,7 @@ const char* CXConsoleVariableIntRef::GetString() const
     return szReturnString;
 }
 
-void CXConsoleVariableIntRef::Set(const char* s)
+void CXConsoleVariableIntRef::Set(const char* s, const Cry::SetCVarOptions& setCvarArgs)
 {
     int nValue = TextToInt(s, m_iValue, (m_nFlags & VF_BITFIELD) != 0);
     if (nValue == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
@@ -361,12 +367,15 @@ void CXConsoleVariableIntRef::Set(const char* s)
         m_nFlags |= VF_MODIFIED;
         m_iValue = nValue;
 
-        CallOnChangeFunctions();
+        if (!setCvarArgs.m_supressOnChangeFunctions)
+        {
+            CallOnChangeFunctions();
+        }
         m_pConsole->OnAfterVarChange(this);
     }
 }
 
-void CXConsoleVariableIntRef::Set(float f)
+void CXConsoleVariableIntRef::Set(float f, const Cry::SetCVarOptions& setCvarArgs)
 {
     if ((int)f == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
     {
@@ -380,12 +389,15 @@ void CXConsoleVariableIntRef::Set(float f)
     {
         m_nFlags |= VF_MODIFIED;
         m_iValue = (int)f;
-        CallOnChangeFunctions();
+        if (!setCvarArgs.m_supressOnChangeFunctions)
+        {
+            CallOnChangeFunctions();
+        }
         m_pConsole->OnAfterVarChange(this);
     }
 }
 
-void CXConsoleVariableIntRef::Set(int i)
+void CXConsoleVariableIntRef::Set(int i, const Cry::SetCVarOptions& setCvarArgs)
 {
     if (i == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
     {
@@ -399,7 +411,10 @@ void CXConsoleVariableIntRef::Set(int i)
     {
         m_nFlags |= VF_MODIFIED;
         m_iValue = i;
-        CallOnChangeFunctions();
+        if (!setCvarArgs.m_supressOnChangeFunctions)
+        {
+            CallOnChangeFunctions();
+        }
         m_pConsole->OnAfterVarChange(this);
     }
 }
@@ -412,7 +427,7 @@ const char* CXConsoleVariableFloat::GetString() const
     return szReturnString;
 }
 
-void CXConsoleVariableFloat::Set(const char* s)
+void CXConsoleVariableFloat::Set(const char* s, const Cry::SetCVarOptions& setCvarArgs)
 {
     float fValue = 0;
     if (s)
@@ -430,13 +445,16 @@ void CXConsoleVariableFloat::Set(const char* s)
         m_nFlags |= VF_MODIFIED;
         m_fValue = fValue;
 
-        CallOnChangeFunctions();
+        if (!setCvarArgs.m_supressOnChangeFunctions)
+        {
+            CallOnChangeFunctions();
+        }
 
         m_pConsole->OnAfterVarChange(this);
     }
 }
 
-void CXConsoleVariableFloat::Set(float f)
+void CXConsoleVariableFloat::Set(float f, const Cry::SetCVarOptions& setCvarArgs)
 {
     if (f == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
     {
@@ -450,13 +468,16 @@ void CXConsoleVariableFloat::Set(float f)
         m_nFlags |= VF_MODIFIED;
         m_fValue = f;
 
-        CallOnChangeFunctions();
+        if (!setCvarArgs.m_supressOnChangeFunctions)
+        {
+            CallOnChangeFunctions();
+        }
 
         m_pConsole->OnAfterVarChange(this);
     }
 }
 
-void CXConsoleVariableFloat::Set(int i)
+void CXConsoleVariableFloat::Set(int i, const Cry::SetCVarOptions& setCvarArgs)
 {
     if ((float)i == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
     {
@@ -470,7 +491,10 @@ void CXConsoleVariableFloat::Set(int i)
     {
         m_nFlags |= VF_MODIFIED;
         m_fValue = (float)i;
-        CallOnChangeFunctions();
+        if (!setCvarArgs.m_supressOnChangeFunctions)
+        {
+            CallOnChangeFunctions();
+        }
         m_pConsole->OnAfterVarChange(this);
     }
 }
@@ -483,7 +507,7 @@ const char* CXConsoleVariableFloatRef::GetString() const
     return szReturnString;
 }
 
-void CXConsoleVariableFloatRef::Set(const char *s)
+void CXConsoleVariableFloatRef::Set(const char *s, const Cry::SetCVarOptions& setCvarArgs)
 {
     float fValue = 0;
     if (s)
@@ -500,12 +524,15 @@ void CXConsoleVariableFloatRef::Set(const char *s)
         m_nFlags |= VF_MODIFIED;
         m_fValue = fValue;
 
-        CallOnChangeFunctions();
+        if (!setCvarArgs.m_supressOnChangeFunctions)
+        {
+            CallOnChangeFunctions();
+        }
         m_pConsole->OnAfterVarChange(this);
     }
 }
 
-void CXConsoleVariableFloatRef::Set(float f)
+void CXConsoleVariableFloatRef::Set(float f, const Cry::SetCVarOptions& setCvarArgs)
 {
     if (f == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
     {
@@ -519,12 +546,15 @@ void CXConsoleVariableFloatRef::Set(float f)
     {
         m_nFlags |= VF_MODIFIED;
         m_fValue = f;
-        CallOnChangeFunctions();
+        if (!setCvarArgs.m_supressOnChangeFunctions)
+        {
+            CallOnChangeFunctions();
+        }
         m_pConsole->OnAfterVarChange(this);
     }
 }
 
-void CXConsoleVariableFloatRef::Set(int i)
+void CXConsoleVariableFloatRef::Set(int i, const Cry::SetCVarOptions& setCvarArgs)
 {
     if ((float)i == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
     {
@@ -538,12 +568,15 @@ void CXConsoleVariableFloatRef::Set(int i)
     {
         m_nFlags |= VF_MODIFIED;
         m_fValue = (float)i;
-        CallOnChangeFunctions();
+        if (!setCvarArgs.m_supressOnChangeFunctions)
+        {
+            CallOnChangeFunctions();
+        }
         m_pConsole->OnAfterVarChange(this);
     }
 }
 
-void CXConsoleVariableStringRef::Set(const char *s)
+void CXConsoleVariableStringRef::Set(const char *s, const Cry::SetCVarOptions& setCvarArgs)
 {
     if ((m_sValue == s) && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
     {
@@ -558,7 +591,10 @@ void CXConsoleVariableStringRef::Set(const char *s)
             m_userPtr = m_sValue.c_str();
         }
 
-        CallOnChangeFunctions();
+        if (!setCvarArgs.m_supressOnChangeFunctions)
+        {
+            CallOnChangeFunctions();
+        }
         m_pConsole->OnAfterVarChange(this);
     }
 }

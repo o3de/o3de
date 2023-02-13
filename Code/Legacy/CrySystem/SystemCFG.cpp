@@ -447,17 +447,19 @@ void CSystem::OnLoadConfigurationEntry(const char* szKey, const char* szValue, [
         azConsoleProcessed = static_cast<bool>(console->PerformCommand(command.c_str()));
     }
 
-    if (!azConsoleProcessed)
+    if (!gEnv->pConsole)
     {
-        if (!gEnv->pConsole)
-        {
-            return;
-        }
+        return;
+    }
 
-        if (*szKey != 0)
-        {
-            gEnv->pConsole->LoadConfigVar(szKey, szValue);
-        }
+    if (*szKey != 0)
+    {
+        Cry::LoadConfigVarOptions loadConfigOptions;
+        // When the Az Console sets the CVar variable,
+        // suppress the on change callback from the CXConsoleVariables
+        // to prevent a loop to calling PerformCommand a second time
+        loadConfigOptions.m_setCvarOptions.m_supressOnChangeFunctions = azConsoleProcessed;
+        gEnv->pConsole->LoadConfigVar(szKey, szValue, loadConfigOptions);
     }
 }
 
