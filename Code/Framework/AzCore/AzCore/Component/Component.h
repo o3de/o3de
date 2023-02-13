@@ -121,7 +121,7 @@ namespace AZ
         //! Sets the provided string as the serialized identifier for the component. This should be done only for editor components
         //! since those are the only ones that'll be written to disk.
         //! @param serializedIdentifer The unique identifier for this component within the entity it lives in.
-        virtual void SetSerializedIdentifier(const AZStd::string& serializedIdentifer);
+        virtual void SetSerializedIdentifier(AZStd::string serializedIdentifer);
 
         //! Gets the serialzied identifier of this component within an entity. This will be a non-empty string for components that
         //! inherit from EditorComponentBase. For all others, it'll be empty.
