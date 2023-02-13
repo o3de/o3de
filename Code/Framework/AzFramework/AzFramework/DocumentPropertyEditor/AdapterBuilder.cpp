@@ -165,8 +165,6 @@ namespace AZ::DocumentPropertyEditor
     {
         BeginLabel();
         Attribute(Nodes::Label::Value, text);
-        Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
-        Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignLeft);
         EndLabel();
     }
 } // namespace AZ::DocumentPropertyEditor

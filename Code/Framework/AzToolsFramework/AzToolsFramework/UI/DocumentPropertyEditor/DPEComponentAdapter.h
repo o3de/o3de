@@ -56,7 +56,6 @@ namespace AZ::DocumentPropertyEditor
 
     protected:
 
-        AZStd::string m_entityAlias;
         AZStd::string m_componentAlias;
         AZ::EntityId m_entityId;
 

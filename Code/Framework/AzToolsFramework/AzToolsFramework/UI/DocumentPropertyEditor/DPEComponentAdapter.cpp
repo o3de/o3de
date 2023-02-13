@@ -10,7 +10,6 @@
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <QtCore/QTimer>
@@ -82,11 +81,6 @@ namespace AZ::DocumentPropertyEditor
         AZ::Uuid instanceTypeId = azrtti_typeid(m_componentInstance);
         SetValue(m_componentInstance, instanceTypeId);
         m_componentAlias = componentInstance->GetSerializedIdentifier();
-        auto owningInstance = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get()->FindOwningInstance(m_entityId);
-        AZ_Assert(owningInstance.has_value(), "Entity owning the component doesn't have an owning prefab instance.");
-        auto entityAlias = owningInstance->get().GetEntityAlias(m_entityId);
-        AZ_Assert(entityAlias.has_value(), "Owning entity of component doesn't have a valid entity alias in the owning prefab.");
-        m_entityAlias = entityAlias->get();
     }
 
     void ComponentAdapter::DoRefresh()
