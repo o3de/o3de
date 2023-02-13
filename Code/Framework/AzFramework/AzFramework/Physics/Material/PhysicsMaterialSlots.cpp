@@ -95,7 +95,7 @@ namespace Physics
                         "Select which physics materials to use for each slot.")
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ_CRC_CE("ValueText"), " ")
+                        ->Attribute(AZ::Edit::Attributes::ValueText, " ")
                         ->ElementAttribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }
