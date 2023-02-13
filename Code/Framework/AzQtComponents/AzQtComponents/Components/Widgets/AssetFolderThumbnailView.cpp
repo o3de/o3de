@@ -59,7 +59,7 @@ namespace
 
         // Text does not fit within one row, calculate the number of characters in each row
         double percentOfTextPerLine = static_cast<double>(width) / static_cast<double>(textWidth);
-        int charactersPerLine = percentOfTextPerLine * text.size();
+        int charactersPerLine = percentOfTextPerLine * text.size() - 1;
         auto firstLine = text.left(charactersPerLine);
         auto secondLine = text.mid(charactersPerLine);
         auto secondLineWidth = fm.horizontalAdvance(secondLine);
