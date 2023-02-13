@@ -300,6 +300,16 @@ namespace AZ
 
         virtual void MergeSettingsToRegistry(SettingsRegistryInterface& registry);
 
+        void MergeSharedSettings(
+            SettingsRegistryInterface& registry,
+            const AZ::SettingsRegistryInterface::Specializations& specializations,
+            AZStd::vector<char>& scratchBuffer);
+
+        void MergeUserSettings(
+            SettingsRegistryInterface& registry,
+            const AZ::SettingsRegistryInterface::Specializations& specializations,
+            AZStd::vector<char>& scratchBuffer);
+
         //! Sets the specializations that will be used when loading the Settings Registry. Extend this in derived
         //! application classes to specialize settings for those applications.
         virtual void SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations);
@@ -392,5 +402,19 @@ namespace AZ
         //! @return true to indicate a record event operation should occur in the current Tick() call
         using RecordMetricsCallback = AZStd::function<bool(AZStd::chrono::steady_clock::time_point)>;
         RecordMetricsCallback m_recordMetricsOnTickCallback;
+
+    private:
+        enum class DevelopmentSettingsOverrides
+        {
+            None,                       // 0 = no overrides are allowed
+            CommandLineOnly,            // 1 = registry overrides are allowed from the command line
+            CommandLineAndProject,      // 2 = registry overrides are allowed from the command line, engine, gem, and project files
+            CommandLineProjectAndUser   // 3 = registry overrides are allowed from the command line, engine, gem, project, and user files
+        };
+
+        //! Determines which development settings (user registry files, project registry files, etc) should
+        //! be allowed to override the default settings.
+        //! @return the level of development settings overrides that are allowed
+        static constexpr DevelopmentSettingsOverrides GetDevelopmentSettingsOverrides();
     };
 }

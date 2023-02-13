@@ -516,6 +516,21 @@ namespace AZ
         AZ::Debug::Trace::Instance().Destroy();
     }
 
+    constexpr ComponentApplication::DevelopmentSettingsOverrides ComponentApplication::GetDevelopmentSettingsOverrides()
+    {
+#if defined(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES)
+        // If this compile setting has been set, then allow whatever subset of settings overrides the user requested, whether this
+        // is a debug, profile, or release build.
+        return static_cast<ComponentApplication::DevelopmentSettingsOverrides>(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES);
+#elif AZ_RELEASE_BUILD
+        // By default, if no compile setting was provided, turn off all overrides in release builds.
+        return DevelopmentSettingsOverrides::None;
+#else
+        // By default, if no compile setting was provided, turn on all overrides in non-release builds.
+        return DevelopmentSettingsOverrides::CommandLineProjectAndUser;
+#endif
+    }
+
     void ComponentApplication::InitializeSettingsRegistry()
     {
         SettingsRegistryMergeUtils::ParseCommandLine(m_commandLine);
@@ -556,9 +571,9 @@ namespace AZ
         // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
 
-        if (SettingsRegistryMergeUtils::AllowDevelopmentSettingsOverrides())
+        if constexpr (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineProjectAndUser)
         {
-            // Only merge the Global User Registry (~/.o3de/Registry) in debug and profile configurations
+            // Only merge the Global User Registry (~/.o3de/Registry) if that override type is allowed by our compile settings.
             SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
         }
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
@@ -924,13 +939,12 @@ namespace AZ
         }
     }
 
-    void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
+    void ComponentApplication::MergeSharedSettings(
+        SettingsRegistryInterface& registry,
+        const AZ::SettingsRegistryInterface::Specializations& specializations,
+        AZStd::vector<char>& scratchBuffer)
     {
-        SettingsRegistryInterface::Specializations specializations;
-        SetSettingsRegistrySpecializations(specializations);
-
-        AZStd::vector<char> scratchBuffer;
-        if (SettingsRegistryMergeUtils::AllowDevelopmentSettingsOverrides())
+        if constexpr (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineProjectAndUser)
         {
             // In development builds apply the o3de registry and the command line to allow early overrides. This will
             // allow developers to override things like default paths or Asset Processor connection settings. Any additional
@@ -964,24 +978,58 @@ namespace AZ
         //!    3. <project_build_path>/bin/$<CONFIG>/Registry
         //! 3. MergeSettingsToRegistry_GemRegistries - Merges the settings registry files from each gem's <GemRoot>/Registry directory
 
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(registry,
-            AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(
+            registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
 
-        if (SettingsRegistryMergeUtils::AllowDevelopmentSettingsOverrides())
+#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
+        if constexpr (
+            (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineAndProject) ||
+            (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineProjectAndUser))
         {
-            SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(
                 registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-            SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(
                 registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(
+                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        }
+#endif
+    }
+
+    void ComponentApplication::MergeUserSettings(
+        SettingsRegistryInterface& registry,
+        const AZ::SettingsRegistryInterface::Specializations& specializations,
+        AZStd::vector<char>& scratchBuffer)
+    {
+        if constexpr (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineProjectAndUser)
+        {
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
+                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
+        }
+        else if constexpr (
+            (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineAndProject) ||
+            (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineOnly))
+        {
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
         }
 
         // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
+    }
+
+    void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
+    {
+        SettingsRegistryInterface::Specializations specializations;
+        SetSettingsRegistrySpecializations(specializations);
+
+        AZStd::vector<char> scratchBuffer;
+
+        MergeSharedSettings(registry, specializations, scratchBuffer);
+        MergeUserSettings(registry, specializations, scratchBuffer);
     }
 
     void ComponentApplication::SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations)

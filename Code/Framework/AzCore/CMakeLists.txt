@@ -89,7 +89,7 @@ ly_add_source_properties(
 
 ly_add_source_properties(
     SOURCES
-        AzCore/Settings/SettingsRegistryMergeUtils.cpp
+        AzCore/Component/ComponentApplication.cpp
     PROPERTY COMPILE_DEFINITIONS
     VALUES ${ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES_FLAG}
 )

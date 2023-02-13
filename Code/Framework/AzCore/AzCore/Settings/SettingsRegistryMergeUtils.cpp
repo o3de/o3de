@@ -252,17 +252,6 @@ namespace AZ::Internal
 
 namespace AZ::SettingsRegistryMergeUtils
 {
-    bool AllowDevelopmentSettingsOverrides()
-    {
-#if defined(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES)
-        return bool{ ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES };
-#elif AZ_RELEASE_BUILD
-        return false;
-#else
-        return true;
-#endif
-    }
-
     //! The algorithm that is used to find the *directory* containing the o3de_manifest.json
     //! 1. It first checks the "{BootstrapSettingsRootKey}/o3de_manifest_path"
     //! 2. If that is not set it defaults to the user's home directory with the .o3de folder appended to it
