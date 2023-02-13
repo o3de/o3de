@@ -297,6 +297,7 @@ namespace AZ
                 size_t m_allocatedBytes = 0;
                 size_t m_usedBytes = 0;
                 float m_fragmentation = 0.f;
+                size_t m_uniqueBytes = 0;
             };
 
             struct ResourceTableRow
@@ -312,6 +313,7 @@ namespace AZ
             bool m_includeBuffers = true;
             bool m_includeImages = true;
             bool m_includeTransientAttachments = true;
+            bool m_hideEmptyBufferPools = true;
 
             ImGuiTextFilter m_nameFilter;
 

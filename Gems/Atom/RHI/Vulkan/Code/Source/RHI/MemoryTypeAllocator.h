@@ -129,6 +129,10 @@ namespace AZ
             {
                 RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
                 heapMemoryUsage->m_usedResidentInBytes += memoryView.GetSize();
+                if (forceUnique)
+                {
+                    heapMemoryUsage->m_uniqueAllocationBytes += memoryView.GetSize();
+                }
                 heapMemoryUsage->Validate();
             }
 
