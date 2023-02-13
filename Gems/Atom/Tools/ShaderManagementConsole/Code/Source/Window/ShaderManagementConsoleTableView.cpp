@@ -307,7 +307,8 @@ namespace ShaderManagementConsole
         if (materialList != "")
         {
             QMessageBox msgBox;
-            msgBox.setText("The materials which used this option are listed here.");
+            QString message = QString("The materials which used %1 are listed here.").arg(shaderOptionDescriptor.GetName().GetCStr());
+            msgBox.setText(message);
             msgBox.setDetailedText(materialList);
             msgBox.exec();
         }
