@@ -22,27 +22,61 @@ AZ_POP_DISABLE_WARNING
 
 namespace
 {
+    // Returns the QString that will be displayed under each thumbnail
     QString elidedTextWithExtension(const QFontMetrics& fm, const QString& text, int width)
     {
-        // Create a second line if text width is wider than the given space
         auto textWidth = fm.horizontalAdvance(text);
+        const int dot = text.lastIndexOf(QLatin1Char{ '.' });
+        QString extension = "";
+        int extensionWidth = 0;
+
+        // If the file has an extension, move it to the second row
+        if (dot != -1)
+        {
+            auto baseName = text.left(dot);
+            extension = text.mid(dot + 1);
+            extensionWidth = fm.horizontalAdvance(extension);
+            if (extensionWidth > width)
+            {
+                extension = fm.elidedText(extension, Qt::ElideRight, width);
+                extensionWidth = fm.horizontalAdvance(extension);
+            }
+            if (baseName.isEmpty())
+            {
+                return text;
+            }
+            if (fm.horizontalAdvance(baseName) <= width)
+            {
+                return baseName + "\n" + extension;
+            }
+        }
+
+        // Return if text fits within one row
         if (textWidth <= width)
         {
             return text;
         }
-        else
+
+        // Text does not fit within one row, calculate the number of characters in each row
+        double percentOfTextPerLine = static_cast<double>(width) / static_cast<double>(textWidth);
+        int charactersPerLine = percentOfTextPerLine * text.size();
+        auto firstLine = text.left(charactersPerLine);
+        auto secondLine = text.mid(charactersPerLine);
+        auto secondLineWidth = fm.horizontalAdvance(secondLine);
+        // Check if text fits within the two rows
+        if (secondLineWidth <= width)
         {
-            // Calculate the number of characters needed in each line to not exceed the given space
-            double percentOfTextPerLine = static_cast<double>(width) / static_cast<double>(textWidth);
-            int charactersPerLine = percentOfTextPerLine * text.size() - 1;
-            // If the second line is wider than the given space, elide it
-            QString firstLine = text.mid(0, charactersPerLine);
-            QString secondLine = text.mid(charactersPerLine);
-            auto secondLineWidth = fm.horizontalAdvance(secondLine);
-            return (secondLineWidth <= width ?
-                firstLine + "\n" + secondLine :
-                firstLine + "\n" + fm.elidedText(secondLine, Qt::ElideRight, width));
+            return firstLine + "\n" + secondLine;
         }
+        // If there is an extension present, elide to show it
+        if (!extension.isEmpty())
+        {
+            auto secondLineBase = secondLine.left(dot);
+            auto elidedBase = fm.elidedText(secondLineBase, Qt::ElideRight, width - extensionWidth); 
+            return firstLine + "\n" + elidedBase + extension;
+        }
+        // Elide left to show the beginning of the text in the first row and the end of the text in the second row
+        return firstLine + "\n" + fm.elidedText(secondLine, Qt::ElideLeft, width);
     }
 }
 
@@ -168,10 +202,9 @@ namespace AzQtComponents
             const auto textRect = QRect{rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2};
 
             painter->setPen(option.palette.color(QPalette::Text));
-            painter->drawText(
-                textRect,
-                Qt::AlignTop | Qt::AlignHCenter,
-                elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width()));
+            QString text = elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width());
+            (text.contains(QChar::LineFeed) ? painter->drawText(textRect, Qt::AlignTop | Qt::AlignLeft, text)
+                                            : painter->drawText(textRect, Qt::AlignTop | Qt::AlignHCenter, text));
         }
         else
         {
@@ -181,10 +214,9 @@ namespace AzQtComponents
             const auto textRect = QRect{ rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2};
 
             painter->setPen(option.palette.color(QPalette::Text));
-            painter->drawText(
-                textRect,
-                Qt::AlignTop | Qt::AlignHCenter,
-                elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width()));
+            QString text = elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width());
+            (text.contains(QChar::LineFeed) ? painter->drawText(textRect, Qt::AlignTop | Qt::AlignLeft, text)
+                                            : painter->drawText(textRect, Qt::AlignTop | Qt::AlignHCenter, text));
         }
 
         painter->restore();
