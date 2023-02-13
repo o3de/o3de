@@ -8,8 +8,17 @@
 #pragma once
 
 #include <Source/AutoGen/NetworkDebugPlayerIdComponent.AutoComponent.h>
+#include <Atom/RPI.Public/ViewportContext.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Font/FontInterface.h>
+
+namespace AZ
+{
+    namespace RPI
+    {
+        class ViewportContext;
+    }
+}
 
 namespace Multiplayer
 {
@@ -33,12 +42,12 @@ namespace Multiplayer
 
     private:
         // Properties exposed to editor
-        bool m_renderDebugTextOnPlayer = true;
         AZ::Vector3 m_translationOffset = AZ::Vector3(0, 0, 0);
         float m_fontScale = 0.7f;
         AZ::Color m_fontColor = AZ::Colors::Wheat;
 
         // Cache properties required for font rendering
+        AZ::RPI::ViewportContextPtr m_viewport;
         AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
         AzFramework::TextDrawParameters m_drawParams;
     };
