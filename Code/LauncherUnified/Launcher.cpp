@@ -592,8 +592,10 @@ namespace O3DELauncher
         }
     #endif // !defined(_RELEASE)
 
-        delete systemInitParams.pSystem;
+        SAFE_DELETE(systemInitParams.pSystem);
         crySystemLibrary.reset(nullptr);
+    #else
+        SAFE_DELETE(systemInitParams.pSystem);
     #endif // !defined(AZ_MONOLITHIC_BUILD)
 
         gameApplication.Stop();

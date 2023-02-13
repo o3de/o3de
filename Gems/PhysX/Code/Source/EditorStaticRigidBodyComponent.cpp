@@ -33,12 +33,10 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(
                         AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/static-rigid-body/")
-                    ->UIElement(AZ::Edit::UIHandlers::MultiLineEdit, "", ToolTip)
-                    ->Attribute(AZ::Edit::Attributes::ValueText,"<i>Component properties not required</i>")
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-                    ->UIElement(AZ::Edit::UIHandlers::MultiLineEdit, "", ToolTip)
-                    ->Attribute(AZ::Edit::Attributes::ValueText, "Non-movable rigid body in PhysX")
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, true);
+                    ->UIElement(AZ::Edit::UIHandlers::Label, "", ToolTip)
+                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                        ->Attribute(AZ::Edit::Attributes::ValueText, "<i>Component properties not required</i><br>Non-movable rigid body in PhysX")
+                    ;
             }
         }
     }
