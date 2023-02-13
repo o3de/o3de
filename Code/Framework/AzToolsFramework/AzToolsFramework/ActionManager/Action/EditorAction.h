@@ -27,7 +27,7 @@ namespace AzToolsFramework
     public:
         EditorAction() = default;
         EditorAction(
-            QWidget* parentWidget,
+            QObject* parentObject,
             AZStd::string contextIdentifier,
             AZStd::string identifier,
             AZStd::string name,
@@ -42,6 +42,7 @@ namespace AzToolsFramework
 
         static void Initialize();
 
+        const AZStd::string& GetActionIdentifier() const;
         const AZStd::string& GetActionContextIdentifier() const;
 
         const AZStd::string& GetName() const;
