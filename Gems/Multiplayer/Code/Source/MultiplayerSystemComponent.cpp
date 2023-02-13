@@ -403,6 +403,13 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::StartHosting(uint16_t port, bool isDedicated)
     {
+        if (IsHosting())
+        {
+            AZLOG_WARN("Already hosting on port %u, new host request ignored (request is for port %u).",
+                m_networkInterface->GetPort(), static_cast<uint32_t>(sv_port));
+            return false;
+        }
+
         if (port == UseDefaultHostPort)
         {
             port = sv_port;
@@ -482,6 +489,12 @@ namespace Multiplayer
     {
         return true;
     }
+
+    bool MultiplayerSystemComponent::IsHosting() const
+    {
+        return (GetAgentType() == MultiplayerAgentType::ClientServer) || (GetAgentType() == MultiplayerAgentType::DedicatedServer);
+    }
+
 
     bool MultiplayerSystemComponent::OnCreateSessionBegin(const SessionConfig& sessionConfig)
     {
@@ -1828,10 +1841,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::HostConsoleCommand([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        if (!StartHosting(sv_port, sv_isDedicated))
-        {
-            AZLOG_ERROR("Failed to start listening on any allocated port");
-        }
+        StartHosting(sv_port, sv_isDedicated);
     }
 
     void sv_launch_local_client([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
