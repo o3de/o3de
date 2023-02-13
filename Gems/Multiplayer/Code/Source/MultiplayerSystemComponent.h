@@ -166,6 +166,7 @@ namespace Multiplayer
         //! @}
 
     private:
+        bool IsHosting() const;
 
         bool AttemptPlayerConnect(AzNetworking::IConnection* connection, MultiplayerPackets::Connect& packet);
         void TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds);
