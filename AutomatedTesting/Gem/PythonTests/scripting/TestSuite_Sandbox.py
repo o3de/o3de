@@ -192,3 +192,67 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
+
+    def test_GraphClose_Default_SavePrompt(self, request, editor, launcher_platform):
+        expected_lines = [
+            "New graph created: True",
+            "Save prompt opened as expected: True",
+            "Close button worked as expected: True",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "GraphClose_Default_SavePrompt.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=160,
+        )
+
+    def test_VariableManager_Default_CreateDeleteVars(self, request, editor, launcher_platform):
+        var_types = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
+        expected_lines = [f"{var_type} variable is created: True" for var_type in var_types]
+        expected_lines.extend([f"{var_type} variable is deleted: True" for var_type in var_types])
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "VariableManager_Default_CreateDeleteVars.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
+    @pytest.mark.parametrize(
+        "config",
+        [
+            {
+                "cfg_args": "before_restart",
+                "expected_lines": [
+                    "All the test panes are opened: True",
+                    "Test pane 1 is closed: True",
+                    "Location of test pane 2 changed successfully: True",
+                    "Test pane 3 resized successfully: True",
+                ],
+            },
+            {
+                "cfg_args": "after_restart",
+                "expected_lines": [
+                    "Test pane retained its visiblity on Editor restart: True",
+                    "Test pane retained its location on Editor restart: True",
+                    "Test pane retained its size on Editor restart: True",
+                ],
+            },
+        ],
+    )
+    def test_Pane_PropertiesChanged_RetainsOnRestart(self, request, editor, config, project, launcher_platform):
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "Pane_PropertiesChanged_RetainsOnRestart.py",
+            config.get('expected_lines'),
+            cfg_args=[config.get('cfg_args')],
+            auto_test_mode=False,
+            timeout=60,
+        )
