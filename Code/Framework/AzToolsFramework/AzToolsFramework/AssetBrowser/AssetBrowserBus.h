@@ -390,6 +390,10 @@ namespace AzToolsFramework
             virtual void OnSourceFilePathNameChanged(
                 [[maybe_unused]] const AZStd::string_view fromPathName, [[maybe_unused]] const AZStd::string_view toPathName) {}
 
+            //! Notifies when a source folder has been moved or renamed
+            virtual void OnSourceFolderPathNameChanged(
+                [[maybe_unused]] const AZStd::string_view fromPathName, [[maybe_unused]] const AZStd::string_view toPathName) {}
+
         protected:
             ~AssetBrowserFileActionNotifications() = default;
         };

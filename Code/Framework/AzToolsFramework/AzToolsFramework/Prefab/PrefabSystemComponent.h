@@ -85,6 +85,7 @@ namespace AzToolsFramework
 
             // AssetBrowserSourceActionNotificationBus...
             void OnSourceFilePathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName) override;
+            void OnSourceFolderPathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName) override;
 
             //////////////////////////////////////////////////////////////////////////
             // PrefabSystemComponentInterface interface implementation

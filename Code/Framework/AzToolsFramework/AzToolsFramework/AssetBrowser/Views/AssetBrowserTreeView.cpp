@@ -774,10 +774,22 @@ namespace AzToolsFramework
             if (SendRequest(moveRequest, moveResponse))
             {
                 // Send notification for listeners to update any in-memory states
-                AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
-                    &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFilePathNameChanged,
-                    fromPath.c_str(),
-                    toPath.c_str());
+                if (isFolder)
+                {
+                    AZStd::string_view fromPathNoWildcard(fromPath.ParentPath().Native());
+                    AZStd::string_view toPathNoWildcard(toPath.ParentPath().Native());
+                    AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
+                        &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFolderPathNameChanged,
+                        fromPathNoWildcard,
+                        toPathNoWildcard);
+                }
+                else
+                {
+                    AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
+                        &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFilePathNameChanged,
+                        fromPath.c_str(),
+                        toPath.c_str());
+                }
 
                 if (!moveResponse.m_lines.empty())
                 {
@@ -954,14 +966,26 @@ namespace AzToolsFramework
                     AssetChangeReportResponse moveResponse;
                     if (SendRequest(moveRequest, moveResponse))
                     {
-                        if (!response.m_lines.empty())
+                        // Send notification for listeners to update any in-memory states
+                        if (isFolder)
                         {
-                            // Send notification for listeners to update any in-memory states
+                            AZStd::string fromPathNoWildcard(fromPath.substr(0, fromPath.size() - 2));
+                            AZStd::string toPathNoWildcard(toPath.substr(0, toPath.size() - 2));
+                            AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
+                                &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFolderPathNameChanged,
+                                fromPathNoWildcard.c_str(),
+                                toPathNoWildcard.c_str());
+                        }
+                        else
+                        {
                             AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
                                 &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFilePathNameChanged,
                                 fromPath,
                                 toPath);
+                        }
 
+                        if (!response.m_lines.empty())
+                        {
                             AZStd::string moveMessage;
                             AZ::StringFunc::Join(moveMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
                             AzQtComponents::FixedWidthMessageBox moveMsgBox(
@@ -979,7 +1003,8 @@ namespace AzToolsFramework
                     }
                     if (isFolder)
                     {
-                        AZ::IO::SystemFile::DeleteDir(fromPath.substr(0, fromPath.size() - 2).data());
+                        AZStd::string fromPathNoWildcard(fromPath.substr(0, fromPath.size() - 2));
+                        AZ::IO::SystemFile::DeleteDir(fromPathNoWildcard.c_str());
                     }
                 }
             }
