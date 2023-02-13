@@ -198,7 +198,7 @@ def MaterialEditor_FileSaveChecks_AllChecksPass():
             Tests.opened_original_material_document,
             atom_tools_utils.is_document_open(original_material_document_id) is True)
 
-        # 2. Verify original_material_document baseColor.color property value is 255.0, 255.0, 255.0, 1.0.
+        # 2. Verify original_material_document baseColor.color property value is 1.0, 1.0, 1.0, 1.0.
         expected_original_material_starting_color = Color(1.0, 1.0, 1.0, 1.0)
         Report.result(
             Tests.original_material_document_has_expected_starting_color,
