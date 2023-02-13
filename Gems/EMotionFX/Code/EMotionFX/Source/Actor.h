@@ -676,6 +676,9 @@ namespace EMotionFX
 
         const AZ::Aabb& GetStaticAabb() const;
         void SetStaticAabb(const AZ::Aabb& aabb);
+        /**
+        * Sets the static aabb and expects to have the model asset ready.
+        */
         void UpdateStaticAabb();
 
         void SetThreadIndex(uint32 index)                   { m_threadIndex = index; }

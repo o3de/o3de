@@ -1365,7 +1365,6 @@ namespace EMotionFX
         // Do not release the mesh assets. We need the mesh data to initialize future instances of the render actor instances.
     }
 
-    // update the static AABB (very heavy as it has to create an actor instance, update mesh deformers, calculate the mesh based bounds etc)
     void Actor::UpdateStaticAabb()
     {
         if (m_meshAsset && m_meshAsset.IsReady())
