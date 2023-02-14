@@ -435,15 +435,6 @@ namespace AZ
 
         void MeshFeatureProcessor::ProcessVisibilityListForView(size_t viewIndex, const RPI::ViewPtr& view)
         {
-            // Update the buffer that stores the instance data for this frames visible instances
-            // This needs to happen after the mesh handles have been updated, but before culling, since we have to update the
-            // cullables to use the new draw packets
-            //
-            // Eventually there will be a unique buffer for each view storing just the instance data for
-            // the instances that are visible in that view, so things that are culled on the CPU side can be skipped
-            // For now, we're assuming that there is only one instance for any given object, so we'll create just one
-            // buffer and share it between all of the views. For culling, that draw call will just be omitted entirely for now,
-            // but objects will eventually be culled by omitting their instance data from the view's instance data buffer
             RPI::VisibilityListView visibilityList = view->GetVisibilityList();
             size_t instanceBufferCount = visibilityList.size();
 
@@ -452,14 +443,10 @@ namespace AZ
 
             if (instanceBufferCount > 0)
             {
-                // perViewInstanceData.reserve(instanceBufferCount);
                 perViewInstanceData.clear();
                 perViewSortInstanceData.clear();
             }
-            AZStd::unordered_set<uint32_t> visibleInstanceIndices;
-            // Even though this is larger than actual number of visible instance groups, reserve memory here to avoid several allocations
-            // later
-            visibleInstanceIndices.reserve(instanceBufferCount);
+
             for (const RPI::VisiblityEntryProperties& visibilityEntry : visibilityList)
             {
                 const MeshData* meshData = reinterpret_cast<const MeshData*>(visibilityEntry.m_userData);
@@ -474,18 +461,7 @@ namespace AZ
                         instanceData.m_objectId = m_meshData[meshDataIndex].m_objectId_metaDataMeshCount;
                         instanceData.m_depth = visibilityEntry.m_depth;
 
-                        /* MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
-
-                        // The per-instance data is just the objectId, which is used to look up the object transform
-                        // After this first pass, we will accumulate all the per-instance data into one buffer for the view,
-                        // sorted by the instance key so that all data for any objects instanced together is contiguous
-                        if (instanceData.m_perViewInstanceData.size() <= viewIndex)
-                        {
-                            instanceData.m_perViewInstanceData.resize(viewIndex + 1);
-                            instanceData.m_perViewDrawPackets.resize(viewIndex + 1);
-                        }
-                        instanceData.m_perViewInstanceData[viewIndex].push_back(objectId);
-                        visibleInstanceIndices.insert(instanceIndex);*/
+                        // TODO: this is not thread safe when using a shared pool allocator
                         perViewSortInstanceData.push_back(instanceData);
                     }
                 }
@@ -494,6 +470,12 @@ namespace AZ
 
         void MeshFeatureProcessor::SortInstanceDataForView(size_t viewIndex)
         {
+            // TODO: We're sorting by depth front to back within the instanced data for a given instance group. This is valid for depth/shadow passes
+            // but not for transparency. We need to either determine the sort order on the CPU side
+            // (not sure that's possible, since that's a per-pass setting, so some items in the draw packet will have different sort orders)
+            // Or update the shaders to read the data in the correct order (front to back vs back to front)
+            // Sort key is irrelevant, only depth, in this scenario because everything in an instance group shares a common sort key
+            // What do we do about depth-then-key sorting? The pass system will only see average depth, not true depth. Should we not support instancing here?
             AZStd::vector<SortInstanceData, AZStdIAllocator>& perViewSortInstanceData = m_perViewSortInstanceData[viewIndex];
             std::sort(std::execution::par_unseq, perViewSortInstanceData.begin(), perViewSortInstanceData.end());
         }
@@ -506,131 +488,6 @@ namespace AZ
             uint32_t totalVisibleInstanceCount = static_cast<uint32_t>(perViewSortInstanceData.size());
             if (totalVisibleInstanceCount > 0)
             {
-                /// Serial iteration over visible data
-                ///
-                ///
-                ///
-                /*uint32_t instanceDataOffset = 0;
-                uint32_t currentInstanceGroup = perViewSortInstanceData[0].m_instanceIndex;
-                perViewInstanceData.reserve(perViewSortInstanceData.size());
-                perViewInstanceData.push_back(perViewSortInstanceData[0].m_objectId);
-                for (uint32_t i = 1; i < totalVisibleInstanceCount; ++i)
-                {
-                    perViewInstanceData.push_back(perViewSortInstanceData[i].m_objectId);
-                    // Anytime the instance group changes, submit a draw
-                    if (perViewSortInstanceData[i].m_instanceIndex != currentInstanceGroup)
-                    {
-                        // Submit a draw
-                        MeshInstanceData& instanceData = m_meshInstanceManager[currentInstanceGroup];
-
-                        if (instanceData.m_perViewDrawPackets.size() <= viewIndex)
-                        {
-                            instanceData.m_perViewDrawPackets.resize(viewIndex + 1);
-                        }
-
-                        // Cache a cloned drawpacket here
-                        if (!instanceData.m_perViewDrawPackets[viewIndex])
-                        {
-                            // Clone the draw packet
-                            RHI::DrawPacketBuilder drawPacketBuilder;
-                            instanceData.m_perViewDrawPackets[viewIndex] =
-                                const_cast<RHI::DrawPacket*>(drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
-                        }
-
-                        RHI::Ptr<RHI::DrawPacket> clonedDrawPacket = instanceData.m_perViewDrawPackets[viewIndex];
-
-                        // Get the root constant layout
-                        if (instanceData.m_drawRootConstantInterval.IsValid())
-                        {
-                            // Set the instance data offset
-                            for (size_t drawItemIndex = 0; drawItemIndex < clonedDrawPacket->GetDrawItemCount(); ++drawItemIndex)
-                            {
-                                AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
-                                clonedDrawPacket->SetRootConstant(
-                                    drawItemIndex, instanceData.m_drawRootConstantInterval, data);
-                            }
-                        }
-                        else
-                        {
-                            AZ_Error(
-                                "MeshFeatureProcessor",
-                                false,
-                                "Trying to instance something that is missing s_m_rootConstantInstanceDataOffset_Name from its "
-                                "root constant layout.");
-                        }
-
-                        // This is the number of visible instances for this view
-                        uint32_t instanceCount = i - instanceDataOffset;
-
-                        // Set the cloned draw packet instance count
-                        clonedDrawPacket->SetInstanceCount(instanceCount);
-
-                        // Submit the draw packet
-                        view->AddDrawPacket(clonedDrawPacket.get(), 0.0f);
-
-                        // Update the loop trackers
-                        instanceDataOffset = i;
-                        currentInstanceGroup = perViewSortInstanceData[i].m_instanceIndex;
-                    }
-                }
-
-                // submit the last instance group
-                {
-                    // Submit a draw
-                    MeshInstanceData& instanceData = m_meshInstanceManager[currentInstanceGroup];
-
-                    if (instanceData.m_perViewDrawPackets.size() <= viewIndex)
-                    {
-                        instanceData.m_perViewDrawPackets.resize(viewIndex + 1);
-                    }
-
-                    // Cache a cloned drawpacket here
-                    if (!instanceData.m_perViewDrawPackets[viewIndex])
-                    {
-                        // Clone the draw packet
-                        RHI::DrawPacketBuilder drawPacketBuilder;
-                        instanceData.m_perViewDrawPackets[viewIndex] =
-                            const_cast<RHI::DrawPacket*>(drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
-                    }
-
-                    RHI::Ptr<RHI::DrawPacket> clonedDrawPacket = instanceData.m_perViewDrawPackets[viewIndex];
-
-                    // Set the instance data offset
-                    for (size_t i = 0; i < clonedDrawPacket->GetDrawItemCount(); ++i)
-                    {
-                        // Get the root constant layout
-                        if (instanceData.m_drawRootConstantInterval.IsValid())
-                        {
-                            AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
-                            clonedDrawPacket->SetRootConstant(i, instanceData.m_drawRootConstantInterval, data);
-                        }
-                        else
-                        {
-                            AZ_Error(
-                                "MeshFeatureProcessor",
-                                false,
-                                "Trying to instance something that is missing s_m_rootConstantInstanceDataOffset_Name from its "
-                                "root constant layout.");
-                        }
-                    }
-
-                    // This is the number of visible instances for this view
-                    uint32_t instanceCount = static_cast<uint32_t>(perViewInstanceData.size()) - instanceDataOffset;
-                    // Set the cloned draw packet instance count
-                    clonedDrawPacket->SetInstanceCount(instanceCount);
-
-                    // Submit the draw packet
-                    view->AddDrawPacket(clonedDrawPacket.get(), 0.0f);
-                }*/
-
-                /// Parallel iteration over instance data
-                ///
-                ///
-                ///
-                ///
-                ///
-                ///
-
                 // Make space for the final data
                 perViewInstanceData.resize_no_construct(perViewSortInstanceData.size());
 
@@ -660,6 +517,11 @@ namespace AZ
                         uint32_t approximateEndOffset = taskIndex * approximateBatchSize + approximateBatchSize;
                         uint32_t batchEndInstanceGroup = perViewSortInstanceData[approximateEndOffset].m_instanceIndex;
                         // TODO: validate what happens whenthe offset overruns the start of the next batch
+                        if (approximateEndOffset < currentBatchStart)
+                        {
+                            // Skip this batch since the previous batch overran what would have been the start of this batch
+                            continue;
+                        }
                         for (uint32_t actualEndOffset = approximateEndOffset; actualEndOffset < approximateEndOffset + approximateBatchSize;
                              ++actualEndOffset)
                         {
@@ -810,72 +672,6 @@ namespace AZ
                     currentBatchStart = currentBatchEndNonInclusive;
                 }
             }
-
-            /// Mesh instance manager owns partial lists of instance data
-            ///
-            ///
-            ///
-            /* for (uint32_t instanceIndex : visibleInstanceIndices)
-            {
-                MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
-
-                if (instanceData.m_perViewDrawPackets.size() <= viewIndex)
-                {
-                    instanceData.m_perViewDrawPackets.resize(viewIndex + 1);
-                }
-
-                // Cache a cloned drawpacket here
-                if (!instanceData.m_perViewDrawPackets[viewIndex])
-                {
-                    // Clone the draw packet
-                    RHI::DrawPacketBuilder drawPacketBuilder;
-                    instanceData.m_perViewDrawPackets[viewIndex] =
-                        const_cast<RHI::DrawPacket*>(drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
-                }
-
-                RHI::Ptr<RHI::DrawPacket> clonedDrawPacket = instanceData.m_perViewDrawPackets[viewIndex];
-
-                // Get the instanceData offset
-                // The offset into the per-instance data is part of the instanced draw call. This can change every frame,
-                // and will differ between views
-                [[maybe_unused]] uint32_t instanceDataOffset = static_cast<uint32_t>(perViewInstanceData.size());
-
-                // Set the instance data offset
-                for (size_t i = 0; i < clonedDrawPacket->GetDrawItemCount(); ++i)
-                {
-                    // Get the root constant layout
-                    if (instanceData.m_drawRootConstantIntervals[i].IsValid())
-                    {
-                        AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
-                        clonedDrawPacket->SetRootConstant(i, instanceData.m_drawRootConstantIntervals[i], data);
-                    }
-                    else
-                    {
-                        AZ_Error(
-                            "MeshFeatureProcessor",
-                            false,
-                            "Trying to instance something that is missing s_m_rootConstantInstanceDataOffset_Name from its "
-                            "root constant layout.");
-                    }
-                }
-
-                // These are the object Id's (instance data) for all the instances visible by this view
-                AZStd::vector<uint32_t>& instanceDataForCurrentIndexAndView = instanceData.m_perViewInstanceData[viewIndex];
-                // This is the number of visible instances for this view
-                uint32_t instanceCount = static_cast<uint32_t>(instanceDataForCurrentIndexAndView.size());
-                // Set the cloned draw packet instance count
-                clonedDrawPacket->SetInstanceCount(instanceCount);
-
-                // Add the actual instance data for this view
-                perViewInstanceData.insert(
-                    perViewInstanceData.end(),
-                    instanceDataForCurrentIndexAndView.begin(),
-                    instanceDataForCurrentIndexAndView.end());
-                instanceDataForCurrentIndexAndView.clear();
-
-                // Submit the draw packet
-                view->AddDrawPacket(clonedDrawPacket.get(), 0.0f);
-            }*/
         }
 
         void MeshFeatureProcessor::UpdateGPUInstanceBufferForView(size_t viewIndex, const RPI::ViewPtr& view)
@@ -1839,7 +1635,7 @@ namespace AZ
                     key.m_lodIndex = static_cast<uint32_t>(modelLodIndex);
                     key.m_meshIndex = static_cast<uint32_t>(meshIndex);
                     key.m_materialId = material->GetId();
-                    key.m_forceInstancingOff = Uuid::CreateRandom();
+                    key.m_forceInstancingOff = Uuid::CreateNull();
                     key.m_stencilRef = stencilRef;
                     key.m_sortKey = m_sortKey;
                     index = meshInstanceManager.AddInstance(key);
