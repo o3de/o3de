@@ -1738,7 +1738,8 @@ namespace AssetProcessor
             }
         }
 
-        bool originalIsMetadata = false;
+        // Indicates if this CheckSource event was originally started due to a file change from a metadata file
+        bool triggeredByMetadata = false;
 
         // if metadata file change, pretend the actual file changed
         // the fingerprint will be different anyway since metadata file is folded in
@@ -1751,7 +1752,7 @@ namespace AssetProcessor
             if (normalizedFilePath.endsWith("." + metaInfo.first, Qt::CaseInsensitive))
             {
                 //its a meta file.  What was the original?
-                originalIsMetadata = true;
+                triggeredByMetadata = true;
 
                 normalizedFilePath = normalizedFilePath.left(normalizedFilePath.length() - (metaInfo.first.length() + 1));
                 if (!metaInfo.second.isEmpty())
@@ -1802,45 +1803,68 @@ namespace AssetProcessor
             }
         }
 
+        // Check if this event is part of an in-process file move.
+        // If so, ignore the event.
+        if (ShouldIgnorePendingMove(normalizedFilePath.toUtf8().constData(), triggeredByMetadata, source.m_isDelete))
+        {
+            return;
+        }
+
         if (m_metaCreationDelayMs > 0)
         {
             AZ::IO::Path absolutePath = normalizedFilePath.toUtf8().constData();
 
-            // Metadata file added, see if it matches a waiting file
-            if (originalIsMetadata && !source.m_isDelete)
+            // There are 7 possible relevant events here:
+            // 1) An existing source file is deleted
+            // 2) An existing metadata file is deleted
+            // 3) A new source file is added
+            // 4) A new metadata file is added
+            // 5) Delay has expired and the file must be proccessed now
+            // 6) A delayed file was deleted
+            // 7) A delayed file is updated
+
+            // Normally Events 2, 3 and 7 would cause a new metadata to be generated.
+
+            // Event 1 requires no action (since an orphan metadata file is harmless).
+            // Event 2 will need to be delayed if Event 1 has not occurred yet.
+            // Event 3 will need to be delayed if Event 4 has not occurred yet.
+            // Event 4 will end a delay early if Event 3 has already occurred.
+            // Event 5 & 6 will remove the file from the queue and start processing.
+            // Event 7 will simply continue waiting.
+
+            // Event 4: Metadata file added, check if Event 3 has already occurred.
+            if (triggeredByMetadata && !source.m_isDelete)
             {
                 auto itr = m_delayProcessMetadataFiles.find(absolutePath);
 
                 if (itr != m_delayProcessMetadataFiles.end())
                 {
-                    // Metadata file matches a waiting file, remove from queue and proceed
+                    // Events 3 and 4 have occurred, clear to proceed.
                     m_delayProcessMetadataFiles.erase(itr);
+                    Q_EMIT ProcessingResumed(normalizedFilePath);
                 }
             }
             else
             {
-                // Regular file added or metadata deleted, make sure it has a metadata file before proceeding
+                // Events 1-3, 5-7
                 if (m_delayProcessMetadataFiles.contains(absolutePath))
                 {
                     auto duration = m_delayProcessMetadataFiles[absolutePath].msecsTo(QDateTime::currentDateTime());
-                    if (source.m_isDelete)
+                    if (duration < m_metaCreationDelayMs)
                     {
-                        m_delayProcessMetadataFiles.erase(absolutePath);
-                    }
-                    else if (duration < m_metaCreationDelayMs)
-                    {
-                        // Already waiting on file, keep waiting
+                        // Event 7: Already waiting on file, keep waiting
                         return;
                     }
                     else
                     {
-                        // Times up, process the file
+                        // Event 5-6: Times up, process the file
                         m_delayProcessMetadataFiles.erase(absolutePath);
+                        Q_EMIT ProcessingResumed(normalizedFilePath);
                     }
                 }
-                else if ((originalIsMetadata || !source.m_isDelete) && !CheckMetadataIsAvailable(absolutePath))
+                else if ((triggeredByMetadata || !source.m_isDelete) && !CheckMetadataIsAvailable(absolutePath))
                 {
-                    //File not in queue and invalid metadata, add to queue
+                    //Events 2-3: File not in queue and invalid metadata, add to queue
                     AZ_TracePrintf(
                         AssetProcessor::DebugChannel,
                         "Source " AZ_STRING_FORMAT " has no metadata file yet, delaying processing to wait for metadata file.\n",
@@ -1853,6 +1877,8 @@ namespace AssetProcessor
                         m_delayProcessMetadataQueued = true;
                         QTimer::singleShot(m_metaCreationDelayMs, this, SLOT(DelayedMetadataFileCheck()));
                     }
+
+                    Q_EMIT ProcessingDelayed(normalizedFilePath);
 
                     return;
                 }
@@ -5913,7 +5939,10 @@ namespace AssetProcessor
             if (duration + ToleranceMs >= m_metaCreationDelayMs)
             {
                 // Times up, process it
-                AssessFileInternal(file.c_str(), false);
+                auto* fileStateCache = AZ::Interface<IFileStateRequests>::Get();
+                AZ_Assert(fileStateCache, "Programmer Error - IFileStateRequests is not available.");
+
+                AssessFileInternal(file.c_str(), fileStateCache->Exists(file.c_str()));
             }
             else
             {

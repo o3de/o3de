@@ -43,6 +43,7 @@
 
 #include <AssetManager/ExcludedFolderCache.h>
 #include <AssetManager/ProductAsset.h>
+#include <native/utilities/IMetadataUpdates.h>
 #endif
 
 class FileWatcher;
@@ -293,6 +294,12 @@ namespace AssetProcessor
         //! Fired when FinishAnalysis is run for a file to notify that a source file has completely finished processing.
         //! count is the number of files remaining waiting for FinishAnalysis to be called
         void FinishedAnalysis(int count);
+
+        //! Fired when processing of a file has been delayed to wait for a metadata file creation event.
+        void ProcessingDelayed(QString filePath);
+
+        //! Fired when a previously-delayed file has begun processing.
+        void ProcessingResumed(QString filePath);
 
     public Q_SLOTS:
         void AssetProcessed(JobEntry jobEntry, AssetBuilderSDK::ProcessJobResponse response);

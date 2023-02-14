@@ -81,6 +81,7 @@ namespace UnitTests
 
         static constexpr int AssetSubId = 1;
         static constexpr int ExtraAssetSubId = 2;
+        static constexpr int MetadataProcessingDelayMs = 1;
 
     protected:
         void RunFile(int expectedJobCount, int expectedFileCount = 1, int dependencyFileCount = 0);
@@ -124,7 +125,7 @@ namespace UnitTests
 
         TraceBusErrorChecker m_errorChecker;
 
-        AssetProcessor::FileStatePassthrough m_fileStateCache;
+        MockFileStateCache m_fileStateCache;
 
         AZStd::unique_ptr<QCoreApplication> m_qApp;
         AZStd::unique_ptr<TestingAssetProcessorManager> m_assetProcessorManager;
