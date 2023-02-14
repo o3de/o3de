@@ -125,7 +125,7 @@ namespace AZ::Internal
 #if defined(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES)
         // If this compile setting has been set, then allow whatever subset of settings overrides the user requested, whether this
         // is a debug, profile, or release build.
-        return static_cast<ComponentApplication::DevelopmentSettingsOverrides>(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES);
+        return static_cast<DevelopmentSettingsOverrides>(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES);
 #elif AZ_RELEASE_BUILD
         // By default, if no compile setting was provided, turn off all overrides in release builds.
         return DevelopmentSettingsOverrides::None;
