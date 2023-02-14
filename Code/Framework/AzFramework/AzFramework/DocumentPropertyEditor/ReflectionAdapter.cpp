@@ -255,7 +255,7 @@ namespace AZ::DocumentPropertyEditor
             void* valuePointer = access.Get();
 
             rapidjson::Document serializedValue;
-            auto result = JsonSerialization::Store(serializedValue, serializedValue.GetAllocator(), valuePointer, nullptr, valueType);
+            JsonSerialization::Store(serializedValue, serializedValue.GetAllocator(), valuePointer, nullptr, valueType);
 
             AZ::Dom::Value instancePointerValue;
             auto outputWriter = instancePointerValue.GetWriteHandler();
@@ -268,8 +268,7 @@ namespace AZ::DocumentPropertyEditor
                 {
                     void* marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType);
                     rapidjson::Document serializedValue;
-                    auto result =
-                        JsonSerialization::Store(serializedValue, serializedValue.GetAllocator(), marshalledPointer, nullptr, valueType);
+                    JsonSerialization::Store(serializedValue, serializedValue.GetAllocator(), marshalledPointer, nullptr, valueType);
 
                     JsonDeserializerSettings deserializeSettings;
                     deserializeSettings.m_serializeContext = m_serializeContext;
