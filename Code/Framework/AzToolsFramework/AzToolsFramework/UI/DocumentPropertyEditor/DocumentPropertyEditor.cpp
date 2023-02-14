@@ -1544,15 +1544,17 @@ namespace AzToolsFramework
 
     QWidget* DocumentPropertyEditor::GetWidgetAtPath(const AZ::Dom::Path& path)
     {
-        QWidget* currWidget = m_rootNode;
+        DPERowWidget* currParent = m_rootNode;
+        QWidget* currWidget = currParent;
         for (auto entry : path)
         {
-            auto* widgetAsRow = qobject_cast<DPERowWidget*>(currWidget);
-            if (!widgetAsRow || !entry.IsIndex())
+            const auto entryIndex = entry.GetIndex();
+            if (!currParent || currParent->m_domOrderedChildren.size() <= entryIndex)
             {
                 return nullptr;
             }
-            currWidget = widgetAsRow->m_domOrderedChildren[entry.GetIndex()];
+            currWidget = currParent->m_domOrderedChildren[entryIndex];
+            currParent = qobject_cast<DPERowWidget*>(currWidget);
         }
         return currWidget;
     }

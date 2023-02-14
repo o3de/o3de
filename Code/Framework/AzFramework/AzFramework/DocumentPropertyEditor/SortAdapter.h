@@ -97,7 +97,7 @@ namespace AZ::DocumentPropertyEditor
         void HandleReset() override;
         void HandleDomChange(const Dom::Patch& patch) override;
 
-        SortInfoNode* GetNodeAtSourcePath(Dom::Path sortedPath);
+        SortInfoNode* GetNodeAtSourcePath(Dom::Path sourcePath);
 
         void GenerateFullTree();
         void PopulateChildren(const Dom::Value& value, SortInfoNode* sortInfo);
@@ -105,7 +105,7 @@ namespace AZ::DocumentPropertyEditor
         Dom::Value GetSortedValue(const Dom::Value& sourceValue, SortInfoNode* sortInfo);
 
         //! re-sorts the row at the given path relative to its siblings and adds a patch operation if its place changed
-        void ResortRow(Dom::Path sortedPath, Dom::Patch& outgoingPatch);
+        void ResortRow(Dom::Path sourcePath, Dom::Patch& outgoingPatch);
 
         void GenerateMovePatches(
             const SortInfoNode* sortNode, Dom::Path indexPath, Dom::Path sortedPath, bool mapToSource, Dom::Patch& outgoingPatch);

@@ -165,8 +165,7 @@ namespace AZ::DocumentPropertyEditor
                         outgoingPatch.PushBack(Dom::PatchOperation::ReplaceOperation(sortedPath, operationIterator->GetValue()));
 
                         // the replaced column entry might've changed the row's sorting. Updated it
-                        sortedPath.Pop();
-                        ResortRow(sortedPath, outgoingPatch);
+                        ResortRow(GetRowPath(patchPath), outgoingPatch);
                     }
                     else
                     {
@@ -207,10 +206,10 @@ namespace AZ::DocumentPropertyEditor
         HandleReset();
     }
 
-    RowSortAdapter::SortInfoNode* RowSortAdapter::GetNodeAtSourcePath(Dom::Path sortedPath)
+    RowSortAdapter::SortInfoNode* RowSortAdapter::GetNodeAtSourcePath(Dom::Path sourcePath)
     {
         SortInfoNode* currNode = m_rootNode.get();
-        for (auto pathIter = sortedPath.begin(), endIter = sortedPath.end(); pathIter != endIter; ++pathIter)
+        for (auto pathIter = sourcePath.begin(), endIter = sourcePath.end(); pathIter != endIter; ++pathIter)
         {
             if (!pathIter->IsIndex())
             {
@@ -285,15 +284,9 @@ namespace AZ::DocumentPropertyEditor
         return sortedValue;
     }
 
-    void RowSortAdapter::ResortRow(Dom::Path sortedPath, Dom::Patch& outgoingPatch)
+    void RowSortAdapter::ResortRow(Dom::Path sourcePath, Dom::Patch& outgoingPatch)
     {
-        // record row's existing sorted index for comparison
-        auto& lastEntry = *(sortedPath.end() - 1);
-        AZ_Assert(lastEntry.IsIndex(), "rows are always referenced by index!");
-        const auto oldIndex = lastEntry.GetIndex();
-
         // get the actual node at sortedPath
-        auto sourcePath = MapToSourcePath(sortedPath);
         auto* node = GetNodeAtSourcePath(sourcePath);
 
         // remove the (possibly changed) node from its sorted set and re-add it to see if it ends up in the same position
@@ -315,6 +308,9 @@ namespace AZ::DocumentPropertyEditor
         AZ_Assert(sortedIter != sortedSet.end(), "re-inserted node not found!");
         const auto newIndex = (*indexIter)->m_domIndex;
 
+        // record row's existing sorted index for comparison
+        auto sortedPath = MapFromSourcePath(sourcePath);
+        const auto oldIndex = sortedPath.Back().GetIndex();
         if (newIndex != oldIndex)
         {
             auto newPath = sortedPath;
