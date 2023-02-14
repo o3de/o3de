@@ -150,7 +150,10 @@ namespace AZ::DocumentPropertyEditor
             relativePathFromEntity /= AZ::Dom::Path(serializedPath);
 
             auto* prefabAdapterInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabAdapterInterface>::Get();
-            prefabAdapterInterface->AddPropertyHandlerIfOverridden(adapterBuilder, relativePathFromEntity, m_entityId);
+            if (prefabAdapterInterface != nullptr)
+            {
+                prefabAdapterInterface->AddPropertyHandlerIfOverridden(adapterBuilder, relativePathFromEntity, m_entityId);
+            }
         }
     }
 } // namespace AZ::DocumentPropertyEditor
