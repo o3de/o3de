@@ -85,6 +85,13 @@ namespace AZ::Render
             return static_cast<uint32_t>(m_pagedDataVector.size());
         }
 
+        
+        AZStd::vector<AZStd::pair<StableDynamicArray<MeshInstanceData>::pageIterator, StableDynamicArray<MeshInstanceData>::pageIterator>>
+        GetParallelRanges()
+        {
+            return m_pagedDataVector.GetParallelRanges();
+        }
+
         MeshInstanceData& operator[](WeakHandle handle);
         const MeshInstanceData& operator[](WeakHandle handle) const;
 

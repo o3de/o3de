@@ -58,7 +58,7 @@ namespace UnitTest
         {
             for (size_t j = i + 1; j < m_indices.size(); ++j)
             {
-                EXPECT_NE(m_indices[i].m_index, m_indices[j].m_index);
+                EXPECT_NE(m_indices[i].m_handle, m_indices[j].m_handle);
             }
 
             // None of these have been intiailized yet, so they should not have been found
@@ -83,7 +83,7 @@ namespace UnitTest
         // Remove all of the entries
         for (size_t i = 0; i < m_indices.size(); ++i)
         {
-            m_meshInstanceManager.RemoveInstance(m_indices[i].m_index);
+            m_meshInstanceManager.RemoveInstance(m_indices[i].m_handle);
         }
 
         // All objects were removed, the size of the data vector should be 0
@@ -97,7 +97,7 @@ namespace UnitTest
         InsertResult instanceIndex = m_meshInstanceManager.AddInstance(m_uniqueKeys[refCountIncreaseIndex]);
 
         // We should get back the same instace index that was given originally
-        EXPECT_EQ(instanceIndex.m_index, m_indices[refCountIncreaseIndex].m_index);
+        EXPECT_EQ(instanceIndex.m_handle, m_indices[refCountIncreaseIndex].m_handle);
         // It was not inserted, since it already existed
         EXPECT_FALSE(instanceIndex.m_wasInserted);
         

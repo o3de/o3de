@@ -39,6 +39,12 @@ namespace AZ::Render
             return m_instanceData[handle];
         }
 
+        AZStd::vector<AZStd::pair<StableDynamicArray<MeshInstanceData>::pageIterator, StableDynamicArray<MeshInstanceData>::pageIterator>>
+        GetParallelRanges()
+        {
+            return m_instanceData.GetParallelRanges();
+        }
+
     private:
 
         MeshInstanceList m_instanceData;

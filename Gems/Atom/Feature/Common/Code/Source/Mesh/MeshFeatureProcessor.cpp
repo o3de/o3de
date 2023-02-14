@@ -190,71 +190,61 @@ namespace AZ
             AZ::Job* parentJob = packet.m_parentJob;
             AZStd::concurrency_check_scope scopeCheck(m_meshDataChecker);
 
-            // This is a really awful way to iterate over instance groups...
-            const auto perInstanceGroupJobLambda = [&]() -> void
+            const auto instanceManagerRanges = m_meshInstanceManager.GetParallelRanges();
+            AZStd::vector<Job*> perInstanceGroupJobQueue;
+            for (const auto& iteratorRange : instanceManagerRanges)
             {
-                m_instanceGroupIndices.clear();
                 RPI::Scene* scene = GetParentScene();
-                for (auto& modelDataIter : m_modelData)
+                // This is a really awful way to iterate over instance groups...
+                const auto perInstanceGroupJobLambda = [&]() -> void
                 {
-                    MeshFP::EndCullingData* endCullingData = modelDataIter.GetItem<ModelDataIndex::EndCullingData>();
-                    //ModelDataInstance* modelData = modelDataIter.GetItem<ModelDataIndex::Instance>();
-                    //auto model = modelData->GetModel();
-                    for (auto& meshDataIndices : endCullingData->m_instanceIndicesByLod)
+                    for (auto instanceGroupDataIter = iteratorRange.first; instanceGroupDataIter != iteratorRange.second;
+                         ++instanceGroupDataIter)
                     {
-                        for (uint32_t meshDataIndex = meshDataIndices.m_startIndex;
-                             meshDataIndex < meshDataIndices.m_startIndex + meshDataIndices.m_count;
-                             ++meshDataIndex)
+                        RPI::MeshDrawPacket& drawPacket = instanceGroupDataIter->m_drawPacket;
+                        if (drawPacket.Update(*scene, m_forceRebuildDrawPackets))
                         {
-                            uint32_t instanceIndex = m_meshData[meshDataIndex].m_instanceGroupHandle_metaDataMeshOffset;
-                            m_instanceGroupIndices.insert(instanceIndex);
-                        }
-                    }
-                }
-
-                for (MeshInstanceManager::Handle instanceIndex : m_instanceGroupIndices)
-                {
-                    MeshInstanceData& instanceData = m_meshInstanceManager[instanceIndex];
-                    RPI::MeshDrawPacket& drawPacket = instanceData.m_drawPacket;
-                    if (drawPacket.Update(*scene, m_forceRebuildDrawPackets))
-                    {
-                        // Clear any cached draw packets, since they need to be re-created
-                        instanceData.m_perViewDrawPackets.clear();
-                        instanceData.m_drawSrgInstanceDataIndices.clear();
-                        // We're going to need an index for m_instanceOffset every frame for each draw item, so cache those here
-                        for (auto& drawSrg : drawPacket.GetDrawSrgs())
-                        {
-                            RHI::ShaderInputConstantIndex drawSrgIndexInstanceOffsetIndex =
-                                drawSrg->FindShaderInputConstantIndex(s_m_instanceDataOffset_Name);
-
-                            instanceData.m_drawSrgInstanceDataIndices.push_back(drawSrgIndexInstanceOffsetIndex);
-                        }
-                        const RPI::MeshDrawPacket::RootConstantsLayoutList& rootConstantsLayouts =
-                            instanceData.m_drawPacket.GetRootConstantsLayouts();
-
-                        if (!rootConstantsLayouts.empty())
-                        {
-                            // Get the root constant layout
-                            RHI::ShaderInputConstantIndex shaderInputIndex =
-                                rootConstantsLayouts[0]->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
-
-                            if (shaderInputIndex.IsValid())
+                            // Clear any cached draw packets, since they need to be re-created
+                            instanceGroupDataIter->m_perViewDrawPackets.clear();
+                            instanceGroupDataIter->m_drawSrgInstanceDataIndices.clear();
+                            // We're going to need an index for m_instanceOffset every frame for each draw item, so cache those here
+                            for (auto& drawSrg : drawPacket.GetDrawSrgs())
                             {
-                                RHI::Interval interval = rootConstantsLayouts[0]->GetInterval(shaderInputIndex);
-                                instanceData.m_drawRootConstantInterval = interval;
+                                RHI::ShaderInputConstantIndex drawSrgIndexInstanceOffsetIndex =
+                                    drawSrg->FindShaderInputConstantIndex(s_m_instanceDataOffset_Name);
+
+                                instanceGroupDataIter->m_drawSrgInstanceDataIndices.push_back(drawSrgIndexInstanceOffsetIndex);
                             }
-                            else
+                            const RPI::MeshDrawPacket::RootConstantsLayoutList& rootConstantsLayouts =
+                                instanceGroupDataIter->m_drawPacket.GetRootConstantsLayouts();
+
+                            if (!rootConstantsLayouts.empty())
                             {
-                                instanceData.m_drawRootConstantInterval = RHI::Interval{};
+                                // Get the root constant layout
+                                RHI::ShaderInputConstantIndex shaderInputIndex =
+                                    rootConstantsLayouts[0]->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
+
+                                if (shaderInputIndex.IsValid())
+                                {
+                                    RHI::Interval interval = rootConstantsLayouts[0]->GetInterval(shaderInputIndex);
+                                    instanceGroupDataIter->m_drawRootConstantInterval = interval;
+                                }
+                                else
+                                {
+                                    instanceGroupDataIter->m_drawRootConstantInterval = RHI::Interval{};
+                                }
                             }
                         }
                     }
-                }
-            };
+                };
+                Job* executePerInstanceGroupJob =
+                    aznew JobFunction<decltype(perInstanceGroupJobLambda)>(perInstanceGroupJobLambda, true, nullptr); // Auto-deletes
+                perInstanceGroupJobQueue.push_back(executePerInstanceGroupJob);
+            }
 
             const auto iteratorRanges = m_modelData.GetParallelRanges();
             AZ::JobCompletion jobCompletion;
-            AZStd::vector<Job*> updateJobQueue;
+            AZStd::vector<Job*> updateCullingJobQueue;
             for (const auto& iteratorRange : iteratorRanges)
             {
                 const auto initJobLambda = [&]() -> void
@@ -301,9 +291,9 @@ namespace AZ
                     }
                 };
 
-                const auto updateJobLambda = [&]() -> void
+                const auto updateCullingJobLambda = [&]() -> void
                 {
-                    AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: Job");
+                    AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: UpdateCulling");
 
                     for (auto meshDataIter = iteratorRange.first; meshDataIter != iteratorRange.second; ++meshDataIter)
                     {
@@ -327,8 +317,8 @@ namespace AZ
                     }
                 };
                 Job* executeInitGroupJob = aznew JobFunction<decltype(initJobLambda)>(initJobLambda, true, nullptr); // Auto-deletes
-                Job* executeUpdateGroupJob = aznew JobFunction<decltype(updateJobLambda)>(updateJobLambda, true, nullptr); // Auto-deletes
-                updateJobQueue.push_back(executeUpdateGroupJob);
+                Job* executeUpdateGroupJob = aznew JobFunction<decltype(updateCullingJobLambda)>(updateCullingJobLambda, true, nullptr); // Auto-deletes
+                updateCullingJobQueue.push_back(executeUpdateGroupJob);
                 if (parentJob)
                 {
                     parentJob->StartAsChild(executeInitGroupJob);
@@ -354,18 +344,22 @@ namespace AZ
                 // TODO: this needs to be going the parent job. Simulate is being called in a job already. If we create a new job here, and call StartAndWaitForCompletion, then this thread might try to steal work, and end up excuting something that is trying to do a blocking asset load.
                 // And that blocking load will wait for the main thread to tick to load the asset. But the main thread is in RenderTick and waiting for this job to complete.
                 // Although I'm not certain if utilizing the parent job will fix the problem. 
-                Job* perInstanceGroupJob =
-                    aznew JobFunction<decltype(perInstanceGroupJobLambda)>(perInstanceGroupJobLambda, true, nullptr); // Auto-deletes
-                perInstanceGroupJob->StartAndWaitForCompletion();
-
-                // Now that that is done, execute the update jobs
-                AZ::JobCompletion updateJobCompletion;
-                for (Job* updateJob : updateJobQueue)
+                AZ::JobCompletion perInstanceGroupJobCompletion;
+                for (Job* perInstanceGroupJob : perInstanceGroupJobQueue)
                 {
-                    updateJob->SetDependent(&updateJobCompletion);
+                    perInstanceGroupJob->SetDependent(&perInstanceGroupJobCompletion);
+                    perInstanceGroupJob->Start();
+                }
+                perInstanceGroupJobCompletion.StartAndWaitForCompletion();
+
+                // Now that that the per-instance group work is done, execute the update jobs
+                AZ::JobCompletion updateCullingJobCompletion;
+                for (Job* updateJob : updateCullingJobQueue)
+                {
+                    updateJob->SetDependent(&updateCullingJobCompletion);
                     updateJob->Start();
                 }
-                updateJobCompletion.StartAndWaitForCompletion();
+                updateCullingJobCompletion.StartAndWaitForCompletion();
             }
 
             m_forceRebuildDrawPackets = false;

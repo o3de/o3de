@@ -46,7 +46,6 @@ namespace AZ
 
         class iterator;
         class const_iterator;
-        class pageIterator;
 
         friend iterator;
         friend const_iterator;
@@ -57,7 +56,7 @@ namespace AZ
         struct Page;
 
     public:
-
+        class pageIterator;
         using Handle = StableDynamicArrayHandle<T>;
         using WeakHandle = StableDynamicArrayWeakHandle<T>;
 
