@@ -33,7 +33,6 @@ if(EXISTS "${O3DE_USER_PROJECT_JSON_PATH}")
         if(user_project_engine)
             # Update the project json data so it is available in the O3DE_PROJECT_JSON global property
             string(JSON o3de_project_json SET "${o3de_project_json}" engine "\"${user_project_engine}\"" )
-            set(project_engine ${O3DE_ENGINE_NAME_TO_USE})
             set(O3DE_ENGINE_NAME_TO_USE ${user_project_engine})
         endif()
     endif()
