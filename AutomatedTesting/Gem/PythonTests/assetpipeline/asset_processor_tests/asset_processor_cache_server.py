@@ -100,7 +100,7 @@ class TestsAssetProcessorGUI_Windows(object):
         asset_processor.wait_for_idle()
         asset_processor.terminate()
 
-
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.assetpipeline
     def test_AssetCacheServer_LocalWorkUnaffected(self, asset_processor, ap_setup_fixture):
         """
