@@ -482,6 +482,8 @@ set(FILES
     UI/PropertyEditor/GenericComboBoxCtrl.inl
     UI/PropertyEditor/InstanceDataHierarchy.cpp
     UI/PropertyEditor/InstanceDataHierarchy.h
+    UI/PropertyEditor/LabelHandler.h
+    UI/PropertyEditor/LabelHandler.cpp
     UI/PropertyEditor/PropertyAssetCtrl.hxx
     UI/PropertyEditor/PropertyAssetCtrl.cpp
     UI/PropertyEditor/PropertyAudioCtrl.h
