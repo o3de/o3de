@@ -186,7 +186,7 @@ namespace LmbrCentral
         if (shapeDrawParams.m_filled)
         {
             debugDisplay.SetColor(shapeDrawParams.m_shapeColor.GetAsVector4());
-            debugDisplay.DrawBall(sphereConfig.m_translationOffset, sphereConfig.m_radius);
+            debugDisplay.DrawBall(sphereConfig.m_translationOffset, sphereConfig.m_radius, false);
         }
 
         debugDisplay.SetColor(shapeDrawParams.m_wireColor.GetAsVector4());
