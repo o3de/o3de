@@ -632,21 +632,21 @@ namespace AZ
          * @return True if there are any handlers connected to the
          * EBus. Otherwise, false.
          */
-        static inline bool HasHandlers();
+        static bool HasHandlers();
 
         /**
          * Returns whether handlers are connected to this specific address.
          * @return True if there are any handlers connected at the address.
          * Otherwise, false.
          */
-        static inline bool HasHandlers(const BusIdType& id);
+        static bool HasHandlers(const BusIdType& id);
 
         /**
          * Returns whether handlers are connected to the specific cached address.
          * @return True if there are any handlers connected at the cached address.
          * Otherwise, false.
          */
-        static inline bool HasHandlers(const BusPtr& ptr);
+        static bool HasHandlers(const BusPtr& ptr);
 
         /**
          * Gets the ID of the address that is currently receiving an event.

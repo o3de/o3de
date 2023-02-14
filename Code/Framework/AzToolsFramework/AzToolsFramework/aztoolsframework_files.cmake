@@ -62,11 +62,13 @@ set(FILES
     AzToolsFrameworkModule.h
     AzToolsFrameworkModule.cpp
     API/ToolsApplicationAPI.h
+    API/ToolsApplicationAPI.cpp
     API/EditorAssetSystemAPI.h
     API/EditorAssetSystemAPI.cpp
     API/AssetDatabaseBus.h
     API/ComponentEntityObjectBus.h
     API/ComponentEntitySelectionBus.h
+    API/ComponentEntitySelectionBus.cpp
     API/ComponentModeCollectionInterface.h
     API/EditorCameraBus.h
     API/EditorCameraBus.cpp
@@ -480,6 +482,8 @@ set(FILES
     UI/PropertyEditor/GenericComboBoxCtrl.inl
     UI/PropertyEditor/InstanceDataHierarchy.cpp
     UI/PropertyEditor/InstanceDataHierarchy.h
+    UI/PropertyEditor/LabelHandler.h
+    UI/PropertyEditor/LabelHandler.cpp
     UI/PropertyEditor/PropertyAssetCtrl.hxx
     UI/PropertyEditor/PropertyAssetCtrl.cpp
     UI/PropertyEditor/PropertyAudioCtrl.h
