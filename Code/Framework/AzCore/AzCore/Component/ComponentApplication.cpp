@@ -108,7 +108,34 @@ namespace AZ::Internal
 
         return createCoreMetricsFile;
     }
-}
+
+    enum class DevelopmentSettingsOverrides
+    {
+        None, // 0 = no overrides are allowed
+        CommandLineOnly, // 1 = registry overrides are allowed from the command line
+        CommandLineAndProject, // 2 = registry overrides are allowed from the command line, engine, gem, and project files
+        CommandLineProjectAndUser // 3 = registry overrides are allowed from the command line, engine, gem, project, and user files
+    };
+
+    //! Determines which development settings (user registry files, project registry files, etc) should
+    //! be allowed to override the default settings.
+    //! @return the level of development settings overrides that are allowed
+    static constexpr DevelopmentSettingsOverrides GetDevelopmentSettingsOverrides()
+    {
+#if defined(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES)
+        // If this compile setting has been set, then allow whatever subset of settings overrides the user requested, whether this
+        // is a debug, profile, or release build.
+        return static_cast<ComponentApplication::DevelopmentSettingsOverrides>(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES);
+#elif AZ_RELEASE_BUILD
+        // By default, if no compile setting was provided, turn off all overrides in release builds.
+        return DevelopmentSettingsOverrides::None;
+#else
+        // By default, if no compile setting was provided, turn on all overrides in non-release builds.
+        return DevelopmentSettingsOverrides::CommandLineProjectAndUser;
+#endif
+    }
+
+} // namespace AZ::Internal
 
 namespace AZ
 {
@@ -516,21 +543,6 @@ namespace AZ
         AZ::Debug::Trace::Instance().Destroy();
     }
 
-    constexpr ComponentApplication::DevelopmentSettingsOverrides ComponentApplication::GetDevelopmentSettingsOverrides()
-    {
-#if defined(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES)
-        // If this compile setting has been set, then allow whatever subset of settings overrides the user requested, whether this
-        // is a debug, profile, or release build.
-        return static_cast<ComponentApplication::DevelopmentSettingsOverrides>(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES);
-#elif AZ_RELEASE_BUILD
-        // By default, if no compile setting was provided, turn off all overrides in release builds.
-        return DevelopmentSettingsOverrides::None;
-#else
-        // By default, if no compile setting was provided, turn on all overrides in non-release builds.
-        return DevelopmentSettingsOverrides::CommandLineProjectAndUser;
-#endif
-    }
-
     void ComponentApplication::InitializeSettingsRegistry()
     {
         SettingsRegistryMergeUtils::ParseCommandLine(m_commandLine);
@@ -571,7 +583,8 @@ namespace AZ
         // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
 
-        if constexpr (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineProjectAndUser)
+        if constexpr (
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
         {
             // Only merge the Global User Registry (~/.o3de/Registry) if that override type is allowed by our compile settings.
             SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
@@ -944,18 +957,24 @@ namespace AZ
         const AZ::SettingsRegistryInterface::Specializations& specializations,
         AZStd::vector<char>& scratchBuffer)
     {
-        if constexpr (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineProjectAndUser)
+        if constexpr (AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly)
         {
-            // In development builds apply the o3de registry and the command line to allow early overrides. This will
-            // allow developers to override things like default paths or Asset Processor connection settings. Any additional
-            // values will be replaced by later loads, so this step will happen again at the end of loading.
-            SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
-                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-            // Project User Registry is merged after the command line here to allow make sure the any command line override of the project
-            // path is used for merging the project's user registry
-            SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
-                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            if constexpr (
+                AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
+            {
+                // In development builds apply the o3de registry and the command line to allow early overrides. This will
+                // allow developers to override things like default paths or Asset Processor connection settings. Any additional
+                // values will be replaced by later loads, so this step will happen again at the end of loading.
+                SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+                    registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+                SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+                // Project User Registry is merged after the command line here to allow make sure the any command line override of the
+                // project path is used for merging the project's user registry
+                SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
+                    registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            }
+
+            // Make sure the command line is merged at least once, before updating the runtime filepaths
             SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
             SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
         }
@@ -983,8 +1002,7 @@ namespace AZ
 
 #if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
         if constexpr (
-            (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineAndProject) ||
-            (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineProjectAndUser))
+            AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineAndProject)
         {
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(
                 registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
@@ -1001,20 +1019,20 @@ namespace AZ
         const AZ::SettingsRegistryInterface::Specializations& specializations,
         AZStd::vector<char>& scratchBuffer)
     {
-        if constexpr (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineProjectAndUser)
+        if constexpr (AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly)
         {
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
-                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
-                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            if constexpr (
+                AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
+            {
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+                    registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
+                    registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            }
+
+            // The final merge of the command line should also execute any command-line commands.
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
-        }
-        else if constexpr (
-            (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineAndProject) ||
-            (GetDevelopmentSettingsOverrides() == DevelopmentSettingsOverrides::CommandLineOnly))
-        {
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
         }
 
         // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
