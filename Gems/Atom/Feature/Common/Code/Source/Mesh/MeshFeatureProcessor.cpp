@@ -642,8 +642,17 @@ namespace AZ
 
 
                 // Divy up the work into tasks
-                constexpr uint32_t approximateBatchSize = 256;
-                uint32_t taskCount = totalVisibleInstanceCount / approximateBatchSize;
+                constexpr uint32_t minimumBatchSize = 256;
+                // If there are a lot of instances to iterate over, split them evenly among threads
+                uint32_t taskCount = AZStd::thread::hardware_concurrency();
+                uint32_t approximateBatchSize = totalVisibleInstanceCount / taskCount;
+                // If there are not very many instances, split them into reasonably sized batches
+                if (approximateBatchSize < minimumBatchSize)
+                {
+                    taskCount = (totalVisibleInstanceCount / minimumBatchSize) + 1;
+                    approximateBatchSize = totalVisibleInstanceCount / taskCount;
+                }
+
                 uint32_t currentBatchStart = 0;
                 uint32_t currentBatchEndNonInclusive = 0;
                 // For each task, find the next boundary where the work needs to be split
