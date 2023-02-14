@@ -339,7 +339,13 @@ namespace AZ
 
             // RPI::SceneNotificationBus::Handler overrides...
             void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
-                        
+
+            void ResizePerViewInstanceVectors(size_t viewCount);
+            void ProcessVisibilityListForView(size_t viewIndex, const RPI::ViewPtr& view);
+            void SortInstanceDataForView(size_t viewIndex);
+            void AddInstancedDrawPacketsTasksForView(TaskGraph& taskGraph, size_t viewIndex, const RPI::ViewPtr& view);
+            void UpdateGPUInstanceBufferForView(size_t viewIndex, const RPI::ViewPtr& view);
+
             AZStd::concurrency_checker m_meshDataChecker;
 
         public:
@@ -372,7 +378,8 @@ namespace AZ
                     return AZStd::tie(m_instanceIndex,  m_depth) < AZStd::tie(rhs.m_instanceIndex, rhs.m_depth);
                 }
             };
-            AZStd::vector<SortInstanceData, AZStdIAllocator> m_perViewSortInstanceData;
+
+            AZStd::vector<AZStd::vector<SortInstanceData, AZStdIAllocator>, AZStdIAllocator> m_perViewSortInstanceData;
         private:
             AZStd::mutex m_meshDataMutex;
             RHI::FreeListAllocator m_meshDataAllocator;
