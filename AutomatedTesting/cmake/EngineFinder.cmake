@@ -79,7 +79,7 @@ if(user_project_json)
 endif()
 
 
-# Option 3: Find a compatible engine registered in o3de_manfiest.json 
+# Option 3: Find a compatible engine registered in ~/.o3de/o3de_manifest.json 
 if(DEFINED ENV{USERPROFILE} AND EXISTS $ENV{USERPROFILE})
     set(manifest_path $ENV{USERPROFILE}/.o3de/o3de_manifest.json) # Windows
 else()

@@ -47,10 +47,13 @@ set_property(GLOBAL PROPERTY O3DE_PROJECT_JSON ${o3de_project_json})
 set(LY_ENGINE_NAME_TO_USE ${O3DE_ENGINE_NAME_TO_USE})
 
 # Option 1: Use engine manually set in CMAKE_MODULE_PATH, old engines will check engine name only
+# NOTE: find_package() will fail if CMAKE_MODULE_PATH doesn't contain the cmake folder inside the engine 
 find_package(o3de MODULE QUIET)
 if(o3de_FOUND)
     message(STATUS "Selecting engine from CMAKE_MODULE_PATH '${CMAKE_MODULE_PATH}'.")
     return()
+elseif(CMAKE_MODULE_PATH)
+    message(VERBOSE "No compatible engine found from CMAKE_MODULE_PATH '${CMAKE_MODULE_PATH}'.")
 endif()
 
 # Option 2: Use the engine from the 'engine_path' field in <project>/user/project.json
@@ -76,7 +79,7 @@ if(user_project_json)
 endif()
 
 
-# Option 3: Find a compatible engine registered in o3de_manfiest.json 
+# Option 3: Find a compatible engine registered in ~/.o3de/o3de_manifest.json 
 if(DEFINED ENV{USERPROFILE} AND EXISTS $ENV{USERPROFILE})
     set(manifest_path $ENV{USERPROFILE}/.o3de/o3de_manifest.json) # Windows
 else()
