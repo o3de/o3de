@@ -58,4 +58,32 @@ class TestMetricsXMLtoCSV(unittest.TestCase):
 
         assert under_test == 'passed'
 
-    
+    @mock.patch('pytest_metrics_xml_to_csv._determine_test_result')
+    @mock.patch('ly_test_tools.cli.codeowners_hint.get_codeowners')
+    @mock.patch('xml.etree.ElementTree.parse')
+    def test_ParsePytestXMLToCsv_HappyPath_WorksCorrectly(self, mock_parse, mock_get_codeowners, mock_determine_results):
+        mock_xml = mock.MagicMock()
+        mock_entry = mock.MagicMock()
+        mock_entry.attrib = {
+            'name': 'mock_test_name',
+            'time': 1,
+            'file': mock.MagicMock(),
+        }
+        mock_testcases = [
+            mock_entry
+        ]
+        mock_xml.findall.return_value = mock_testcases
+        mock_get_codeowners.return_value = [None, 'mock_codeowner']
+        mock_parse.return_value.getroot.return_value = mock_xml
+        mock_writer = mock.MagicMock()
+        mock_xml_path = mock.MagicMock()
+        mock_determine_results.return_value = 'passed'
+
+        pytest_metrics_xml_to_csv.parse_pytest_xmls_to_csv(mock_xml_path, mock_writer)
+
+        mock_writer.writerow.assert_called_once_with({
+            'test_name': 'mock_test_name',
+            'duration_seconds': 1,
+            'status': 'passed',
+            'sig_owner': 'mock_codeowner'
+        })
