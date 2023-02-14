@@ -34,8 +34,8 @@ namespace Multiplayer
 
         static void Reflect(AZ::ReflectContext* context);
 
-        void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
-        void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnActivate(EntityIsMigrating entityIsMigrating) override;
+        void OnDeactivate(EntityIsMigrating entityIsMigrating) override;
 
         // AZ::TickBus::Handler overrides...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -54,7 +54,6 @@ namespace Multiplayer
 
     class NetworkDebugPlayerIdComponentController
     : public NetworkDebugPlayerIdComponentControllerBase
-    , private AZ::TickBus::Handler
     {
     public:
         explicit NetworkDebugPlayerIdComponentController(NetworkDebugPlayerIdComponent& parent);
@@ -63,9 +62,23 @@ namespace Multiplayer
         void OnDeactivate(EntityIsMigrating entityIsMigrating) override;
 
     private:
-        // AZ::TickBus::Handler overrides...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        void OnConnectionAcquired();
+        void OnEndpointDisconnected();
 
         AzNetworking::INetworkInterface* m_networkInterface = nullptr;
+
+        ConnectionAcquiredEvent::Handler m_connectionAcquiredHandler = ConnectionAcquiredEvent::Handler(
+            [this](MultiplayerAgentDatum)
+            {
+                this->OnConnectionAcquired();
+            });
+
+        EndpointDisconnectedEvent::Handler m_endpointDisconnectedHandler = EndpointDisconnectedEvent::Handler(
+            [this](MultiplayerAgentType)
+            {
+                this->OnEndpointDisconnected();
+            });
+
+        uint32_t m_playerId = 0;
     };
-}
+} // namespace Multiplayer

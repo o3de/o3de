@@ -15,6 +15,8 @@
 
 namespace Multiplayer
 {
+    AZ_CVAR(bool, cl_debugPlayerIdRender, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether NetworkDebugPlayerIdComponent should render the player id and connection count on-screen.");
+
     void NetworkDebugPlayerIdComponent::Reflect(AZ::ReflectContext* context)
     {
         if (const auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -42,7 +44,7 @@ namespace Multiplayer
         NetworkDebugPlayerIdComponentBase::Reflect(context);
     }
 
-    void NetworkDebugPlayerIdComponent::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    void NetworkDebugPlayerIdComponent::OnActivate([[maybe_unused]] EntityIsMigrating entityIsMigrating)
     {
         #if (!AZ_TRAIT_CLIENT)
             return;
@@ -71,19 +73,23 @@ namespace Multiplayer
 
         m_drawParams.m_drawViewportId = m_viewport->GetId();
         m_drawParams.m_scale = AZ::Vector2(m_fontScale);
-        m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Center;
         m_drawParams.m_color = m_fontColor;
 
         AZ::TickBus::Handler::BusConnect();
     }
 
-    void NetworkDebugPlayerIdComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    void NetworkDebugPlayerIdComponent::OnDeactivate([[maybe_unused]] EntityIsMigrating entityIsMigrating)
     {
         AZ::TickBus::Handler::BusDisconnect();
     }
 
     void NetworkDebugPlayerIdComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+        if (!cl_debugPlayerIdRender)
+        {
+            return;
+        }
+
         AZ::Vector3 renderWorldSpace = GetEntity()->GetTransform()->GetWorldTranslation() + m_translationOffset;
 
         // Don't render others players' on-screen debug text if the player is behind the camera
@@ -100,7 +106,7 @@ namespace Multiplayer
         const AzFramework::WindowSize windowSize = m_viewport->GetViewportSize();
         AzFramework::ScreenPoint renderScreenpoint = AzFramework::WorldToScreen(
             renderWorldSpace, m_viewport->GetCameraViewMatrixAsMatrix3x4(), m_viewport->GetCameraProjectionMatrix(), AzFramework::ScreenSize(windowSize.m_width, windowSize.m_height));
-
+        m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Center;
         m_drawParams.m_position = AZ::Vector3(aznumeric_cast<float>(renderScreenpoint.m_x), aznumeric_cast<float>(renderScreenpoint.m_y), 0.f);
 
         AZStd::string playerIdText = AZStd::string::format("Player %i", GetPlayerId());
@@ -115,9 +121,15 @@ namespace Multiplayer
                 return;
             }
 
+            // Render connection count in the lower right-hand corner
             const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, playerIdText).GetY();
             const float lineSpacing = 0.5f * textHeight;
-            m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() + textHeight + lineSpacing);
+            const AzFramework::WindowSize viewportSize = m_viewport->GetViewportSize();
+            const AZ::Vector3 viewportConnectionBottomRightBorderPadding(-40.0f, -40.0f + textHeight + lineSpacing, 0.0f);
+            m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
+            m_drawParams.m_position =
+                AZ::Vector3(aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height), 1.0f) +
+                AZ::Vector3(viewportConnectionBottomRightBorderPadding) * m_viewport->GetDpiScalingFactor();
 
             AZStd::string playerCountText = AZStd::string::format("Player Count: %i", controller->GetConnectionCount());
             m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, playerCountText);
@@ -129,7 +141,7 @@ namespace Multiplayer
     {
     }
 
-    void NetworkDebugPlayerIdComponentController::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    void NetworkDebugPlayerIdComponentController::OnActivate([[maybe_unused]] EntityIsMigrating entityIsMigrating)
     {
         # if AZ_TRAIT_SERVER
             m_networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
@@ -140,35 +152,34 @@ namespace Multiplayer
 
                 // Multiplayer system doesn't directly track the number of players.
                 // Instead just assign this player an id by checking how many machines are already connected to this host.
-                // Note 1: This doesn't support reassigning player-ids to rejoining players
-                // Note 2: This doesn't consider multi-server connections; it's possible that connection count includes other servers (not just player machines)
-                // Note 3: Client-server player count will be wrong by -1; client-server has its own player without any connections.
+                // Note 1: Players can have duplicate ids based on how many players were connected at the time they activated.
+                // Note 2: This doesn't support reassigning player-ids to rejoining players
+                // Note 3: This doesn't consider multi-server connections; it's possible that connection count includes other servers (not just player machines)
+                // Note 4: Client-server player count will be wrong by -1; client-server has its own player without any connections.
                 SetPlayerId(currentConnectionCount); 
+                SetConnectionCount(currentConnectionCount);
 
-                AZ::TickBus::Handler::BusConnect();
+                AZ::Interface<IMultiplayer>::Get()->AddConnectionAcquiredHandler(m_connectionAcquiredHandler);
+                AZ::Interface<IMultiplayer>::Get()->AddEndpointDisconnectedHandler(m_endpointDisconnectedHandler);
             }
         #endif
     }
 
-    void NetworkDebugPlayerIdComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    void NetworkDebugPlayerIdComponentController::OnDeactivate([[maybe_unused]] EntityIsMigrating entityIsMigrating)
     {
-        if (IsNetEntityRoleAuthority())
-        {
-            AZ::TickBus::Handler::BusDisconnect();
-        }
+        m_connectionAcquiredHandler.Disconnect();
+        m_endpointDisconnectedHandler.Disconnect();
     }
 
-    void NetworkDebugPlayerIdComponentController::OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]AZ::ScriptTimePoint time)
+    void NetworkDebugPlayerIdComponentController::OnConnectionAcquired()
     {
-        #if AZ_TRAIT_SERVER
-            if (IsNetEntityRoleAuthority())
-            {
-                uint32_t currentConnectionCount = m_networkInterface->GetConnectionSet().GetConnectionCount();
-                if (GetConnectionCount() != currentConnectionCount)
-                {
-                    SetConnectionCount(currentConnectionCount);
-                }
-            }
-        #endif
+        uint32_t currentConnectionCount = m_networkInterface->GetConnectionSet().GetConnectionCount() + 1;
+        SetConnectionCount(currentConnectionCount);
+    }
+
+    void NetworkDebugPlayerIdComponentController::OnEndpointDisconnected()
+    {
+        uint32_t currentConnectionCount = m_networkInterface->GetConnectionSet().GetConnectionCount() - 1;
+        SetConnectionCount(currentConnectionCount);
     }
 } // namespace Multiplayer
