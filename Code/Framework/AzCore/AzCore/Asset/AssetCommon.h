@@ -1267,3 +1267,4 @@ namespace AZStd
     };
 }
 
+DECLARE_EBUS_EXTERN(Data::AssetEvents);

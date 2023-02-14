@@ -47,7 +47,7 @@ namespace EMotionFX
             , private AZ::TickBus::Handler
             , private CrySystemEventBus::Handler
             , private EMotionFXRequestBus::Handler
-            , private RaycastRequestBus::Handler
+            , private IRaycastRequests
 #if defined (EMOTIONFXANIMATION_EDITOR)
             , private AzToolsFramework::EditorEvents::Bus::Handler
             , private AzToolsFramework::EditorAnimationSystemRequestsBus::Handler
@@ -98,10 +98,10 @@ namespace EMotionFX
             ////////////////////////////////////////////////////////////////////////
 
             ////////////////////////////////////////////////////////////////////////
-            // RaycastRequestBus
+            // IRaycastRequests overrides ...
             void EnableRayRequests() override;
             void DisableRayRequests() override;
-            RaycastRequests::RaycastResult Raycast(AZ::EntityId entityId, const RaycastRequests::RaycastRequest& rayRequest) override;
+            IRaycastRequests::RaycastResult Raycast(AZ::EntityId entityId, const IRaycastRequests::RaycastRequest& rayRequest) override;
             ////////////////////////////////////////////////////////////////////////
 
 

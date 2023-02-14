@@ -518,6 +518,12 @@ namespace AzToolsFramework
 
         virtual void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* node) override
         {
+            // Can bail out here if there's no class metadata (e.g. if the node is a UIElement instead of a DataElement)
+            if (!node->GetClassMetadata())
+            {
+                return;
+            }
+
             WidgetType* wid = static_cast<WidgetType*>(widget);
 
             const AZ::Uuid& actualUUID = node->GetClassMetadata()->m_typeId;
@@ -562,6 +568,12 @@ namespace AzToolsFramework
         virtual void ReadValuesIntoGUI_Internal(QWidget* widget, InstanceDataNode* node) override
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+            // Can bail out here if there's no class metadata (e.g. if the node is a UIElement instead of a DataElement)
+            if (!node->GetClassMetadata())
+            {
+                return;
+            }
 
             WidgetType* wid = static_cast<WidgetType*>(widget);
 

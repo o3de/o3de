@@ -29,7 +29,7 @@ namespace AzToolsFramework
 
     AZ::u32 MultiLineTextEditHandler::GetHandlerName() const
     {
-        return AZ_CRC("MultiLineEdit", 0xf5d93777);
+        return AZ::Edit::UIHandlers::MultiLineEdit;
     }
 
     bool MultiLineTextEditHandler::AutoDelete() const
@@ -52,6 +52,21 @@ namespace AzToolsFramework
             {
                 AZ_WarningOnce("AzToolsFramework", false, 
                     "Failed to read 'PlaceholderText' attribute from property '%s' into multi-line text field.", debugName);
+            }
+        }
+        else if (attrib == AZ::Edit::Attributes::ValueText)
+        {
+            AZStd::string valueText;
+            if (attrValue->Read<AZStd::string>(valueText))
+            {
+                GUI->blockSignals(true);
+                GUI->SetText(valueText.c_str());
+                GUI->blockSignals(false);
+            }
+            else
+            {
+                AZ_WarningOnce("AzToolsFramework", false,
+                    "Failed to read 'ValueText' attribute from property '%s' into multi-line text field.", debugName);
             }
         }
         else if (attrib == AZ::Edit::Attributes::ReadOnly)

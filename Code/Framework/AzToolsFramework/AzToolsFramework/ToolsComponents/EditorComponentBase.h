@@ -16,8 +16,7 @@
  * [Editor Components documentation](https://www.o3de.org/docs/user-guide/programming/components/editor-components/).
  */
 
-#ifndef EDITOR_COMPONENT_BASE_H
-#define EDITOR_COMPONENT_BASE_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -411,6 +410,4 @@ namespace AzToolsFramework
     } // namespace Components
 } // namespace AzToolsFramework
 
-
-
-#endif
+DECLARE_EBUS_EXTERN_WITH_TRAITS(AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);

@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTBUS_H
-#define AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTBUS_H
+#pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Uuid.h>
@@ -235,4 +234,4 @@ namespace AzToolsFramework
     using EditorLegacyGameModeNotificationBus = AZ::EBus<EditorLegacyGameModeNotifications>;
 } // namespace AzToolsFramework
 
-#endif // AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTBUS_H
+DECLARE_EBUS_EXTERN(AzToolsFramework::EditorEntityContextRequests);
