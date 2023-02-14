@@ -182,31 +182,40 @@ def register_all_engines_in_folder(engines_path: pathlib.Path,
 
 def register_all_projects_in_folder(projects_path: pathlib.Path,
                                     remove: bool = False,
-                                    engine_path: pathlib.Path = None) -> int:
-    return register_all_o3de_objects_of_type_in_folder(projects_path, 'project', remove, False,
-                                                       stop_on_template_folders, engine_path=engine_path)
+                                    engine_path: pathlib.Path = None,
+                                    force: bool = False,
+                                    dry_run: bool = False) -> int:
+    return register_all_o3de_objects_of_type_in_folder(projects_path, 'project', remove, force,
+                                                       stop_on_template_folders, engine_path=engine_path, 
+                                                       dry_run=dry_run)
 
 
 def register_all_gems_in_folder(gems_path: pathlib.Path,
                                 remove: bool = False,
                                 engine_path: pathlib.Path = None,
-                                project_path: pathlib.Path = None) -> int:
-    return register_all_o3de_objects_of_type_in_folder(gems_path, 'gem', remove, False, stop_on_template_folders,
-                                                       engine_path=engine_path)
+                                project_path: pathlib.Path = None,
+                                force: bool = False,
+                                dry_run: bool = False) -> int:
+    return register_all_o3de_objects_of_type_in_folder(gems_path, 'gem', remove, force, stop_on_template_folders,
+                                                       engine_path=engine_path, dry_run=dry_run)
 
 
 def register_all_templates_in_folder(templates_path: pathlib.Path,
                                      remove: bool = False,
-                                     engine_path: pathlib.Path = None) -> int:
-    return register_all_o3de_objects_of_type_in_folder(templates_path, 'template', remove, False, None,
-                                                       engine_path=engine_path)
+                                     engine_path: pathlib.Path = None,
+                                     force: bool = False,
+                                     dry_run: bool = False) -> int:
+    return register_all_o3de_objects_of_type_in_folder(templates_path, 'template', remove, force, None,
+                                                       engine_path=engine_path, dry_run=dry_run)
 
 
 def register_all_restricted_in_folder(restricted_path: pathlib.Path,
                                       remove: bool = False,
-                                      engine_path: pathlib.Path = None) -> int:
-    return register_all_o3de_objects_of_type_in_folder(restricted_path, 'restricted', remove, False, None,
-                                                       engine_path=engine_path)
+                                     engine_path: pathlib.Path = None,
+                                     force: bool = False,
+                                     dry_run: bool = False) -> int:
+    return register_all_o3de_objects_of_type_in_folder(restricted_path, 'restricted', remove, force, None,
+                                                       engine_path=engine_path, dry_run=dry_run)
 
 
 def register_all_repos_in_folder(repos_path: pathlib.Path,
@@ -366,7 +375,7 @@ def register_gem_path(json_data: dict,
         # because most gems depend on engine gems which would not be found 
         if project_path and manifest.get_project_engine_path(project_path):
             # note this check includes engine and manifest gems
-            incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path)
+            incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_path, gem_json_data, project_path)
             if incompatible_objects: 
                 logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
                     'following objects/APIs and requires the --force parameter to register:\n  '+
@@ -377,8 +386,11 @@ def register_gem_path(json_data: dict,
             if not engine_json_data:
                 logger.error(f'Failed to load engine.json data needed for registration from {engine_path}')
                 return 1
-            # note this does NOT include o3de manifest gems, just engine gems
-            engine_gems_json_data = manifest.get_gems_json_data_by_name(engine_path=engine_path)
+            # note this does NOT include o3de manifest gems, just engine gems and any gems that may
+            # be nested inside the gem we're adding which will now be available
+            engine_gems_json_data = manifest.get_gems_json_data_by_name(engine_path=engine_path,
+                external_subdirectories=[gem_path])
+
             incompatible_objects = compatibility.get_gem_engine_incompatible_objects(gem_json_data, engine_json_data, engine_gems_json_data)
             if incompatible_objects: 
                 logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
@@ -393,7 +405,7 @@ def register_gem_path(json_data: dict,
                                      dry_run=dry_run)
 
     if result == 0 and dry_run:
-        logger.info('Gem path was not registered because --dry-run option was specified')
+        logger.info(f'Gem path {gem_path} was not registered because the --dry-run option was specified')
 
     return result
 
@@ -836,13 +848,13 @@ def _run_register(args: argparse) -> int:
     elif args.all_engines_path:
         return register_all_engines_in_folder(args.all_engines_path, args.remove, args.force)
     elif args.all_projects_path:
-        return register_all_projects_in_folder(args.all_projects_path, args.remove)
+        return register_all_projects_in_folder(args.all_projects_path, args.remove, force=args.force, dry_run=args.dry_run)
     elif args.all_gems_path:
-        return register_all_gems_in_folder(args.all_gems_path, args.remove)
+        return register_all_gems_in_folder(args.all_gems_path, args.remove, force=args.force, dry_run=args.dry_run)
     elif args.all_templates_path:
-        return register_all_templates_in_folder(args.all_templates_path, args.remove)
+        return register_all_templates_in_folder(args.all_templates_path, args.remove, force=args.force, dry_run=args.dry_run)
     elif args.all_restricted_path:
-        return register_all_restricted_in_folder(args.all_restricted_path, args.remove)
+        return register_all_restricted_in_folder(args.all_restricted_path, args.remove, force=args.force, dry_run=args.dry_run)
     elif args.all_repo_uri:
         return register_all_repos_in_folder(args.all_restricted_path, args.remove, args.force)
     else:

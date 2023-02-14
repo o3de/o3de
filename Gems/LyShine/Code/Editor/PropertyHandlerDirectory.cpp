@@ -46,7 +46,7 @@ PropertyDirectoryCtrl::PropertyDirectoryCtrl(QWidget* parent)
 
         refreshButton->setFocusPolicy(Qt::StrongFocus);
 
-        refreshButton->setIcon(QIcon("Icons/PropertyEditor/reset_icon.png"));
+        refreshButton->setIcon(QIcon(":/PropertyEditor/Resources/reset_icon.png"));
 
         // The icon size needs to be smaller than the fixed size to make sure it visually aligns properly.
         QSize iconSize = QSize(fixedSize.width() - 2, fixedSize.height() - 2);

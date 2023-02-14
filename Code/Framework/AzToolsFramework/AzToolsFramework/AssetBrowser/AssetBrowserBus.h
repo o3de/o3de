@@ -362,7 +362,8 @@ namespace AzToolsFramework
             //! Notifies the handler that a new asset was created from the editor so they can handle renaming or other behavior as necessary.
             //! @param assetPath The full path to the asset that was created.
             //! @param creatorBusId The file creator's bus handler address. A default constructed Crc32 implies no one is listening.
-            virtual void HandleAssetCreatedInEditor(const AZStd::string_view /*assetPath*/, const AZ::Crc32& /*creatorBusId*/) {}
+            //! @param initialFilenameChange Notifies the handler that this file should give users the option to rename upon creation, set to false if you will use custom naming
+            virtual void HandleAssetCreatedInEditor(const AZStd::string_view /*assetPath*/, const AZ::Crc32& /*creatorBusId*/, const bool /*initialFilenameChange*/) {}
 
             //! Notifies a given handler that an asset which was recently created has been given a non-default name.
             //! @param assetPath The full path to the asset that had its initial name change.

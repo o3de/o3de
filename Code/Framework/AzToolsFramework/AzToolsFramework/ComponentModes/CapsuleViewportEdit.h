@@ -16,8 +16,7 @@ namespace AzToolsFramework
     //! Wraps linear manipulators, providing a viewport experience for 
     //! modifying the radius and height of a capsule.
     //! It is designed to be usable either by a component mode or by other contexts which are not associated with a
-    //! particular component, so it does not contain any reference to an EntityComponentIdPair or other component-based
-    //! identifier.
+    //! particular component, so editing does not rely on an EntityComponentIdPair or other component-based identifier.
     class CapsuleViewportEdit : public BaseShapeViewportEdit
     {
     public:
@@ -33,8 +32,8 @@ namespace AzToolsFramework
         void Setup(const ManipulatorManagerId manipulatorManagerId) override;
         void Teardown() override;
         void UpdateManipulators() override;
-        void ResetValues() override;
-        void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
+        void ResetValuesImpl() override;
+        void AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
 
         void OnCameraStateChanged(const AzFramework::CameraState& cameraState);
     private:

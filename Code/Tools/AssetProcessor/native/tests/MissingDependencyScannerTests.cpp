@@ -166,6 +166,7 @@ namespace AssetProcessor
             AZStd::shared_ptr<AssetDatabaseConnection> m_dbConn;
             MissingDependencyScanner_Test m_scanner;
             UnitTests::MockPathConversion m_pathConversion;
+            AzToolsFramework::UuidUtilComponent m_uuidUtil;
             AzToolsFramework::MetadataManager m_metadataManager;
             AssetProcessor::UuidManager m_uuidManager;
             UnitTestUtils::ScopedDir m_scopedDir; // Sets up FileIO instance

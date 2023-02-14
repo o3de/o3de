@@ -53,6 +53,9 @@ namespace AzToolsFramework
             void entryDoubleClicked(const AssetBrowserEntry* entry);
             void showInFolderTriggered(const AssetBrowserEntry* entry);
 
+        public Q_SLOTS:
+            void UpdateThumbnailview();
+
         private:
             AssetBrowserTreeView* m_assetTreeView = nullptr;
             AzQtComponents::AssetFolderThumbnailView* m_thumbnailViewWidget = nullptr;

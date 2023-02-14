@@ -150,7 +150,9 @@ class TestEnableGemCommand:
         def get_gems_json_data_by_name(engine_path:pathlib.Path = None, 
                                        project_path: pathlib.Path = None, 
                                        include_manifest_gems: bool = False,
-                                       include_engine_gems: bool = False) -> dict:
+                                       include_engine_gems: bool = False,
+                                       external_subdirectories: list = None
+                                       ) -> dict:
             return {}
 
         def get_project_json_data(project_name: str = None,
@@ -296,7 +298,9 @@ class TestEnableGemCommand:
         def get_gems_json_data_by_name( engine_path:pathlib.Path = None, 
                                         project_path: pathlib.Path = None, 
                                         include_manifest_gems: bool = False,
-                                        include_engine_gems: bool = False) -> dict:
+                                        include_engine_gems: bool = False,
+                                        external_subdirectories: list = None
+                                        ) -> dict:
             all_gems_json_data = {}
             for gem_name in gem_json_data_by_name.keys():
                 all_gems_json_data[gem_name] = get_gem_json_data(gem_name=gem_name)
