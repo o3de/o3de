@@ -1022,6 +1022,51 @@ void UiParticleEmitterComponent::SetOverrideAlpha(float alpha)
     m_isAlphaOverridden = true;
 }
 
+void UiParticleEmitterComponent::SetImageIndex(AZ::u32 index)
+{
+    if (m_spriteSheetCellIndex != index)
+    {
+        m_spriteSheetCellIndex = index;
+        MarkRenderGraphDirty();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+const AZ::u32 UiParticleEmitterComponent::GetImageIndex()
+{
+    return m_spriteSheetCellIndex;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+const AZ::u32 UiParticleEmitterComponent::GetImageIndexCount()
+{
+    if (m_sprite)
+    {
+        return static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
+    }
+
+    return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZStd::string UiParticleEmitterComponent::GetImageIndexAlias(AZ::u32 index)
+{
+    return m_sprite ? m_sprite->GetCellAlias(index) : AZStd::string();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiParticleEmitterComponent::SetImageIndexAlias(AZ::u32 index, const AZStd::string& alias)
+{
+    m_sprite ? m_sprite->SetCellAlias(index, alias) : AZ_UNUSED(0);
+    MarkRenderGraphDirty();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::u32 UiParticleEmitterComponent::GetImageIndexFromAlias(const AZStd::string& alias)
+{
+    return m_sprite ? m_sprite->GetCellIndexFromAlias(alias) : 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC STATIC MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1462,6 +1507,7 @@ void UiParticleEmitterComponent::Activate()
     UiVisualBus::Handler::BusConnect(GetEntityId());
     UiCanvasSizeNotificationBus::Handler::BusConnect();
     UiElementNotificationBus::Handler::BusConnect(GetEntityId());
+    UiIndexableImageBus::Handler::BusConnect(GetEntityId());
 
     AZ::EntityId canvasEntityId;
     UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
@@ -1486,6 +1532,7 @@ void UiParticleEmitterComponent::Deactivate()
     UiVisualBus::Handler::BusDisconnect();
     UiCanvasSizeNotificationBus::Handler::BusDisconnect();
     UiElementNotificationBus::Handler::BusDisconnect();
+    UiIndexableImageBus::Handler::BusDisconnect();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

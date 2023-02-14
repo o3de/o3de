@@ -369,7 +369,7 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
-                        ->Attribute(AZ_CRC("ValueText"), &SimulatedObject::GetJointsTextOverride)
+                        ->Attribute(AZ::Edit::Attributes::ValueText, &SimulatedObject::GetJointsTextOverride)
                     ->DataElement(AZ::Edit::UIHandlers::SpinBox, &SimulatedObject::m_gravityFactor, "Gravity factor", "The gravity multiplier, which is a multiplier over the individual joint gravity values.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 20.0f)
