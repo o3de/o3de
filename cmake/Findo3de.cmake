@@ -34,7 +34,7 @@ endif()
 set(found_matching_engine FALSE)
 
 if(NOT O3DE_ENGINE_NAME_TO_USE)
-    # Look in for a local engine override in <project>/user/project.json
+    # Look for a local engine override in <project>/user/project.json
     cmake_path(SET O3DE_USER_PROJECT_JSON_PATH ${CMAKE_CURRENT_SOURCE_DIR}/user/project.json)
     if(EXISTS "${O3DE_USER_PROJECT_JSON_PATH}")
         file(READ "${O3DE_USER_PROJECT_JSON_PATH}" user_project_json)
