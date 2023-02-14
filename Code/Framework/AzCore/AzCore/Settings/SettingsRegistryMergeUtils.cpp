@@ -277,10 +277,6 @@ namespace AZ::Internal
                 // Look through the manifest engines for the most compatible engine
                 for (auto& engineInfo : searchedEngineInfo)
                 {
-                    // The following creation of projectJsonPath handles the two cases we care about, relative and
-                    // absolute project paths, due to the way AZ::IO::Path handles appending of paths.
-                    // if projectPath is absolute, engineInfo.m_path will be discarded e.g. <projectPath>/project.json
-                    // if projectPath is relative, projectJsonPath will include the engine path e.g. <enginePath>/<projectPath>/project.json
                     AZ::IO::FixedMaxPath projectJsonPath{projectPath / ProjectJsonFilename};
                     AZ::IO::FixedMaxPath projectUserJsonPath{projectUserPath / ProjectJsonFilename};
                     AZ::IO::FixedMaxPath engineJsonPath{engineInfo.m_path  / EngineJsonFilename};
