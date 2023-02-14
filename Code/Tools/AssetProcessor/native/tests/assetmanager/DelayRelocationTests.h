@@ -14,6 +14,9 @@ namespace UnitTests
 {
     class DelayRelocationTests : public AssetManagerTestingBase
     {
+    public:
+        void SetUp() override;
 
+        AssetProcessor::IUuidRequests* m_uuidInterface{};
     };
 } // namespace UnitTests
