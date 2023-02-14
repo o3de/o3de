@@ -629,7 +629,7 @@ namespace AzToolsFramework
             if (rowToRemove)
             {
                 // we're removing a row, remove any associated saved expander state
-                dpe->RemoveExpanderStateForRow(rowToRemove->GetPath());
+                dpe->RemoveExpanderStateForRow(rowToRemove->BuildDomPath());
                 DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowToRemove);
             }
             else if (auto foundEntry = m_widgetToPropertyHandlerInfo.find(childWidget); foundEntry != m_widgetToPropertyHandlerInfo.end())
@@ -1223,7 +1223,7 @@ namespace AzToolsFramework
 
             pushAllChildRowsToStack(row->m_domOrderedChildren);
 
-            GetDPE()->SetSavedExpanderStateForRow(row->GetPath(), isExpanded);
+            GetDPE()->SetSavedExpanderStateForRow(row->BuildDomPath(), isExpanded);
         }
     }
 
