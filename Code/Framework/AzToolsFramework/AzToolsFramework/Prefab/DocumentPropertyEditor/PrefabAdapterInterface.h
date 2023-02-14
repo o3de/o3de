@@ -13,8 +13,15 @@
 
 namespace AZ
 {
-    class DocumentPropertyEditor::AdapterBuilder;
-    class Dom::Path;
+    namespace DocumentPropertyEditor
+    {
+        class AdapterBuilder;
+    }
+
+    namespace Dom
+    {
+        class Path;
+    }
 }
 
 namespace AzToolsFramework::Prefab
