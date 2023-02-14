@@ -187,7 +187,7 @@ void EditorActionsHandler::OnActionContextRegistrationHook()
         m_actionManagerInterface->RegisterActionContext(
             EditorIdentifiers::MainWindowActionContextIdentifier, contextProperties);
 
-        auto outcome = m_hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::MainWindowActionContextIdentifier, m_mainWindow);
+        m_hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::MainWindowActionContextIdentifier, m_mainWindow);
     }
 
     // Editor Entity Property Editor (Entity Inspector)

@@ -104,20 +104,19 @@ namespace AzToolsFramework
 
         // Collect all actions that are enabled and match with the shortcut.
         QList<QAction*> matchingActions;
-        for (QAction* action : contextActions)
+        auto CollectMatchingActions = [&matchingActions, shortcutKeySequence](const QList<QAction*>& actions)
         {
-            if (action->isEnabled() && action->shortcut() == shortcutKeySequence)
+            for (QAction* action : actions)
             {
-                matchingActions.append(action);
+                if (action->isEnabled() && action->shortcut() == shortcutKeySequence)
+                {
+                    matchingActions.append(action);
+                }
             }
-        }
-        for (QAction* action : widgetActions)
-        {
-            if (action->isEnabled() && action->shortcut() == shortcutKeySequence)
-            {
-                matchingActions.append(action);
-            }
-        }
+        };
+
+        CollectMatchingActions(contextActions);
+        CollectMatchingActions(widgetActions);
 
         // Trigger all matching actions.
         for (QAction* action : matchingActions)

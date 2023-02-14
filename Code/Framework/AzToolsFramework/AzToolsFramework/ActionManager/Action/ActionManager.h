@@ -31,7 +31,7 @@ namespace AzToolsFramework
         static bool TriggerActiveActionsWithShortcut(
             const QList<QAction*>& contextActions, const QList<QAction*>& widgetActions, const QKeySequence& shortcutKeySequence);
 
-        EditorActionContext* m_editorActionContext;
+        EditorActionContext* m_editorActionContext = nullptr;
     };
 
     //! Action Manager class definition.

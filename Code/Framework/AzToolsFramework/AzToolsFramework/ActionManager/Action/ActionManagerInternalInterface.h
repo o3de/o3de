@@ -51,7 +51,7 @@ namespace AzToolsFramework
 
         //! Retrieve an ActionContextWidgetWatcher via its action context identifier.
         //! @param actionContextIdentifier The identifier for the action context whose ActionContextWidgetWatcher to retrieve.
-        //! @return A raw const pointer to the ActionContextWidgetWatcher, or nullptr if the ActionContextWidgetWatcher could not be found.
+        //! @return A raw pointer to the ActionContextWidgetWatcher, or nullptr if the ActionContextWidgetWatcher could not be found.
         virtual ActionContextWidgetWatcher* GetActionContextWidgetWatcher(const AZStd::string& actionContextIdentifier) = 0;
 
         //! Retrieve the Action's visibility property for Menus.
