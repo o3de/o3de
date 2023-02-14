@@ -25,7 +25,7 @@ namespace AZ::DocumentPropertyEditor
         Dom::Path MapFromSourcePath(const Dom::Path& sourcePath) const override;
         Dom::Path MapToSourcePath(const Dom::Path& filterPath) const override;
 
-        Dom::Path MapPath(const Dom::Path& sourcePath, bool mapToSource) const;
+        Dom::Path MapPath(const Dom::Path& sourcePath, bool mapFromSource) const;
 
     protected:
         Dom::Value GenerateContents() override;

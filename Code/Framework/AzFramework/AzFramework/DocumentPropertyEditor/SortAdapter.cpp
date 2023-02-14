@@ -53,7 +53,7 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
-    Dom::Path RowSortAdapter::MapPath(const Dom::Path& path, bool mapToSource) const
+    Dom::Path RowSortAdapter::MapPath(const Dom::Path& path, bool mapFromSource) const
     {
         if (!m_sortActive)
         {
@@ -73,19 +73,19 @@ namespace AZ::DocumentPropertyEditor
                      AZStd::views::zip(currNode->m_indexSortedChildren, currNode->m_adapterSortedChildren))
                 {
                     const SortInfoNode* comparisonNode =
-                        static_cast<SortInfoNode*>((mapToSource ? adapterSortedNode : indexSortedNode.get()));
+                        static_cast<SortInfoNode*>((mapFromSource ? adapterSortedNode : indexSortedNode.get()));
                     const auto comparisonIndex = comparisonNode->m_domIndex;
                     const auto pathIndex = pathEntry.GetIndex();
                     if (comparisonIndex == pathIndex)
                     {
                         // set the mapped entry
-                        const auto mappedIndex = (mapToSource ? indexSortedNode->m_domIndex : adapterSortedNode->m_domIndex);
+                        const auto mappedIndex = (mapFromSource ? indexSortedNode->m_domIndex : adapterSortedNode->m_domIndex);
                         mappedPath.Push(mappedIndex);
                         currNode = comparisonNode;
                         found = true;
                         break;
                     }
-                    else if (!mapToSource && pathIndex < comparisonIndex)
+                    else if (!mapFromSource && pathIndex < comparisonIndex)
                     {
                         // if we're searching the index-ordered container, we can stop if we've passed the index we're looking for
                         break;

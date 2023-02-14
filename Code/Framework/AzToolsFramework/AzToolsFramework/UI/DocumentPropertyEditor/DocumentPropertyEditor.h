@@ -122,8 +122,6 @@ namespace AzToolsFramework
         void SetExpanded(bool expanded, bool recurseToChildRows = false);
         bool IsExpanded() const;
 
-        const AZ::Dom::Path GetPath() const;
-
         bool HasChildRows() const;
         int GetLevel() const;
 
@@ -133,7 +131,6 @@ namespace AzToolsFramework
     protected:
         DocumentPropertyEditor* GetDPE() const;
         void AddDomChildWidget(size_t domIndex, QWidget* childWidget);
-        void AddColumnWidget(QWidget* columnWidget, size_t domIndex, const AZ::Dom::Value& domValue);
 
         AZ::Dom::Path BuildDomPath();
         void SaveExpanderStatesForChildRows(bool isExpanded);
