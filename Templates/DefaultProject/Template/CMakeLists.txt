@@ -13,11 +13,11 @@ if(NOT PROJECT_NAME)
 
     # Utility function to look for an optional 'engine_finder_cmake_path'setting 
     function(get_engine_finder_cmake_path project_json_file_path path_value)
-        if(NOT $path_value AND EXISTS "${project_json_file_path}")
+        if(NOT path_value AND EXISTS "${project_json_file_path}")
             file(READ "${project_json_file_path}" project_json_data)
             string(JSON engine_finder_cmake_value ERROR_VARIABLE json_error GET ${project_json_data} "engine_finder_cmake_path")
             if(NOT json_error AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${engine_finder_cmake_value}")
-                set(${path_value} "${engine_finder_path}" PARENT_SCOPE)
+                set(${path_value} "${CMAKE_CURRENT_SOURCE_DIR}/${engine_finder_cmake_value}" PARENT_SCOPE)
             endif()
         endif()
     endfunction()
