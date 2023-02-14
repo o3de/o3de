@@ -52,7 +52,7 @@ if(project_engine AND NOT json_error)
     o3de_get_version_specifier_parts(${project_engine} project_engine_name specifier_op specifier_version)
 
     cmake_path(GET current_path PARENT_PATH this_engine_path)
-    o3de_engine_compatible(${this_engine_path} ${project_engine_name} ${specifier_op} ${specifier_version} is_compatible this_engine_version FALSE)
+    o3de_engine_compatible(${this_engine_path} ${project_engine_name} ${specifier_op} ${specifier_version} is_compatible this_engine_version)
     if(is_compatible)
         set(PACKAGE_VERSION ${this_engine_version})
         set(PACKAGE_VERSION_COMPATIBLE TRUE)
