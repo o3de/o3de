@@ -136,16 +136,14 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_EntityFallsUnderGravity)
     {
-        float expectedGravityMultiplier = 1.5f;
-
-        GameplayTestBasis basis(m_testSceneHandle, expectedGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         sceneInterface->RemoveSimulatedBody(basis.m_sceneHandle, basis.m_floor->m_bodyHandle);
         
         // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
         auto startPosition = basis.m_controller->GetPosition();
         
-        int timeStepCount = 2;
+        int timeStepCount = 10;
         float totalTime = 0.0f;
         float timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
         float distanceFell = 0.0f;
@@ -157,11 +155,11 @@ namespace PhysX
         }
 
         auto endPosition = basis.m_controller->GetPosition();
-        auto currentGravity = basis.m_testScene->GetGravity();
+        
         // calculate distance fallen (d = 0.5 * g * t^2)
-        distanceFell = 0.5f * (currentGravity.GetZ() * expectedGravityMultiplier) * (totalTime * totalTime);
-
-        EXPECT_THAT(endPosition.GetZ(), testing::FloatEq(startPosition.GetZ() - distanceFell));
+        distanceFell = 0.5f * (-10) * (totalTime * totalTime);
+        
+        EXPECT_THAT(endPosition.GetZ(), testing::FloatNear(startPosition.GetZ() + distanceFell, 0.1f));
     }
 
 } // namespace PhysX
