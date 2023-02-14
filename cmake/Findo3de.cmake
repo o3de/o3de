@@ -29,8 +29,28 @@ if(json_error)
     message(FATAL_ERROR "Unable to read key 'engine_name' from '${engine_json_path}', error: ${json_error}")
 endif()
 
+
 # Make sure we are matching O3DE_ENGINE_NAME_TO_USE with the current engine
 set(found_matching_engine FALSE)
+
+if(NOT O3DE_ENGINE_NAME_TO_USE)
+    # Look in for a local engine override in <project>/user/project.json
+    cmake_path(SET O3DE_USER_PROJECT_JSON_PATH ${CMAKE_CURRENT_SOURCE_DIR}/user/project.json)
+    if(EXISTS "${O3DE_USER_PROJECT_JSON_PATH}")
+        file(READ "${O3DE_USER_PROJECT_JSON_PATH}" user_project_json)
+        string(JSON O3DE_ENGINE_NAME_TO_USE ERROR_VARIABLE json_error GET ${user_project_json} engine)
+    endif()
+
+    # Look in project.json if no local override was found
+    if(NOT O3DE_ENGINE_NAME_TO_USE)
+        cmake_path(SET O3DE_PROJECT_JSON_PATH ${CMAKE_CURRENT_SOURCE_DIR}/project.json)
+        file(READ "${O3DE_PROJECT_JSON_PATH}" project_json)
+        string(JSON O3DE_ENGINE_NAME_TO_USE ERROR_VARIABLE json_error GET ${project_json} engine)
+        if(json_error)
+            message(FATAL_ERROR "Unable to read key 'engine' from '${O3DE_PROJECT_JSON_PATH}'\nPlease register the project with an engine.\nError: ${json_error}")
+        endif()
+    endif()
+endif()
 
 # Support older CMake prefixes
 if(LY_ENGINE_NAME_TO_USE AND NOT O3DE_ENGINE_NAME_TO_USE)
@@ -39,7 +59,10 @@ endif()
 
 if(this_engine_name STREQUAL O3DE_ENGINE_NAME_TO_USE)
     set(found_matching_engine TRUE)
+else()
+    message(VERBOSE "Project engine name '${O3DE_ENGINE_NAME_TO_USE}' does not match this engine name '${this_engine_name}' in '${engine_json_path}'")
 endif()
+
 
 find_package_handle_standard_args(o3de
     "The engine name for this engine '${this_engine_name}' does not match the projects engine name '${O3DE_ENGINE_NAME_TO_USE}'."
