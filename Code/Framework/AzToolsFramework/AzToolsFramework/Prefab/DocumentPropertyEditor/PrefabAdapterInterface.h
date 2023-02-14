@@ -26,9 +26,9 @@ namespace AzToolsFramework::Prefab
 
         //! Adds a property handler to the DPE DOM if an override is present on the entity at the provided path.
         //! @param adapterBuilder The builder to use to add the property handler. It could have already added other things to DOM.
-        //! @param path The path as seen by the entity to any one of its component properties
+        //! @param relativePathFromEntity The path as seen by the entity a component or its properties.
         //! @param entityId The entity id to use to query the prefab system about the presence of overrides.
         virtual void AddPropertyHandlerIfOverridden(
-            AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder, const AZ::Dom::Path& path, AZ::EntityId entityId) = 0;
+            AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder, const AZ::Dom::Path& relativePathFromEntity, AZ::EntityId entityId) = 0;
     };
 } // namespace AzToolsFramework::Prefab

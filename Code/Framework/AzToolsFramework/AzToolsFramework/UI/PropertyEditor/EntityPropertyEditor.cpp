@@ -503,7 +503,7 @@ namespace AzToolsFramework
 
         initEntityPropertyEditorResources();
 
-        if (AzToolsFramework::Prefab::IsInspectorOverrideManagementEnabled())
+        if (Prefab::IsInspectorOverrideManagementEnabled())
         {
             m_prefabAdapter = AZStd::make_unique<Prefab::PrefabAdapter>();
         }

@@ -145,12 +145,12 @@ namespace AZ::DocumentPropertyEditor
     {
         if (!serializedPath.empty())
         {
-            AZ::Dom::Path componentPathFromEntity(AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName);
-            componentPathFromEntity /= m_componentAlias;
-            componentPathFromEntity /= AZ::Dom::Path(serializedPath);
+            AZ::Dom::Path relativePathFromEntity(AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName);
+            relativePathFromEntity /= m_componentAlias;
+            relativePathFromEntity /= AZ::Dom::Path(serializedPath);
 
             auto* prefabAdapterInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabAdapterInterface>::Get();
-            prefabAdapterInterface->AddPropertyHandlerIfOverridden(adapterBuilder, componentPathFromEntity, m_entityId);
+            prefabAdapterInterface->AddPropertyHandlerIfOverridden(adapterBuilder, relativePathFromEntity, m_entityId);
         }
     }
 } // namespace AZ::DocumentPropertyEditor

@@ -1262,7 +1262,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerListModel::OnContainerEntityStatusChanged(AZ::EntityId entityId, [[maybe_unused]] bool open)
     {
-        if (!AzToolsFramework::Prefab::IsPrefabOverridesUxEnabled())
+        if (!Prefab::IsPrefabOverridesUxEnabled())
         {
             // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
             QueueEntityUpdate(entityId);

@@ -268,7 +268,7 @@ namespace AzToolsFramework
             auto value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node);
             if (value.has_value())
             {
-                if (!AzToolsFramework::Prefab::IsInspectorOverrideManagementEnabled())
+                if (!Prefab::IsInspectorOverrideManagementEnabled())
                 {
                     m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
                 }

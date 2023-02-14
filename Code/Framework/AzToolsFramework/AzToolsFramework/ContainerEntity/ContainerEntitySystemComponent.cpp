@@ -116,7 +116,7 @@ namespace AzToolsFramework
         auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
-        if (AzToolsFramework::Prefab::IsPrefabOverridesUxEnabled())
+        if (Prefab::IsPrefabOverridesUxEnabled())
         {
             // Get currently selected entities
             EntityIdList selectedEntities;
