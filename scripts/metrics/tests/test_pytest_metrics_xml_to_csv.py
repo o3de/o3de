@@ -41,3 +41,21 @@ class TestMetricsXMLtoCSV(unittest.TestCase):
         under_test = pytest_metrics_xml_to_csv._get_default_csv_filename()
 
         assert under_test == "xxxx_11_12_13_14_pytest.csv"
+
+    def test_DetermineTestResult_FailedResult_ReturnsCorrectly(self):
+        mock_node = mock.MagicMock()
+        mock_node.find.return_value = True
+
+        under_test = pytest_metrics_xml_to_csv._determine_test_result(mock_node)
+
+        assert under_test == 'failed'
+
+    def test_DetermineTestResult_PassedResult_ReturnsCorrectly(self):
+        mock_node = mock.MagicMock()
+        mock_node.find.return_value = None
+
+        under_test = pytest_metrics_xml_to_csv._determine_test_result(mock_node)
+
+        assert under_test == 'passed'
+
+    
