@@ -204,11 +204,6 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto OnActivate = CallbackAttributeDefinition<void()>("OnActivate");
     };
 
-    struct PrefabOverrideProperty : PropertyEditorDefinition
-    {
-        static constexpr AZStd::string_view Name = "PrefabOverrideProperty";
-    };
-
     struct CheckBox : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "CheckBox";

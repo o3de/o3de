@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 
 #include <QIcon>
@@ -33,7 +33,7 @@ namespace AzToolsFramework::Prefab
 
         static constexpr const AZStd::string_view GetHandlerName()
         {
-            return AZ::DocumentPropertyEditor::Nodes::PrefabOverrideProperty::Name;
+            return PrefabPropertyEditorNodes::PrefabOverrideProperty::Name;
         }
 
     private:

@@ -26,7 +26,7 @@ namespace AzToolsFramework::Prefab
         void AddPropertyHandlerIfOverridden(
             AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder, const AZ::Dom::Path& componentPathInEntity, AZ::EntityId entityId) override;
 
-        AzToolsFramework::Prefab::PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
+        PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
     };
 
 } // namespace AzToolsFramework::Prefab

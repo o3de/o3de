@@ -773,6 +773,7 @@ set(FILES
     Prefab/DocumentPropertyEditor/PrefabAdapter.h
     Prefab/DocumentPropertyEditor/PrefabAdapter.cpp
     Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h
+    Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h
     Prefab/EditorPrefabComponent.h
     Prefab/EditorPrefabComponent.cpp
     Prefab/PrefabEditorPreferences.h

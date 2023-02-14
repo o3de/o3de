@@ -7,9 +7,11 @@
  */
 
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
-#include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapter.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/OverridePropertyHandler.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -21,6 +23,12 @@ namespace AzToolsFramework::Prefab
             AZ_Assert(false, "Could not get PrefabOverridePublicInterface on PrefabAdapter construction.");
             return;
         }
+
+        auto* propertyEditorToolsSystemInterface = AZ::Interface<PropertyEditorToolsSystemInterface>::Get();
+        AZ_Assert(
+            propertyEditorToolsSystemInterface != nullptr,
+            "PrefabAdapter::PrefabAdapter() - PropertyEditorToolsSystemInterface is not available");
+        propertyEditorToolsSystemInterface->RegisterHandler<OverridePropertyHandler>();
 
         AZ::Interface<PrefabAdapterInterface>::Register(this);
     }
@@ -35,7 +43,7 @@ namespace AzToolsFramework::Prefab
     {
         if (m_prefabOverridePublicInterface->AreOverridesPresent(entityId, componentPathFromEntity))
         {
-            adapterBuilder->BeginPropertyEditor<AZ::DocumentPropertyEditor::Nodes::PrefabOverrideProperty>();
+            adapterBuilder->BeginPropertyEditor<PrefabPropertyEditorNodes::PrefabOverrideProperty>();
             adapterBuilder->Attribute(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::SharePriorColumn, true);
             adapterBuilder->Attribute(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::UseMinimumWidth, true);
             adapterBuilder->Attribute(
@@ -44,4 +52,4 @@ namespace AzToolsFramework::Prefab
             adapterBuilder->EndPropertyEditor();
         }
     }
-}
+} // namespace AzToolsFramework::Prefab

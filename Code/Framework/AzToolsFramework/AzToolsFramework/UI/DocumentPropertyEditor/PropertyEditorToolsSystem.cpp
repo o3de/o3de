@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Interface/Interface.h>
-#include <AzToolsFramework/Prefab/DocumentPropertyEditor/OverridePropertyHandler.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/ContainerActionButtonHandler.h>
 
@@ -28,7 +27,6 @@ namespace AzToolsFramework
     void PropertyEditorToolsSystem::RegisterDefaultHandlers()
     {
         PropertyEditorToolsSystemInterface::RegisterHandler<ContainerActionButtonHandler>();
-        PropertyEditorToolsSystemInterface::RegisterHandler<Prefab::OverridePropertyHandler>();
     }
 
     PropertyEditorToolsSystem::PropertyHandlerId PropertyEditorToolsSystem::GetPropertyHandlerForNode(const AZ::Dom::Value node)
