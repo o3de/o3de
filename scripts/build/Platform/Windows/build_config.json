@@ -22,7 +22,7 @@
     "COMMAND": "upload_metrics_windows.cmd",
     "PARAMETERS": {
       "CSV_DIRECTORY": "build\\windows\\Testing\\csv",
-      "BUCKET":  "!O3DE_METRICS_S3_BUCKET!"
+      "BUCKET":  "%O3DE_METRICS_S3_BUCKET%"
     }
   },
   "test_cpu_profile_internal_metrics": {
