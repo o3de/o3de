@@ -168,14 +168,6 @@ namespace AzFramework
     using InputDeviceRequestBus = AZ::EBus<InputDeviceRequests>;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    inline const InputDevice* InputDeviceRequests::FindInputDevice(const InputDeviceId& deviceId)
-    {
-        const InputDevice* inputDevice = nullptr;
-        InputDeviceRequestBus::EventResult(inputDevice, deviceId, &InputDeviceRequests::GetInputDevice);
-        return inputDevice;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     template<class CustomDataType>
     inline void InputDeviceRequests::GetInputChannelIdsWithCustomDataOfType(
         InputChannelIdSet& o_channelIds,
@@ -279,3 +271,5 @@ namespace AzFramework
         InputDeviceType& m_inputDevice; //!< Reference to the input device that owns this handler
     };
 } // namespace AzFramework
+
+DECLARE_EBUS_EXTERN(AzFramework::InputDeviceRequests);

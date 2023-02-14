@@ -853,43 +853,36 @@ namespace AzToolsFramework
         {
             return false;
         }
-
-        // Check if we're in focus mode
-        auto entityContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-        AZ::EntityId focusRoot = m_focusModeInterface->GetFocusRoot(entityContextId);
-        if (focusRoot.IsValid())
+        
+        // Only allow reparenting the selected entities if they are all under the same instance.
+        // We check the parent entity separately because it may be a container entity and
+        // container entities consider their owning instance to be the parent instance
+        auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+        AZ_Assert(prefabPublicInterface, "EntityOutlinerListModel requires a PrefabPublicInterface instance on Initialize.");
+        if (!prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntityIds))
         {
-            // Only allow reparenting the selected entities if they are all under the same instance.
-            // We check the parent entity separately because it may be a container entity and
-            // container entities consider their owning instance to be the parent instance
-            auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
-            AZ_Assert(prefabPublicInterface, "EntityOutlinerListModel requires a PrefabPublicInterface instance on Initialize.");
-            if (!prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntityIds))
+            return false;
+        }
+
+        // Disable parenting to a different owning instance
+        auto instanceEntityMapperInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get();
+        if (instanceEntityMapperInterface)
+        {
+            auto parentInstanceReference = instanceEntityMapperInterface->FindOwningInstance(newParentId);
+
+            AZ::EntityId firstSelectedEntityId = selectedEntityIds.front();
+            auto selectedInstanceReference = instanceEntityMapperInterface->FindOwningInstance(firstSelectedEntityId);
+            // If the selected entity id is a container entity id, then we need get its parent owning instance.
+            // This is because containers, despite representing the nested instance in the parent, are owned by the child.
+            if ((selectedInstanceReference->get().GetContainerEntityId() == firstSelectedEntityId) &&
+                !prefabPublicInterface->IsLevelInstanceContainerEntity(firstSelectedEntityId))
             {
-                return false;
+                selectedInstanceReference = selectedInstanceReference->get().GetParentInstance();
             }
 
-            // Disable parenting to a different owning instance
-            auto instanceEntityMapperInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get();
-            if (instanceEntityMapperInterface)
+            if (&(parentInstanceReference->get()) != &(selectedInstanceReference->get()))
             {
-                auto parentInstanceReference = instanceEntityMapperInterface->FindOwningInstance(newParentId);
-
-                AZ::EntityId firstSelectedEntityId = selectedEntityIds.front();
-                auto selectedInstanceReference = instanceEntityMapperInterface->FindOwningInstance(firstSelectedEntityId);
-                // If the selected entity id is a container entity id, then we need get its parent owning instance.
-                // This is because containers, despite representing the nested instance in the parent, are owned by the child.
-                if ((selectedInstanceReference->get().GetContainerEntityId() == firstSelectedEntityId) &&
-                    !prefabPublicInterface->IsLevelInstanceContainerEntity(firstSelectedEntityId))
-                {
-                    selectedInstanceReference = selectedInstanceReference->get().GetParentInstance();
-                }
-
-                if (&(parentInstanceReference->get()) != &(selectedInstanceReference->get()))
-                {
-                    return false;
-                }
+                return false;
             }
         }
 
