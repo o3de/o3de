@@ -476,8 +476,8 @@ namespace AZ
             DataPatchTypeUpgrade(AZStd::string_view nodeName, unsigned int fromVersion, unsigned int toVersion, AZStd::function<ToT(const FromT& data)> upgradeFunc)
                 : DataPatchUpgrade(nodeName, fromVersion, toVersion)
                 , m_upgrade(AZStd::move(upgradeFunc))
-                , m_fromTypeID(azrtti_typeid<FromT>())
-                , m_toTypeID(azrtti_typeid<ToT>())
+                , m_fromTypeID(AZ::AzTypeInfo<FromT>::Uuid())
+                , m_toTypeID(AZ::AzTypeInfo<ToT>::Uuid())
             {
                 m_upgradeType = TYPE_UPGRADE;
             }
@@ -1560,7 +1560,7 @@ namespace AZ
         static AZStd::any CreateAny(SerializeContext* serializeContext)
         {
             AZStd::any::type_info typeinfo;
-            typeinfo.m_id = azrtti_typeid<ValueType>();
+            typeinfo.m_id = AZ::AzTypeInfo<ValueType>::Uuid();
             typeinfo.m_handler = NonCopyableAnyHandler(serializeContext);
             typeinfo.m_isPointer = AZStd::is_pointer<ValueType>::value;
             typeinfo.m_useHeap = AZStd::GetMax(sizeof(ValueType), AZStd::alignment_of<ValueType>::value) > AZStd::Internal::ANY_SBO_BUF_SIZE;
@@ -1875,7 +1875,7 @@ namespace AZ
         ed.m_nameCrc = AZ_CRC(c_serializeBaseClassStrings[index]);
         ed.m_flags = ClassElement::FLG_BASE_CLASS;
         ed.m_dataSize = sizeof(BaseClass);
-        ed.m_typeId = azrtti_typeid<BaseClass>();
+        ed.m_typeId = AZ::AzTypeInfo<BaseClass>::Uuid();
         ed.m_offset = SerializeInternal::GetBaseOffset<T, BaseClass>();
         ed.m_genericClassInfo = SerializeGenericTypeInfo<BaseClass>::GetGenericInfo();
         ed.m_azRtti = GetRttiHelper<BaseClass>();
@@ -2561,7 +2561,7 @@ namespace AZ
         using GenericClassInfoType = typename SerializeGenericTypeInfo<T>::ClassInfoType;
         static_assert(AZStd::is_base_of<AZ::GenericClassInfo, GenericClassInfoType>::value, "GenericClassInfoType must be be derived from AZ::GenericClassInfo");
 
-        const AZ::TypeId& canonicalTypeId = azrtti_typeid<T>();
+        const AZ::TypeId& canonicalTypeId = AZ::AzTypeInfo<T>::Uuid();
         auto findIt = m_moduleLocalGenericClassInfos.find(canonicalTypeId);
         if (findIt != m_moduleLocalGenericClassInfos.end())
         {
@@ -2579,7 +2579,7 @@ namespace AZ
     template<typename T>
     AZ::GenericClassInfo* SerializeContext::PerModuleGenericClassInfo::FindGenericClassInfo() const
     {
-        return FindGenericClassInfo(azrtti_typeid<T>());
+        return FindGenericClassInfo(AZ::AzTypeInfo<T>::Uuid());
     }
 
     /// Creates AZ::Attribute that is allocated using the the SerializeContext PerModule allocator
