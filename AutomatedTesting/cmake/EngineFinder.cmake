@@ -53,7 +53,9 @@ if(EXISTS "${O3DE_USER_PROJECT_JSON_PATH}")
             else()
                 message(WARNING "Not using engine at '${user_project_engine_path}' because the version cmake file '${user_engine_version_cmake_path}' needed to check compatibility is missing.")
             endif()
-        elseif(json_error)
+        elseif(json_error AND ${user_project_engine_path} STREQUAL "NOTFOUND")
+            # When the value is just NOTFOUND that means there is a JSON
+            # parsing error, and not simply a missing key 
             message(WARNING "Unable to read 'engine_path' from '${user_project_engine_path}'\nError: ${json-error}")
         endif()
     endif()

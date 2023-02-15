@@ -29,6 +29,10 @@ if(NOT o3de_project_json)
             string(JSON user_project_engine ERROR_VARIABLE json_error GET ${o3de_user_project_json} engine)
             if(user_project_engine AND NOT json_error)
                 string(JSON o3de_project_json SET "${o3de_project_json}" engine "\"${user_project_engine}\"" )
+            elseif(json_error AND ${user_project_engine} STREQUAL "NOTFOUND")
+                # When the value is just NOTFOUND that means there is a JSON
+                # parsing error, and not simply a missing key 
+                message(WARNING "Unable to read 'engine' from '${O3DE_USER_PROJECT_JSON_PATH}'\nError: ${json-error}")
             endif()
         endif()
 
