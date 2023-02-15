@@ -20,7 +20,7 @@
 
 namespace AzFramework::ProjectManager
 {
-    AZ::IO::FixedMaxPath FindProjectAndEngineRootPaths(const int argc, char* argv[])
+    AZ::IO::FixedMaxPath FindProjectPath(const int argc, char* argv[])
     {
         AZ::IO::FixedMaxPath projectRootPath;
         {
@@ -49,7 +49,7 @@ namespace AzFramework::ProjectManager
     // Check for a project name, if not found, attempt to launch project manager and shut down
     ProjectPathCheckResult CheckProjectPathProvided(const int argc, char* argv[])
     {
-        const auto projectRootPath = FindProjectAndEngineRootPaths(argc, argv);
+        const auto projectRootPath = FindProjectPath(argc, argv);
         // If we were able to locate a path to a project, we're done
         if (!projectRootPath.empty())
         {
