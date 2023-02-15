@@ -42,6 +42,41 @@ class TestAutomation(TestAutomationBase):
         # Fixme: expected_lines=["GroupName: "]
         self._run_test(request, workspace, editor, test_module)
 
+    @revert_physics_config
+    @fm.file_override('physxsystemconfiguration.setreg','Material_RestitutionCombine.setreg_override',
+                      'AutomatedTesting/Registry', search_subdirs=True)
+    def test_Material_RestitutionCombine(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_RestitutionCombine as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    @revert_physics_config
+    @fm.file_override('physxsystemconfiguration.setreg','Material_FrictionCombine.setreg_override',
+                      'AutomatedTesting/Registry', search_subdirs=True)
+    def test_Material_FrictionCombine(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_FrictionCombine as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    @revert_physics_config
+    @fm.file_override('physxsystemconfiguration.setreg','Material_RestitutionCombinePriorityOrder.setreg_override',
+                      'AutomatedTesting/Registry', search_subdirs=True)
+    def test_Material_RestitutionCombinePriorityOrder(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_RestitutionCombinePriorityOrder as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    @revert_physics_config
+    @fm.file_override('physxsystemconfiguration.setreg','Material_FrictionCombinePriorityOrder.setreg_override',
+                      'AutomatedTesting/Registry', search_subdirs=True)
+    def test_Material_FrictionCombinePriorityOrder(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_FrictionCombinePriorityOrder as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    @revert_physics_config
+    @fm.file_override('physxsystemconfiguration.setreg','Material_Restitution.setreg_override',
+                      'AutomatedTesting/Registry', search_subdirs=True)
+    def test_Material_Restitution(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_Restitution as test_module
+        self._run_test(request, workspace, editor, test_module)
+
 
 # Custom test spec, it provides functionality to override files
 class EditorSingleTest_WithFileOverrides(EditorSingleTest):

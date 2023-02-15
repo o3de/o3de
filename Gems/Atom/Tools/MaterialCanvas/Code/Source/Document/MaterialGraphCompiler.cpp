@@ -1289,6 +1289,9 @@ namespace MaterialCanvas
             }
         }
 
+        // Sorting groups and properties in the source data layout to force consistent ordering of the generated material type.
+        materialTypeSourceData.SortProperties();
+
         // The file is written to an in memory buffer before saving to facilitate string substitutions.
         AZStd::string templateOutputText;
         if (!AZ::RPI::JsonUtils::SaveObjectToString(templateOutputText, materialTypeSourceData))

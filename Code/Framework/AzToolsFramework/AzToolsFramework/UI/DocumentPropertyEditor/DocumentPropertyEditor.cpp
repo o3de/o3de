@@ -34,7 +34,7 @@ AZ_CVAR(
 AZ_CVAR(
     bool,
     ed_enableCVarDPE,
-    false,
+    true,
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, enables experimental DPE-based CVar Editor");
@@ -1004,6 +1004,11 @@ namespace AzToolsFramework
         }
     }
 
+    AZ::Name DPERowWidget::GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId)
+    {
+        return AZ::Name(AZStd::to_string(reinterpret_cast<uintptr_t>(handlerId)));
+    }
+
     QWidget* DPERowWidget::CreateWidgetForHandler(
         PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId, const AZ::Dom::Value& domValue)
     {
@@ -1012,7 +1017,7 @@ namespace AzToolsFramework
         if (handlerId)
         {
             auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
-            auto handlerName = AZ::Name(handlerId->m_name);
+            auto handlerName = GetNameForHandlerId(handlerId);
             auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
             if (!handlerPool)
             {
@@ -1053,7 +1058,7 @@ namespace AzToolsFramework
     void DPERowWidget::ReleaseHandler(HandlerInfo& handler)
     {
         auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
-        auto handlerName = AZ::Name(handler.handlerId->m_name);
+        auto handlerName = GetNameForHandlerId(handler.handlerId);
         auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
         if (handlerPool)
         {
