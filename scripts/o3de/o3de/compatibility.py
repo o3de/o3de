@@ -73,7 +73,10 @@ def get_incompatible_gem_dependencies(gem_json_data:dict, all_gems_json_data:dic
     return get_incompatible_gem_version_specifiers(gem_json_data, all_gems_json_data, checked_specifiers=set())
 
 
-def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathlib.Path, all_gems_json_data:dict = None) -> set:
+def get_gem_project_incompatible_objects(gem_path:pathlib.Path, 
+                                        gem_json_data:dict, 
+                                        project_path:pathlib.Path
+                                        ) -> set:
     """
     Returns any incompatible objects for this gem and project.
     :param gem_json_data: gem json data dictionary
@@ -100,8 +103,10 @@ def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathli
         logger.error(f'Failed to load engine.json data based on the engine field in project.json or detect the engine from the current folder')
         return set(f'engine.json (missing)') 
 
-    if not isinstance(all_gems_json_data, dict):
-        all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path, project_path, include_manifest_gems=True)
+    # Include the gem_path for the gem we are adding so it 
+    # and any gems in 'external_subdirectories' it has will be considered 
+    all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path, project_path, 
+        external_subdirectories=[gem_path], include_manifest_gems=True)
 
     # compatibility will be based on the engine the project uses and the gems visible to
     # the engine and project
