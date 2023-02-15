@@ -302,7 +302,7 @@ namespace LmbrCentral
             debugDisplay.SetColor(shapeDrawParams.m_shapeColor.GetAsVector4());
             debugDisplay.DrawSolidCylinder(
                 AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(),
-                cylinderShapeConfig.m_radius, cylinderShapeConfig.m_height);
+                cylinderShapeConfig.m_radius, cylinderShapeConfig.m_height, false);
         }
 
         debugDisplay.SetColor(shapeDrawParams.m_wireColor.GetAsVector4());
