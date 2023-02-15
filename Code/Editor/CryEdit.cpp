@@ -2652,7 +2652,9 @@ void CCryEditApp::OnEditLevelData()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnFileEditLogFile()
 {
-    CFileUtil::EditTextFile(CLogFile::GetLogFileName(), 0, IFileUtil::FILE_TYPE_SCRIPT);
+    QString file = CLogFile::GetLogFileName();
+    QString fullPathName = Path::GamePathToFullPath(file);
+    QDesktopServices::openUrl(QUrl::fromLocalFile(fullPathName));
 }
 
 #ifdef ENABLE_SLICE_EDITOR

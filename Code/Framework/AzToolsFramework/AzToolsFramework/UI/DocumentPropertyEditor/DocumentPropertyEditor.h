@@ -136,6 +136,8 @@ namespace AzToolsFramework
         AZ::Dom::Path BuildDomPath();
         void SaveExpanderStatesForChildRows(bool isExpanded);
 
+        static AZ::Name GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId);
+
         QWidget* CreateWidgetForHandler(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId, const AZ::Dom::Value& domValue);
 
         DPERowWidget* m_parentRow = nullptr;

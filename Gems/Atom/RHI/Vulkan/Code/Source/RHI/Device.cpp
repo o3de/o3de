@@ -852,7 +852,7 @@ namespace AZ
             m_releaseQueue.Notify(notifyFunction);
         }
 
-        RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate)
+        RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate) const
         {
             ShadingRateImageMode mode = GetImageShadingRateMode();
             if (mode == ShadingRateImageMode::ImageAttachment)
