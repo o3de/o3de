@@ -17,3 +17,4 @@ configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.
 execute_process (COMMAND snapcraft --verbose
                  WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY})
 
+set(CPACK_EXTERNAL_BUILT_PACKAGES "O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64.snap")
