@@ -7,6 +7,6 @@ REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
 
-aws s3 cp --recursive %CSV_DIRECTORY% %BUCKET% --acl bucket-owner-full-control
+aws s3 cp --recursive %CSV_DIRECTORY% O3DE_METRICS_S3_BUCKET% --acl bucket-owner-full-control
 
 EXIT /b %ERRORLEVEL%
