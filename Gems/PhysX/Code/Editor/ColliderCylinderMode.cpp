@@ -6,7 +6,7 @@
  *
  */
 
-#include <Editor/ColliderCapsuleMode.h>
+#include <Editor/ColliderCylinderMode.h>
 
 #include <AzToolsFramework/ComponentModes/BaseShapeComponentMode.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -14,20 +14,21 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ColliderCapsuleMode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ColliderCylinderMode, AZ::SystemAllocator);
 
-    void ColliderCapsuleMode::Setup(const AZ::EntityComponentIdPair& idPair)
+    void ColliderCylinderMode::Setup(const AZ::EntityComponentIdPair& idPair)
     {
         m_entityComponentIdPair = idPair;
         const bool allowAsymmetricalEditing = true;
         m_capsuleViewportEdit = AZStd::make_unique<AzToolsFramework::CapsuleViewportEdit>(allowAsymmetricalEditing);
+        m_capsuleViewportEdit->SetEnsureHeightExceedsTwiceRadius(false);
         AzToolsFramework::InstallBaseShapeViewportEditFunctions(m_capsuleViewportEdit.get(), idPair);
         m_capsuleViewportEdit->InstallGetCapsuleRadius(
             [this]()
             {
                 float capsuleRadius = 0.0f;
                 EditorColliderComponentRequestBus::EventResult(
-                    capsuleRadius, m_entityComponentIdPair, &EditorColliderComponentRequests::GetCapsuleRadius);
+                    capsuleRadius, m_entityComponentIdPair, &EditorColliderComponentRequests::GetCylinderRadius);
                 return capsuleRadius;
             });
         m_capsuleViewportEdit->InstallGetCapsuleHeight(
@@ -35,27 +36,27 @@ namespace PhysX
             {
                 float capsuleHeight = 0.0f;
                 EditorColliderComponentRequestBus::EventResult(
-                    capsuleHeight, m_entityComponentIdPair, &EditorColliderComponentRequests::GetCapsuleHeight);
+                    capsuleHeight, m_entityComponentIdPair, &EditorColliderComponentRequests::GetCylinderHeight);
                 return capsuleHeight;
             });
         m_capsuleViewportEdit->InstallSetCapsuleRadius(
             [this](float radius)
             {
                 EditorColliderComponentRequestBus::Event(
-                    m_entityComponentIdPair, &EditorColliderComponentRequests::SetCapsuleRadius, radius);
+                    m_entityComponentIdPair, &EditorColliderComponentRequests::SetCylinderRadius, radius);
             });
         m_capsuleViewportEdit->InstallSetCapsuleHeight(
             [this](float height)
             {
                 EditorColliderComponentRequestBus::Event(
-                    m_entityComponentIdPair, &EditorColliderComponentRequests::SetCapsuleHeight, height);
+                    m_entityComponentIdPair, &EditorColliderComponentRequests::SetCylinderHeight, height);
             });
         m_capsuleViewportEdit->Setup(AzToolsFramework::g_mainManipulatorManagerId);
         m_capsuleViewportEdit->AddEntityComponentIdPair(idPair);
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(idPair.GetEntityId());
     }
 
-    void ColliderCapsuleMode::Refresh([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
+    void ColliderCylinderMode::Refresh([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
         if (m_capsuleViewportEdit)
         {
@@ -63,7 +64,7 @@ namespace PhysX
         }
     }
 
-    void ColliderCapsuleMode::Teardown([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
+    void ColliderCylinderMode::Teardown([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         if (m_capsuleViewportEdit)
@@ -74,7 +75,7 @@ namespace PhysX
         m_entityComponentIdPair = AZ::EntityComponentIdPair();
     }
 
-    void ColliderCapsuleMode::ResetValues([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
+    void ColliderCylinderMode::ResetValues([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
         if (m_capsuleViewportEdit)
         {
@@ -82,7 +83,7 @@ namespace PhysX
         }
     }
 
-    void ColliderCapsuleMode::DisplayEntityViewport(
+    void ColliderCylinderMode::DisplayEntityViewport(
         const AzFramework::ViewportInfo& viewportInfo,
         [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay)
     {
