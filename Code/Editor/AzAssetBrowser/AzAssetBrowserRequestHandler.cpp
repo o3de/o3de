@@ -419,13 +419,13 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
     AssetBrowserTreeView* treeView = qobject_cast<AssetBrowserTreeView*>(caller);
     if (treeView)
     {
-        calledFromAssetBrowser = treeView->GetIsMainView();
+        calledFromAssetBrowser = treeView->GetIsAssetBrowserMainView();
     }
 
     AssetBrowserTableView* tableView = qobject_cast<AssetBrowserTableView*>(caller);
     if (tableView)
     {
-        calledFromAssetBrowser |= tableView->GetIsMainView();
+        calledFromAssetBrowser |= tableView->GetIsAssetBrowserMainView();
     }
 
     if (!treeView && !tableView)
