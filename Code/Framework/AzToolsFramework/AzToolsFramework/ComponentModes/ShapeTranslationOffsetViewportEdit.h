@@ -24,8 +24,8 @@ namespace AzToolsFramework
         void Setup(const ManipulatorManagerId manipulatorManagerId) override;
         void Teardown() override;
         void UpdateManipulators() override;
-        void ResetValues() override;
-        void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
+        void ResetValuesImpl() override;
+        void AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
 
     private:
         AZStd::shared_ptr<TranslationManipulators> m_translationManipulators; //!< Manipulators for editing shape offset.

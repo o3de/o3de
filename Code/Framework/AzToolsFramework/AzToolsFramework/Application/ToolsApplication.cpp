@@ -81,6 +81,7 @@
 #include <Entity/EntityUtilityComponent.h>
 #include <Metadata/MetadataManager.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 
 #include <QtWidgets/QMessageBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
@@ -90,6 +91,7 @@ AZ_POP_DISABLE_WARNING
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMap>
+
 
 // Not possible to use AZCore's operator new overrides until we address the overall problems
 // with allocators, or more likely convert AzToolsFramework to a DLL and restrict overloading to
@@ -304,6 +306,7 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::Script::LuaEditorSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::GlobalPaintBrushSettingsSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::MetadataManager>(),
+                azrtti_typeid<AzToolsFramework::UuidUtilComponent>(),
             });
 
         return components;
@@ -405,6 +408,13 @@ namespace AzToolsFramework
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            // wrap BeginUndoBatch so we do not have to return a pointer to URSequencePoint which is not currently exposed to Python
+            // note: This could be added as a 'handle' that could then be resolved as a pointer but this functionality is not needed yet
+            auto BeginUndoBatchWrapper = [](ToolsApplicationRequests*, const char* name) {
+                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequestBus::Events::BeginUndoBatch, name);
+            };
+
             behaviorContext->EBus<ToolsApplicationRequestBus>("ToolsApplicationRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
@@ -427,6 +437,9 @@ namespace AzToolsFramework
                 ->Event("IsSelected", &ToolsApplicationRequests::IsSelected)
                 ->Event("AreAnyEntitiesSelected", &ToolsApplicationRequests::AreAnyEntitiesSelected)
                 ->Event("GetSelectedEntitiesCount", &ToolsApplicationRequests::GetSelectedEntitiesCount)
+                ->Event("BeginUndoBatch", BeginUndoBatchWrapper)
+                ->Event("EndUndoBatch", &ToolsApplicationRequests::EndUndoBatch)
+                ->Event("AddDirtyEntity", &ToolsApplicationRequests::AddDirtyEntity)
                 ;
 
             behaviorContext->EBus<ToolsApplicationNotificationBus>("ToolsApplicationNotificationBus")

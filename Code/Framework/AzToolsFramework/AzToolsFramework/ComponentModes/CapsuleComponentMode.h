@@ -19,6 +19,7 @@ namespace AzToolsFramework
     //! The specific ComponentMode responsible for handling capsule editing.
     class CapsuleComponentMode
         : public BaseShapeComponentMode
+        , private AzFramework::EntityDebugDisplayEventBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -36,10 +37,14 @@ namespace AzToolsFramework
         CapsuleComponentMode& operator=(const CapsuleComponentMode&) = delete;
         CapsuleComponentMode(CapsuleComponentMode&&) = delete;
         CapsuleComponentMode& operator=(CapsuleComponentMode&&) = delete;
-        ~CapsuleComponentMode() = default;
+        ~CapsuleComponentMode();
 
         // EditorBaseComponentMode overrides ...
         AZStd::string GetComponentModeName() const override;
         AZ::Uuid GetComponentModeType() const override;
+
+    private:
+        // AzFramework::EntityDebugDisplayEventBus overrides ...
+        void DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
     };
 } // namespace AzToolsFramework

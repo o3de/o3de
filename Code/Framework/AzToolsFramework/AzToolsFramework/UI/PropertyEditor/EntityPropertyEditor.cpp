@@ -34,9 +34,11 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
@@ -499,7 +501,6 @@ namespace AzToolsFramework
         , m_isSystemEntityEditor(false)
         , m_isLevelEntityEditor(isLevelEntityEditor)
     {
-
         initEntityPropertyEditorResources();
 
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
@@ -629,10 +630,32 @@ namespace AzToolsFramework
         ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
             GetEntityContextId());
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
+
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+
+            if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+            {
+                // Assign this widget to the Editor Entity Property Editor Action Context.
+                hotKeyManagerInterface->AssignWidgetToActionContext(
+                    EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
+            }
+        }
     }
 
     EntityPropertyEditor::~EntityPropertyEditor()
     {
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+            {
+                // Assign this widget to the Editor Entity Property Editor Action Context.
+                hotKeyManagerInterface->RemoveWidgetFromActionContext(
+                    EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
+            }
+        }
+
         qApp->removeEventFilter(this);
 
         ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
@@ -3288,15 +3311,7 @@ namespace AzToolsFramework
     {
         if (AzToolsFramework::IsNewActionManagerEnabled())
         {
-            static constexpr AZStd::string_view EditorEntityPropertyEditorActionContextIdentifier = "o3de.context.editor.entitypropertyeditor";
-
             m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-
-            AzToolsFramework::ActionContextProperties contextProperties;
-            contextProperties.m_name = "O3DE Entity Editor";
-
-            // Register a custom action context to allow duplicated shortcut hotkeys to work
-            m_actionManagerInterface->RegisterActionContext("", EditorEntityPropertyEditorActionContextIdentifier, contextProperties, this);
         }
 
         m_actionToAddComponents = new QAction(tr("Add component"), this);

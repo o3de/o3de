@@ -1084,7 +1084,7 @@ namespace AzToolsFramework
     {
         if (EditorVertexSelectionBase<Vertex>::m_translationManipulator)
         {
-            return EditorVertexSelectionBase<Vertex>::m_translationManipulator->m_vertices.size();
+            return aznumeric_cast<int>(EditorVertexSelectionBase<Vertex>::m_translationManipulator->m_vertices.size());
         }
 
         return 0;

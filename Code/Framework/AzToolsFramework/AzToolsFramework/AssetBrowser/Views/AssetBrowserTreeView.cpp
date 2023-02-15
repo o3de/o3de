@@ -772,7 +772,8 @@ namespace AzToolsFramework
                         AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
                         &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
                         path.c_str(),
-                        AZ::Crc32());
+                        AZ::Crc32(),
+                        true);
 
                     if (!AZ::IO::SystemFile::Exists(path.c_str()))
                     {

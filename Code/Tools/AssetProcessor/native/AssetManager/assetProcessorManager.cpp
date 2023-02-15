@@ -35,6 +35,7 @@
 #include <AssetManager/ProductAsset.h>
 #include <native/AssetManager/SourceAssetReference.h>
 #include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <native/utilities/UuidManager.h>
 
 namespace AssetProcessor
 {
@@ -2007,17 +2008,11 @@ namespace AssetProcessor
         {
             if (IsInIntermediateAssetsFolder(sourceAsset))
             {
-                auto topLevelSource = AssetUtilities::GetTopLevelSourceForIntermediateAsset(SourceAssetReference(source.m_scanFolderPK, source.m_sourceName.c_str()), m_stateData);
+                auto topLevelSource = AssetUtilities::GetTopLevelSourcePathForIntermediateAsset(sourceAsset, m_stateData);
 
                 if (topLevelSource)
                 {
-                    ScanFolderDatabaseEntry scanfolderForTopLevelSource;
-                    m_stateData->GetScanFolderByScanFolderID(topLevelSource->m_scanFolderPK, scanfolderForTopLevelSource);
-
-                    AZ::IO::Path fullPath = scanfolderForTopLevelSource.m_scanFolder;
-                    fullPath /= topLevelSource->m_sourceName;
-
-                    if (AZ::IO::SystemFile::Exists(fullPath.c_str()))
+                    if (AZ::IO::SystemFile::Exists(topLevelSource.value().c_str()))
                     {
                         // The top level file for this intermediate exists, treat this as a product deletion in that case which should
                         // regenerate the product
@@ -3184,6 +3179,30 @@ namespace AssetProcessor
                 // Do not process this file yet.  When the job is done it will retrigger processing for this file.
                 return;
             }
+
+            auto topLevelSource = AssetUtilities::GetTopLevelSourcePathForIntermediateAsset(SourceAssetReference(fullFile),
+                m_stateData);
+
+            if (topLevelSource)
+            {
+                if (!AZ::Interface<IFileStateRequests>::Get()->Exists(topLevelSource.value().c_str()))
+                {
+                    AZ_TracePrintf(
+                        AssetProcessor::ConsoleChannel,
+                        "Top level source '%s' for intermediate asset '%.*s' no longer exists, "
+                        "so this intermediate asset will not be reprocessed.\n",
+                        topLevelSource.value().c_str(),
+                        AZ_STRING_ARG(productName));
+                    return;
+                }
+            }
+            else
+            {
+                // Failed to find top level source for this intermediate asset - don't process this asset, there's a gap or issue in the asset database.
+                // No reason to print anything out here, no warnings or errors because the asset processor does cleanup on intermediate
+                // assets that no longer have a source asset, or the source asset no longer emits them, later in asset processing.
+                return;
+            }
         }
 
         m_AssetProcessorIsBusy = true;
@@ -4132,6 +4151,18 @@ namespace AssetProcessor
                         newJob.m_priority = jobDescriptor.m_priority;
                         newJob.m_scanFolder = scanFolder;
                         newJob.m_checkServer = jobDescriptor.m_checkServer;
+
+                        auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+
+                        if (!uuidInterface)
+                        {
+                            AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+                            return;
+                        }
+
+                        const bool isEnabledType = uuidInterface->IsGenerationEnabledForFile(sourceAsset.AbsolutePath());
+
+                        newJob.m_sourceUuid = isEnabledType ? sourceUUID : AZ::Uuid{};
 
                         if (m_builderDebugFlag)
                         {
