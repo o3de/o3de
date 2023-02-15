@@ -238,6 +238,11 @@ namespace AzToolsFramework
                     return SourceFileDetails("Icons/AssetBrowser/Lua_16.svg");
                 }
 
+                if (AzFramework::StringFunc::Equal(extension.c_str(), ".prefab"))
+                {
+                    return SourceFileDetails(":Entity/prefab_edit.svg");
+                }
+
                 if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str()))
                 {
                     return SourceFileDetails("Icons/AssetBrowser/Slice_16.svg");
@@ -256,6 +261,11 @@ namespace AzToolsFramework
                 if (AzFramework::StringFunc::Equal(extension.c_str(), ".xml"))
                 {
                     return SourceFileDetails("Icons/AssetBrowser/XML_16.svg");
+                }
+
+                if (AzFramework::StringFunc::Equal(extension.c_str(), ".uicanvas"))
+                {
+                    return SourceFileDetails("Icons/AssetBrowser/UICanvas.svg");
                 }
 
                 static const char* sourceFormats[] = { ".tif", ".bmp", ".gif", ".jpg", ".jpeg", ".jpe", ".tga", ".png" };

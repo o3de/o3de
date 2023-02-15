@@ -23,6 +23,7 @@ namespace AzQtComponents
     AssetFolderExpandedTableView::AssetFolderExpandedTableView(QWidget* parent)
         : TableView(parent)
     {
+        setSortingEnabled(true);
     }
 
     AssetFolderExpandedTableView::~AssetFolderExpandedTableView() = default;

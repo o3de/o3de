@@ -61,6 +61,10 @@ namespace AzToolsFramework
                         return "No data";
                     }
                 }
+            case Qt::UserRole:
+                return QString(assetBrowserEntry->GetFullPath().c_str());
+            case Qt::UserRole + 1:
+                return assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
             }
             return QVariant();
         }
@@ -109,25 +113,14 @@ namespace AzToolsFramework
                 endResetModel();
             }
         }
-
-        inline constexpr auto Hash(const AZStd::string_view sv)
-        {
-            unsigned long hash{ 5381 };
-            for (unsigned char c : sv)
-            {
-                hash = ((hash << 5) + hash) ^ c;
-            }
-            return hash;
-        }
-
         inline constexpr auto operator"" _hash(const char* str, size_t len)
         {
-            return Hash(AZStd::string_view{ str, len });
+            return AZStd::hash<AZStd::string_view>{}(AZStd::string_view{ str, len });
         }
 
         const AZStd::string AssetBrowserExpandedTableViewProxyModel::ExtensionToType(AZStd::string_view str) const
         {
-            switch (Hash(str))
+            switch (AZStd::hash<AZStd::string_view>{}(str))
             {
             case ".png"_hash:
                 return "PNG";
