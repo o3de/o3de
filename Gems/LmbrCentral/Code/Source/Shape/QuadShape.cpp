@@ -259,7 +259,7 @@ namespace LmbrCentral
         if (shapeDrawParams.m_filled)
         {
             debugDisplay.SetColor(shapeDrawParams.m_shapeColor.GetAsVector4());
-            debugDisplay.DrawQuad(scaledWidth, scaledHeight);
+            debugDisplay.DrawQuad(scaledWidth, scaledHeight, false);
         }
 
         debugDisplay.SetColor(shapeDrawParams.m_wireColor.GetAsVector4());
