@@ -215,6 +215,7 @@ namespace AZ::DocumentPropertyEditor
         void VisitValue(
             Dom::Value value,
             void* instance,
+            size_t valueSize,
             const Reflection::IAttributes& attributes,
             AZStd::function<Dom::Value(const Dom::Value&)> onChanged,
             bool createRow,
@@ -234,10 +235,9 @@ namespace AZ::DocumentPropertyEditor
 
             if (hashValue)
             {
-                AZStd::any anyVal(&instance);
                 m_builder.Attribute(
                     Nodes::PropertyEditor::ValueHashed,
-                    AZ::Uuid::CreateData(reinterpret_cast<AZStd::byte*>(AZStd::any_cast<void>(&anyVal)), anyVal.get_type_info().m_valueSize));
+                    AZ::Uuid::CreateData(static_cast<AZStd::byte*>(instance), valueSize));
             }
             m_builder.EndPropertyEditor();
 
@@ -262,7 +262,8 @@ namespace AZ::DocumentPropertyEditor
             auto convertToAzDomResult = AZ::Dom::Json::VisitRapidJsonValue(serializedValue, *outputWriter, AZ::Dom::Lifetime::Temporary);
             VisitValue(
                 instancePointerValue,
-                access.Get(),
+                reinterpret_cast<void*>(&valuePointer),
+                sizeof(void*),
                 attributes,
                 [valuePointer, valueType, this](const Dom::Value& newValue)
                 {
@@ -310,6 +311,7 @@ namespace AZ::DocumentPropertyEditor
             VisitValue(
                 Dom::Utils::ValueFromType(value),
                 &value,
+                sizeof(value),
                 attributes,
                 [&value](const Dom::Value& newValue)
                 {
@@ -455,6 +457,7 @@ namespace AZ::DocumentPropertyEditor
                 VisitValue(
                     Dom::Utils::ValueFromType(value),
                     &value,
+                    sizeof(value),
                     attributes,
                     [&value](const Dom::Value& newValue)
                     {
@@ -546,9 +549,11 @@ namespace AZ::DocumentPropertyEditor
                 }
                 else
                 {
+                    void* instance = access.Get();
                     VisitValue(
                         instancePointerValue,
-                        access.Get(),
+                        reinterpret_cast<void*>(&instance),
+                        sizeof(instance), // Without knowning the real size of the instance, hashing occurs on the pointer value directly
                         attributes,
                         // this needs to write the value back into the reflected object via Json serialization
                         [valuePointer = access.Get(), valueType = access.GetType(), this](const Dom::Value& newValue)

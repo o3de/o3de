@@ -19,9 +19,17 @@
 
 namespace AZStd
 {
+    // An alias template is a name for a family of types (https://eel.is/c++draft/temp.alias)
+    // It is not related to any template that might be used on the right hand side of the declaration
+    // Furthermore alias template are not deduced as part of template argument deduction
+    // https://eel.is/c++draft/temp.alias#note-1
+    // So instead of using an alias template
+    // a using declaration is used to bring the std::unique_ptr into the AZStd:: namespace
+    // https://eel.is/c++draft/namespace.udecl
+    // This allows the exactly the name"AZStd::unique_ptr" to be an alias of the name "std::unique_ptr"
+
     /// 20.7.12.2 unique_ptr for single objects.
-    template <typename T, typename Deleter = std::default_delete<T> >
-    using unique_ptr = std::unique_ptr<T, Deleter>;
+    using std::unique_ptr;
 
     template<class T>
     struct hash;
@@ -59,26 +67,15 @@ namespace AZStd
     template<typename T, typename... Args>
     AZStd::enable_if_t<AZStd::is_array<T>::value && AZStd::extent<T>::value != 0, unique_ptr<T>> make_unique(Args&&... args) = delete;
 
+} // namespace AZStd
+
+namespace std
+{
     // GetAzTypeInfo overload for AZStd::unique_ptr
     // The Deleter is not part of the TypeInfo
-    template<class T, class Deleter>
-    constexpr AZ::TypeInfoObject GetAzTypeInfo(AZStd::type_identity<unique_ptr<T, Deleter>>)
-    {
-        using Type = AZStd::unique_ptr<T, Deleter>;
-        AZStd::fixed_string<512> typeName{ "AZStd::unique_ptr<" };
-        typeName += AZ::AzTypeInfo<T>::Name();
-        typeName += '>';
-
-        AZ::TypeTraits typeTraits{};
-        typeTraits |= AZStd::is_signed_v<Type> ? AZ::TypeTraits::is_signed : AZ::TypeTraits{};
-        typeTraits |= AZStd::is_unsigned_v<Type> ? AZ::TypeTraits::is_unsigned : AZ::TypeTraits{};
-
-        AZ::TypeInfoObject typeInfoObject;
-        typeInfoObject.m_name = typeName;
-        typeInfoObject.m_templateId = AZ::TypeId("{B55F90DA-C21E-4EB4-9857-87BE6529BA6D}");
-        typeInfoObject.m_canonicalTypeId = typeInfoObject.m_templateId + AZ::AzTypeInfo<T>::GetCanonicalTypeId();
-        typeInfoObject.m_pointerTypeId = typeInfoObject.m_canonicalTypeId + AZ::Internal::PointerId_v;
-        typeInfoObject.m_typeTraits = typeTraits;
-        typeInfoObject.m_typeSize = sizeof(Type);
-    }
-} // namespace AZStd
+    // The POSTFIX version of aggregating the Uuid together with the class template argument T is used to maintain backwards
+    // compatibility with existing `unique_ptr<T>` serialized data
+    // The Uuid was previously calcaluated using postfixing the unique_ptr template identifier to end
+    // `AzTypeInfo<T>::Uuid() + AZ::Uuid("{B55F90DA-C21E-4EB4-9857-87BE6529BA6D}");`
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::unique_ptr, "AZStd::unique_ptr", "{B55F90DA-C21E-4EB4-9857-87BE6529BA6D}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
+}
