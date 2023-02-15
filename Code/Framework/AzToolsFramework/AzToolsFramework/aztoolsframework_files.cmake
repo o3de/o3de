@@ -708,6 +708,8 @@ set(FILES
     AssetBrowser/Views/AssetBrowserTableView.h
     AssetBrowser/Views/AssetBrowserThumbnailView.cpp
     AssetBrowser/Views/AssetBrowserThumbnailView.h
+    AssetBrowser/Views/AssetBrowserViewUtils.cpp
+    AssetBrowser/Views/AssetBrowserViewUtils.h
     AssetBrowser/Views/EntryDelegate.cpp
     AssetBrowser/Views/EntryDelegate.h
     AssetBrowser/Views/AssetBrowserFolderWidget.cpp

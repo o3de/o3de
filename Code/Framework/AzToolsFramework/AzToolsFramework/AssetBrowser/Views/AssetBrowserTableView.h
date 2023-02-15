@@ -40,8 +40,13 @@ namespace AzToolsFramework
 
             void setModel(QAbstractItemModel *model) override;
             void SetName(const QString& name);
+            QString& GetName();
+            void SetIsMainView();
+            bool GetIsMainView();
 
-            AZStd::vector<AssetBrowserEntry*> GetSelectedAssets() const;
+            void RenameEntry();
+            void AfterRename(QString newVal);
+            AZStd::vector<AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus

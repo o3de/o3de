@@ -56,6 +56,9 @@ namespace AzToolsFramework
             void SetName(const QString& name);
             QString& GetName(){ return m_name; }
 
+            void SetIsMainView();
+            bool GetIsMainView();
+
             // O3DE_DEPRECATED
             void LoadState(const QString& name);
             void SaveState() const;

@@ -33,6 +33,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
@@ -412,8 +413,22 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 {
     using namespace AzToolsFramework::AssetBrowser;
 
-    AssetBrowserTreeView* treeView = qobject_cast<AssetBrowserTreeView*> (caller);
-    if (!treeView)
+    QString callerName = QString();
+    bool calledFromAssetBrowser = false;
+
+    AssetBrowserTreeView* treeView = qobject_cast<AssetBrowserTreeView*>(caller);
+    if (treeView)
+    {
+        calledFromAssetBrowser = treeView->GetIsMainView();
+    }
+
+    AssetBrowserTableView* tableView = qobject_cast<AssetBrowserTableView*>(caller);
+    if (tableView)
+    {
+        calledFromAssetBrowser |= tableView->GetIsMainView();
+    }
+
+    if (!treeView && !tableView)
     {
         return;
     }
@@ -423,7 +438,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
     {
         return;
     }
-    bool calledFromAssetBrowser = treeView->GetName() == "AssetBrowserTreeView_main" ? true : false;
+
     size_t numOfEntries = entries.size();
 
     AZStd::string fullFilePath;
@@ -510,13 +525,16 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     });
             }
 
-            menu->addAction(QObject::tr("Open in another Asset Browser"), [fullFilePath, treeView](){
+            menu->addAction(QObject::tr("Open in another Asset Browser"), [fullFilePath, caller](){
                 auto* browser1 = qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetBrowser)->Widget());
                 const QString name2 = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
                 auto* browser2 = qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(name2)->Widget());
-                if (browser1->TreeViewBelongsTo(treeView)) {
+                if (browser1->ViewWidgetBelongsTo(caller))
+                {
                     browser2->SelectAsset(fullFilePath.c_str());
-                } else {
+                }
+                else
+                {
                     browser1->SelectAsset(fullFilePath.c_str());
                 }
             });
@@ -560,14 +578,28 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             if (calledFromAssetBrowser && selectionIsSource)
             {
                 // Add Rename option
-                QAction* action = menu->addAction(
-                    QObject::tr("Rename asset"),
-                    [treeView]()
-                    {
-                        treeView->RenameEntry();
-                    });
-                action->setShortcut(Qt::Key_F2);
-                action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+                if (treeView)
+                {
+                    QAction* action = menu->addAction(
+                        QObject::tr("Rename asset"),
+                        [treeView]()
+                        {
+                            treeView->RenameEntry();
+                        });
+                    action->setShortcut(Qt::Key_F2);
+                    action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+                }
+                else if (tableView)
+                {
+                    QAction* action = menu->addAction(
+                        QObject::tr("Rename asset"),
+                        [tableView]()
+                        {
+                            tableView->RenameEntry();
+                        });
+                    action->setShortcut(Qt::Key_F2);
+                    action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+                }
             }
         }
 
