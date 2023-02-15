@@ -1325,11 +1325,11 @@ namespace SettingsRegistryTests
             EXPECT_EQ(1, value);
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
-        bool result = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr).IsSuccess();
-        ASSERT_TRUE(result);
+        auto outcome = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr);
+        ASSERT_TRUE(outcome);
 
         AZStd::string history;
-        result = m_registry->Get(history, AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0");
+        bool result = m_registry->Get(history, AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0");
         ASSERT_TRUE(result);
         EXPECT_STREQ(path.c_str(), history.c_str());
     }
@@ -1347,11 +1347,11 @@ namespace SettingsRegistryTests
             EXPECT_EQ(1, value);
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
-        bool result = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "/Path", nullptr).IsSuccess();
-        ASSERT_TRUE(result);
+        auto outcome = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "/Path", nullptr);
+        ASSERT_TRUE(outcome);
 
         AZStd::string history;
-        result = m_registry->Get(history, AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0");
+        bool result = m_registry->Get(history, AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0");
         ASSERT_TRUE(result);
         EXPECT_STREQ(path.c_str(), history.c_str());
     }
@@ -1484,11 +1484,11 @@ namespace SettingsRegistryTests
 
         // Merging a file with a empty JSON Object should be effectively a no-op.
         // There are some changes in the settings registry to record the merge history for introspection purposes.
-        bool result = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}).IsSuccess();
-        EXPECT_TRUE(result);
+        auto outcome = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
+        EXPECT_TRUE(outcome);
 
         AZStd::string history;
-        result = m_registry->Get(history, AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0");
+        bool result = m_registry->Get(history, AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0");
         EXPECT_TRUE(result);
         EXPECT_STREQ(path.c_str(), history.c_str());
 
