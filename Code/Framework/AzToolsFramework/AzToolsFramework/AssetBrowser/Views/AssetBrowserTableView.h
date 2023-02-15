@@ -41,8 +41,8 @@ namespace AzToolsFramework
             void setModel(QAbstractItemModel *model) override;
             void SetName(const QString& name);
             QString& GetName();
-            void SetIsMainView();
-            bool GetIsMainView();
+            void SetIsAssetBrowserMainView();
+            bool GetIsAssetBrowserMainView();
 
             void RenameEntry();
             void AfterRename(QString newVal);
