@@ -350,6 +350,12 @@ namespace AtomToolsFramework
         }
 
         const QFileInfo saveInfo(savePath.c_str());
+        if (!saveInfo.exists())
+        {
+            QMessageBox::critical(QApplication::activeWindow(), "Error", QObject::tr("Document does not exist:\n%1").arg(savePath.c_str()));
+            return false;
+        }
+
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
             DisplayErrorMessage(
