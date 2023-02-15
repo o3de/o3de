@@ -58,7 +58,7 @@ namespace AZ
     class Crc32
     {
     public:
-        AZ_TYPE_INFO(Crc32, "{88345436-06F2-4DA9-B687-9F821A4FA115}")
+        AZ_TYPE_INFO(Crc32, "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}")
 
         /**
          * Initializes to 0.

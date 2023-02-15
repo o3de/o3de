@@ -29,7 +29,7 @@ namespace AZ
             //! An entry in the shader compiler profiling data.
             struct Entry
             {
-                AZ_TYPE_INFO(ShaderCompilerProfilingEntry, "{DBE390C8-8A06-492A-8494-93AAE0A938E0}");
+                AZ_TYPE_INFO(Entry, "{DBE390C8-8A06-492A-8494-93AAE0A938E0}");
                 AZ_CLASS_ALLOCATOR(Entry, AZ::SystemAllocator);
 
                 static void Reflect(AZ::ReflectContext* context);

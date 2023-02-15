@@ -24,7 +24,7 @@ namespace AZ
         struct EnumConstant
             : EnumConstantBase
         {
-            AZ_RTTI((SerializeContextEnumInternal::EnumConstant, "{165E0327-C060-45F6-9522-D1CC992E7ECC}", EnumType), EnumConstantBase);
+            AZ_RTTI((EnumConstant, "{165E0327-C060-45F6-9522-D1CC992E7ECC}", EnumType), EnumConstantBase);
             using UnderlyingType = AZStd::RemoveEnumT<EnumType>;
 
             EnumConstant() = default;

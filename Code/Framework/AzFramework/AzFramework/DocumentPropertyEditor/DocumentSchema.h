@@ -306,9 +306,9 @@ namespace AZ::DocumentPropertyEditor
 
             const AZStd::any* opaqueValue = &value[EntryValueKey].GetOpaqueValue();
             auto genericValue = AZStd::any_cast<GenericValueType>(opaqueValue);
-            if (opaqueValue->is<GenericValueType>() && genericValue)
+            if (genericValue != nullptr)
             {
-                return AZStd::make_pair(*genericValue, value[EntryDescriptionKey].GetString());
+                return GenericValuePair{ *genericValue, AZStd::string(value[EntryDescriptionKey].GetString()) };
             }
 
             return {};

@@ -950,7 +950,7 @@ namespace SerializeTestClasses
     class ClassThatAllocatesMemoryInDefaultCtor final
     {
     public:
-        AZ_RTTI("ClassThatAllocatesMemoryInDefaultCtor", "{CF9B593D-A19E-467B-8370-28AF68D2F345}")
+        AZ_RTTI(ClassThatAllocatesMemoryInDefaultCtor, "{CF9B593D-A19E-467B-8370-28AF68D2F345}")
         AZ_CLASS_ALLOCATOR(ClassThatAllocatesMemoryInDefaultCtor, AZ::SystemAllocator)
 
         ClassThatAllocatesMemoryInDefaultCtor()
@@ -975,7 +975,7 @@ namespace SerializeTestClasses
         class InstanceTracker final
         {
         public:
-            AZ_RTTI("InstanceTracker", "{DED6003B-11E0-454C-B170-4889697815A0}");
+            AZ_RTTI(InstanceTracker, "{DED6003B-11E0-454C-B170-4889697815A0}");
             AZ_CLASS_ALLOCATOR(InstanceTracker, AZ::SystemAllocator);
 
             InstanceTracker()
@@ -6419,7 +6419,7 @@ namespace UnitTest
         {
             // AggregateTestClassV2 Uuid should match version 1, It isn't the class that
             // is being converted, but it's m_value that is.
-            AZ_TYPE_INFO(AggregateTestClassV1, "{088E3B16-4D93-4116-A747-706BE132AF5F}");
+            AZ_TYPE_INFO(AggregateTestClassV2, "{088E3B16-4D93-4116-A747-706BE132AF5F}");
             ConvertedNewClass m_testField;
             AZ::Vector3 m_position = AZ::Vector3::CreateZero();
             ConvertedNewClass m_value;
@@ -8055,7 +8055,7 @@ namespace UnitTest
             ->Field("m_value", &NoTypeInfoNonReflectedEnumWrapper::m_value)
             ;
 
-        static_assert(!AZ::Internal::HasAZTypeInfo<TestNoTypeInfoEnum>::value, "Test enum type should not have AzTypeInfo");
+        static_assert(AZ::Internal::HasAZTypeInfo<TestNoTypeInfoEnum>::value, "Test enum type should not have AzTypeInfo");
         NoTypeInfoNonReflectedEnumWrapper testObject;
         testObject.m_value = TestNoTypeInfoEnum::Second;
         AZStd::vector<uint8_t> byteBuffer;

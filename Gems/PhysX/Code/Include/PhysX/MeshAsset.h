@@ -28,7 +28,7 @@ namespace PhysX
         {
         public:
             AZ_CLASS_ALLOCATOR(AssetColliderConfiguration, AZ::SystemAllocator);
-            AZ_TYPE_INFO(MeshAssetData, "{463AA6A7-8A1A-42B6-B103-F6939CC7A8A5}");
+            AZ_TYPE_INFO(AssetColliderConfiguration, "{463AA6A7-8A1A-42B6-B103-F6939CC7A8A5}");
 
             static void Reflect(AZ::ReflectContext* context);
             void UpdateColliderConfiguration(Physics::ColliderConfiguration& colliderConfiguration) const;
