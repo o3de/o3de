@@ -51,6 +51,7 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 
+DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EditorEntityContextRequests);
 
 namespace AzToolsFramework
 {

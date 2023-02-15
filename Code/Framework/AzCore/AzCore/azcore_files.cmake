@@ -26,6 +26,7 @@ set(FILES
     Asset/AssetSerializer.cpp
     Asset/AssetSerializer.h
     Asset/AssetTypeInfoBus.h
+    Asset/AssetTypeInfoBus.cpp
     Asset/AssetInternal/WeakAsset.h
     base.h
     Casting/lossy_cast.h
@@ -480,6 +481,7 @@ set(FILES
     RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorInterfaceProxy.h
     RTTI/BehaviorObjectSignals.h
+    RTTI/BehaviorObjectSignals.cpp
     RTTI/ChronoReflection.cpp
     RTTI/ChronoReflection.h
     RTTI/ReflectContext.h

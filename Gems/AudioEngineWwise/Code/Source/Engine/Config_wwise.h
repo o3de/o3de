@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <AzCore/PlatformIncl.h> // This include is needed to include WinSock2.h before including Windows.h
+                                 // As AK/SoundEngine/Common/AkTypes.h eventually includes Windows.h
+
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/string.h>
 

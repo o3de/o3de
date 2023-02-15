@@ -97,9 +97,8 @@ namespace AzToolsFramework
         }
     }
 
-    void BoxViewportEdit::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    void BoxViewportEdit::AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        m_entityIds.insert(entityComponentIdPair.GetEntityId());
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_linearManipulators.size(); ++manipulatorIndex)
         {
             if (auto& linearManipulator = m_linearManipulators[manipulatorIndex]; linearManipulator)
@@ -182,13 +181,9 @@ namespace AzToolsFramework
         }
     }
 
-    void BoxViewportEdit::ResetValues()
+    void BoxViewportEdit::ResetValuesImpl()
     {
-        // manipulators handle undo batches themselves, but this function does not work via manipulators so needs its own undo batch
-        BeginUndoBatch("BoxViewportEdit Reset");
         SetBoxDimensions(AZ::Vector3::CreateOne());
         SetTranslationOffset(AZ::Vector3::CreateZero());
-        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
-        EndUndoBatch();
     }
 } // namespace AzToolsFramework

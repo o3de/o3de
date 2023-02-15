@@ -45,6 +45,7 @@ namespace AssetProcessor
         AZStd::unique_ptr<UnitTestUtils::ScopedDir> m_changeDir;
         FileWatcher m_fileWatcher;
         ::UnitTests::MockVirtualFileIO m_virtualFileIO;
+        AzToolsFramework::UuidUtilComponent m_uuidUtil;
         AzToolsFramework::MetadataManager m_metadataManager;
         AssetProcessor::UuidManager m_uuidManager;
 
