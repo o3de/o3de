@@ -90,6 +90,9 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::Reset()
     {
+        AzFramework::EntityOwnershipServiceNotificationBus::Event(
+            m_entityContextId, &AzFramework::EntityOwnershipServiceNotificationBus::Events::PrepareForEntityOwnershipServiceReset);
+
         m_isRootPrefabAssigned = false;
 
         if (m_rootInstance)
