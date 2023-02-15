@@ -11,6 +11,8 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
+DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EditorEntityLockComponentNotifications);
+
 namespace AzToolsFramework
 {
     namespace Components

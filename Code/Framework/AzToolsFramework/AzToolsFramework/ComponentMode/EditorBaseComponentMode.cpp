@@ -11,6 +11,9 @@
 
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
+DECLARE_EBUS_INSTANTIATION(AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests);
+DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequests, AzToolsFramework::ComponentModeFramework::ComponentModeMouseViewportRequests)
+
 namespace AzToolsFramework
 {
     namespace ComponentModeFramework

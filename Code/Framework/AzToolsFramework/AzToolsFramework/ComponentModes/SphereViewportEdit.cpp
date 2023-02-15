@@ -14,13 +14,13 @@
 
 namespace AzToolsFramework
 {
-    namespace
+    namespace SphereViewportEditConstants
     {
         const AZ::Vector3 RadiusManipulatorAxis = AZ::Vector3::CreateAxisX();
         const AZ::Vector3 UpAxis = AZ::Vector3::CreateAxisZ();
         const float MinSphereRadius = 0.001f;
         const float ResetSphereRadius = 0.5f;
-    } // namespace
+    } // namespace SphereViewportEditConstants
 
     void SphereViewportEdit::InstallGetSphereRadius(AZStd::function<float()> getSphereRadius)
     {
@@ -39,7 +39,7 @@ namespace AzToolsFramework
             return m_getSphereRadius();
         }
         AZ_ErrorOnce("SphereViewportEdit", false, "No implementation provided for GetSphereRadius");
-        return ResetSphereRadius;
+        return SphereViewportEditConstants::ResetSphereRadius;
     }
 
     void SphereViewportEdit::SetSphereRadius(float radius)
@@ -65,7 +65,7 @@ namespace AzToolsFramework
 
             const AZ::Vector3 inverseTransformedForward =
                 localInverse.TransformVector(manipulatorSpaceInverse.TransformVector(cameraState.m_forward) / GetNonUniformScale());
-            AZ::Vector3 axis = inverseTransformedForward.Cross(UpAxis);
+            AZ::Vector3 axis = inverseTransformedForward.Cross(SphereViewportEditConstants::UpAxis);
             if (axis.GetLengthSq() < AZ::Constants::Tolerance * AZ::Constants::Tolerance)
             {
                 axis = AZ::Vector3::CreateAxisX();
@@ -117,7 +117,7 @@ namespace AzToolsFramework
 
     void SphereViewportEdit::ResetValuesImpl()
     {
-        SetSphereRadius(ResetSphereRadius);
+        SetSphereRadius(SphereViewportEditConstants::ResetSphereRadius);
     }
 
     void SphereViewportEdit::Teardown()
@@ -136,9 +136,10 @@ namespace AzToolsFramework
     {
         float sphereRadius = GetSphereRadius();
         m_radiusManipulator = LinearManipulator::MakeShared(worldTransform);
-        m_radiusManipulator->SetAxis(RadiusManipulatorAxis);
+        m_radiusManipulator->SetAxis(SphereViewportEditConstants::RadiusManipulatorAxis);
         m_radiusManipulator->Register(manipulatorManagerId);
-        m_radiusManipulator->SetLocalTransform(localTransform * AZ::Transform::CreateTranslation(RadiusManipulatorAxis * sphereRadius));
+        m_radiusManipulator->SetLocalTransform(
+            localTransform * AZ::Transform::CreateTranslation(SphereViewportEditConstants::RadiusManipulatorAxis * sphereRadius));
         m_radiusManipulator->SetNonUniformScale(nonUniformScale);
         {
             ManipulatorViews views;
@@ -171,7 +172,7 @@ namespace AzToolsFramework
             m_radiusManipulator->GetSpace().GetUniformScale(), localTransform, action);
 
         float extent = manipulatorPosition.Dot(action.m_fixed.m_axis);
-        extent = AZ::GetMax(extent, MinSphereRadius);
+        extent = AZ::GetMax(extent, SphereViewportEditConstants::MinSphereRadius);
         m_radiusManipulator->SetLocalTransform(localTransform * AZ::Transform::CreateTranslation(extent * action.m_fixed.m_axis));
 
         SetSphereRadius(extent);
