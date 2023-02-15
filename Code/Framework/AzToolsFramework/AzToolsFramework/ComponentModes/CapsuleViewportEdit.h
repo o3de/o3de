@@ -20,7 +20,10 @@ namespace AzToolsFramework
     class CapsuleViewportEdit : public BaseShapeViewportEdit
     {
     public:
-        CapsuleViewportEdit(bool allowAsymmetricalEditing = false, bool ensureHeightExceedsTwiceRadius = true);
+        CapsuleViewportEdit(bool allowAsymmetricalEditing = false);
+
+        //! Set whether to force height to exceed twice the radius when editing (default is true).
+        void SetEnsureHeightExceedsTwiceRadius(bool ensureHeightExceedsTwiceRadius);
 
         void InstallGetCapsuleRadius(AZStd::function<float()> getCapsuleRadius);
         void InstallGetCapsuleHeight(AZStd::function<float()> getCapsuleHeight);

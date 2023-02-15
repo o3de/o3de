@@ -14,15 +14,14 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ColliderCylinderMode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ColliderCylinderMode, AZ::SystemAllocator);
 
     void ColliderCylinderMode::Setup(const AZ::EntityComponentIdPair& idPair)
     {
         m_entityComponentIdPair = idPair;
         const bool allowAsymmetricalEditing = true;
-        const bool ensureHeightExceedsTwiceRadius = false;
-        m_capsuleViewportEdit =
-            AZStd::make_unique<AzToolsFramework::CapsuleViewportEdit>(allowAsymmetricalEditing, ensureHeightExceedsTwiceRadius);
+        m_capsuleViewportEdit = AZStd::make_unique<AzToolsFramework::CapsuleViewportEdit>(allowAsymmetricalEditing);
+        m_capsuleViewportEdit->SetEnsureHeightExceedsTwiceRadius(false);
         AzToolsFramework::InstallBaseShapeViewportEditFunctions(m_capsuleViewportEdit.get(), idPair);
         m_capsuleViewportEdit->InstallGetCapsuleRadius(
             [this]()

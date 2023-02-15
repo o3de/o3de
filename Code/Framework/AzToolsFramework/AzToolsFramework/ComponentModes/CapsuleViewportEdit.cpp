@@ -24,10 +24,14 @@ namespace AzToolsFramework
         const float ResetCapsuleRadius = 0.25f;
     } // namespace CapsuleViewportEditConstants
 
-    CapsuleViewportEdit::CapsuleViewportEdit(bool allowAsymmetricalEditing, bool ensureHeightExceedsTwiceRadius)
+    CapsuleViewportEdit::CapsuleViewportEdit(bool allowAsymmetricalEditing)
         : m_allowAsymmetricalEditing(allowAsymmetricalEditing)
-        , m_ensureHeightExceedsTwiceRadius(ensureHeightExceedsTwiceRadius)
     {
+    }
+
+    void CapsuleViewportEdit::SetEnsureHeightExceedsTwiceRadius(bool ensureHeightExceedsTwiceRadius)
+    {
+        m_ensureHeightExceedsTwiceRadius = ensureHeightExceedsTwiceRadius;
     }
 
     void CapsuleViewportEdit::InstallGetCapsuleRadius(AZStd::function<float()> getCapsuleRadius)
@@ -302,7 +306,8 @@ namespace AzToolsFramework
         const float symmetryFactor = symmetrical ? 2.0f : 1.0f;
 
         const float oldCapsuleHeight = GetCapsuleHeight();
-        const float newAxisLength = AZ::GetMax(0.5f * MinCapsuleHeight, symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis));
+        const float newAxisLength = AZ::GetMax(
+            0.5f * CapsuleViewportEditConstants::MinCapsuleHeight, symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis));
         const float oldAxisLength = 0.5f * symmetryFactor * oldCapsuleHeight;
         const float capsuleHeightDelta = newAxisLength - oldAxisLength;
 

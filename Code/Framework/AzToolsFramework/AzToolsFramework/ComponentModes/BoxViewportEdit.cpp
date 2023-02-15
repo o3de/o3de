@@ -18,10 +18,10 @@
 
 namespace AzToolsFramework
 {
-    namespace
+    namespace BoxViewportEditConstants
     {
         const float MinBoxDimension = 0.001f;
-    } // namespace
+    } // namespace BoxViewportEditConstants
 
     const AZStd::array<AZ::Vector3, 6> s_boxAxes =
     { {
@@ -135,8 +135,8 @@ namespace AzToolsFramework
                     // factor of 2 for symmetrical editing because both ends of the box move
                     const float symmetryFactor = symmetrical ? 2.0f : 1.0f; 
 
-                    const float newAxisLength =
-                        AZ::GetMax(0.5f * MinBoxDimension, symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis));
+                    const float newAxisLength = AZ::GetMax(
+                        0.5f * BoxViewportEditConstants::MinBoxDimension, symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis));
                     const float oldAxisLength = 0.5f * symmetryFactor * boxDimensions.Dot(action.m_fixed.m_axis.GetAbs());
                     const AZ::Vector3 dimensionsDelta = (newAxisLength - oldAxisLength) * action.m_fixed.m_axis.GetAbs();
 

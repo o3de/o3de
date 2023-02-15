@@ -82,7 +82,7 @@ namespace AzToolsFramework
         {
             return m_getRotationOffset();
         }
-        AZ_ErrorOnce("CapsuleViewportEdit", false, "No implementation provided for GetRotationOffset");
+        AZ_ErrorOnce("BaseShapeViewportEdit", false, "No implementation provided for GetRotationOffset");
         return AZ::Quaternion::CreateIdentity();
     }
 
