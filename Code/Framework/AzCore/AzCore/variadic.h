@@ -90,7 +90,8 @@ static_assert(AZ_VA_NUM_ARGS(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
 //! ex. `define MACRO(Token1, ...) Token1 AZ_VA_OPT(COMMA_SEPARATOR_MACRO, __VA_ARGS__) __VA_ARGS__`
 //! When no macro arguments are supplied, the separator_macro is not called
 //! When 1 or more macro arguments are supplied, the separator_macro is called
-#define AZ_VA_OPT(separator_macro, ...) AZ_VA_OPT_CALL(AZ_VA_OPT_, AZ_VA_NUM_ARGS(__VA_ARGS__), separator_macro)
+#define AZ_VA_OPT_HELPER(separator_macro, ...) AZ_VA_OPT_CALL(AZ_VA_OPT_, AZ_VA_NUM_ARGS(__VA_ARGS__), separator_macro)
+#define AZ_VA_OPT(separator_macro, ...) AZ_VA_OPT_HELPER(separator_macro, __VA_ARGS__)
 
 // Expands a macro and calls a different macro based on the number of arguments.
 //
@@ -438,7 +439,8 @@ static_assert(AZ_VA_NUM_ARGS(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
 #define O3DE_AZ_PARENTHESIS
 #define AZ_UNWRAP(...) AZ_REMOVE(AZ_PARENTHESIS __VA_ARGS__)
 // Wraps variadic arguments inside parenthesis
-#define AZ_WRAP(...) (__VA_ARGS__)
+#define AZ_WRAP_I(...) (__VA_ARGS__)
+#define AZ_WRAP(...) AZ_WRAP_I(__VA_ARGS__)
 
 // Allows passing a comma has a separator to AZ_FOR_EACH_WITH_SEPARATOR / AZ_FOR_EACH_UNWRAP_WITH_SEPARATOR
 // It has to be a macro call via (), so that the comma isn't immediately substituted
