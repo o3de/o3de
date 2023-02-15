@@ -3,6 +3,7 @@ version: '${O3DE_INSTALL_VERSION_STRING}'
 summary: O3DE Engine
 description: |
   Open 3D Engine (O3DE) is an Apache 2.0-licensed multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations. 
+license: Apache-2.0
 confinement: classic
 base: core22
 
