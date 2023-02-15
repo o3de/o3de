@@ -24,7 +24,7 @@ class Launcher(QtWidgets.QMainWindow):
         self.setWindowFlags(QtCore.Qt.Window)
         self.setGeometry(50, 50, 1280, 720)
         self.setObjectName('DCCsiLauncher')
-        self.setWindowTitle('DCCsi Launcher')
+        self.setWindowTitle(' ')
         self.icon_path = (settings.get('PATH_DCCSI_TOOLS') / 'Launcher/images/o3de_icon.png').as_posix()
         self.setWindowIcon(QtGui.QIcon(self.icon_path))
         self.isTopLevel()
@@ -40,7 +40,7 @@ class Launcher(QtWidgets.QMainWindow):
         self.load_bar.setVisible(False)
         self.status_bar.addPermanentWidget(self.load_bar)
         self.status_label = QtWidgets.QLabel()
-        self.status_bar.setStyleSheet('color:rgb(0, 255, 0);')
+        self.status_bar.setStyleSheet('color:rgb(0, 255, 255);')
         self.status_bar.addPermanentWidget(self.status_label)
         self.status_bar.showMessage('Ready.')
 

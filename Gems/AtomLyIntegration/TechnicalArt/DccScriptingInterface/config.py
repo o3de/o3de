@@ -331,6 +331,27 @@ def initialize_substance_settings():
 
 
 # ++++++++++++++++++++++++++++++++---->>
+# GET ENVIRONMENT SETTINGS +++++++----->>
+# ++++++++++++++++++++++++++++++++---->>
+
+def get_environment_values(target_environment=None):
+    """ Gather environment variables stored in Dynaconf """
+    settings_file = Path().absolute() / 'settings.json'
+    target_keys = []
+    with open(settings_file.as_posix(), 'r') as f:
+        environment_values = json.load(f)
+        for key, values in environment_values.items():
+            if key == target_environment:
+                for k, v in values.items():
+                    target_keys.append(k)
+    environment_values = {}
+    for key, value in settings.items():
+        if key in target_keys:
+            environment_values[key] = value
+    return environment_values
+
+
+# ++++++++++++++++++++++++++++++++---->>
 # DEBUG MESSAGING ++++++++++++++++----->>
 # ++++++++++++++++++++++++++++++++---->>
 

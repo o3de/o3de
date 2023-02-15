@@ -13,6 +13,7 @@
 
 import logging
 from azpy.shared.client_base import ClientBase
+from PySide2.QtCore import Signal
 
 
 _MODULENAME = 'azpy.dcc.maya.utils.maya_client'
@@ -20,18 +21,12 @@ _LOGGER = logging.getLogger(_MODULENAME)
 
 
 class MayaClient(ClientBase):
-
     def echo(self, text):
         cmd = {
             'cmd': 'echo',
             'text': text
         }
-
-        reply = self.send(cmd)
-        if self.is_valid_reply(reply):
-            return reply['result']
-        else:
-            return None
+        self.send(cmd)
 
     def set_title(self, title):
         cmd = {
@@ -57,25 +52,3 @@ class MayaClient(ClientBase):
             return reply['result']
         else:
             return None
-
-
-if __name__ == '__main__':
-    client = MayaClient(17344, timeout=10)
-    if client.connect():
-        _LOGGER.info('Connected successfully')
-        script_path = 'E:/Depot/o3de-engine/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/azpy/dcc/maya/' \
-                      'utils/maya_scene_audit.py'
-        arguments = {
-            'class': 'MayaSceneAuditor',
-            'target_application': 'maya',
-            'target_files': 'current',
-            'operation': 'audit'
-        }
-        client.run_script(script_path, arguments)
-
-        if client.disconnect():
-            _LOGGER.info('Disconnected successfully')
-    else:
-        _LOGGER.info('Failed to connect')
-
-

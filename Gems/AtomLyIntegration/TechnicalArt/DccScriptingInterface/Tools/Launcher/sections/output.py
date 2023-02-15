@@ -10,7 +10,6 @@ class Output(QtWidgets.QWidget):
     def __init__(self, model):
         super(Output, self).__init__()
 
-        _LOGGER.info('Output Page added to content layout')
         self.model = model
         self.content_layout = QtWidgets.QVBoxLayout(self)
         self.content_layout.setContentsMargins(0, 0, 0, 0)
@@ -27,7 +26,6 @@ class Output(QtWidgets.QWidget):
         open(self.log_file, 'w').close()
 
     def get_info(self):
-        _LOGGER.info('Gathering Information for the Output Section...')
         self.set_info(str(self.model.get_table_names()))
 
     def set_info(self, info_text: str):

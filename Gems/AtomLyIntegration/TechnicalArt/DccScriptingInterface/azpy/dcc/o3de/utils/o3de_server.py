@@ -40,29 +40,40 @@ from pathlib import Path
 from importlib import import_module
 from PySide2 import QtWidgets, QtCore
 from PySide2.QtCore import Signal, Slot
-from azpy.shared.server_base import ServerBase
 
-import os
+try:
+    from azpy.shared.server_base import ServerBase
+except:
+    from o3de import manifest, global_project
+    base_path = manifest.get_this_engine_path()
+    module_path = Path(base_path) / 'Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/azpy/shared/server_base.py'
+    module_name = 'utils.o3de_server'
+    spec = importlib.util.spec_from_file_location(module_name, module_path.as_posix())
+    server = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = server
+    spec.loader.exec_module(server)
+    ServerBase = getattr(import_module(module_name), 'ServerBase')
 
 
-_MODULENAME = 'azpy.dcc.maya.utils.maya_server'
+_MODULENAME = 'azpy.dcc.o3de.utils.o3de_server'
 _LOGGER = _logging.getLogger(_MODULENAME)
 
 
 class O3DEServer(ServerBase):
-    def __init__(self):
-        super(O3DEServer, self).__init__()
+    server_activity_registered = Signal(dict)
 
-        # self.setParent(mayaMainWindow)
+    def __init__(self, port):
+        super(O3DEServer, self).__init__(port)
+
         self.setWindowFlags(QtCore.Qt.Window)
         self.setObjectName('O3DEServer')
-        self.setWindowTitle('O3DE Server')
-        self.setGeometry(50, 50, 240, 150)
+        self.setWindowTitle('DCCsi Communication Server')
+        self.setFixedSize(300, 200)
+
         self.container = QtWidgets.QVBoxLayout(self)
-        self.window = QtWidgets.QPlainTextEdit()
+        self.window = QtWidgets.QPlainTextEdit('Connected to port 17345')
         self.container.addWidget(self.window)
         self.cls = None
-        self.show()
 
     def process_cmd(self, cmd, data, reply):
         """! Extends command capabilities for DCC applications. The run script command is likely the most useful
@@ -83,13 +94,13 @@ class O3DEServer(ServerBase):
         """! Tests communication channel """
         reply['result'] = data['text']
         reply['success'] = True
+        self.server_activity_registered.emit({'server_message': data})
 
     def run_script(self, data, reply):
         """! Fire commands and/or python scripts to open scenes """
         _LOGGER.info(f'Run Script DATA: {data}')
         target_module = self.get_module_path(Path(data['path']))
         module_name = f"{Path(data['path']).parts[-2]}.{Path(data['path']).stem}"
-        processing_data = None
 
         # Import module if it hasn't been done already
         if target_module not in sys.modules:
@@ -98,9 +109,7 @@ class O3DEServer(ServerBase):
         if 'class' in data['arguments']:
             target_class = getattr(import_module(module_name), data['arguments']['class'])
             cls = target_class(**data['arguments'])
-            # processing_data = cls.get_script_data()
             processing_data = cls.start_operation()
-            _LOGGER.info(f'>>>>>>>> ExistingProcessingData: {processing_data}')
         else:
             target_module.run(data['arguments'])
             processing_data = data['path']
@@ -131,9 +140,4 @@ class O3DEServer(ServerBase):
     @Slot(object)
     def return_scene_data(self, data):
         _LOGGER.info(f'%%%%%% Return Scene Data Slot Fired %%%%%%\n{data}')
-
-
-def launch():
-    _LOGGER.info('Starting O3DE Communication Server...')
-    O3DEServer()
 

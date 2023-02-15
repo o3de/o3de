@@ -74,7 +74,9 @@ class QtProcess(QtCore.QObject):
         _LOGGER.info(f'**** QPROCESS LAUNCHED ****************************************')
         _LOGGER.info(f'Application: {self.application}')
         _LOGGER.info(f'Target File: {self.target_files}')
+        _LOGGER.info(f'Passed Data: {self.data}')
         _LOGGER.info(f'Processing Script: {self.processing_script}')
+        _LOGGER.info(f'Input Information: {self.input_data}')
         _LOGGER.info(f'Output Information: {self.output_data}')
 
         self.p = QProcess()
@@ -94,7 +96,7 @@ class QtProcess(QtCore.QObject):
     def parse_data(self, target_key=None):
         """
         The kwargs argument when instantiating the QProcess class is mainly used for establishing the application
-        environment, with the exception of passing execution scripts as well as also sending output information when
+        environment, except passing execution scripts as well as also sending output information when
         the application process is launched. The method for achieving this is to insert "script" and/or
         "input_data/output_data" as keys, and related information as values
         """
@@ -174,12 +176,12 @@ class QtProcess(QtCore.QObject):
         # TODO - somewhere you need to run the self.processing_script path to the socket server in order to see audit
 
         info_list = [self.input_data, self.output_data]
-        command = [self.target_files]
+        command = [self.target_files] if self.target_files else []
         command.append('socket_connection') if socket_connection else command
         for entry in info_list:
-            command.append(str(entry))
+            if entry:
+                command.append(str(entry))
         self.p.setArguments(command)
-        _LOGGER.info(f'Command:::::> {self.p.arguments()}')
 
         try:
             if detached:
@@ -189,6 +191,11 @@ class QtProcess(QtCore.QObject):
                 self.p.waitForFinished(-1)
         except Exception as e:
             _LOGGER.info(f'+ QProcess failed: {e}')
+
+    def start_o3de_process(self, command):
+        _LOGGER.info(f'Command: {command}')
+        self.p.setArguments(command)
+        self.p.startDetached()
 
     def start_dcc_server(self):
         dcc_app = Path(self.application).stem.capitalize()

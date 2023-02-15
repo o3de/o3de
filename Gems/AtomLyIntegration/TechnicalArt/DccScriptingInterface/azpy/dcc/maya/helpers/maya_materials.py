@@ -143,22 +143,11 @@ def get_materials_in_scene():
 
 
 def get_file_texture_information(material_list):
-    material_info = {}
+    material_data = {}
     for material in material_list:
-        material_info[material] = {}
-        connections = mc.listConnections(material, c=1, d=0)
-
-        for index, connection in enumerate(connections):
-            if index % 2 == 0:
-                temp_array = {connection: {}}
-                file_connection = mc.listConnections(connection, type='file')
-                connection = connection if file_connection else connections[index + 1]
-                file_connection = mc.listConnections(connection, type='file')
-                temp_array[list(temp_array.keys())[0]].update({'file_node': file_connection[0]})
-                material_info[material].update(temp_array)
-            else:
-                if not connection.startswith('file'):
-                    material_info[material][connections[index - 1]]['embedded_node'] = connection
+        material_data[material] = {}
+        material_type = get_material_type(material)
+        material_info = get_material_settings(material, material_type)
     return material_info
 
 
@@ -194,15 +183,23 @@ def get_current_scene():
     return Path(current_scene)
 
 
+def get_shape_node(target_mesh):
+    mc.select(target_mesh)
+    selected_items = mc.ls(selection=True)
+    if selected_items:
+        shape = mc.listRelatives(selected_items[0], shapes=True)
+        if shape:
+            return shape[0]
+    return None
+
+
 def get_material_info(target_meshes):
     supported_materials = ['lambert', 'blinn', 'phong', 'standardSurface', 'StingrayPBS', 'aiStandardSurface']
     material_info = {}
     for mesh in target_meshes:
-        file_texture_info = get_file_texture_information(get_materials(mesh))
-        for material_name, attr_values in file_texture_info.items():
-            material_type = mc.nodeType(material_name)
-            if material_type in supported_materials:
-                material_info[mesh] = {'material_type': material_type, 'file_texture_info': attr_values}
+        target_shape = get_shape_node(mesh)
+        file_texture_info = get_file_texture_information(get_materials(target_shape))
+        material_info[mesh] = file_texture_info
     return material_info
 
 
@@ -305,22 +302,22 @@ def get_material(material_name: str) -> list:
         _LOGGER.info('Shader creation failed: {}'.format(e))
     return [sha, sg]
 
-#
-# def get_material_type(target_material, material_type=None):
-#     mc.select(target_material, r=True)
-#     material_type = get_material_type(mc.ls(sl=True, long=True) or []) if not material_type else material_type
-#     if material_type == 'aiStandardSurface':
-#         return arnold.get_material_info(target_material)
-#     elif material_type == 'StingrayPBS':
-#         return stingray.get_material_info(target_material)
-#     elif material_type == 'lambert':
-#         return lambert.get_material_info(target_material)
-#     elif material_type == 'blinn':
-#         return blinn.get_material_info(target_material)
-#     elif material_type == 'phong':
-#         return phong.get_material_info(target_material)
-#     elif material_type == 'standardSurface':
-#         return standardSurface.get_material_info(target_material)
+
+def get_material_settings(target_material, material_type=None):
+    mc.select(target_material, r=True)
+    material_type = get_material_type(mc.ls(sl=True, long=True) or []) if not material_type else material_type
+    if material_type == 'aiStandardSurface':
+        return arnold.get_material_info(target_material)
+    elif material_type == 'StingrayPBS':
+        return stingray.get_material_info(target_material)
+    elif material_type == 'lambert':
+        return lambert.get_material_info(target_material)
+    elif material_type == 'blinn':
+        return blinn.get_material_info(target_material)
+    elif material_type == 'phong':
+        return phong.get_material_info(target_material)
+    elif material_type == 'standardSurface':
+        return standardSurface.get_material_info(target_material)
 
 
 def get_arnold_material_info(material_name: str):

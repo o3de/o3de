@@ -10,7 +10,6 @@ class Database(QtWidgets.QWidget):
     def __init__(self, model):
         super(Database, self).__init__()
 
-        _LOGGER.info('Database Page added to content layout')
         self.model = model
         self.content_layout = QtWidgets.QVBoxLayout(self)
         self.content_layout.setContentsMargins(0, 0, 0, 0)
@@ -22,8 +21,8 @@ class Database(QtWidgets.QWidget):
         self.get_info()
 
     def get_info(self):
-        _LOGGER.info('Gathering Information for the Database Section...')
         # Retrieve database values here- use tables to allow easy way to change database values, backup data, etc
+        pass
 
     def set_info(self, info_text: str):
         self.info.setText(info_text)

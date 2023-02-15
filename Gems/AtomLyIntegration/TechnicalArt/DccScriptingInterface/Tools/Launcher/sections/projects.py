@@ -11,7 +11,6 @@ class Projects(QtWidgets.QWidget):
     def __init__(self, model):
         super(Projects, self).__init__()
 
-        _LOGGER.info('Project Page added to content layout')
         self.model = model
         self.content_layout = QtWidgets.QVBoxLayout(self)
         self.content_layout.setContentsMargins(0, 0, 0, 0)
@@ -24,9 +23,7 @@ class Projects(QtWidgets.QWidget):
         self.get_info()
 
     def get_info(self):
-        _LOGGER.info('\n\nGathering Information for the Projects Section...')
         info_text = 'Projects Information:\n\nFound projects:\n'
-        _LOGGER.info(f'Value found: {self.model.projects.items()}')
         for index, value in self.model.projects.items():
             info_text += f'-- {index}: {value}\n'
         self.set_info(info_text)

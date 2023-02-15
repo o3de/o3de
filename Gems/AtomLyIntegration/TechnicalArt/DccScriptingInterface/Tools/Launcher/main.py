@@ -108,7 +108,7 @@ class ContentContainer(QtWidgets.QWidget):
         if self.current_section:
             self.sections[self.current_section][0].close_section()
         self.current_section = target_section
-        self.sections_layout.setCurrentIndex(self.sections[self.current_section ][1])
+        self.sections_layout.setCurrentIndex(self.sections[self.current_section][1])
         self.sections[self.current_section][0].open_section()
 
 

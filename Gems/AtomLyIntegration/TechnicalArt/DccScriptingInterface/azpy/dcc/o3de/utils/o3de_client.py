@@ -15,11 +15,11 @@ import logging
 from azpy.shared.client_base import ClientBase
 
 
-_MODULENAME = 'azpy.dcc.maya.utils.maya_client'
+_MODULENAME = 'azpy.dcc.o3de.utils.o3de_client'
 _LOGGER = logging.getLogger(_MODULENAME)
 
 
-class MayaClient(ClientBase):
+class O3DEClient(ClientBase):
 
     def echo(self, text):
         cmd = {
@@ -58,22 +58,3 @@ class MayaClient(ClientBase):
         else:
             return None
 
-
-if __name__ == '__main__':
-    client = MayaClient(17344, timeout=10)
-    if client.connect():
-        _LOGGER.info('Connected successfully')
-        script_path = 'E:/Depot/o3de-engine/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/azpy/dcc/maya/' \
-                      'utils/maya_scene_audit.py'
-        arguments = {
-            'class': 'MayaSceneAuditor',
-            'target_application': 'maya',
-            'target_files': 'current',
-            'operation': 'audit'
-        }
-        client.run_script(script_path, arguments)
-
-        if client.disconnect():
-            _LOGGER.info('Disconnected successfully')
-    else:
-        _LOGGER.info('Failed to connect')

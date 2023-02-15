@@ -13,7 +13,6 @@ class Help(QtWidgets.QWidget):
     def __init__(self, model):
         super(Help, self).__init__()
 
-        _LOGGER.info('Help Page added to content layout')
         self.model = model
         self.content_layout = QtWidgets.QVBoxLayout(self)
         self.content_layout.setContentsMargins(0, 0, 0, 0)

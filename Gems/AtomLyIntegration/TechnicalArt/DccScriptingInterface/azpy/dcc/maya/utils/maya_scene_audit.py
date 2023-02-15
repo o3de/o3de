@@ -18,7 +18,6 @@ class MayaSceneAuditor(SceneAuditor):
 
     Defines the tool's main window, messaging and loading systems and adds content widget
     """
-
     def __init__(self, **kwargs):
         super(MayaSceneAuditor, self).__init__()
 
@@ -34,20 +33,17 @@ class MayaSceneAuditor(SceneAuditor):
         self.material_data = {}
         self.animation_data = {}
         self.camera_data = {}
-        # self.start_operation()
 
     def start_operation(self):
-        _LOGGER.info(f'Operation: {self.operation}')
         self.reload_imports()
         for file in self.target_files:
             target_file = self.get_file_information(file)
             if target_file:
                 if self.operation == 'audit':
                     self.get_scene_info()
+                    return self.audit_data
                 elif self.operation == 'track_object':
                     _LOGGER.info('Track Object')
-            # self.clear_data()
-        return self.audit_data
 
     def clear_data(self):
         self.audit_data = {}
@@ -75,15 +71,19 @@ class MayaSceneAuditor(SceneAuditor):
             return [current_file]
         return file_list
 
-    def get_scene_info(self, filter=None):
-        # TODO - Add filtering system to speed up process when processing in realtime
+    def get_scene_info(self, object_filter=None):
         temp_dict = {}
-        temp_dict.update({'cameras': self.get_camera_information()})
-        temp_dict.update({'lights': self.get_lighting_information()})
-        temp_dict.update({'meshes': self.get_mesh_information()})
-        temp_dict.update({'materials': self.get_material_information(temp_dict['meshes'])})
-        self.audit_data[self.current_file] = temp_dict
-        _LOGGER.info(f'AuditData: {json.dumps(self.audit_data, indent=4)}')
+        if object_filter is None:
+            object_filter = ['cameras', 'lights', 'meshes', 'materials']
+        if 'cameras' in object_filter:
+            temp_dict.update({'cameras': self.get_camera_information()})
+        if 'lights' in object_filter:
+            temp_dict.update({'lights': self.get_lighting_information()})
+        if 'meshes' in object_filter:
+            temp_dict.update({'meshes': self.get_mesh_information()})
+        if 'materials' in object_filter:
+            temp_dict.update({'materials': self.get_material_information(temp_dict['meshes'])})
+        self.audit_data = {'cmd': 'audit', self.current_file: temp_dict}
 
     def track_object(self, target_object):
         pass
@@ -113,12 +113,10 @@ class MayaSceneAuditor(SceneAuditor):
     def get_mesh_information(self, target='all'):
         return maya_meshes.get_scene_objects()
 
-    def get_material_information(self, target='all'):
-        return maya_materials.get_material_info(target)
+    def get_material_information(self, mesh_list):
+        mesh_list = [k for k, v in mesh_list.items()]
+        return maya_materials.get_material_info(mesh_list)
 
     def get_animation_information(self, target='all'):
         pass
 
-    # def get_script_data(self):
-    #     _LOGGER.info('Get Script Data firing')
-    #     return self.audit_data

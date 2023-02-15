@@ -504,7 +504,6 @@ class Setup(QtWidgets.QWidget):
         for index, target_button in enumerate(self.ide_radio_group.buttons()):
             if index == selection_index:
                 target_button.setChecked(True)
-        _LOGGER.info(self.ide_radio_group.checkedButton().text())
 
     def launch_dcc_application(self, environment, application_path):
         if Path(application_path).name not in (i.name() for i in psutil.process_iter()):

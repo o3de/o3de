@@ -13,98 +13,70 @@
 # This file is contains OpenImageIO operations for file texture conversions
 # -------------------------------------------------------------------------
 import config
+from PySide2.QtCore import QDataStream, QByteArray, QIODevice, QObject, Signal, Slot
+from PySide2.QtNetwork import QTcpSocket
 import socket
 import time
 import traceback
 import json
 import logging
+import socket
 
 _MODULENAME = 'azpy.shared.client_base'
 _LOGGER = logging.getLogger(_MODULENAME)
 
 
-class ClientBase(object):
-    def __init__(self, port=17344, timeout=2):
-        self.timeout = timeout
-        self.header_size = 10
-        self.buffer_size = 4096
-        self.client_socket = None
+class ClientBase(QObject):
+    client_activity_registered = Signal(dict)
+
+    def __init__(self, port=17344):
+        super().__init__()
+        self.socket = QTcpSocket()
+        self.socket.readyRead.connect(self.read_data)
+        self.socket.connected.connect(self.connected)
+        self.stream = None
         self.port = port
-        self.client = None
-        self.addr = None
-        self.discard_count = 0
 
-    def connect(self, port=-1):
+    def establish_connection(self):
         _LOGGER.info(f'Client connecting to port [{self.port}]')
-
-        if port >= 0:
-            self.port = port
-
         try:
-            self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.client_socket.connect(('localhost', self.port))
+            self.socket.connectToHost('localhost', self.port)
         except Exception as e:
             _LOGGER.info(f'CONNECTION EXCEPTION [{type(e)}] :::: {e}')
-            traceback.print_exc()
             return False
         return True
 
+    def connected(self):
+        self.stream = QDataStream(self.socket)
+        self.stream.setVersion(QDataStream.Qt_5_0)
+
     def disconnect(self):
         try:
-            self.client_socket.close()
-        except:
-            traceback.print_exc()
+            self.socket.close()
+            _LOGGER.info('Client disconnected.')
+        except ConnectionError:
             return False
         return True
 
     def send(self, cmd):
         json_cmd = json.dumps(cmd)
-        try:
-            msg_str = f'{len(json_cmd):<{self.header_size}}{json_cmd}'
-            _LOGGER.info(f"Message: {msg_str.encode('ascii')}")
-            self.client_socket.sendall(msg_str.encode('ascii'))
-        except Exception as e:
-            _LOGGER.info(f'Send Exception [{type(e)}] ::: {e}')
-            traceback.print_exc()
-            return None
-        return self.recv()
+        if self.socket.waitForConnected(5000):
+            self.stream << json_cmd
+        else:
+            _LOGGER.info('Connection to the server failed')
+        return None
 
-    def recv(self):
-        total_data = []
-        reply_length = 0
-        bytes_remaining = self.header_size
+    def read_data(self):
+        msg = self.socket.readAll()
+        converted = str(msg.data(), encoding='utf-8')
+        message = json.loads(converted)
 
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                data = self.client_socket.recv(bytes_remaining)
-            except Exception:
-                time.sleep(0.01)
-                continue
+        if self.is_valid_reply(message):
+            self.update_event(message)
 
-            if data:
-                total_data.append(data)
-                _LOGGER.info(f'Data: {data}')
-
-                bytes_remaining -= len(data)
-                if bytes_remaining <= 0:
-                    for i in range(len(total_data)):
-                        total_data[i] = total_data[i].decode()
-
-                    if reply_length == 0:
-                        header = ''.join(total_data)
-                        reply_length = int(header)
-                        bytes_remaining = reply_length
-                        total_data = []
-                    else:
-                        if self.discard_count > 0:
-                            self.discard_count -= 1
-                            return self.recv()
-                        reply_json = ''.join(total_data)
-                        return json.loads(reply_json)
-        self.discard_count += 1
-
-        raise RuntimeError('Timeout waiting for response.')
+    def update_event(self, update):
+        _LOGGER.info(f'UPDATE EVENT FIRED::::: {update}')
+        self.client_activity_registered.emit(update['result'])
 
     def ping(self):
         cmd = {'cmd': 'ping'}
@@ -125,17 +97,3 @@ class ClientBase(object):
             _LOGGER.info(f"[ERROR] {reply['cmd']} failed: {reply['msg']}")
             return
         return True
-
-
-if __name__ == '__main__':
-    _LOGGER.info('Socket Communication- ClientBase started...')
-    # client = ClientBase(timeout=10)
-    # if client.connect():
-    #     _LOGGER.info('Connected successfully')
-    #     _LOGGER.info(client.ping())
-    #
-    #     if client.disconnect():
-    #         _LOGGER.info('Disconnected successfully')
-    # else:
-    #     _LOGGER.info('Failed to connect')
-

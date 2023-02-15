@@ -49,7 +49,7 @@ def get_material_textures(target_material: str):
         if texture_path.suffix != 'dds':
             texture_key = get_texture_key(node, target_material)
             if texture_key:
-                material_textures_dict[texture_key] = {'node': node, 'path': texture_path}
+                material_textures_dict[texture_key] = {'node': node, 'path': texture_path.as_posix()}
 
     return material_textures_dict
 
@@ -65,7 +65,7 @@ def get_file_node(source_node):
 
 def get_texture_key(source_node, target_material):
     active_texture_slots = get_active_texture_slots(get_shader(target_material))
-    key = mc.listConnections(source_node, plugs=1, destination=1)[-1]
+    key = mc.listConnections(source_node, plugs=1, destination=1)[0]
     texture_slot_name = str(key).split('.')[-1]
     if texture_slot_name in active_texture_slots:
         texture_base_type = texture_slot_name.split('_')[1]

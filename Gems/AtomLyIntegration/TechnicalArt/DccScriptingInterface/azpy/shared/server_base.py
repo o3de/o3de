@@ -32,6 +32,8 @@
 
 
 from PySide2 import QtCore, QtNetwork, QtWidgets
+from PySide2.QtCore import QDataStream, Signal, Slot
+from PySide2.QtNetwork import QTcpServer
 import logging
 import json
 import sys
@@ -39,16 +41,17 @@ import sys
 
 _MODULENAME = 'azpy.shared.server_base'
 _LOGGER = logging.getLogger(_MODULENAME)
+SIZEOF_UINT32 = 4
 
 
 class ServerBase(QtWidgets.QWidget):
-    HEADER_SIZE = 10
 
-    def __init__(self):
+    def __init__(self, port):
         super(ServerBase, self).__init__()
         self.server = None
         self.socket = None
-        self.port = 17344
+        self.stream = None
+        self.port = port
         self.initialize()
 
     def initialize(self):
@@ -68,6 +71,7 @@ class ServerBase(QtWidgets.QWidget):
 
     def establish_connection(self):
         self.socket = self.server.nextPendingConnection()
+        self.socket.nextBlockSize = 0
         if self.socket.state() == QtNetwork.QTcpSocket.ConnectedState:
             self.socket.disconnected.connect(self.on_disconnected)
             self.socket.readyRead.connect(self.read)
@@ -80,42 +84,23 @@ class ServerBase(QtWidgets.QWidget):
         _LOGGER.info('Connection Disconnected')
 
     def read(self):
-        bytes_remaining = -1
-        json_data = ''
-
-        while self.socket.bytesAvailable():
-            # Header ======>
-            if bytes_remaining <= 0:
-                byte_array = self.socket.read(ServerBase.HEADER_SIZE)
-                bytes_remaining, valid = byte_array.toInt()
-
-                if not valid:
-                    self.write_error('Invalid Header')
-
-                    # Purge unknown data
-                    self.socket.readAll()
-                    return
-            # Body ======>
-            if bytes_remaining > 0:
-                byte_array = self.socket.read(bytes_remaining)
-                bytes_remaining -= len(byte_array)
-                json_data += byte_array.data().decode()
-
-                if bytes_remaining == 0:
-                    bytes_remaining = -1
-
-                    data = json.loads(json_data)
-                    self.process_data(data)
-                    json_data = ''
+        self.stream = QDataStream(self.socket)
+        self.stream.setVersion(QDataStream.Qt_5_0)
+        while True:
+            if self.stream.atEnd():
+                break
+            message = self.stream.readQString()
+            data = json.loads(message)
+            self.process_data(data)
 
     def write(self, reply):
         json_reply = json.dumps(reply)
         if self.socket.state() == QtNetwork.QTcpSocket.ConnectedState:
-            header = '{}'.format(len(json_reply.encode())).zfill(ServerBase.HEADER_SIZE)
-            data = QtCore.QByteArray(f'{header}{json_reply}'.encode())
+            # _LOGGER.info(f'SendingInfo: {json_reply}')
+            data = QtCore.QByteArray(json_reply.encode())
             self.socket.write(data)
         else:
-            _LOGGER.info("NOT IN A CONNECTED STATE ::::::::::::::::::::::::::::::::::::")
+            _LOGGER.info('Connection to the server failed')
 
     def write_error(self, error_msg):
         reply = {
@@ -123,11 +108,9 @@ class ServerBase(QtWidgets.QWidget):
             'msg': error_msg,
             'command': 'unknown'
         }
-
         self.write(reply)
 
     def process_data(self, data):
-        _LOGGER.info(f'++++++ PROCESS DATA: {data}')
         reply = {
             'success': False
         }
@@ -138,11 +121,12 @@ class ServerBase(QtWidgets.QWidget):
         else:
             self.process_cmd(cmd, data, reply)
 
+            # TODO - What is above showing up false?
+
             if not reply['success']:
                 reply['cmd'] = cmd
                 if not 'msg' in reply.keys():
                     reply['msg'] = 'Unknown Error'
-
         self.write(reply)
 
     def process_cmd(self, cmd, data, reply):

@@ -58,9 +58,10 @@ import logging as _logging
 import importlib.util
 from pathlib import Path
 from importlib import import_module
-from PySide2 import QtWidgets, QtCore
 from PySide2.QtCore import Signal, Slot
 from azpy.shared.server_base import ServerBase
+
+from PySide2 import QtWidgets, QtCore
 from shiboken2 import wrapInstance
 from maya import OpenMayaUI as omui
 import os
@@ -75,13 +76,12 @@ mayaMainWindow = wrapInstance(int(mayaMainWindowPtr), QtWidgets.QWidget)
 
 
 class MayaServer(ServerBase):
-    def __init__(self):
-        super(MayaServer, self).__init__()
+    def __init__(self, port):
+        super(MayaServer, self).__init__(port)
 
         self.setParent(mayaMainWindow)
         self.setWindowFlags(QtCore.Qt.Window)
         self.setObjectName('MayaServer')
-        self.setWindowTitle('Maya Server')
         self.setGeometry(50, 50, 240, 150)
         self.container = QtWidgets.QVBoxLayout(self)
         self.window = QtWidgets.QPlainTextEdit()
@@ -94,24 +94,26 @@ class MayaServer(ServerBase):
         of these commands beyond testing and verifying connections. Any commands that are unrecognized return errors
         in the reply
         """
-        _LOGGER.info(f'Process command FIRED: cmd:: {cmd}   data:: {data}   reply:: {reply}')
+        # _LOGGER.info(f'Process command FIRED: cmd:: {cmd}   data:: {data}   reply:: {reply}')
         if cmd == 'echo':
             self.echo(data, reply)
         elif cmd == 'run_script':
             self.run_script(data, reply)
         elif cmd == 'set_title':
             self.set_title(data, reply)
+        elif cmd == 'update_event':
+            self.update_event(data, reply)
         else:
             super(MayaServer, self).process_cmd(cmd, data, reply)
 
     def echo(self, data, reply):
         """! Tests communication channel """
+        _LOGGER.info(f"EchoTest::::> {data['text']}")
         reply['result'] = data['text']
         reply['success'] = True
 
     def run_script(self, data, reply):
         """! Fire commands and/or python scripts to open scenes """
-        _LOGGER.info(f'Run Script DATA: {data}')
         target_module = self.get_module_path(Path(data['path']))
         module_name = f"{Path(data['path']).parts[-2]}.{Path(data['path']).stem}"
         processing_data = None
@@ -123,14 +125,21 @@ class MayaServer(ServerBase):
         if 'class' in data['arguments']:
             target_class = getattr(import_module(module_name), data['arguments']['class'])
             cls = target_class(**data['arguments'])
-            # processing_data = cls.get_script_data()
+
+            if 'operation' in data['arguments']:
+                cls.operation = data['arguments']['operation']
             processing_data = cls.start_operation()
-            _LOGGER.info(f'>>>>>>>> ExistingProcessingData: {processing_data}')
         else:
             target_module.run(data['arguments'])
             processing_data = data['path']
 
         reply['result'] = processing_data
+        reply['success'] = True
+
+    def update_event(self, data, reply):
+        _LOGGER.info(f'UpdateEventFired:::> {data}')
+
+        reply['result'] = data
         reply['success'] = True
 
     def handle_script_configuration(self, module_name, data):
@@ -156,6 +165,11 @@ class MayaServer(ServerBase):
     @Slot(object)
     def return_scene_data(self, data):
         _LOGGER.info(f'%%%%%% Return Scene Data Slot Fired %%%%%%\n{data}')
+
+    @Slot(dict)
+    def scene_update(self, data):
+        print(f'Maya Scene Update fired::::: {data}')
+
 
 
 def launch():
