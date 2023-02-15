@@ -536,6 +536,10 @@ namespace AZ::DocumentPropertyEditor
                     hashValue = true;
                 }
 
+                // The IsInspectorOverrideManagementEnabled() check is only temporary until the inspector override management feature set
+                // is fully developed. Since the original utils funtion is in AzToolsFramework and we can't access it from here, we are
+                // duplicating it in this class temporarily till we can do more testing and gain confidence about this new way of storing
+                // serialized values of opaque types directly in the DPE DOM.
                 if (IsInspectorOverrideManagementEnabled() && !serializedPathAttribute.GetString().empty())
                 {
                     VisitValueWithSerializedPath(access, attributes);
