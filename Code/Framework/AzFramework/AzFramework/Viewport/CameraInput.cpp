@@ -539,7 +539,8 @@ namespace AzFramework
             if (input->m_state == InputChannel::State::Began)
             {
                 if (auto translation = TranslationFromKey(input->m_channelId, m_translateCameraInputChannelIds);
-                    translation != TranslationType::Nil)
+                    (state.m_modifiers.GetActiveModifierKeys() & ~ModifierKeyMask::ShiftAny) == ModifierKeyMask::None
+                    && translation != TranslationType::Nil)
                 {
                     m_translation |= translation;
                     BeginActivation();
