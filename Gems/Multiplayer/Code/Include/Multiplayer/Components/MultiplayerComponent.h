@@ -180,7 +180,7 @@ namespace Multiplayer
             if (bitset.GetBit(i))
             {
                 serializer.ClearTrackedChangesFlag();
-                serializer.Serialize(value[i], "Element");
+                serializer.Serialize(value[i], AzNetworking::GenerateIndexLabel<SIZE>(i).c_str());
                 if (modifyRecord && !serializer.GetTrackedChangesFlag())
                 {
                     bitset.SetBit(i, false);
@@ -222,7 +222,7 @@ namespace Multiplayer
             if (bitset.GetBit(i))
             {
                 serializer.ClearTrackedChangesFlag();
-                serializer.Serialize(value[i], "Element");
+                serializer.Serialize(value[i], AzNetworking::GenerateIndexLabel<SIZE>(i).c_str());
                 if (modifyRecord && !serializer.GetTrackedChangesFlag())
                 {
                     bitset.SetBit(i, false);
