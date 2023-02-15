@@ -8,7 +8,7 @@ confinement: classic
 base: core22
 
 parts:
-  test-o3de:
+  o3de:
     plugin: dump
     source: ./${CPACK_PACKAGE_NAME}
     source-type: local
