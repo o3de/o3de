@@ -124,8 +124,7 @@ namespace AZ
             {
                 memoryView = AllocateUnique(sizeInBytes);
             }
-
-            if (memoryView.IsValid())
+            else
             {
                 RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
                 heapMemoryUsage->m_usedResidentInBytes += memoryView.GetSize();
@@ -138,17 +137,16 @@ namespace AZ
         template<typename SubAllocator, typename View>
         void MemoryTypeAllocator<SubAllocator, View>::DeAllocate(const View& memoryView)
         {
-            if (memoryView.IsValid())
-            {
-                RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
-                heapMemoryUsage->m_usedResidentInBytes -= memoryView.GetSize();
-            }
-
             switch (memoryView.GetAllocationType())
             {
             case MemoryAllocationType::SubAllocated:
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_subAllocatorMutex);
+                if (memoryView.IsValid())
+                {
+                    RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+                    heapMemoryUsage->m_usedResidentInBytes -= memoryView.GetSize();
+                }
                 m_subAllocator.DeAllocate(memoryView.GetAllocation());
                 break;
             }
@@ -180,6 +178,11 @@ namespace AZ
                 return View();
             }
 
+            RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+            heapMemoryUsage->m_usedResidentInBytes += sizeInBytes;
+            heapMemoryUsage->m_uniqueAllocationBytes += sizeInBytes;
+            heapMemoryUsage->Validate();
+
             const char* name = GetName().IsEmpty() ? "Unique Allocation" : GetName().GetCStr();
             memory->SetName(Name{ name });
             return View(ViewBase(memory, 0, sizeInBytes, 0, MemoryAllocationType::Unique));
@@ -189,6 +192,12 @@ namespace AZ
         void MemoryTypeAllocator<SubAllocator, View>::DeAllocateUnique(const View& memoryView)
         {
             AZ_Assert(memoryView.GetAllocationType() == MemoryAllocationType::Unique, "This call only supports unique MemoryView allocations.");
+
+            RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+            const size_t sizeInBytes = memoryView.GetSize();
+            heapMemoryUsage->m_usedResidentInBytes -= sizeInBytes;
+            heapMemoryUsage->m_uniqueAllocationBytes -= sizeInBytes;
+
             auto memory = memoryView.GetAllocation().m_memory;
             const_cast<typename PageAllocator::ObjectFactoryType&>(m_pageAllocator.GetFactory()).ShutdownObject(*memory);
             static_cast<Device&>(GetDevice()).QueueForRelease(memory);
