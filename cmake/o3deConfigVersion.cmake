@@ -13,14 +13,6 @@
 set(PACKAGE_VERSION_COMPATIBLE FALSE)
 set(PACKAGE_VERSION_EXACT FALSE)
 
-# Helper function needed to resolve current path
-function(o3de_current_file_path path)
-    set(${path} ${CMAKE_CURRENT_FUNCTION_LIST_DIR} PARENT_SCOPE)
-endfunction()
-o3de_current_file_path(current_path)
-
-include(${current_path}/VersionUtils.cmake)
-
 # Store the project.json with any overrides from <project>/user/project.json 
 # in a global property to avoid the performance hit of loading multiple times
 # The project's CMake will likely have already set this for us, but just in case
@@ -42,26 +34,121 @@ if(NOT o3de_project_json)
 
         set_property(GLOBAL PROPERTY O3DE_PROJECT_JSON ${o3de_project_json})
     else()
-        message(FATAL_ERROR "Unable to read '${O3DE_PROJECT_JSON_PATH}' file necessary to determine whether the project is compatible with this engine.")
+        message(WARNING "Unable to read '${O3DE_PROJECT_JSON_PATH}' file necessary to determine whether the project is compatible with this engine.")
+        return()
     endif()
 endif()
 
-string(JSON project_engine ERROR_VARIABLE json_error GET ${o3de_project_json} engine)
-if(project_engine AND NOT json_error)
-    # Get the engine name and version specifier information for the project from the 'engine' field
-    o3de_get_version_specifier_parts(${project_engine} project_engine_name specifier_op specifier_version)
 
-    cmake_path(GET current_path PARENT_PATH this_engine_path)
-    o3de_engine_compatible(${this_engine_path} ${project_engine_name} ${specifier_op} ${specifier_version} is_compatible this_engine_version)
-    if(is_compatible)
-        set(PACKAGE_VERSION ${this_engine_version})
-        set(PACKAGE_VERSION_COMPATIBLE TRUE)
-        if(PACKAGE_VERSION STREQUAL ${specifier_version})
-            set(PACKAGE_VERSION_EXACT TRUE)
-        endif()
+# Get the engine's 'engine_name' and 'version' fields
+cmake_path(GET CMAKE_CURRENT_LIST_DIR PARENT_PATH this_engine_path)
+file(READ ${this_engine_path}/engine.json engine_json)
+string(JSON engine_name ERROR_VARIABLE json_error GET ${engine_json} engine_name)
+if(json_error OR NOT engine_name)
+    message(WARNING "Unable to read key 'engine_name' from '${this_engine_path}/engine.json'\nError: ${json_error}")
+    return()
+endif()
+string(JSON engine_version ERROR_VARIABLE json_error GET ${engine_json} version)
+if(json_error)
+    message(WARNING "Unable to verify engine compatibility because we could not read key 'version' from '${this_engine_path}/engine.json'\nError: ${json_error}")
+    return()
+endif()
+
+set(PACKAGE_VERSION ${engine_version})
+
+# Get the project.json 'engine' field
+string(JSON project_engine ERROR_VARIABLE json_error GET ${o3de_project_json} engine)
+if(json_error OR NOT project_engine)
+    message(WARNING "Unable to read 'engine' value from '${O3DE_PROJECT_JSON_PATH}'. Please verify this project is registered with an engine. \nError: ${json_error}")
+    return()
+endif()
+
+# Split the engine field into engine name and version specifier 
+unset(project_engine_name)
+unset(project_engine_op)
+unset(project_engine_version)
+if("${project_engine}" MATCHES "^(.*)(~=|==|!=|<=|>=|<|>|===)(.*)$")
+    if(${CMAKE_MATCH_COUNT} GREATER_EQUAL 1)
+        set(project_engine_name ${CMAKE_MATCH_1})
+    endif()
+    if(${CMAKE_MATCH_COUNT} GREATER_EQUAL 2)
+        set(project_engine_op ${CMAKE_MATCH_2})
+    endif()
+    if(${CMAKE_MATCH_COUNT} GREATER_EQUAL 3)
+        set(project_engine_version ${CMAKE_MATCH_3})
     endif()
 else()
-    message(WARNING "Unable to read 'engine' value from '${O3DE_PROJECT_JSON_PATH}'. Please verify this project is registered with an engine. \nError: ${json_error}")
+    # format unknown, assume it's just the dependency name
+    set(project_engine_name ${project_engine})
 endif()
 
+# Does the engine name match?
+if(NOT engine_name STREQUAL project_engine_name)
+    message(VERBOSE " Engine name '${engine_name}' found in '${this_engine_path}/engine.json' does not match expected engine name '${project_engine_name}'")
+    return()
+endif()
 
+# Is the version compatible?
+if(project_engine_op AND project_engine_version)
+    set(contains_version FALSE)
+    set(op ${project_engine_op})
+    set(specifier_version ${project_engine_version})
+    set(version ${engine_version})
+
+    if(op STREQUAL "==" AND version VERSION_EQUAL specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL "!=" AND NOT version VERSION_EQUAL specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL "<=" AND version VERSION_LESS_EQUAL specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL ">=" AND version VERSION_GREATER_EQUAL specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL "<" AND version VERSION_LESS specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL ">" AND version VERSION_GREATER specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL "===" AND version STREQUAL specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL "~=")
+        # compatible versions have an equivalent combination of >= and == 
+        # e.g. ~=2.2 is equivalent to >=2.2,==2.*
+        if(version VERSION_GREATER_EQUAL specifier_version)
+            string(REPLACE "." ";" specifer_version_part_list ${specifier_version})
+            list(LENGTH specifer_version_part_list list_length)
+            if(list_length LESS 2)
+                # truncating would leave nothing to compare 
+                set(contains_version TRUE)
+            else()
+                # trim the last version part because CMake doesn't support '*'
+                math(EXPR truncated_length "${list_length} - 1")
+                list(SUBLIST specifer_version_part_list 0 ${truncated_length} specifier_version)
+                string(REPLACE ";" "." specifier_version "${specifier_version}")
+                string(REPLACE "." ";" version_part_list ${version})
+                list(SUBLIST version_part_list 0 ${truncated_length} version)
+                string(REPLACE ";" "." version "${version}")
+
+                # compare the truncated versions
+                if(version VERSION_EQUAL specifier_version)
+                    set(contains_version TRUE)
+                endif()
+            endif()
+        endif()
+    endif()
+
+    if(NOT contains_version)
+        message(VERBOSE "The engine ${engine_name} version ${engine_version} at ${this_engine_path} is not compatible with the project's version specifier '${project_engine_op}${project_engine_version}'")
+        return()
+    endif()
+
+    message(VERBOSE "The engine '${engine_name}' version '${engine_version}' at '${this_engine_path}' is compatible with the project's version specifier '${project_engine_op}${project_engine_version}'")
+else()
+    message(VERBOSE "The engine '${engine_name}' version '${engine_version}' at '${this_engine_path}' is compatible because the project has no engine version specifier.'")
+endif()
+
+set(PACKAGE_VERSION_COMPATIBLE TRUE)
+
+if(project_engine_version)
+    if(PACKAGE_VERSION STREQUAL ${project_engine_version})
+        set(PACKAGE_VERSION_EXACT TRUE)
+    endif()
+endif()
