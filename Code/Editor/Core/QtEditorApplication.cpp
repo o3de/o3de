@@ -239,8 +239,17 @@ namespace Editor
         // Initialize our stylesheet here to allow Gems to register stylesheets when their system components activate.
         AZ::IO::FixedMaxPath engineRootPath;
         {
+            using namespace AZ::SettingsRegistryMergeUtils;
+            constexpr bool executeRegDumpCommands = false;
             AZ::SettingsRegistryImpl settingsRegistry;
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(settingsRegistry);
+            AZ::CommandLine commandLine;
+            commandLine.Parse(argc, argv);
+
+            ParseCommandLine(commandLine);
+            StoreCommandLineToRegistry(settingsRegistry, commandLine);
+            MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, executeRegDumpCommands);
+            MergeSettingsToRegistry_AddRuntimeFilePaths(settingsRegistry);
+
             settingsRegistry.Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
         }
         m_stylesheet->initialize(this, engineRootPath);
