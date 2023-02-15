@@ -19,7 +19,6 @@ namespace AzToolsFramework
     class SphereViewportEdit : public BaseShapeViewportEdit
     {
     public:
-        void InstallGetRotationOffset(AZStd::function<AZ::Quaternion()> getRotationOffset);
         void InstallGetSphereRadius(AZStd::function<float()> getSphereRadius);
         void InstallSetSphereRadius(AZStd::function<void(float)> setSphereRadius);
 
@@ -32,11 +31,8 @@ namespace AzToolsFramework
 
         void OnCameraStateChanged(const AzFramework::CameraState& cameraState);
     private:
-        AZ::Quaternion GetRotationOffset() const;
         float GetSphereRadius() const;
         void SetSphereRadius(float radius);
-
-        AZ::Transform GetLocalTransform() const;
 
         void SetupRadiusManipulator(
             const ManipulatorManagerId manipulatorManagerId,
@@ -47,7 +43,6 @@ namespace AzToolsFramework
 
         AZStd::shared_ptr<LinearManipulator> m_radiusManipulator;
 
-        AZStd::function<AZ::Quaternion()> m_getRotationOffset;
         AZStd::function<float()> m_getSphereRadius;
         AZStd::function<void(float)> m_setSphereRadius;
     };
