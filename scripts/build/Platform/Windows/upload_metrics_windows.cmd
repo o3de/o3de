@@ -9,7 +9,7 @@ REM
 
 SETLOCAL EnableDelayedExpansion
 
-ECHO [ci_build] aws s3 cp --recursive %CSV_DIRECTORY% O3DE_METRICS_S3_BUCKET% --acl bucket-owner-full-control
-aws s3 cp --recursive %CSV_DIRECTORY% O3DE_METRICS_S3_BUCKET% --acl bucket-owner-full-control
+ECHO [ci_build] aws s3 cp --recursive %CSV_DIRECTORY% %O3DE_METRICS_S3_BUCKET% --acl bucket-owner-full-control
+aws s3 cp --recursive %CSV_DIRECTORY% %O3DE_METRICS_S3_BUCKET% --acl bucket-owner-full-control
 
 EXIT /b %ERRORLEVEL%
