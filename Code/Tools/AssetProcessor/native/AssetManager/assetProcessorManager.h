@@ -99,6 +99,7 @@ namespace AssetProcessor
     class AssetProcessorManager
         : public QObject
         , public AssetProcessor::ProcessingJobInfoBus::Handler
+        , public AZ::Interface<AssetProcessor::IMetadataUpdates>::Registrar
     {
         using BaseAssetProcessorMessage = AzFramework::AssetSystem::BaseAssetProcessorMessage;
         using AssetFingerprintClearRequest = AzToolsFramework::AssetSystem::AssetFingerprintClearRequest;
@@ -245,6 +246,8 @@ namespace AssetProcessor
         //! Only applies to file types which are using the metadata system.
         //! This is used to prevent AP generating new metadata files while someone is trying to rename an existing file.
         void SetMetaCreationDelay(AZ::u32 milliseconds);
+
+        void PrepareForFileMove(AZ::IO::PathView oldPath, AZ::IO::PathView newPath) override;
 
     Q_SIGNALS:
         void NumRemainingJobsChanged(int newNumJobs);
@@ -495,6 +498,7 @@ namespace AssetProcessor
         bool IsLfsPointerFile(const AZStd::string& filePath);
 
         bool CheckMetadataIsAvailable(AZ::IO::PathView absolutePath);
+        bool ShouldIgnorePendingMove(AZ::IO::PathView absolutePath, bool triggeredByMetadata, bool isDelete);
 
         AssetProcessor::PlatformConfiguration* m_platformConfig = nullptr;
 
@@ -517,6 +521,9 @@ namespace AssetProcessor
         // Max delay time before creating a metadata file.  Defaults to 1000ms.
         // Avoid setting this too high as it will delay processing of new files.
         AZ::u32 m_metaCreationDelayMs = 1000;
+        // Set of files/folders that have been reported as pending for move.  bool: false = old file path, true = new file path
+        AZStd::unordered_map<AZ::IO::Path, bool> m_pendingMoves;
+        AZStd::recursive_mutex m_pendingMovesMutex;
 
         // this map contains a list of source files that were discovered in the database before asset scanning began.
         // (so files from a previous run).

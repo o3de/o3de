@@ -90,7 +90,6 @@ namespace UnitTests
             m_assetProcessorManager.get(), "AssessDeletedFile", Qt::QueuedConnection, Q_ARG(QString, oldPath.c_str()));
         QCoreApplication::processEvents();
 
-
         // Reset state
         m_jobDetailsList.clear();
         m_fileCompiled = false;
@@ -98,8 +97,6 @@ namespace UnitTests
 
         RunFile(0, 1);
         EXPECT_FALSE(delayed);
-
-        QCoreApplication::processEvents();
 
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, newPath.c_str()));
         QCoreApplication::processEvents();
@@ -158,8 +155,6 @@ namespace UnitTests
         RunFile(0, 1);
         EXPECT_FALSE(delayed);
 
-        QCoreApplication::processEvents();
-
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, newPath.c_str()));
         QCoreApplication::processEvents();
 
@@ -179,5 +174,90 @@ namespace UnitTests
         ASSERT_TRUE(currentUuid);
 
         EXPECT_EQ(originalUuid.GetValue(), currentUuid.GetValue());
+    }
+
+    TEST_F(DelayRelocationTests, PrepareForFileMove_RenameSourceAndMetadata_MovedWithoutRecreating)
+    {
+        m_assetProcessorManager->SetMetaCreationDelay(0);
+
+        auto* updateInterface = AZ::Interface<AssetProcessor::IMetadataUpdates>::Get();
+
+        ASSERT_TRUE(updateInterface);
+
+        AZ::IO::Path oldPath = m_testFilePath;
+        AZ::IO::Path scanFolderDir(m_scanfolder.m_scanFolder);
+        AZStd::string testFilename = "renamed.stage1";
+        auto newPath = scanFolderDir / testFilename;
+
+        updateInterface->PrepareForFileMove(oldPath, newPath);
+
+        auto oldMetadataPath = AzToolsFramework::MetadataManager::ToMetadataPath(oldPath);
+        auto newMetadataPath = AzToolsFramework::MetadataManager::ToMetadataPath(newPath);
+
+        AZ::IO::FileIOBase::GetInstance()->Rename(oldMetadataPath.c_str(), newMetadataPath.c_str());
+        m_uuidInterface->FileRemoved(oldMetadataPath.c_str());
+
+        // Process the delete first
+        QMetaObject::invokeMethod(
+            m_assetProcessorManager.get(), "AssessDeletedFile", Qt::QueuedConnection, Q_ARG(QString, oldMetadataPath.c_str()));
+        QCoreApplication::processEvents();
+
+        // For the below tests, since AP is expected to not complete the analysis, don't use RunFile
+        // Just execute CheckSource and make sure it produced no work
+
+        // Reset state
+        m_jobDetailsList.clear();
+        m_fileCompiled = false;
+        m_fileFailed = false;
+
+        m_assetProcessorManager->CheckActiveFiles(1);
+
+        QCoreApplication::processEvents(); // execute CheckSource
+
+        m_assetProcessorManager->CheckActiveFiles(0);
+        m_assetProcessorManager->CheckFilesToExamine(0);
+
+        QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, newMetadataPath.c_str()));
+        QCoreApplication::processEvents();
+
+        // Reset state
+        m_jobDetailsList.clear();
+        m_fileCompiled = false;
+        m_fileFailed = false;
+
+        m_assetProcessorManager->CheckActiveFiles(1);
+
+        QCoreApplication::processEvents(); // execute CheckSource
+
+        m_assetProcessorManager->CheckActiveFiles(0);
+        m_assetProcessorManager->CheckFilesToExamine(0);
+
+        EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(oldMetadataPath.c_str()));
+
+        // Now move the source file
+
+        AZ::IO::FileIOBase::GetInstance()->Rename(oldPath.c_str(), newPath.c_str());
+        m_uuidInterface->FileRemoved(oldPath.c_str());
+
+        // Process the delete first
+        QMetaObject::invokeMethod(
+            m_assetProcessorManager.get(), "AssessDeletedFile", Qt::QueuedConnection, Q_ARG(QString, oldPath.c_str()));
+        QCoreApplication::processEvents();
+
+        RunFile(0, 1);
+
+        QMetaObject::invokeMethod(
+            m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, newPath.c_str()));
+        QCoreApplication::processEvents();
+
+        // Reset state
+        m_jobDetailsList.clear();
+        m_fileCompiled = false;
+        m_fileFailed = false;
+
+        RunFile(1, 1);
+
+        EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(oldPath.c_str()));
+        EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(oldMetadataPath.c_str()));
     }
 } // namespace UnitTests

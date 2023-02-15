@@ -5909,6 +5909,25 @@ namespace AssetProcessor
         m_metaCreationDelayMs = milliseconds;
     }
 
+    void AssetProcessorManager::PrepareForFileMove(AZ::IO::PathView oldPath, AZ::IO::PathView newPath)
+    {
+        // Note - this code is likely not running on the APM thread, be careful with variable access
+        auto* fileStateInterface = AZ::Interface<IFileStateRequests>::Get();
+        AZ_Assert(fileStateInterface, "Programmer Error - IFileStateRequests is not available.");
+
+        AssetProcessor::FileStateInfo fileInfo;
+        QString oldPathQString = QString::fromUtf8(oldPath.Native().data(), azlossy_caster(oldPath.Native().size()));
+        if (fileStateInterface->GetFileInfo(oldPathQString, &fileInfo) && fileInfo.m_isDirectory)
+        {
+            // If we know the old path is a directory just exit out, a directory rename doesn't have any create/delete issues
+            return;
+        }
+
+        AZStd::scoped_lock lock(m_pendingMovesMutex);
+        m_pendingMoves.emplace(oldPath, false);
+        m_pendingMoves.emplace(newPath, true);
+    }
+
     bool AssetProcessorManager::CheckMetadataIsAvailable(AZ::IO::PathView absolutePath)
     {
         auto* fileStateInterface = AZ::Interface<IFileStateRequests>::Get();
@@ -5919,6 +5938,41 @@ namespace AssetProcessor
 
         return !uuidInterface->IsGenerationEnabledForFile(absolutePath) ||
             fileStateInterface->Exists(AzToolsFramework::MetadataManager::ToMetadataPath(absolutePath).c_str());
+    }
+
+    bool AssetProcessorManager::ShouldIgnorePendingMove(AZ::IO::PathView absolutePath, bool triggeredByMetadata, bool isDelete)
+    {
+        AZStd::scoped_lock lock(m_pendingMovesMutex);
+        auto itr = m_pendingMoves.find(absolutePath);
+
+        if (itr != m_pendingMoves.end())
+        {
+            const bool isNewFile = itr->second;
+
+            if (!isNewFile)
+            {
+                if (triggeredByMetadata && isDelete)
+                {
+                    // Deletion of the old metadata file typically would cause the metadata file to be recreated.
+                    // Since this file is moving, ignore the deletion event.
+                    m_pendingMoves.erase(itr);
+                    return true;
+                }
+            }
+            else if (!triggeredByMetadata && !isDelete)
+            {
+                // The new file has been created.
+                m_pendingMoves.erase(itr);
+
+                // If the metadata is not available yet, ignore this event.
+                if (!CheckMetadataIsAvailable(absolutePath))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     void AssetProcessorManager::DelayedMetadataFileCheck()
