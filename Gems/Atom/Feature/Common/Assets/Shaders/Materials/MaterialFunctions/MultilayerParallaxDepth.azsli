@@ -12,17 +12,17 @@
 #include "ParallaxShadowUtil.azsli"
 
  void MultilayerSetPixelDepth(
-     float3 blendMask,
-     float3 worldPosition,
+     float3 vertexBlendMask,
+     inout float3 worldPosition,
      float3 normal,
      float3 tangents[UvSetCount],
      float3 bitangents[UvSetCount],
-     float2 uvs[UvSetCount],
+     inout float2 uvs[UvSetCount],
      bool isFrontFace,
-     out float depth)
+     inout float depthNDC,
+     inout float depthCS,
+     out bool isClipped)
 {
-    s_blendMaskFromVertexStream = blendMask;
-
     float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
     float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
 
@@ -30,10 +30,29 @@
     float parallaxOverallFactor = MaterialSrg::m_displacementMax - MaterialSrg::m_displacementMin;
     
     AdjustParallaxShadowCaster(parallaxOverallFactor, parallaxOverallOffset, MaterialSrg::m_parallax_pdo_shadowFactor);
-
+    
+    s_blendMaskFromVertexStream = vertexBlendMask;
+    
     GetParallaxInput(
         normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex],
         parallaxOverallFactor, parallaxOverallOffset, 
         ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
-        uvs[MaterialSrg::m_parallaxUvIndex], worldPosition, depth);
+        uvs[MaterialSrg::m_parallaxUvIndex], worldPosition, depthNDC, depthCS, isClipped);
+}
+
+ void MultilayerSetPixelDepth(
+     float3 vertexBlendMask,
+     inout float3 positionWS,
+     float3 normal,
+     float3 tangents[UvSetCount],
+     float3 bitangents[UvSetCount],
+     inout float2 uvs[UvSetCount],
+     bool isFrontFace,
+     inout float depthNDC)
+{
+    // Dummy variables to call the above function
+    float depthCS = 1.0;
+    bool isClipped;
+    
+    MultilayerSetPixelDepth(vertexBlendMask, positionWS, normal, tangents, bitangents, uvs, isFrontFace, depthNDC, depthCS, isClipped);
 }

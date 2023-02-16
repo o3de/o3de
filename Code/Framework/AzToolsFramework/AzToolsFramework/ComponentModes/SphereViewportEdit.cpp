@@ -22,11 +22,6 @@ namespace AzToolsFramework
         const float ResetSphereRadius = 0.5f;
     } // namespace SphereViewportEditConstants
 
-    void SphereViewportEdit::InstallGetRotationOffset(AZStd::function<AZ::Quaternion()> getRotationOffset)
-    {
-        m_getRotationOffset = AZStd::move(getRotationOffset);
-    }
-
     void SphereViewportEdit::InstallGetSphereRadius(AZStd::function<float()> getSphereRadius)
     {
         m_getSphereRadius = AZStd::move(getSphereRadius);
@@ -35,16 +30,6 @@ namespace AzToolsFramework
     void SphereViewportEdit::InstallSetSphereRadius(AZStd::function<void(float)> setSphereRadius)
     {
         m_setSphereRadius = AZStd::move(setSphereRadius);
-    }
-
-    AZ::Quaternion SphereViewportEdit::GetRotationOffset() const
-    {
-        if (m_getRotationOffset)
-        {
-            return m_getRotationOffset();
-        }
-        AZ_ErrorOnce("CapsuleViewportEdit", false, "No implementation provided for GetRotationOffset");
-        return AZ::Quaternion::CreateIdentity();
     }
 
     float SphereViewportEdit::GetSphereRadius() const
@@ -67,11 +52,6 @@ namespace AzToolsFramework
         {
             AZ_ErrorOnce("SphereViewportEdit", false, "No implementation provided for SetSphereRadius");
         }
-    }
-
-    AZ::Transform SphereViewportEdit::GetLocalTransform() const
-    {
-        return AZ::Transform::CreateFromQuaternionAndTranslation(GetRotationOffset(), GetTranslationOffset());
     }
 
     void SphereViewportEdit::OnCameraStateChanged(const AzFramework::CameraState& cameraState)

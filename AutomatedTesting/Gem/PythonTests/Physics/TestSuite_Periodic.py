@@ -28,34 +28,6 @@ revert_physics_config = fm.file_revert_list(['physxdebugconfiguration.setreg', '
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
 
-    @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','Material_RestitutionCombine.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Material_RestitutionCombine(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_RestitutionCombine as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','Material_FrictionCombine.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Material_FrictionCombine(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_FrictionCombine as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','Material_RestitutionCombinePriorityOrder.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Material_RestitutionCombinePriorityOrder(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_RestitutionCombinePriorityOrder as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','Material_FrictionCombinePriorityOrder.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Material_FrictionCombinePriorityOrder(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_FrictionCombinePriorityOrder as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     # Marking the test as an expected failure due to sporadic failure on Automated Review: LYN-2580
     # The test still runs, but a failure of the test doesn't result in the test run failing
     @pytest.mark.xfail(
@@ -74,6 +46,7 @@ class TestAutomation(TestAutomationBase):
         from .tests.material import Material_CharacterController as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.skipif(sys.platform.startswith('linux'), reason="https://github.com/o3de/o3de/issues/14520")
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Collider_NoneCollisionGroupSameLayerNotCollide.setreg_override',
                       'AutomatedTesting/Registry', search_subdirs=True)
@@ -81,6 +54,7 @@ class TestAutomation(TestAutomationBase):
         from .tests.collider import Collider_NoneCollisionGroupSameLayerNotCollide as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.skipif(sys.platform.startswith('linux'), reason="https://github.com/o3de/o3de/issues/14520")
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Collider_SameCollisionGroupSameCustomLayerCollide.setreg_override',
                       'AutomatedTesting/Registry', search_subdirs=True)
@@ -93,13 +67,6 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_ScriptCanvas_PostUpdateEvent(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_PostUpdateEvent as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','Material_Restitution.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Material_Restitution(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_Restitution as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config

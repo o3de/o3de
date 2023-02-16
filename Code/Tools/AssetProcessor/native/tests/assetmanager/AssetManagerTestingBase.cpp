@@ -79,6 +79,7 @@ namespace UnitTests
 
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         m_platformConfig->PopulatePlatformsForScanFolder(platforms);
+        m_platformConfig->ReadMetaDataFromSettingsRegistry();
 
         m_platformConfig->AddScanFolder(
             AssetProcessor::ScanFolderInfo{ (assetRootDir / "folder").c_str(), "folder", "folder", false, true, platforms });
