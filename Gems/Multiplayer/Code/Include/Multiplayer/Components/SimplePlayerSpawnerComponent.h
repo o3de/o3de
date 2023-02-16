@@ -28,6 +28,8 @@ namespace Multiplayer
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
+        AZ::Transform VisitNextPlayerSpawnPoint();
+
     protected:
 
         void Activate() override;
@@ -45,6 +47,6 @@ namespace Multiplayer
         AZStd::vector<AZ::EntityId> m_spawnPoints;
 
         // Runtime properties
-        uint32_t m_spawnIndex = 0;
+        int32_t m_spawnIndex = -1;
     };
 } // namespace Multiplayer
