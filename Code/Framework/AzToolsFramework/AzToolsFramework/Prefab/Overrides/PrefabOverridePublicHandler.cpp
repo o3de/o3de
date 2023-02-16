@@ -51,12 +51,12 @@ namespace AzToolsFramework
             }
         }
 
-        bool PrefabOverridePublicHandler::AreOverridesPresent(AZ::EntityId entityId, const AZ::Dom::Path& relativePathFromEntity)
+        bool PrefabOverridePublicHandler::AreOverridesPresent(AZ::EntityId entityId, AZStd::string_view relativePathFromEntity)
         {
             AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetPathAndLinkIdFromFocusedPrefab(entityId);
             if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
             {
-                if (!relativePathFromEntity.IsEmpty())
+                if (!relativePathFromEntity.empty())
                 {
                     pathAndLinkIdPair.first /= relativePathFromEntity;
                 }

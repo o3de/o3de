@@ -28,7 +28,7 @@ namespace AzToolsFramework
             //! @param relativePathFromEntity The relative path from the entity. This can be used to query about overrides on components
             //!        and their properties
             //! @return true if overrides are present on the given entity id.
-            virtual bool AreOverridesPresent(AZ::EntityId entityId, const AZ::Dom::Path& relativePathFromEntity = {}) = 0;
+            virtual bool AreOverridesPresent(AZ::EntityId entityId, AZStd::string_view relativePathFromEntity = {}) = 0;
 
             //! Gets the override type on the given entity id. The prefab that creates the overrides is identified
             //! by the class implmenting this interface based on certain selections in the editor. eg: the prefab currently being edited.

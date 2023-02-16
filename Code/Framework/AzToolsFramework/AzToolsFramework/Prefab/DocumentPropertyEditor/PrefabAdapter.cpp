@@ -41,7 +41,7 @@ namespace AzToolsFramework::Prefab
     void PrefabAdapter::AddPropertyHandlerIfOverridden(
         AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder, const AZ::Dom::Path& relativePathFromEntity, AZ::EntityId entityId) 
     {
-        if (m_prefabOverridePublicInterface->AreOverridesPresent(entityId, relativePathFromEntity))
+        if (m_prefabOverridePublicInterface->AreOverridesPresent(entityId, relativePathFromEntity.ToString()))
         {
             adapterBuilder->BeginPropertyEditor<PrefabPropertyEditorNodes::PrefabOverrideProperty>();
             adapterBuilder->Attribute(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::SharePriorColumn, true);
