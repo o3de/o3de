@@ -774,6 +774,8 @@ namespace AzQtComponents
             }
         }
 
+        // If empty space in the view is clicked, clear the current selection and update the view
+
         {
             if (!idx.isValid())
             {
