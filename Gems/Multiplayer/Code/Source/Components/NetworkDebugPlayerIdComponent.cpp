@@ -46,36 +46,34 @@ namespace Multiplayer
 
     void NetworkDebugPlayerIdComponent::OnActivate([[maybe_unused]] EntityIsMigrating entityIsMigrating)
     {
-        #if (!AZ_TRAIT_CLIENT)
-            return;
+        #if (AZ_TRAIT_CLIENT)
+            m_viewport = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
+            if (!m_viewport)
+            {
+                AZ_Assert(false, "NetworkDebugPlayerIdComponent failed to find the a rendering viewport. Debug rendering will be disabled.");
+                return;
+            }
+
+            const auto fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
+            if (!fontQueryInterface)
+            {
+                AZ_Assert(false, "NetworkDebugPlayerIdComponent failed to find the FontQueryInterface. Debug rendering will be disabled.");
+                return;
+            }
+
+            m_fontDrawInterface = fontQueryInterface->GetDefaultFontDrawInterface();
+            if (!m_fontDrawInterface)
+            {
+                AZ_Assert(false, "NetworkDebugPlayerIdComponent failed to find the FontDrawInterface. Debug rendering will be disabled.");
+                return;
+            }
+
+            m_drawParams.m_drawViewportId = m_viewport->GetId();
+            m_drawParams.m_scale = AZ::Vector2(m_fontScale);
+            m_drawParams.m_color = m_fontColor;
+
+            AZ::TickBus::Handler::BusConnect();
         #endif
-
-        m_viewport = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
-        if (!m_viewport)
-        {
-            AZ_Assert(false, "NetworkDebugPlayerIdComponent failed to find the a rendering viewport. Debug rendering will be disabled.");
-            return;
-        }
-
-        const auto fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
-        if (!fontQueryInterface)
-        {
-            AZ_Assert(false, "NetworkDebugPlayerIdComponent failed to find the FontQueryInterface. Debug rendering will be disabled.");
-            return;
-        }
-
-        m_fontDrawInterface = fontQueryInterface->GetDefaultFontDrawInterface();
-        if (!m_fontDrawInterface)
-        {
-            AZ_Assert(false, "NetworkDebugPlayerIdComponent failed to find the FontDrawInterface. Debug rendering will be disabled.");
-            return;
-        }
-
-        m_drawParams.m_drawViewportId = m_viewport->GetId();
-        m_drawParams.m_scale = AZ::Vector2(m_fontScale);
-        m_drawParams.m_color = m_fontColor;
-
-        AZ::TickBus::Handler::BusConnect();
     }
 
     void NetworkDebugPlayerIdComponent::OnDeactivate([[maybe_unused]] EntityIsMigrating entityIsMigrating)
@@ -90,9 +88,8 @@ namespace Multiplayer
             return;
         }
 
-        AZ::Vector3 renderWorldSpace = GetEntity()->GetTransform()->GetWorldTranslation() + m_translationOffset;
-
         // Don't render others players' on-screen debug text if the player is behind the camera
+        AZ::Vector3 renderWorldSpace = GetEntity()->GetTransform()->GetWorldTranslation() + m_translationOffset;
         if (!IsNetEntityRoleAutonomous())
         {
             AZ::Vector3 cameraForward = m_viewport->GetCameraTransform().GetBasisY();
@@ -114,13 +111,6 @@ namespace Multiplayer
 
         if (IsNetEntityRoleAutonomous())
         {
-            const auto controller = static_cast<NetworkDebugPlayerIdComponentController*>(GetController());
-            if (!controller)
-            {
-                AZ_Assert(false, "NetworkDebugPlayerIdComponent failed to access its multiplayer controller.");
-                return;
-            }
-
             // Render connection count in the lower right-hand corner
             const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, playerIdText).GetY();
             const float lineSpacing = 0.5f * textHeight;
@@ -131,6 +121,7 @@ namespace Multiplayer
                 AZ::Vector3(aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height), 1.0f) +
                 AZ::Vector3(viewportConnectionBottomRightBorderPadding) * m_viewport->GetDpiScalingFactor();
 
+            const auto controller = static_cast<NetworkDebugPlayerIdComponentController*>(GetController());
             AZStd::string playerCountText = AZStd::string::format("Player Count: %i", controller->GetConnectionCount());
             m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, playerCountText);
         }
